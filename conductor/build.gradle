@@ -1,0 +1,56 @@
+group 'eu.cqse'
+version '0.8'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.eclipse.org/content/groups/releases/" }
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    def jacocoVersion = '0.7.9'
+    compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
+    compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
+    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
+
+    compile group: 'com.squareup.retrofit2', name: 'retrofit', version: '2.2.0'
+    compile group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.2.0'
+    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '3.2.0.201312181205-r'
+
+    compile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.testng', name: 'testng', version: '6.11'
+
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.0-M4'
+}
+
+//jar {
+//    manifest {
+//        attributes 'Main-Class': 'eu.cqse.teamscale.test.ReportStarter'
+//    }
+//
+//    from {
+//        configurations.compile.collect {
+//            it.isDirectory() ? it : zipTree(it)
+//        }
+//    }
+//
+//    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+//}
+
+
+uploadArchives {
+    repositories {
+        mavenLocal()
+        mavenDeployer {
+            repository(url: mavenLocal().url)
+            pom.groupId = rootProject.group
+            pom.artifactId = project.name
+            pom.version = rootProject.version
+        }
+    }
+}
