@@ -1,4 +1,4 @@
-package eu.cqse.test.coverage.recorder.jacoco;
+package eu.cqse.teamscale.jacoco.recorder.jacoco;
 
 import org.jacoco.core.data.ExecutionDataWriter;
 import org.jacoco.core.runtime.RemoteControlReader;

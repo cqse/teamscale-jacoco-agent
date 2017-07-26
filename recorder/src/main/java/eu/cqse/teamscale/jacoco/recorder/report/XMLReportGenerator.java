@@ -1,4 +1,4 @@
-package eu.cqse.test.coverage.recorder.report;
+package eu.cqse.teamscale.jacoco.recorder.report;
 
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;

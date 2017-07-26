@@ -9,7 +9,7 @@
  *    Brock Janiczak -initial API and implementation
  *    
  *******************************************************************************/
-package eu.cqse.test.coverage.recorder.report;
+package eu.cqse.teamscale.jacoco.recorder.report;
 
 import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.data.ExecutionData;

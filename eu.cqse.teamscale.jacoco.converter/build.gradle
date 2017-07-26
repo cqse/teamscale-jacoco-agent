@@ -1,0 +1,18 @@
+apply plugin: 'java'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    def jacocoVersion = '0.7.9'
+    compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
+    compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
+    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
+    
+    compile "io.reactivex.rxjava2:rxjava:2.1.2"
+    compile "com.beust:jcommander:1.71"
+    
+    testImplementation 'junit:junit:4.12'
+}
+

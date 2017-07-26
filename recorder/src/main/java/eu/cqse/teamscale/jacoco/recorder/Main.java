@@ -1,4 +1,4 @@
-package eu.cqse.test.coverage.recorder;
+package eu.cqse.teamscale.jacoco.recorder;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 

@@ -1,4 +1,4 @@
-package eu.cqse.test.coverage.recorder.upload;
+package eu.cqse.teamscale.jacoco.recorder.upload;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

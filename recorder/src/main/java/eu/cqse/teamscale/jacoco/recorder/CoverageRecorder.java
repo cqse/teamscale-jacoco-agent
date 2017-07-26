@@ -1,13 +1,14 @@
-package eu.cqse.test.coverage.recorder;
+package eu.cqse.teamscale.jacoco.recorder;
 
-import eu.cqse.test.coverage.recorder.jacoco.ExecutionDataClient;
-import eu.cqse.test.coverage.recorder.report.XMLReportGenerator;
-import eu.cqse.test.coverage.recorder.upload.TeamscaleClient;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+
+import eu.cqse.teamscale.jacoco.recorder.jacoco.ExecutionDataClient;
+import eu.cqse.teamscale.jacoco.recorder.report.XMLReportGenerator;
+import eu.cqse.teamscale.jacoco.recorder.upload.TeamscaleClient;
 
 import java.io.File;
 import java.io.FileWriter;
