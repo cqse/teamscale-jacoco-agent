@@ -147,7 +147,7 @@ public class Main {
 
 			scheduleRegularDump(controller);
 
-			logger.info("Started");
+			logger.info("Connected successfully to JaCoCo");
 			// blocks until either the job throws an exception or is cancelled
 			dumpJob.get();
 		} catch (CancellationException e) {
