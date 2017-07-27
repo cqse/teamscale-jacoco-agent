@@ -14,8 +14,7 @@ import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.report.IReportVisitor;
-
-import eu.cqse.teamscale.jacoco.recorder.report.FilteringXMLFormatter;
+import org.jacoco.report.xml.XMLFormatter;
 
 /** Creates an XML report from binary execution data. */
 public class XmlReportGenerator {
@@ -39,10 +38,7 @@ public class XmlReportGenerator {
 	/** Creates an XML report based on the given coverage data. */
 	private String createReport(IBundleCoverage bundleCoverage, ExecutionData data) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		// Create a concrete report visitor based on some supplied
-		// configuration. In this case we use the defaults
-		// TODO (FS) config??
-		FilteringXMLFormatter xmlFormatter = new FilteringXMLFormatter();
+		XMLFormatter xmlFormatter = new XMLFormatter();
 		IReportVisitor visitor = xmlFormatter.createVisitor(output);
 
 		SessionInfo sessionInfo = new SessionInfo("dummyid", 123l, 456l);
