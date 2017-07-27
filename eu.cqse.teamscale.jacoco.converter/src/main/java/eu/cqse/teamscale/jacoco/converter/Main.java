@@ -55,7 +55,6 @@ public class Main {
 	private int dumpIntervalInMinutes = 0;
 
 	/** The logger. */
-	// TODO (FS) log management, rotation etc. dont want to flood the disk
 	private final Logger logger = LogManager.getLogger(this);
 
 	/** The scheduler for the recurring dump task. */
