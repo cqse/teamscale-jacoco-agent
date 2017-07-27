@@ -96,8 +96,8 @@ public class Main {
 	}
 
 	/**
-	 * Executes {@link #run(Arguments)} in a loop to ensure this stays running even
-	 * when exceptions occur.
+	 * Executes {@link #run()} in a loop to ensure this stays running even when
+	 * exceptions occur.
 	 * 
 	 * Handles the following error cases:
 	 * <ul>
@@ -170,7 +170,8 @@ public class Main {
 	}
 
 	/**
-	 * Stops the dump job. This will make the {@link #run(Arguments)} method exit.
+	 * Stops the dump job. This will make the {@link #run()} method exit which
+	 * causes the {@link #loop()} method to restart it.
 	 */
 	private void restart() {
 		dumpJob.cancel(false);
