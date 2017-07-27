@@ -3,8 +3,9 @@ package eu.cqse.teamscale.jacoco.converter;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.logging.ILogger;
 
 /**
  * Writes XMLs to files in a folder. The files are timestamped with the time of
@@ -14,7 +15,7 @@ import org.conqat.lib.commons.logging.ILogger;
 public class TimestampedFileStore implements IXmlStore {
 
 	/** The logger. */
-	private final ILogger logger;
+	private final Logger logger = LogManager.getLogger(this);
 
 	/** The directory to which to write the XML files. */
 	private final Path outputDirectory;
@@ -22,9 +23,8 @@ public class TimestampedFileStore implements IXmlStore {
 	/**
 	 * Constructor.
 	 */
-	public TimestampedFileStore(Path outputDirectory, ILogger logger) {
+	public TimestampedFileStore(Path outputDirectory) {
 		this.outputDirectory = outputDirectory;
-		this.logger = logger;
 	}
 
 	@Override

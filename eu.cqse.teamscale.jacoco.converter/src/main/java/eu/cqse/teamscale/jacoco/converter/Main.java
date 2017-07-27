@@ -12,11 +12,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.logging.ILogger;
-import org.conqat.lib.commons.logging.SimpleLogger;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -29,6 +29,9 @@ import io.reactivex.schedulers.Schedulers;
  * disk.
  */
 public class Main {
+
+	/** Minutes to wait after a connection drop to try and reconnect. */
+	private static final int RECONNECT_SLEEP_INTERVAL_MINUTES = 5;
 
 	/** The directories and/or zips that contain all class files being profiled. */
 	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
@@ -52,8 +55,8 @@ public class Main {
 	private int dumpIntervalInMinutes = 0;
 
 	/** The logger. */
-	// TODO (FS) log management
-	private final ILogger logger = new SimpleLogger();
+	// TODO (FS) log management, rotation etc. dont want to flood the disk
+	private final Logger logger = LogManager.getLogger(this);
 
 	/** The scheduler for the recurring dump task. */
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
@@ -107,16 +110,16 @@ public class Main {
 	 */
 	private void loop() {
 		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new));
-		store = new TimestampedFileStore(Paths.get(outputDir), logger);
+		store = new TimestampedFileStore(Paths.get(outputDir));
 
 		while (true) {
 			try {
 				run();
 			} catch (ConnectException e) {
 				logger.error("Could not connect to JaCoCo. The application appears not to be running."
-						+ " Trying to reconnect in 5 minutes", e);
+						+ " Trying to reconnect in {} minutes", RECONNECT_SLEEP_INTERVAL_MINUTES, e);
 				try {
-					Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+					Thread.sleep(TimeUnit.MINUTES.toMillis(RECONNECT_SLEEP_INTERVAL_MINUTES));
 				} catch (InterruptedException e2) {
 					// ignore, retry early
 				}
