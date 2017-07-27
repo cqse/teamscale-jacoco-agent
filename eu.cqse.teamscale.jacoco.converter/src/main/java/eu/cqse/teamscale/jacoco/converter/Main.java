@@ -52,13 +52,11 @@ public class Main {
 	private int dumpIntervalInMinutes = 0;
 
 	/** The logger. */
+	// TODO (FS) log management
 	private final ILogger logger = new SimpleLogger();
 
 	/** The scheduler for the recurring dump task. */
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-
-	/** Connection to JaCoCo. */
-	private IJacocoController controller;
 
 	/** Converts binary execution data to XML. */
 	private XmlReportGenerator converter;
@@ -115,9 +113,10 @@ public class Main {
 			try {
 				run();
 			} catch (ConnectException e) {
-				logger.error("The application appears not to be running. Trying to reconnect in 1 minute", e);
+				logger.error("Could not connect to JaCoCo. The application appears not to be running."
+						+ " Trying to reconnect in 5 minutes", e);
 				try {
-					Thread.sleep(TimeUnit.MINUTES.toMillis(1));
+					Thread.sleep(TimeUnit.MINUTES.toMillis(5));
 				} catch (InterruptedException e2) {
 					// ignore, retry early
 				}
@@ -133,43 +132,39 @@ public class Main {
 	 * exception occurs.
 	 */
 	private void run() throws IOException, InterruptedException, ExecutionException {
-		controller = new JacocoRemoteTCPController("localhost", port);
-		controller.connect().observeOn(Schedulers.single()).doOnNext(data -> {
-			logger.info("Received dump, converting");
-		}).map(converter::convert).doOnNext(data -> {
-			logger.info("Storing XML");
-		}).subscribe(store::store, error -> {
-			logger.error("Fatal exception in execution data pipeline", error);
-			restart();
-		});
+		try (IJacocoController controller = new JacocoRemoteTCPController("localhost", port)) {
+			controller.connect().observeOn(Schedulers.single()).doOnNext(data -> {
+				logger.info("Received dump, converting");
+			}).map(converter::convert).doOnNext(data -> {
+				logger.info("Storing XML");
+			}).subscribe(store::store, error -> {
+				logger.error("Fatal exception in execution data pipeline", error);
+				restart();
+			});
 
-		scheduleRegularDump();
+			scheduleRegularDump(controller);
 
-		logger.info("Started");
-		try {
+			logger.info("Started");
 			// blocks until either the job throws an exception or is cancelled
 			dumpJob.get();
 		} catch (CancellationException e) {
 			// only happens when the job was cancelled. allow restart to happen
-		} finally {
-			controller.close();
 		}
 	}
 
 	/**
 	 * Schedules a job to run regularly and dump execution data.
 	 */
-	private void scheduleRegularDump() throws InterruptedException, ExecutionException {
+	private void scheduleRegularDump(IJacocoController controller) throws InterruptedException, ExecutionException {
 		dumpJob = executor.scheduleAtFixedRate(() -> {
 			logger.info("Requesting dump");
 			try {
 				controller.dump(true);
 			} catch (IOException e) {
-				// this means the connection is no longer valid and we need to restart
+				// this means the connection is no longer up and we need to restart
 				logger.error("Failed to dump execution data. Most likely, the connection to"
 						+ " the application was interrupted. Will try to reconnect", e);
 				restart();
-				// TODO (FS) handle app not running scenario
 			}
 		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.SECONDS);
 	}
