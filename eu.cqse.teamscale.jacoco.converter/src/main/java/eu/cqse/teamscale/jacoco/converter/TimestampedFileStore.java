@@ -1,4 +1,4 @@
-package eu.cqse.teamcsale.jacoco.converter;
+package eu.cqse.teamscale.jacoco.converter;
 
 import java.io.IOException;
 import java.nio.file.Path;

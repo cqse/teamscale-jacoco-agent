@@ -1,4 +1,4 @@
-package eu.cqse.teamcsale.jacoco.converter;
+package eu.cqse.teamscale.jacoco.converter;
 
 /** Stores XML data permanently. */
 public interface IXmlStore {
