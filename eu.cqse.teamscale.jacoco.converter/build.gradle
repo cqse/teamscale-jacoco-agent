@@ -1,6 +1,9 @@
 apply plugin: 'java'
 
 repositories {
+	ivy {
+		url "https://share.cqse.eu/svn/artifacts/ivy"
+	}
     jcenter()
 }
 
@@ -12,6 +15,7 @@ dependencies {
     
     compile "io.reactivex.rxjava2:rxjava:2.1.2"
     compile "com.beust:jcommander:1.71"
+    compile 'org.conqat:org.conqat.lib.commons:0.20160822'
     
     testImplementation 'junit:junit:4.12'
 }

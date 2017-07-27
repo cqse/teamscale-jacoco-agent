@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -16,24 +17,26 @@ import org.jacoco.report.IReportVisitor;
 
 import eu.cqse.teamscale.jacoco.recorder.report.FilteringXMLFormatter;
 
-public class XMLReportGenerator {
+/** Creates an XML report from binary execution data. */
+public class XmlReportGenerator {
 
+	/** Directories and zip files that contain class files. */
 	private final List<File> codeDirectoriesOrArchives;
 
-	public XMLReportGenerator(List<File> codeDirectoriesOrArchives) {
+	/** Constructor. */
+	public XmlReportGenerator(List<File> codeDirectoriesOrArchives) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 	}
 
 	/**
-	 * Create the report.
-	 *
-	 * @throws IOException
+	 * Creates the report.
 	 */
-	public String create(ExecutionData data) throws IOException {
+	public String convert(ExecutionData data) throws IOException {
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(data);
 		return createReport(bundleCoverage, data);
 	}
 
+	/** Creates an XML report based on the given coverage data. */
 	private String createReport(IBundleCoverage bundleCoverage, ExecutionData data) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		// Create a concrete report visitor based on some supplied
@@ -47,10 +50,13 @@ public class XMLReportGenerator {
 		visitor.visitBundle(bundleCoverage, null);
 		visitor.visitEnd();
 
-		// TODO (FS) constant
-		return output.toString("utf8");
+		return output.toString(FileSystemUtils.UTF8_ENCODING);
 	}
 
+	/**
+	 * Analyzes the structure of the class files in
+	 * {@link #codeDirectoriesOrArchives} and builds an in-memory coverage report.
+	 */
 	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionData data) throws IOException {
 		CoverageBuilder coverageBuilder = new CoverageBuilder();
 		ExecutionDataStore store = new ExecutionDataStore();

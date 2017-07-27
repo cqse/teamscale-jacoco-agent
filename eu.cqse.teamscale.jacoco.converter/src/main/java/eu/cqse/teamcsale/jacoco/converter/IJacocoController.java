@@ -12,4 +12,7 @@ public interface IJacocoController extends AutoCloseable {
 
 	void dump(boolean reset) throws IOException;
 
+	@Override
+	void close() throws IOException;
+
 }
