@@ -5,7 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -22,9 +27,22 @@ public class XmlReportGenerator {
 	/** Directories and zip files that contain class files. */
 	private final List<File> codeDirectoriesOrArchives;
 
-	/** Constructor. */
-	public XmlReportGenerator(List<File> codeDirectoriesOrArchives) {
+	/**
+	 * Ant-style include filters to apply to all locations during class file
+	 * traversal.
+	 */
+	private final List<Pattern> locationIncludeFilters;
+
+	/** The logger. */
+	private final Logger logger = LogManager.getLogger(this);
+
+	/**
+	 * Constructor.
+	 */
+	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, List<String> locationIncludeFilters) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
+		this.locationIncludeFilters = CollectionUtils.map(locationIncludeFilters,
+				filter -> AntPatternUtils.convertPattern(filter, false));
 	}
 
 	/**
@@ -57,28 +75,36 @@ public class XmlReportGenerator {
 		CoverageBuilder coverageBuilder = new CoverageBuilder();
 		ExecutionDataStore store = new ExecutionDataStore();
 		store.put(data);
-		Analyzer analyzer = new Analyzer(store, coverageBuilder);
-		// TODO (FS) filter analyzed class files
-		/*
-		 * {
-		 * 
-		 * @Override public int analyzeAll(InputStream input, String location) throws
-		 * IOException { if (!location.endsWith(".class")) { return 0; } File file = new
-		 * File(location);
-		 * 
-		 * if (location.contains("test-data") ||
-		 * includedClassFiles.contains(file.getName())) { //
-		 * System.out.println("Ignoring: " + location); return 0; }
-		 * includedClassFiles.add(file.getName());
-		 * 
-		 * return super.analyzeAll(input, location); } };
-		 */
+		Analyzer analyzer = new Analyzer(store, coverageBuilder) {
+			@Override
+			public int analyzeAll(java.io.InputStream input, String location) throws IOException {
+				if (isFiltered(location)) {
+					logger.debug("Filtering location {}", location);
+					return 0;
+				}
+				return super.analyzeAll(input, location);
+			};
+		};
 
 		for (File file : codeDirectoriesOrArchives) {
 			analyzer.analyzeAll(file);
 		}
 
 		return coverageBuilder.getBundle("dummybundle");
+	}
+
+	private boolean isFiltered(String location) {
+		if (locationIncludeFilters.isEmpty()) {
+			return false;
+		}
+
+		for (Pattern pattern : locationIncludeFilters) {
+			if (pattern.matcher(location).matches()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

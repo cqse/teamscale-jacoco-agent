@@ -39,6 +39,15 @@ public class Main {
 			+ " Searches recursively, including inside zips.")
 	private List<String> classDirectoriesOrZips = new ArrayList<>();
 
+	/** The directories and/or zips that contain all class files being profiled. */
+	@Parameter(names = { "--filter", "-f" }, description = ""
+			+ "Ant-style include patterns to apply to all locations during JaCoCo's traversal of class files."
+			+ " Note that zip contents are separated from zip files with @ and that you can filter both"
+			+ " class files and intermediate folders/zips. Use with great care as missing class files"
+			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
+			+ " Defaults to no filtering.")
+	private List<String> locationIncludeFilters = new ArrayList<>();
+
 	/** The JaCoCo port. */
 	@Parameter(names = { "--port", "-p" }, required = true, description = ""
 			+ "The port under which JaCoCo is listening for connections.")
@@ -108,7 +117,8 @@ public class Main {
 	 * </ul>
 	 */
 	private void loop() {
-		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new));
+		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new),
+				locationIncludeFilters);
 		store = new TimestampedFileStore(Paths.get(outputDir));
 
 		while (true) {

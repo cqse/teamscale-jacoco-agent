@@ -34,7 +34,7 @@ public class TimestampedFileStore implements IXmlStore {
 		try {
 			FileSystemUtils.writeFile(outputPath.toFile(), xml);
 		} catch (IOException e) {
-			logger.error("Failed to write XML to " + outputPath, e);
+			logger.error("Failed to write XML to {}", outputPath, e);
 		}
 	}
 
