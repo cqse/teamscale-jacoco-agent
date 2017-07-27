@@ -63,6 +63,8 @@ public class JacocoRemoteTCPController implements IJacocoController {
 	public void dump(boolean reset) throws IOException {
 		CCSMAssert.isTrue(isConnected(), "You must connect before you can start issuing dump commands");
 		writer.visitDumpCommand(true, reset);
+		// must read afterwards or data will not be received
+		reader.read();
 	}
 
 	/** {@inheritDoc} */

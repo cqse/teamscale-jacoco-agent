@@ -2,6 +2,7 @@ package eu.cqse.teamscale.jacoco.converter;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,11 +94,18 @@ public class Main {
 		}
 
 		FileSystemUtils.ensureDirectoryExists(new File(outputDir));
+		CCSMAssert.isTrue(new File(outputDir).canWrite(), "Path '" + outputDir + "' is not writable");
 	}
 
 	/**
 	 * Executes {@link #run(Arguments)} in a loop to ensure this stays running even
 	 * when exceptions occur.
+	 * 
+	 * Handles the following error cases:
+	 * <ul>
+	 * <li>Application is not running: wait for one minute, then retry
+	 * <li>Fatal error: immediately restart
+	 * </ul>
 	 */
 	private void loop() {
 		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new));
@@ -106,6 +114,13 @@ public class Main {
 		while (true) {
 			try {
 				run();
+			} catch (ConnectException e) {
+				logger.error("The application appears not to be running. Trying to reconnect in 1 minute", e);
+				try {
+					Thread.sleep(TimeUnit.MINUTES.toMillis(1));
+				} catch (InterruptedException e2) {
+					// ignore, retry early
+				}
 			} catch (Throwable t) {
 				logger.error("Fatal error", t);
 			}
@@ -150,9 +165,13 @@ public class Main {
 			try {
 				controller.dump(true);
 			} catch (IOException e) {
-				logger.error("Failed to dump execution data. Will retry next interval", e);
+				// this means the connection is no longer valid and we need to restart
+				logger.error("Failed to dump execution data. Most likely, the connection to"
+						+ " the application was interrupted. Will try to reconnect", e);
+				restart();
+				// TODO (FS) handle app not running scenario
 			}
-		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.MINUTES);
+		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.SECONDS);
 	}
 
 	/**
