@@ -93,6 +93,10 @@ public class XmlReportGenerator {
 		return coverageBuilder.getBundle("dummybundle");
 	}
 
+	/**
+	 * Returns <code>true</code> if the given location should not be traversed for
+	 * class files.
+	 */
 	private boolean isFiltered(String location) {
 		if (locationIncludeFilters.isEmpty()) {
 			return false;

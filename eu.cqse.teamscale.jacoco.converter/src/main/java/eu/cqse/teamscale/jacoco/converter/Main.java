@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -117,6 +118,12 @@ public class Main {
 	 * </ul>
 	 */
 	private void loop() {
+		logger.info("Connecting to JaCoCo on localhost:{} and dumping coverage every {} minutes to {}", port,
+				dumpIntervalInMinutes, outputDir);
+		if (!locationIncludeFilters.isEmpty()) {
+			logger.warn("Class file filters are enabled: {}", StringUtils.concat(locationIncludeFilters, ", "));
+		}
+
 		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new),
 				locationIncludeFilters);
 		store = new TimestampedFileStore(Paths.get(outputDir));
