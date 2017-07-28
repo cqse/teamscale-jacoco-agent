@@ -49,8 +49,10 @@ public class XmlReportGenerator {
 	 * Creates the report.
 	 */
 	public String convert(ExecutionData data) throws IOException {
-		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(data);
-		return createReport(bundleCoverage, data);
+		return TimerUtils.time("Generating the XML report", () -> {
+			IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(data);
+			return createReport(bundleCoverage, data);
+		});
 	}
 
 	/** Creates an XML report based on the given coverage data. */

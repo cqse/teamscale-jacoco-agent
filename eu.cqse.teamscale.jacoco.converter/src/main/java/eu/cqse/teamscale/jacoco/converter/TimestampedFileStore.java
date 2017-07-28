@@ -27,15 +27,19 @@ public class TimestampedFileStore implements IXmlStore {
 		this.outputDirectory = outputDirectory;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void store(String xml) {
-		long currentTime = System.currentTimeMillis();
-		Path outputPath = outputDirectory.resolve("jacoco-coverage-" + currentTime + ".xml");
-		try {
-			FileSystemUtils.writeFile(outputPath.toFile(), xml);
-		} catch (IOException e) {
-			logger.error("Failed to write XML to {}", outputPath, e);
-		}
+		TimerUtils.time("Writing the report to a file", () -> {
+			long currentTime = System.currentTimeMillis();
+			Path outputPath = outputDirectory.resolve("jacoco-coverage-" + currentTime + ".xml");
+			try {
+				FileSystemUtils.writeFile(outputPath.toFile(), xml);
+			} catch (IOException e) {
+				logger.error("Failed to write XML to {}", outputPath, e);
+			}
+			return 1;
+		});
 	}
 
 }
