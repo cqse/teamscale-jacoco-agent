@@ -30,7 +30,7 @@ public class TimestampedFileStore implements IXmlStore {
 	/** {@inheritDoc} */
 	@Override
 	public void store(String xml) {
-		TimerUtils.time("Writing the report to a file", () -> {
+		try (Benchmark benchmark = new Benchmark("Writing the report to a file")) {
 			long currentTime = System.currentTimeMillis();
 			Path outputPath = outputDirectory.resolve("jacoco-coverage-" + currentTime + ".xml");
 			try {
@@ -38,8 +38,7 @@ public class TimestampedFileStore implements IXmlStore {
 			} catch (IOException e) {
 				logger.error("Failed to write XML to {}", outputPath, e);
 			}
-			return 1;
-		});
+		}
 	}
 
 }
