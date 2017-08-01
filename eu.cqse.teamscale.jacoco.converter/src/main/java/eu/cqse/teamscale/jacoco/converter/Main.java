@@ -23,8 +23,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-import io.reactivex.schedulers.Schedulers;
-
 /**
  * Connects to a running JaCoCo and regularly dumps coverage to XML files on
  * disk.
@@ -152,10 +150,11 @@ public class Main {
 	 */
 	private void run() throws IOException, InterruptedException, ExecutionException {
 		try (IJacocoController controller = new JacocoRemoteTCPController("localhost", port)) {
-			controller.connect().observeOn(Schedulers.single()).doOnNext(data -> {
+			controller.connect().doOnNext(data -> {
 				logger.info("Received dump, converting");
 			}).map(converter::convert).doOnNext(data -> {
 				logger.info("Storing XML");
+				// access to the store must be synchronized, so use the single scheduler
 			}).subscribe(store::store, error -> {
 				logger.error("Fatal exception in execution data pipeline", error);
 				restart();
@@ -185,8 +184,7 @@ public class Main {
 						+ " the application was interrupted. Will try to reconnect", e);
 				restart();
 			}
-			// TODO (FS)
-		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.SECONDS);
+		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.MINUTES);
 	}
 
 	/**
