@@ -185,7 +185,8 @@ public class Main {
 						+ " the application was interrupted. Will try to reconnect", e);
 				restart();
 			}
-		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.MINUTES);
+			// TODO (FS)
+		}, dumpIntervalInMinutes, dumpIntervalInMinutes, TimeUnit.SECONDS);
 	}
 
 	/**

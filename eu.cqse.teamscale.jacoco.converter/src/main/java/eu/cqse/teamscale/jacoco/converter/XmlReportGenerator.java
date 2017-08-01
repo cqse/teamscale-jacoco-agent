@@ -15,11 +15,11 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
-import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
-import org.jacoco.core.data.SessionInfo;
 import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.xml.XMLFormatter;
+
+import eu.cqse.teamscale.jacoco.converter.IJacocoController.Dump;
 
 /** Creates an XML report from binary execution data. */
 public class XmlReportGenerator {
@@ -48,21 +48,20 @@ public class XmlReportGenerator {
 	/**
 	 * Creates the report.
 	 */
-	public String convert(ExecutionData data) throws IOException {
+	public String convert(Dump dump) throws IOException {
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(data);
-			return createReport(bundleCoverage, data);
+			IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(dump.store);
+			return createReport(bundleCoverage, dump);
 		}
 	}
 
-	/** Creates an XML report based on the given coverage data. */
-	private String createReport(IBundleCoverage bundleCoverage, ExecutionData data) throws IOException {
+	/** Creates an XML report based on the given session and coverage data. */
+	private String createReport(IBundleCoverage bundleCoverage, Dump dump) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		XMLFormatter xmlFormatter = new XMLFormatter();
 		IReportVisitor visitor = xmlFormatter.createVisitor(output);
 
-		SessionInfo sessionInfo = new SessionInfo("dummyid", 123l, 456l);
-		visitor.visitInfo(Collections.singletonList(sessionInfo), Collections.singletonList(data));
+		visitor.visitInfo(Collections.singletonList(dump.info), dump.store.getContents());
 		visitor.visitBundle(bundleCoverage, null);
 		visitor.visitEnd();
 
@@ -71,12 +70,11 @@ public class XmlReportGenerator {
 
 	/**
 	 * Analyzes the structure of the class files in
-	 * {@link #codeDirectoriesOrArchives} and builds an in-memory coverage report.
+	 * {@link #codeDirectoriesOrArchives} and builds an in-memory coverage report
+	 * with the coverage in the given store.
 	 */
-	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionData data) throws IOException {
+	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionDataStore store) throws IOException {
 		CoverageBuilder coverageBuilder = new CoverageBuilder();
-		ExecutionDataStore store = new ExecutionDataStore();
-		store.put(data);
 		Analyzer analyzer = new Analyzer(store, coverageBuilder) {
 			@Override
 			public int analyzeAll(java.io.InputStream input, String location) throws IOException {
