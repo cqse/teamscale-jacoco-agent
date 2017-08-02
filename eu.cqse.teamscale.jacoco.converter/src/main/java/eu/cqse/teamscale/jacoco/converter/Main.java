@@ -23,6 +23,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * Connects to a running JaCoCo and regularly dumps coverage to XML files on
  * disk.
@@ -155,8 +157,11 @@ public class Main {
 			}).map(converter::convert).doOnNext(data -> {
 				logger.info("Storing XML");
 				// access to the store must be synchronized, so use the single scheduler
-			}).subscribe(store::store, error -> {
+			}).observeOn(Schedulers.single()).subscribe(store::store, error -> {
 				logger.error("Fatal exception in execution data pipeline", error);
+				restart();
+			}, () -> {
+				logger.info("Target application shut down. Restarting and waiting for new connection.");
 				restart();
 			});
 

@@ -40,7 +40,7 @@ public interface IJacocoController extends AutoCloseable {
 		/**
 		 * Constructor.
 		 */
-		public Dump(SessionInfo info, ExecutionDataStore store) {
+		public Dump(ExecutionDataStore store, SessionInfo info) {
 			this.info = info;
 			this.store = store;
 		}
