@@ -1,9 +1,5 @@
 # Teamscale JaCoCo Client
 
-## Building
-
-To build the fat jar: `gradlew clean shadow`. The jar will be under build/libs. Rename to `jacoco-client.jar`.
-
 ## Running
 
 - `java -jar jacoco-client.jar` to see all available options

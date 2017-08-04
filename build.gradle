@@ -29,3 +29,8 @@ dependencies {
 }
 
 mainClassName = "eu.cqse.teamscale.jacoco.client.Main"
+shadowJar {
+    baseName = 'teamscale-jacoco-client'
+    classifier = null
+    version = '1.0.0'
+}
