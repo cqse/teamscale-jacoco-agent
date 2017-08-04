@@ -1,4 +1,4 @@
-# JaCoCo Coverage Converter
+# Teamscale JaCoCo Client
 
 ## Building
 
