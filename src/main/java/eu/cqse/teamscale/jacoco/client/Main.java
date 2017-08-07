@@ -20,6 +20,7 @@ import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
+import org.jacoco.core.JaCoCo;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -107,6 +108,11 @@ public class Main {
 
 		main.validate();
 		main.loop();
+	}
+
+	/** Constructor. */
+	public Main() {
+		logger.info("This program uses the following JaCoCo version: " + JaCoCo.VERSION);
 	}
 
 	/** Makes sure the arguments are valid. */
