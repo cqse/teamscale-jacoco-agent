@@ -31,16 +31,15 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class Main {
 
-	/** Minutes to wait after a connection drop to try and reconnect. */
-	private static final int RECONNECT_SLEEP_INTERVAL_MINUTES = 5;
-
 	/** The directories and/or zips that contain all class files being profiled. */
 	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
 			+ "The directories or zip/ear/jar/war/... files that contain the compiled Java classes being profiled."
 			+ " Searches recursively, including inside zips.")
 	private List<String> classDirectoriesOrZips = new ArrayList<>();
 
-	/** Ant-style include patterns to apply during JaCoCo's traversal of class files. */
+	/**
+	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
+	 */
 	@Parameter(names = { "--filter", "-f" }, description = ""
 			+ "Ant-style include patterns to apply to all locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter both"
@@ -63,6 +62,11 @@ public class Main {
 	@Parameter(names = { "--interval", "-i" }, required = true, description = ""
 			+ "Interval in minutes after which the current coverage is retrived and stored in a new XML file.")
 	private int dumpIntervalInMinutes = 0;
+
+	/** The interval in seconds for a reconnect to the application. */
+	@Parameter(names = { "--reconnect", "-r" }, required = false, description = ""
+			+ "Interval in seconds after which to try and reconnect after losing connection to JaCoCo.")
+	private int reconnectIntervalInSeconds = 5 * 60;
 
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
@@ -113,7 +117,8 @@ public class Main {
 	 * 
 	 * Handles the following error cases:
 	 * <ul>
-	 * <li>Application is not running: wait for {@value #RECONNECT_SLEEP_INTERVAL_MINUTES} minutes, then retry
+	 * <li>Application is not running: wait for
+	 * {@value #RECONNECT_SLEEP_INTERVAL_MINUTES} minutes, then retry
 	 * <li>Fatal error: immediately restart
 	 * </ul>
 	 */
@@ -133,9 +138,9 @@ public class Main {
 				run();
 			} catch (ConnectException e) {
 				logger.error("Could not connect to JaCoCo. The application appears not to be running."
-						+ " Trying to reconnect in {} minutes", RECONNECT_SLEEP_INTERVAL_MINUTES, e);
+						+ " Trying to reconnect in {} seconds", reconnectIntervalInSeconds, e);
 				try {
-					Thread.sleep(TimeUnit.MINUTES.toMillis(RECONNECT_SLEEP_INTERVAL_MINUTES));
+					Thread.sleep(TimeUnit.SECONDS.toMillis(reconnectIntervalInSeconds));
 				} catch (InterruptedException e2) {
 					// ignore, retry early
 				}
