@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -30,6 +32,13 @@ import io.reactivex.schedulers.Schedulers;
  * disk.
  */
 public class Main {
+
+	/**
+	 * Logger used to mark messages that occur due to the application being
+	 * restarted. We use this to filter these messages in case restarts happen
+	 * frequently and are expected to have cleaner logs.
+	 */
+	private static final Marker RECONNECT_LOGGER_MARKER = MarkerManager.getMarker("RECONNECT");
 
 	/** The directories and/or zips that contain all class files being profiled. */
 	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
@@ -137,8 +146,10 @@ public class Main {
 			try {
 				run();
 			} catch (ConnectException e) {
-				logger.error("Could not connect to JaCoCo. The application appears not to be running."
-						+ " Trying to reconnect in {} seconds", reconnectIntervalInSeconds, e);
+				logger.error(RECONNECT_LOGGER_MARKER,
+						"Could not connect to JaCoCo. The application appears not to be running."
+								+ " Trying to reconnect in {} seconds",
+						reconnectIntervalInSeconds, e);
 				try {
 					Thread.sleep(TimeUnit.SECONDS.toMillis(reconnectIntervalInSeconds));
 				} catch (InterruptedException e2) {
@@ -147,7 +158,7 @@ public class Main {
 			} catch (Throwable t) {
 				logger.error("Fatal error", t);
 			}
-			logger.info("Restarting");
+			logger.info(RECONNECT_LOGGER_MARKER, "Restarting");
 		}
 	}
 
