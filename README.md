@@ -1,5 +1,11 @@
 # Teamscale JaCoCo Client
 
+## Compiling for a different JaCoCo version
+
+- change `ext.jacocoVersion` in the build script
+- `gradlew clean shadow`
+- **Do not commit unless you are upgrading to a newer version!**
+
 ## Publishing
 
 - Increase the version number in the build file.

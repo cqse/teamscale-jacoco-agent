@@ -6,6 +6,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 ext.appVersion = '1.1.0'
+ext.jacocoVersion = '0.7.9'
 
 repositories {
 	ivy {
@@ -15,7 +16,6 @@ repositories {
 }
 
 dependencies {
-    def jacocoVersion = '0.7.9'
     compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
     compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
     compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
@@ -34,7 +34,7 @@ mainClassName = "eu.cqse.teamscale.jacoco.client.Main"
 shadowJar {
     baseName = 'teamscale-jacoco-client'
     classifier = null
-    version = appVersion
+    version = appVersion + "-jacoco-" + jacocoVersion
 }
 
 processResources {
