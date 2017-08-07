@@ -40,7 +40,7 @@ public class Main {
 			+ " Searches recursively, including inside zips.")
 	private List<String> classDirectoriesOrZips = new ArrayList<>();
 
-	/** The directories and/or zips that contain all class files being profiled. */
+	/** Ant-style include patterns to apply during JaCoCo's traversal of class files. */
 	@Parameter(names = { "--filter", "-f" }, description = ""
 			+ "Ant-style include patterns to apply to all locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter both"
@@ -113,7 +113,7 @@ public class Main {
 	 * 
 	 * Handles the following error cases:
 	 * <ul>
-	 * <li>Application is not running: wait for one minute, then retry
+	 * <li>Application is not running: wait for {@value #RECONNECT_SLEEP_INTERVAL_MINUTES} minutes, then retry
 	 * <li>Fatal error: immediately restart
 	 * </ul>
 	 */
@@ -193,7 +193,7 @@ public class Main {
 	}
 
 	/**
-	 * Stops the dump job. This will make the {@link #run()} method exit which
+	 * Stops the dump job. This will make the {@link #run()} method exit, which
 	 * causes the {@link #loop()} method to restart it.
 	 */
 	private void restart() {
