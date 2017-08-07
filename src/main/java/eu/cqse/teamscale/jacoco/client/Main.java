@@ -6,6 +6,7 @@ import java.net.ConnectException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -33,6 +34,14 @@ import io.reactivex.schedulers.Schedulers;
  * disk.
  */
 public class Main {
+
+	/** Version of this program. */
+	private static final String VERSION;
+
+	static {
+		ResourceBundle bundle = ResourceBundle.getBundle("eu.cqse.teamscale.jacoco.client.app");
+		VERSION = bundle.getString("version");
+	}
 
 	/**
 	 * Logger used to mark messages that occur due to the application being
@@ -112,7 +121,7 @@ public class Main {
 
 	/** Constructor. */
 	public Main() {
-		logger.info("This program uses the following JaCoCo version: " + JaCoCo.VERSION);
+		logger.info("Starting JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 	}
 
 	/** Makes sure the arguments are valid. */

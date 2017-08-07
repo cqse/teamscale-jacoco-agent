@@ -5,6 +5,8 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
+ext.appVersion = '1.0.0'
+
 repositories {
 	ivy {
 		url "https://share.cqse.eu/svn/artifacts/ivy"
@@ -32,5 +34,13 @@ mainClassName = "eu.cqse.teamscale.jacoco.client.Main"
 shadowJar {
     baseName = 'teamscale-jacoco-client'
     classifier = null
-    version = '1.0.0'
+    version = appVersion
+}
+
+processResources {
+    filesMatching('**/app.properties') {
+        filter {
+            it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', appVersion)
+        }
+    }
 }
