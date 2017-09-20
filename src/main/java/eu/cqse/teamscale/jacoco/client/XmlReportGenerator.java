@@ -3,6 +3,7 @@ package eu.cqse.teamscale.jacoco.client;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -33,15 +34,24 @@ public class XmlReportGenerator {
 	 */
 	private final List<Pattern> locationIncludeFilters;
 
+	/**
+	 * Ant-style exclude filters to apply to all locations during class file
+	 * traversal.
+	 */
+	private final List<Pattern> locationExcludeFilters;
+
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
 
 	/**
 	 * Constructor.
 	 */
-	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, List<String> locationIncludeFilters) {
+	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, List<String> locationIncludeFilters,
+			List<String> locationExcludeFilters) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.locationIncludeFilters = CollectionUtils.map(locationIncludeFilters,
+				filter -> AntPatternUtils.convertPattern(filter, false));
+		this.locationExcludeFilters = CollectionUtils.map(locationExcludeFilters,
 				filter -> AntPatternUtils.convertPattern(filter, false));
 	}
 
@@ -77,9 +87,11 @@ public class XmlReportGenerator {
 		CoverageBuilder coverageBuilder = new CoverageBuilder();
 		Analyzer analyzer = new Analyzer(store, coverageBuilder) {
 			@Override
-			public int analyzeAll(java.io.InputStream input, String location) throws IOException {
-				if (isFiltered(location)) {
-					logger.debug("Filtering location {}", location);
+			public int analyzeAll(InputStream input, String location) throws IOException {
+				// we must normalize first since ANT patterns assume forward slashes
+				String normalizedLocation = FileSystemUtils.normalizeSeparators(location);
+				if (location.endsWith(".class") && isFiltered(normalizedLocation)) {
+					logger.debug("Filtering class file {}", normalizedLocation);
 					return 0;
 				}
 				return super.analyzeAll(input, location);
@@ -94,21 +106,17 @@ public class XmlReportGenerator {
 	}
 
 	/**
-	 * Returns <code>true</code> if the given location should not be traversed for
-	 * class files.
+	 * Returns <code>true</code> if the given class file location (normalized to
+	 * forward slashes as path separators) should not be analyzed.
+	 * 
+	 * Exclude filters overrule include filters.
 	 */
 	private boolean isFiltered(String location) {
-		if (locationIncludeFilters.isEmpty()) {
-			return false;
+		if (!locationIncludeFilters.isEmpty()
+				&& locationIncludeFilters.stream().noneMatch(filter -> filter.matcher(location).matches())) {
+			return true;
 		}
-
-		for (Pattern pattern : locationIncludeFilters) {
-			if (pattern.matcher(location).matches()) {
-				return false;
-			}
-		}
-
-		return true;
+		return locationExcludeFilters.stream().anyMatch(filter -> filter.matcher(location).matches());
 	}
 
 }
