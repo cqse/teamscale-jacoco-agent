@@ -60,12 +60,23 @@ public class Main {
 	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
 	 */
 	@Parameter(names = { "--filter", "-f" }, description = ""
-			+ "Ant-style include patterns to apply to all locations during JaCoCo's traversal of class files."
-			+ " Note that zip contents are separated from zip files with @ and that you can filter both"
-			+ " class files and intermediate folders/zips. Use with great care as missing class files"
+			+ "Ant-style include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
+			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
+			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
 			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
-			+ " Defaults to no filtering.")
+			+ " Defaults to no filtering. Excludes overrule includes.")
 	private List<String> locationIncludeFilters = new ArrayList<>();
+
+	/**
+	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
+	 */
+	@Parameter(names = { "--exclude", "-e" }, description = ""
+			+ "Ant-style exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
+			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
+			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
+			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
+			+ " Defaults to no filtering. Excludes overrule includes.")
+	private List<String> locationExcludeFilters = new ArrayList<>();
 
 	/** The JaCoCo port. */
 	@Parameter(names = { "--port", "-p" }, required = true, description = ""
@@ -149,12 +160,13 @@ public class Main {
 	private void loop() {
 		logger.info("Connecting to JaCoCo on localhost:{} and dumping coverage every {} minutes to {}", port,
 				dumpIntervalInMinutes, outputDir);
-		if (!locationIncludeFilters.isEmpty()) {
-			logger.warn("Class file filters are enabled: {}", StringUtils.concat(locationIncludeFilters, ", "));
+		if (!locationIncludeFilters.isEmpty() || !locationExcludeFilters.isEmpty()) {
+			logger.warn("Class file filters are enabled. Includes: {}, excludes: {}",
+					StringUtils.concat(locationIncludeFilters, ", "), StringUtils.concat(locationExcludeFilters, ", "));
 		}
 
 		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new),
-				locationIncludeFilters);
+				locationIncludeFilters, locationExcludeFilters);
 		store = new TimestampedFileStore(Paths.get(outputDir));
 
 		while (true) {
