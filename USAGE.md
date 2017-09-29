@@ -89,7 +89,7 @@ Run `java -jar jacoco-client.jar` to see all available options
 
 ## Filtering during dump conversion
 
-You can use `-f` to filter out unwanted class files. Note that at the moment these are *include* patterns only! This is useful in two situations:
+You can use `-f` and `-e` to filter out unwanted class files. Note that at the moment these are *include* patterns only! This is useful in two situations:
 
 1. Traces are too big and contain lots of third-party classes (e.g. from libraries or application servers)
 2. There are duplicate classes in third-party components and the tool is crashing when analyzing the execution data of a dump. Use the patterns to filter out the duplicate classes
@@ -98,15 +98,26 @@ These patterns are ANT-style patterns, i.e. *not* the same syntax as JaCoCo's in
 
 ## How To...
 
-### change the log level
+### Change the log level
 
 Modify the log4j2.xml as needed.
 
-### See which files/folders are filtered due to the `-f` parameter
+### See which files/folders are filtered due to the `-f` and `-e` parameters
 
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
 
 ### Prevent messages about the application not being reachable
 
 Enable the marker filter in the logging config.
+
+## Troubleshooting
+
+### Can't add different class with same name
+
+This is a restriction of JaCoCo. You specified a class file location with the `-c` parameter that contains two versions of the same class that are not identical. This may happen e.g. when you
+have multiple application versions under the `-c` path. It may also happen if your application simply contains such conflicting classes (which is not good, you should fix this!).
+You have two options to fix this problem:
+
+1. Make the `-c` parameter more concrete so it only includes the correct version of your application
+2. Use the `-f` and `-e` to exclude one of the duplicates. Make sure to exclude the right one or you might not get accurate coverage for those files!
 
