@@ -51,7 +51,7 @@ public class XmlReportGeneratorTest extends CCSMTestCaseBase {
 	}
 
 	/** Creates a dummy dump. */
-	private Dump createDummyDump() {
+	private static Dump createDummyDump() {
 		ExecutionDataStore store = new ExecutionDataStore();
 		store.put(new ExecutionData(123, "TestClass", new boolean[] { true, true, true }));
 		SessionInfo info = new SessionInfo("session-id", 124l, 125l);

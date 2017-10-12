@@ -30,7 +30,7 @@ public class JacocoRemoteTCPController implements IJacocoController {
 	private final Logger logger = LogManager.getLogger(this);
 
 	/** Constructor. */
-	public JacocoRemoteTCPController(String address, int port) throws IOException {
+	public JacocoRemoteTCPController(String address, int port) {
 		this.address = address;
 		this.port = port;
 	}

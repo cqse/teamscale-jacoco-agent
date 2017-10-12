@@ -71,7 +71,7 @@ public class XmlReportGenerator {
 	}
 
 	/** Creates an XML report based on the given session and coverage data. */
-	private String createReport(IBundleCoverage bundleCoverage, Dump dump) throws IOException {
+	private static String createReport(IBundleCoverage bundleCoverage, Dump dump) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		XMLFormatter xmlFormatter = new XMLFormatter();
 		IReportVisitor visitor = xmlFormatter.createVisitor(output);
@@ -104,7 +104,7 @@ public class XmlReportGenerator {
 					return 0;
 				}
 				return super.analyzeAll(input, location);
-			};
+			}
 		};
 
 		for (File file : codeDirectoriesOrArchives) {

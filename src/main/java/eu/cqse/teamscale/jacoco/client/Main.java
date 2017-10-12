@@ -227,7 +227,7 @@ public class Main {
 	/**
 	 * Schedules a job to run regularly and dump execution data.
 	 */
-	private void scheduleRegularDump(IJacocoController controller) throws InterruptedException, ExecutionException {
+	private void scheduleRegularDump(IJacocoController controller) {
 		dumpJob = executor.scheduleAtFixedRate(() -> {
 			logger.info("Requesting dump");
 			try {

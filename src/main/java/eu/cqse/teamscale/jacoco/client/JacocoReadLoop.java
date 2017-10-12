@@ -50,7 +50,7 @@ public class JacocoReadLoop {
 		RemoteControlReader reader = new RemoteControlReader(socketInputStream);
 		reader.setExecutionDataVisitor(store::put);
 
-		Observable<SessionInfo> sessionInfoObservable = Observable.<SessionInfo>create(emitter -> {
+		Observable<SessionInfo> sessionInfoObservable = Observable.<SessionInfo> create(emitter -> {
 			reader.setSessionInfoVisitor(info -> {
 				logger.info("Received session info");
 				emitter.onNext(info);
@@ -59,7 +59,7 @@ public class JacocoReadLoop {
 			// session data
 		}).startWith(new SessionInfo(DUMMY_SESSION_ID, new Date().getTime(), 123l));
 
-		Observable<ExecutionDataStore> executionDataObservable = Observable.<ExecutionDataStore>create(emitter -> {
+		Observable<ExecutionDataStore> executionDataObservable = Observable.<ExecutionDataStore> create(emitter -> {
 			try {
 				logger.info("Starting to read from socket");
 				while (reader.read()) {
@@ -84,5 +84,5 @@ public class JacocoReadLoop {
 						logger.warn("Got execution data without first receiving a session. Using the dummy session.");
 					}
 				});
-	};
+	}
 }
