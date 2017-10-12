@@ -1,8 +1,12 @@
 # Teamscale JaCoCo Client
 
+## Command line options
+
+You can run the JAR file without arguments to get a list and description of all available options.
+
 ## Installation
 
-This document explains how to instrument your application so coverage is recorded and run the
+This section explains how to instrument your application so coverage is recorded and run the
 teamscale-jacoco-client which writes the recorded coverage to disk at regular intervals.
 
 This document assumes a Unix environment but the tool works just as well under Windows. Just
