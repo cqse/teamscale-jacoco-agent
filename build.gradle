@@ -27,7 +27,8 @@ dependencies {
     compile "com.beust:jcommander:1.71"
     compile 'org.conqat:org.conqat.lib.commons:0.20160822'
     
-    testImplementation 'junit:junit:4.12'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.8.0'
 }
 
 mainClassName = "eu.cqse.teamscale.jacoco.client.Main"

@@ -98,6 +98,12 @@ public class Main {
 			+ "Interval in seconds after which to try and reconnect after losing connection to JaCoCo.")
 	private int reconnectIntervalInSeconds = 5 * 60;
 
+	/** Whether to ignore duplicate, non-identical class files. */
+	@Parameter(names = { "--ignore-duplicates", "-d" }, required = false, description = ""
+			+ "Whether to ignore duplicate, non-identical class files."
+			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
+	private boolean shouldIgnoreDuplicateClassFiles = false;
+
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
 
@@ -152,8 +158,8 @@ public class Main {
 	 * 
 	 * Handles the following error cases:
 	 * <ul>
-	 * <li>Application is not running: wait for
-	 * {@value #RECONNECT_SLEEP_INTERVAL_MINUTES} minutes, then retry
+	 * <li>Application is not running: wait for {@link #reconnectIntervalInSeconds}
+	 * then retry
 	 * <li>Fatal error: immediately restart
 	 * </ul>
 	 */
@@ -166,7 +172,7 @@ public class Main {
 		}
 
 		converter = new XmlReportGenerator(CollectionUtils.map(classDirectoriesOrZips, File::new),
-				locationIncludeFilters, locationExcludeFilters);
+				locationIncludeFilters, locationExcludeFilters, shouldIgnoreDuplicateClassFiles);
 		store = new TimestampedFileStore(Paths.get(outputDir));
 
 		while (true) {
