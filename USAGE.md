@@ -116,8 +116,9 @@ Enable the marker filter in the logging config.
 
 This is a restriction of JaCoCo. You specified a class file location with the `-c` parameter that contains two versions of the same class that are not identical. This may happen e.g. when you
 have multiple application versions under the `-c` path. It may also happen if your application simply contains such conflicting classes (which is not good, you should fix this!).
-You have two options to fix this problem:
+You have three options to fix this problem:
 
 1. Make the `-c` parameter more concrete so it only includes the correct version of your application
 2. Use the `-f` and `-e` to exclude one of the duplicates. Make sure to exclude the right one or you might not get accurate coverage for those files!
+3. (Discouraged!) You can use the -d parameter to simply suppress these errors. Note, however, that coverage reported for these duplicated classes may be inaccurate!
 
