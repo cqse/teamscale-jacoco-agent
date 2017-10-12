@@ -1,0 +1,15 @@
+image: gradle:alpine
+
+cache:
+  paths:
+    - /cache
+  key: global
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - ./gradlew clean check
+
