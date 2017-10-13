@@ -7,6 +7,7 @@ apply plugin: 'application'
 
 ext.appVersion = '1.4.0'
 ext.jacocoVersion = '0.7.9'
+ext.outputVersion = appVersion + "-jacoco-" + jacocoVersion
 
 repositories {
 	ivy {
@@ -35,7 +36,7 @@ mainClassName = "eu.cqse.teamscale.jacoco.client.Main"
 shadowJar {
     baseName = 'teamscale-jacoco-client'
     classifier = null
-    version = appVersion + "-jacoco-" + jacocoVersion
+    version = outputVersion
 }
 
 processResources {
@@ -47,6 +48,16 @@ processResources {
 }
 
 task doc(type: Exec) {
-    commandLine 'pandoc', 'USAGE.md', '-o', 'USAGE.pdf'
+    doFirst {
+        mkdir 'build/doc'
+    }
+    commandLine 'pandoc', 'USAGE.md', '-o', 'build/doc/USAGE.pdf'
+}
+
+task dist(dependsOn: ['clean', 'shadowJar', 'doc'], type: Zip) {
+    version outputVersion
+    from 'build'
+    include 'libs/*.jar'
+    include 'doc/*.pdf'
 }
 
