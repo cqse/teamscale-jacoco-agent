@@ -45,3 +45,8 @@ processResources {
         }
     }
 }
+
+task doc(type: Exec) {
+    commandLine 'pandoc', 'USAGE.md', '-o', 'USAGE.pdf'
+}
+
