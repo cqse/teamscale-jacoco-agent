@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.watch;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.jacoco.core.runtime.RemoteControlWriter;
 
+import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 import io.reactivex.Observable;
 
 /** Connects to JaCoCo via a TCP port. */

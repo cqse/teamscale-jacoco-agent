@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
+import eu.cqse.teamscale.jacoco.client.util.Benchmark;
+
 /**
  * Writes XMLs to files in a folder. The files are timestamped with the time of
  * writing the trace to make each file reasonably unique so they don't overwrite

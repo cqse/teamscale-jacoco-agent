@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2017 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.watch;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,11 +15,17 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+
+import eu.cqse.teamscale.jacoco.client.commandline.ICommand;
 
 /**
- * Encapsulates all command line options for parsing with {@link JCommander}.
+ * Encapsulates all command line options for the watch command for parsing with
+ * {@link JCommander}.
  */
-public class CommandLineArguments {
+@Parameters(commandNames = "watch", commandDescription = "Watches a running JaCoCo instance via a TCP port and"
+		+ " regularly dumps coverage to XML files.")
+public class WatchCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
 	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
@@ -155,7 +161,8 @@ public class CommandLineArguments {
 		this.shouldIgnoreDuplicateClassFiles = shouldIgnoreDuplicateClassFiles;
 	}
 
-	/** Makes sure the arguments are valid. */
+	/** {@inheritDoc} */
+	@Override
 	public void validate() throws IOException {
 		for (String path : getClassDirectoriesOrZips()) {
 			CCSMAssert.isTrue(new File(path).exists(), "Path '" + path + "' does not exist");
@@ -164,6 +171,12 @@ public class CommandLineArguments {
 
 		FileSystemUtils.ensureDirectoryExists(new File(getOutputDir()));
 		CCSMAssert.isTrue(new File(getOutputDir()).canWrite(), "Path '" + getOutputDir() + "' is not writable");
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void run() {
+		new Watcher(this).loop();
 	}
 
 }
