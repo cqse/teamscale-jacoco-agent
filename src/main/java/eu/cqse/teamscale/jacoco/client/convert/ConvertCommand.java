@@ -31,7 +31,7 @@ public class ConvertCommand implements ICommand {
 	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
 			+ "The directories or zip/ear/jar/war/... files that contain the compiled Java classes being profiled."
 			+ " Searches recursively, including inside zips.")
-	private List<String> classDirectoriesOrZips = new ArrayList<>();
+	/* package */ List<String> classDirectoriesOrZips = new ArrayList<>();
 
 	/**
 	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
@@ -42,7 +42,7 @@ public class ConvertCommand implements ICommand {
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
 			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
 			+ " Defaults to no filtering. Excludes overrule includes.")
-	private List<String> locationIncludeFilters = new ArrayList<>();
+	/* package */ List<String> locationIncludeFilters = new ArrayList<>();
 
 	/**
 	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
@@ -53,22 +53,22 @@ public class ConvertCommand implements ICommand {
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
 			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
 			+ " Defaults to no filtering. Excludes overrule includes.")
-	private List<String> locationExcludeFilters = new ArrayList<>();
+	/* package */ List<String> locationExcludeFilters = new ArrayList<>();
 
 	/** The directory to write the XML traces to. */
 	@Parameter(names = { "--in", "-i" }, required = true, description = "" + "The binary .exec file to read.")
-	private String inputFile = "";
+	/* package */ String inputFile = "";
 
 	/** The directory to write the XML traces to. */
 	@Parameter(names = { "--out", "-o" }, required = true, description = ""
 			+ "The file to write the generated XML report to.")
-	private String outputFile = "";
+	/* package */ String outputFile = "";
 
 	/** Whether to ignore duplicate, non-identical class files. */
 	@Parameter(names = { "--ignore-duplicates", "-d" }, required = false, description = ""
 			+ "Whether to ignore duplicate, non-identical class files."
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
-	private boolean shouldIgnoreDuplicateClassFiles = false;
+	/* package */ boolean shouldIgnoreDuplicateClassFiles = false;
 
 	/** @see #classDirectoriesOrZips */
 	public List<File> getClassDirectoriesOrZips() {
