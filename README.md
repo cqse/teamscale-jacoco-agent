@@ -7,7 +7,12 @@ You will need to install pandoc and have it on the path.
 - Update the changelog
 - Increase the version number in the build file. We use [semantic versioning](http://semver.org)!
 - Create a git tag.
-- Build the distribution: `gradlew dist`
+- Push the tag and your revisions to git
+
+   git push
+   git push --tags
+
+- The build server will build the project and you can download a build artifact with the dist afterwards
 
 ## Compiling for a different JaCoCo version
 
