@@ -12,8 +12,6 @@ import com.beust.jcommander.ParameterException;
 
 import eu.cqse.teamscale.jacoco.client.commandline.ECommand;
 import eu.cqse.teamscale.jacoco.client.commandline.ICommand;
-import eu.cqse.teamscale.jacoco.client.convert.ConvertCommand;
-import eu.cqse.teamscale.jacoco.client.watch.WatchCommand;
 
 /**
  * Connects to a running JaCoCo and regularly dumps coverage to XML files on
@@ -47,7 +45,7 @@ public class Main {
 			builder.addCommand(command.implementation);
 		}
 
-		JCommander jCommander = builder.addCommand(new WatchCommand()).addCommand(new ConvertCommand()).build();
+		JCommander jCommander = builder.build();
 		try {
 			jCommander.parse(args);
 		} catch (ParameterException e) {

@@ -123,12 +123,17 @@ public class ConvertCommand implements ICommand {
 	/** Makes sure the arguments are valid. */
 	@Override
 	public void validate() throws IOException {
+		System.err.println("------>" + inputFile + "|" + outputFile + "|" + classDirectoriesOrZips);
+
 		for (File path : getClassDirectoriesOrZips()) {
 			CCSMAssert.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			CCSMAssert.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
 
-		File outputDir = getInputFile().getParentFile();
+		CCSMAssert.isTrue(getInputFile().exists() && getInputFile().canRead(),
+				"Cannot read the input file " + getInputFile());
+
+		File outputDir = getOutputFile().getAbsoluteFile().getParentFile();
 		FileSystemUtils.ensureDirectoryExists(outputDir);
 		CCSMAssert.isTrue(outputDir.canWrite(), "Path '" + outputDir + "' is not writable");
 	}

@@ -37,6 +37,7 @@ public enum ECommand {
 	 */
 	public static ECommand from(JCommander jCommander) {
 		String commandName = jCommander.getParsedCommand();
+		CCSMAssert.isNotNull(commandName, "You must specify a command.");
 		ECommand command = EnumUtils.valueOfIgnoreCase(ECommand.class, commandName);
 		CCSMAssert.isNotNull(command, "Unknown command " + commandName);
 		return command;
