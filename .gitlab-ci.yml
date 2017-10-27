@@ -1,4 +1,4 @@
-image: gradle:alpine
+image: cqse/latex
 
 cache:
   paths:
