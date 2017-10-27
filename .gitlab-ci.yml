@@ -1,4 +1,4 @@
-image: cqse/latex
+image: registry.cqse.eu/cqse/latex
 
 cache:
   paths:
