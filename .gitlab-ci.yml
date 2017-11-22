@@ -3,6 +3,7 @@ image: registry.cqse.eu/cqse/latex
 cache:
   paths:
     - /cache
+    - .cache
   key: global
 
 stages:
