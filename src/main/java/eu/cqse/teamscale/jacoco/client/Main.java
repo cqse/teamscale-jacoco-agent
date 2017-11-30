@@ -56,8 +56,8 @@ public class Main {
 		try {
 			jCommander.parse(args);
 		} catch (MissingCommandException e) {
-			// fall back to the watch command
-			jCommander = createJCommanderBuilder().addObject(ECommand.WATCH.implementation).build();
+			// fall back to the default command
+			jCommander = createJCommanderBuilder().addObject(ECommand.DEFAULT_COMMAND.implementation).build();
 			try {
 				jCommander.parse(args);
 			} catch (ParameterException e2) {
