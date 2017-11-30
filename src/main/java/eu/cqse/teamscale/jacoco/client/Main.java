@@ -68,7 +68,7 @@ public class Main {
 
 	/** Shows an informative error and help message. Then exits the program. */
 	private static void handleInvalidCommandLine(JCommander jCommander, String message) {
-		System.err.println("Invalid command line: " + message);
+		System.err.println("Invalid command line: " + message + StringUtils.CR);
 		jCommander.usage();
 		System.exit(1);
 	}

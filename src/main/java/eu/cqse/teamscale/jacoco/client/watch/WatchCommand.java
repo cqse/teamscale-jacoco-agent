@@ -167,6 +167,8 @@ public class WatchCommand implements ICommand {
 	public Validator validate() {
 		Validator validator = new Validator();
 
+		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
+				"You must specify at least one directory or zip that contains class files");
 		for (String path : getClassDirectoriesOrZips()) {
 			validator.isTrue(new File(path).exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(new File(path).canRead(), "Path '" + path + "' is not readable");

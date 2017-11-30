@@ -64,7 +64,7 @@ public class Validator {
 
 	/** Returns an error message with all validation problems that were found. */
 	public String getErrorMessage() {
-		return StringUtils.concat(messages, StringUtils.CR);
+		return "- " + StringUtils.concat(messages, StringUtils.CR + "- ");
 	}
 
 }

@@ -126,6 +126,8 @@ public class ConvertCommand implements ICommand {
 	public Validator validate() {
 		Validator validator = new Validator();
 
+		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
+				"You must specify at least one directory or zip that contains class files");
 		for (File path : getClassDirectoriesOrZips()) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
