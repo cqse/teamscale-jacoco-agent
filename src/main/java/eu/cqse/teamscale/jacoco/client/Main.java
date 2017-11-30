@@ -9,6 +9,7 @@ import org.jacoco.core.JaCoCo;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
+import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.ParameterException;
 
 import eu.cqse.teamscale.jacoco.client.commandline.ECommand;
@@ -42,14 +43,22 @@ public class Main {
 	 * exception if the arguments are not valid. Then runs the specified command.
 	 */
 	private void parseCommandLineAndRun(String[] args) throws Exception {
-		Builder builder = JCommander.newBuilder().programName(Main.class.getName());
+		Builder builder = createJCommanderBuilder();
 		for (ECommand command : ECommand.values()) {
 			builder.addCommand(command.implementation);
 		}
-
 		JCommander jCommander = builder.build();
+
 		try {
 			jCommander.parse(args);
+		} catch (MissingCommandException e) {
+			// fall back to the watch command
+			jCommander = createJCommanderBuilder().addObject(ECommand.WATCH.implementation).build();
+			try {
+				jCommander.parse(args);
+			} catch (ParameterException e2) {
+				handleInvalidCommandLine(jCommander, e2.getMessage());
+			}
 		} catch (ParameterException e) {
 			handleInvalidCommandLine(jCommander, e.getMessage());
 		}
@@ -64,6 +73,11 @@ public class Main {
 		logger.info("Starting CQSE JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION
 				+ " with command " + commandType);
 		command.run();
+	}
+
+	/** Creates a basic builder for a {@link JCommander} object. */
+	private static Builder createJCommanderBuilder() {
+		return JCommander.newBuilder().programName(Main.class.getName());
 	}
 
 	/** Shows an informative error and help message. Then exits the program. */

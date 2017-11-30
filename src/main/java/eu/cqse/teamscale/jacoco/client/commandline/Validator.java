@@ -35,7 +35,8 @@ public class Validator {
 	public static interface ExceptionBasedValidation {
 
 		/**
-		 * Throws an exception if the validation fails.
+		 * Throws an {@link Exception} or {@link AssertionError} if the validation
+		 * fails.
 		 */
 		public void validate() throws Exception, AssertionError;
 

@@ -41,9 +41,7 @@ public enum ECommand {
 	 */
 	public static ECommand from(JCommander jCommander) {
 		String commandName = jCommander.getParsedCommand();
-		if (StringUtils.isEmpty(commandName)) {
-			return ECommand.DEFAULT_COMMAND;
-		}
+		CCSMAssert.isFalse(StringUtils.isEmpty(commandName), "No command given");
 
 		ECommand command = EnumUtils.valueOfIgnoreCase(ECommand.class, commandName);
 		CCSMAssert.isNotNull(command, "Unknown command " + commandName);
