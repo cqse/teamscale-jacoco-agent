@@ -5,15 +5,16 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.client.commandline;
 
-import java.io.IOException;
-
 /**
  * Interface for commands: argument parsing and execution.
  */
 public interface ICommand {
 
-	/** Makes sure the arguments are valid. */
-	void validate() throws IOException, AssertionError;
+	/**
+	 * Makes sure the arguments are valid. Must return all detected problems in the
+	 * form of a user-visible message.
+	 */
+	Validator validate();
 
 	/**
 	 * Runs the implementation of the command. May throw an exception to indicate

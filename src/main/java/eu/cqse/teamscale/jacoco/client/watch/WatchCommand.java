@@ -6,7 +6,6 @@
 package eu.cqse.teamscale.jacoco.client.watch;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +18,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import eu.cqse.teamscale.jacoco.client.commandline.ICommand;
+import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 
 /**
  * Encapsulates all command line options for the watch command for parsing with
@@ -164,15 +164,21 @@ public class WatchCommand implements ICommand {
 
 	/** {@inheritDoc} */
 	@Override
-	public void validate() throws IOException {
+	public Validator validate() {
+		Validator validator = new Validator();
+
 		for (String path : getClassDirectoriesOrZips()) {
-			CCSMAssert.isTrue(new File(path).exists(), "Path '" + path + "' does not exist");
-			CCSMAssert.isTrue(new File(path).canRead(), "Path '" + path + "' is not readable");
+			validator.isTrue(new File(path).exists(), "Path '" + path + "' does not exist");
+			validator.isTrue(new File(path).canRead(), "Path '" + path + "' is not readable");
 		}
 
-		CCSMAssert.isFalse(StringUtils.isEmpty(getOutputDir()), "You must specify an output directory");
-		FileSystemUtils.ensureDirectoryExists(new File(getOutputDir()));
-		CCSMAssert.isTrue(new File(getOutputDir()).canWrite(), "Path '" + getOutputDir() + "' is not writable");
+		validator.ensure(() -> {
+			CCSMAssert.isFalse(StringUtils.isEmpty(getOutputDir()), "You must specify an output directory");
+			FileSystemUtils.ensureDirectoryExists(new File(getOutputDir()));
+			CCSMAssert.isTrue(new File(getOutputDir()).canWrite(), "Path '" + getOutputDir() + "' is not writable");
+		});
+
+		return validator;
 	}
 
 	/** {@inheritDoc} */

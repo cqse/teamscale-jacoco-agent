@@ -6,19 +6,20 @@
 package eu.cqse.teamscale.jacoco.client.convert;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
 import eu.cqse.teamscale.jacoco.client.commandline.ICommand;
+import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 
 /**
  * Encapsulates all command line options for the convert command for parsing
@@ -122,18 +123,25 @@ public class ConvertCommand implements ICommand {
 
 	/** Makes sure the arguments are valid. */
 	@Override
-	public void validate() throws IOException {
+	public Validator validate() {
+		Validator validator = new Validator();
+
 		for (File path : getClassDirectoriesOrZips()) {
-			CCSMAssert.isTrue(path.exists(), "Path '" + path + "' does not exist");
-			CCSMAssert.isTrue(path.canRead(), "Path '" + path + "' is not readable");
+			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
+			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
 
-		CCSMAssert.isTrue(getInputFile().exists() && getInputFile().canRead(),
+		validator.isTrue(getInputFile().exists() && getInputFile().canRead(),
 				"Cannot read the input file " + getInputFile());
 
-		File outputDir = getOutputFile().getAbsoluteFile().getParentFile();
-		FileSystemUtils.ensureDirectoryExists(outputDir);
-		CCSMAssert.isTrue(outputDir.canWrite(), "Path '" + outputDir + "' is not writable");
+		validator.ensure(() -> {
+			CCSMAssert.isFalse(StringUtils.isEmpty(outputFile), "You must specify an output file");
+			File outputDir = getOutputFile().getAbsoluteFile().getParentFile();
+			FileSystemUtils.ensureDirectoryExists(outputDir);
+			CCSMAssert.isTrue(outputDir.canWrite(), "Path '" + outputDir + "' is not writable");
+		});
+
+		return validator;
 	}
 
 	/** {@inheritDoc} */

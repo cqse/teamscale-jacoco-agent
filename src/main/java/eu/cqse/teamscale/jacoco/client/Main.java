@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.JaCoCo;
 
 import com.beust.jcommander.JCommander;
@@ -12,6 +13,7 @@ import com.beust.jcommander.ParameterException;
 
 import eu.cqse.teamscale.jacoco.client.commandline.ECommand;
 import eu.cqse.teamscale.jacoco.client.commandline.ICommand;
+import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 
 /**
  * Connects to a running JaCoCo and regularly dumps coverage to XML files on
@@ -49,15 +51,14 @@ public class Main {
 		try {
 			jCommander.parse(args);
 		} catch (ParameterException e) {
-			handleInvalidCommandLine(jCommander, e);
+			handleInvalidCommandLine(jCommander, e.getMessage());
 		}
 
 		ECommand commandType = ECommand.from(jCommander);
 		ICommand command = commandType.implementation;
-		try {
-			command.validate();
-		} catch (AssertionError e) {
-			handleInvalidCommandLine(jCommander, e);
+		Validator validator = command.validate();
+		if (!validator.isValid()) {
+			handleInvalidCommandLine(jCommander, StringUtils.CR + validator.getErrorMessage());
 		}
 
 		logger.info("Starting CQSE JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION
@@ -66,8 +67,8 @@ public class Main {
 	}
 
 	/** Shows an informative error and help message. Then exits the program. */
-	private static void handleInvalidCommandLine(JCommander jCommander, Throwable t) {
-		System.err.println("Invalid command line: " + t.getMessage());
+	private static void handleInvalidCommandLine(JCommander jCommander, String message) {
+		System.err.println("Invalid command line: " + message);
 		jCommander.usage();
 		System.exit(1);
 	}
