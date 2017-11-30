@@ -10,6 +10,7 @@ import org.jacoco.core.JaCoCo;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 import com.beust.jcommander.MissingCommandException;
+import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 import eu.cqse.teamscale.jacoco.client.commandline.ECommand;
@@ -32,6 +33,9 @@ public class Main {
 
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
+
+	/** The default arguments that will always be parsed. */
+	private final DefaultArguments defaultArguments = new DefaultArguments();
 
 	/** Entry point. */
 	public static void main(String[] args) throws Exception {
@@ -63,6 +67,11 @@ public class Main {
 			handleInvalidCommandLine(jCommander, e.getMessage());
 		}
 
+		if (defaultArguments.help) {
+			jCommander.usage();
+			return;
+		}
+
 		ECommand commandType = ECommand.from(jCommander);
 		ICommand command = commandType.implementation;
 		Validator validator = command.validate();
@@ -76,8 +85,8 @@ public class Main {
 	}
 
 	/** Creates a basic builder for a {@link JCommander} object. */
-	private static Builder createJCommanderBuilder() {
-		return JCommander.newBuilder().programName(Main.class.getName());
+	private Builder createJCommanderBuilder() {
+		return JCommander.newBuilder().programName(Main.class.getName()).addObject(defaultArguments);
 	}
 
 	/** Shows an informative error and help message. Then exits the program. */
@@ -85,6 +94,18 @@ public class Main {
 		System.err.println("Invalid command line: " + message + StringUtils.CR);
 		jCommander.usage();
 		System.exit(1);
+	}
+
+	/**
+	 * Default arguments that may be provided regardless of the specified
+	 * {@link ECommand}.
+	 */
+	private static class DefaultArguments {
+
+		/** Shows the help message. */
+		@Parameter(names = "--help", help = true, description = "Shows all available command line arguments.")
+		private boolean help;
+
 	}
 
 }
