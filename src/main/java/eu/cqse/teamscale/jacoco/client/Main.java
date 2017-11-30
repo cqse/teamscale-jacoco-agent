@@ -68,6 +68,7 @@ public class Main {
 		}
 
 		if (defaultArguments.help) {
+			System.out.println("CQSE JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 			jCommander.usage();
 			return;
 		}
