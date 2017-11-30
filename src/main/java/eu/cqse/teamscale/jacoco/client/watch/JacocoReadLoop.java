@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.watch;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.runtime.RemoteControlReader;
 
-import eu.cqse.teamscale.jacoco.client.IJacocoController.Dump;
+import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 

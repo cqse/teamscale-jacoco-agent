@@ -42,7 +42,7 @@ This option disables a WebSphere internal class cache that causes problems with 
 
 To test the setup, start the instrumented application, then start the client manually:
 
-    java -jar teamscale-jacoco-client.jar
+    java -jar teamscale-jacoco-client.jar watch
     -c CLASSES -i 1 -o OUTPUTDIR -p PORT
 
 Where
@@ -76,7 +76,7 @@ Where `OUTPUTDIR` is any writable directory into which the resulting coverage tr
 Then run the JAR file with the following command:
 
     java -Dlog4j.configurationFile=LOG4J2XML
-    -jar teamscale-jacoco-client.jar
+    -jar teamscale-jacoco-client.jar watch
     -c CLASSES -i 60 -o OUTPUTDIR -p PORT
 
 Where
@@ -128,4 +128,8 @@ Enable the marker filter in the logging config.
 ### How to see which files/folders are filtered due to the `-f` and `-e` parameters
 
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
+
+## One-time conversion
+
+You can invoke the client with the `convert` command as well, to achieve a one-time conversion from .exec files to XML.
 

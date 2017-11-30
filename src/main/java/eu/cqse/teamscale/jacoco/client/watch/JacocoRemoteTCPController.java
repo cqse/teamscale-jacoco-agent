@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.watch;
 
 import java.io.IOException;
 import java.net.InetAddress;

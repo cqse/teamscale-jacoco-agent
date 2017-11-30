@@ -21,7 +21,8 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.xml.XMLFormatter;
 
-import eu.cqse.teamscale.jacoco.client.IJacocoController.Dump;
+import eu.cqse.teamscale.jacoco.client.util.Benchmark;
+import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
 /** Creates an XML report from binary execution data. */
 public class XmlReportGenerator {
