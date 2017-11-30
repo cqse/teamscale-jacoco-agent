@@ -7,6 +7,7 @@ package eu.cqse.teamscale.jacoco.client.commandline;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.enums.EnumUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 import com.beust.jcommander.JCommander;
 
@@ -24,6 +25,9 @@ public enum ECommand {
 	/** Does a one-time conversion from .exec to XML. */
 	CONVERT(new ConvertCommand());
 
+	/** The default command to use when no command is given. */
+	public static final ECommand DEFAULT_COMMAND = WATCH;
+
 	/** The arguments object for parsing command line arguments. */
 	public final ICommand implementation;
 
@@ -37,7 +41,10 @@ public enum ECommand {
 	 */
 	public static ECommand from(JCommander jCommander) {
 		String commandName = jCommander.getParsedCommand();
-		CCSMAssert.isNotNull(commandName, "You must specify a command.");
+		if (StringUtils.isEmpty(commandName)) {
+			return ECommand.DEFAULT_COMMAND;
+		}
+
 		ECommand command = EnumUtils.valueOfIgnoreCase(ECommand.class, commandName);
 		CCSMAssert.isNotNull(command, "Unknown command " + commandName);
 		return command;

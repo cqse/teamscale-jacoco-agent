@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -169,6 +170,7 @@ public class WatchCommand implements ICommand {
 			CCSMAssert.isTrue(new File(path).canRead(), "Path '" + path + "' is not readable");
 		}
 
+		CCSMAssert.isFalse(StringUtils.isEmpty(getOutputDir()), "You must specify an output directory");
 		FileSystemUtils.ensureDirectoryExists(new File(getOutputDir()));
 		CCSMAssert.isTrue(new File(getOutputDir()).canWrite(), "Path '" + getOutputDir() + "' is not writable");
 	}

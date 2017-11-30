@@ -49,16 +49,27 @@ public class Main {
 		try {
 			jCommander.parse(args);
 		} catch (ParameterException e) {
-			System.err.println(e.getMessage());
-			jCommander.usage();
-			System.exit(1);
+			handleInvalidCommandLine(jCommander, e);
 		}
 
-		ICommand command = ECommand.from(jCommander).implementation;
-		command.validate();
+		ECommand commandType = ECommand.from(jCommander);
+		ICommand command = commandType.implementation;
+		try {
+			command.validate();
+		} catch (AssertionError e) {
+			handleInvalidCommandLine(jCommander, e);
+		}
 
-		logger.info("Starting JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
+		logger.info("Starting CQSE JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION
+				+ " with command " + commandType);
 		command.run();
+	}
+
+	/** Shows an informative error and help message. Then exits the program. */
+	private static void handleInvalidCommandLine(JCommander jCommander, Throwable t) {
+		System.err.println("Invalid command line: " + t.getMessage());
+		jCommander.usage();
+		System.exit(1);
 	}
 
 }

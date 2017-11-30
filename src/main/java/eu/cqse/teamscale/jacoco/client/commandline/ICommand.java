@@ -13,7 +13,7 @@ import java.io.IOException;
 public interface ICommand {
 
 	/** Makes sure the arguments are valid. */
-	void validate() throws IOException;
+	void validate() throws IOException, AssertionError;
 
 	/**
 	 * Runs the implementation of the command. May throw an exception to indicate

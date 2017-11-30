@@ -123,8 +123,6 @@ public class ConvertCommand implements ICommand {
 	/** Makes sure the arguments are valid. */
 	@Override
 	public void validate() throws IOException {
-		System.err.println("------>" + inputFile + "|" + outputFile + "|" + classDirectoriesOrZips);
-
 		for (File path : getClassDirectoriesOrZips()) {
 			CCSMAssert.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			CCSMAssert.isTrue(path.canRead(), "Path '" + path + "' is not readable");
