@@ -64,7 +64,7 @@ If you got any errors, please refer to the below troubleshooting section and fix
 
 ### 3. Production setup of the teamscale-jacoco-client
 
-If the above test worked, extract the log4j.rolling-file.xml from the teamscale-jacoco-client.jar and name it log4j2.xml. This file configures
+If the above test worked, extract the log4j2.rolling-file.xml from the zip under `resources/main` and name it log4j2.xml. This file configures
 the logging of the client.
 The installation is simple, just put teamscale-jacoco-client.jar file and log4j2.xml in any directory of your choosing.
 Edit log4j2.xml and change the log-path property:
@@ -88,6 +88,11 @@ Where
 
 The `-c` parameter may be repeated multiple times. Only CLASSES of the application itself have to be specified.
 External libraries should not be specified.
+
+# Running as a service
+
+For Windows and Linux systemd there are README files within the distribution zip under `resources/main/windows` and
+`resources/main/linux` that describe how to install the client as a service.
 
 # Advanced usage of teamscale-jacoco-client
 
