@@ -1,0 +1,15 @@
+[Unit]
+Description=CQSE JaCoCo Client - fetches coverage from JaCoCo via a TCP port
+After=network.target
+
+[Service]
+Type=simple
+# TODO adjust user
+User=ubuntu
+# TODO adjust path to JaCoCo client and java
+ExecStart=/usr/bin/java -jar /path/to/eu.cqse.teamscale.jacoco.client-X.X.X-jacoco-Y.Y.Y.zip
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
