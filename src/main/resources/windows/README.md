@@ -1,4 +1,4 @@
-The contents of this directory can be used to install the CQSE JaCoCo client as a windows
+The contents of this directory can be used to install the Teamscale JaCoCo client as a windows
 service. This ensures that it is automatically restarted on system reboot.
 
 To install the service first configure the client and ensure it can
@@ -16,7 +16,7 @@ be started normally. Then follow the next steps to install:
 
 3. Install the service by running from the command line:
 
-        cqse-jacoco-client-service.exe install
+        teamscale-jacoco-client-service.exe install
 
 4. Check that the service is running. Directly after installation, you
    might have to start the services manually or alternatively reboot the
@@ -24,6 +24,6 @@ be started normally. Then follow the next steps to install:
 
 If you later have to uninstall the service run the following commands:
 
-    cqse-jacoco-client-service.exe uninstall
+    teamscale-jacoco-client-service.exe uninstall
 
 

@@ -7,7 +7,7 @@ To see if your system supports systemd, check for the existance of the directory
 
 To install the service:
 
-- Modify the cqse-jacoco-client.service file according to the TODO comments inside.
+- Modify the teamscale-jacoco-client.service file according to the TODO comments inside.
 - Copy the file to `/etc/systemd/system`
 
 To uninstall the service simply remove the file you copied above.

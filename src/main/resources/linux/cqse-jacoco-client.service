@@ -1,5 +1,5 @@
 [Unit]
-Description=CQSE JaCoCo Client - fetches coverage from JaCoCo via a TCP port
+Description=Teamscale JaCoCo Client - fetches coverage from JaCoCo via a TCP port
 After=network.target
 
 [Service]

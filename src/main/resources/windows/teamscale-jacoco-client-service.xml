@@ -1,7 +1,7 @@
 <service>
-	<id>cqse-jacoco-client</id>
-	<name>CQSE JaCoCo Client</name>
-	<description>CQSE JaCoCo Client - fetches coverage from a running JaCoCo via TCP</description>
+	<id>teamscale-jacoco-client</id>
+	<name>Teamscale JaCoCo Client</name>
+	<description>Teamscale JaCoCo Client - fetches coverage from a running JaCoCo via TCP</description>
 
 	<!-- TODO Adjust these paths to your setup. -->
 	<env name="CLIENT_PATH" value="/path/to/eu.cqse.teamscale.jacoco.client-X.X.X-jacoco-Y.Y.Y.zip" />
