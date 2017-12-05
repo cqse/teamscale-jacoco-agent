@@ -9,6 +9,15 @@ To install the service:
 
 - Modify the teamscale-jacoco-client.service file according to the TODO comments inside.
 - Copy the file to `/etc/systemd/system`
+- Enable the service to start at boot time by running
+
+        sudo systemctl enable teamscale-jacoco-client.service
 
 To uninstall the service simply remove the file you copied above.
+
+To start the service manually use
+
+    sudo systemctl start teamscale-jacoco-client.service
+
+_This procedure was tested on Ubuntu 17.04_
 
