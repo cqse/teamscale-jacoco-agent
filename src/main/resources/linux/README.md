@@ -1,6 +1,6 @@
 The contents of this directory can be used to install the JaCoCo client as a
-Linux service. This ensures that the client is automatically restarted on
-system reboot. Currently, only a _systemd_ unit file is provided.
+Linux _systemd_ service. This ensures that the client is automatically restarted on
+system reboot.
 
 To see if your system supports systemd, check for the existance of the directory
 `/lib/systemd`
@@ -13,7 +13,14 @@ To install the service:
 
         sudo systemctl enable teamscale-jacoco-client.service
 
-To uninstall the service simply remove the file you copied above.
+To uninstall the service
+
+1. Run
+
+        sudo systemctl stop teamscale-jacoco-client.service
+        sudo systemctl disable teamscale-jacoco-client.service
+
+2. remove the file you copied to `/etc/systemd/system/teamscale-jacoco-client.service`
 
 To start the service manually use
 

@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 # TODO adjust user
 User=ubuntu
-# TODO adjust path to JaCoCo client and java
+# TODO adjust path to JaCoCo client and java and add command line arguments
 ExecStart=/usr/bin/java -jar /path/to/eu.cqse.teamscale.jacoco.client-X.X.X-jacoco-Y.Y.Y.zip
 Restart=always
 
