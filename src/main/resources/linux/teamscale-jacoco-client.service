@@ -8,6 +8,8 @@ Type=simple
 User=ubuntu
 # TODO adjust path to JaCoCo client and java and add command line arguments
 ExecStart=/usr/bin/java -jar /path/to/eu.cqse.teamscale.jacoco.client-X.X.X-jacoco-Y.Y.Y.zip
+# TODO set the path where logs and other runtime files will be placed
+WorkingDirectory=/some/path
 Restart=always
 
 [Install]
