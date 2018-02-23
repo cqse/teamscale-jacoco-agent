@@ -43,23 +43,27 @@ public class Watcher {
 	private final Logger logger = LogManager.getLogger(this);
 
 	/** The parsed command line arguments. */
-	private WatchCommand arguments;
+	private final WatchCommand arguments;
 
 	/** The scheduler for the recurring dump task. */
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
 	/** Converts binary execution data to XML. */
-	private XmlReportGenerator converter;
+	private final XmlReportGenerator converter;
 
 	/** Permanently stores the XMLs. */
-	private IXmlStore store;
+	private final IXmlStore store;
 
-	/** The currently running dump task. */
+	/** The currently running dump job or <code>null</code>. */
 	private ScheduledFuture<?> dumpJob;
 
 	/** Constructor. */
 	public Watcher(WatchCommand arguments) {
 		this.arguments = arguments;
+		this.converter = new XmlReportGenerator(CollectionUtils.map(arguments.getClassDirectoriesOrZips(), File::new),
+				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters(),
+				arguments.isShouldIgnoreDuplicateClassFiles());
+		this.store = new TimestampedFileStore(Paths.get(arguments.getOutputDir()));
 	}
 
 	/**
@@ -81,11 +85,6 @@ public class Watcher {
 					StringUtils.concat(arguments.getLocationIncludeFilters(), ", "),
 					StringUtils.concat(arguments.getLocationExcludeFilters(), ", "));
 		}
-
-		converter = new XmlReportGenerator(CollectionUtils.map(arguments.getClassDirectoriesOrZips(), File::new),
-				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters(),
-				arguments.isShouldIgnoreDuplicateClassFiles());
-		store = new TimestampedFileStore(Paths.get(arguments.getOutputDir()));
 
 		while (true) {
 			try {
@@ -126,11 +125,10 @@ public class Watcher {
 				restart();
 			});
 
-			scheduleRegularDump(controller);
-
 			logger.info("Connected successfully to JaCoCo");
+
 			// blocks until either the job throws an exception or is cancelled
-			dumpJob.get();
+			scheduleRegularDump(controller).get();
 		} catch (CancellationException e) {
 			// only happens when the job was cancelled. allow restart to happen
 		}
@@ -139,7 +137,7 @@ public class Watcher {
 	/**
 	 * Schedules a job to run regularly and dump execution data.
 	 */
-	private void scheduleRegularDump(IJacocoController controller) {
+	private ScheduledFuture<?> scheduleRegularDump(IJacocoController controller) {
 		dumpJob = executor.scheduleAtFixedRate(() -> {
 			logger.info("Requesting dump");
 			try {
@@ -151,6 +149,7 @@ public class Watcher {
 				restart();
 			}
 		}, arguments.getDumpIntervalInMinutes(), arguments.getDumpIntervalInMinutes(), TimeUnit.MINUTES);
+		return dumpJob;
 	}
 
 	/**
