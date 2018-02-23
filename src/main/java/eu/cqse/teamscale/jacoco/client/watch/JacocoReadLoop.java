@@ -48,7 +48,10 @@ public class JacocoReadLoop {
 	 */
 	public Observable<Dump> connect() throws IOException {
 		RemoteControlReader reader = new RemoteControlReader(socketInputStream);
-		reader.setExecutionDataVisitor(store::put);
+		// the following put invocation must NOT be replaced with a method reference
+		// otherwise, the put will always be called on the initial value of #store,
+		// not on the current value
+		reader.setExecutionDataVisitor(data -> store.put(data));
 
 		Observable<SessionInfo> sessionInfoObservable = Observable.<SessionInfo> create(emitter -> {
 			reader.setSessionInfoVisitor(info -> {
