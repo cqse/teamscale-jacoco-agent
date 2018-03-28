@@ -20,6 +20,7 @@ build:
     expire_in: 1 week
 
 docker:
+  image: registry.cqse.eu/cqse/build-docker
   stage: publish
   when: manual
   script:
