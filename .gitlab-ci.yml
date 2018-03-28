@@ -12,7 +12,7 @@ stages:
 build:
   stage: build
   script:
-    - ./gradlew clean check dist
+    - ./gradlew clean check dist docker
   artifacts:
     paths:
       - build/distributions
