@@ -111,7 +111,7 @@ public class Watcher {
 	 * exception occurs.
 	 */
 	private void run() throws IOException, InterruptedException, ExecutionException {
-		try (IJacocoController controller = new JacocoRemoteTCPController("localhost", arguments.getPort())) {
+		try (IJacocoController controller = new JacocoRemoteTCPController(arguments.getHost(), arguments.getPort())) {
 			controller.connect().doOnNext(data -> {
 				logger.info("Received dump, converting");
 			}).map(converter::convert).doOnNext(data -> {

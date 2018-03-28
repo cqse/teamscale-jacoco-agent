@@ -61,6 +61,11 @@ public class WatchCommand implements ICommand {
 			+ "The port under which JaCoCo is listening for connections.")
 	private int port = 0;
 
+	/** The JaCoCo host. */
+	@Parameter(names = { "--host", "-h" }, required = false, description = ""
+			+ "The host on which JaCoCo is listening for connections. Defaults to localhost")
+	private String host = "localhost";
+
 	/** The directory to write the XML traces to. */
 	@Parameter(names = { "--out", "-o" }, required = true, description = ""
 			+ "The directory to write the generated XML reports to.")
@@ -81,6 +86,16 @@ public class WatchCommand implements ICommand {
 			+ "Whether to ignore duplicate, non-identical class files."
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
 	private boolean shouldIgnoreDuplicateClassFiles = false;
+
+	/** @see #host */
+	public String getHost() {
+		return host;
+	}
+
+	/** @see #host */
+	public void setHost(String host) {
+		this.host = host;
+	}
 
 	/** @see #classDirectoriesOrZips */
 	public List<String> getClassDirectoriesOrZips() {

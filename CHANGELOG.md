@@ -1,5 +1,8 @@
 We use [semantic versioning][semver]
 
+# 2.1.0
+- [feature] allow setting explicit host name via `--host`
+
 # 2.0.1
 - [fix] working directory was missing from systemd service file
 
