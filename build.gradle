@@ -89,11 +89,16 @@ task copyDockerFiles(dependsOn: 'shadowJar', type: Copy) {
 
 task buildDockerImage(dependsOn: [copyDockerFiles, copyDockerJar], type: Exec) {
     workingDir 'build/docker'
-    commandLine 'docker', 'build', '.', '-t', "teamscale-jacoco-client:${outputVersion}"
+    commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
-task publishDockerImage(dependsOn: buildDockerImage)
+task tagDockerImage(dependsOn: buildDockerImage, type: Exec) {
+    commandLine 'docker', 'tag', "cqse/teamscale-jacoco-client:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
+}
 
-task docker(dependsOn: [buildDockerImage, publishDockerImage])
+task publishDockerImage(dependsOn: tagDockerImage, type: Exec) {
+    commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
+}
 
+task docker(dependsOn: publishDockerImage)
 
