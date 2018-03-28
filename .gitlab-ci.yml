@@ -8,13 +8,20 @@ cache:
 
 stages:
   - build
+  - publish
 
 build:
   stage: build
   script:
-    - ./gradlew clean check dist docker
+    - ./gradlew clean check dist
   artifacts:
     paths:
       - build/distributions
     expire_in: 1 week
+
+docker:
+  stage: publish
+  when: manual
+  script:
+    - ./gradlew clean docker
 
