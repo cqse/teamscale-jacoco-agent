@@ -2,9 +2,8 @@ image: registry.cqse.eu/cqse/latex
 
 cache:
   paths:
-    - /cache
-    - .cache
-  key: global
+    - .gradle/wrapper
+    - .gradle/caches
 
 stages:
   - build
