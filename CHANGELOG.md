@@ -1,7 +1,10 @@
 We use [semantic versioning][semver]
 
-# 2.1.0
+# 3.0.0
+- [breaking change] you must pass `true` or `false` explicitly to the `-d` parameter
 - [feature] allow setting explicit host name via `--host`
+- [feature] add Docker image
+- [tooling] add Docker image build
 
 # 2.0.1
 - [fix] working directory was missing from systemd service file

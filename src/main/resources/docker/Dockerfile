@@ -10,10 +10,10 @@ env CLASSES_DIR=/classes \
     HOSTNAME=app \
     PORT=9876 \
     DUMP_INTERVAL=3600 \
-    INCLUDE_FILTERS="" \
-    EXCLUDE_FILTERS="" \
+    INCLUDE_FILTERS="**" \
+    EXCLUDE_FILTERS="does-not-exist" \
     RECONNECT_INTERVAL=300 \
-    IGNORE_DUPLICATE_CLASS_FILES=false \
+    IGNORE_DUPLICATE_CLASS_FILES="false" \
     LOG_CONFIG=/client/log4j2.xml
 
 # create the volumes where the output of the tools is written
@@ -22,5 +22,4 @@ run mkdir -p /output/traces /output/logs
 volume /output/traces /output/logs
 
 workdir /client
-cmd java -Dlog4j.configurationFile="$LOG_CONFIG" -jar teamscale-jacoco-client.jar watch -c "$CLASSES_DIR" -i "$DUMP_INTERVAL" -r "$RECONNECT_INTERVAL" -o /output/traces -h "$HOSTNAME" -p "$PORT" -f "$INCLUDE_FILTERS" -e "EXCLUDE_FILTERS" -d "$IGNORE_DUPLICATE_CLASS_FILES"
-
+cmd java -Dlog4j.configurationFile="$LOG_CONFIG" -jar teamscale-jacoco-client.jar watch -c "$CLASSES_DIR" -i "$DUMP_INTERVAL" -r "$RECONNECT_INTERVAL" -o /output/traces -h "$HOSTNAME" -p "$PORT" -f "$INCLUDE_FILTERS" -e "$EXCLUDE_FILTERS" -d "$IGNORE_DUPLICATE_CLASS_FILES"

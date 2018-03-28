@@ -82,7 +82,7 @@ public class WatchCommand implements ICommand {
 	private int reconnectIntervalInSeconds = 5 * 60;
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	@Parameter(names = { "--ignore-duplicates", "-d" }, required = false, description = ""
+	@Parameter(names = { "--ignore-duplicates", "-d" }, required = false, arity = 1, description = ""
 			+ "Whether to ignore duplicate, non-identical class files."
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
 	private boolean shouldIgnoreDuplicateClassFiles = false;

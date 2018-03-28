@@ -120,7 +120,7 @@ You have three options to fix this problem:
 
 1. Make the `-c` parameter more concrete so it only includes the correct version of your application
 2. Use the `-f` and `-e` to exclude one of the duplicates. Make sure to exclude the right one or you might not get accurate coverage for those files!
-3. (Discouraged!) You can use the `-d` parameter to simply suppress these errors. Note, however, that coverage reported for these duplicated classes may be inaccurate!
+3. (Discouraged!) You can use the `-d true` parameter to simply suppress these errors. Note, however, that coverage reported for these duplicated classes may be inaccurate!
 
 ### How to change the log level
 
