@@ -64,3 +64,36 @@ task dist(dependsOn: ['clean', 'shadowJar', 'doc'], type: Zip) {
     include 'resources/main/log4j*.xml'
 }
 
+task copyDockerJar(dependsOn: 'shadowJar', type: Copy) {
+    doFirst {
+        mkdir 'build/docker'
+    }
+    from 'build/libs'
+    into 'build/docker'
+    rename(/teamscale-jacoco-client.*\.jar/, 'teamscale-jacoco-client.jar')
+}
+
+task copyDockerFiles(dependsOn: 'shadowJar', type: Copy) {
+    doFirst {
+        mkdir 'build/docker'
+    }
+    from 'build/resources'
+    include '**/docker/*'
+    include '**/docker/Dockerfile'
+    includeEmptyDirs false
+    eachFile {
+        it.path = it.relativePath.lastName
+    }
+    into 'build/docker'
+}
+
+task buildDockerImage(dependsOn: [copyDockerFiles, copyDockerJar], type: Exec) {
+    workingDir 'build/docker'
+    commandLine 'docker', 'build', '.', '-t', "teamscale-jacoco-client:${outputVersion}"
+}
+
+task publishDockerImage(dependsOn: buildDockerImage)
+
+task docker(dependsOn: [buildDockerImage, publishDockerImage])
+
+

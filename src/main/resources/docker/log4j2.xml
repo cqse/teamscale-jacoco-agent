@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Properties>
+		<Property name="log-path">/output/logs</Property>
+	</Properties>
+	<Appenders>
+	    <Console name="Console" target="SYSTEM_OUT">
+	      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n"/>
+	    </Console>
+		<RollingFile name="RollingFile" fileName="${log-path}/jacoco-converter.log"
+				filePattern="${log-path}/jacoco-converter-%d{yyyy-MM-dd}-%i.log">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="1MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="10" />
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="info">
+			<AppenderRef ref="RollingFile" />
+		</Root>
+	</Loggers>
+	<!-- Filters for reconnection messages. Enable these if frequent restarts of the application under test are expected.
+	<Filters>
+	    <MarkerFilter marker="RECONNECT" onMatch="DENY" onMismatch="NEUTRAL" />
+	</Filters>
+	-->
+</Configuration>
