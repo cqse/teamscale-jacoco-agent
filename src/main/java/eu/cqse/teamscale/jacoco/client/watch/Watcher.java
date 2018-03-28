@@ -91,8 +91,8 @@ public class Watcher {
 				run();
 			} catch (ConnectException e) {
 				logger.error(RECONNECT_LOGGER_MARKER,
-						"Could not connect to JaCoCo. The application appears not to be running."
-								+ " Trying to reconnect in {} seconds",
+						"Could not connect to JaCoCo at " + arguments.getHost() + ":" + arguments.getPort()
+								+ ". The application appears not to be running." + " Trying to reconnect in {} seconds",
 						arguments.getReconnectIntervalInSeconds(), e);
 				try {
 					Thread.sleep(TimeUnit.SECONDS.toMillis(arguments.getReconnectIntervalInSeconds()));
