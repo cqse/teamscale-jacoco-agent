@@ -104,7 +104,11 @@ You'll need these two images in addition to your application's image:
 - Teamscale JaCoCo client: [cqse/teamscale-jacoco-client](https://hub.docker.com/r/cqse/teamscale-jacoco-client/)
 - JaCoCo agent: [ictu/jacoco-agent-docker](https://hub.docker.com/r/ictu/jacoco-agent-docker/)
 
-__Please make sure the JaCoCo version of both images is the same. Otherwise there may be compatibility problems!__
+The client image has the same versioning scheme as the client itself: `CLIENTVERSION-jacoco-JACOCOVERSION`.
+There is no `latest` tag.
+
+__Please make sure the JaCoCo version of both of these images is the same.
+Otherwise there may be compatibility problems!__
 
 ## Prepare your application
 
