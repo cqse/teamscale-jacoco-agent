@@ -1,10 +1,12 @@
 We use [semantic versioning][semver]
 
+# Next release
+
 # 3.0.0
 - [breaking change] you must pass `true` or `false` explicitly to the `-d` parameter
 - [feature] allow setting explicit host name via `--host`
 - [feature] add Docker image
-- [tooling] add Docker image build
+- [tooling] add Docker image build and Docker Hub project
 
 # 2.0.1
 - [fix] working directory was missing from systemd service file
