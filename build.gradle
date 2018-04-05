@@ -96,9 +96,18 @@ task tagDockerImage(dependsOn: buildDockerImage, type: Exec) {
     commandLine 'docker', 'tag', "cqse/teamscale-jacoco-client:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
-task publishDockerImage(dependsOn: tagDockerImage, type: Exec) {
+task publishDockerImageInternal(dependsOn: tagDockerImage, type: Exec) {
     commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
-task docker(dependsOn: publishDockerImage)
+task loginDockerHub(type: Exec) {
+    commandLine 'docker', 'login', '-u', 'hummel', '-p', System.env.DOCKER_HUB_PASSWORD
+}
+
+task publishDockerImageDockerHub(dependsOn: [tagDockerImage, loginDockerHub], type: Exec) {
+    commandLine 'docker', 'push', "cqse/teamscale-jacoco-client:${outputVersion}"
+}
+
+task dockerInternal(dependsOn: publishDockerImageInternal)
+task dockerHub(dependsOn: publishDockerImageDockerHub)
 

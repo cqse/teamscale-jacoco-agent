@@ -18,10 +18,17 @@ build:
       - build
     expire_in: 1 week
 
-docker:
+docker-internal:
   image: registry.cqse.eu/cqse/build-docker
   stage: publish
   when: manual
   script:
-    - ./gradlew docker
+    - ./gradlew dockerInternal
+
+docker-hub:
+  image: registry.cqse.eu/cqse/build-docker
+  stage: publish
+  when: manual
+  script:
+    - ./gradlew dockerHub
 
