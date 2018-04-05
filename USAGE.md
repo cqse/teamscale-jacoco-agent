@@ -94,6 +94,81 @@ External libraries should not be specified.
 For Windows and Linux systemd there are README files within the distribution zip under `resources/main/windows` and
 `resources/main/linux` that describe how to install the client as a service.
 
+# Docker
+
+The client is available as a Docker image. If you would like to profile an application that is running inside a
+Docker image.
+
+TODO: image link
+caveat: jacoco version
+jacoco image
+
+## Prepare your application
+
+Make sure that your Java process is the root process in the Docker image (PID 1). Otherwise, it will not receive
+the SIGTERM signal when the Docker image is stopped and JaCoCo will not dump its coverage (i.e. coverage is lost).
+You can do this by either using `CMD exec java ...` in the Docker file or `CMD ["java", ...]`. For more information
+see [this StackOverflow answer][so-java-exec-answer].
+
+Next, you'll need to make your application's bytecode (.jar/.war/.class files) available to the JaCoCo client
+image. To do so, declare it as a volume in your Dockerfile:
+
+    VOLUME /path/to/class/files
+
+The volume must contain _all_ relevant Java bytecode for which you want to receive coverage.
+
+Finally, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
+via `JAVA_TOOL_OPTIONS`. If your docker images starts the Java process directly, this should
+work out of the box. If you are using an application container (e.g. Tomcat), you'll have
+to check how to pass these options to your application's VM.
+
+## Compose the images
+
+Here's an example Docker Compose file that instruments an application:
+
+	services:
+	  jacoco:
+		image: ictu/jacoco-agent-docker:0.7.9
+	  app:
+		build: ./app
+		environment:
+		  JAVA_TOOL_OPTIONS: -javaagent:/jacoco/lib/jacocoagent.jar=dumponexit=true,output=tcpserver,port=9876,address=*
+		expose:
+		  - '9876'
+		volumes_from:
+		  - service:jacoco:ro
+	  jacoco-client:
+		image: cqse/teamscale-jacoco-client:2.0.1-jacoco-0.7.9
+		volumes:
+		  - ./traces:/output/traces
+		  - ./logs:/output/logs
+		volumes_from:
+		  - service:app:ro
+		links:
+		  - 'app:app'
+		environment:
+		  CLASSES_DIR: /jars
+		  HOSTNAME: app
+		  PORT: 9876
+	version: '2.0'
+
+This configures the three images and links them together:
+
+- your application mounts the volumes from the JaCoCo image, which contains the profiler binaries
+- your application enables the profiler
+- the profiler is configured to open a local port which is forwarded out of the Docker image
+- the client mounts the volumes from your application's image, which contains a volume with
+  all your bytecode (`/jars` in this example)
+- the client is `link`ed to your application and can thus access the JaCoCo port we opened
+- the client's output volumes are mounted to some form of persistent storage
+  (`/output/traces` and `/output/logs`)
+
+## Configuring the client image
+
+There are several environment variables that allow you to configure the client image.
+See the Dockerfile of the image for an explanation of each option.
+TODO link
+
 # Advanced usage of teamscale-jacoco-client
 
 ## Command line options
@@ -137,4 +212,6 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 ## One-time conversion
 
 You can invoke the client with the `convert` command as well, to achieve a one-time conversion from .exec files to XML.
+
+[so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306
 
