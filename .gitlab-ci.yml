@@ -1,5 +1,9 @@
 image: registry.cqse.eu/cqse/latex
 
+# make gradle artifacts cachable
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
 cache:
   paths:
     - .gradle/wrapper
