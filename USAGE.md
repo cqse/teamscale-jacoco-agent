@@ -96,12 +96,15 @@ For Windows and Linux systemd there are README files within the distribution zip
 
 # Docker
 
-The client is available as a Docker image. If you would like to profile an application that is running inside a
+The client is available as a Docker image if you would like to profile an application that is running inside a
 Docker image.
 
-TODO: image link
-caveat: jacoco version
-jacoco image
+You'll need these two images in addition to your application's image:
+
+- Teamscale JaCoCo client: [cqse/teamscale-jacoco-client](https://hub.docker.com/r/cqse/teamscale-jacoco-client/)
+- JaCoCo agent: [ictu/jacoco-agent-docker](https://hub.docker.com/r/ictu/jacoco-agent-docker/)
+
+__Please make sure the JaCoCo version of both images is the same. Otherwise there may be compatibility problems!__
 
 ## Prepare your application
 
@@ -167,7 +170,8 @@ This configures the three images and links them together:
 
 There are several environment variables that allow you to configure the client image.
 See the Dockerfile of the image for an explanation of each option.
-TODO link
+You'll find this in the distribution zip of the JaCoCo client (ask CQSE if you don't
+have one).
 
 # Advanced usage of teamscale-jacoco-client
 
