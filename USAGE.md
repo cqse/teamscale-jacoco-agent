@@ -114,8 +114,8 @@ Otherwise there may be compatibility problems!__
 
 Make sure that your Java process is the root process in the Docker image (PID 1). Otherwise, it will not receive
 the SIGTERM signal when the Docker image is stopped and JaCoCo will not dump its coverage (i.e. coverage is lost).
-You can do this by either using `CMD exec java ...` in the Docker file or `CMD ["java", ...]`. For more information
-see [this StackOverflow answer][so-java-exec-answer].
+You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
+your application. For more information see [this StackOverflow answer][so-java-exec-answer].
 
 Next, you'll need to make your application's bytecode (.jar/.war/.class files) available to the JaCoCo client
 image. To do so, declare it as a volume in your Dockerfile:
