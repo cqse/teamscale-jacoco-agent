@@ -101,7 +101,7 @@ task publishDockerImageInternal(dependsOn: tagDockerImage, type: Exec) {
 }
 
 task loginDockerHub(type: Exec) {
-    commandLine 'docker', 'login', '-u', 'hummel', '-p', System.env.DOCKER_HUB_PASSWORD
+    commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
 }
 
 task publishDockerImageDockerHub(dependsOn: [tagDockerImage, loginDockerHub], type: Exec) {
