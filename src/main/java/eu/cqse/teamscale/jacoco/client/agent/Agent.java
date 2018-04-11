@@ -9,10 +9,13 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
 
 import eu.cqse.teamscale.jacoco.client.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
@@ -36,19 +39,23 @@ public class Agent {
 		agent.registerShutdownHook();
 	}
 
-	/** Command line options of the agent. */
-	private final AgentOptions options;
+	/** The logger. */
+	private final Logger logger = LogManager.getLogger(this);
 
+	/** Regular dump task. */
 	private final Timer timer;
 
+	/** Controls the JaCoCo runtime. */
 	private final JacocoRuntimeController controller;
+
+	/** Converts binary data to XML. */
 	private final XmlReportGenerator generator;
+
+	/** Writes XML to the file system. */
 	private final TimestampedFileStore store;
 
 	/** Constructor. */
 	public Agent(AgentOptions options) {
-		this.options = options;
-
 		controller = new JacocoRuntimeController();
 		generator = new XmlReportGenerator(options.classDirectoriesOrZips, options.locationIncludeFilters,
 				options.locationExcludeFilters, options.shouldIgnoreDuplicateClassFiles);
@@ -57,16 +64,28 @@ public class Agent {
 		timer = new Timer(this::dump, Duration.ofMinutes(60));
 	}
 
+	/**
+	 * Dumps the current execution data, converts it and writes it to the
+	 * {@link #store}.
+	 */
 	private void dump() {
+		Dump dump;
 		try {
-			Dump dump = controller.dumpAndReset();
-			String xml = generator.convert(dump);
-			store.store(xml);
-		} catch (IllegalStateException | IOException e) {
-			// TODO (FS) error handling
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			dump = controller.dumpAndReset();
+		} catch (DumpException e) {
+			logger.error("Dumping failed, retrying later", e);
+			return;
 		}
+
+		String xml;
+		try {
+			xml = generator.convert(dump);
+		} catch (IOException e) {
+			logger.error("Converting binary dump to XML failed", e);
+			return;
+		}
+
+		store.store(xml);
 	}
 
 	/**
@@ -81,17 +100,10 @@ public class Agent {
 	}
 
 	/**
-	 * 
+	 * Starts the regular {@link #dump()}.
 	 */
 	private void startDumpLoop() {
 		timer.start();
-	}
-
-	/**
-	 * Starts the JaCoCo Java agent.
-	 */
-	private static void startJacocoAgent(AgentOptions options, Instrumentation inst) throws Exception {
-		PreMain.premain(options.createJacocoAgentOptions(), inst);
 	}
 
 }
