@@ -9,9 +9,11 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
@@ -130,13 +132,13 @@ public class AgentOptions {
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
 		case "include":
-			locationIncludeFilters.add(value);
+			locationIncludeFilters = splitMultiOptionValue(value);
 			break;
 		case "exclude":
-			locationExcludeFilters.add(value);
+			locationExcludeFilters = splitMultiOptionValue(value);
 			break;
 		case "class-dir":
-			classDirectoriesOrZips.add(new File(value));
+			classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);
 			break;
 		case "jacoco-include":
 			jacocoIncludes = value;
@@ -147,6 +149,11 @@ public class AgentOptions {
 		default:
 			throw new AgentOptionParseException("Unknown option: " + key);
 		}
+	}
+
+	/** Splits the given value at colons. */
+	private static List<String> splitMultiOptionValue(String value) {
+		return Arrays.asList(value.split(":"));
 	}
 
 	/** Returns the options to pass to the JaCoCo agent. */
