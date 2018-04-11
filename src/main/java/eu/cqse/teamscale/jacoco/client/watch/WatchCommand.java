@@ -29,7 +29,7 @@ import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 public class WatchCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
-	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
+	@Parameter(names = { "--classDir", "--class-dir", "--jar", "-c" }, required = true, description = ""
 			+ "The directories or zip/ear/jar/war/... files that contain the compiled Java classes being profiled."
 			+ " Searches recursively, including inside zips.")
 	private List<String> classDirectoriesOrZips = new ArrayList<>();
@@ -37,7 +37,7 @@ public class WatchCommand implements ICommand {
 	/**
 	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = { "--filter", "-f" }, description = ""
+	@Parameter(names = { "--filter", "--include", "-f" }, description = ""
 			+ "Ant-style include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
