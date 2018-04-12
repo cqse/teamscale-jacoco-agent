@@ -61,7 +61,7 @@ public class Agent {
 				options.getLocationExcludeFilters(), options.isShouldIgnoreDuplicateClassFiles());
 		store = new TimestampedFileStore(options.getOutputDir());
 
-		timer = new Timer(this::dump, Duration.ofMinutes(60));
+		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
 	}
 
 	/**
