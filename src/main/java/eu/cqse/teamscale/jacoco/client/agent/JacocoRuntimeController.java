@@ -12,6 +12,7 @@ import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.ExecutionDataStore;
+import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
@@ -56,15 +57,36 @@ public class JacocoRuntimeController {
 
 		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binaryData)) {
 			ExecutionDataReader reader = new ExecutionDataReader(inputStream);
+
 			ExecutionDataStore store = new ExecutionDataStore();
-			SessionInfo sessionInfo = new SessionInfo("dummysession", System.currentTimeMillis(),
-					System.currentTimeMillis());
 			reader.setExecutionDataVisitor(store::put);
+
+			SessionInfoVisitor sessionInfoVisitor = new SessionInfoVisitor();
+			reader.setSessionInfoVisitor(sessionInfoVisitor);
+
 			reader.read();
-			return new Dump(store, sessionInfo);
+			return new Dump(store, sessionInfoVisitor.sessionInfo);
 		} catch (IOException e) {
 			throw new DumpException("should never happen for the ByteArrayInputStream", e);
 		}
+	}
+
+	/**
+	 * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in
+	 * case nothing is received.
+	 */
+	private static class SessionInfoVisitor implements ISessionInfoVisitor {
+
+		/** The received session info or a dummy. */
+		public SessionInfo sessionInfo = new SessionInfo("dummysession", System.currentTimeMillis(),
+				System.currentTimeMillis());
+
+		/** {@inheritDoc} */
+		@Override
+		public void visitSessionInfo(SessionInfo info) {
+			this.sessionInfo = info;
+		}
+
 	}
 
 }
