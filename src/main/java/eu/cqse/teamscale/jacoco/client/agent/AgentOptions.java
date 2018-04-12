@@ -15,6 +15,7 @@ import java.util.List;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 
@@ -71,7 +72,7 @@ public class AgentOptions {
 
 	/** Parses the given command-line options. */
 	public AgentOptions(String options) throws AgentOptionParseException {
-		if (options.isEmpty()) {
+		if (StringUtils.isEmpty(options)) {
 			throw new AgentOptionParseException(
 					"No agent options given. You must at least provide an output directory (out)"
 							+ " and a classes directory (class-dir)");

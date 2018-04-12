@@ -37,6 +37,9 @@ shadowJar {
     baseName = 'teamscale-jacoco-client'
     classifier = null
     version = outputVersion
+    manifest {
+        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.client.agent.Agent'
+    }
 }
 
 processResources {

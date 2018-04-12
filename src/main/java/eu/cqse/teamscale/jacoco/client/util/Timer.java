@@ -7,17 +7,23 @@ package eu.cqse.teamscale.jacoco.client.util;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Triggers a callback in a regular interval
+ * Triggers a callback in a regular interval. Note that the spawned threads are
+ * Daemon threads, i.e. they will not prevent the JVM from shutting down.
  */
 public class Timer {
 
-	/** Runs the job on a background thread. */
-	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+	/** Runs the job on a background daemon thread. */
+	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, runnable -> {
+		Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+		thread.setDaemon(true);
+		return thread;
+	});
 
 	/** The currently running job or <code>null</code>. */
 	private ScheduledFuture<?> job = null;
