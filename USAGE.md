@@ -1,9 +1,41 @@
 # Teamscale JaCoCo Client
 
-## Installation
+## Using it as an agent
+
+If used as an agent, coverage is dumped to the file system in regular intervals while the application
+is running.
+
+Configure the agent on your application's JVM:
+
+    -javaagent:CLIENTJAR=OPTIONS
+
+Where
+
+* `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client
+* `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
+
+The following options are available:
+
+- `out` (required): the path to a writable directory where the generated coverage XML files will be stored
+- `class-dir` (required): the path under which all class files of the profiled application are stored. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a colon
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file
+- `include` (recommended): include filters for class files during the conversion to XML. Separate multiple patterns with a colon.
+  You should provide some include patters so that external libraries are not profiled - only your own code
+- `exclude`: exclude filters for class files during the conversion to XML. Separate multiple patterns with a colon
+- `jacoco-include` (recommended): include patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `includes` parameter.
+  You should provide some include patterns so that conversion will not have to parse all your external libraries.
+  This speeds up conversion to XML
+- `jacoco-exclude`: exclude patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `excludes` parameter
+- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below
+
+Please note that the `include`/`exclude` parameters use a different pattern syntax than the
+`jacoco-include`/`jacoco-exclude` patterns! See below for details.
+
+## Using it as a separate process
 
 This section explains how to instrument your application so coverage is recorded and run the
-teamscale-jacoco-client which writes the recorded coverage to disk at regular intervals.
+teamscale-jacoco-client as a separate process which writes the recorded coverage to disk at regular intervals.
 
 This document assumes a Unix environment but the tool works just as well under Windows. Just
 replace Unix paths with Windows paths etc.
