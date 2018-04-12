@@ -6,6 +6,7 @@
 package eu.cqse.teamscale.jacoco.client.util;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -42,9 +43,24 @@ public class Timer {
 		job = executor.scheduleAtFixedRate(runnable, duration.toMinutes(), duration.toMinutes(), TimeUnit.MINUTES);
 	}
 
+	/**
+	 * Waits until this timer is stopped or the scheduled job throws an exception.
+	 */
+	public void waitUntilTimerIsStopped() {
+		if (job == null) {
+			return;
+		}
+
+		try {
+			job.get();
+		} catch (InterruptedException | ExecutionException e) {
+			// ignore exception
+		}
+	}
+
 	/** Stops the regular job, possibly aborting it. */
 	public synchronized void stop() {
-		job.cancel(true);
+		job.cancel(false);
 		job = null;
 	}
 
