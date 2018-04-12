@@ -25,6 +25,15 @@ import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
  */
 public class Agent {
 
+	static {
+		// since we will be logging from our own shutdown hook, we must disable the
+		// log4j one. Otherwise it logs a warning to the console on shutdown. Due to
+		// this, we need to manually shutdown the logging engine in our own shutdown
+		// hook
+		System.setProperty("log4j.shutdownHookEnabled", "false");
+		System.setProperty("log4j2.shutdownHookEnabled", "false");
+	}
+
 	/**
 	 * Entry point for the agent, called by the JVM.
 	 */
@@ -109,6 +118,9 @@ public class Agent {
 			dump();
 			timer.stop();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
+
+			// manually shut down the logging system since we prevented automatic shutdown
+			LogManager.shutdown();
 		}));
 	}
 
