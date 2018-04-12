@@ -96,7 +96,7 @@ public class Agent {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			dump();
 			timer.stop();
-			System.err.println("CQSE JaCoCo agent successfully shut down.");
+			logger.info("CQSE JaCoCo agent successfully shut down.");
 		}));
 	}
 
