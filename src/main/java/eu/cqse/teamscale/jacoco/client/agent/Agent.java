@@ -69,6 +69,18 @@ public class Agent {
 	 * {@link #store}.
 	 */
 	private void dump() {
+		try {
+			dumpUnsafe();
+		} catch (Throwable t) {
+			// we want to catch anything in order to avoid that it kills the regular job
+			logger.error("Dump job failed with an exception. Retrying later", t);
+		}
+	}
+
+	/**
+	 * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
+	 */
+	private void dumpUnsafe() {
 		Dump dump;
 		try {
 			dump = controller.dumpAndReset();
