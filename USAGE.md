@@ -32,6 +32,15 @@ The following options are available:
 Please note that the `include`/`exclude` parameters use a different pattern syntax than the
 `jacoco-include`/`jacoco-exclude` patterns! See below for details.
 
+### Logging
+
+By default, the agent logs to the console. You can change this by providing a Log4j2 logging configuration:
+
+    java -Dlog4j.configurationFile=LOG4J2XML ...
+
+Where `LOG4J2XML` is the absolute path to the logging configuration. Example configurations are included with
+the client.
+
 ## Using it as a separate process
 
 This section explains how to instrument your application so coverage is recorded and run the

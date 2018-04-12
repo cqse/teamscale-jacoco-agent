@@ -71,6 +71,9 @@ public class Agent {
 		store = new TimestampedFileStore(options.getOutputDir());
 
 		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
+
+		logger.info("Starting JaCoCo agent. Dumping every {} minutes to {}", options.getDumpIntervalInMinutes(),
+				options.getOutputDir());
 	}
 
 	/**
