@@ -60,6 +60,7 @@ public class Timer {
 		}
 
 		try {
+			// this blocks until the periodic job is cancelled or throws an exception
 			job.get();
 		} catch (InterruptedException | ExecutionException e) {
 			// ignore exception
