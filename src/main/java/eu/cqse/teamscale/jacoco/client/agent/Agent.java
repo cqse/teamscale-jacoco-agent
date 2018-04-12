@@ -13,9 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
 
-import eu.cqse.teamscale.jacoco.client.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpException;
+import eu.cqse.teamscale.jacoco.client.store.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 

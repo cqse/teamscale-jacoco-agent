@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.store;
 
 /** Stores XML data permanently. */
 public interface IXmlStore {

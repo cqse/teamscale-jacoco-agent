@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.store;
 
 import java.io.IOException;
 import java.nio.file.Path;

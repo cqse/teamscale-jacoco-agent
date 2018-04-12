@@ -20,9 +20,9 @@ import org.apache.logging.log4j.MarkerManager;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
-import eu.cqse.teamscale.jacoco.client.IXmlStore;
-import eu.cqse.teamscale.jacoco.client.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.client.store.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
 import io.reactivex.schedulers.Schedulers;
