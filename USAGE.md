@@ -21,11 +21,20 @@ The following options are available:
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a colon
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file
 - `include` (recommended): include filters for class files during the conversion to XML. Separate multiple patterns with a colon.
-  You should provide some include patters so that external libraries are not profiled - only your own code
+  You should provide some include patters so that external libraries are not profiled - only your own code.
+  Patterns are ANT-style patterns matched against the Unix-style path of every found class file, e.g.
+  `./teamscale-jacoco-client-3.1.0-jacoco-0.7.9.jar@org/reactivestreams/Processor.class`. So to only include
+  classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+  subpackages you can use `**com/yourcompany/**:**com/yourotherpackage/**`
 - `exclude`: exclude filters for class files during the conversion to XML. Separate multiple patterns with a colon
 - `jacoco-include` (recommended): include patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `includes` parameter.
   You should provide some include patterns so that conversion will not have to parse all your external libraries.
-  This speeds up conversion to XML
+  This speeds up conversion to XML.
+  These patterns that are matched against
+  the Java package names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+  subpackages you can use `com.yourcompany.*:com.yourotherpackage.*`
+  By specifying this, the performance of the profiler is increased. Make sure to include **all** relevant application code
+  but no external libraries. For further details, please see the JaCoCo documentation in the "Agent" section.
 - `jacoco-exclude`: exclude patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `excludes` parameter
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below
 
@@ -233,6 +242,11 @@ the `-f` and `-e` command line parameters of the tool to decide which code to an
 
 Please note that these patterns are ANT-style patterns and *always* use forward slashes,
 i.e. *not* the same syntax as JaCoCo's include patterns above. To see what is being filtered out, activate debug logging.
+
+Patterns are ANT-style patterns matched against the Unix-style path of every found class file, e.g.
+`./teamscale-jacoco-client-3.1.0-jacoco-0.7.9.jar@org/reactivestreams/Processor.class`. So to only include
+classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+subpackages you can use `-f '**com/yourcompany/**:**com/yourotherpackage/**'`
 
 Enable debug logging to see what is being filtered out and fine-tune these patterns.
 
