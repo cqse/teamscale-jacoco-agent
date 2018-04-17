@@ -124,7 +124,11 @@ public class AgentOptions {
 
 		switch (key.toLowerCase()) {
 		case "interval":
-			dumpIntervalInMinutes = Integer.parseInt(value);
+			try {
+				dumpIntervalInMinutes = Integer.parseInt(value);
+			} catch (NumberFormatException e) {
+				throw new AgentOptionParseException("Non-numeric value given for option 'interval'");
+			}
 			break;
 		case "out":
 			outputDir = Paths.get(value);

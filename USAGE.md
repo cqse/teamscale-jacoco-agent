@@ -21,7 +21,8 @@ The following options are available:
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a colon
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file
 - `include` (recommended): include filters for class files during the conversion to XML. Separate multiple patterns with a colon.
-  You should provide some include patters so that external libraries are not profiled - only your own code.
+  You should provide some include patterns in order to reduce the size of the XML file. You only need coverage reporting for
+  your own code, not for external libraries.
   Patterns are ANT-style patterns matched against the Unix-style path of every found class file, e.g.
   `./teamscale-jacoco-client-3.1.0-jacoco-0.7.9.jar@org/reactivestreams/Processor.class`. So to only include
   classes in package `com.yourcompany` and `com.yourotherpackage` and all their
