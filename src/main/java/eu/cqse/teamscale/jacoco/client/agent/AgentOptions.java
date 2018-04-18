@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
@@ -69,6 +70,9 @@ public class AgentOptions {
 
 	/** Exclude patterns to pass on to JaCoCo. */
 	private String jacocoExcludes = null;
+
+	/** Additional user-provided options to pass to JaCoCo. */
+	private PairList<String, String> additionalJacocoOptions = new PairList<>();
 
 	/** Parses the given command-line options. */
 	public AgentOptions(String options) throws AgentOptionParseException {
@@ -152,6 +156,11 @@ public class AgentOptions {
 			jacocoExcludes = value;
 			break;
 		default:
+			if (key.toLowerCase().startsWith("jacoco-")) {
+				additionalJacocoOptions.add(key.substring(7), value);
+				break;
+			}
+
 			throw new AgentOptionParseException("Unknown option: " + key);
 		}
 	}
@@ -170,6 +179,11 @@ public class AgentOptions {
 		if (jacocoExcludes != null) {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
+
+		additionalJacocoOptions.forEach((key, value) -> {
+			builder.append(",").append(key).append("=").append(value);
+		});
+
 		return builder.toString();
 	}
 

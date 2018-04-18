@@ -41,6 +41,10 @@ The following options are available:
 Please note that the `include`/`exclude` parameters use a different pattern syntax than the
 `jacoco-include`/`jacoco-exclude` patterns! See below for details.
 
+You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
+`jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
+for a list of all available options.
+
 ### Logging
 
 By default, the agent logs to the console. You can change this by providing a Log4j2 logging configuration:
