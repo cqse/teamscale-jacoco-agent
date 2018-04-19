@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 3.1.0
+- [feature] add agent for regular dumping without separate process
+
 # 3.0.0
 - [breaking change] you must pass `true` or `false` explicitly to the `-d` parameter
 - [feature] allow setting explicit host name via `--host`

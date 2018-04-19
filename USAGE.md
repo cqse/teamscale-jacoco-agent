@@ -1,9 +1,59 @@
 # Teamscale JaCoCo Client
 
-## Installation
+## Using it as an agent
+
+If used as an agent, coverage is dumped to the file system in regular intervals while the application
+is running.
+
+Configure the agent on your application's JVM:
+
+    -javaagent:CLIENTJAR=OPTIONS
+
+Where
+
+* `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client
+* `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
+
+The following options are available:
+
+- `out` (required): the path to a writable directory where the generated coverage XML files will be stored
+- `class-dir` (required): the path under which all class files of the profiled application are stored. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a colon
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file
+- `include` (recommended): include filters for class files during the conversion to XML. Separate multiple patterns with a colon.
+  You should provide some include patterns in order to reduce the size of the XML file. You only need coverage reporting for
+  your own code, not for external libraries.
+  Patterns are ANT-style patterns matched against the Unix-style path of every found class file, e.g.
+  `./teamscale-jacoco-client-3.1.0-jacoco-0.7.9.jar@org/reactivestreams/Processor.class`. So to only include
+  classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+  subpackages you can use `**com/yourcompany/**:**com/yourotherpackage/**`
+- `exclude`: exclude filters for class files during the conversion to XML. Separate multiple patterns with a colon
+- `jacoco-include` (recommended): include patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `includes` parameter.
+  This speeds up the profiled application since less code needs to be instrumented.
+  These patterns are matched against
+  the Java package names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+  subpackages you can use `com.yourcompany.*:com.yourotherpackage.*`
+  Make sure to include **all** relevant application code
+  but no external libraries. For further details, please see the JaCoCo documentation in the "Agent" section.
+- `jacoco-exclude`: exclude patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `excludes` parameter
+- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below
+
+Please note that the `include`/`exclude` parameters use a different pattern syntax than the
+`jacoco-include`/`jacoco-exclude` patterns! See below for details.
+
+### Logging
+
+By default, the agent logs to the console. You can change this by providing a Log4j2 logging configuration:
+
+    java -Dlog4j.configurationFile=LOG4J2XML ...
+
+Where `LOG4J2XML` is the absolute path to the logging configuration. Example configurations are included with
+the client.
+
+## Using it as a separate process
 
 This section explains how to instrument your application so coverage is recorded and run the
-teamscale-jacoco-client which writes the recorded coverage to disk at regular intervals.
+teamscale-jacoco-client as a separate process which writes the recorded coverage to disk at regular intervals.
 
 This document assumes a Unix environment but the tool works just as well under Windows. Just
 replace Unix paths with Windows paths etc.
@@ -192,6 +242,11 @@ the `-f` and `-e` command line parameters of the tool to decide which code to an
 
 Please note that these patterns are ANT-style patterns and *always* use forward slashes,
 i.e. *not* the same syntax as JaCoCo's include patterns above. To see what is being filtered out, activate debug logging.
+
+The patterns are matched against the Unix-style path of every found class file, e.g.
+`./teamscale-jacoco-client-3.1.0-jacoco-0.7.9.jar@org/reactivestreams/Processor.class`. So to only include
+classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+subpackages you can use `-f '**com/yourcompany/**:**com/yourotherpackage/**'`
 
 Enable debug logging to see what is being filtered out and fine-tune these patterns.
 
