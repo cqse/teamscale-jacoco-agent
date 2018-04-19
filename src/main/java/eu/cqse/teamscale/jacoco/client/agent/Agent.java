@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
 
 import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.client.agent.AgentOptions.AgentOptionParseException;
 import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
@@ -38,7 +39,13 @@ public class Agent {
 	 * Entry point for the agent, called by the JVM.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		AgentOptions agentOptions = new AgentOptions(options);
+		AgentOptions agentOptions;
+		try {
+			agentOptions = new AgentOptions(options);
+		} catch (AgentOptionParseException e) {
+			System.err.println("Failed to parse agent options: " + e.getMessage());
+			throw e;
+		}
 
 		// start the JaCoCo agent
 		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
@@ -83,6 +90,8 @@ public class Agent {
 	 * {@link #store}. Logs any errors, never throws an exception.
 	 */
 	private void dump() {
+		logger.debug("Starting dump");
+
 		try {
 			dumpUnsafe();
 		} catch (Throwable t) {

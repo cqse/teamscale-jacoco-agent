@@ -61,6 +61,8 @@ public class HttpUploadStore implements IXmlStore {
 
 	/** Performs the upload and returns <code>true</code> if successful. */
 	private boolean tryUploading(String xml) {
+		logger.debug("Uploading coverage to {}", uploadUrl);
+
 		byte[] zipFileBytes;
 		try {
 			zipFileBytes = createZipFile(xml);

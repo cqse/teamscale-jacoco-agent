@@ -24,7 +24,7 @@ public interface IHttpUploadApi {
 	/** The upload API call. */
 	@Multipart
 	@POST("/")
-	public Call<ResponseBody> upload(@Part("file") MultipartBody.Part uploadedFile);
+	public Call<ResponseBody> upload(@Part MultipartBody.Part uploadedFile);
 
 	/**
 	 * Convenience method to perform an {@link #upload(okhttp3.MultipartBody.Part)}

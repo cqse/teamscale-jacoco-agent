@@ -182,6 +182,7 @@ public class AgentOptions {
 			} catch (InvalidPathException e) {
 				throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'");
 			}
+			break;
 		case "ignore-duplicates":
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
