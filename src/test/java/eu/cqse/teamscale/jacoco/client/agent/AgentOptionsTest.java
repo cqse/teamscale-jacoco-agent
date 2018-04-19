@@ -28,9 +28,9 @@ public class AgentOptionsTest {
 				"file1.jar@goo/file2.jar@com/foo/Bar.class", "com/foo/Bar.class", "com.foo/Bar.class");
 		assertThat(includeFilter("com.*")).rejects("foo/com/Bar.class", "com.class", "file.jar@com.class",
 				"A$com$Bar.class");
-		assertThat(includeFilter("*.com.*:com.*")).accepts("file.jar@com/foo/Bar.class",
-				"file.jar@com/foo/Bar$Goo.class", "file1.jar@goo/file2.jar@com/foo/Bar.class", "com/foo/Bar.class",
-				"foo/com/goo/Bar.class", "A$com$Bar.class", "src/com/foo/Bar.class");
+		assertThat(includeFilter("*com.*")).accepts("file.jar@com/foo/Bar.class", "file.jar@com/foo/Bar$Goo.class",
+				"file1.jar@goo/file2.jar@com/foo/Bar.class", "com/foo/Bar.class", "foo/com/goo/Bar.class",
+				"A$com$Bar.class", "src/com/foo/Bar.class");
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */

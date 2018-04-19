@@ -178,7 +178,7 @@ public class AgentOptions {
 			break;
 		case "upload-metadata":
 			try {
-				additionalMetaDataFiles.add(Paths.get(value));
+				additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
 			} catch (InvalidPathException e) {
 				throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'");
 			}
