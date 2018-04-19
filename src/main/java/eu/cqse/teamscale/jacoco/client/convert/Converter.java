@@ -9,6 +9,7 @@ import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
 
 import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
 /** Converts one .exec binary coverage file to XML. */
@@ -26,12 +27,15 @@ public class Converter {
 	public void run() throws IOException {
 		ExecFileLoader loader = new ExecFileLoader();
 		loader.load(arguments.getInputFile());
-		XmlReportGenerator generator = new XmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters(),
-				arguments.shouldIgnoreDuplicateClassFiles());
+
 		List<SessionInfo> sessioninfos = loader.getSessionInfoStore().getInfos();
 		CCSMAssert.isFalse(sessioninfos.isEmpty(), "No sessions were recorded. Must implement handling for this.");
 		SessionInfo sessionInfo = sessioninfos.get(0);
+
+		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(
+				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters());
+		XmlReportGenerator generator = new XmlReportGenerator(arguments.getClassDirectoriesOrZips(),
+				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles());
 		String xml = generator.convert(new Dump(loader.getExecutionDataStore(), sessionInfo));
 		FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml);
 	}

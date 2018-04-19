@@ -66,8 +66,9 @@ public class Agent {
 	/** Constructor. */
 	public Agent(AgentOptions options) {
 		controller = new JacocoRuntimeController();
-		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilters(),
-				options.getLocationExcludeFilters(), options.isShouldIgnoreDuplicateClassFiles());
+
+		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
+				options.isShouldIgnoreDuplicateClassFiles());
 		store = new TimestampedFileStore(options.getOutputDir());
 
 		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));

@@ -19,6 +19,7 @@ import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
+import org.jacoco.report.JavaNames;
 
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 
@@ -144,11 +145,11 @@ public class AgentOptions {
 		case "ignore-duplicates":
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
-		case "include":
+		case "includes":
 			jacocoIncludes = value;
 			locationIncludeFilters = new WildcardMatcher(value);
 			break;
-		case "exclude":
+		case "excludes":
 			jacocoExcludes = value;
 			locationExcludeFilters = new WildcardMatcher(value);
 			break;
@@ -192,28 +193,20 @@ public class AgentOptions {
 		return classDirectoriesOrZips;
 	}
 
-	/** @see #locationIncludeFilters */
-	public Predicate<Path> getLocationIncludeFilter() {
-		return path -> locationIncludeFilters == null || locationIncludeFilters.matches(getPackageName(path));
-	}
-
 	/**
-	 * @param path
-	 * @return
+	 * @see #locationIncludeFilters
+	 * @see #locationExcludeFilters
 	 */
-	// TODO (FS) test
-	private static String getPackageName(Path path) {
-		String[] parts = path.toString().split("@");
-		if (parts.length == 0) {
-			// TODO (FS)
-			return "";
-		}
-		return Paths.get(parts[parts.length - 1]).getParent().toString();
-	}
-
-	/** @see #locationExcludeFilters */
-	public Predicate<Path> getLocationExcludeFilters() {
-		return path -> locationExcludeFilters == null || locationExcludeFilters.matches(getPackageName(path));
+	public Predicate<Path> getLocationIncludeFilter() {
+		return path -> {
+			String className = getClassName(path);
+			// first check includes
+			if (locationIncludeFilters != null && !locationIncludeFilters.matches(className)) {
+				return false;
+			}
+			// if they match, check excludes
+			return locationExcludeFilters == null || !locationExcludeFilters.matches(className);
+		};
 	}
 
 	/** @see #outputDir */
@@ -229,6 +222,18 @@ public class AgentOptions {
 	/** @see #shouldIgnoreDuplicateClassFiles */
 	public boolean isShouldIgnoreDuplicateClassFiles() {
 		return shouldIgnoreDuplicateClassFiles;
+	}
+
+	/** Returns the normalized class name of the given class file's path. */
+	/* package */ static String getClassName(Path path) {
+		String[] parts = path.toString().split("@");
+		if (parts.length == 0) {
+			return "";
+		}
+
+		String pathInsideJar = parts[parts.length - 1];
+		String pathWithoutExtension = StringUtils.removeLastPart(pathInsideJar, '.');
+		return new JavaNames().getQualifiedClassName(pathWithoutExtension);
 	}
 
 }
