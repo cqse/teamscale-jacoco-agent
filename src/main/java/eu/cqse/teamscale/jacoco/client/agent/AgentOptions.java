@@ -11,12 +11,14 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
+import org.jacoco.core.runtime.WildcardMatcher;
 
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 
@@ -47,14 +49,16 @@ public class AgentOptions {
 	private List<File> classDirectoriesOrZips = new ArrayList<>();
 
 	/**
-	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
+	 * Include patterns to apply during JaCoCo's traversal of class files. If null
+	 * then everything is included.
 	 */
-	private List<String> locationIncludeFilters = new ArrayList<>();
+	private WildcardMatcher locationIncludeFilters = null;
 
 	/**
-	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
+	 * Exclude patterns to apply during JaCoCo's traversal of class files. If null
+	 * then nothing is excluded.
 	 */
-	private List<String> locationExcludeFilters = new ArrayList<>();
+	private WildcardMatcher locationExcludeFilters = null;
 
 	/** The directory to write the XML traces to. */
 	private Path outputDir = null;
@@ -141,19 +145,15 @@ public class AgentOptions {
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
 		case "include":
-			locationIncludeFilters = splitMultiOptionValue(value);
+			jacocoIncludes = value;
+			locationIncludeFilters = new WildcardMatcher(value);
 			break;
 		case "exclude":
-			locationExcludeFilters = splitMultiOptionValue(value);
+			jacocoExcludes = value;
+			locationExcludeFilters = new WildcardMatcher(value);
 			break;
 		case "class-dir":
 			classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);
-			break;
-		case "jacoco-include":
-			jacocoIncludes = value;
-			break;
-		case "jacoco-exclude":
-			jacocoExcludes = value;
 			break;
 		default:
 			if (key.toLowerCase().startsWith("jacoco-")) {
@@ -193,13 +193,27 @@ public class AgentOptions {
 	}
 
 	/** @see #locationIncludeFilters */
-	public List<String> getLocationIncludeFilters() {
-		return locationIncludeFilters;
+	public Predicate<Path> getLocationIncludeFilter() {
+		return path -> locationIncludeFilters == null || locationIncludeFilters.matches(getPackageName(path));
+	}
+
+	/**
+	 * @param path
+	 * @return
+	 */
+	// TODO (FS) test
+	private static String getPackageName(Path path) {
+		String[] parts = path.toString().split("@");
+		if (parts.length == 0) {
+			// TODO (FS)
+			return "";
+		}
+		return Paths.get(parts[parts.length - 1]).getParent().toString();
 	}
 
 	/** @see #locationExcludeFilters */
-	public List<String> getLocationExcludeFilters() {
-		return locationExcludeFilters;
+	public Predicate<Path> getLocationExcludeFilters() {
+		return path -> locationExcludeFilters == null || locationExcludeFilters.matches(getPackageName(path));
 	}
 
 	/** @see #outputDir */
