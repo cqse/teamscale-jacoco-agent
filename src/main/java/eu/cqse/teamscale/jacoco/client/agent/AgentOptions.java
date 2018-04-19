@@ -6,6 +6,7 @@
 package eu.cqse.teamscale.jacoco.client.agent;
 
 import java.io.File;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -22,6 +23,10 @@ import org.jacoco.core.runtime.WildcardMatcher;
 import org.jacoco.report.JavaNames;
 
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
+import eu.cqse.teamscale.jacoco.client.store.HttpUploadStore;
+import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.client.store.TimestampedFileStore;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -46,6 +51,9 @@ public class AgentOptions {
 
 	}
 
+	/** The original options passed to the agent. */
+	private final String originalOptionsString;
+
 	/** The directories and/or zips that contain all class files being profiled. */
 	private List<File> classDirectoriesOrZips = new ArrayList<>();
 
@@ -64,6 +72,12 @@ public class AgentOptions {
 	/** The directory to write the XML traces to. */
 	private Path outputDir = null;
 
+	/** The URL to which to upload coverage zips. */
+	private HttpUrl uploadUrl = null;
+
+	/** Additional meta data files to upload together with the coverage XML. */
+	private List<Path> additionalMetaDataFiles = new ArrayList<>();
+
 	/** The interval in minutes for dumping XML data. */
 	private int dumpIntervalInMinutes = 60;
 
@@ -81,6 +95,8 @@ public class AgentOptions {
 
 	/** Parses the given command-line options. */
 	public AgentOptions(String options) throws AgentOptionParseException {
+		this.originalOptionsString = options;
+
 		if (StringUtils.isEmpty(options)) {
 			throw new AgentOptionParseException(
 					"No agent options given. You must at least provide an output directory (out)"
@@ -93,6 +109,11 @@ public class AgentOptions {
 		}
 
 		validate();
+	}
+
+	/** @see #originalOptionsString */
+	public String getOriginalOptionsString() {
+		return originalOptionsString;
 	}
 
 	/**
@@ -113,6 +134,9 @@ public class AgentOptions {
 			FileSystemUtils.ensureDirectoryExists(outputDir.toFile());
 			CCSMAssert.isTrue(outputDir.toFile().canWrite(), "Path '" + outputDir + "' is not writable");
 		});
+
+		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
+				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
@@ -140,8 +164,24 @@ public class AgentOptions {
 			}
 			break;
 		case "out":
-			outputDir = Paths.get(value);
+			try {
+				outputDir = Paths.get(value);
+			} catch (InvalidPathException e) {
+				throw new AgentOptionParseException("Invalid path given for option 'out'");
+			}
 			break;
+		case "upload-url":
+			uploadUrl = parseUrl(value);
+			if (uploadUrl == null) {
+				throw new AgentOptionParseException("Invalid URL given for option 'upload-url'");
+			}
+			break;
+		case "upload-metadata":
+			try {
+				additionalMetaDataFiles.add(Paths.get(value));
+			} catch (InvalidPathException e) {
+				throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'");
+			}
 		case "ignore-duplicates":
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
@@ -164,6 +204,18 @@ public class AgentOptions {
 
 			throw new AgentOptionParseException("Unknown option: " + key);
 		}
+	}
+
+	/**
+	 * Parses the given value as a URL or returns <code>null</code> if that fails.
+	 */
+	private static HttpUrl parseUrl(String value) {
+		// default to HTTP if no scheme is given
+		if (!value.startsWith("http://") && !value.startsWith("https://")) {
+			value = "http://" + value;
+		}
+
+		return HttpUrl.parse(value);
 	}
 
 	/** Splits the given value at colons. */
@@ -209,9 +261,14 @@ public class AgentOptions {
 		};
 	}
 
-	/** @see #outputDir */
-	public Path getOutputDir() {
-		return outputDir;
+	/** Creates the store to use for the coverage XMLs. */
+	public IXmlStore createStore() {
+		TimestampedFileStore fileStore = new TimestampedFileStore(outputDir);
+		if (uploadUrl == null) {
+			return fileStore;
+		}
+
+		return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
 	}
 
 	/** @see #dumpIntervalInMinutes */

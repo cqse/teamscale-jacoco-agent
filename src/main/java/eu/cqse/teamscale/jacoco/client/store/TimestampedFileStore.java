@@ -48,4 +48,10 @@ public class TimestampedFileStore implements IXmlStore {
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public String describe() {
+		return "Saving to local filesystem path " + outputDirectory;
+	}
+
 }

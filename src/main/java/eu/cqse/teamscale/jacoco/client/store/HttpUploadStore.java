@@ -113,4 +113,11 @@ public class HttpUploadStore implements IXmlStore {
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public String describe() {
+		return "Uploading to " + uploadUrl + " (fallback in case of network errors to: " + failureStore.describe()
+				+ ")";
+	}
+
 }
