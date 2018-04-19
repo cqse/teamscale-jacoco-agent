@@ -29,6 +29,11 @@ public class TimestampedFileStore implements IXmlStore {
 		this.outputDirectory = outputDirectory;
 	}
 
+	/** @see #outputDirectory */
+	public Path getOutputDirectory() {
+		return outputDirectory;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public void store(String xml) {
