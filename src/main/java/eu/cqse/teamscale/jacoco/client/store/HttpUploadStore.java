@@ -78,7 +78,7 @@ public class HttpUploadStore implements IXmlStore {
 			}
 
 			logger.error("Failed to upload coverage to {}. Request failed with error code {}. Response body:\n{}",
-					uploadUrl, response.code(), response.body().string());
+					uploadUrl, response.code(), String.valueOf(response.body()));
 			return false;
 		} catch (IOException e) {
 			logger.error("Failed to upload coverage to {}. Probably a network problem", uploadUrl, e);
