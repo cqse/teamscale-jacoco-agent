@@ -13,9 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
 
-import eu.cqse.teamscale.jacoco.client.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.client.agent.AgentOptions.AgentOptionParseException;
 import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpException;
+import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
@@ -38,7 +39,13 @@ public class Agent {
 	 * Entry point for the agent, called by the JVM.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		AgentOptions agentOptions = new AgentOptions(options);
+		AgentOptions agentOptions;
+		try {
+			agentOptions = new AgentOptions(options);
+		} catch (AgentOptionParseException e) {
+			System.err.println("Failed to parse agent options: " + e.getMessage());
+			throw e;
+		}
 
 		// start the JaCoCo agent
 		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
@@ -60,31 +67,35 @@ public class Agent {
 	/** Converts binary data to XML. */
 	private final XmlReportGenerator generator;
 
-	/** Writes XML to the file system. */
-	private final TimestampedFileStore store;
+	/** Stores the XML files. */
+	private final IXmlStore store;
 
 	/** Constructor. */
 	public Agent(AgentOptions options) {
 		controller = new JacocoRuntimeController();
-		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilters(),
-				options.getLocationExcludeFilters(), options.isShouldIgnoreDuplicateClassFiles());
-		store = new TimestampedFileStore(options.getOutputDir());
+
+		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
+				options.isShouldIgnoreDuplicateClassFiles());
+		store = options.createStore();
 
 		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
 
-		logger.info("Starting JaCoCo agent. Dumping every {} minutes to {}", options.getDumpIntervalInMinutes(),
-				options.getOutputDir());
+		logger.info("Starting JaCoCo agent with options: {}", options.getOriginalOptionsString());
+		logger.info("Dumping every {} minutes. Storage method: {}", options.getDumpIntervalInMinutes(),
+				store.describe());
 	}
 
 	/**
 	 * Dumps the current execution data, converts it and writes it to the
-	 * {@link #store}.
+	 * {@link #store}. Logs any errors, never throws an exception.
 	 */
 	private void dump() {
+		logger.debug("Starting dump");
+
 		try {
 			dumpUnsafe();
 		} catch (Throwable t) {
-			// we want to catch anything in order to avoid that it kills the regular job
+			// we want to catch anything in order to avoid killing the regular job
 			logger.error("Dump job failed with an exception. Retrying later", t);
 		}
 	}

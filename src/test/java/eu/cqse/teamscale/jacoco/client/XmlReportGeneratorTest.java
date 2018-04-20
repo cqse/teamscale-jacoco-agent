@@ -13,6 +13,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.junit.Test;
 
+import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
 /** Tests report generation with and without duplicate classes. */
@@ -61,8 +62,10 @@ public class XmlReportGeneratorTest extends CCSMTestCaseBase {
 	/** Runs the report generator. */
 	private void runGenerator(String testDataFolder, boolean shouldIgnoreDuplicates) throws IOException {
 		File classFileFolder = useTestFile(testDataFolder);
-		new XmlReportGenerator(Collections.singletonList(classFileFolder), CollectionUtils.emptyList(),
-				CollectionUtils.emptyList(), shouldIgnoreDuplicates).convert(createDummyDump());
+		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
+				CollectionUtils.emptyList());
+		new XmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter, shouldIgnoreDuplicates)
+				.convert(createDummyDump());
 	}
 
 }

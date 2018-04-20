@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.store;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,6 +29,11 @@ public class TimestampedFileStore implements IXmlStore {
 		this.outputDirectory = outputDirectory;
 	}
 
+	/** @see #outputDirectory */
+	public Path getOutputDirectory() {
+		return outputDirectory;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public void store(String xml) {
@@ -41,6 +46,12 @@ public class TimestampedFileStore implements IXmlStore {
 				logger.error("Failed to write XML to {}", outputPath, e);
 			}
 		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public String describe() {
+		return "Saving to local filesystem path " + outputDirectory;
 	}
 
 }

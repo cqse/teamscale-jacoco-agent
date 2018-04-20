@@ -4,14 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.conqat.lib.commons.collections.CollectionUtils;
-import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -31,16 +31,9 @@ public class XmlReportGenerator {
 	private final List<File> codeDirectoriesOrArchives;
 
 	/**
-	 * Ant-style include filters to apply to all locations during class file
-	 * traversal.
+	 * Include filter to apply to all locations during class file traversal.
 	 */
-	private final List<Pattern> locationIncludeFilters;
-
-	/**
-	 * Ant-style exclude filters to apply to all locations during class file
-	 * traversal.
-	 */
-	private final List<Pattern> locationExcludeFilters;
+	private final Predicate<Path> locationIncludeFilter;
 
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
@@ -51,14 +44,11 @@ public class XmlReportGenerator {
 	/**
 	 * Constructor.
 	 */
-	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, List<String> locationIncludeFilters,
-			List<String> locationExcludeFilters, boolean ignoreDuplicates) {
+	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<Path> locationIncludeFilter,
+			boolean ignoreDuplicates) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.ignoreNonidenticalDuplicateClassFiles = ignoreDuplicates;
-		this.locationIncludeFilters = CollectionUtils.map(locationIncludeFilters,
-				filter -> AntPatternUtils.convertPattern(filter, false));
-		this.locationExcludeFilters = CollectionUtils.map(locationExcludeFilters,
-				filter -> AntPatternUtils.convertPattern(filter, false));
+		this.locationIncludeFilter = locationIncludeFilter;
 	}
 
 	/**
@@ -98,10 +88,8 @@ public class XmlReportGenerator {
 		Analyzer analyzer = new Analyzer(store, coverageBuilder) {
 			@Override
 			public int analyzeAll(InputStream input, String location) throws IOException {
-				// we must normalize first since ANT patterns assume forward slashes
-				String normalizedLocation = FileSystemUtils.normalizeSeparators(location);
-				if (location.endsWith(".class") && isFiltered(normalizedLocation)) {
-					logger.debug("Filtering class file {}", normalizedLocation);
+				if (location.endsWith(".class") && !locationIncludeFilter.test(Paths.get(location))) {
+					logger.debug("Filtering class file {}", location);
 					return 0;
 				}
 				return super.analyzeAll(input, location);
@@ -133,20 +121,6 @@ public class XmlReportGenerator {
 			}
 		}
 
-	}
-
-	/**
-	 * Returns <code>true</code> if the given class file location (normalized to
-	 * forward slashes as path separators) should not be analyzed.
-	 * 
-	 * Exclude filters overrule include filters.
-	 */
-	private boolean isFiltered(String location) {
-		if (!locationIncludeFilters.isEmpty()
-				&& locationIncludeFilters.stream().noneMatch(filter -> filter.matcher(location).matches())) {
-			return true;
-		}
-		return locationExcludeFilters.stream().anyMatch(filter -> filter.matcher(location).matches());
 	}
 
 }

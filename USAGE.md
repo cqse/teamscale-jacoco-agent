@@ -2,7 +2,7 @@
 
 ## Using it as an agent
 
-If used as an agent, coverage is dumped to the file system in regular intervals while the application
+If used as an agent, coverage is dumped to the file system or via HTTP in regular intervals while the application
 is running.
 
 Configure the agent on your application's JVM:
@@ -11,35 +11,35 @@ Configure the agent on your application's JVM:
 
 Where
 
-* `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client
-* `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
+- `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client
+- `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
 
 The following options are available:
 
-- `out` (required): the path to a writable directory where the generated coverage XML files will be stored
+- `out` (required): the path to a writable directory where the generated coverage XML files will be stored.
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a colon
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon.
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file
-- `include` (recommended): include filters for class files during the conversion to XML. Separate multiple patterns with a colon.
-  You should provide some include patterns in order to reduce the size of the XML file. You only need coverage reporting for
-  your own code, not for external libraries.
-  Patterns are ANT-style patterns matched against the Unix-style path of every found class file, e.g.
-  `./teamscale-jacoco-client-3.1.0-jacoco-0.7.9.jar@org/reactivestreams/Processor.class`. So to only include
-  classes in package `com.yourcompany` and `com.yourotherpackage` and all their
-  subpackages you can use `**com/yourcompany/**:**com/yourotherpackage/**`
-- `exclude`: exclude filters for class files during the conversion to XML. Separate multiple patterns with a colon
-- `jacoco-include` (recommended): include patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `includes` parameter.
-  This speeds up the profiled application since less code needs to be instrumented.
+- `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
+  This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
-  the Java package names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
-  subpackages you can use `com.yourcompany.*:com.yourotherpackage.*`
+  the Java class names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
+  subpackages you can use `*com.yourcompany.*:*com.yourotherpackage.*` (the initial star before each package name is a
+  precaution in case your classes are nested inside e.g. a `src` folder, which might be interpreted as a part
+  of the package name. We recommend always using this form).
   Make sure to include **all** relevant application code
   but no external libraries. For further details, please see the JaCoCo documentation in the "Agent" section.
-- `jacoco-exclude`: exclude patterns for the instrumentation to pass on to JaCoCo. See JaCoCo's `excludes` parameter
-- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below
+- `excludes`: exclude patterns for classes. Same syntax as the `includes` parameter.
+  For further details, please see the JaCoCo documentation in the "Agent" section.
+- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below.
+- `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
+  Note that you still need to specify an `out` directory where failed uploads are stored.
+- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
+  You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 
-Please note that the `include`/`exclude` parameters use a different pattern syntax than the
-`jacoco-include`/`jacoco-exclude` patterns! See below for details.
+You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
+`jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
+for a list of all available options.
 
 ### Logging
 

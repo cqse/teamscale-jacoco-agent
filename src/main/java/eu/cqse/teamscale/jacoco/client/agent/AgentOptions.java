@@ -6,18 +6,27 @@
 package eu.cqse.teamscale.jacoco.client.agent;
 
 import java.io.File;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
+import org.jacoco.core.runtime.WildcardMatcher;
+import org.jacoco.report.JavaNames;
 
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
+import eu.cqse.teamscale.jacoco.client.store.HttpUploadStore;
+import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.client.store.TimestampedFileStore;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -42,21 +51,32 @@ public class AgentOptions {
 
 	}
 
+	/** The original options passed to the agent. */
+	private final String originalOptionsString;
+
 	/** The directories and/or zips that contain all class files being profiled. */
 	private List<File> classDirectoriesOrZips = new ArrayList<>();
 
 	/**
-	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
+	 * Include patterns to apply during JaCoCo's traversal of class files. If null
+	 * then everything is included.
 	 */
-	private List<String> locationIncludeFilters = new ArrayList<>();
+	private WildcardMatcher locationIncludeFilters = null;
 
 	/**
-	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
+	 * Exclude patterns to apply during JaCoCo's traversal of class files. If null
+	 * then nothing is excluded.
 	 */
-	private List<String> locationExcludeFilters = new ArrayList<>();
+	private WildcardMatcher locationExcludeFilters = null;
 
 	/** The directory to write the XML traces to. */
 	private Path outputDir = null;
+
+	/** The URL to which to upload coverage zips. */
+	private HttpUrl uploadUrl = null;
+
+	/** Additional meta data files to upload together with the coverage XML. */
+	private List<Path> additionalMetaDataFiles = new ArrayList<>();
 
 	/** The interval in minutes for dumping XML data. */
 	private int dumpIntervalInMinutes = 60;
@@ -70,8 +90,13 @@ public class AgentOptions {
 	/** Exclude patterns to pass on to JaCoCo. */
 	private String jacocoExcludes = null;
 
+	/** Additional user-provided options to pass to JaCoCo. */
+	private PairList<String, String> additionalJacocoOptions = new PairList<>();
+
 	/** Parses the given command-line options. */
 	public AgentOptions(String options) throws AgentOptionParseException {
+		this.originalOptionsString = options;
+
 		if (StringUtils.isEmpty(options)) {
 			throw new AgentOptionParseException(
 					"No agent options given. You must at least provide an output directory (out)"
@@ -84,6 +109,11 @@ public class AgentOptions {
 		}
 
 		validate();
+	}
+
+	/** @see #originalOptionsString */
+	public String getOriginalOptionsString() {
+		return originalOptionsString;
 	}
 
 	/**
@@ -104,6 +134,9 @@ public class AgentOptions {
 			FileSystemUtils.ensureDirectoryExists(outputDir.toFile());
 			CCSMAssert.isTrue(outputDir.toFile().canWrite(), "Path '" + outputDir + "' is not writable");
 		});
+
+		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
+				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
@@ -131,34 +164,64 @@ public class AgentOptions {
 			}
 			break;
 		case "out":
-			outputDir = Paths.get(value);
+			try {
+				outputDir = Paths.get(value);
+			} catch (InvalidPathException e) {
+				throw new AgentOptionParseException("Invalid path given for option 'out'");
+			}
+			break;
+		case "upload-url":
+			uploadUrl = parseUrl(value);
+			if (uploadUrl == null) {
+				throw new AgentOptionParseException("Invalid URL given for option 'upload-url'");
+			}
+			break;
+		case "upload-metadata":
+			try {
+				additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
+			} catch (InvalidPathException e) {
+				throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'");
+			}
 			break;
 		case "ignore-duplicates":
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
-		case "include":
-			locationIncludeFilters = splitMultiOptionValue(value);
+		case "includes":
+			jacocoIncludes = value.replaceAll(";", ":");
+			locationIncludeFilters = new WildcardMatcher(value);
 			break;
-		case "exclude":
-			locationExcludeFilters = splitMultiOptionValue(value);
+		case "excludes":
+			jacocoExcludes = value.replaceAll(";", ":");
+			locationExcludeFilters = new WildcardMatcher(value);
 			break;
 		case "class-dir":
 			classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);
 			break;
-		case "jacoco-include":
-			jacocoIncludes = value;
-			break;
-		case "jacoco-exclude":
-			jacocoExcludes = value;
-			break;
 		default:
+			if (key.toLowerCase().startsWith("jacoco-")) {
+				additionalJacocoOptions.add(key.substring(7), value);
+				break;
+			}
+
 			throw new AgentOptionParseException("Unknown option: " + key);
 		}
 	}
 
-	/** Splits the given value at colons. */
+	/**
+	 * Parses the given value as a URL or returns <code>null</code> if that fails.
+	 */
+	private static HttpUrl parseUrl(String value) {
+		// default to HTTP if no scheme is given
+		if (!value.startsWith("http://") && !value.startsWith("https://")) {
+			value = "http://" + value;
+		}
+
+		return HttpUrl.parse(value);
+	}
+
+	/** Splits the given value at semicolons. */
 	private static List<String> splitMultiOptionValue(String value) {
-		return Arrays.asList(value.split(":"));
+		return Arrays.asList(value.split(";"));
 	}
 
 	/** Returns the options to pass to the JaCoCo agent. */
@@ -170,6 +233,11 @@ public class AgentOptions {
 		if (jacocoExcludes != null) {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
+
+		additionalJacocoOptions.forEach((key, value) -> {
+			builder.append(",").append(key).append("=").append(value);
+		});
+
 		return builder.toString();
 	}
 
@@ -178,19 +246,30 @@ public class AgentOptions {
 		return classDirectoriesOrZips;
 	}
 
-	/** @see #locationIncludeFilters */
-	public List<String> getLocationIncludeFilters() {
-		return locationIncludeFilters;
+	/**
+	 * @see #locationIncludeFilters
+	 * @see #locationExcludeFilters
+	 */
+	public Predicate<Path> getLocationIncludeFilter() {
+		return path -> {
+			String className = getClassName(path);
+			// first check includes
+			if (locationIncludeFilters != null && !locationIncludeFilters.matches(className)) {
+				return false;
+			}
+			// if they match, check excludes
+			return locationExcludeFilters == null || !locationExcludeFilters.matches(className);
+		};
 	}
 
-	/** @see #locationExcludeFilters */
-	public List<String> getLocationExcludeFilters() {
-		return locationExcludeFilters;
-	}
+	/** Creates the store to use for the coverage XMLs. */
+	public IXmlStore createStore() {
+		TimestampedFileStore fileStore = new TimestampedFileStore(outputDir);
+		if (uploadUrl == null) {
+			return fileStore;
+		}
 
-	/** @see #outputDir */
-	public Path getOutputDir() {
-		return outputDir;
+		return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
 	}
 
 	/** @see #dumpIntervalInMinutes */
@@ -201,6 +280,18 @@ public class AgentOptions {
 	/** @see #shouldIgnoreDuplicateClassFiles */
 	public boolean isShouldIgnoreDuplicateClassFiles() {
 		return shouldIgnoreDuplicateClassFiles;
+	}
+
+	/** Returns the normalized class name of the given class file's path. */
+	/* package */ static String getClassName(Path path) {
+		String[] parts = path.toString().split("@");
+		if (parts.length == 0) {
+			return "";
+		}
+
+		String pathInsideJar = parts[parts.length - 1];
+		String pathWithoutExtension = StringUtils.removeLastPart(pathInsideJar, '.');
+		return new JavaNames().getQualifiedClassName(pathWithoutExtension);
 	}
 
 }
