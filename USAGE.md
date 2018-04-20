@@ -18,9 +18,9 @@ The following options are available:
 
 - `out` (required): the path to a writable directory where the generated coverage XML files will be stored.
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a colon.
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon.
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file
-- `includes` (recommended): include patterns for classes. Separate multiple patterns with a colon.
+- `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
   the Java class names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
@@ -34,7 +34,7 @@ The following options are available:
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
   Note that you still need to specify an `out` directory where failed uploads are stored.
-- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a colon.
+- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.

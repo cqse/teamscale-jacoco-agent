@@ -2,6 +2,11 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 4.0.0
+- [breaking change] agent option separator is now a semicolon, no longer a colon (to support Windows paths)
+- [breaking change] merged `include` and `jacoco-include` parameters. Both use the JaCoCo pattern syntax
+- [feature] allow dumping via HTTP file upload
+
 # 3.1.0
 - [feature] add agent for regular dumping without separate process
 

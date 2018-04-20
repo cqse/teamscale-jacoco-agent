@@ -187,11 +187,11 @@ public class AgentOptions {
 			shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
 			break;
 		case "includes":
-			jacocoIncludes = value;
+			jacocoIncludes = value.replaceAll(";", ":");
 			locationIncludeFilters = new WildcardMatcher(value);
 			break;
 		case "excludes":
-			jacocoExcludes = value;
+			jacocoExcludes = value.replaceAll(";", ":");
 			locationExcludeFilters = new WildcardMatcher(value);
 			break;
 		case "class-dir":
@@ -219,9 +219,9 @@ public class AgentOptions {
 		return HttpUrl.parse(value);
 	}
 
-	/** Splits the given value at colons. */
+	/** Splits the given value at semicolons. */
 	private static List<String> splitMultiOptionValue(String value) {
-		return Arrays.asList(value.split(":"));
+		return Arrays.asList(value.split(";"));
 	}
 
 	/** Returns the options to pass to the JaCoCo agent. */
