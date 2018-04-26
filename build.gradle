@@ -5,7 +5,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
-ext.appVersion = '4.0.1'
+ext.appVersion = '4.0.2'
 ext.jacocoVersion = '0.7.9'
 ext.outputVersion = appVersion + "-jacoco-" + jacocoVersion
 
