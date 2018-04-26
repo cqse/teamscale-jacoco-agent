@@ -103,16 +103,17 @@ public class HttpUploadStore implements IXmlStore {
 	 * Fills the upload zip file with the given coverage XML and all
 	 * {@link #additionalMetaDataFiles}.
 	 */
-	private void fillZipFile(ZipOutputStream zipOutputStream, String xml)
-			throws IOException {
+	private void fillZipFile(ZipOutputStream zipOutputStream, String xml) throws IOException {
 		try (OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream)) {
 			zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
 			writer.write(xml);
-		}
+			writer.flush();
+			zipOutputStream.flush();
 
-		for (Path additionalFile : additionalMetaDataFiles) {
-			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));
-			zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()));
+			for (Path additionalFile : additionalMetaDataFiles) {
+				zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));
+				zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()));
+			}
 		}
 	}
 
