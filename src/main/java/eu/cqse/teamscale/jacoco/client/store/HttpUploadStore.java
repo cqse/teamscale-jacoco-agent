@@ -106,14 +106,14 @@ public class HttpUploadStore implements IXmlStore {
 	 */
 	private void fillZipFile(ZipOutputStream zipOutputStream, OutputStreamWriter writer, String xml)
 			throws IOException {
-			zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
-			writer.write(xml);
-			writer.flush();
+		zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
+		writer.write(xml);
+		writer.flush();
 
-			for (Path additionalFile : additionalMetaDataFiles) {
-				zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));
-				zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()));
-			}
+		for (Path additionalFile : additionalMetaDataFiles) {
+			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));
+			zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()));
+		}
 	}
 
 	/** {@inheritDoc} */
