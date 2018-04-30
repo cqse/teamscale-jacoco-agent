@@ -108,6 +108,9 @@ public class HttpUploadStore implements IXmlStore {
 			throws IOException {
 		zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
 		writer.write(xml);
+
+		// We flush the writer, but don't close it here, because closing the writer
+		// would also close the zipOutputStream, making further writes impossible.
 		writer.flush();
 
 		for (Path additionalFile : additionalMetaDataFiles) {
