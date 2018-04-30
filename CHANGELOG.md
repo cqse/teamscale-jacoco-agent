@@ -6,6 +6,7 @@ We use [semantic versioning][semver]
 - [fix] using `upload-url` in conjunction with `upload-metadata` caused a crash
 
 # 4.0.1
+_This version was never checked in, thus there is no tag for it in the Git_
 - [fix] using `upload-url` in conjunction with `upload-metadata` caused corrupt files
 
 # 4.0.0
