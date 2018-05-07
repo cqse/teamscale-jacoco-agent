@@ -21,3 +21,8 @@ launch4j {
 	copyConfigurable = project.tasks.shadowJar.outputs.files
 	jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
+
+task dist {
+    dependsOn createExe
+}
+
