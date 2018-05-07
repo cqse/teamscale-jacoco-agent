@@ -1,0 +1,23 @@
+plugins {
+	id "com.github.johnrengelman.shadow" version "1.2.3"
+	id 'edu.sc.seis.launch4j' version '2.4.3'
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = "eu.cqse.teamscale.jacoco.javaws.Main"
+shadowJar {
+    baseName = 'teamscale-javaws-wrapper'
+    classifier = null
+    version = rootProject.appVersion
+}
+
+launch4j {
+	outfile = 'javaws.exe'
+  	mainClassName = 'eu.cqse.teamscale.jacoco.javaws.Main'
+  	
+  	// make it work with shadow jar
+	copyConfigurable = project.tasks.shadowJar.outputs.files
+	jar = "lib/${project.tasks.shadowJar.archiveName}"
+}
