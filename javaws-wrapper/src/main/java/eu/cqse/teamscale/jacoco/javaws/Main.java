@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 /** Wraps javaws and adds the profiler via `-J-javaagent`. */
 public class Main {
@@ -24,21 +23,20 @@ public class Main {
 
 	/** Entry point. */
 	public static void main(String[] args) throws InterruptedException, ConfigurationException, IOException {
-		Path workingDir = Paths.get(System.getProperty("user.dir"));
-		new Main().run(System::exit, args, workingDir);
+		Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+		new Main().run(args, workingDirectory);
 	}
 
 	/**
-	 * Contains the actual logic to run the wrapper. Makes it testable in a unit
-	 * test.
+	 * Contains the actual logic to run the wrapper.
 	 */
-	/* package */ void run(Consumer<Integer> exitFunction, String[] args, Path workingDirectory)
+	private void run(String[] args, Path workingDirectory)
 			throws InterruptedException, ConfigurationException, IOException {
 		Path configFile = workingDirectory.resolve(PROPERTIES_FILENAME).toAbsolutePath();
 
 		Properties properties;
 		try {
-			properties = tryReadProperties(configFile);
+			properties = readProperties(configFile);
 		} catch (IOException e) {
 			throw new ConfigurationException("Unable to read config file " + configFile);
 		}
@@ -56,13 +54,23 @@ public class Main {
 
 		System.out.println("Running real javaws command: " + commandLine);
 
-		int exitCode = runCommand(commandLine);
-		exitFunction.accept(exitCode);
+		int exitCode = Main.runCommand(commandLine);
+		System.exit(exitCode);
 	}
 
 	private String buildPolicyArgument(Path workingDirectory) {
 		Path policyFile = workingDirectory.resolve("agent.policy").toAbsolutePath();
 		return "-J-Djava.security.policy=" + policyFile;
+	}
+
+	/**
+	 * Runs the given command line and returns the exit code. Stdout and Stderr are
+	 * redirected to System.out/System.err.
+	 */
+	public static int runCommand(List<String> commandLine) throws IOException, InterruptedException {
+		ProcessBuilder builder = new ProcessBuilder(commandLine);
+		Process process = builder.inheritIO().start();
+		return process.waitFor();
 	}
 
 	private static String readProperty(Properties properties, String property, Path configFile)
@@ -85,13 +93,7 @@ public class Main {
 				+ "," + additionalAgentArguments;
 	}
 
-	private static int runCommand(List<String> commandLine) throws IOException, InterruptedException {
-		ProcessBuilder builder = new ProcessBuilder(commandLine);
-		Process process = builder.inheritIO().start();
-		return process.waitFor();
-	}
-
-	private static Properties tryReadProperties(Path configFile) throws IOException, FileNotFoundException {
+	private static Properties readProperties(Path configFile) throws IOException, FileNotFoundException {
 		Properties properties = new Properties();
 		try (FileInputStream inputStream = new FileInputStream(configFile.toFile())) {
 			properties.load(inputStream);
