@@ -24,16 +24,16 @@ public class Main {
 
 	/** Entry point. */
 	public static void main(String[] args) throws InterruptedException, ConfigurationException, IOException {
-		new Main().run(System::exit, args);
+		Path workingDir = Paths.get(System.getProperty("user.dir"));
+		new Main().run(System::exit, args, workingDir);
 	}
 
 	/**
 	 * Contains the actual logic to run the wrapper. Makes it testable in a unit
 	 * test.
 	 */
-	/* package */ void run(Consumer<Integer> exitFunction, String[] args)
+	/* package */ void run(Consumer<Integer> exitFunction, String[] args, Path workingDir)
 			throws InterruptedException, ConfigurationException, IOException {
-		Path workingDir = Paths.get(System.getProperty("user.dir"));
 		Path configFile = workingDir.resolve(PROPERTIES_FILENAME).toAbsolutePath();
 
 		Properties properties;

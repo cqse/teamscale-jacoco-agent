@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 public class TestApp {
 	
 	public static void main(String[] args) {
-		System.out.println("output");
+		System.out.println(String.join("\n", args));
 		System.err.println("error");
 		
 		String arguments = String.join(" ", args);

@@ -7,11 +7,23 @@ repositories {
 
 mainClassName = 'TestApp'
 
-task deploy(type: Copy) {
+task deployJar(type: Copy) {
     dependsOn build
 
     from 'build/libs'
-    include '**.jar'
-    into '..'
+    include '*'
+    into '../lib'
+}
+
+task deployScripts(type: Copy) {
+    dependsOn build
+
+    from 'build/scripts'
+    include '*'
+    into '../bin'
+}
+
+task deploy {
+    dependsOn deployJar, deployScripts
 }
 
