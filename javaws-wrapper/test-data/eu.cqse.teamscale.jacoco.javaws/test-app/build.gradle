@@ -1,0 +1,17 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+repositories {
+    jcenter()
+}
+
+mainClassName = 'TestApp'
+
+task deploy(type: Copy) {
+    dependsOn build
+
+    from 'build/libs'
+    include '**.jar'
+    into '..'
+}
+

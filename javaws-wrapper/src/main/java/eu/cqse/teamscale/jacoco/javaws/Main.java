@@ -10,14 +10,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 /** Wraps javaws and adds the profiler via `-J-javaagent`. */
 public class Main {
 
+	/** Visible for testing. */
+	/* package */ static final String PROPERTY_ARGENT_ARGUMENTS = "argentArguments";
+	/** Visible for testing. */
+	/* package */ static final String PROPERTY_JAVAWS = "javaws";
+	/** Visible for testing. */
+	/* package */ static final String PROPERTIES_FILENAME = "javaws.properties";
+
 	/** Entry point. */
 	public static void main(String[] args) throws InterruptedException, ConfigurationException, IOException {
+		new Main().run(System::exit, args);
+	}
+
+	/**
+	 * Contains the actual logic to run the wrapper. Makes it testable in a unit
+	 * test.
+	 */
+	/* package */ void run(Consumer<Integer> exitFunction, String[] args)
+			throws InterruptedException, ConfigurationException, IOException {
 		Path workingDir = Paths.get(System.getProperty("user.dir"));
-		Path configFile = workingDir.resolve("javaws.properties").toAbsolutePath();
+		Path configFile = workingDir.resolve(PROPERTIES_FILENAME).toAbsolutePath();
 
 		Properties properties;
 		try {
@@ -26,8 +43,8 @@ public class Main {
 			throw new ConfigurationException("Unable to read config file " + configFile);
 		}
 
-		String pathToJavaws = readProperty(properties, "javaws", configFile);
-		String additionalAgentArguments = readProperty(properties, "argentArguments", configFile);
+		String pathToJavaws = readProperty(properties, PROPERTY_JAVAWS, configFile);
+		String additionalAgentArguments = readProperty(properties, PROPERTY_ARGENT_ARGUMENTS, configFile);
 
 		String toolOptionsArgument = buildToolOptions(workingDir, additionalAgentArguments);
 
@@ -36,7 +53,7 @@ public class Main {
 		commandLine.add(1, toolOptionsArgument);
 
 		int exitCode = runCommand(commandLine);
-		System.exit(exitCode);
+		exitFunction.accept(exitCode);
 	}
 
 	private static String readProperty(Properties properties, String property, Path configFile)
