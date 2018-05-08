@@ -1,4 +1,4 @@
-ext.appVersion = '4.0.0'
+ext.appVersion = '4.0.2'
 
 subprojects {
     repositories {

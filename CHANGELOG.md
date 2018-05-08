@@ -2,6 +2,13 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 4.0.2
+- [fix] using `upload-url` in conjunction with `upload-metadata` caused a crash
+
+# 4.0.1
+_This version was never checked in, thus there is no tag for it in the Git_
+- [fix] using `upload-url` in conjunction with `upload-metadata` caused corrupt files
+
 # 4.0.0
 - [breaking change] agent option separator is now a semicolon, no longer a colon (to support Windows paths)
 - [breaking change] merged `include` and `jacoco-include` parameters. Both use the JaCoCo pattern syntax
@@ -21,7 +28,7 @@ We use [semantic versioning][semver]
 
 # 2.0.0
 
-- [feature] added `convert` mode to do one-time conversion. The old behaviour is now reachable via the `watch` command (which is also the default if no command is provided).
+- [feature] added `convert` mode to do one-time conversion. The old behavior is now reachable via the `watch` command (which is also the default if no command is provided).
 
 # 1.4.1
 
