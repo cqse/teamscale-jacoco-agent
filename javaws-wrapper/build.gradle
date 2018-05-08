@@ -37,6 +37,10 @@ task doc(type: Exec) {
 task dist(type: Zip) {
     dependsOn createExe, doc
     
+    doFirst {
+    	file('build/version.txt').withWriter { it.println(rootProject.appVersion) }
+    }
+    
     version rootProject.appVersion
     from('build/launch4j') {
     	include '*.exe'
@@ -46,6 +50,7 @@ task dist(type: Zip) {
 	}
     from 'resources'
     from 'build/doc'
+    from 'build/version.txt'
     from(project(':eu.cqse.teamscale.jacoco.client').projectDir.toString() + '/build/doc/USAGE.pdf') {
     	rename(/.*/, 'agent-userguide.pdf')
     }

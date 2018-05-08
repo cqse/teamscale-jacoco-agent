@@ -1,6 +1,8 @@
 We use [semantic versioning][semver]
 
 # Next release
+
+# 5.0.0
 - [feature] add wrapper around `javaws` to allow profiling Java Web Start applications
 
 # 4.0.2
