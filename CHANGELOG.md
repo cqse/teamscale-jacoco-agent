@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next release
+- [feature] add wrapper around `javaws` to allow profiling Java Web Start applications
 
 # 4.0.2
 - [fix] using `upload-url` in conjunction with `upload-metadata` caused a crash
