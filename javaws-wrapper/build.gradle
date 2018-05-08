@@ -38,5 +38,8 @@ task dist(type: Zip) {
 		rename(/.*/, 'agent.jar')
 	}
     from 'resources'
+    from(project(':eu.cqse.teamscale.jacoco.client').projectDir.toString() + '/build/doc/USAGE.pdf') {
+    	rename(/.*/, 'agent-userguide.pdf')
+    }
 }
 
