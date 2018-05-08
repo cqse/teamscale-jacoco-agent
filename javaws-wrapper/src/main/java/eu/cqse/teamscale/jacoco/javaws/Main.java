@@ -32,9 +32,9 @@ public class Main {
 	 * Contains the actual logic to run the wrapper. Makes it testable in a unit
 	 * test.
 	 */
-	/* package */ void run(Consumer<Integer> exitFunction, String[] args, Path workingDir)
+	/* package */ void run(Consumer<Integer> exitFunction, String[] args, Path workingDirectory)
 			throws InterruptedException, ConfigurationException, IOException {
-		Path configFile = workingDir.resolve(PROPERTIES_FILENAME).toAbsolutePath();
+		Path configFile = workingDirectory.resolve(PROPERTIES_FILENAME).toAbsolutePath();
 
 		Properties properties;
 		try {
@@ -46,14 +46,23 @@ public class Main {
 		String pathToJavaws = readProperty(properties, PROPERTY_JAVAWS, configFile);
 		String additionalAgentArguments = readProperty(properties, PROPERTY_ARGENT_ARGUMENTS, configFile);
 
-		String toolOptionsArgument = buildToolOptions(workingDir, additionalAgentArguments);
+		String agentArgument = buildAgentArgument(workingDirectory, additionalAgentArguments);
+		String policyArgument = buildPolicyArgument(workingDirectory);
 
 		List<String> commandLine = new ArrayList<>(Arrays.asList(args));
 		commandLine.add(0, pathToJavaws);
-		commandLine.add(1, toolOptionsArgument);
+		commandLine.add(1, agentArgument);
+		commandLine.add(2, policyArgument);
+
+		System.out.println("Running real javaws command: " + commandLine);
 
 		int exitCode = runCommand(commandLine);
 		exitFunction.accept(exitCode);
+	}
+
+	private String buildPolicyArgument(Path workingDirectory) {
+		Path policyFile = workingDirectory.resolve("agent.policy").toAbsolutePath();
+		return "-J-Djava.security.policy=" + policyFile;
 	}
 
 	private static String readProperty(Properties properties, String property, Path configFile)
@@ -65,7 +74,8 @@ public class Main {
 		return additionalAgentArguments;
 	}
 
-	private static String buildToolOptions(Path workingDirectory, String additionalAgentArguments) throws IOException {
+	private static String buildAgentArgument(Path workingDirectory, String additionalAgentArguments)
+			throws IOException {
 		Path agentJar = workingDirectory.resolve("agent.jar").toAbsolutePath();
 
 		Path tempDirectory = Files.createTempDirectory(workingDirectory, "classdumpdir");

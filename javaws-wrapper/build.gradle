@@ -36,5 +36,6 @@ task dist(type: Zip) {
 	from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar.archivePath) {
 		rename(/.*/, 'agent.jar')
 	}
+    from 'resources'
 }
 
