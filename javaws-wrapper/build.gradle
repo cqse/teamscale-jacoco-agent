@@ -27,8 +27,15 @@ launch4j {
 	jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
 
+task doc(type: Exec) {
+    doFirst {
+        mkdir 'build/doc'
+    }
+    commandLine 'pandoc', 'README.md', '-o', 'build/doc/README.pdf'
+}
+
 task dist(type: Zip) {
-    dependsOn createExe
+    dependsOn createExe, doc
     
     version rootProject.appVersion
     from('build/launch4j') {
@@ -38,6 +45,7 @@ task dist(type: Zip) {
 		rename(/.*/, 'agent.jar')
 	}
     from 'resources'
+    from 'build/doc'
     from(project(':eu.cqse.teamscale.jacoco.client').projectDir.toString() + '/build/doc/USAGE.pdf') {
     	rename(/.*/, 'agent-userguide.pdf')
     }

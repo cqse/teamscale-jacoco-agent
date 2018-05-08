@@ -20,7 +20,7 @@ build:
   artifacts:
     paths:
       - client/build
-      - javaws-wrapper/build
+      - javaws-wrapper/build/distributions
     expire_in: 1 week
 
 docker-internal:
