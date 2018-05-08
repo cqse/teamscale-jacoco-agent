@@ -11,4 +11,6 @@
 include 'client'
 include 'javaws-wrapper'
 
-rootProject.name = 'eu.cqse.teamscale.jacoco.client'
+rootProject.name = 'eu.cqse.teamscale.jacoco'
+project(':javaws-wrapper').name = 'eu.cqse.teamscale.jacoco.javaws'
+project(':client').name = 'eu.cqse.teamscale.jacoco.client'

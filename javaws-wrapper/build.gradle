@@ -6,6 +6,11 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
+dependencies {
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.8.0'
+}
+
 mainClassName = "eu.cqse.teamscale.jacoco.javaws.Main"
 shadowJar {
     baseName = 'teamscale-javaws-wrapper'
