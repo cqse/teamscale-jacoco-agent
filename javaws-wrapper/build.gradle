@@ -6,6 +6,10 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
+dependencies {
+	compile project(':eu.cqse.teamscale.jacoco.client')
+}
+
 mainClassName = "eu.cqse.teamscale.jacoco.javaws.Main"
 shadowJar {
     baseName = 'teamscale-javaws-wrapper'
@@ -22,7 +26,15 @@ launch4j {
 	jar = "lib/${project.tasks.shadowJar.archiveName}"
 }
 
-task dist {
+task dist(type: Zip) {
     dependsOn createExe
+    
+    version rootProject.appVersion
+    from('build/launch4j') {
+    	include '*.exe'
+    }
+	from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar.archivePath) {
+		rename(/.*/, 'agent.jar')
+	}
 }
 
