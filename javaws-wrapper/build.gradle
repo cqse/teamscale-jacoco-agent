@@ -1,5 +1,5 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "1.2.3"
+	id "com.github.johnrengelman.shadow" version "2.0.4"
 	id 'edu.sc.seis.launch4j' version '2.4.3'
 }
 
@@ -7,52 +7,53 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 dependencies {
-  	compile 'org.apache.commons:commons-lang3:3.7'
-	compile project(':eu.cqse.teamscale.jacoco.client')
+	compile 'org.apache.commons:commons-lang3:3.7'
 }
 
 mainClassName = "eu.cqse.teamscale.jacoco.javaws.Main"
+
 shadowJar {
     baseName = 'teamscale-javaws-wrapper'
     classifier = null
     version = rootProject.appVersion
 }
 
-launch4j {
-	outfile = 'javaws.exe'
-  	mainClassName = 'eu.cqse.teamscale.jacoco.javaws.Main'
-  	
-  	// make it work with shadow jar
-	copyConfigurable = project.tasks.shadowJar.outputs.files
-	jar = "lib/${project.tasks.shadowJar.archiveName}"
+startShadowScripts {
+    applicationName = 'javaws'
 }
 
 task doc(type: Exec) {
+    def outputDir = file('build/doc')
+    outputs.dir outputDir
+
     doFirst {
-        mkdir 'build/doc'
+        mkdir outputDir
     }
-    commandLine 'pandoc', 'README.md', '-o', 'build/doc/README.pdf'
+
+    commandLine 'pandoc', 'README.md', '-o', "$outputDir/README.pdf"
 }
 
-task dist(type: Zip) {
-    dependsOn createExe, doc
-    
-    doFirst {
-    	file('build/version.txt').withWriter { it.println(rootProject.appVersion) }
+distributions {
+    shadow {
+        contents {
+            from(doc) {
+                include '**'
+                into 'documentation'
+            }
+
+            from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar) {
+                rename(/.*/, 'agent.jar')
+            }
+            // todo depend on task outputs
+            from(project(':eu.cqse.teamscale.jacoco.client').projectDir.toString() + '/build/doc/USAGE.pdf') {
+                rename(/.*/, 'agent-userguide.pdf')
+                into 'documentation'
+            }
+        }
     }
-    
-    version rootProject.appVersion
-    from('build/launch4j') {
-    	include '*.exe'
-    }
-	from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar.archivePath) {
-		rename(/.*/, 'agent.jar')
-	}
-    from 'resources'
-    from 'build/doc'
-    from 'build/version.txt'
-    from(project(':eu.cqse.teamscale.jacoco.client').projectDir.toString() + '/build/doc/USAGE.pdf') {
-    	rename(/.*/, 'agent-userguide.pdf')
-    }
+}
+
+task dist {
+    dependsOn shadowDistZip
 }
 

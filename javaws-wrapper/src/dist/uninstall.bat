@@ -1,4 +1,7 @@
-if exist <insert file name here> (
+@echo off
+echo Uninstallation will fail unless you have Administrator rights!
+
+if exist JNLPFile.ftype.bak (
     set /p oldftype=<JNLPFile.ftype.bak
 	ftype %oldftype%
 	
