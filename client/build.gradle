@@ -1,5 +1,5 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "1.2.3"
+	id "com.github.johnrengelman.shadow" version "2.0.4"
 }
 
 apply plugin: 'java'
@@ -19,9 +19,9 @@ dependencies {
     compile "io.reactivex.rxjava2:rxjava:2.1.2"
     compile "com.beust:jcommander:1.71"
     compile 'org.conqat:org.conqat.lib.commons:0.20160822'
-    
+
     compile 'com.squareup.retrofit2:retrofit:2.4.0'
-    
+
     testCompile 'junit:junit:4.12'
     testCompile 'org.assertj:assertj-core:3.8.0'
 }
@@ -36,6 +36,39 @@ shadowJar {
     }
 }
 
+startShadowScripts {
+    applicationName = 'jacoco-client'
+}
+
+// todo
+// - update gitlab build
+// - jar is in lib folder
+// - start scripts included: do we want that?
+// - rename dist zip (should have no -shadow suffix)
+// - check documentation and update
+// - app.properties seems to be in a weird place
+
+task doc(type: Exec) {
+    def outputDir = file('build/doc')
+    outputs.dir outputDir
+
+    doFirst {
+        mkdir outputDir
+    }
+    commandLine 'pandoc', 'USAGE.md', '-o', "$outputDir/userguide.pdf"
+}
+
+distributions {
+    shadow {
+        contents {
+            from(doc) {
+                include '**'
+                into 'documentation'
+            }
+        }
+    }
+}
+
 processResources {
     filesMatching('**/app.properties') {
         filter {
@@ -44,24 +77,13 @@ processResources {
     }
 }
 
-task doc(type: Exec) {
-    doFirst {
-        mkdir 'build/doc'
-    }
-    commandLine 'pandoc', 'USAGE.md', '-o', 'build/doc/USAGE.pdf'
+task dist {
+    dependsOn shadowDistZip
 }
 
-task dist(dependsOn: ['clean', 'shadowJar', 'doc'], type: Zip) {
-    version outputVersion
-    from 'build'
-    include 'libs/*.jar'
-    include 'doc/*.pdf'
-    include 'resources/main/windows/**/*'
-    include 'resources/main/linux/**/*'
-    include 'resources/main/log4j*.xml'
-}
+task copyDockerJar(type: Copy) {
+    dependsOn shadowJar
 
-task copyDockerJar(dependsOn: 'shadowJar', type: Copy) {
     doFirst {
         mkdir 'build/docker'
     }
@@ -70,7 +92,9 @@ task copyDockerJar(dependsOn: 'shadowJar', type: Copy) {
     rename(/teamscale-jacoco-client.*\.jar/, 'teamscale-jacoco-client.jar')
 }
 
-task copyDockerFiles(dependsOn: 'shadowJar', type: Copy) {
+task copyDockerFiles(type: Copy) {
+    dependsOn shadowJar
+
     doFirst {
         mkdir 'build/docker'
     }
@@ -84,16 +108,22 @@ task copyDockerFiles(dependsOn: 'shadowJar', type: Copy) {
     into 'build/docker'
 }
 
-task buildDockerImage(dependsOn: [copyDockerFiles, copyDockerJar], type: Exec) {
+task buildDockerImage(type: Exec) {
+    dependsOn copyDockerFiles, copyDockerJar
+
     workingDir 'build/docker'
     commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
-task tagDockerImage(dependsOn: buildDockerImage, type: Exec) {
+task tagDockerImage(type: Exec) {
+    dependsOn buildDockerImage
+
     commandLine 'docker', 'tag', "cqse/teamscale-jacoco-client:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
-task publishDockerImageInternal(dependsOn: tagDockerImage, type: Exec) {
+task publishDockerImageInternal(type: Exec) {
+    dependsOn tagDockerImage
+
     commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
@@ -101,7 +131,9 @@ task loginDockerHub(type: Exec) {
     commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
 }
 
-task publishDockerImageDockerHub(dependsOn: [tagDockerImage, loginDockerHub], type: Exec) {
+task publishDockerImageDockerHub(type: Exec) {
+    dependsOn tagDockerImage, loginDockerHub
+
     commandLine 'docker', 'push', "cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
