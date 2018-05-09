@@ -3,6 +3,8 @@ package eu.cqse.teamscale.jacoco.javaws;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,8 +24,11 @@ public class Main {
 	/* package */ static final String PROPERTIES_FILENAME = "javaws.properties";
 
 	/** Entry point. */
-	public static void main(String[] args) throws InterruptedException, ConfigurationException, IOException {
-		Path workingDirectory = Paths.get(System.getProperty("user.dir"));
+	public static void main(String[] args)
+			throws InterruptedException, ConfigurationException, IOException, URISyntaxException {
+		URI jarFileUri = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+		// jar file is located inside the lib folder. Config files are one level higher
+		Path workingDirectory = Paths.get(jarFileUri).getParent().getParent();
 		new Main().run(args, workingDirectory);
 	}
 
