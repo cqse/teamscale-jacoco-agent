@@ -49,10 +49,6 @@ startShadowScripts {
     applicationName = 'jacoco-client'
 }
 
-// todo
-// - check documentation and update
-// - update gitlab build
-
 task doc(type: Exec) {
     def outputDir = file('build/doc')
     outputs.dir outputDir

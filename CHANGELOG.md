@@ -3,6 +3,7 @@ We use [semantic versioning][semver]
 # Next release
 
 # 5.0.0
+- [breaking change] Docker image is now designed to use the agent instead of the client
 - [feature] add wrapper around `javaws` to allow profiling Java Web Start applications
 
 # 4.0.2
