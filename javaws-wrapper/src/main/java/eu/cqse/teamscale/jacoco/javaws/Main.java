@@ -10,8 +10,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 /** Wraps javaws and adds the profiler via `-J-javaagent`. */
 public class Main {
@@ -22,6 +26,7 @@ public class Main {
 	/* package */ static final String PROPERTY_JAVAWS = "javaws";
 	/** Visible for testing. */
 	/* package */ static final String PROPERTIES_FILENAME = "javaws.properties";
+	private static final String JAVA_TOOL_OPTIONS_VARIABLE = "JAVA_TOOL_OPTIONS";
 
 	/** Entry point. */
 	public static void main(String[] args)
@@ -54,26 +59,29 @@ public class Main {
 
 		List<String> commandLine = new ArrayList<>(Arrays.asList(args));
 		commandLine.add(0, pathToJavaws);
-		commandLine.add(1, agentArgument);
-		commandLine.add(2, policyArgument);
+		commandLine.add(1, policyArgument);
 
 		System.out.println("Running real javaws command: " + commandLine);
+		System.out.println("With environment variable " + JAVA_TOOL_OPTIONS_VARIABLE + "=" + agentArgument);
 
-		int exitCode = Main.runCommand(commandLine);
+		int exitCode = Main.runCommand(commandLine,
+				Collections.singletonMap(JAVA_TOOL_OPTIONS_VARIABLE, agentArgument));
 		System.exit(exitCode);
 	}
 
 	private String buildPolicyArgument(Path workingDirectory) {
-		Path policyFile = workingDirectory.resolve("agent.policy").toAbsolutePath();
-		return "-J-Djava.security.policy=" + policyFile;
+		Path policyFile = workingDirectory.resolve("agent.policy");
+		return "-J-Djava.security.policy=" + normalizePath(policyFile);
 	}
 
 	/**
 	 * Runs the given command line and returns the exit code. Stdout and Stderr are
 	 * redirected to System.out/System.err.
 	 */
-	public static int runCommand(List<String> commandLine) throws IOException, InterruptedException {
+	public static int runCommand(List<String> commandLine, Map<String, String> environmentVariables)
+			throws IOException, InterruptedException {
 		ProcessBuilder builder = new ProcessBuilder(commandLine);
+		builder.environment().putAll(environmentVariables);
 		Process process = builder.inheritIO().start();
 		return process.waitFor();
 	}
@@ -89,13 +97,23 @@ public class Main {
 
 	private static String buildAgentArgument(Path workingDirectory, String additionalAgentArguments)
 			throws IOException {
-		Path agentJar = workingDirectory.resolve("agent.jar").toAbsolutePath();
+		String agentJarPath = normalizePath(workingDirectory.resolve("agent.jar"));
 
 		Path tempDirectory = Files.createTempDirectory(workingDirectory, "classdumpdir");
 		tempDirectory.toFile().deleteOnExit();
+		String tempDirectoryPath = normalizePath(tempDirectory);
 
-		return "-J-javaagent:" + agentJar + "=class-dir=" + tempDirectory + ",jacoco-classdumpdir=" + tempDirectory
-				+ "," + additionalAgentArguments;
+		return "-javaagent:" + agentJarPath + "=class-dir=" + tempDirectoryPath + ",jacoco-classdumpdir="
+				+ tempDirectoryPath + "," + additionalAgentArguments;
+	}
+
+	/**
+	 * We normalize all paths to forward slashes to avoid problems with backward
+	 * slashes and escaping under Windows. Forward slashed paths still work under
+	 * Windows.
+	 */
+	private static String normalizePath(Path path) {
+		return FileSystemUtils.normalizeSeparators(path.toAbsolutePath().toString());
 	}
 
 	private static Properties readProperties(Path configFile) throws IOException, FileNotFoundException {

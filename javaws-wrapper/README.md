@@ -20,6 +20,11 @@ Under Linux, revert whatever you did to associate the wrapper with JNLP files.
 
 The wrapper expects a file called `javaws.properties` in the same directory as the wrapper is located.
 An example is provided.
+Please remember that backslashes have to be escaped in the properties file! E.g.:
+
+    javaws=C:\\Program Files (x86)\\Java\\jre1.8.0_171\\bin\\javaws.exe
+
+Alternatively, just use forward slashes
 
 ## Security
 
@@ -27,3 +32,4 @@ In order for the agent to be able to profile classes and send the data to disk o
 more permissions than a Java Web Start application normally has. These are granted by the `agent.policy`
 policy file. Reducing these permissions may result in the agent failing with security exceptions, i.e.
 it won't work.
+
