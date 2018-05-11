@@ -8,11 +8,19 @@ apply plugin: 'application'
 ext.jacocoVersion = '0.7.9'
 ext.outputVersion = rootProject.appVersion + "-jacoco-" + jacocoVersion
 
+configurations {
+    provided
+}
+
+sourceSets {
+    main { compileClasspath += configurations.provided }
+}
+
 dependencies {
     compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
     compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
     compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
-    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion
+    provided group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion
 
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.8.2'
 	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8.2'
@@ -59,13 +67,14 @@ task doc(type: Exec) {
 
 distributions {
     shadow {
+        baseName = 'jacoco-client'
         contents {
             from(doc) {
                 include '**'
                 into 'documentation'
             }
 
-            def agentJar = configurations.compile.find {
+            def agentJar = configurations.provided.find {
                 def path = it.toString()
                 path.contains("org.jacoco.agent") && !path.contains("runtime")
             }
