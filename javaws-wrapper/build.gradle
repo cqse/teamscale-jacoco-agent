@@ -45,8 +45,7 @@ distributions {
             from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar) {
                 rename(/.*/, 'agent.jar')
             }
-            // todo depend on task outputs
-            from(project(':eu.cqse.teamscale.jacoco.client').projectDir.toString() + '/build/doc/USAGE.pdf') {
+            from(project(':eu.cqse.teamscale.jacoco.client').tasks.doc) {
                 rename(/.*/, 'agent-userguide.pdf')
                 into 'documentation'
             }
