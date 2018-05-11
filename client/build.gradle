@@ -50,9 +50,7 @@ startShadowScripts {
 }
 
 // todo
-// - rename dist zip (should have no -shadow suffix)
 // - check documentation and update
-// - app.properties seems to be in a weird place
 // - update gitlab build
 
 task doc(type: Exec) {

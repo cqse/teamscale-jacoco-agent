@@ -1,6 +1,10 @@
 # Teamscale JaCoCo Client
 
-## Using it as an agent
+## Installing
+
+Unzip this zip file into any folder.
+
+## Using it as an agent (recommended)
 
 If used as an agent, coverage is dumped to the file system or via HTTP in regular intervals while the application
 is running.
@@ -11,7 +15,7 @@ Configure the agent on your application's JVM:
 
 Where
 
-- `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client
+- `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client (inside the `lib` folder of this zip)
 - `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
 
 The following options are available:
@@ -40,6 +44,10 @@ The following options are available:
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
 for a list of all available options.
+
+In case the class files of the application are not locally available (e.g. loaded with custom class loader, ...)
+you can set the `jacoco-classdumpdir` option to dump the classes to a temporary directory and instruct the
+agent to read them from there with the `class-dir` option.
 
 ### Logging
 
@@ -70,7 +78,7 @@ application's process. Then make sure that the application is started with the f
 
 Where
 
-* `JACOCOAGENTJAR` is the absolute path to the jacocoagent.jar file
+* `JACOCOAGENTJAR` is the absolute path to the `jacocoagent.jar` file (inside the `jacoco-agent` folder of this zip)
 * `PORT` refers to any free port number. It is used to communicate between the application's profiler and the client.
 * `INCLUDES` refers to include patterns for classes that should be profiled. These are patterns that are matched against
   the Java package names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
@@ -92,8 +100,7 @@ This option disables a WebSphere internal class cache that causes problems with 
 
 To test the setup, start the instrumented application, then start the client manually:
 
-    java -jar teamscale-jacoco-client.jar watch
-    -c CLASSES -i 1 -o OUTPUTDIR -p PORT
+    bin/jacoco-client watch -c CLASSES -i 1 -o OUTPUTDIR -p PORT
 
 Where
 
@@ -112,11 +119,10 @@ You can upload the trace file to Teamscale to check whether the coverage is as e
 
 If you got any errors, please refer to the below troubleshooting section and fix them before continuing.
 
-### 3. Production setup of the teamscale-jacoco-client
+### 3. Production setup of the jacoco-client
 
-If the above test worked, extract the log4j2.rolling-file.xml from the zip under `resources/main` and name it log4j2.xml. This file configures
+If the above test worked, rename the log4j2.rolling-file.xml from the zip to log4j2.xml. This file configures
 the logging of the client.
-The installation is simple, just put teamscale-jacoco-client.jar file and log4j2.xml in any directory of your choosing.
 Edit log4j2.xml and change the log-path property:
 
     <Property name="log-path">OUTPUTDIR</Property>
@@ -125,8 +131,8 @@ Where `OUTPUTDIR` is any writable directory into which the resulting coverage tr
 
 Then run the JAR file with the following command:
 
-    java -Dlog4j.configurationFile=LOG4J2XML
-    -jar teamscale-jacoco-client.jar watch
+    JAVA_OPTS="-Dlog4j.configurationFile=LOG4J2XML"
+    bin/jacoco-client watch
     -c CLASSES -i 60 -o OUTPUTDIR -p PORT
 
 Where
