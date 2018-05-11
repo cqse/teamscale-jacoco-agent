@@ -12,6 +12,7 @@ dependencies {
     compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
     compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
     compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
+    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion
 
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.8.2'
 	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8.2'
@@ -41,12 +42,10 @@ startShadowScripts {
 }
 
 // todo
-// - update gitlab build
-// - jar is in lib folder
-// - start scripts included: do we want that?
 // - rename dist zip (should have no -shadow suffix)
 // - check documentation and update
 // - app.properties seems to be in a weird place
+// - update gitlab build
 
 task doc(type: Exec) {
     def outputDir = file('build/doc')
@@ -65,6 +64,16 @@ distributions {
                 include '**'
                 into 'documentation'
             }
+
+            def agentJar = configurations.compile.find {
+                def path = it.toString()
+                path.contains("org.jacoco.agent") && !path.contains("runtime")
+            }
+
+            from(zipTree(agentJar)) {
+                include 'jacocoagent.jar'
+                into 'jacoco-agent'
+            }
         }
     }
 }
@@ -79,6 +88,8 @@ processResources {
 
 task dist {
     dependsOn shadowDistZip
+    doLast {
+    }
 }
 
 task copyDockerJar(type: Copy) {

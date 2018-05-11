@@ -60,7 +60,7 @@ replace Unix paths with Windows paths etc.
 
 ### 1. Instrument the application with the profiler
 
-Store the jacocoagent.jar in any directory of your choosing. The directory must be readable by the
+Store the contents of the zip file in any directory of your choosing. The directory must be readable by the
 application's process. Then make sure that the application is started with the following JVM parameters:
 
     -javaagent:JACOCOAGENTJAR=dumponexit=true,output=tcpserver,
