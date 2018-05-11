@@ -95,19 +95,6 @@ processResources {
 
 task dist {
     dependsOn shadowDistZip
-    doLast {
-    }
-}
-
-task copyDockerJar(type: Copy) {
-    dependsOn shadowJar
-
-    doFirst {
-        mkdir 'build/docker'
-    }
-    from 'build/libs'
-    into 'build/docker'
-    rename(/teamscale-jacoco-client.*\.jar/, 'teamscale-jacoco-client.jar')
 }
 
 task copyDockerFiles(type: Copy) {
@@ -116,18 +103,19 @@ task copyDockerFiles(type: Copy) {
     doFirst {
         mkdir 'build/docker'
     }
-    from 'build/resources'
-    include '**/docker/*'
-    include '**/docker/Dockerfile'
-    includeEmptyDirs false
-    eachFile {
-        it.path = it.relativePath.lastName
+
+    from('src/docker') {
+        include 'Dockerfile'
     }
+    from(shadowJar) {
+        rename(/.*/, 'agent.jar')
+    }
+
     into 'build/docker'
 }
 
 task buildDockerImage(type: Exec) {
-    dependsOn copyDockerFiles, copyDockerJar
+    dependsOn copyDockerFiles
 
     workingDir 'build/docker'
     commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-client:${outputVersion}"
