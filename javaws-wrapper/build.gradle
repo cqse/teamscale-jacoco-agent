@@ -35,6 +35,7 @@ task doc(type: Exec) {
 
 distributions {
     shadow {
+        baseName = 'javaws'
         contents {
             from(doc) {
                 include '**'
