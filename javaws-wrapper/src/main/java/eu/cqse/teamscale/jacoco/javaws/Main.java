@@ -99,8 +99,12 @@ public class Main {
 			throws IOException {
 		String agentJarPath = normalizePath(workingDirectory.resolve("agent.jar"));
 
-		Path tempDirectory = Files.createTempDirectory(workingDirectory, "classdumpdir");
-		tempDirectory.toFile().deleteOnExit();
+		Path tempDirectory = Files.createTempDirectory("javaws-classdumpdir");
+		// we explicitly don't delete the temp directory because the javaws process will
+		// exit before the actual application exits and the dir needs to be present or
+		// JaCoCo will just crash
+		// However, the files are created in the system's temp directory so they are
+		// cleared up by the OS later in most cases
 		String tempDirectoryPath = normalizePath(tempDirectory);
 
 		return "-javaagent:" + agentJarPath + "=class-dir=" + tempDirectoryPath + ",jacoco-classdumpdir="
