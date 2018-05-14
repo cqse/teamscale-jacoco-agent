@@ -16,12 +16,13 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 /** Wraps javaws and adds the profiler via `-J-javaagent`. */
 public class Main {
 
 	/** Visible for testing. */
-	/* package */ static final String PROPERTY_ARGENT_ARGUMENTS = "argentArguments";
+	/* package */ static final String PROPERTY_AGENT_ARGUMENTS = "agentArguments";
 	/** Visible for testing. */
 	/* package */ static final String PROPERTY_JAVAWS = "javaws";
 	/** Visible for testing. */
@@ -52,7 +53,7 @@ public class Main {
 		}
 
 		String pathToJavaws = readProperty(properties, PROPERTY_JAVAWS, configFile);
-		String additionalAgentArguments = readProperty(properties, PROPERTY_ARGENT_ARGUMENTS, configFile);
+		String additionalAgentArguments = readProperty(properties, PROPERTY_AGENT_ARGUMENTS, configFile);
 
 		String agentArgument = buildAgentArgument(workingDirectory, additionalAgentArguments);
 		String policyArgument = buildPolicyArgument(workingDirectory);
@@ -88,15 +89,15 @@ public class Main {
 
 	private static String readProperty(Properties properties, String property, Path configFile)
 			throws ConfigurationException {
-		String additionalAgentArguments = properties.getProperty(property, null);
-		if (additionalAgentArguments == null) {
+		String value = properties.getProperty(property, null);
+		if (value == null) {
 			throw new ConfigurationException("Missing property `" + property + "` in config file " + configFile);
 		}
-		return additionalAgentArguments;
+		return value;
 	}
 
 	private static String buildAgentArgument(Path workingDirectory, String additionalAgentArguments)
-			throws IOException {
+			throws IOException, ConfigurationException {
 		String agentJarPath = normalizePath(workingDirectory.resolve("agent.jar"));
 
 		Path tempDirectory = Files.createTempDirectory("javaws-classdumpdir");
@@ -106,6 +107,11 @@ public class Main {
 		// However, the files are created in the system's temp directory so they are
 		// cleared up by the OS later in most cases
 		String tempDirectoryPath = normalizePath(tempDirectory);
+
+		if (StringUtils.isEmpty(additionalAgentArguments)) {
+			throw new ConfigurationException("You must provide additional mandatory agent arguments."
+					+ " At least the dump interval and a method for storing the traces must be specified");
+		}
 
 		return "-javaagent:" + agentJarPath + "=class-dir=" + tempDirectoryPath + ",jacoco-classdumpdir="
 				+ tempDirectoryPath + "," + additionalAgentArguments;

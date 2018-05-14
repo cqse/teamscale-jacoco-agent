@@ -12,14 +12,14 @@ Under Linux, associate JNLP files with the wrapper (`bin/javaws`).
 
 ## Uninstallation
 
-For Windows, run `powershell -ExecutionPolicy ByPass uninstall.bat`. This will restore the old file type mapping (for the current user).
+For Windows, run `powershell -ExecutionPolicy ByPass uninstall.ps1`. This will restore the old file type mapping (for the current user).
 
 Under Linux, revert whatever you did to associate the wrapper with JNLP files.
 
 ## Configuration
 
 The wrapper expects a file called `javaws.properties` in the same directory as the wrapper is located.
-An example is provided.
+An example is provided. As per the Java properties file spec, the file must use the ISO 8859-1 encoding!
 Please remember that backslashes have to be escaped in the properties file! E.g.:
 
     javaws=C:\\Program Files (x86)\\Java\\jre1.8.0_171\\bin\\javaws.exe
