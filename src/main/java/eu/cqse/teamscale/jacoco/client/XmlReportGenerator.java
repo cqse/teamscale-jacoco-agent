@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -33,7 +31,7 @@ public class XmlReportGenerator {
 	/**
 	 * Include filter to apply to all locations during class file traversal.
 	 */
-	private final Predicate<Path> locationIncludeFilter;
+	private final Predicate<String> locationIncludeFilter;
 
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
@@ -44,7 +42,7 @@ public class XmlReportGenerator {
 	/**
 	 * Constructor.
 	 */
-	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<Path> locationIncludeFilter,
+	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
 			boolean ignoreDuplicates) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.ignoreNonidenticalDuplicateClassFiles = ignoreDuplicates;
@@ -88,7 +86,7 @@ public class XmlReportGenerator {
 		Analyzer analyzer = new Analyzer(store, coverageBuilder) {
 			@Override
 			public int analyzeAll(InputStream input, String location) throws IOException {
-				if (location.endsWith(".class") && !locationIncludeFilter.test(Paths.get(location))) {
+				if (location.endsWith(".class") && !locationIncludeFilter.test(location)) {
 					logger.debug("Filtering class file {}", location);
 					return 0;
 				}
