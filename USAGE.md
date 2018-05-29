@@ -51,6 +51,8 @@ By default, the agent logs to the console. You can change this by providing a Lo
 Where `LOG4J2XML` is the absolute path to the logging configuration. Example configurations are included with
 the client.
 
+__Please check the log for errors and warnings before using the agent in any productive setting.__
+
 ## Using it as a separate process
 
 This section explains how to instrument your application so coverage is recorded and run the
