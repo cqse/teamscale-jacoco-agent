@@ -11,7 +11,7 @@ import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IClassCoverage;
 
 /** Modified {@link CoverageBuilder} that ignores non-identical duplicates. */
-class DuplicateIgnoringCoverageBuilder extends CoverageBuilder {
+/* package */class DuplicateIgnoringCoverageBuilder extends CoverageBuilder {
 
 	/** The logger. */
 	private final Logger logger = LogManager.getLogger(this);
