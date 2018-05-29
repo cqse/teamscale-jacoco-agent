@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 4.0.3
+- [fix] fix handling of Windows paths
+
 # 4.0.2
 - [fix] using `upload-url` in conjunction with `upload-metadata` caused a crash
 
