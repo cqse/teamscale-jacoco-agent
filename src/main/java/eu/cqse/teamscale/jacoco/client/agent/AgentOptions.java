@@ -82,7 +82,7 @@ public class AgentOptions {
 	private int dumpIntervalInMinutes = 60;
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	private boolean shouldIgnoreDuplicateClassFiles = false;
+	private boolean shouldIgnoreDuplicateClassFiles = true;
 
 	/** Include patterns to pass on to JaCoCo. */
 	private String jacocoIncludes = null;
