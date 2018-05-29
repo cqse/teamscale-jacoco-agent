@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.client;
+package eu.cqse.teamscale.jacoco.client.report;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -13,6 +13,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.junit.Test;
 
+import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
