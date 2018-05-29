@@ -31,7 +31,8 @@ The following options are available:
   but no external libraries. For further details, please see the JaCoCo documentation in the "Agent" section.
 - `excludes`: exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the JaCoCo documentation in the "Agent" section.
-- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below.
+- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
+  setup of the tool as easy as possible. However, this should be disabled for productive use if possible, see the comments below.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
