@@ -6,6 +6,7 @@
 package eu.cqse.teamscale.jacoco.client.agent;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,6 +69,9 @@ public class AgentOptions {
 	 * then nothing is excluded.
 	 */
 	private WildcardMatcher locationExcludeFilters = null;
+
+	/** The logging configuration file. */
+	private Path loggingConfig = null;
 
 	/** The directory to write the XML traces to. */
 	private Path outputDir = null;
@@ -156,6 +160,13 @@ public class AgentOptions {
 		String value = keyAndValue[1];
 
 		switch (key.toLowerCase()) {
+		case "logging-config":
+			// TODO (FS) or do this in validations?
+			// TODO (FS) relocate dependencies using shadow plugin
+			// TODO (FS) initialize our shadowed logging from this or init with default
+			// config
+			loggingConfig = parsePathToReadableFile(key, value);
+			break;
 		case "interval":
 			try {
 				dumpIntervalInMinutes = Integer.parseInt(value);
@@ -164,11 +175,7 @@ public class AgentOptions {
 			}
 			break;
 		case "out":
-			try {
-				outputDir = Paths.get(value);
-			} catch (InvalidPathException e) {
-				throw new AgentOptionParseException("Invalid path given for option 'out'");
-			}
+			outputDir = parsePathToDirectory(key, value);
 			break;
 		case "upload-url":
 			uploadUrl = parseUrl(value);
@@ -205,6 +212,53 @@ public class AgentOptions {
 
 			throw new AgentOptionParseException("Unknown option: " + key);
 		}
+	}
+
+	/**
+	 * Parses the given value as a {@link Path} and ensures that it is a readable
+	 * file.
+	 */
+	private Path parsePathToReadableFile(String optionName, String value) throws AgentOptionParseException {
+		Path path = parseExistingPath(optionName, value);
+		if (!Files.isRegularFile(loggingConfig)) {
+			throw new AgentOptionParseException(
+					"The path provided for option " + optionName + " is not a file: " + loggingConfig);
+		}
+		if (!Files.isReadable(loggingConfig)) {
+			throw new AgentOptionParseException(
+					"The file provided for option " + optionName + " is not readable: " + loggingConfig);
+		}
+		return path;
+	}
+
+	/**
+	 * Parses the given value as a {@link Path} and ensures that it is a directory.
+	 */
+	private Path parsePathToDirectory(String optionName, String value) throws AgentOptionParseException {
+		Path path = parseExistingPath(optionName, value);
+		if (!Files.isDirectory(path)) {
+			throw new AgentOptionParseException(
+					"The path provided for option " + optionName + " is not a directory: " + loggingConfig);
+		}
+		return path;
+	}
+
+	/**
+	 * Parses the given value as a {@link Path} that must exist.
+	 */
+	private Path parseExistingPath(String optionName, String value) throws AgentOptionParseException {
+		Path path;
+		try {
+			path = Paths.get(value);
+		} catch (InvalidPathException e) {
+			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + loggingConfig,
+					e);
+		}
+		if (!Files.exists(loggingConfig)) {
+			throw new AgentOptionParseException(
+					"The path provided for option " + optionName + " does not exist: " + loggingConfig);
+		}
+		return path;
 	}
 
 	/**
