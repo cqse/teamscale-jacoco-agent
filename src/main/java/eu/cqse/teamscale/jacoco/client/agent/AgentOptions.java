@@ -278,7 +278,7 @@ public class AgentOptions {
 	}
 
 	/** @see #shouldIgnoreDuplicateClassFiles */
-	public boolean isShouldIgnoreDuplicateClassFiles() {
+	public boolean shouldIgnoreDuplicateClassFiles() {
 		return shouldIgnoreDuplicateClassFiles;
 	}
 
