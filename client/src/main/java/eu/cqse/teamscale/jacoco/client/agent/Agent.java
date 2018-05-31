@@ -42,7 +42,6 @@ public class Agent {
 
 		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 
-		// start the JaCoCo agent
 		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
