@@ -1,0 +1,12 @@
+apply plugin: 'groovy'
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile(group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8.2')
+    compile "com.github.jengelman.gradle.plugins:shadow:2.0.3"
+}
