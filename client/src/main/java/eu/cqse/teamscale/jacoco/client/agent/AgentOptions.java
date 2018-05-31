@@ -138,16 +138,18 @@ public class AgentOptions {
 			FileSystemUtils.ensureDirectoryExists(outputDir.toFile());
 		});
 
-		validator.ensure(() -> {
-			CCSMAssert.isTrue(Files.exists(loggingConfig),
-					"The path provided for the logging configuration does not exist: " + loggingConfig);
-			CCSMAssert.isTrue(Files.isRegularFile(loggingConfig),
-					"The path provided for the logging configuration is not a file: " + loggingConfig);
-			CCSMAssert.isTrue(Files.isReadable(loggingConfig),
-					"The file provided for the logging configuration is not readable: " + loggingConfig);
-			CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
-					"The logging configuration file must have the file extension .xml and be a valid XML file");
-		});
+		if (loggingConfig != null) {
+			validator.ensure(() -> {
+				CCSMAssert.isTrue(Files.exists(loggingConfig),
+						"The path provided for the logging configuration does not exist: " + loggingConfig);
+				CCSMAssert.isTrue(Files.isRegularFile(loggingConfig),
+						"The path provided for the logging configuration is not a file: " + loggingConfig);
+				CCSMAssert.isTrue(Files.isReadable(loggingConfig),
+						"The file provided for the logging configuration is not readable: " + loggingConfig);
+				CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
+						"The logging configuration file must have the file extension .xml and be a valid XML file");
+			});
+		}
 
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
