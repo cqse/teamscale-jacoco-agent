@@ -136,7 +136,17 @@ public class AgentOptions {
 		validator.ensure(() -> {
 			CCSMAssert.isNotNull(outputDir, "You must specify an output directory");
 			FileSystemUtils.ensureDirectoryExists(outputDir.toFile());
-			CCSMAssert.isTrue(outputDir.toFile().canWrite(), "Path '" + outputDir + "' is not writable");
+		});
+
+		validator.ensure(() -> {
+			CCSMAssert.isTrue(Files.exists(loggingConfig),
+					"The path provided for the logging configuration does not exist: " + loggingConfig);
+			CCSMAssert.isTrue(Files.isRegularFile(loggingConfig),
+					"The path provided for the logging configuration is not a file: " + loggingConfig);
+			CCSMAssert.isTrue(Files.isReadable(loggingConfig),
+					"The file provided for the logging configuration is not readable: " + loggingConfig);
+			CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
+					"The logging configuration file must have the file extension .xml and be a valid XML file");
 		});
 
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
@@ -161,11 +171,8 @@ public class AgentOptions {
 
 		switch (key.toLowerCase()) {
 		case "logging-config":
-			// TODO (FS) or do this in validations?
 			// TODO (FS) relocate dependencies using shadow plugin
-			// TODO (FS) initialize our shadowed logging from this or init with default
-			// config
-			loggingConfig = parsePathToReadableFile(key, value);
+			loggingConfig = parsePath(key, value);
 			break;
 		case "interval":
 			try {
@@ -175,7 +182,7 @@ public class AgentOptions {
 			}
 			break;
 		case "out":
-			outputDir = parsePathToDirectory(key, value);
+			outputDir = parsePath(key, value);
 			break;
 		case "upload-url":
 			uploadUrl = parseUrl(value);
@@ -215,50 +222,14 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Parses the given value as a {@link Path} and ensures that it is a readable
-	 * file.
+	 * Parses the given value as a {@link Path}.
 	 */
-	private Path parsePathToReadableFile(String optionName, String value) throws AgentOptionParseException {
-		Path path = parseExistingPath(optionName, value);
-		if (!Files.isRegularFile(loggingConfig)) {
-			throw new AgentOptionParseException(
-					"The path provided for option " + optionName + " is not a file: " + loggingConfig);
-		}
-		if (!Files.isReadable(loggingConfig)) {
-			throw new AgentOptionParseException(
-					"The file provided for option " + optionName + " is not readable: " + loggingConfig);
-		}
-		return path;
-	}
-
-	/**
-	 * Parses the given value as a {@link Path} and ensures that it is a directory.
-	 */
-	private Path parsePathToDirectory(String optionName, String value) throws AgentOptionParseException {
-		Path path = parseExistingPath(optionName, value);
-		if (!Files.isDirectory(path)) {
-			throw new AgentOptionParseException(
-					"The path provided for option " + optionName + " is not a directory: " + loggingConfig);
-		}
-		return path;
-	}
-
-	/**
-	 * Parses the given value as a {@link Path} that must exist.
-	 */
-	private Path parseExistingPath(String optionName, String value) throws AgentOptionParseException {
-		Path path;
+	private static Path parsePath(String optionName, String value) throws AgentOptionParseException {
 		try {
-			path = Paths.get(value);
+			return Paths.get(value);
 		} catch (InvalidPathException e) {
-			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + loggingConfig,
-					e);
+			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + value, e);
 		}
-		if (!Files.exists(loggingConfig)) {
-			throw new AgentOptionParseException(
-					"The path provided for option " + optionName + " does not exist: " + loggingConfig);
-		}
-		return path;
 	}
 
 	/**
