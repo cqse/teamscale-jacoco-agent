@@ -34,8 +34,8 @@ public class LoggingUtils {
 
 	/** Initializes the logging to the default configured in the Jar. */
 	public static void initializeDefaultLogging() {
-		URL url = Agent.class.getResource("log4j.xml");
-		InputStream stream = Agent.class.getResourceAsStream("log4j.xml");
+		URL url = Agent.class.getResource("log4j2-default.xml");
+		InputStream stream = Agent.class.getResourceAsStream("log4j2-default.xml");
 		ConfigurationSource source = new ConfigurationSource(stream, url);
 		Configurator.initialize(null, source);
 	}
