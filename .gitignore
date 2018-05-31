@@ -1,4 +1,5 @@
 /.gradle/
-build/
-/bin/
-/test-tmp/
+/*/build/
+/*/bin/
+/*/test-tmp/
+.gradletasknamecache

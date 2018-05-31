@@ -1,0 +1,60 @@
+plugins {
+	id "com.github.johnrengelman.shadow" version "2.0.4"
+	id 'edu.sc.seis.launch4j' version '2.4.3'
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+dependencies {
+    compile 'org.conqat:org.conqat.lib.commons:0.20160822'
+	compile 'org.apache.commons:commons-lang3:3.7'
+}
+
+mainClassName = "eu.cqse.teamscale.jacoco.javaws.Main"
+
+shadowJar {
+    baseName = 'teamscale-javaws-wrapper'
+    classifier = null
+    version = rootProject.appVersion
+}
+
+startShadowScripts {
+    applicationName = 'javaws'
+}
+
+task doc(type: Exec) {
+    def outputDir = file('build/doc')
+    outputs.dir outputDir
+
+    doFirst {
+        mkdir outputDir
+    }
+
+    commandLine 'pandoc', 'README.md', '-o', "$outputDir/README.pdf"
+}
+
+distributions {
+    shadow {
+        baseName = 'javaws'
+        contents {
+            from(doc) {
+                include '**'
+                into 'documentation'
+            }
+
+            from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar) {
+                rename(/.*/, 'agent.jar')
+            }
+            from(project(':eu.cqse.teamscale.jacoco.client').tasks.doc) {
+                rename(/.*/, 'agent-userguide.pdf')
+                into 'documentation'
+            }
+        }
+    }
+}
+
+task dist {
+    dependsOn shadowDistZip
+}
+

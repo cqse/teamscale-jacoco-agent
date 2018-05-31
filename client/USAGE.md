@@ -1,6 +1,10 @@
 # Teamscale JaCoCo Client
 
-## Using it as an agent
+## Installing
+
+Unzip this zip file into any folder.
+
+## Using it as an agent (recommended)
 
 If used as an agent, coverage is dumped to the file system or via HTTP in regular intervals while the application
 is running.
@@ -11,7 +15,7 @@ Configure the agent on your application's JVM:
 
 Where
 
-- `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client
+- `CLIENTJAR` is the path to the Jar file of the Teamscale JaCoCo client (inside the `lib` folder of this zip)
 - `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
 
 The following options are available:
@@ -41,6 +45,10 @@ You can pass additional options directly to the original JaCoCo agent by prefixi
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
 for a list of all available options.
 
+In case the class files of the application are not locally available (e.g. loaded with custom class loader, ...)
+you can set the `jacoco-classdumpdir` option to dump the classes to a temporary directory and instruct the
+agent to read them from there with the `class-dir` option.
+
 ### Logging
 
 By default, the agent logs to the console. You can change this by providing a Log4j2 logging configuration:
@@ -60,7 +68,7 @@ replace Unix paths with Windows paths etc.
 
 ### 1. Instrument the application with the profiler
 
-Store the jacocoagent.jar in any directory of your choosing. The directory must be readable by the
+Store the contents of the zip file in any directory of your choosing. The directory must be readable by the
 application's process. Then make sure that the application is started with the following JVM parameters:
 
     -javaagent:JACOCOAGENTJAR=dumponexit=true,output=tcpserver,
@@ -70,7 +78,7 @@ application's process. Then make sure that the application is started with the f
 
 Where
 
-* `JACOCOAGENTJAR` is the absolute path to the jacocoagent.jar file
+* `JACOCOAGENTJAR` is the absolute path to the `jacocoagent.jar` file (inside the `jacoco-agent` folder of this zip)
 * `PORT` refers to any free port number. It is used to communicate between the application's profiler and the client.
 * `INCLUDES` refers to include patterns for classes that should be profiled. These are patterns that are matched against
   the Java package names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
@@ -92,8 +100,7 @@ This option disables a WebSphere internal class cache that causes problems with 
 
 To test the setup, start the instrumented application, then start the client manually:
 
-    java -jar teamscale-jacoco-client.jar watch
-    -c CLASSES -i 1 -o OUTPUTDIR -p PORT
+    bin/jacoco-client watch -c CLASSES -i 1 -o OUTPUTDIR -p PORT
 
 Where
 
@@ -112,11 +119,10 @@ You can upload the trace file to Teamscale to check whether the coverage is as e
 
 If you got any errors, please refer to the below troubleshooting section and fix them before continuing.
 
-### 3. Production setup of the teamscale-jacoco-client
+### 3. Production setup of the jacoco-client
 
-If the above test worked, extract the log4j2.rolling-file.xml from the zip under `resources/main` and name it log4j2.xml. This file configures
+If the above test worked, rename the log4j2.rolling-file.xml from the zip to log4j2.xml. This file configures
 the logging of the client.
-The installation is simple, just put teamscale-jacoco-client.jar file and log4j2.xml in any directory of your choosing.
 Edit log4j2.xml and change the log-path property:
 
     <Property name="log-path">OUTPUTDIR</Property>
@@ -125,8 +131,8 @@ Where `OUTPUTDIR` is any writable directory into which the resulting coverage tr
 
 Then run the JAR file with the following command:
 
-    java -Dlog4j.configurationFile=LOG4J2XML
-    -jar teamscale-jacoco-client.jar watch
+    JAVA_OPTS="-Dlog4j.configurationFile=LOG4J2XML"
+    bin/jacoco-client watch
     -c CLASSES -i 60 -o OUTPUTDIR -p PORT
 
 Where
@@ -146,19 +152,15 @@ For Windows and Linux systemd there are README files within the distribution zip
 
 # Docker
 
-The client is available as a Docker image if you would like to profile an application that is running inside a
+The agent is available as a Docker image if you would like to profile an application that is running inside a
 Docker image.
 
-You'll need these two images in addition to your application's image:
+You'll need this image in addition to your application's image:
 
 - Teamscale JaCoCo client: [cqse/teamscale-jacoco-client](https://hub.docker.com/r/cqse/teamscale-jacoco-client/)
-- JaCoCo agent: [ictu/jacoco-agent-docker](https://hub.docker.com/r/ictu/jacoco-agent-docker/)
 
 The client image has the same versioning scheme as the client itself: `CLIENTVERSION-jacoco-JACOCOVERSION`.
 There is no `latest` tag.
-
-__Please make sure the JaCoCo version of both of these images is the same.
-Otherwise there may be compatibility problems!__
 
 ## Prepare your application
 
@@ -167,14 +169,7 @@ the SIGTERM signal when the Docker image is stopped and JaCoCo will not dump its
 You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
 your application. For more information see [this StackOverflow answer][so-java-exec-answer].
 
-Next, you'll need to make your application's bytecode (.jar/.war/.class files) available to the JaCoCo client
-image. To do so, declare it as a volume in your Dockerfile:
-
-    VOLUME /path/to/class/files
-
-The volume must contain _all_ relevant Java bytecode for which you want to receive coverage.
-
-Finally, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
+Next, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
 via `JAVA_TOOL_OPTIONS`. If your docker images starts the Java process directly, this should
 work out of the box. If you are using an application container (e.g. Tomcat), you'll have
 to check how to pass these options to your application's VM.
@@ -184,48 +179,23 @@ to check how to pass these options to your application's VM.
 Here's an example Docker Compose file that instruments an application:
 
 	services:
-	  jacoco:
-		image: ictu/jacoco-agent-docker:0.7.9
 	  app:
 		build: ./app
 		environment:
-		  JAVA_TOOL_OPTIONS: -javaagent:/jacoco/lib/jacocoagent.jar=dumponexit=true,output=tcpserver,port=9876,address=*
+		  JAVA_TOOL_OPTIONS: -javaagent:/agent/agent.jar=AGENTOPTIONS
 		expose:
 		  - '9876'
 		volumes_from:
-		  - service:jacoco:ro
-	  jacoco-client:
-		image: cqse/teamscale-jacoco-client:2.0.1-jacoco-0.7.9
-		volumes:
-		  - ./traces:/output/traces
-		  - ./logs:/output/logs
-		volumes_from:
-		  - service:app:ro
-		links:
-		  - 'app:app'
-		environment:
-		  CLASSES_DIR: /jars
-		  HOSTNAME: app
-		  PORT: 9876
+		  - service:agent:ro
+	  agent:
+		image: cqse/teamscale-jacoco-client:5.0.0-jacoco-0.7.9
 	version: '2.0'
 
-This configures the three images and links them together:
+This configures your application and the agent image:
 
-- your application mounts the volumes from the JaCoCo image, which contains the profiler binaries
-- your application enables the profiler
-- the profiler is configured to open a local port which is forwarded out of the Docker image
-- the client mounts the volumes from your application's image, which contains a volume with
-  all your bytecode (`/jars` in this example)
-- the client is `link`ed to your application and can thus access the JaCoCo port we opened
-- the client's output volumes are mounted to some form of persistent storage
-  (`/output/traces` and `/output/logs`)
-
-## Configuring the client image
-
-There are several environment variables that allow you to configure the client image.
-See the Dockerfile of the image for an explanation of each option.
-You'll find this in the distribution zip of the JaCoCo client (ask CQSE if you don't
-have one).
+- your application mounts the volumes from the agent image, which contains the profiler binaries
+- your application enables the profiler via `JAVA_TOOL_OPTIONS`. `AGENTOPTIONS` are the agent options as
+  discussed in this guide's section on the agent above
 
 # Advanced usage of teamscale-jacoco-client
 
