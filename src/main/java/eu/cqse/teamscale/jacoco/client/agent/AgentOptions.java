@@ -336,6 +336,16 @@ public class AgentOptions {
 		return shouldIgnoreDuplicateClassFiles;
 	}
 
+	/** @see #loggingConfig */
+	public Path getLoggingConfig() {
+		return loggingConfig;
+	}
+
+	/** @see #loggingConfig */
+	public void setLoggingConfig(Path loggingConfig) {
+		this.loggingConfig = loggingConfig;
+	}
+
 	/** Returns the normalized class name of the given class file's path. */
 	/* package */ static String getClassName(Path path) {
 		String[] parts = path.toString().split("@");
