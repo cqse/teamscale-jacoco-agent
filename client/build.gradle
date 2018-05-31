@@ -50,6 +50,7 @@ shadowJar {
     
     // ensures that log4j resource files are also relocated properly
     transform(de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer)
+    transform(Log4JResourceTransformer)
 }
 
 startShadowScripts {

@@ -171,7 +171,6 @@ public class AgentOptions {
 
 		switch (key.toLowerCase()) {
 		case "logging-config":
-			// TODO (FS) relocate dependencies using shadow plugin
 			loggingConfig = parsePath(key, value);
 			break;
 		case "interval":
