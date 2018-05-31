@@ -1,5 +1,8 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "2.0.4"
+    // we don't want to cause conflicts between our dependencies and the target application
+    // since the agent will be loaded with the same class loader as the profiled application
+    // so we use plugin-shadow instead of shadow to relocate all of our dependencies
+	id 'com.github.johnrengelman.plugin-shadow' version '2.0.3'
 }
 
 apply plugin: 'java'
