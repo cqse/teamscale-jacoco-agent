@@ -28,6 +28,13 @@ if (-not (Test-IsAdmin)) {
 	exit 1
 }
 
+$javaHome = $env:JAVA_HOME
+if (-not $javaHome) {
+    $javaHome = read-host "%JAVA_HOME% is not set. Please enter the path to the active JRE/JDK. The entered path must contain the lib and bin folders of your Java installation:"
+}
+$securityPolicyFile = "$javaHome/lib/security/javaws.policy"
+$securityPolicyFileBackup = "$PSScriptRoot/javaws.policy.bak"
+
 $currentSetting = ((cmd.exe /c ftype JNLPFile) | out-string) -replace "`r|`n", ""
 write-host "Current setting: $currentSetting"
 
