@@ -88,13 +88,15 @@ public class WindowsInstallation {
 		try {
 			Files.copy(wrapperPaths.securityPolicy, systemSecurityPolicy, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			throw new InstallationException("Failed to overwrite the system security policy at " + systemSecurityPolicy,
-					e);
+			throw new InstallationException("Failed to overwrite the system security policy at " + systemSecurityPolicy
+					+ ". You must run this installer as an administrator", e);
 		}
 		try {
 			setFtype(wrapperPaths.wrapperExecutable.toAbsolutePath() + " \"%1\"");
 		} catch (IOException | InterruptedException e) {
-			throw new InstallationException("Failed to change the file type mapping for JNLP files", e);
+			throw new InstallationException(
+					"Failed to change the file type mapping for JNLP files. You must run this installer as an administrator",
+					e);
 		}
 
 		Properties properties = new Properties();
@@ -129,13 +131,16 @@ public class WindowsInstallation {
 		try {
 			setFtype(oldFtypeMapping);
 		} catch (IOException | InterruptedException e) {
-			throw new InstallationException("Failed to change the file type mapping for JNLP files", e);
+			throw new InstallationException(
+					"Failed to change the file type mapping for JNLP files. You must run this installer as an administrator",
+					e);
 		}
 		try {
 			Files.copy(backupPaths.securityPolicy, systemSecurityPolicy, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			throw new InstallationException("Failed to overwrite the system security policy at " + systemSecurityPolicy
-					+ " with the backup from " + backupPaths.securityPolicy, e);
+					+ " with the backup from " + backupPaths.securityPolicy
+					+ ". You must run this installer as an administrator", e);
 		}
 
 		try {
