@@ -1,16 +1,19 @@
 package eu.cqse.teamscale.jacoco.javaws;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Properties;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 
 /**
  * Installs/uninstalls the wrapper under Windows.
@@ -69,8 +72,6 @@ public class WindowsInstallation {
 			throw new InstallationException("Wrapper is already installed");
 		}
 
-		// TODO (FS) write properties file
-
 		try {
 			Files.copy(systemSecurityPolicy, backupPaths.securityPolicy, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
@@ -94,6 +95,17 @@ public class WindowsInstallation {
 			setFtype(wrapperPaths.wrapperExecutable.toAbsolutePath() + " \"%1\"");
 		} catch (IOException | InterruptedException e) {
 			throw new InstallationException("Failed to change the file type mapping for JNLP files", e);
+		}
+
+		Properties properties = new Properties();
+		properties.setProperty("javaws", wrapperPaths.wrapperExecutable.toAbsolutePath().toString());
+
+		try (FileOutputStream outputStream = new FileOutputStream(wrapperPaths.configProperties.toFile())) {
+			properties.store(outputStream, StringUtils.EMPTY_STRING);
+		} catch (IOException e) {
+			System.err.print("WARN: Failed to write the wrapper config file to " + wrapperPaths.configProperties
+					+ ". The installation itself was successful but you'll have to configure the wrapper manually (see the userguide for instructions)");
+			e.printStackTrace(System.err);
 		}
 	}
 
@@ -131,7 +143,7 @@ public class WindowsInstallation {
 			Files.deleteIfExists(backupPaths.securityPolicy);
 		} catch (IOException e) {
 			System.err.println(
-					"Warning: Failed to delete the backup files. The uninstallation was successful but the backup files remain at "
+					"WARN: Failed to delete the backup files. The uninstallation was successful but the backup files remain at "
 							+ backupPaths.backupDirectory);
 			e.printStackTrace(System.err);
 		}
@@ -187,10 +199,12 @@ public class WindowsInstallation {
 
 		private final Path securityPolicy;
 		private final Path wrapperExecutable;
+		private final Path configProperties;
 
 		public WrapperPaths(Path wrapperDirectory) {
 			securityPolicy = wrapperDirectory.resolve("agent.policy");
 			wrapperExecutable = wrapperDirectory.resolve("bin/javaws");
+			configProperties = wrapperDirectory.resolve("javaws.properties");
 		}
 
 	}
