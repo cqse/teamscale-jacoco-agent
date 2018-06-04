@@ -5,16 +5,18 @@
 Put all files in any directory, as long as it is readable by all users that want to start
 Web Start applications.
 
-Under Windows, run `powershell -ExecutionPolicy ByPass install.ps1`. This will register the wrapper as the handler for JNLP files
-(for the current user).
+Under Windows, run `bin\javaws install` as an administrator. This will register the wrapper as the handler for JNLP files
+(for the current user) and fix the security policy file (for the JVM installation under which it is run).
 
-Under Linux, associate JNLP files with the wrapper (`bin/javaws`).
+Under Linux, associate JNLP files with the wrapper (`bin/javaws`). If necessary, replace the JVM's `javaws.policy`
+with the contents of the `agent.policy`.
 
 ## Uninstallation
 
-For Windows, run `powershell -ExecutionPolicy ByPass uninstall.ps1`. This will restore the old file type mapping (for the current user).
+For Windows, run `bin\javaws uninstall`. This will restore the old file type mapping (for the current user)
+and the javaws security policy file (for the JVM installation under which it is run).
 
-Under Linux, revert whatever you did to associate the wrapper with JNLP files.
+Under Linux, revert whatever you did to associate the wrapper with JNLP files and undo any changes to the `javaws.policy`.
 
 ## Configuration
 

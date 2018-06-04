@@ -69,6 +69,8 @@ public class WindowsInstallation {
 			throw new InstallationException("Wrapper is already installed");
 		}
 
+		// TODO (FS) write properties file
+
 		try {
 			Files.copy(systemSecurityPolicy, backupPaths.securityPolicy, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
