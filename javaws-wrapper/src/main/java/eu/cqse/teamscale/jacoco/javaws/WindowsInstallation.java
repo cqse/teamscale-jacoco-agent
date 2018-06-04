@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.apache.commons.exec.CommandLine;
@@ -11,6 +12,14 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
+/**
+ * Installs/uninstalls the wrapper under Windows.
+ * 
+ * We must set the file type association for JNLP files so it points to our
+ * wrapper. We must also overwrite the system security policy since with some
+ * JREs the additional system property the wrapper sets to make the JVM use our
+ * custom security policy is ignored.
+ */
 public class WindowsInstallation {
 
 	private static final String JNLP_FTYPE = "JNLPFile";
@@ -34,13 +43,27 @@ public class WindowsInstallation {
 		} catch (IOException e) {
 			throw new InstallationException("Cannot create backup directory at " + backupPaths.backupDirectory, e);
 		}
-		// TODO (FS)
+
+		if (!Files.exists(systemSecurityPolicy)) {
+			throw new InstallationException("Could not locate the javaws security policy file at "
+					+ systemSecurityPolicy + ". Please make sure the JAVA_HOME environment variable is properly set");
+		}
+
+		if (!Files.exists(wrapperPaths.securityPolicy) || !Files.exists(wrapperPaths.wrapperExecutable)) {
+			throw new InstallationException("Could not locate all necessary data files that came with this program."
+					+ " Please make sure you run this installation routine from within its installation directory.");
+		}
 	}
 
+	/** Checks whether the wrapper is currently installed. */
 	public boolean isInstalled() {
 		return Files.exists(backupPaths.ftypeMapping);
 	}
 
+	/**
+	 * Installs the wrapper or throws an exception if the installation fails. In
+	 * case of an exception, the installation may be partly done.
+	 */
 	public void install() throws InstallationException {
 		try {
 			Files.copy(systemSecurityPolicy, backupPaths.securityPolicy, StandardCopyOption.REPLACE_EXISTING);
@@ -68,6 +91,10 @@ public class WindowsInstallation {
 		}
 	}
 
+	/**
+	 * Uninstalls the wrapper or throws an exception if the uninstallation fails. In
+	 * case of an exception, the uninstallation may be partly done.
+	 */
 	public void uninstall() throws InstallationException {
 		String oldFtypeMapping;
 		try {
@@ -112,6 +139,7 @@ public class WindowsInstallation {
 		}
 	}
 
+	/** Runs the ftype shell builtin to change file associations. */
 	private static String runFtype(String argument) throws IOException, InterruptedException {
 		CommandLine commandLine = new CommandLine("cmd.exe");
 		commandLine.addArgument("/c");
@@ -126,14 +154,13 @@ public class WindowsInstallation {
 		return outputStream.toString().trim();
 	}
 
+	/** The path where the currently running JVM is installed. */
 	private static final Path getJvmInstallPath() {
-		// TODO (FS) -Djava.home
-		return null;
+		return Paths.get(System.getProperty("java.home"));
 	}
 
 	private static final Path getCurrentWorkingDirectory() {
-		// TODO (FS) -Duser.dir
-		return null;
+		return Paths.get(System.getProperty("user.dir"));
 	}
 
 	private class BackupPaths {
@@ -162,6 +189,7 @@ public class WindowsInstallation {
 
 	}
 
+	/** Thrown if the installation/uninstallation fails. */
 	public static class InstallationException extends Exception {
 
 		private static final long serialVersionUID = 1L;
