@@ -79,7 +79,7 @@ public class WindowsInstallation {
 					+ systemSecurityPolicy + " to " + backupPaths.securityPolicy, e);
 		}
 		try {
-			FileSystemUtils.writeFileUTF8(backupPaths.ftypeMapping.toFile(), readCurrentFtype());
+			FileSystemUtils.writeFileUTF8(backupPaths.ftypeMapping.toFile(), readCurrentJnlpFtype());
 		} catch (IOException | InterruptedException e) {
 			throw new InstallationException(
 					"Failed to backup current file type mapping for JNLP files to " + backupPaths.ftypeMapping, e);
@@ -92,7 +92,7 @@ public class WindowsInstallation {
 					+ ". You must run this installer as an administrator", e);
 		}
 		try {
-			setFtype(wrapperPaths.wrapperExecutable.toAbsolutePath() + " \"%1\"");
+			setFtype(JNLP_FTYPE + "=" + wrapperPaths.wrapperExecutable.toAbsolutePath() + " \"%1\"");
 		} catch (IOException | InterruptedException e) {
 			throw new InstallationException(
 					"Failed to change the file type mapping for JNLP files. You must run this installer as an administrator",
@@ -154,28 +154,35 @@ public class WindowsInstallation {
 		}
 	}
 
-	private String readCurrentFtype() throws IOException, InterruptedException {
+	private String readCurrentJnlpFtype() throws IOException, InterruptedException {
 		return runFtype(JNLP_FTYPE);
 	}
 
-	private void setFtype(String desiredFtype) throws InstallationException, IOException, InterruptedException {
-		String argument = JNLP_FTYPE + "=" + desiredFtype;
-		String newFtype = runFtype(argument);
-		if (!newFtype.equalsIgnoreCase(argument)) {
-			throw new InstallationException("Failed to set ftype " + argument);
+	/** Sets the given mapping of the form <code>MAPPING=COMMAND</code>. */
+	private void setFtype(String desiredMapping) throws InstallationException, IOException, InterruptedException {
+		String argument = desiredMapping;
+		String ftypeOutput = runFtype(argument);
+		if (!readCurrentJnlpFtype().equalsIgnoreCase(argument)) {
+			throw new InstallationException(
+					"Failed to set file mapping " + argument + ". Output of ftype: " + ftypeOutput);
 		}
 	}
 
 	/** Runs the ftype shell builtin to change file associations. */
 	private static String runFtype(String argument) throws IOException, InterruptedException {
 		CommandLine commandLine = new CommandLine("cmd.exe");
+		commandLine.addArgument("/s");
 		commandLine.addArgument("/c");
-		commandLine.addArgument("ftype " + argument);
+		// cmd.exe rejects the command unless we disable quoting and wrap the entire
+		// thing in quotes for the /s parameter's quote handling
+		commandLine.addArgument("\"ftype " + argument + "\"", false);
 
 		DefaultExecutor executor = new DefaultExecutor();
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
 		executor.setStreamHandler(streamHandler);
+		// ftype has weird exit values. We just ignore them and only check the output
+		executor.setExitValues(null);
 
 		executor.execute(commandLine);
 		return outputStream.toString().trim();
