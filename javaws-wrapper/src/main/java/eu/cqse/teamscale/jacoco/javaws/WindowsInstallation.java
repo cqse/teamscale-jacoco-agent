@@ -30,10 +30,10 @@ public class WindowsInstallation {
 	private final WrapperPaths wrapperPaths;
 	private final BackupPaths backupPaths;
 
-	public WindowsInstallation() throws InstallationException {
+	public WindowsInstallation(Path workingDirectory) throws InstallationException {
 		this.systemSecurityPolicy = getJvmInstallPath().resolve("lib/security").resolve(SECURITY_POLICY_FILE);
-		this.wrapperPaths = new WrapperPaths(getCurrentWorkingDirectory());
-		this.backupPaths = new BackupPaths(getCurrentWorkingDirectory().resolve("backup"));
+		this.wrapperPaths = new WrapperPaths(workingDirectory);
+		this.backupPaths = new BackupPaths(workingDirectory.resolve("backup"));
 		validate();
 	}
 
@@ -65,6 +65,10 @@ public class WindowsInstallation {
 	 * case of an exception, the installation may be partly done.
 	 */
 	public void install() throws InstallationException {
+		if (isInstalled()) {
+			throw new InstallationException("Wrapper is already installed");
+		}
+
 		try {
 			Files.copy(systemSecurityPolicy, backupPaths.securityPolicy, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
@@ -96,6 +100,10 @@ public class WindowsInstallation {
 	 * case of an exception, the uninstallation may be partly done.
 	 */
 	public void uninstall() throws InstallationException {
+		if (!isInstalled()) {
+			throw new InstallationException("Wrapper does not seem to be installed");
+		}
+
 		String oldFtypeMapping;
 		try {
 			oldFtypeMapping = FileSystemUtils.readFileUTF8(backupPaths.ftypeMapping.toFile());
@@ -157,10 +165,6 @@ public class WindowsInstallation {
 	/** The path where the currently running JVM is installed. */
 	private static final Path getJvmInstallPath() {
 		return Paths.get(System.getProperty("java.home"));
-	}
-
-	private static final Path getCurrentWorkingDirectory() {
-		return Paths.get(System.getProperty("user.dir"));
 	}
 
 	private class BackupPaths {
