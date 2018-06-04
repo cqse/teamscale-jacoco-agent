@@ -284,7 +284,7 @@ public class AgentOptions {
 
 	/** Returns the normalized class name of the given class file's path. */
 	/* package */ static String getClassName(String path) {
-		String[] parts = FileSystemUtils.normalizeSeparators(path.toString()).split("@");
+		String[] parts = FileSystemUtils.normalizeSeparators(path).split("@");
 		if (parts.length == 0) {
 			return "";
 		}
