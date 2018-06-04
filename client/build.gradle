@@ -1,142 +1,144 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "2.0.4"
+	id 'com.github.johnrengelman.shadow' version '2.0.4'
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
 
-ext.jacocoVersion = '0.7.9'
-ext.outputVersion = rootProject.appVersion + "-jacoco-" + jacocoVersion
+ext {
+	jacocoVersion = '0.7.9'
+	outputVersion = rootProject.appVersion + "-jacoco-" + jacocoVersion
+}
 
 configurations {
-    provided
+	provided
 }
 
 sourceSets {
-    main { compileClasspath += configurations.provided }
+	main { compileClasspath += configurations.provided }
 }
 
 dependencies {
-    compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
-    compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
-    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
-    provided group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion
+	compile "org.jacoco:org.jacoco.core:$jacocoVersion"
+	compile "org.jacoco:org.jacoco.report:$jacocoVersion"
+	compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
+	provided "org.jacoco:org.jacoco.agent:$jacocoVersion"
 
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.8.2'
-	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8.2'
+	compile 'org.apache.logging.log4j:log4j-api:2.8.2'
+	compile 'org.apache.logging.log4j:log4j-core:2.8.2'
 
-    compile "io.reactivex.rxjava2:rxjava:2.1.2"
-    compile "com.beust:jcommander:1.71"
-    compile 'org.conqat:org.conqat.lib.commons:0.20160822'
+	compile 'io.reactivex.rxjava2:rxjava:2.1.2'
+	compile 'com.beust:jcommander:1.71'
+	compile 'org.conqat:org.conqat.lib.commons:0.20160822'
 
-    compile 'com.squareup.retrofit2:retrofit:2.4.0'
+	compile 'com.squareup.retrofit2:retrofit:2.4.0'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.assertj:assertj-core:3.8.0'
+	testCompile 'junit:junit:4.12'
+	testCompile 'org.assertj:assertj-core:3.8.0'
 }
 
-mainClassName = "eu.cqse.teamscale.jacoco.client.Main"
+mainClassName = 'eu.cqse.teamscale.jacoco.client.Main'
 shadowJar {
-    baseName = 'teamscale-jacoco-client'
-    classifier = null
-    version = outputVersion
-    manifest {
-        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.client.agent.Agent'
-    }
+	baseName = 'teamscale-jacoco-client'
+	classifier = null
+	version = outputVersion
+	manifest {
+		attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.client.agent.Agent'
+	}
 }
 
 startShadowScripts {
-    applicationName = 'jacoco-client'
+	applicationName = 'jacoco-client'
 }
 
 task doc(type: Exec) {
-    def outputDir = file('build/doc')
-    outputs.dir outputDir
+	def outputDir = file('build/doc')
+	outputs.dir outputDir
 
-    doFirst {
-        mkdir outputDir
-    }
-    commandLine 'pandoc', 'USAGE.md', '-o', "$outputDir/userguide.pdf"
+	doFirst {
+		mkdir outputDir
+	}
+	commandLine 'pandoc', 'USAGE.md', '-o', "$outputDir/userguide.pdf"
 }
 
 distributions {
-    shadow {
-        baseName = 'jacoco-client'
-        contents {
-            from(doc) {
-                include '**'
-                into 'documentation'
-            }
+	shadow {
+		baseName = 'jacoco-client'
+		contents {
+			from(doc) {
+				include '**'
+				into 'documentation'
+			}
 
-            def agentJar = configurations.provided.find {
-                def path = it.toString()
-                path.contains("org.jacoco.agent") && !path.contains("runtime")
-            }
+			def agentJar = configurations.provided.find {
+				def path = it.toString()
+				path.contains('org.jacoco.agent') && !path.contains('runtime')
+			}
 
-            from(zipTree(agentJar)) {
-                include 'jacocoagent.jar'
-                into 'jacoco-agent'
-            }
-        }
-    }
+			from(zipTree(agentJar)) {
+				include 'jacocoagent.jar'
+				into 'jacoco-agent'
+			}
+		}
+	}
 }
 
 processResources {
-    filesMatching('**/app.properties') {
-        filter {
-            it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
-        }
-    }
+	filesMatching('**/app.properties') {
+		filter {
+			it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
+		}
+	}
 }
 
 task dist {
-    dependsOn shadowDistZip
+	dependsOn shadowDistZip
 }
 
 task copyDockerFiles(type: Copy) {
-    dependsOn shadowJar
+	dependsOn shadowJar
 
-    doFirst {
-        mkdir 'build/docker'
-    }
+	doFirst {
+		mkdir 'build/docker'
+	}
 
-    from('src/docker') {
-        include 'Dockerfile'
-    }
-    from(shadowJar) {
-        rename(/.*/, 'agent.jar')
-    }
+	from('src/docker') {
+		include 'Dockerfile'
+	}
+	from(shadowJar) {
+		rename(/.*/, 'agent.jar')
+	}
 
-    into 'build/docker'
+	into 'build/docker'
 }
 
 task buildDockerImage(type: Exec) {
-    dependsOn copyDockerFiles
+	dependsOn copyDockerFiles
 
-    workingDir 'build/docker'
-    commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-client:${outputVersion}"
+	workingDir 'build/docker'
+	commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
 task tagDockerImage(type: Exec) {
-    dependsOn buildDockerImage
+	dependsOn buildDockerImage
 
-    commandLine 'docker', 'tag', "cqse/teamscale-jacoco-client:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
+	commandLine 'docker', 'tag', "cqse/teamscale-jacoco-client:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
 task publishDockerImageInternal(type: Exec) {
-    dependsOn tagDockerImage
+	dependsOn tagDockerImage
 
-    commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
+	commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
 task loginDockerHub(type: Exec) {
-    commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
+	commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
 }
 
 task publishDockerImageDockerHub(type: Exec) {
-    dependsOn tagDockerImage, loginDockerHub
+	dependsOn tagDockerImage, loginDockerHub
 
-    commandLine 'docker', 'push', "cqse/teamscale-jacoco-client:${outputVersion}"
+	commandLine 'docker', 'push', "cqse/teamscale-jacoco-client:${outputVersion}"
 }
 
 task dockerInternal(dependsOn: publishDockerImageInternal)

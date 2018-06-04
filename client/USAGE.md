@@ -1,5 +1,12 @@
 # Teamscale JaCoCo Client
 
+This profiler can be used in two different modes:
+
+- as a Java agent (recommended, easier to set up)
+- in conjunction with the JaCoCo agent as a stand-alone client application (deprecated, will be removed in the future)
+
+Please choose which mode you'd like to use and check the corresponding instructions below on how to install that mode.
+
 ## Installing
 
 Unzip this zip file into any folder.
