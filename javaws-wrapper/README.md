@@ -23,7 +23,10 @@ Under Linux, revert whatever you did to associate the wrapper with JNLP files an
 ## Configuration
 
 The wrapper expects a file called `javaws.properties` in the same directory as the wrapper is located.
-An example is provided. If you used the Windows installer (see above), this will be auto-configured for you.
+An example is provided. If you used the Windows installer (see above), this will be partly preconfigured for you.
+Please fill out all properties in that file before first use of the wrapper.
+
+The `agentArguments` must be filled according to the guidelines from the agent's userguide.
 
 As per the Java properties file spec, the file must use the ISO 8859-1 encoding!
 Please remember that backslashes have to be escaped in the properties file! E.g.:
