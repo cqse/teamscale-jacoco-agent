@@ -101,6 +101,7 @@ public class WindowsInstallation {
 
 		Properties properties = new Properties();
 		properties.setProperty("javaws", wrapperPaths.wrapperExecutable.toAbsolutePath().toString());
+		properties.setProperty("agentArguments", "TODO");
 
 		try (FileOutputStream outputStream = new FileOutputStream(wrapperPaths.configProperties.toFile())) {
 			properties.store(outputStream, StringUtils.EMPTY_STRING);
@@ -109,6 +110,9 @@ public class WindowsInstallation {
 					+ ". The installation itself was successful but you'll have to configure the wrapper manually (see the userguide for instructions)");
 			e.printStackTrace(System.err);
 		}
+
+		System.out.println("The installation was successful. Please fill in the agent arguments in the config file "
+				+ wrapperPaths.configProperties);
 	}
 
 	/**
