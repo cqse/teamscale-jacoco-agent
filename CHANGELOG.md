@@ -2,6 +2,10 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 8.0.0
+
+- [breaking change] removed `watch` mode and made `convert` mode the default. Only the agent is now supported
+
 # 7.0.0
 - [feature] prevent clashes between our dependencies and the profile app's
 - [breaking change] logging for the agent must now be configured via the `logging-config` parameter
