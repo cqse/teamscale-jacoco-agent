@@ -6,8 +6,9 @@ The JaCoCo coverage tool is used underneath.
 ## Installing
 
 Unzip this zip file into any folder.
-When used as an agent, coverage is dumped to the file system or via HTTP in regular intervals while the application
-is running.
+When used as a Java agent for your Java application, coverage is dumped to the file system or via
+HTTP file uploads in regular intervals while the application is running.
+Coverage is also transfered when the application is shut down.
 
 Configure the agent on your application's JVM:
 
@@ -16,7 +17,7 @@ Configure the agent on your application's JVM:
 Where
 
 - `AGENTJAR` is the path to the Jar file of the Teamscale JaCoCo agent (inside the `lib` folder of this zip)
-- `OPTIONS` are one or more comma-separated options in the format `key=value` for the agent
+- `OPTIONS` are one or more comma-separated options for the agent in the format `key1=value1,key2=value2` and so on.
 
 The following options are available:
 
@@ -36,7 +37,8 @@ The following options are available:
 - `excludes`: exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the JaCoCo documentation in the "Agent" section.
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
-  setup of the tool as easy as possible. However, this should be disabled for productive use if possible, see the comments below.
+  setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
+  See the special section on `ignore-duplicates` below.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
@@ -60,6 +62,26 @@ For web applications running in WebSphere, please also apply this additional JVM
     -Xshareclasses:none
 
 This option disables a WebSphere internal class cache that causes problems with the profiler.
+
+## `ignore-duplicates`
+
+The underlying JaCoCo coverage instrumentation tooling relies on fully qualified class names
+to uniquely identify classes. However, in practice, applications are often deployed with
+multiple versions of the same class. This can happen, e.g. if you use the same library
+in different versions in subprojects of your code.
+
+At runtime, it is not deterministic, which of these versions will be loaded by the class loader.
+Thus, when trying to convert the recorded coverage back to covered source code lines,
+JaCoCo cannot determine which of the two versions was actually profiled.
+
+By default, the agent is configured to only log a warning in these cases and simply pick one
+of the versions at random. Thus, the reported coverage for such files may not be accurate
+and may even be totally unusable.
+It is thus desirable to fix these warnings by ensuring that only one version of each class
+is deployed with your application. This has to be fixed in your build process.
+
+Please refer to [this StackOverflow post][so-duplicates] and the [JaCoCo FAQ][jacoco-faq] for more
+information.
 
 # Docker
 
@@ -134,13 +156,14 @@ agent to read them from there with the `class-dir` option.
 
 ## Error: "Can't add different class with same name"
 
-This is a restriction of JaCoCo. You specified a class file location with the `-c` parameter that contains two versions of the same class that are not identical. This may happen e.g. when you
-have multiple application versions under the `-c` path. It may also happen if your application simply contains such conflicting classes (which is not good, you should fix this!).
-You have three options to fix this problem:
+This is a restriction of JaCoCo. See the abovesection about `ignore-duplicates`.
+To fix this error, it is best to resolve the underlying problem (two classes with the same fully qualified name
+but different code). If this is not possible or not desirable, you can set `ignore-duplicates=true` in the
+agent options to turn this error into a warning. Be advised that coverage for all classes that produce this
+error/warning in the log may have inaccurate coverage values reported.
 
-1. Make the `-c` parameter more concrete so it only includes the correct version of your application
-2. Use the `-f` and `-e` to exclude one of the duplicates. Make sure to exclude the right one or you might not get accurate coverage for those files!
-3. (Discouraged!) You can use the `-d true` parameter to simply suppress these errors. Note, however, that coverage reported for these duplicated classes may be inaccurate!
+Please refer to [this StackOverflow post][so-duplicates] and the [JaCoCo FAQ][jacoco-faq] for more
+information.
 
 ## How to change the log level
 
@@ -152,4 +175,6 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 
 
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306
+[so-duplicates]: https://stackoverflow.com/questions/11673356/jacoco-cant-add-different-class-with-same-name-org-hamcrest-basedescription
+[jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
 
