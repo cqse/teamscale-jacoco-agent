@@ -21,7 +21,7 @@ sourceSets {
 dependencies {
 	compile "org.jacoco:org.jacoco.core:$jacocoVersion"
 	compile "org.jacoco:org.jacoco.report:$jacocoVersion"
-	compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
+	compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 	provided "org.jacoco:org.jacoco.agent:$jacocoVersion"
 
 	compile 'org.apache.logging.log4j:log4j-api:2.8.2'
