@@ -55,7 +55,7 @@ shadowJar {
 }
 
 startShadowScripts {
-	applicationName = 'jacoco-agent'
+	applicationName = 'convert'
 }
 
 task doc(type: Exec) {

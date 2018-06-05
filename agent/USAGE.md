@@ -42,7 +42,8 @@ The following options are available:
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `logging-config`: path to a Log4J configuration XML file (other configuration formats are not supported at the moment).
-  Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent.
+  Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
+  `logging` folder, e.g. to enable debug logging or log directly to the console.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -52,7 +53,7 @@ __Please check the produced log file for errors and warnings before using the ag
 
 The log file is written to the current directory of the profiled Java process by default.
 
-### Additional steps for WebSphere
+## Additional steps for WebSphere
 
 For web applications running in WebSphere, please also apply this additional JVM parameter:
 
