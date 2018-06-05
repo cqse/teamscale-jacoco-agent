@@ -19,7 +19,8 @@ build:
     - ./gradlew clean check dist
   artifacts:
     paths:
-      - build
+      - client/build
+      - javaws-wrapper/build/distributions
     expire_in: 1 week
 
 docker-internal:

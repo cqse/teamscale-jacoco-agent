@@ -1,121 +1,13 @@
-plugins {
-	id "com.github.johnrengelman.shadow" version "1.2.3"
-}
-
-apply plugin: 'java'
-apply plugin: 'application'
-
 ext {
-	appVersion = '5.0.0'
-	jacocoVersion = '0.7.9'
-	outputVersion = appVersion + "-jacoco-" + jacocoVersion
+	appVersion = '6.0.0'
 }
 
-repositories {
-	ivy {
-		url "https://share.cqse.eu/svn/artifacts/ivy"
+subprojects {
+	repositories {
+		ivy {
+			url 'https://share.cqse.eu/svn/artifacts/ivy'
+		}
+		jcenter()
 	}
-    jcenter()
 }
-
-dependencies {
-    compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
-    compile group: 'org.jacoco', name:'org.jacoco.report', version: jacocoVersion
-    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
-
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.8.2'
-	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.8.2'
-
-    compile "io.reactivex.rxjava2:rxjava:2.1.2"
-    compile "com.beust:jcommander:1.71"
-    compile 'org.conqat:org.conqat.lib.commons:0.20160822'
-    
-    compile 'com.squareup.retrofit2:retrofit:2.4.0'
-    
-
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.assertj:assertj-core:3.8.0'
-}
-
-mainClassName = "eu.cqse.teamscale.jacoco.client.Main"
-shadowJar {
-    baseName = 'teamscale-jacoco-client'
-    classifier = null
-    version = outputVersion
-    manifest {
-        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.client.agent.Agent'
-    }
-}
-
-processResources {
-    filesMatching('**/app.properties') {
-        filter {
-            it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', appVersion)
-        }
-    }
-}
-
-task doc(type: Exec) {
-    doFirst {
-        mkdir 'build/doc'
-    }
-    commandLine 'pandoc', 'USAGE.md', '-o', 'build/doc/USAGE.pdf'
-}
-
-task dist(dependsOn: ['clean', 'shadowJar', 'doc'], type: Zip) {
-    version outputVersion
-    from 'build'
-    include 'libs/*.jar'
-    include 'doc/*.pdf'
-    include 'resources/main/windows/**/*'
-    include 'resources/main/linux/**/*'
-    include 'resources/main/log4j*.xml'
-}
-
-task copyDockerJar(dependsOn: 'shadowJar', type: Copy) {
-    doFirst {
-        mkdir 'build/docker'
-    }
-    from 'build/libs'
-    into 'build/docker'
-    rename(/teamscale-jacoco-client.*\.jar/, 'teamscale-jacoco-client.jar')
-}
-
-task copyDockerFiles(dependsOn: 'shadowJar', type: Copy) {
-    doFirst {
-        mkdir 'build/docker'
-    }
-    from 'build/resources'
-    include '**/docker/*'
-    include '**/docker/Dockerfile'
-    includeEmptyDirs false
-    eachFile {
-        it.path = it.relativePath.lastName
-    }
-    into 'build/docker'
-}
-
-task buildDockerImage(dependsOn: [copyDockerFiles, copyDockerJar], type: Exec) {
-    workingDir 'build/docker'
-    commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-client:${outputVersion}"
-}
-
-task tagDockerImage(dependsOn: buildDockerImage, type: Exec) {
-    commandLine 'docker', 'tag', "cqse/teamscale-jacoco-client:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
-}
-
-task publishDockerImageInternal(dependsOn: tagDockerImage, type: Exec) {
-    commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-client:${outputVersion}"
-}
-
-task loginDockerHub(type: Exec) {
-    commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
-}
-
-task publishDockerImageDockerHub(dependsOn: [tagDockerImage, loginDockerHub], type: Exec) {
-    commandLine 'docker', 'push', "cqse/teamscale-jacoco-client:${outputVersion}"
-}
-
-task dockerInternal(dependsOn: publishDockerImageInternal)
-task dockerHub(dependsOn: publishDockerImageDockerHub)
 
