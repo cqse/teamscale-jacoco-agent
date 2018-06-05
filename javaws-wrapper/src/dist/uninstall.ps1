@@ -1,6 +1,6 @@
 # Uninstalls the javaws wrapper for the current user
 # Run this as:
-# powershell -ExecutionPolicy ByPass uninstall.ps1
+# powershell -ExecutionPolicy ByPass ./uninstall.ps1
 
 # taken from https://stackoverflow.com/a/10000292/1396068
 function Test-IsAdmin {
