@@ -26,15 +26,6 @@ import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
  */
 public class Agent {
 
-	static {
-		// since we will be logging from our own shutdown hook, we must disable the
-		// log4j one. Otherwise it logs a warning to the console on shutdown. Due to
-		// this, we need to manually shutdown the logging engine in our own shutdown
-		// hook
-		System.setProperty("log4j.shutdownHookEnabled", "false");
-		System.setProperty("log4j2.shutdownHookEnabled", "false");
-	}
-
 	/**
 	 * Entry point for the agent, called by the JVM.
 	 */
@@ -43,11 +34,15 @@ public class Agent {
 		try {
 			agentOptions = new AgentOptions(options);
 		} catch (AgentOptionParseException e) {
+			LoggingUtils.initializeDefaultLogging();
+			LogManager.getLogger(Agent.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
 			System.err.println("Failed to parse agent options: " + e.getMessage());
 			throw e;
 		}
 
-		// start the JaCoCo agent
+		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+
+		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
 		Agent agent = new Agent(agentOptions);

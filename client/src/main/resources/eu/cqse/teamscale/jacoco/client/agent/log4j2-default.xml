@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<RollingFile name="RollingFile" fileName="./cqse-jacoco-agent.errors.log"
+				filePattern="./cqse-jacoco-agent-%d{yyyy-MM-dd}-%i.errors.log">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="1MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="10" />
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="WARN">
+			<AppenderRef ref="RollingFile" />
+		</Root>
+	</Loggers>
+</Configuration>

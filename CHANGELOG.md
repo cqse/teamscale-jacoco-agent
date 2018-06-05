@@ -2,6 +2,10 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 7.0.0
+- [feature] prevent clashes between our dependencies and the profile app's
+- [breaking change] logging for the agent must now be configured via the `logging-config` parameter
+
 # 6.0.0
 - [breaking change] Docker image is now designed to use the agent instead of the client
 - [feature] add wrapper around `javaws` to allow profiling Java Web Start applications

@@ -1,9 +1,20 @@
-plugins {
-	id 'com.github.johnrengelman.shadow' version '2.0.4'
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
+    }
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
+// we don't want to cause conflicts between our dependencies and the target application
+// since the agent will be loaded with the same class loader as the profiled application
+// so we use plugin-shadow instead of shadow to relocate all of our dependencies
+apply plugin: 'com.github.johnrengelman.plugin-shadow'
 
 ext {
 	jacocoVersion = '0.7.9'
@@ -31,12 +42,16 @@ dependencies {
 
 mainClassName = 'eu.cqse.teamscale.jacoco.client.Main'
 shadowJar {
-	baseName = 'teamscale-jacoco-client'
-	classifier = null
-	version = outputVersion
-	manifest {
-		attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.client.agent.Agent'
-	}
+    baseName = 'teamscale-jacoco-client'
+    classifier = null
+    version = outputVersion
+    manifest {
+        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.client.agent.Agent'
+    }
+
+    // ensures that log4j resource files are also relocated properly
+    transform(de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer)
+    transform(Log4JResourceTransformer)
 }
 
 startShadowScripts {
