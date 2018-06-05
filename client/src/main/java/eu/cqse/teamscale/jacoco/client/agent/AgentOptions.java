@@ -82,7 +82,7 @@ public class AgentOptions {
 	private int dumpIntervalInMinutes = 60;
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	private boolean shouldIgnoreDuplicateClassFiles = false;
+	private boolean shouldIgnoreDuplicateClassFiles = true;
 
 	/** Include patterns to pass on to JaCoCo. */
 	private String jacocoIncludes = null;
@@ -250,7 +250,7 @@ public class AgentOptions {
 	 * @see #locationIncludeFilters
 	 * @see #locationExcludeFilters
 	 */
-	public Predicate<Path> getLocationIncludeFilter() {
+	public Predicate<String> getLocationIncludeFilter() {
 		return path -> {
 			String className = getClassName(path);
 			// first check includes
@@ -278,13 +278,13 @@ public class AgentOptions {
 	}
 
 	/** @see #shouldIgnoreDuplicateClassFiles */
-	public boolean isShouldIgnoreDuplicateClassFiles() {
+	public boolean shouldIgnoreDuplicateClassFiles() {
 		return shouldIgnoreDuplicateClassFiles;
 	}
 
 	/** Returns the normalized class name of the given class file's path. */
-	/* package */ static String getClassName(Path path) {
-		String[] parts = path.toString().split("@");
+	/* package */ static String getClassName(String path) {
+		String[] parts = FileSystemUtils.normalizeSeparators(path).split("@");
 		if (parts.length == 0) {
 			return "";
 		}
