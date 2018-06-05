@@ -5,9 +5,11 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 
-ext.appVersion = '4.0.3'
-ext.jacocoVersion = '0.7.9'
-ext.outputVersion = appVersion + "-jacoco-" + jacocoVersion
+ext {
+	appVersion = '5.0.0'
+	jacocoVersion = '0.7.9'
+	outputVersion = appVersion + "-jacoco-" + jacocoVersion
+}
 
 repositories {
 	ivy {

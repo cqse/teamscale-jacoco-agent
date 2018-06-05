@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 5.0.0
+- [breaking change] ignore-duplicates is now the default for the agent to simplify the initial setup
+
 # 4.0.3
 - [fix] fix handling of Windows paths
 
