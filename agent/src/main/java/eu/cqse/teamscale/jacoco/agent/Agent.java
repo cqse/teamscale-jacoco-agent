@@ -11,7 +11,7 @@ import java.time.Duration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
+import org.jacoco.agent.rt.internal_c13123e.PreMain;
 
 import eu.cqse.teamscale.jacoco.agent.AgentOptions.AgentOptionParseException;
 import eu.cqse.teamscale.jacoco.agent.dump.Dump;
