@@ -9,13 +9,11 @@ import org.jacoco.core.JaCoCo;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
-import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-import eu.cqse.teamscale.jacoco.client.commandline.ECommand;
-import eu.cqse.teamscale.jacoco.client.commandline.ICommand;
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
+import eu.cqse.teamscale.jacoco.client.convert.ConvertCommand;
 
 /**
  * Connects to a running JaCoCo and regularly dumps coverage to XML files on
@@ -37,6 +35,9 @@ public class Main {
 	/** The default arguments that will always be parsed. */
 	private final DefaultArguments defaultArguments = new DefaultArguments();
 
+	/** The arguments for the one-time conversion process. */
+	private final ConvertCommand command = new ConvertCommand();
+
 	/** Entry point. */
 	public static void main(String[] args) throws Exception {
 		new Main().parseCommandLineAndRun(args);
@@ -48,21 +49,10 @@ public class Main {
 	 */
 	private void parseCommandLineAndRun(String[] args) throws Exception {
 		Builder builder = createJCommanderBuilder();
-		for (ECommand command : ECommand.values()) {
-			builder.addCommand(command.implementation);
-		}
 		JCommander jCommander = builder.build();
 
 		try {
 			jCommander.parse(args);
-		} catch (MissingCommandException e) {
-			// fall back to the default command
-			jCommander = createJCommanderBuilder().addObject(ECommand.DEFAULT_COMMAND.implementation).build();
-			try {
-				jCommander.parse(args);
-			} catch (ParameterException e2) {
-				handleInvalidCommandLine(jCommander, e2.getMessage());
-			}
 		} catch (ParameterException e) {
 			handleInvalidCommandLine(jCommander, e.getMessage());
 		}
@@ -73,21 +63,18 @@ public class Main {
 			return;
 		}
 
-		ECommand commandType = ECommand.from(jCommander);
-		ICommand command = commandType.implementation;
 		Validator validator = command.validate();
 		if (!validator.isValid()) {
 			handleInvalidCommandLine(jCommander, StringUtils.CR + validator.getErrorMessage());
 		}
 
-		logger.info("Starting CQSE JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION
-				+ " with command " + commandType);
+		logger.info("Starting CQSE JaCoCo client " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 		command.run();
 	}
 
 	/** Creates a basic builder for a {@link JCommander} object. */
 	private Builder createJCommanderBuilder() {
-		return JCommander.newBuilder().programName(Main.class.getName()).addObject(defaultArguments);
+		return JCommander.newBuilder().programName(Main.class.getName()).addObject(defaultArguments).addObject(command);
 	}
 
 	/** Shows an informative error and help message. Then exits the program. */
@@ -98,8 +85,7 @@ public class Main {
 	}
 
 	/**
-	 * Default arguments that may be provided regardless of the specified
-	 * {@link ECommand}.
+	 * Default arguments that may always be provided.
 	 */
 	private static class DefaultArguments {
 

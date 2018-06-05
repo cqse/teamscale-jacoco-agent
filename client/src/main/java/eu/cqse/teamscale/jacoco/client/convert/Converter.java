@@ -8,9 +8,9 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
 
+import eu.cqse.teamscale.jacoco.client.agent.Dump;
 import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
-import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
 /** Converts one .exec binary coverage file to XML. */
 public class Converter {

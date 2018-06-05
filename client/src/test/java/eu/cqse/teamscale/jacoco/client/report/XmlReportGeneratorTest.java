@@ -13,9 +13,9 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.junit.Test;
 
+import eu.cqse.teamscale.jacoco.client.agent.Dump;
 import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
-import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
 /** Tests report generation with and without duplicate classes. */
 public class XmlReportGeneratorTest extends CCSMTestCaseBase {

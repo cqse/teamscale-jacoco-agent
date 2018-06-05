@@ -15,8 +15,6 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 
-import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
-
 /**
  * Wrapper around JaCoCo's {@link RT} runtime interface.
  * 

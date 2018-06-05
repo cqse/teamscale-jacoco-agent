@@ -18,7 +18,6 @@ import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpExcepti
 import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
-import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
