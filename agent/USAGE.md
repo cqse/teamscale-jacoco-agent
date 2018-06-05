@@ -139,6 +139,8 @@ see all available command line options.
 This is especially useful since this conversion does allow for duplicate class files by default, which
 the raw JaCoCo conversion will not allow.
 
+__The caveats listed in the above `ignore-duplicates` section still apply!__
+
 # Troubleshooting
 
 ## Produced coverage files are huge
