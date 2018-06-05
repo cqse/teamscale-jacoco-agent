@@ -6,6 +6,7 @@
 package eu.cqse.teamscale.jacoco.client.agent;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,6 +70,9 @@ public class AgentOptions {
 	 */
 	private WildcardMatcher locationExcludeFilters = null;
 
+	/** The logging configuration file. */
+	private Path loggingConfig = null;
+
 	/** The directory to write the XML traces to. */
 	private Path outputDir = null;
 
@@ -82,7 +86,7 @@ public class AgentOptions {
 	private int dumpIntervalInMinutes = 60;
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	private boolean shouldIgnoreDuplicateClassFiles = false;
+	private boolean shouldIgnoreDuplicateClassFiles = true;
 
 	/** Include patterns to pass on to JaCoCo. */
 	private String jacocoIncludes = null;
@@ -132,8 +136,20 @@ public class AgentOptions {
 		validator.ensure(() -> {
 			CCSMAssert.isNotNull(outputDir, "You must specify an output directory");
 			FileSystemUtils.ensureDirectoryExists(outputDir.toFile());
-			CCSMAssert.isTrue(outputDir.toFile().canWrite(), "Path '" + outputDir + "' is not writable");
 		});
+
+		if (loggingConfig != null) {
+			validator.ensure(() -> {
+				CCSMAssert.isTrue(Files.exists(loggingConfig),
+						"The path provided for the logging configuration does not exist: " + loggingConfig);
+				CCSMAssert.isTrue(Files.isRegularFile(loggingConfig),
+						"The path provided for the logging configuration is not a file: " + loggingConfig);
+				CCSMAssert.isTrue(Files.isReadable(loggingConfig),
+						"The file provided for the logging configuration is not readable: " + loggingConfig);
+				CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
+						"The logging configuration file must have the file extension .xml and be a valid XML file");
+			});
+		}
 
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
@@ -156,6 +172,9 @@ public class AgentOptions {
 		String value = keyAndValue[1];
 
 		switch (key.toLowerCase()) {
+		case "logging-config":
+			loggingConfig = parsePath(key, value);
+			break;
 		case "interval":
 			try {
 				dumpIntervalInMinutes = Integer.parseInt(value);
@@ -164,11 +183,7 @@ public class AgentOptions {
 			}
 			break;
 		case "out":
-			try {
-				outputDir = Paths.get(value);
-			} catch (InvalidPathException e) {
-				throw new AgentOptionParseException("Invalid path given for option 'out'");
-			}
+			outputDir = parsePath(key, value);
 			break;
 		case "upload-url":
 			uploadUrl = parseUrl(value);
@@ -204,6 +219,17 @@ public class AgentOptions {
 			}
 
 			throw new AgentOptionParseException("Unknown option: " + key);
+		}
+	}
+
+	/**
+	 * Parses the given value as a {@link Path}.
+	 */
+	private static Path parsePath(String optionName, String value) throws AgentOptionParseException {
+		try {
+			return Paths.get(value);
+		} catch (InvalidPathException e) {
+			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + value, e);
 		}
 	}
 
@@ -250,7 +276,7 @@ public class AgentOptions {
 	 * @see #locationIncludeFilters
 	 * @see #locationExcludeFilters
 	 */
-	public Predicate<Path> getLocationIncludeFilter() {
+	public Predicate<String> getLocationIncludeFilter() {
 		return path -> {
 			String className = getClassName(path);
 			// first check includes
@@ -278,13 +304,23 @@ public class AgentOptions {
 	}
 
 	/** @see #shouldIgnoreDuplicateClassFiles */
-	public boolean isShouldIgnoreDuplicateClassFiles() {
+	public boolean shouldIgnoreDuplicateClassFiles() {
 		return shouldIgnoreDuplicateClassFiles;
 	}
 
+	/** @see #loggingConfig */
+	public Path getLoggingConfig() {
+		return loggingConfig;
+	}
+
+	/** @see #loggingConfig */
+	public void setLoggingConfig(Path loggingConfig) {
+		this.loggingConfig = loggingConfig;
+	}
+
 	/** Returns the normalized class name of the given class file's path. */
-	/* package */ static String getClassName(Path path) {
-		String[] parts = path.toString().split("@");
+	/* package */ static String getClassName(String path) {
+		String[] parts = FileSystemUtils.normalizeSeparators(path).split("@");
 		if (parts.length == 0) {
 			return "";
 		}

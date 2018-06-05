@@ -1,5 +1,12 @@
 # Teamscale JaCoCo Client
 
+This profiler can be used in two different modes:
+
+- as a Java agent (recommended, easier to set up)
+- in conjunction with the JaCoCo agent as a stand-alone client application (deprecated, will be removed in the future)
+
+Please choose which mode you'd like to use and check the corresponding instructions below on how to install that mode.
+
 ## Installing
 
 Unzip this zip file into any folder.
@@ -35,7 +42,8 @@ The following options are available:
   but no external libraries. For further details, please see the JaCoCo documentation in the "Agent" section.
 - `excludes`: exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the JaCoCo documentation in the "Agent" section.
-- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. Should be used with care, see below.
+- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
+  setup of the tool as easy as possible. However, this should be disabled for productive use if possible, see the comments below.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
@@ -57,6 +65,8 @@ By default, the agent logs to the console. You can change this by providing a Lo
 
 Where `LOG4J2XML` is the absolute path to the logging configuration. Example configurations are included with
 the client.
+
+__Please check the log for errors and warnings before using the agent in any productive setting.__
 
 ## Using it as a separate process
 

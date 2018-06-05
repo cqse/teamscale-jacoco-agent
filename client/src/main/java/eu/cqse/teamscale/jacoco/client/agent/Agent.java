@@ -13,9 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
 
-import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.agent.AgentOptions.AgentOptionParseException;
 import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpException;
+import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
@@ -26,15 +26,6 @@ import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
  */
 public class Agent {
 
-	static {
-		// since we will be logging from our own shutdown hook, we must disable the
-		// log4j one. Otherwise it logs a warning to the console on shutdown. Due to
-		// this, we need to manually shutdown the logging engine in our own shutdown
-		// hook
-		System.setProperty("log4j.shutdownHookEnabled", "false");
-		System.setProperty("log4j2.shutdownHookEnabled", "false");
-	}
-
 	/**
 	 * Entry point for the agent, called by the JVM.
 	 */
@@ -43,11 +34,15 @@ public class Agent {
 		try {
 			agentOptions = new AgentOptions(options);
 		} catch (AgentOptionParseException e) {
+			LoggingUtils.initializeDefaultLogging();
+			LogManager.getLogger(Agent.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
 			System.err.println("Failed to parse agent options: " + e.getMessage());
 			throw e;
 		}
 
-		// start the JaCoCo agent
+		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+
+		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
 		Agent agent = new Agent(agentOptions);
@@ -75,7 +70,7 @@ public class Agent {
 		controller = new JacocoRuntimeController();
 
 		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
-				options.isShouldIgnoreDuplicateClassFiles());
+				options.shouldIgnoreDuplicateClassFiles());
 		store = options.createStore();
 
 		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));

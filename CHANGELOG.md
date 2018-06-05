@@ -2,9 +2,19 @@ We use [semantic versioning][semver]
 
 # Next release
 
-# 5.0.0
+# 7.0.0
+- [feature] prevent clashes between our dependencies and the profile app's
+- [breaking change] logging for the agent must now be configured via the `logging-config` parameter
+
+# 6.0.0
 - [breaking change] Docker image is now designed to use the agent instead of the client
 - [feature] add wrapper around `javaws` to allow profiling Java Web Start applications
+
+# 5.0.0
+- [breaking change] ignore-duplicates is now the default for the agent to simplify the initial setup
+
+# 4.0.3
+- [fix] fix handling of Windows paths
 
 # 4.0.2
 - [fix] using `upload-url` in conjunction with `upload-metadata` caused a crash

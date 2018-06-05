@@ -65,9 +65,7 @@ public class Main {
 		}
 	}
 
-	/**
-	 * Contains the actual logic to run the wrapper.
-	 */
+	/** Contains the actual logic to run the wrapper. */
 	private void run(String[] args, Path workingDirectory)
 			throws InterruptedException, ConfigurationException, IOException {
 		Path configFile = workingDirectory.resolve(PROPERTIES_FILENAME).toAbsolutePath();

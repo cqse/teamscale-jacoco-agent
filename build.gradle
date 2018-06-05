@@ -1,11 +1,13 @@
-ext.appVersion = '5.0.0'
+ext {
+	appVersion = '7.0.0'
+}
 
 subprojects {
-    repositories {
-        ivy {
-            url "https://share.cqse.eu/svn/artifacts/ivy"
-        }
-        jcenter()
-    }
+	repositories {
+		ivy {
+			url 'https://share.cqse.eu/svn/artifacts/ivy'
+		}
+		jcenter()
+	}
 }
 

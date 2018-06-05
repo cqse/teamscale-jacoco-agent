@@ -5,10 +5,10 @@
 	</Properties>
 	<Appenders>
 	    <Console name="Console" target="SYSTEM_OUT">
-	      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n"/>
+	    	<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n"/>
 	    </Console>
-		<RollingFile name="RollingFile" fileName="${log-path}/jacoco-converter.log"
-				filePattern="${log-path}/jacoco-converter-%d{yyyy-MM-dd}-%i.log">
+		<RollingFile name="RollingFile" fileName="${log-path}/cqse-jacoco-agent.log"
+				filePattern="${log-path}/cqse-jacoco-agent-%d{yyyy-MM-dd}-%i.log">
 			<PatternLayout
 				pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n" />
 			<Policies>
