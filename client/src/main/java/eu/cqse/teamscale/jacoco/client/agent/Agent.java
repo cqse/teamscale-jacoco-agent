@@ -13,9 +13,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.internal_8ff85ea.PreMain;
 
-import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.agent.AgentOptions.AgentOptionParseException;
 import eu.cqse.teamscale.jacoco.client.agent.JacocoRuntimeController.DumpException;
+import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.client.util.Timer;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
@@ -70,7 +70,7 @@ public class Agent {
 		controller = new JacocoRuntimeController();
 
 		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
-				options.isShouldIgnoreDuplicateClassFiles());
+				options.shouldIgnoreDuplicateClassFiles());
 		store = options.createStore();
 
 		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));

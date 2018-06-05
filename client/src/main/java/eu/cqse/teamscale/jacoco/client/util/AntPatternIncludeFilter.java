@@ -5,7 +5,6 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.client.util;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -15,9 +14,9 @@ import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 /**
- * Applies ANT include and exclude patterns to {@link Path}s.
+ * Applies ANT include and exclude patterns to paths.
  */
-public class AntPatternIncludeFilter implements Predicate<Path> {
+public class AntPatternIncludeFilter implements Predicate<String> {
 
 	/** The include filters. Empty means include everything. */
 	private final List<Pattern> locationIncludeFilters;
@@ -35,8 +34,8 @@ public class AntPatternIncludeFilter implements Predicate<Path> {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean test(Path path) {
-		return !isFiltered(FileSystemUtils.normalizeSeparators(path.toString()));
+	public boolean test(String path) {
+		return !isFiltered(FileSystemUtils.normalizeSeparators(path));
 	}
 
 	/**

@@ -8,7 +8,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
 
-import eu.cqse.teamscale.jacoco.client.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.client.report.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.client.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.client.watch.IJacocoController.Dump;
 
