@@ -15,10 +15,7 @@ import com.beust.jcommander.ParameterException;
 import eu.cqse.teamscale.jacoco.client.commandline.Validator;
 import eu.cqse.teamscale.jacoco.client.convert.ConvertCommand;
 
-/**
- * Connects to a running JaCoCo and regularly dumps coverage to XML files on
- * disk.
- */
+/** Provides a command line interface for interacting with JaCoCo. */
 public class Main {
 
 	/** Version of this program. */
@@ -72,7 +69,7 @@ public class Main {
 		command.run();
 	}
 
-	/** Creates a basic builder for a {@link JCommander} object. */
+	/** Creates a builder for a {@link JCommander} object. */
 	private Builder createJCommanderBuilder() {
 		return JCommander.newBuilder().programName(Main.class.getName()).addObject(defaultArguments).addObject(command);
 	}
@@ -84,9 +81,7 @@ public class Main {
 		System.exit(1);
 	}
 
-	/**
-	 * Default arguments that may always be provided.
-	 */
+	/** Default arguments that may always be provided. */
 	private static class DefaultArguments {
 
 		/** Shows the help message. */
