@@ -25,7 +25,6 @@ dependencies {
 	compile "org.jacoco:org.jacoco.core:$jacocoVersion"
 	compile "org.jacoco:org.jacoco.report:$jacocoVersion"
 	compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
-	compileOnly "org.jacoco:org.jacoco.agent:$jacocoVersion"
 
 	compile 'org.apache.logging.log4j:log4j-api:2.8.2'
 	compile 'org.apache.logging.log4j:log4j-core:2.8.2'
@@ -70,21 +69,11 @@ task doc(type: Exec) {
 
 distributions {
 	shadow {
-		baseName = 'jacoco-agent'
+		baseName = 'teamscale-jacoco-agent'
 		contents {
 			from(doc) {
 				include '**'
 				into 'documentation'
-			}
-
-			def agentJar = configurations.compileOnly.find {
-				def path = it.toString()
-				path.contains('org.jacoco.agent') && !path.contains('runtime')
-			}
-
-			from(zipTree(agentJar)) {
-				include 'jacocoagent.jar'
-				into 'jacoco-agent'
 			}
 		}
 	}
