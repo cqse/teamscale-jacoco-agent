@@ -39,10 +39,10 @@ distributions {
 				into 'documentation'
 			}
 
-			from(project(':eu.cqse.teamscale.jacoco.client').tasks.shadowJar) {
+			from(project(':eu.cqse.teamscale.jacoco.agent').tasks.shadowJar) {
 				rename(/.*/, 'agent.jar')
 			}
-			from(project(':eu.cqse.teamscale.jacoco.client').tasks.doc) {
+			from(project(':eu.cqse.teamscale.jacoco.agent').tasks.doc) {
 				rename(/.*/, 'agent-userguide.pdf')
 				into 'documentation'
 			}
