@@ -26,7 +26,8 @@ The wrapper expects a file called `javaws.properties` in the same directory as t
 An example is provided. If you used the Windows installer (see above), this will be partly preconfigured for you.
 Please fill out all properties in that file before first use of the wrapper.
 
-The `agentArguments` must be filled according to the guidelines from the agent's userguide.
+The `agentArguments` must be filled according to the guidelines from the Teamscale JaCoCo agent's userguide
+(see the PDF in the `docs` folder).
 
 As per the Java properties file spec, the file must use the ISO 8859-1 encoding!
 Please remember that backslashes have to be escaped in the properties file! E.g.:

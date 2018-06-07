@@ -101,7 +101,8 @@ public class WindowsInstallation {
 
 		Properties properties = new Properties();
 		properties.setProperty("javaws", wrapperPaths.wrapperExecutable.toAbsolutePath().toString());
-		properties.setProperty("agentArguments", "TODO");
+		properties.setProperty("agentArguments",
+				"out=C:/path/to/output/directory,class-dir=C:/path/to/jars/or/class/files,includes=*com.yourcompany.*");
 
 		try (FileOutputStream outputStream = new FileOutputStream(wrapperPaths.configProperties.toFile())) {
 			properties.store(outputStream, StringUtils.EMPTY_STRING);
@@ -164,11 +165,10 @@ public class WindowsInstallation {
 
 	/** Sets the given mapping of the form <code>MAPPING=COMMAND</code>. */
 	private void setFtype(String desiredMapping) throws InstallationException, IOException, InterruptedException {
-		String argument = desiredMapping;
-		String ftypeOutput = runFtype(argument);
-		if (!readCurrentJnlpFtype().equalsIgnoreCase(argument)) {
+		String ftypeOutput = runFtype(desiredMapping);
+		if (!readCurrentJnlpFtype().equalsIgnoreCase(desiredMapping)) {
 			throw new InstallationException(
-					"Failed to set file mapping " + argument + ". Output of ftype: " + ftypeOutput);
+					"Failed to set file mapping " + desiredMapping + ". Output of ftype: " + ftypeOutput);
 		}
 	}
 
