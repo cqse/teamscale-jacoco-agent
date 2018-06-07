@@ -33,9 +33,9 @@ The following options are available:
   precaution in case your classes are nested inside e.g. a `src` folder, which might be interpreted as a part
   of the package name. We recommend always using this form).
   Make sure to include **all** relevant application code
-  but no external libraries. For further details, please see the JaCoCo documentation in the "Agent" section.
+  but no external libraries. For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
 - `excludes`: exclude patterns for classes. Same syntax as the `includes` parameter.
-  For further details, please see the JaCoCo documentation in the "Agent" section.
+  For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.
@@ -53,7 +53,7 @@ for a list of all available options.
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
-The log file is written to the current directory of the profiled Java process by default.
+The log file is written to the working directory of the profiled Java process by default.
 
 ## Additional steps for WebSphere
 
@@ -132,6 +132,8 @@ This configures your application and the agent image:
 
 # One-time conversion of .exec files to .xml
 
+This tool is also useful in case you are using the plain JaCoCo agent.
+
 Converting `.exec` files produced by raw JaCoCo to XML can be cumbersome. You can run the `bin/convert`
 tool to perform this conversion for you. Run `bin/convert --help` to
 see all available command line options.
@@ -179,4 +181,5 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306
 [so-duplicates]: https://stackoverflow.com/questions/11673356/jacoco-cant-add-different-class-with-same-name-org-hamcrest-basedescription
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
+[jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
 
