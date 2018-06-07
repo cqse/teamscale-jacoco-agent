@@ -1,4 +1,4 @@
-# Teamscale JaCoCo Client
+# Teamscale JaCoCo Agent
 
 ## Downloading
 

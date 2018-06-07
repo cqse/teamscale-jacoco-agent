@@ -8,9 +8,9 @@
  * in the user guide at https://docs.gradle.org/3.5/userguide/multi_project_builds.html
  */
 
-include 'client'
+include 'agent'
 include 'javaws-wrapper'
 
 rootProject.name = 'eu.cqse.teamscale.jacoco'
 project(':javaws-wrapper').name = 'eu.cqse.teamscale.jacoco.javaws'
-project(':client').name = 'eu.cqse.teamscale.jacoco.client'
+project(':agent').name = 'eu.cqse.teamscale.jacoco.agent'
