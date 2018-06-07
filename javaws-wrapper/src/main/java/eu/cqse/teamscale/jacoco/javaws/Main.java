@@ -18,6 +18,8 @@ import java.util.Properties;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
+import eu.cqse.teamscale.jacoco.javaws.WindowsInstallation.InstallationException;
+
 /** Wraps javaws and adds the profiler via `-J-javaagent`. */
 public class Main {
 
@@ -35,7 +37,32 @@ public class Main {
 		URI jarFileUri = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
 		// jar file is located inside the lib folder. Config files are one level higher
 		Path workingDirectory = Paths.get(jarFileUri).getParent().getParent();
+
+		if (args.length == 1 && args[0].equalsIgnoreCase("install") || args[0].equalsIgnoreCase("uninstall")) {
+			handleInstallation(args, workingDirectory);
+			return;
+		}
+
 		new Main().run(args, workingDirectory);
+	}
+
+	private static void handleInstallation(String[] args, Path workingDirectory) {
+		try {
+			WindowsInstallation installation = new WindowsInstallation(workingDirectory);
+
+			switch (args[0]) {
+			case "install":
+				installation.install();
+				break;
+			case "uninstall":
+				installation.uninstall();
+				break;
+			}
+		} catch (InstallationException e) {
+			System.err.println("ERROR: " + e.getMessage());
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	/** Contains the actual logic to run the wrapper. */
