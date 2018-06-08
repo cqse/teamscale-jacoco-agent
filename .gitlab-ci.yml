@@ -19,7 +19,7 @@ build:
     - ./gradlew clean check dist
   artifacts:
     paths:
-      - client/build
+      - agent/build
       - javaws-wrapper/build/distributions
     expire_in: 1 week
 
