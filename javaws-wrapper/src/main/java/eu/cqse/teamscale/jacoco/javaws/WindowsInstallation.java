@@ -30,11 +30,13 @@ public class WindowsInstallation {
 	private static final String FTYPE_MAPPING_BACKUP_FILE = "ftype.bak";
 
 	private final Path systemSecurityPolicy;
+	private final Path systemJavaws;
 	private final WrapperPaths wrapperPaths;
 	private final BackupPaths backupPaths;
 
 	public WindowsInstallation(Path workingDirectory) throws InstallationException {
 		this.systemSecurityPolicy = getJvmInstallPath().resolve("lib/security").resolve(SECURITY_POLICY_FILE);
+		this.systemJavaws = getJvmInstallPath().resolve("bin/javaws");
 		this.wrapperPaths = new WrapperPaths(workingDirectory);
 		this.backupPaths = new BackupPaths(workingDirectory.resolve("backup"));
 		validate();
@@ -73,6 +75,14 @@ public class WindowsInstallation {
 		}
 
 		try {
+			FileSystemUtils.mkdirs(wrapperPaths.defaultOutputDirectory.toFile());
+		} catch (IOException e) {
+			System.err.println("Unable to create default output directory " + wrapperPaths.defaultOutputDirectory
+					+ ". Please create it yourself");
+			e.printStackTrace(System.err);
+		}
+
+		try {
 			Files.copy(systemSecurityPolicy, backupPaths.securityPolicy, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			throw new InstallationException("Failed to backup current javaws security policy from "
@@ -100,9 +110,9 @@ public class WindowsInstallation {
 		}
 
 		Properties properties = new Properties();
-		properties.setProperty("javaws", wrapperPaths.wrapperExecutable.toAbsolutePath().toString());
+		properties.setProperty("javaws", systemJavaws.toAbsolutePath().toString());
 		properties.setProperty("agentArguments",
-				"out=C:/path/to/output/directory,class-dir=C:/path/to/jars/or/class/files,includes=*com.yourcompany.*");
+				"out=" + wrapperPaths.defaultOutputDirectory.toAbsolutePath() + ",includes=*com.yourcompany.*");
 
 		try (FileOutputStream outputStream = new FileOutputStream(wrapperPaths.configProperties.toFile())) {
 			properties.store(outputStream, StringUtils.EMPTY_STRING);
@@ -216,11 +226,13 @@ public class WindowsInstallation {
 		private final Path securityPolicy;
 		private final Path wrapperExecutable;
 		private final Path configProperties;
+		private final Path defaultOutputDirectory;
 
 		public WrapperPaths(Path wrapperDirectory) {
 			securityPolicy = wrapperDirectory.resolve("agent.policy");
 			wrapperExecutable = wrapperDirectory.resolve("bin/javaws");
 			configProperties = wrapperDirectory.resolve("javaws.properties");
+			defaultOutputDirectory = wrapperDirectory.resolve("coverage");
 		}
 
 	}
