@@ -5,6 +5,9 @@ We use [semantic versioning][semver]
 # 8.0.2
 - [fix] remove version number from jar file name
 
+# 8.0.1
+- [fix] prefill the `javaws.properties` correctly on Windows
+
 # 8.0.0
 - [breaking change] removed `watch` mode and made `convert` mode the default. Only the agent is now supported
 
