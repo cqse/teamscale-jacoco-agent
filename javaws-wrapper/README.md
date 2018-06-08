@@ -27,7 +27,8 @@ An example is provided. If you used the Windows installer (see above), this will
 Please fill out all properties in that file before first use of the wrapper.
 
 The `agentArguments` must be filled according to the guidelines from the Teamscale JaCoCo agent's userguide
-(see the PDF in the `docs` folder).
+(see the PDF in the `docs` folder). In most cases, it is enough to adjust the `includes` parameter to
+your code base.
 
 As per the Java properties file spec, the file must use the ISO 8859-1 encoding!
 Please remember that backslashes have to be escaped in the properties file! E.g.:
