@@ -43,7 +43,10 @@ mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
 shadowJar {
     baseName = 'teamscale-jacoco-agent'
     classifier = null
-    version = outputVersion
+    // since this is used as an agent, we want it to always have the same name
+    // otherwise people have to adjust their -javaagent parameters after every
+    // update
+    version = null
     manifest {
         attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.Agent'
     }
@@ -75,6 +78,12 @@ distributions {
 				include '**'
 				into 'documentation'
 			}
+
+            filesMatching('**/VERSION.txt') {
+                filter {
+                    it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', outputVersion)
+                }
+            }
 		}
 	}
 }

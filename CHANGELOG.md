@@ -2,8 +2,10 @@ We use [semantic versioning][semver]
 
 # Next release
 
-# 8.0.0
+# 8.0.2
+- [fix] remove version number from jar file name
 
+# 8.0.0
 - [breaking change] removed `watch` mode and made `convert` mode the default. Only the agent is now supported
 
 # 7.0.0
