@@ -6,9 +6,9 @@ The JaCoCo coverage tool is used underneath.
 ## Installing
 
 Unzip this zip file into any folder.
-When used as a Java agent for your Java application, coverage is dumped to the file system or via
-HTTP file uploads in regular intervals while the application is running.
-Coverage is also transfered when the application is shut down.
+When used as a Java agent for your Java application, coverage is dumped to the file system, via
+HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
+Coverage is also transferred when the application is shut down.
 
 Configure the agent on your application's JVM:
 
@@ -46,6 +46,14 @@ The following options are available:
 - `logging-config`: path to a Log4J configuration XML file (other configuration formats are not supported at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console.
+- `teamscale-server-url`: an HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
+- `teamscale-project`: the project id within Teamscale to which the coverage belongs.
+- `teamscale-user`: the service username used to authenticate against Teamscale. The user account must have the 
+  "Perform External Uploads" permission on the given project.
+- `teamscale-access-token`: the access token of the user.
+- `teamscale-partition`: the partition within Teamscale to upload coverage to.
+- `teamscale-commit`: the commit at which to coverage should be uploaded. (Format: "branch:timestamp")
+- `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -68,7 +76,7 @@ This option disables a WebSphere internal class cache that causes problems with 
 The underlying JaCoCo coverage instrumentation tooling relies on fully qualified class names
 to uniquely identify classes. However, in practice, applications are often deployed with
 multiple versions of the same class. This can happen, e.g. if you use the same library
-in different versions in subprojects of your code.
+in different versions in sub-projects of your code.
 
 At runtime, it is not deterministic, which of these versions will be loaded by the class loader.
 Thus, when trying to convert the recorded coverage back to covered source code lines,
@@ -160,7 +168,7 @@ agent to read them from there with the `class-dir` option.
 
 ## Error: "Can't add different class with same name"
 
-This is a restriction of JaCoCo. See the abovesection about `ignore-duplicates`.
+This is a restriction of JaCoCo. See the above section about `ignore-duplicates`.
 To fix this error, it is best to resolve the underlying problem (two classes with the same fully qualified name
 but different code). If this is not possible or not desirable, you can set `ignore-duplicates=true` in the
 agent options to turn this error into a warning. Be advised that coverage for all classes that produce this

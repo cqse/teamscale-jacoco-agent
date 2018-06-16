@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package eu.cqse.teamscale.jacoco.agent.store;
+package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 
 import java.io.IOException;
 

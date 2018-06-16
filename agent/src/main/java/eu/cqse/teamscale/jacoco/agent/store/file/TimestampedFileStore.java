@@ -1,8 +1,9 @@
-package eu.cqse.teamscale.jacoco.agent.store;
+package eu.cqse.teamscale.jacoco.agent.store.file;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
+import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
