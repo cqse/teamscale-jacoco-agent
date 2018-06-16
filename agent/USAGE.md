@@ -46,13 +46,13 @@ The following options are available:
 - `logging-config`: path to a Log4J configuration XML file (other configuration formats are not supported at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console.
-- `teamscale-server-url`: an HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
-- `teamscale-project`: the project id within Teamscale to which the coverage belongs.
+- `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
+- `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the service username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to.
-- `teamscale-commit`: the commit at which to coverage should be uploaded. (Format: "branch:timestamp")
+- `teamscale-commit`: the commit for which the coverage should be uploaded. (Format: "branch:timestamp")
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
