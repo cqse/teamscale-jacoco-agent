@@ -57,9 +57,9 @@ The following options are available:
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. You can get this info from your VCS during the build e.g. for Git via 
   
-  ```bash
+```bash
 echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"`
-    ```
+```
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 
