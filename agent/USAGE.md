@@ -48,11 +48,20 @@ The following options are available:
   `logging` folder, e.g. to enable debug logging or log directly to the console.
 - `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
-- `teamscale-user`: the service username used to authenticate against Teamscale. The user account must have the 
+- `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
-- `teamscale-partition`: the partition within Teamscale to upload coverage to.
-- `teamscale-commit`: the commit for which the coverage should be uploaded. (Format: "branch:timestamp")
+- `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string, 
+  which can be used to encode the test environment and/or the tester. These can be individually toggled on or off in Teamscale's UI. 
+  Uploads to a partition will overwrite all existing coverage of this partition.
+- `teamscale-commit`: the commit (Format: "branch:timestamp"), which has been used to build the system under test.
+  Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
+  from the VCS that was deployed. You can get this info from your VCS during the build e.g. via 
+  
+  ```bash
+echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"`
+    ```
+  
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.

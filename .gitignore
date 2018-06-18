@@ -3,11 +3,7 @@
 /*/bin/
 /*/test-tmp/
 .gradletasknamecache
-
-\.idea/libraries/
-
-\.idea/uiDesigner\.xml
-
-\.idea/workspace\.xml
-
-\.idea/modules/
+.idea/libraries/
+.idea/uiDesigner.xml
+.idea/workspace.xml
+.idea/modules/

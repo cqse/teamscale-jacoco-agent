@@ -21,12 +21,23 @@ public interface ITeamscaleService {
     /** Report upload API. */
     @Multipart
     @POST("p/{projectName}/external-report/")
-    Call<ResponseBody> uploadExternalReport(@Path("projectName") String projectName,
-                                            @Query("format") EReportFormat format,
-                                            @Query("t") CommitDescriptor commit,
-                                            @Query("adjusttimestamp") boolean adjustTimestamp,
-                                            @Query("partition") String partition,
-                                            @Query("message") String message,
-                                            @Part("report") RequestBody report
+    Call<ResponseBody> uploadExternalReport(
+            @Path("projectName") String projectName,
+            @Query("format") EReportFormat format,
+            @Query("t") CommitDescriptor commit,
+            @Query("adjusttimestamp") boolean adjustTimestamp,
+            @Query("partition") String partition,
+            @Query("message") String message,
+            @Part("report") RequestBody report
     );
+
+    default Call<ResponseBody> uploadJaCococReport(
+            String projectName,
+            CommitDescriptor commit,
+            String partition,
+            String message,
+            RequestBody report
+    ) {
+        return uploadExternalReport(projectName, EReportFormat.JACOCO, commit, true, partition, message, report);
+    }
 }

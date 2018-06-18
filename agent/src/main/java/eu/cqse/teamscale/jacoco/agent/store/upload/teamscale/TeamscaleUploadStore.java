@@ -56,11 +56,9 @@ public class TeamscaleUploadStore implements IXmlStore {
         logger.debug("Uploading coverage to {}", teamscaleServer);
 
         try {
-            Response<ResponseBody> response = api.uploadExternalReport(
+            Response<ResponseBody> response = api.uploadJaCococReport(
                     teamscaleServer.project,
-                    JACOCO,
                     teamscaleServer.commit,
-                    true,
                     teamscaleServer.partition,
                     teamscaleServer.message,
                     RequestBody.create(MultipartBody.FORM, xml)
@@ -69,8 +67,15 @@ public class TeamscaleUploadStore implements IXmlStore {
                 return true;
             }
 
+            ResponseBody body = response.body();
+            String bodyStr;
+            if (body == null) {
+                bodyStr = "<no body>";
+            } else {
+                bodyStr = body.string();
+            }
             logger.error("Failed to upload coverage to {}. Request failed with error code {}. Response body:\n{}",
-                    teamscaleServer, response.code(), String.valueOf(response.body()));
+                    teamscaleServer, response.code(), bodyStr);
             return false;
         } catch (IOException e) {
             logger.error("Failed to upload coverage to {}. Probably a network problem", teamscaleServer, e);

@@ -6,7 +6,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
 
-import javax.xml.bind.DatatypeConverter;
+import java.util.Base64;
 
 public class BasicAuthServiceGenerator {
 
@@ -31,17 +31,12 @@ public class BasicAuthServiceGenerator {
      */
     private static Interceptor getBasicAuthInterceptor(String username, String password) {
         String credentials = username + ":" + password;
-        final String basic = "Basic " + DatatypeConverter.printBase64Binary(credentials.getBytes());
+        String basic = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
 
         return chain -> {
             Request original = chain.request();
-
-            Request.Builder requestBuilder = original.newBuilder()
-                    .header("Authorization", basic)
-                    .header("Accept", "application/json")
-                    .method(original.method(), original.body());
-
-            Request request = requestBuilder.build();
+            Request request = original.newBuilder()
+                    .header("Authorization", basic).build();
             return chain.proceed(request);
         };
     }
