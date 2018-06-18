@@ -66,14 +66,14 @@ public class TeamscaleUploadStore implements IXmlStore {
             }
 
             ResponseBody body = response.body();
-            String bodyStr;
+            String bodyString;
             if (body == null) {
-                bodyStr = "<no body>";
+                bodyString = "<no body>";
             } else {
-                bodyStr = body.string();
+                bodyString = body.string();
             }
             logger.error("Failed to upload coverage to {}. Request failed with error code {}. Response body:\n{}",
-                    teamscaleServer, response.code(), bodyStr);
+                    teamscaleServer, response.code(), bodyString);
             return false;
         } catch (IOException e) {
             logger.error("Failed to upload coverage to {}. Probably a network problem", teamscaleServer, e);
