@@ -51,12 +51,12 @@ The following options are available:
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
-- `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string, 
-  which can be used to encode the test environment and/or the tester. These can be individually toggled on or off in Teamscale's UI. 
+- `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string 
+  which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in Teamscale's UI. 
   Uploads to a partition will overwrite all existing coverage of this partition.
-- `teamscale-commit`: the commit (Format: "branch:timestamp"), which has been used to build the system under test.
+- `teamscale-commit`: the commit (Format: "branch:timestamp") which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed. You can get this info from your VCS during the build e.g. via 
+  from the VCS that was deployed. You can get this info from your VCS during the build e.g. for Git via 
   
   ```bash
 echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"`
