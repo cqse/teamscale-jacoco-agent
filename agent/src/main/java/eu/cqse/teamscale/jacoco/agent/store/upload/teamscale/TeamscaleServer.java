@@ -12,13 +12,22 @@ public class TeamscaleServer {
     public CommitDescriptor commit;
     public String message = "Agent coverage upload";
 
-    public boolean validate() {
+    public boolean hasAllFieldsSet() {
         return url != null &&
                 project != null &&
                 userName != null &&
                 userAccessToken != null &&
                 partition != null &&
                 commit != null;
+    }
+
+    public boolean hasAllFieldsNull() {
+        return url == null &&
+                project == null &&
+                userName == null &&
+                userAccessToken == null &&
+                partition == null &&
+                commit == null;
     }
 
     @Override

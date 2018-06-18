@@ -193,6 +193,9 @@ public class AgentOptions {
         validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
                 "You specified additional meta data files to be uploaded but did not configure an upload URL");
 
+        validator.isTrue(teamscaleServer.hasAllFieldsNull() || teamscaleServer.hasAllFieldsSet(),
+                "You did provide some options prefixed with 'teamscale-', but all required ones!");
+
         if (!validator.isValid()) {
             throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
         }
@@ -253,6 +256,9 @@ public class AgentOptions {
                 break;
             case "teamscale-server-url":
                 teamscaleServer.url = parseUrl(value);
+                if (teamscaleServer.url == null) {
+                    throw new AgentOptionParseException("Invalid URL " + value + " given for option 'teamscale-server-url'!");
+                }
                 break;
             case "teamscale-project":
                 teamscaleServer.project = value;
@@ -312,10 +318,10 @@ public class AgentOptions {
      * The expected format is "branch:timestamp".
      */
     private static CommitDescriptor parseCommit(String commit) throws AgentOptionParseException {
-        if (!commit.contains(":")) {
+        String[] split = commit.split(":");
+        if (split.length != 2) {
             throw new AgentOptionParseException("Invalid commit given " + commit);
         }
-        String[] split = commit.split(":");
         return new CommitDescriptor(split[0], split[1]);
     }
 
@@ -376,7 +382,7 @@ public class AgentOptions {
         if (uploadUrl != null) {
             return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
         }
-        if (teamscaleServer.validate()) {
+        if (teamscaleServer.hasAllFieldsSet()) {
             return new TeamscaleUploadStore(fileStore, teamscaleServer);
         }
         return fileStore;
