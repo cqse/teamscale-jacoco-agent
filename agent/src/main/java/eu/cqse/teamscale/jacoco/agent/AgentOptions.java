@@ -386,7 +386,6 @@ public class AgentOptions {
             return new TeamscaleUploadStore(fileStore, teamscaleServer);
         }
         return fileStore;
-
     }
 
     /**
