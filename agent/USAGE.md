@@ -29,7 +29,7 @@ The following options are available:
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
   the Java class names. E.g. to match all classes in package `com.yourcompany` and `com.yourotherpackage` and all their
-  subpackages you can use `*com.yourcompany.*:*com.yourotherpackage.*` (the initial star before each package name is a
+  subpackages you can use `*com.yourcompany.*;*com.yourotherpackage.*` (the initial star before each package name is a
   precaution in case your classes are nested inside e.g. a `src` folder, which might be interpreted as a part
   of the package name. We recommend always using this form).
   Make sure to include **all** relevant application code
