@@ -12,8 +12,6 @@ import retrofit2.Response;
 
 import java.io.IOException;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
-
 /** Uploads XML Coverage to a Teamscale instance. */
 public class TeamscaleUploadStore implements IXmlStore {
 
@@ -56,7 +54,7 @@ public class TeamscaleUploadStore implements IXmlStore {
         logger.debug("Uploading coverage to {}", teamscaleServer);
 
         try {
-            Response<ResponseBody> response = api.uploadJaCococReport(
+            Response<ResponseBody> response = api.uploadJaCoCoReport(
                     teamscaleServer.project,
                     teamscaleServer.commit,
                     teamscaleServer.partition,

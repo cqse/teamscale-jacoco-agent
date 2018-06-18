@@ -26,18 +26,19 @@ public interface ITeamscaleService {
             @Query("format") EReportFormat format,
             @Query("t") CommitDescriptor commit,
             @Query("adjusttimestamp") boolean adjustTimestamp,
+            @Query("movetolastcommit") boolean moveToLastCommit,
             @Query("partition") String partition,
             @Query("message") String message,
             @Part("report") RequestBody report
     );
 
-    default Call<ResponseBody> uploadJaCococReport(
+    default Call<ResponseBody> uploadJaCoCoReport(
             String projectName,
             CommitDescriptor commit,
             String partition,
             String message,
             RequestBody report
     ) {
-        return uploadExternalReport(projectName, EReportFormat.JACOCO, commit, true, partition, message, report);
+        return uploadExternalReport(projectName, EReportFormat.JACOCO, commit, true, true, partition, message, report);
     }
 }
