@@ -245,11 +245,11 @@ public class AgentOptions {
                 break;
             case "includes":
                 jacocoIncludes = value.replaceAll(";", ":");
-                locationIncludeFilters = new WildcardMatcher(value);
+                locationIncludeFilters = new WildcardMatcher(jacocoIncludes);
                 break;
             case "excludes":
                 jacocoExcludes = value.replaceAll(";", ":");
-                locationExcludeFilters = new WildcardMatcher(value);
+                locationExcludeFilters = new WildcardMatcher(jacocoExcludes);
                 break;
             case "class-dir":
                 classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);

@@ -35,6 +35,8 @@ public class AgentOptionsTest {
 		assertThat(includeFilter("*com.*")).accepts("file.jar@com/foo/Bar.class", "file.jar@com/foo/Bar$Goo.class",
 				"file1.jar@goo/file2.jar@com/foo/Bar.class", "com/foo/Bar.class", "foo/com/goo/Bar.class",
 				"A$com$Bar.class", "src/com/foo/Bar.class");
+		assertThat(includeFilter("*com.*;*de.*")).accepts("file.jar@com/foo/Bar.class", "file.jar@de/foo/Bar$Goo.class");
+		assertThat(excludeFilter("*com.*;*de.*")).rejects("file.jar@com/foo/Bar.class", "file.jar@de/foo/Bar$Goo.class");
 		assertThat(includeFilter("*com.customer.*")).accepts(
 				"C:\\client-daily\\client\\plugins\\com.customer.something.client_1.2.3.4.1234566778.jar@com/customer/something/SomeClass.class");
 	}
@@ -42,6 +44,12 @@ public class AgentOptionsTest {
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.,includes=" + filterString);
+		return string -> agentOptions.getLocationIncludeFilter().test(string);
+	}
+
+	/** Returns the include filter predicate for the given filter expression. */
+	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
+		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.,excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
