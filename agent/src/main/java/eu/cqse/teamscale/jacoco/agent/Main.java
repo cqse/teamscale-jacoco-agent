@@ -55,7 +55,7 @@ public class Main {
 		}
 
 		if (defaultArguments.help) {
-			System.out.println("Teamscale JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
+			System.out.println("CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 			jCommander.usage();
 			return;
 		}
