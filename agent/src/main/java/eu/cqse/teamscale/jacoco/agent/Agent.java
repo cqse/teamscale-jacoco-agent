@@ -26,7 +26,7 @@ import eu.cqse.teamscale.jacoco.agent.util.Timer;
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
  * XML conversion based on a time interval.
  */
-public class Agent {
+public class Agent extends AgentBase {
 
 	/**
 	 * Entry point for the agent, called by the JVM.
@@ -47,92 +47,45 @@ public class Agent {
 		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
-		Agent agent = new Agent(agentOptions);
-		agent.startDumpLoop();
-		agent.registerShutdownHook();
+		if (agentOptions.shouldUseHttpServerMode()) {
+			ServerAgent agent = new ServerAgent(agentOptions);
+			agent.startServer();
+			agent.registerShutdownHook();
+		} else {
+			Agent agent = new Agent(agentOptions);
+			agent.startDumpLoop();
+			agent.registerShutdownHook();
+		}
 	}
-
-	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
 
 	/** Regular dump task. */
 	private final Timer timer;
 
-	/** Controls the JaCoCo runtime. */
-	private final JacocoRuntimeController controller;
-
 	/** Converts binary data to XML. */
 	private final XmlReportGenerator generator;
 
-	/** Stores the XML files. */
-	private final IXmlStore store;
-
 	/** Constructor. */
 	public Agent(AgentOptions options) {
-		controller = new JacocoRuntimeController();
+		super(options);
 
 		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
 				options.shouldIgnoreDuplicateClassFiles());
-		store = options.createStore();
 
 		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
 
-		logger.info("Starting JaCoCo agent with options: {}", options.getOriginalOptionsString());
 		logger.info("Dumping every {} minutes. Storage method: {}", options.getDumpIntervalInMinutes(),
 				store.describe());
 	}
 
-	/**
-	 * Dumps the current execution data, converts it and writes it to the
-	 * {@link #store}. Logs any errors, never throws an exception.
-	 */
-	private void dump() {
-		logger.debug("Starting dump");
-
-		try {
-			dumpUnsafe();
-		} catch (Throwable t) {
-			// we want to catch anything in order to avoid killing the regular job
-			logger.error("Dump job failed with an exception. Retrying later", t);
-		}
+	@Override
+	protected String generateReport(Dump dump) throws IOException {
+		return generator.convert(dump);
 	}
 
-	/**
-	 * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
-	 */
-	private void dumpUnsafe() {
-		Dump dump;
-		try {
-			dump = controller.dumpAndReset();
-		} catch (DumpException e) {
-			logger.error("Dumping failed, retrying later", e);
-			return;
-		}
-
-		String xml;
-		try {
-			xml = generator.convert(dump);
-		} catch (IOException e) {
-			logger.error("Converting binary dump to XML failed", e);
-			return;
-		}
-
-		store.store(xml);
-	}
-
-	/**
-	 * Registers a shutdown hook that stops the timer and dumps coverage a final
-	 * time.
-	 */
-	private void registerShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			dump();
-			timer.stop();
-			logger.info("CQSE JaCoCo agent successfully shut down.");
-
-			// manually shut down the logging system since we prevented automatic shutdown
-			LogManager.shutdown();
-		}));
+	@Override
+	protected void prepareShutdown() {
+		dump();
+		timer.stop();
 	}
 
 	/**

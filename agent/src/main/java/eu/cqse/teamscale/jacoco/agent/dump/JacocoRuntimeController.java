@@ -44,12 +44,7 @@ public class JacocoRuntimeController {
 	 *             should simply be retried later if this ever happens.
 	 */
 	public Dump dumpAndReset() throws DumpException {
-		IAgent agent;
-		try {
-			agent = RT.getAgent();
-		} catch (IllegalStateException e) {
-			throw new DumpException("JaCoCo agent not yet initialized", e);
-		}
+		IAgent agent = getRTAgent();
 
 		byte[] binaryData = agent.getExecutionData(true);
 
@@ -67,6 +62,22 @@ public class JacocoRuntimeController {
 		} catch (IOException e) {
 			throw new DumpException("should never happen for the ByteArrayInputStream", e);
 		}
+	}
+
+	public void setSessionId(String sessionId) throws DumpException {
+		IAgent agent = getRTAgent();
+		agent.setSessionId(sessionId);
+	}
+
+	/** Returns JaCoCo's {@link RT} agent instance. */
+	private IAgent getRTAgent() throws DumpException {
+		IAgent agent;
+		try {
+			agent = RT.getAgent();
+		} catch (IllegalStateException e) {
+			throw new DumpException("JaCoCo agent not yet initialized", e);
+		}
+		return agent;
 	}
 
 	/**

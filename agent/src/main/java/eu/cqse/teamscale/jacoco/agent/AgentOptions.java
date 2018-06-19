@@ -403,6 +403,19 @@ public class AgentOptions {
     }
 
     /**
+     * TODO
+     */
+    public boolean shouldUseHttpServerMode() {
+        return false;
+    }
+
+    /** Returns the port at which the http server should listen for test execution
+     * information if enabled ({@link #shouldUseHttpServerMode()}). */
+    public int getHttpServerPort() {
+        return 0;
+    }
+
+    /**
      * @see #loggingConfig
      */
     public Path getLoggingConfig() {
