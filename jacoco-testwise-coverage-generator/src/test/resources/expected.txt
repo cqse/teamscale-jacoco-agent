@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE report "cpt.dtd">
+<report>
+<test externalId="[engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[method:myFirstTest(org.junit.jupiter.api.TestInfo)]">
+<path name="com/example/project">
+<file name="Calculator.java">
+<lines nr="13-13,16-16"/>
+</file>
+</path>
+</test>
+<test externalId="[engine:junit-vintage]/[runner:com.example.project.JUnit4Test]/[test:testAdd(com.example.project.JUnit4Test)]">
+<path name="com/example/project">
+<file name="Calculator.java">
+<lines nr="13-13,16-16"/>
+</file>
+</path>
+</test>
+<test externalId="[engine:junit-vintage]/[runner:com.example.project.JUnit4Test]/[test:testMul(com.example.project.JUnit4Test)]">
+<path name="com/example/project">
+<file name="Calculator.java">
+<lines nr="13-13,24-24"/>
+</file>
+</path>
+</test>
+<test externalId="[engine:junit-vintage]/[runner:com.example.project.JUnit4Test]/[test:systemTest(com.example.project.JUnit4Test)]">
+<path name="com/example/project">
+<file name="Calculator.java">
+<lines nr="13-13,16-16,20-20,24-24"/>
+</file>
+</path>
+</test>
+</report>

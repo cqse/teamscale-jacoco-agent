@@ -6,6 +6,8 @@
       <module name="eu.cqse.teamscale.jacoco.agent_test" target="1.8" />
       <module name="eu.cqse.teamscale.jacoco.javaws_main" target="1.8" />
       <module name="eu.cqse.teamscale.jacoco.javaws_test" target="1.8" />
+      <module name="eu.cqse.teamscale.jacoco.testwise.coverage.generator_main" target="1.8" />
+      <module name="eu.cqse.teamscale.jacoco.testwise.coverage.generator_test" target="1.8" />
       <module name="eu.cqse.teamscale.jacoco_buildSrc_main" target="1.8" />
       <module name="eu.cqse.teamscale.jacoco_buildSrc_test" target="1.8" />
     </bytecodeTargetLevel>

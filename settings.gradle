@@ -10,7 +10,9 @@
 
 include 'agent'
 include 'javaws-wrapper'
+include 'jacoco-testwise-coverage-generator'
 
 rootProject.name = 'eu.cqse.teamscale.jacoco'
 project(':javaws-wrapper').name = 'eu.cqse.teamscale.jacoco.javaws'
 project(':agent').name = 'eu.cqse.teamscale.jacoco.agent'
+project(':jacoco-testwise-coverage-generator').name = 'eu.cqse.teamscale.jacoco.testwise.coverage.generator'

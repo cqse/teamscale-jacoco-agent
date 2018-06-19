@@ -19,7 +19,6 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.plugin-shadow'
 
 ext {
-	jacocoVersion = '0.8.1'
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
 

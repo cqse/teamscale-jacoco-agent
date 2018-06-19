@@ -1,5 +1,6 @@
 ext {
 	appVersion = '8.1.0'
+	jacocoVersion = '0.8.1'
 }
 
 subprojects {
