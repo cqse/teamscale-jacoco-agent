@@ -32,6 +32,10 @@ public interface ITeamscaleService {
             @Part("report") RequestBody report
     );
 
+    /**
+     * Uploads the given report body to Teamscale
+     * with adjusttimestamp and movetolastcommit set to true.
+     */
     default Call<ResponseBody> uploadJaCoCoReport(
             String projectName,
             CommitDescriptor commit,

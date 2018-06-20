@@ -193,8 +193,8 @@ public class AgentOptions {
         validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
                 "You specified additional meta data files to be uploaded but did not configure an upload URL");
 
-        validator.isTrue(teamscaleServer.hasAllFieldsNull() || teamscaleServer.hasAllFieldsSet(),
-                "You did provide some options prefixed with 'teamscale-', but all required ones!");
+        validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
+                "You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
         if (!validator.isValid()) {
             throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
@@ -382,7 +382,7 @@ public class AgentOptions {
         if (uploadUrl != null) {
             return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
         }
-        if (teamscaleServer.hasAllFieldsSet()) {
+        if (teamscaleServer.hasAllRequiredFieldsSet()) {
             return new TeamscaleUploadStore(fileStore, teamscaleServer);
         }
         return fileStore;
