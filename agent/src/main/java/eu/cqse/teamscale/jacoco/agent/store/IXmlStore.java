@@ -4,9 +4,9 @@ package eu.cqse.teamscale.jacoco.agent.store;
 public interface IXmlStore {
 
 	/** Stores the given XML permanently. */
-	public void store(String xml);
+	void store(String xml);
 
 	/** Human-readable description of the store. */
-	public String describe();
+	String describe();
 
 }

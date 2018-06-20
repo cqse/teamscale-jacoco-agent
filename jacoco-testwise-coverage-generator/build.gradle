@@ -1,7 +1,0 @@
-apply plugin: 'java'
-
-dependencies {
-    compile group: 'org.jacoco', name: 'org.jacoco.core', version: jacocoVersion
-    compile group: 'org.jacoco', name: 'org.jacoco.report', version: jacocoVersion
-    compile group: 'org.jacoco', name: 'org.jacoco.agent', version: jacocoVersion, classifier: 'runtime'
-}

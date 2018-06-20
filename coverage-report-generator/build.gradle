@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+dependencies {
+    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+    implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
+    implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+
+    implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.assertj:assertj-core:3.8.0'
+}

@@ -8,11 +8,11 @@
  * in the user guide at https://docs.gradle.org/3.5/userguide/multi_project_builds.html
  */
 
-include 'agent'
-include 'javaws-wrapper'
-include 'jacoco-testwise-coverage-generator'
+include ':agent'
+include ':javaws-wrapper'
+include ':coverage-report-generator'
 
 rootProject.name = 'eu.cqse.teamscale.jacoco'
 project(':javaws-wrapper').name = 'eu.cqse.teamscale.jacoco.javaws'
 project(':agent').name = 'eu.cqse.teamscale.jacoco.agent'
-project(':jacoco-testwise-coverage-generator').name = 'eu.cqse.teamscale.jacoco.testwise.coverage.generator'
+project(':coverage-report-generator').name = 'eu.cqse.teamscale.coverage.report.generator'

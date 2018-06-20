@@ -2,7 +2,7 @@ package eu.cqse.teamscale.jacoco.agent.store.upload.teamscale;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import eu.cqse.teamscale.jacoco.agent.util.Benchmark;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -54,10 +54,11 @@ public class TeamscaleUploadStore implements IXmlStore {
         logger.debug("Uploading coverage to {}", teamscaleServer);
 
         try {
-            Response<ResponseBody> response = api.uploadJaCoCoReport(
+            Response<ResponseBody> response = api.uploadReport(
                     teamscaleServer.project,
                     teamscaleServer.commit,
                     teamscaleServer.partition,
+                    teamscaleServer.reportFormat,
                     teamscaleServer.message,
                     RequestBody.create(MultipartBody.FORM, xml)
             ).execute();

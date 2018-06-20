@@ -5,22 +5,12 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import eu.cqse.teamscale.jacoco.dump.Dump;
+import eu.cqse.teamscale.jacoco.report.linebased.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.util.Timer;
+
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.time.Duration;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jacoco.agent.rt.internal_c13123e.PreMain;
-
-import eu.cqse.teamscale.jacoco.agent.AgentOptions.AgentOptionParseException;
-import eu.cqse.teamscale.jacoco.agent.dump.Dump;
-import eu.cqse.teamscale.jacoco.agent.dump.JacocoRuntimeController;
-import eu.cqse.teamscale.jacoco.agent.dump.JacocoRuntimeController.DumpException;
-import eu.cqse.teamscale.jacoco.agent.report.XmlReportGenerator;
-import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.util.LoggingUtils;
-import eu.cqse.teamscale.jacoco.agent.util.Timer;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
@@ -28,71 +18,66 @@ import eu.cqse.teamscale.jacoco.agent.util.Timer;
  */
 public class Agent extends AgentBase {
 
-	/**
-	 * Entry point for the agent, called by the JVM.
-	 */
-	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		AgentOptions agentOptions;
-		try {
-			agentOptions = new AgentOptions(options);
-		} catch (AgentOptionParseException e) {
-			LoggingUtils.initializeDefaultLogging();
-			LogManager.getLogger(Agent.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
-			System.err.println("Failed to parse agent options: " + e.getMessage());
-			throw e;
-		}
+    /** Converts binary data to XML. */
+    private XmlReportGenerator generator;
 
-		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+    /** Regular dump task. */
+    private final Timer timer;
 
-		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
-		PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
+    /** Constructor. */
+    public Agent(AgentOptions options) {
+        super(options);
 
-		if (agentOptions.shouldUseHttpServerMode()) {
-			ServerAgent agent = new ServerAgent(agentOptions);
-			agent.startServer();
-			agent.registerShutdownHook();
-		} else {
-			Agent agent = new Agent(agentOptions);
-			agent.startDumpLoop();
-			agent.registerShutdownHook();
-		}
-	}
+        generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
+                options.shouldIgnoreDuplicateClassFiles());
 
-	/** Regular dump task. */
-	private final Timer timer;
+        timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
+        timer.start();
 
-	/** Converts binary data to XML. */
-	private final XmlReportGenerator generator;
+        logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+    }
 
-	/** Constructor. */
-	public Agent(AgentOptions options) {
-		super(options);
+    @Override
+    protected void prepareShutdown() {
+        timer.stop();
+        dumpReport();
+    }
 
-		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
-				options.shouldIgnoreDuplicateClassFiles());
+    /**
+     * Dumps the current execution data, converts it and writes it to the
+     * {@link #store}. Logs any errors, never throws an exception.
+     */
+    private void dumpReport() {
+        logger.debug("Starting dump");
 
-		timer = new Timer(this::dump, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
+        try {
+            dumpReportUnsafe();
+        } catch (Throwable t) {
+            // we want to catch anything in order to avoid killing the regular job
+            logger.error("Dump job failed with an exception. Retrying later", t);
+        }
+    }
 
-		logger.info("Dumping every {} minutes. Storage method: {}", options.getDumpIntervalInMinutes(),
-				store.describe());
-	}
+    /**
+     * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
+     */
+    private void dumpReportUnsafe() {
+        Dump dump;
+        try {
+            dump = controller.dumpAndReset();
+        } catch (JacocoRuntimeController.DumpException e) {
+            logger.error("Dumping failed, retrying later", e);
+            return;
+        }
 
-	@Override
-	protected String generateReport(Dump dump) throws IOException {
-		return generator.convert(dump);
-	}
+        String xml;
+        try {
+            xml = generator.convert(dump);
+        } catch (IOException e) {
+            logger.error("Converting binary dump to XML failed", e);
+            return;
+        }
 
-	@Override
-	protected void prepareShutdown() {
-		dump();
-		timer.stop();
-	}
-
-	/**
-	 * Starts the regular {@link #dump()}.
-	 */
-	private void startDumpLoop() {
-		timer.start();
-	}
-
+        store.store(xml);
+    }
 }

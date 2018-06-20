@@ -1,16 +1,14 @@
 package eu.cqse.teamscale.jacoco.agent.convert;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.conqat.lib.commons.assertion.CCSMAssert;
+import eu.cqse.teamscale.jacoco.dump.Dump;
+import eu.cqse.teamscale.jacoco.report.linebased.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
 
-import eu.cqse.teamscale.jacoco.agent.dump.Dump;
-import eu.cqse.teamscale.jacoco.agent.report.XmlReportGenerator;
-import eu.cqse.teamscale.jacoco.agent.util.AntPatternIncludeFilter;
+import java.io.IOException;
 
 /** Converts one .exec binary coverage file to XML. */
 public class Converter {
@@ -28,16 +26,16 @@ public class Converter {
 		ExecFileLoader loader = new ExecFileLoader();
 		loader.load(arguments.getInputFile());
 
-		List<SessionInfo> sessioninfos = loader.getSessionInfoStore().getInfos();
-		CCSMAssert.isFalse(sessioninfos.isEmpty(), "No sessions were recorded. Must implement handling for this.");
-		SessionInfo sessionInfo = sessioninfos.get(0);
+		SessionInfo sessionInfo = loader.getSessionInfoStore().getMerged("dummy");
+		ExecutionDataStore executionDataStore = loader.getExecutionDataStore();
 
 		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(
 				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters());
 		XmlReportGenerator generator = new XmlReportGenerator(arguments.getClassDirectoriesOrZips(),
 				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles());
-		String xml = generator.convert(new Dump(loader.getExecutionDataStore(), sessionInfo));
+
+		Dump dump = new Dump(sessionInfo, executionDataStore);
+		String xml = generator.convert(dump);
 		FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml);
 	}
-
 }

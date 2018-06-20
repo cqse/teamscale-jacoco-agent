@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
-import eu.cqse.teamscale.jacoco.agent.util.Benchmark;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Response;

@@ -15,7 +15,8 @@ public interface ITeamscaleService {
 
     /** Enum of report formats. */
     enum EReportFormat {
-        JACOCO
+        JACOCO,
+        TESTWISE_COVERAGE
     }
 
     /** Report upload API. */
@@ -36,13 +37,14 @@ public interface ITeamscaleService {
      * Uploads the given report body to Teamscale
      * with adjusttimestamp and movetolastcommit set to true.
      */
-    default Call<ResponseBody> uploadJaCoCoReport(
+    default Call<ResponseBody> uploadReport(
             String projectName,
             CommitDescriptor commit,
             String partition,
+            EReportFormat reportFormat,
             String message,
             RequestBody report
     ) {
-        return uploadExternalReport(projectName, EReportFormat.JACOCO, commit, true, true, partition, message, report);
+        return uploadExternalReport(projectName, reportFormat, commit, true, true, partition, message, report);
     }
 }

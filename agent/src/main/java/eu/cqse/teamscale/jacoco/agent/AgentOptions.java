@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
+
 /**
  * Parses agent command line options.
  */
@@ -131,6 +133,12 @@ public class AgentOptions {
 
     /** The teamscale server to which coverage should be uploaded. */
     private TeamscaleServer teamscaleServer = new TeamscaleServer();
+
+    /** Indicates whether the interval based dump or the HTTP server mode should be used. */
+    private boolean modeHttpServer;
+
+    /** The port on which the HTTP server should be listening. */
+    private int httpServerPort = 8000;
 
     /**
      * Parses the given command-line options.
@@ -278,6 +286,19 @@ public class AgentOptions {
             case "teamscale-message":
                 teamscaleServer.message = value;
                 break;
+            case "http-server":
+                modeHttpServer = Boolean.parseBoolean(value);
+                if(modeHttpServer) {
+                    teamscaleServer.reportFormat = TESTWISE_COVERAGE;
+                }
+                break;
+            case "http-server-port":
+                try {
+                    httpServerPort = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    throw new AgentOptionParseException("Invalid port number " + value + " given for option 'http-server-port'!");
+                }
+                break;
             default:
                 if (key.toLowerCase().startsWith("jacoco-")) {
                     additionalJacocoOptions.add(key.substring(7), value);
@@ -396,6 +417,13 @@ public class AgentOptions {
     }
 
     /**
+     * @see #dumpIntervalInMinutes
+     */
+    public int getDumpIntervalInMillis() {
+        return dumpIntervalInMinutes * 60_000;
+    }
+
+    /**
      * @see #shouldIgnoreDuplicateClassFiles
      */
     public boolean shouldIgnoreDuplicateClassFiles() {
@@ -403,16 +431,18 @@ public class AgentOptions {
     }
 
     /**
-     * TODO
+     * Returns whether the interval based dump or the HTTP server mode should be used.
      */
     public boolean shouldUseHttpServerMode() {
-        return false;
+        return modeHttpServer;
     }
 
-    /** Returns the port at which the http server should listen for test execution
-     * information if enabled ({@link #shouldUseHttpServerMode()}). */
+    /**
+     * Returns the port at which the http server should listen for test execution
+     * information if enabled ({@link #shouldUseHttpServerMode()}).
+     */
     public int getHttpServerPort() {
-        return 0;
+        return httpServerPort;
     }
 
     /**

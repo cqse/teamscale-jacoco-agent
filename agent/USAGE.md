@@ -10,6 +10,11 @@ When used as a Java agent for your Java application, coverage is dumped to the f
 HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
 Coverage is also transferred when the application is shut down.
 
+In a manual test environment (default) the agent dumps the collected coverage as a line-based JaCoCo coverage report. 
+In contrast when started as HTTP server in an automated build environment the agent 
+listens for test events (which are sent via the REST API) and generates reports that contain method-based testwise coverage.
+For more details see the `HTTP server mode` section below.
+
 Configure the agent on your application's JVM:
 
     -javaagent:AGENTJAR=OPTIONS
@@ -24,7 +29,7 @@ The following options are available:
 - `out` (required): the path to a writable directory where the generated coverage XML files will be stored.
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon.
-- `interval`: the interval in minutes between dumps of the current coverage to an XML file
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -62,6 +67,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"
 ```
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
+- `http-server`: set this to "true" to start the agent in the HTTP server mode (Default is false).
+- `http-server-port` (optional): the port at which the HTTP server should be opened (Default is 8000).
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -70,6 +77,15 @@ for a list of all available options.
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
 The log file is written to the working directory of the profiled Java process by default.
+
+## HTTP server mode
+
+When started as HTTP server the agent accepts GET queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
+`http://127.0.0.1:8000/test/end/myTestId`. The ID can be an arbitrary string, but must correspond to the `externalId` 
+(see the documentation on Test Impact Analysis for more details).
+
+The `interval` commandline argument behaves slightly different in the HTTP server mode. It does not dump any coverage 
+during tests, but only in between and when the program shuts down.
 
 ## Additional steps for WebSphere
 
