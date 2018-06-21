@@ -2,7 +2,6 @@ package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.cache.AnalyzerCache;
 import eu.cqse.teamscale.jacoco.cache.ProbesCache;
-import eu.cqse.teamscale.jacoco.report.testwise.model.FileCoverage;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +11,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 /**
  * Helper class for analyzing class files, reading execution data and converting them to coverage data.
@@ -27,12 +27,12 @@ class CachingExecutionDataReader {
     private ProbesCache probesCache;
 
     /** Analyzes the given class files and creates a lookup of which probes belong to which method. */
-    public void analyzeClassDirs(Collection<File> classesDirectories) {
+    public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter) {
         if (probesCache != null) {
             return;
         }
         probesCache = new ProbesCache();
-        AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache);
+        AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache, locationIncludeFilter);
         for (File classDir: classesDirectories) {
             try {
                 if (classDir.exists()) {

@@ -32,7 +32,7 @@ public class FileCoverageTest {
                 new LineRange(1, 3),
                 new LineRange(12, 14)
         ));
-        assertEquals("1-4,7-10,12-14", fileCoverage.getRangesAsString());
+        assertEquals("1-4,7-10,12-14", fileCoverage.getCompactifiedRangesAsString());
     }
 
     @Test
@@ -41,6 +41,6 @@ public class FileCoverageTest {
         fileCoverage.addLine(1);
         fileCoverage.addLineRange(new LineRange(3, 4));
         fileCoverage.addLineRange(6, 10);
-        assertEquals("1,3-4,6-10", fileCoverage.getRangesAsString());
+        assertEquals("1,3-4,6-10", fileCoverage.getCompactifiedRangesAsString());
     }
 }

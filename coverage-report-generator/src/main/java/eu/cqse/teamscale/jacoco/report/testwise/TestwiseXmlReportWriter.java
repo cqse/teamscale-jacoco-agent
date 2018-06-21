@@ -11,7 +11,6 @@
 package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.report.testwise.model.FileCoverage;
-import eu.cqse.teamscale.jacoco.report.testwise.model.LineRange;
 import eu.cqse.teamscale.jacoco.report.testwise.model.PathCoverage;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
 import org.conqat.lib.commons.collections.CollectionUtils;
@@ -20,8 +19,6 @@ import org.jacoco.report.internal.xml.XMLElement;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Serializes coverage data as XML fragments.
@@ -76,7 +73,7 @@ public final class TestwiseXmlReportWriter {
     private static void writeLines(FileCoverage fileCoverage, XMLElement parent) throws IOException {
         parent.text("\n" + INDENT + INDENT + INDENT + INDENT);
         final XMLElement element = parent.element("lines");
-        element.attr("nr", fileCoverage.getRangesAsString());
+        element.attr("nr", fileCoverage.getCompactifiedRangesAsString());
         element.close();
     }
 

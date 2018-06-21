@@ -10,8 +10,6 @@ import com.sun.net.httpserver.HttpServer;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.TestwiseXmlReportGenerator;
-import org.conqat.lib.commons.string.StringUtils;
-import org.jacoco.core.data.SessionInfo;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -47,7 +45,7 @@ public class ServerAgent extends AgentBase {
     public ServerAgent(AgentOptions options) throws IllegalStateException {
         super(options);
         this.options = options;
-        generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips());
+        generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter());
 
         logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
     }
@@ -93,7 +91,7 @@ public class ServerAgent extends AgentBase {
     }
 
     /** Handles the start of a new test case by setting the session ID. */
-    private void handleTestStart(String testId) throws DumpException {
+    private void handleTestStart(String testId) {
         logger.debug("Start test " + testId);
         controller.reset();
         controller.setSessionId(testId);

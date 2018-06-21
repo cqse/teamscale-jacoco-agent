@@ -19,7 +19,7 @@ import org.jacoco.core.data.ExecutionDataStore;
  * {@link Analyzer} that filters the analyzed class files based on a
  * {@link Predicate}.
  */
-/* package */ class FilteringAnalyzer extends Analyzer {
+/* package */ public class FilteringAnalyzer extends Analyzer {
 
 	/** The filter for the analyzed class files. */
 	private final Predicate<String> locationIncludeFilter;

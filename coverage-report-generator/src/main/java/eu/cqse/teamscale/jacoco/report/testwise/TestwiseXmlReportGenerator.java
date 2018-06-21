@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.
@@ -23,13 +24,18 @@ public class TestwiseXmlReportGenerator {
     /** Directories and zip files that contain class files. */
     private Collection<File> codeDirectoriesOrArchives;
 
+    /** Include filter to apply to all locations during class file traversal. */
+    private Predicate<String> locationIncludeFilter;
+
     /**
      * Create a new generator with a collection of class directories.
      *
      * @param codeDirectoriesOrArchives Root directory that contains the projects class files.
+     * @param locationIncludeFilter Filter for class files
      */
-    public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives) {
+    public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter) {
         this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
+        this.locationIncludeFilter = locationIncludeFilter;
     }
 
     /** Creates the report. */
@@ -46,7 +52,7 @@ public class TestwiseXmlReportGenerator {
         CachingExecutionDataReader executionDataReader = new CachingExecutionDataReader();
         TestwiseXmlReportWriter writer = new TestwiseXmlReportWriter(output);
 
-        executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives);
+        executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
 
         for (Dump dump: dumps) {
             String testId = dump.info.getId();

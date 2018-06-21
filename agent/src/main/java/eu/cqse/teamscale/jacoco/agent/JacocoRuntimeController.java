@@ -52,7 +52,6 @@ public class JacocoRuntimeController {
      *                       should simply be retried later if this ever happens.
      */
     public Dump dumpAndReset() throws DumpException {
-
         byte[] binaryData = agent.getExecutionData(true);
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binaryData)) {

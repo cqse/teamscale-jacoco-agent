@@ -1,6 +1,8 @@
 package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
+import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.jacoco.core.data.ExecutionData;
@@ -45,7 +47,9 @@ public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
     /** Runs the report generator. */
     private String runGenerator(String testDataFolder, String execFileName) throws IOException {
         File classFileFolder = useTestFile(testDataFolder);
-        return new TestwiseXmlReportGenerator(Collections.singletonList(classFileFolder))
+        AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
+                CollectionUtils.emptyList());
+        return new TestwiseXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter)
                 .convert(readDumps(execFileName));
     }
 
