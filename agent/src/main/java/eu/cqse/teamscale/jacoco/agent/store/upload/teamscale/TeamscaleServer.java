@@ -25,6 +25,8 @@ public class TeamscaleServer {
 
     /** The commit message shown in the Teamscale UI for the coverage upload. */
     public String message = "Agent coverage upload";
+
+    /** The report format used for the upload. */
     public ITeamscaleService.EReportFormat reportFormat = ITeamscaleService.EReportFormat.JACOCO;
 
     /** Returns if all required fields are non-null. */

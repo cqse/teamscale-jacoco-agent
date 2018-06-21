@@ -11,16 +11,16 @@ import org.jacoco.core.data.SessionInfo;
 /** All data received in one dump. */
 public class Dump {
 
-    /** The session info. */
-    public final SessionInfo info;
+	/** The session info. */
+	public final SessionInfo info;
 
-    /** The execution data store. */
-    public final ExecutionDataStore store;
+	/** The execution data store. */
+	public final ExecutionDataStore store;
 
-    /** Constructor. */
-    public Dump(SessionInfo info, ExecutionDataStore store) {
-        this.info = info;
-        this.store = store;
-    }
+	/** Constructor. */
+	public Dump(SessionInfo info, ExecutionDataStore store) {
+		this.info = info;
+		this.store = store;
+	}
 
 }

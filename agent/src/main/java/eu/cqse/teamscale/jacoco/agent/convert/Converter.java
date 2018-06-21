@@ -34,8 +34,7 @@ public class Converter {
 		XmlReportGenerator generator = new XmlReportGenerator(arguments.getClassDirectoriesOrZips(),
 				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles());
 
-		Dump dump = new Dump(sessionInfo, executionDataStore);
-		String xml = generator.convert(dump);
+		String xml = generator.convert(new Dump(sessionInfo, executionDataStore));
 		FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml);
 	}
 }

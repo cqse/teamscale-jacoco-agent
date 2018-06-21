@@ -41,7 +41,7 @@ public class AntPatternIncludeFilter implements Predicate<String> {
 	/**
 	 * Returns <code>true</code> if the given class file location (normalized to
 	 * forward slashes as path separators) should not be analyzed.
-	 * 
+	 * <p>
 	 * Exclude filters overrule include filters.
 	 */
 	private boolean isFiltered(String location) {

@@ -21,48 +21,48 @@ import java.util.function.Predicate;
  */
 public class TestwiseXmlReportGenerator {
 
-    /** Directories and zip files that contain class files. */
-    private Collection<File> codeDirectoriesOrArchives;
+	/** Directories and zip files that contain class files. */
+	private Collection<File> codeDirectoriesOrArchives;
 
-    /** Include filter to apply to all locations during class file traversal. */
-    private Predicate<String> locationIncludeFilter;
+	/** Include filter to apply to all locations during class file traversal. */
+	private Predicate<String> locationIncludeFilter;
 
-    /**
-     * Create a new generator with a collection of class directories.
-     *
-     * @param codeDirectoriesOrArchives Root directory that contains the projects class files.
-     * @param locationIncludeFilter Filter for class files
-     */
-    public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter) {
-        this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
-        this.locationIncludeFilter = locationIncludeFilter;
-    }
+	/**
+	 * Create a new generator with a collection of class directories.
+	 *
+	 * @param codeDirectoriesOrArchives Root directory that contains the projects class files.
+	 * @param locationIncludeFilter     Filter for class files
+	 */
+	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter) {
+		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
+		this.locationIncludeFilter = locationIncludeFilter;
+	}
 
-    /** Creates the report. */
-    public String convert(List<Dump> dumps) throws IOException {
-        try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            convertToReport(output, dumps);
-            return output.toString(FileSystemUtils.UTF8_ENCODING);
-        }
-    }
+	/** Creates the report. */
+	public String convert(List<Dump> dumps) throws IOException {
+		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			convertToReport(output, dumps);
+			return output.toString(FileSystemUtils.UTF8_ENCODING);
+		}
+	}
 
-    /** Creates the testwise report. */
-    private void convertToReport(OutputStream output, List<Dump> dumps) throws IOException {
-        CachingExecutionDataReader executionDataReader = new CachingExecutionDataReader();
-        TestwiseXmlReportWriter writer = new TestwiseXmlReportWriter(output);
+	/** Creates the testwise report. */
+	private void convertToReport(OutputStream output, List<Dump> dumps) throws IOException {
+		CachingExecutionDataReader executionDataReader = new CachingExecutionDataReader();
+		TestwiseXmlReportWriter writer = new TestwiseXmlReportWriter(output);
 
-        executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
+		executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
 
-        for (Dump dump: dumps) {
-            String testId = dump.info.getId();
-            if (testId.isEmpty()) {
-                continue;
-            }
-            TestCoverage testCoverage = executionDataReader.buildCoverage(testId, dump.store);
-            writer.writeTestCoverage(testCoverage);
-        }
+		for (Dump dump: dumps) {
+			String testId = dump.info.getId();
+			if (testId.isEmpty()) {
+				continue;
+			}
+			TestCoverage testCoverage = executionDataReader.buildCoverage(testId, dump.store);
+			writer.writeTestCoverage(testCoverage);
+		}
 
-        writer.closeReport();
-    }
+		writer.closeReport();
+	}
 }

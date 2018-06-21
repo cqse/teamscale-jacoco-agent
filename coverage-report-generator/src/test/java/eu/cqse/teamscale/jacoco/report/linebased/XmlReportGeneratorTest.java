@@ -1,11 +1,7 @@
 package eu.cqse.teamscale.jacoco.report.linebased;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-
+import eu.cqse.teamscale.jacoco.dump.Dump;
+import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.jacoco.core.data.ExecutionData;
@@ -13,8 +9,11 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.junit.Test;
 
-import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests report generation with and without duplicate classes. */
 public class XmlReportGeneratorTest extends CCSMTestCaseBase {
@@ -54,7 +53,7 @@ public class XmlReportGeneratorTest extends CCSMTestCaseBase {
 	/** Creates a dummy dump. */
 	private static Dump createDummyDump() {
 		ExecutionDataStore store = new ExecutionDataStore();
-		store.put(new ExecutionData(123, "TestClass", new boolean[] { true, true, true }));
+		store.put(new ExecutionData(123, "TestClass", new boolean[]{true, true, true}));
 		SessionInfo info = new SessionInfo("session-id", 124L, 125L);
 		return new Dump(info, store);
 	}

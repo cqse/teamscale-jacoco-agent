@@ -288,7 +288,7 @@ public class AgentOptions {
                 break;
             case "http-server":
                 modeHttpServer = Boolean.parseBoolean(value);
-                if(modeHttpServer) {
+                if (modeHttpServer) {
                     teamscaleServer.reportFormat = TESTWISE_COVERAGE;
                 }
                 break;

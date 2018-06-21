@@ -20,46 +20,46 @@ import java.util.function.Predicate;
  */
 class CachingExecutionDataReader {
 
-    /** The logger. */
-    private final Logger logger = LogManager.getLogger(this);
+	/** The logger. */
+	private final Logger logger = LogManager.getLogger(this);
 
-    /** Cached probes. */
-    private ProbesCache probesCache;
+	/** Cached probes. */
+	private ProbesCache probesCache;
 
-    /** Analyzes the given class files and creates a lookup of which probes belong to which method. */
-    public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter) {
-        if (probesCache != null) {
-            return;
-        }
-        probesCache = new ProbesCache();
-        AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache, locationIncludeFilter);
-        for (File classDir: classesDirectories) {
-            try {
-                if (classDir.exists()) {
-                    newAnalyzer.analyzeAll(classDir);
-                }
-            } catch (IOException e) {
-                logger.error(e);
-            }
-        }
-        if (probesCache.isEmpty()) {
-            StringBuilder builder = new StringBuilder();
-            for (File classesDirectory: classesDirectories) {
-                builder.append(classesDirectory.getPath());
-                builder.append(", ");
-            }
-            throw new RuntimeException("No class files found in the given directories! " + builder.toString());
-        }
-    }
+	/** Analyzes the given class files and creates a lookup of which probes belong to which method. */
+	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter) {
+		if (probesCache != null) {
+			return;
+		}
+		probesCache = new ProbesCache();
+		AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache, locationIncludeFilter);
+		for (File classDir: classesDirectories) {
+			try {
+				if (classDir.exists()) {
+					newAnalyzer.analyzeAll(classDir);
+				}
+			} catch (IOException e) {
+				logger.error(e);
+			}
+		}
+		if (probesCache.isEmpty()) {
+			StringBuilder builder = new StringBuilder();
+			for (File classesDirectory: classesDirectories) {
+				builder.append(classesDirectory.getPath());
+				builder.append(", ");
+			}
+			throw new RuntimeException("No class files found in the given directories! " + builder.toString());
+		}
+	}
 
-    /**
-     * Converts the given store to coverage data. The coverage will only contain line coverage information.
-     */
-    public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) {
-        TestCoverage testCoverage = new TestCoverage(testId);
-        for (ExecutionData executionData: executionDataStore.getContents()) {
-            testCoverage.add(probesCache.getCoverage(executionData));
-        }
-        return testCoverage;
-    }
+	/**
+	 * Converts the given store to coverage data. The coverage will only contain line coverage information.
+	 */
+	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) {
+		TestCoverage testCoverage = new TestCoverage(testId);
+		for (ExecutionData executionData: executionDataStore.getContents()) {
+			testCoverage.add(probesCache.getCoverage(executionData));
+		}
+		return testCoverage;
+	}
 }

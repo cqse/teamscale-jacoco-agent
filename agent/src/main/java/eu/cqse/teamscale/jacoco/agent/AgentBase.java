@@ -5,6 +5,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.RT;
 
+/**
+ * Base class for agent implementations. Handles logger shutdown,
+ * store creation and instantiation of the {@link JacocoRuntimeController}.
+ */
 public abstract class AgentBase {
 
     /** The logger. */
@@ -38,5 +42,6 @@ public abstract class AgentBase {
         }));
     }
 
+    /** Called when the shutdown hook is triggered. */
     protected abstract void prepareShutdown();
 }

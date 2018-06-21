@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Measures how long a certain piece of code takes and logs it to the debug log.
- * 
+ * <p>
  * Use this in a try-with-resources. Time measurement starts when the resource
  * is created and ends when it is closed.
  */

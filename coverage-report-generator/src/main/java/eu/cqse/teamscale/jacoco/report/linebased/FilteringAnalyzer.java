@@ -5,15 +5,15 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.report.linebased;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.function.Predicate;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.ICoverageVisitor;
 import org.jacoco.core.data.ExecutionDataStore;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Predicate;
 
 /**
  * {@link Analyzer} that filters the analyzed class files based on a
@@ -29,7 +29,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 
 	/** Constructor. */
 	public FilteringAnalyzer(ExecutionDataStore executionData, ICoverageVisitor coverageVisitor,
-			Predicate<String> locationIncludeFilter) {
+							 Predicate<String> locationIncludeFilter) {
 		super(executionData, coverageVisitor);
 		this.locationIncludeFilter = locationIncludeFilter;
 	}

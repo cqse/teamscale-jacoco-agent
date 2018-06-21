@@ -27,6 +27,7 @@ public class TeamscaleUploadStore implements IXmlStore {
     /** The API which performs the upload. */
     private final ITeamscaleService api;
 
+    /** Constructor.*/
     public TeamscaleUploadStore(TimestampedFileStore failureStore, TeamscaleServer teamscaleServer) {
         this.failureStore = failureStore;
         this.teamscaleServer = teamscaleServer;
