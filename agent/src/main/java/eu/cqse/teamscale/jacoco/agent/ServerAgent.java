@@ -44,7 +44,7 @@ public class ServerAgent extends AgentBase {
     private List<Dump> dumps = new ArrayList<>();
 
     /** Constructor. */
-    public ServerAgent(AgentOptions options) {
+    public ServerAgent(AgentOptions options) throws IllegalStateException {
         super(options);
         this.options = options;
         generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips());
@@ -96,12 +96,12 @@ public class ServerAgent extends AgentBase {
     private void handleTestStart(String testId) throws DumpException {
         logger.debug("Start test " + testId);
         controller.reset();
+        controller.setSessionId(testId);
     }
 
     /** Handles the end of a test case by resetting the session ID. */
     private void handleTestEnd(String testId) throws DumpException {
         logger.debug("End test " + testId);
-        controller.setSessionId(testId);
         dumps.add(controller.dumpAndReset());
 
         // If the last dump was longer ago than the specified interval dump report
@@ -139,6 +139,7 @@ public class ServerAgent extends AgentBase {
         }
 
         store.store(xml);
+        dumps.clear();
     }
 
     @Override

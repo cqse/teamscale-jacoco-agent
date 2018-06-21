@@ -25,7 +25,7 @@ public class Agent extends AgentBase {
     private final Timer timer;
 
     /** Constructor. */
-    public Agent(AgentOptions options) {
+    public Agent(AgentOptions options) throws IllegalStateException {
         super(options);
 
         generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),

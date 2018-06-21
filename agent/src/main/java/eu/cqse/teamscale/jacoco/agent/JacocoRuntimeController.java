@@ -37,6 +37,14 @@ public class JacocoRuntimeController {
 
     }
 
+    /** JaCoCo's {@link RT} agent instance */
+    private final IAgent agent;
+
+    /** Constructor. */
+    public JacocoRuntimeController(IAgent agent)  {
+        this.agent = agent;
+    }
+
     /**
      * Dumps execution data and resets it.
      *
@@ -44,7 +52,6 @@ public class JacocoRuntimeController {
      *                       should simply be retried later if this ever happens.
      */
     public Dump dumpAndReset() throws DumpException {
-        IAgent agent = getRTAgent();
 
         byte[] binaryData = agent.getExecutionData(true);
 
@@ -65,28 +72,16 @@ public class JacocoRuntimeController {
     }
 
     /** Resets already collected coverage. */
-    public void reset() throws DumpException {
-        getRTAgent().reset();
+    public void reset() {
+        agent.reset();
     }
 
     /**
      * Sets the current sessionId of the agent that can be used to identify
      * which coverage is recorded from now on.
      */
-    public void setSessionId(String sessionId) throws DumpException {
-        IAgent agent = getRTAgent();
+    public void setSessionId(String sessionId) {
         agent.setSessionId(sessionId);
-    }
-
-    /** Returns JaCoCo's {@link RT} agent instance. */
-    private IAgent getRTAgent() throws DumpException {
-        IAgent agent;
-        try {
-            agent = RT.getAgent();
-        } catch (IllegalStateException e) {
-            throw new DumpException("JaCoCo agent not yet initialized", e);
-        }
-        return agent;
     }
 
     /**
