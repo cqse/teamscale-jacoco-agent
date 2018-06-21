@@ -57,6 +57,10 @@ public class TestwiseXmlReportGenerator {
 
         for (Dump dump: dumps) {
             IBundleCoverage bundle = executionDataReader.buildCoverage(dump.store);
+            String testId = dump.info.getId();
+            if (testId.isEmpty()) {
+                continue;
+            }
             visitor.visitSession(dump.info, bundle, null);
         }
 
