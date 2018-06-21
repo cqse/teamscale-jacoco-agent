@@ -24,81 +24,81 @@ import java.io.IOException;
  */
 public class JacocoRuntimeController {
 
-    /** Indicates a failed dump. */
-    public static class DumpException extends Exception {
+	/** Indicates a failed dump. */
+	public static class DumpException extends Exception {
 
-        /** Serialization ID. */
-        private static final long serialVersionUID = 1L;
+		/** Serialization ID. */
+		private static final long serialVersionUID = 1L;
 
-        /** Constructor. */
-        public DumpException(String message, Throwable cause) {
-            super(message, cause);
-        }
+		/** Constructor. */
+		public DumpException(String message, Throwable cause) {
+			super(message, cause);
+		}
 
-    }
+	}
 
-    /** JaCoCo's {@link RT} agent instance */
-    private final IAgent agent;
+	/** JaCoCo's {@link RT} agent instance */
+	private final IAgent agent;
 
-    /** Constructor. */
-    public JacocoRuntimeController(IAgent agent)  {
-        this.agent = agent;
-    }
+	/** Constructor. */
+	public JacocoRuntimeController(IAgent agent) {
+		this.agent = agent;
+	}
 
-    /**
-     * Dumps execution data and resets it.
-     *
-     * @throws DumpException if dumping fails. This should never happen in real life. Dumping
-     *                       should simply be retried later if this ever happens.
-     */
-    public Dump dumpAndReset() throws DumpException {
-        byte[] binaryData = agent.getExecutionData(true);
+	/**
+	 * Dumps execution data and resets it.
+	 *
+	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping
+	 *                       should simply be retried later if this ever happens.
+	 */
+	public Dump dumpAndReset() throws DumpException {
+		byte[] binaryData = agent.getExecutionData(true);
 
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binaryData)) {
-            ExecutionDataReader reader = new ExecutionDataReader(inputStream);
+		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binaryData)) {
+			ExecutionDataReader reader = new ExecutionDataReader(inputStream);
 
-            ExecutionDataStore store = new ExecutionDataStore();
-            reader.setExecutionDataVisitor(store::put);
+			ExecutionDataStore store = new ExecutionDataStore();
+			reader.setExecutionDataVisitor(store::put);
 
-            SessionInfoVisitor sessionInfoVisitor = new SessionInfoVisitor();
-            reader.setSessionInfoVisitor(sessionInfoVisitor);
+			SessionInfoVisitor sessionInfoVisitor = new SessionInfoVisitor();
+			reader.setSessionInfoVisitor(sessionInfoVisitor);
 
-            reader.read();
-            return new Dump(sessionInfoVisitor.sessionInfo, store);
-        } catch (IOException e) {
-            throw new DumpException("should never happen for the ByteArrayInputStream", e);
-        }
-    }
+			reader.read();
+			return new Dump(sessionInfoVisitor.sessionInfo, store);
+		} catch (IOException e) {
+			throw new DumpException("should never happen for the ByteArrayInputStream", e);
+		}
+	}
 
-    /** Resets already collected coverage. */
-    public void reset() {
-        agent.reset();
-    }
+	/** Resets already collected coverage. */
+	public void reset() {
+		agent.reset();
+	}
 
-    /**
-     * Sets the current sessionId of the agent that can be used to identify
-     * which coverage is recorded from now on.
-     */
-    public void setSessionId(String sessionId) {
-        agent.setSessionId(sessionId);
-    }
+	/**
+	 * Sets the current sessionId of the agent that can be used to identify
+	 * which coverage is recorded from now on.
+	 */
+	public void setSessionId(String sessionId) {
+		agent.setSessionId(sessionId);
+	}
 
-    /**
-     * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in
-     * case nothing is received.
-     */
-    private static class SessionInfoVisitor implements ISessionInfoVisitor {
+	/**
+	 * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in
+	 * case nothing is received.
+	 */
+	private static class SessionInfoVisitor implements ISessionInfoVisitor {
 
-        /** The received session info or a dummy. */
-        public SessionInfo sessionInfo = new SessionInfo("dummysession", System.currentTimeMillis(),
-                System.currentTimeMillis());
+		/** The received session info or a dummy. */
+		public SessionInfo sessionInfo = new SessionInfo("dummysession", System.currentTimeMillis(),
+				System.currentTimeMillis());
 
-        /** {@inheritDoc} */
-        @Override
-        public void visitSessionInfo(SessionInfo info) {
-            this.sessionInfo = info;
-        }
+		/** {@inheritDoc} */
+		@Override
+		public void visitSessionInfo(SessionInfo info) {
+			this.sessionInfo = info;
+		}
 
-    }
+	}
 
 }

@@ -1,19 +1,17 @@
 package eu.cqse.teamscale.jacoco.agent;
 
-import java.util.ResourceBundle;
-
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.JCommander.Builder;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
+import eu.cqse.teamscale.jacoco.agent.convert.ConvertCommand;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.JaCoCo;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.JCommander.Builder;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
-
-import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
-import eu.cqse.teamscale.jacoco.agent.convert.ConvertCommand;
+import java.util.ResourceBundle;
 
 /** Provides a command line interface for interacting with JaCoCo. */
 public class Main {
