@@ -1,33 +1,24 @@
 package eu.cqse.teamscale.jacoco.cache;
 
+import eu.cqse.teamscale.jacoco.report.testwise.model.FileCoverage;
+import eu.cqse.teamscale.jacoco.report.testwise.model.LineRange;
+import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.data.ExecutionData;
-import org.jacoco.core.internal.analysis.ClassCoverageImpl;
-import org.jacoco.core.internal.analysis.CounterImpl;
-import org.jacoco.core.internal.analysis.MethodCoverageImpl;
-import org.jacoco.core.internal.data.CRC64;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProbeLookup {
 
-    /**
-     * The class id used in the execution data ({@link CRC64} checksum of the class file).
-     */
-    private final long classId;
-
-    /**
-     * Fully qualified name of the class.
-     */
+    /** Fully qualified name of the class. */
     private String className;
 
-    /**
-     * Name of the java source file
-     */
+    /** Name of the java source file. */
     private String sourceFileName;
 
     /**
-     * List of all line number that have a probe attached to them.
+     * List of method's line ranges. Each entry is associated with a probe at the same index.
+     * So the same {@link LineRange}s can appear multiple times in the list if a method contains more than one probe.
      */
     private List<LineRange> probes = new ArrayList<>();
 
@@ -35,8 +26,7 @@ public class ProbeLookup {
 
     private LineRange currentMethod = new LineRange();
 
-    ProbeLookup(long classId, String className) {
-        this.classId = classId;
+    ProbeLookup(String className) {
         this.className = className;
     }
 
@@ -60,7 +50,7 @@ public class ProbeLookup {
         }
     }
 
-    public ClassCoverageImpl getClassCoverage(ExecutionData executionData) {
+    public FileCoverage getFileCoverage(ExecutionData executionData) {
         boolean[] executedProbes = executionData.getProbes();
 
         // Check probe invariant
@@ -69,45 +59,19 @@ public class ProbeLookup {
                     sourceFileName + " " + className + " (" + probes.size() + " vs " + executedProbes.length + ")!");
         }
 
-        ArrayList<LineRange> coveredMethods = new ArrayList<>();
+        final FileCoverage fileCoverage = new FileCoverage(StringUtils.removeLastPart(className, '/'), sourceFileName);
         for (int i = 0; i < probes.size(); i++) {
-            if (executedProbes[i] && probes.get(i) != null) {
-                LineRange range = probes.get(i);
-                if (!coveredMethods.contains(range)) {
-                    coveredMethods.add(range);
-                }
+            LineRange lineRange = probes.get(i);
+            if (executedProbes[i] && lineRange != null) {
+                fileCoverage.addLineRange(lineRange);
             }
         }
 
-        return buildClassCoverage(coveredMethods);
-    }
-
-    private ClassCoverageImpl buildClassCoverage(ArrayList<LineRange> coveredMethods) {
-        final ClassCoverageImpl coverage = new ClassCoverageImpl(className, classId, false);
-        coverage.setSourceFileName(sourceFileName == null ? className : sourceFileName);
-        coverage.ensureCapacity(0, 1);
-        for (LineRange coveredMethod : coveredMethods) {
-            coverage.addMethod(new AggregatedMethodCoverage(coveredMethod));
-        }
-
-        if (!coveredMethods.isEmpty()) {
-            // DUMMY coverage so that jacoco does not discard it as being empty
-            coverage.increment(CounterImpl.COUNTER_0_1, CounterImpl.COUNTER_0_0, 0);
-        }
-        return coverage;
+        return fileCoverage;
     }
 
     public void finishMethod() {
         currentMethod = new LineRange();
-    }
-
-    public static class AggregatedMethodCoverage extends MethodCoverageImpl {
-        public LineRange range;
-
-        public AggregatedMethodCoverage(LineRange range) {
-            super("", "", "");
-            this.range = range;
-        }
     }
 
 }

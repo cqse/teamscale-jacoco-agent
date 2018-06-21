@@ -1,12 +1,9 @@
 package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.report.IJaCoCoReportGenerator;
+import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.jacoco.core.analysis.IBundleCoverage;
-import org.jacoco.core.data.ExecutionDataStore;
-import org.jacoco.core.data.SessionInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,9 +32,7 @@ public class TestwiseXmlReportGenerator {
         this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
     }
 
-    /**
-     * Creates the report.
-     */
+    /** Creates the report. */
     public String convert(List<Dump> dumps) throws IOException {
         try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -46,24 +41,22 @@ public class TestwiseXmlReportGenerator {
         }
     }
 
-    /**
-     * Creates the testwise report.
-     */
+    /** Creates the testwise report. */
     private void convertToReport(OutputStream output, List<Dump> dumps) throws IOException {
         CachingExecutionDataReader executionDataReader = new CachingExecutionDataReader();
-        SessionAwareVisitor visitor = new SessionAwareXMLFormatter().createVisitor(output);
+        TestwiseXmlReportWriter writer = new TestwiseXmlReportWriter(output);
 
         executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives);
 
         for (Dump dump: dumps) {
-            IBundleCoverage bundle = executionDataReader.buildCoverage(dump.store);
             String testId = dump.info.getId();
             if (testId.isEmpty()) {
                 continue;
             }
-            visitor.visitSession(dump.info, bundle, null);
+            TestCoverage testCoverage = executionDataReader.buildCoverage(testId, dump.store);
+            writer.writeTestCoverage(testCoverage);
         }
 
-        visitor.visitEnd();
+        writer.closeReport();
     }
 }

@@ -1,9 +1,7 @@
 package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -29,16 +27,8 @@ public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
     }
 
     private void assertEqualsIgnoreFormatting(String expectedFileName, String actualReport) throws IOException {
-        String expected = normalizeLines(FileSystemUtils.readFileUTF8(useTestFile(expectedFileName)));
-        String actual = normalizeLines(actualReport);
-        assertEquals(expected, actual);
-    }
-
-    /** Trims whitespace for all lines. */
-    private String normalizeLines(String content) {
-        List<String> lines = StringUtils.splitLinesAsList(content);
-        List<String> trimmedLines = CollectionUtils.map(lines, String::trim);
-        return StringUtils.concat(trimmedLines, "\n");
+        String expected = FileSystemUtils.readFileUTF8(useTestFile(expectedFileName));
+        assertEquals(expected, actualReport);
     }
 
     /** Reads the dumps from the given *.exec file. */

@@ -2,24 +2,15 @@ package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.cache.AnalyzerCache;
 import eu.cqse.teamscale.jacoco.cache.ProbesCache;
+import eu.cqse.teamscale.jacoco.report.testwise.model.FileCoverage;
+import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jacoco.core.analysis.CoverageBuilder;
-import org.jacoco.core.analysis.IBundleCoverage;
-import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.data.ExecutionData;
-import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.ExecutionDataStore;
-import org.jacoco.core.data.ExecutionDataWriter;
-import org.jacoco.core.data.IExecutionDataVisitor;
-import org.jacoco.core.data.ISessionInfoVisitor;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 
 /**
@@ -35,7 +26,7 @@ class CachingExecutionDataReader {
     /** Cached probes. */
     private ProbesCache probesCache;
 
-    /**  */
+    /** Analyzes the given class files and creates a lookup of which probes belong to which method. */
     public void analyzeClassDirs(Collection<File> classesDirectories) {
         if (probesCache != null) {
             return;
@@ -64,14 +55,11 @@ class CachingExecutionDataReader {
     /**
      * Converts the given store to coverage data. The coverage will only contain line coverage information.
      */
-    public IBundleCoverage buildCoverage(ExecutionDataStore executionDataStore) {
-        CoverageBuilder builder = new CoverageBuilder();
+    public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) {
+        TestCoverage testCoverage = new TestCoverage(testId);
         for (ExecutionData executionData: executionDataStore.getContents()) {
-            IClassCoverage coverage = probesCache.getCoverage(executionData);
-            if (coverage != null) {
-                builder.visitCoverage(coverage);
-            }
+            testCoverage.add(probesCache.getCoverage(executionData));
         }
-        return builder.getBundle("total");
+        return testCoverage;
     }
 }
