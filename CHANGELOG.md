@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 8.1.0
+- [feature] added options to configure coverage upload to Teamscale
+
 # 8.0.2
 - [fix] remove version number from jar file name
 
