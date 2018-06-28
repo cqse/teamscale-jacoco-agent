@@ -1,7 +1,9 @@
+import de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer
+
 buildscript {
     repositories {
         maven {
-            url "https://plugins.gradle.org/m2/"
+            url 'https://plugins.gradle.org/m2/'
         }
     }
     dependencies {
@@ -18,7 +20,7 @@ apply plugin: 'com.github.johnrengelman.plugin-shadow'
 
 ext {
 	jacocoVersion = '0.8.1'
-	outputVersion = rootProject.appVersion + "-jacoco-" + jacocoVersion
+	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
 
 dependencies {
@@ -52,7 +54,7 @@ shadowJar {
     }
 
     // ensures that log4j resource files are also relocated properly
-    transform(de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer)
+    transform(Log4j2PluginsFileTransformer)
     transform(Log4JResourceTransformer)
 }
 

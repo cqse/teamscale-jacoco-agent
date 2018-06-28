@@ -30,7 +30,7 @@ public class Benchmark implements AutoCloseable {
 	@Override
 	public void close() {
 		long endTime = System.nanoTime();
-		logger.debug("{} took {}s", description, (endTime - startTime) / 1_000_000_000l);
+		logger.debug("{} took {}s", description, (endTime - startTime) / 1_000_000_000L);
 	}
 
 }

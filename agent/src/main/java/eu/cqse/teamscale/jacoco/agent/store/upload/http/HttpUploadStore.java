@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.agent.store;
+package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;

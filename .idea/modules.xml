@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" filepath="$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" group="eu.cqse.teamscale.jacoco.agent" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" group="eu.cqse.teamscale.jacoco.agent" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_test.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_test.iml" group="eu.cqse.teamscale.jacoco.agent" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/javaws-wrapper/eu.cqse.teamscale.jacoco.javaws.iml" filepath="$PROJECT_DIR$/.idea/modules/javaws-wrapper/eu.cqse.teamscale.jacoco.javaws.iml" group="eu.cqse.teamscale.jacoco.javaws" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/javaws-wrapper/eu.cqse.teamscale.jacoco.javaws_main.iml" filepath="$PROJECT_DIR$/.idea/modules/javaws-wrapper/eu.cqse.teamscale.jacoco.javaws_main.iml" group="eu.cqse.teamscale.jacoco.javaws" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/javaws-wrapper/eu.cqse.teamscale.jacoco.javaws_test.iml" filepath="$PROJECT_DIR$/.idea/modules/javaws-wrapper/eu.cqse.teamscale.jacoco.javaws_test.iml" group="eu.cqse.teamscale.jacoco.javaws" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_main.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_main.iml" group="eu.cqse.teamscale.jacoco_buildSrc" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_test.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_test.iml" group="eu.cqse.teamscale.jacoco_buildSrc" />
+    </modules>
+  </component>
+</project>
