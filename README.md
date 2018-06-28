@@ -1,5 +1,14 @@
 # Teamscale JaCoCo Agent
 
+## Contributing
+
+- Please create a GitLab issue for all changes
+- Use merge requests. Use the "Definition of Done" description template for every merge request.
+- There's a Teamscale project, please fix all findings before submitting your
+  merge request for review. The Teamscale coding guidelines and Definition of Done
+  apply as far as possible with the available tooling.
+- After merging, please tag the merge commit with the version number, e.g. `v8.1.0`
+
 ## Downloading
 
 We use Gitlab CI to build the distribution zip. Any successful build will have it in its
@@ -13,17 +22,11 @@ that we always know which exact version a customer has deployed.__
 
 ## Publishing
 
-You will need to install pandoc and have it on the path.
+All tags are built automatically. Only use builds from tagged commits. This ensures that
+we always know which code a customer is using.
 
-- Update the changelog
-- Increase the version number in the build file. We use [semantic versioning](http://semver.org)!
-- Create a git tag.
-- Push the tag and your revisions to git
-
-   git push
-   git push --tags
-
-- The build server will build the project and you can download a build artifact with the dist afterwards
+The build server will build the project and you can download a build artifact with the dist afterwards.
+If the artifcats have been removed already, trigger the build again in GitLab.
 
 ## Compiling for a different JaCoCo version
 
