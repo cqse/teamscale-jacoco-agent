@@ -12,7 +12,11 @@ import java.util.function.Predicate;
 
 /**
  * An {@link AnalyzerCache} instance processes a set of Java class/jar/war/... files and
- * builds a {@link ProbeLookup} for each of the classes.
+ * builds a {@link ClassCoverageLookup} for each of the classes.
+ * <p>
+ * For every class that gets found {@link #analyzeClass(byte[])} is called. A class is identified by its class ID which
+ * is a CRC64 checksum of the classfile. We process each class with {@link CachingClassAnalyzer} to fill a
+ * {@link ClassCoverageLookup}.
  * <p>
  * The class basically needs to override {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])}.
  * Since the method is private we need to override and copy the implementations of all methods that call this method,
@@ -43,8 +47,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 			return;
 		}
 		final ClassReader reader = new ClassReader(source);
-		CachingClassAnalyzer classAnalyzer = new CachingClassAnalyzer(
-				probesCache.addClass(classId, reader.getClassName()));
+		ClassCoverageLookup classCoverageLookup = probesCache.createClass(classId, reader.getClassName());
+		CachingClassAnalyzer classAnalyzer = new CachingClassAnalyzer(classCoverageLookup);
 		final ClassVisitor visitor = new ClassProbesAdapter(classAnalyzer, false);
 		reader.accept(visitor, 0);
 	}

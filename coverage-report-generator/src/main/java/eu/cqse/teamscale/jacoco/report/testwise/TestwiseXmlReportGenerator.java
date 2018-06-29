@@ -1,5 +1,6 @@
 package eu.cqse.teamscale.jacoco.report.testwise;
 
+import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
@@ -59,8 +60,12 @@ public class TestwiseXmlReportGenerator {
 			if (testId.isEmpty()) {
 				continue;
 			}
-			TestCoverage testCoverage = executionDataReader.buildCoverage(testId, dump.store);
-			writer.writeTestCoverage(testCoverage);
+			try {
+				TestCoverage testCoverage = executionDataReader.buildCoverage(testId, dump.store);
+				writer.writeTestCoverage(testCoverage);
+			} catch (CoverageGenerationException e) {
+				e.printStackTrace(); //TODO print to logger here
+			}
 		}
 
 		writer.closeReport();

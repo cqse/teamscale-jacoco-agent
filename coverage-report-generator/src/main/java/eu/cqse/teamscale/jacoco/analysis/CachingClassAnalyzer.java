@@ -1,6 +1,6 @@
 package eu.cqse.teamscale.jacoco.analysis;
 
-import eu.cqse.teamscale.jacoco.cache.ProbeLookup;
+import eu.cqse.teamscale.jacoco.cache.ClassCoverageLookup;
 import org.jacoco.core.internal.flow.ClassProbesVisitor;
 import org.jacoco.core.internal.flow.MethodProbesVisitor;
 
@@ -8,35 +8,38 @@ import org.jacoco.core.internal.flow.MethodProbesVisitor;
  * Analyzes a class to reconstruct probe information.
  * <p>
  * It's core is a copy of {@link org.jacoco.core.internal.analysis.ClassAnalyzer} that has been
- * extended with caching functionality to speed up report generation.
+ * changed to support caching functionality.
+ * <p>
+ * A probe lookup holds for a single class which probe belongs to which method (line range). The actual filling of the
+ * {@link ClassCoverageLookup} happens in {@link CachingMethodAnalyzer}.
  */
 public class CachingClassAnalyzer extends ClassProbesVisitor {
 
 	/** The probes cache. */
-	private final ProbeLookup probeLookup;
+	private final ClassCoverageLookup classCoverageLookup;
 
 	/**
 	 * Creates a new analyzer that builds coverage data for a class.
 	 *
-	 * @param probeLookup cache for the class' probes
+	 * @param classCoverageLookup cache for the class' probes
 	 */
-	public CachingClassAnalyzer(ProbeLookup probeLookup) {
-		this.probeLookup = probeLookup;
+	public CachingClassAnalyzer(ClassCoverageLookup classCoverageLookup) {
+		this.classCoverageLookup = classCoverageLookup;
 	}
 
 	@Override
 	public void visitSource(String source, String debug) {
-		probeLookup.setSourceFileName(source);
+		classCoverageLookup.setSourceFileName(source);
 	}
 
 	@Override
 	public MethodProbesVisitor visitMethod(final int access, final String name,
 										   final String desc, final String signature, final String[] exceptions) {
-		return new CachingMethodAnalyzer(probeLookup);
+		return new CachingMethodAnalyzer(classCoverageLookup);
 	}
 
 	@Override
 	public void visitTotalProbeCount(final int count) {
-		// nothing to do
+		classCoverageLookup.setTotalProbeCount(count);
 	}
 }

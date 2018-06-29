@@ -1,6 +1,6 @@
 package eu.cqse.teamscale.jacoco.analysis;
 
-import eu.cqse.teamscale.jacoco.cache.ProbeLookup;
+import eu.cqse.teamscale.jacoco.cache.ClassCoverageLookup;
 import org.jacoco.core.internal.flow.IFrame;
 import org.jacoco.core.internal.flow.LabelInfo;
 import org.jacoco.core.internal.flow.MethodProbesVisitor;
@@ -12,23 +12,30 @@ import org.objectweb.asm.Label;
  * <p>
  * It's core is a copy of {@link org.jacoco.core.internal.analysis.MethodAnalyzer} that has been
  * extended with caching functionality to speed up report generation.
+ * <p>
+ * This class contains callbacks for stepping through a method at bytecode level which has been
+ * decorated with probes by JaCoCo in a depth-first-search like way. When we get a line number
+ * (JVM debug info) we save that the line number is part of the currently analyzed method. If we
+ * get a probe anywhere, we also save it as belonging to the method. At the end
+ * {@link ClassCoverageLookup#finishMethod()} is called to signal that all following lines and probes do
+ * belong to the next method.
  */
 public class CachingMethodAnalyzer extends MethodProbesVisitor {
 
-	private final ProbeLookup probeLookup;
+	private final ClassCoverageLookup classCoverageLookup;
 
 	/**
 	 * New Method analyzer for the given probe data.
 	 *
-	 * @param probeLookup cache of the class' probes
+	 * @param classCoverageLookup cache of the class' probes
 	 */
-	CachingMethodAnalyzer(ProbeLookup probeLookup) {
-		this.probeLookup = probeLookup;
+	CachingMethodAnalyzer(ClassCoverageLookup classCoverageLookup) {
+		this.classCoverageLookup = classCoverageLookup;
 	}
 
 	@Override
 	public void visitLineNumber(final int line, final Label start) {
-		probeLookup.visitLine(line);
+		classCoverageLookup.addLine(line);
 	}
 
 	@Override
@@ -81,10 +88,10 @@ public class CachingMethodAnalyzer extends MethodProbesVisitor {
 
 	@Override
 	public void visitEnd() {
-		probeLookup.finishMethod();
+		classCoverageLookup.finishMethod();
 	}
 
 	private void addProbe(final int probeId) {
-		probeLookup.addProbe(probeId);
+		classCoverageLookup.addProbe(probeId);
 	}
 }

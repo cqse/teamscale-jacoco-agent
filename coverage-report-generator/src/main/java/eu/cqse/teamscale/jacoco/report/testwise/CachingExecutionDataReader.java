@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.cache.AnalyzerCache;
+import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.cache.ProbesCache;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
 import org.apache.logging.log4j.LogManager;
@@ -55,7 +56,7 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line coverage information.
 	 */
-	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) {
+	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
 		TestCoverage testCoverage = new TestCoverage(testId);
 		for (ExecutionData executionData: executionDataStore.getContents()) {
 			testCoverage.add(probesCache.getCoverage(executionData));
