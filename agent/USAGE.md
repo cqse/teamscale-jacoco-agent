@@ -10,11 +10,6 @@ When used as a Java agent for your Java application, coverage is dumped to the f
 HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
 Coverage is also transferred when the application is shut down.
 
-In a manual test environment (default) the agent dumps the collected coverage as a line-based JaCoCo coverage report. 
-In contrast when started as HTTP server in an automated build environment the agent 
-listens for test events (which are sent via the REST API) and generates reports that contain method-based testwise coverage.
-For more details see the `HTTP server mode` section below.
-
 Configure the agent on your application's JVM:
 
     -javaagent:AGENTJAR=OPTIONS
@@ -67,8 +62,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"
 ```
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
-- `http-server`: set this to "true" to start the agent in the HTTP server mode (Default is false).
-- `http-server-port` (optional): the port at which the HTTP server should be opened (Default is 8000).
+- `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
+  (See `HTTP server mode` below for details).
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -80,12 +75,16 @@ The log file is written to the working directory of the profiled Java process by
 
 ## HTTP server mode
 
-When started as HTTP server the agent accepts GET queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
+By default the agent dumps the collected coverage as a line-based JaCoCo coverage report. 
+In contrast when started as HTTP server (`http-server-port` is set) the agent listens for test events 
+(which are sent via the REST API) and generates reports that contain method-based testwise coverage.
+
+When started as HTTP server the agent accepts `POST` queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
 `http://127.0.0.1:8000/test/end/myTestId`. The ID can be an arbitrary string, but must correspond to the `externalId` 
 (see the documentation on Test Impact Analysis for more details).
 
 The `interval` commandline argument behaves slightly different in the HTTP server mode. It does not dump any coverage 
-during tests, but only in between and when the program shuts down.
+during a test, but only in between them and when the program shuts down.
 
 ## Additional steps for WebSphere
 

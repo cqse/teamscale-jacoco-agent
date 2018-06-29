@@ -134,11 +134,8 @@ public class AgentOptions {
 	/** The teamscale server to which coverage should be uploaded. */
 	private TeamscaleServer teamscaleServer = new TeamscaleServer();
 
-	/** Indicates whether the interval based dump or the HTTP server mode should be used. */
-	private boolean modeHttpServer;
-
 	/** The port on which the HTTP server should be listening. */
-	private int httpServerPort = 8000;
+	private Integer httpServerPort = null;
 
 	/**
 	 * Parses the given command-line options.
@@ -286,15 +283,10 @@ public class AgentOptions {
 			case "teamscale-message":
 				teamscaleServer.message = value;
 				break;
-			case "http-server":
-				modeHttpServer = Boolean.parseBoolean(value);
-				if (modeHttpServer) {
-					teamscaleServer.reportFormat = TESTWISE_COVERAGE;
-				}
-				break;
 			case "http-server-port":
 				try {
 					httpServerPort = Integer.parseInt(value);
+					teamscaleServer.reportFormat = TESTWISE_COVERAGE;
 				} catch (NumberFormatException e) {
 					throw new AgentOptionParseException("Invalid port number " + value + " given for option 'http-server-port'!");
 				}
@@ -434,7 +426,7 @@ public class AgentOptions {
 	 * Returns whether the interval based dump or the HTTP server mode should be used.
 	 */
 	public boolean shouldUseHttpServerMode() {
-		return modeHttpServer;
+		return httpServerPort != null;
 	}
 
 	/**
