@@ -2,6 +2,7 @@ package eu.cqse.teamscale.jacoco.cache;
 
 import eu.cqse.teamscale.jacoco.analysis.CachingClassAnalyzer;
 import eu.cqse.teamscale.jacoco.report.linebased.FilteringAnalyzer;
+import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.jacoco.core.internal.data.CRC64;
 import org.jacoco.core.internal.flow.ClassProbesAdapter;
 import org.objectweb.asm.ClassReader;
@@ -31,8 +32,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 	private final ProbesCache probesCache;
 
 	/** Creates a new analyzer filling the given cache. */
-	public AnalyzerCache(ProbesCache probesCache, Predicate<String> locationIncludeFilter) {
-		super(null, null, locationIncludeFilter);
+	public AnalyzerCache(ProbesCache probesCache, Predicate<String> locationIncludeFilter, ILogger logger) {
+		super(null, null, locationIncludeFilter, logger);
 		this.probesCache = probesCache;
 	}
 

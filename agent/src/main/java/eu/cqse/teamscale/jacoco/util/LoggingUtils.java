@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 
+import eu.cqse.teamscale.jacoco.agent.Agent;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -18,8 +20,6 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
-
-import eu.cqse.teamscale.jacoco.agent.Agent;
 
 /**
  * Helps initialize the logging framework properly.
@@ -55,6 +55,26 @@ public class LoggingUtils {
 		ConfigurationSource source = new ConfigurationSource(new FileInputStream(loggingConfigFile.toFile()),
 				loggingConfigFile.toFile());
 		Configurator.initialize(null, source);
+	}
+
+	/** Wraps the given log4j logger into an {@link ILogger}. */
+	public static ILogger wrap(Logger logger) {
+		return new ILogger() {
+			@Override
+			public void debug(String debugLog) {
+				logger.debug(debugLog);
+			}
+
+			@Override
+			public void warn(String s, Throwable e) {
+				logger.warn(s, e);
+			}
+
+			@Override
+			public void error(Throwable e) {
+				logger.error(e);
+			}
+		};
 	}
 
 	/** Factory for XML config files that disables the shutdown hook. */

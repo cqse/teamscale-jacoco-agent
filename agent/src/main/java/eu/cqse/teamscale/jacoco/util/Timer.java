@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Triggers a callback in a regular interval. Note that the spawned threads are
  * Daemon threads, i.e. they will not prevent the JVM from shutting down.
- * 
+ * <p>
  * The timer will abort if the given {@link #runnable} ever throws an exception.
  */
 public class Timer {

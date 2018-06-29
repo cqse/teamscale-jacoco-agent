@@ -7,10 +7,13 @@ package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.linebased.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.Timer;
 
 import java.io.IOException;
 import java.time.Duration;
+
+import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
@@ -29,7 +32,7 @@ public class Agent extends AgentBase {
 		super(options);
 
 		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
-				options.shouldIgnoreDuplicateClassFiles());
+				options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
 		timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
 		timer.start();
@@ -71,7 +74,7 @@ public class Agent extends AgentBase {
 		}
 
 		String xml;
-		try {
+		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			xml = generator.convert(dump);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);

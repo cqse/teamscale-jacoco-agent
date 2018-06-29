@@ -5,8 +5,7 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.report.linebased;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IClassCoverage;
 
@@ -14,22 +13,23 @@ import org.jacoco.core.analysis.IClassCoverage;
 /* package */class DuplicateIgnoringCoverageBuilder extends CoverageBuilder {
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final ILogger logger;
 
-	/**
-	 * {@inheritDoc}
-	 */
+	DuplicateIgnoringCoverageBuilder(ILogger logger) {
+		this.logger = logger;
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public void visitCoverage(IClassCoverage coverage) {
 		try {
 			super.visitCoverage(coverage);
 		} catch (IllegalStateException e) {
-			logger.warn("Ignoring duplicate, non-identical class file for class {} compiled from source file {}."
-							+ " This happens when a class with the same fully-qualified name is loaded twice but the two loaded class files are not identical."
-							+ " A common reason for this is that the same library or shared code is included twice in your application but in two different versions."
-							+ " The produced coverage for this class may not be accurate or may even be unusable."
-							+ " To fix this problem, please resolve the conflict between both class files in your application.",
-					coverage.getName(), coverage.getSourceFileName(), e);
+			logger.warn("Ignoring duplicate, non-identical class file for class " + coverage.getName() + " compiled from source file " + coverage.getSourceFileName() + "."
+					+ " This happens when a class with the same fully-qualified name is loaded twice but the two loaded class files are not identical."
+					+ " A common reason for this is that the same library or shared code is included twice in your application but in two different versions."
+					+ " The produced coverage for this class may not be accurate or may even be unusable."
+					+ " To fix this problem, please resolve the conflict between both class files in your application.", e);
 		}
 	}
 

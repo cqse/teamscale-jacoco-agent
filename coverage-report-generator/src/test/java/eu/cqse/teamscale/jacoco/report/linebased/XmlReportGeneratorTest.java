@@ -2,6 +2,7 @@ package eu.cqse.teamscale.jacoco.report.linebased;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
+import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.jacoco.core.data.ExecutionData;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 /** Tests report generation with and without duplicate classes. */
 public class XmlReportGeneratorTest extends CCSMTestCaseBase {
@@ -63,8 +65,8 @@ public class XmlReportGeneratorTest extends CCSMTestCaseBase {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
 				CollectionUtils.emptyList());
-		new XmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter, shouldIgnoreDuplicates)
-				.convert(createDummyDump());
+		new XmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter, shouldIgnoreDuplicates,
+				mock(ILogger.class)).convert(createDummyDump());
 	}
 
 }

@@ -3,12 +3,17 @@ package eu.cqse.teamscale.jacoco.agent.convert;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.linebased.XmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
 
 import java.io.IOException;
+
+import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /** Converts one .exec binary coverage file to XML. */
 public class Converter {
@@ -31,10 +36,13 @@ public class Converter {
 
 		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(
 				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters());
+		Logger logger = LogManager.getLogger(this);
 		XmlReportGenerator generator = new XmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles());
+				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
-		String xml = generator.convert(new Dump(sessionInfo, executionDataStore));
-		FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml);
+		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
+			String xml = generator.convert(new Dump(sessionInfo, executionDataStore));
+			FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml);
+		}
 	}
 }

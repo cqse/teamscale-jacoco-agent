@@ -4,8 +4,7 @@ import eu.cqse.teamscale.jacoco.cache.AnalyzerCache;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.cache.ProbesCache;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
 
@@ -22,7 +21,12 @@ import java.util.function.Predicate;
 class CachingExecutionDataReader {
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final ILogger logger;
+
+	/** Constructor. */
+	public CachingExecutionDataReader(ILogger logger) {
+		this.logger = logger;
+	}
 
 	/** Cached probes. */
 	private ProbesCache probesCache;
@@ -33,7 +37,7 @@ class CachingExecutionDataReader {
 			return;
 		}
 		probesCache = new ProbesCache();
-		AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache, locationIncludeFilter);
+		AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
 		for (File classDir: classesDirectories) {
 			try {
 				if (classDir.exists()) {

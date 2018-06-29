@@ -12,7 +12,9 @@ import java.util.List;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.TestwiseXmlReportGenerator;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
 
+import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 import static spark.Spark.port;
 import static spark.Spark.post;
 import static spark.Spark.stop;
@@ -38,7 +40,7 @@ public class TestImpactAgent extends AgentBase {
 	public TestImpactAgent(AgentOptions options) throws IllegalStateException {
 		super(options);
 		this.options = options;
-		generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter());
+		this.generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(), wrap(logger));
 
 		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
 
@@ -106,7 +108,7 @@ public class TestImpactAgent extends AgentBase {
 	 */
 	private void dumpReportUnsafe() {
 		String xml;
-		try {
+		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			xml = generator.convert(dumps);
 		} catch (IOException e) {
 			logger.error("Converting binary dumps to XML failed", e);

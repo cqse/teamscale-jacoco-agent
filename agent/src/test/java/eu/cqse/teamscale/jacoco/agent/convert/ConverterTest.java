@@ -1,16 +1,13 @@
 package eu.cqse.teamscale.jacoco.agent.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.File;
-import java.util.Arrays;
-
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.junit.Test;
 
-import eu.cqse.teamscale.jacoco.agent.convert.ConvertCommand;
-import eu.cqse.teamscale.jacoco.agent.convert.Converter;
+import java.io.File;
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /** Basic smoke test for the converter. */
 public class ConverterTest extends CCSMTestCaseBase {

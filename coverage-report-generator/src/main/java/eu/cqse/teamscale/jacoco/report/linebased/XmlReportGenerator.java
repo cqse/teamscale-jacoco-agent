@@ -1,7 +1,7 @@
 package eu.cqse.teamscale.jacoco.report.linebased;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.util.Benchmark;
+import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -22,6 +22,9 @@ import java.util.function.Predicate;
 /** Creates an XML report from binary execution data. */
 public class XmlReportGenerator {
 
+	/** The logger. */
+	private final ILogger logger;
+
 	/** Directories and zip files that contain class files. */
 	private final List<File> codeDirectoriesOrArchives;
 
@@ -35,19 +38,18 @@ public class XmlReportGenerator {
 
 	/** Constructor. */
 	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
-							  boolean ignoreDuplicates) {
+							  boolean ignoreDuplicates, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.ignoreNonidenticalDuplicateClassFiles = ignoreDuplicates;
 		this.locationIncludeFilter = locationIncludeFilter;
+		this.logger = logger;
 	}
 
 	/** Creates the report. */
 	public String convert(Dump dump) throws IOException {
-		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			convertToReport(output, dump);
-			return output.toString(FileSystemUtils.UTF8_ENCODING);
-		}
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		convertToReport(output, dump);
+		return output.toString(FileSystemUtils.UTF8_ENCODING);
 	}
 
 	/** Creates the report. */
@@ -75,10 +77,10 @@ public class XmlReportGenerator {
 	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionDataStore store) throws IOException {
 		CoverageBuilder coverageBuilder = new CoverageBuilder();
 		if (ignoreNonidenticalDuplicateClassFiles) {
-			coverageBuilder = new DuplicateIgnoringCoverageBuilder();
+			coverageBuilder = new DuplicateIgnoringCoverageBuilder(this.logger);
 		}
 
-		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter);
+		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);
 
 		for (File file: codeDirectoriesOrArchives) {
 			analyzer.analyzeAll(file);
