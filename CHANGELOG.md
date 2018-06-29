@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 8.2.0
+- [feature] added Test Impact mode via `http-server-port`
+
 # 8.1.0
 - [feature] added options to configure coverage upload to Teamscale
 
