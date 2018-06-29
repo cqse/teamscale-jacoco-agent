@@ -11,12 +11,15 @@ import java.io.IOException;
 import java.util.function.Predicate;
 
 /**
- * An {@link AnalyzerCache} instance processes a set of Java class files and
- * builds a {@link ProbeLookup} for each of them. The {@link AnalyzerCache} offers
- * several methods to analyze classes from a variety of sources.
+ * An {@link AnalyzerCache} instance processes a set of Java class/jar/war/... files and
+ * builds a {@link ProbeLookup} for each of the classes.
  * <p>
- * It's core is a copy of {@link org.jacoco.core.analysis.Analyzer} that has been
- * extended with caching functionality to speed up report generation.
+ * The class basically needs to override {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])}.
+ * Since the method is private we need to override and copy the implementations of all methods that call this method,
+ * which are {@link org.jacoco.core.analysis.Analyzer#analyzeClass(ClassReader)} and
+ * {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[], String)}. When updating we just need to make sure that
+ * no additional methods have been added to {@link org.jacoco.core.analysis.Analyzer}, which call the private method
+ * internally.
  */
 public class AnalyzerCache extends FilteringAnalyzer {
 
@@ -49,7 +52,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 	/**
 	 * @inheritDoc <p>
 	 * Copy of the method from {@link org.jacoco.core.analysis.Analyzer#analyzeClass(ClassReader)}, because it calls
-	 * the private {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])} method, which we therefore cannot override.
+	 * the private {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])} method, which we therefore cannot
+	 * override.
 	 */
 	@Override
 	public void analyzeClass(final ClassReader reader) {
@@ -59,7 +63,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 	/**
 	 * @inheritDoc <p>
 	 * Copy of the method from {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[], String)}, because it calls
-	 * the private {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])} method, which we therefore cannot override.
+	 * the private {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])} method, which we therefore cannot
+	 * override.
 	 */
 	@Override
 	public void analyzeClass(final byte[] buffer, final String location) throws IOException {

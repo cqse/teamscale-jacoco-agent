@@ -5,21 +5,17 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.TestwiseXmlReportGenerator;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
-import static eu.cqse.teamscale.jacoco.agent.ServerUtils.respondBadRequest;
-import static eu.cqse.teamscale.jacoco.agent.ServerUtils.respondInternalServerError;
-import static eu.cqse.teamscale.jacoco.agent.ServerUtils.respondSuccess;
+import static spark.Spark.port;
+import static spark.Spark.post;
+import static spark.Spark.stop;
 
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens for test events.
@@ -28,9 +24,6 @@ public class TestImpactAgent extends AgentBase {
 
 	/** The agent options. */
 	private AgentOptions options;
-
-	/** The http server instance. */
-	private HttpServer server;
 
 	/** Converts binary data to XML. */
 	private TestwiseXmlReportGenerator generator;
@@ -42,53 +35,34 @@ public class TestImpactAgent extends AgentBase {
 	private List<Dump> dumps = new ArrayList<>();
 
 	/** Constructor. */
-	public TestImpactAgent(AgentOptions options) throws IllegalStateException, IOException {
+	public TestImpactAgent(AgentOptions options) throws IllegalStateException {
 		super(options);
 		this.options = options;
 		generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter());
 
 		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
-		startServer();
+
+		initServer();
 	}
 
 	/**
 	 * Starts the http server, which waits for information about started and finished tests.
 	 */
-	public void startServer() throws IOException {
-		InetSocketAddress inetSocketAddress = new InetSocketAddress(options.getHttpServerPort());
-		server = HttpServer.create(inetSocketAddress, 0);
-		server.createContext("/test/start", httpExchange -> handleTest(httpExchange, this::handleTestStart));
-		server.createContext("/test/end", httpExchange -> handleTest(httpExchange, this::handleTestEnd));
-		server.setExecutor(null);
-		server.start();
+	private void initServer() {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
-	}
+		port(options.getHttpServerPort());
 
-	/**
-	 * Generic handler for a test start or end HTTP call, which takes care of argument parsing and error handling.
-	 * For handling the specific intent of the call the given handler is called.
-	 */
-	private void handleTest(HttpExchange httpExchange, ITestIdHandler handler) throws IOException {
-		String testId = getTestId(httpExchange.getRequestURI());
-		if (testId.isEmpty()) {
-			logger.error("Invalid request " + httpExchange.getRequestURI());
-			respondBadRequest(httpExchange, "No test id given! Expected /test/(start|end)/<test id>!");
-			return;
-		}
-		try {
-			handler.process(testId);
-		} catch (Exception e) {
-			logger.error(e);
-			respondInternalServerError(httpExchange, e);
-			return;
-		}
-		respondSuccess(httpExchange);
-	}
+		post("/test/start/:testId", (request, response) -> {
+			String testId = request.params(":testId");
+			handleTestStart(testId);
+			return "success";
+		});
 
-	/** Extracts the test ID from the given URI. */
-	private static String getTestId(URI requestURI) {
-		String path = requestURI.getPath();
-		return path.replaceFirst("/test/(start|end)/?", "");
+		post("/test/end/:testId", (request, response) -> {
+			String testId = request.params(":testId");
+			handleTestEnd(testId);
+			return "success";
+		});
 	}
 
 	/** Handles the start of a new test case by setting the session ID. */
@@ -122,8 +96,8 @@ public class TestImpactAgent extends AgentBase {
 		try {
 			dumpReportUnsafe();
 		} catch (Throwable t) {
-			// we want to catch anything in order to avoid killing the regular job
-			logger.error("Dump job failed with an exception. Retrying later", t);
+			// we want to catch anything in order to avoid crashing the whole system under test
+			logger.error("Dump job failed with an exception", t);
 		}
 	}
 
@@ -145,12 +119,7 @@ public class TestImpactAgent extends AgentBase {
 
 	@Override
 	protected void prepareShutdown() {
+		stop();
 		dumpReport();
-		server.stop(0);
-	}
-
-	/** Callback interface for handling a test related HTTP call. */
-	interface ITestIdHandler {
-		void process(String testId) throws Exception;
 	}
 }

@@ -35,11 +35,12 @@ dependencies {
 	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+	implementation 'com.sparkjava:spark-core:2.7.2'
 
-	compile project(':eu.cqse.teamscale.coverage.report.generator')
+	implementation project(':eu.cqse.teamscale.coverage.report.generator')
 
-	testCompile 'junit:junit:4.12'
-	testCompile 'org.assertj:assertj-core:3.8.0'
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'

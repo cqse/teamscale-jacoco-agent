@@ -427,7 +427,7 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws IOException {
+	public AgentBase createAgent() {
 		if (httpServerPort != null) {
 			return new TestImpactAgent(this);
 		} else {
