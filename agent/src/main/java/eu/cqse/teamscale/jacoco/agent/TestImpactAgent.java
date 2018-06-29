@@ -24,7 +24,7 @@ import static eu.cqse.teamscale.jacoco.agent.ServerUtils.respondSuccess;
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens for test events.
  */
-public class ServerAgent extends AgentBase {
+public class TestImpactAgent extends AgentBase {
 
 	/** The agent options. */
 	private AgentOptions options;
@@ -42,12 +42,13 @@ public class ServerAgent extends AgentBase {
 	private List<Dump> dumps = new ArrayList<>();
 
 	/** Constructor. */
-	public ServerAgent(AgentOptions options) throws IllegalStateException {
+	public TestImpactAgent(AgentOptions options) throws IllegalStateException, IOException {
 		super(options);
 		this.options = options;
 		generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter());
 
 		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+		startServer();
 	}
 
 	/**
@@ -64,7 +65,7 @@ public class ServerAgent extends AgentBase {
 	}
 
 	/**
-	 * Generic handler for a test start or end HTTP call, which takes care of argument paring and error handling.
+	 * Generic handler for a test start or end HTTP call, which takes care of argument parsing and error handling.
 	 * For handling the specific intent of the call the given handler is called.
 	 */
 	private void handleTest(HttpExchange httpExchange, ITestIdHandler handler) throws IOException {
@@ -93,6 +94,8 @@ public class ServerAgent extends AgentBase {
 	/** Handles the start of a new test case by setting the session ID. */
 	private void handleTestStart(String testId) {
 		logger.debug("Start test " + testId);
+		// Reset coverage so that we only record coverage that belongs to this particular test case.
+		// Dumps from previous tests are stored in #dumps
 		controller.reset();
 		controller.setSessionId(testId);
 	}

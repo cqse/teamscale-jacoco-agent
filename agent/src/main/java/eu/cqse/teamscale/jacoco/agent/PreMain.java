@@ -26,13 +26,7 @@ public class PreMain {
 		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
-		if (agentOptions.shouldUseHttpServerMode()) {
-			ServerAgent agent = new ServerAgent(agentOptions);
-			agent.startServer();
-			agent.registerShutdownHook();
-		} else {
-			Agent agent = new Agent(agentOptions);
-			agent.registerShutdownHook();
-		}
+		AgentBase agent = agentOptions.createAgent();
+		agent.registerShutdownHook();
 	}
 }

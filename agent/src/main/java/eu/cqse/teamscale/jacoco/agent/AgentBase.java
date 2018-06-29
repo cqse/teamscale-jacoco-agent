@@ -8,6 +8,8 @@ import org.jacoco.agent.rt.RT;
 /**
  * Base class for agent implementations. Handles logger shutdown,
  * store creation and instantiation of the {@link JacocoRuntimeController}.
+ * <p>
+ * Subclasses must handle dumping into the store.
  */
 public abstract class AgentBase {
 
@@ -21,7 +23,11 @@ public abstract class AgentBase {
 	protected final IXmlStore store;
 
 	public AgentBase(AgentOptions options) throws IllegalStateException {
-		controller = new JacocoRuntimeController(RT.getAgent());
+		try {
+			controller = new JacocoRuntimeController(RT.getAgent());
+		} catch (IllegalStateException e) {
+			throw new IllegalStateException("JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
+		}
 		store = options.createStore();
 
 		logger.info("Starting JaCoCo agent with options: {}", options.getOriginalOptionsString());

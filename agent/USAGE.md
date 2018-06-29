@@ -53,7 +53,7 @@ The following options are available:
 - `teamscale-access-token`: the access token of the user.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string 
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in Teamscale's UI.
-- `teamscale-commit`: the commit (Format: "branch:timestamp") which has been used to build the system under test.
+- `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. You can get this info from your VCS during the build e.g. for Git via 
   
@@ -63,7 +63,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
-  (See `HTTP server mode` below for details).
+  (See `Test impact mode` below for details).
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -73,17 +73,18 @@ __Please check the produced log file for errors and warnings before using the ag
 
 The log file is written to the working directory of the profiled Java process by default.
 
-## HTTP server mode
+## Test impact mode
 
-By default the agent dumps the collected coverage as a line-based JaCoCo coverage report. 
-In contrast when started as HTTP server (`http-server-port` is set) the agent listens for test events 
-(which are sent via the REST API) and generates reports that contain method-based testwise coverage.
+The agent can be used in a Test Impact scenario to collect testwise coverage. The test system (the application executing 
+the test specification) can inform the agent of when a test is started and finished via a REST API. 
+The agent then generates reports that contain method-based testwise coverage.
+The HTTP server is started when `http-server-port` is set (Recommended port is 8000).
 
-When started as HTTP server the agent accepts `POST` queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
-`http://127.0.0.1:8000/test/end/myTestId`. The ID can be an arbitrary string, but must correspond to the `externalId` 
-(see the documentation on Test Impact Analysis for more details).
+The agent accepts `POST` queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
+`http://127.0.0.1:8000/test/end/myTestId`. The ID can be an arbitrary string that the test system uses to identify the test.
+When uploading test details before the coverage the `externalId` must be the same as this ID.
 
-The `interval` commandline argument behaves slightly different in the HTTP server mode. It does not dump any coverage 
+The `interval` commandline argument behaves slightly different in the Test Impact mode. It does not dump any coverage 
 during a test, but only in between them and when the program shuts down.
 
 ## Additional steps for WebSphere

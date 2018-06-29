@@ -22,6 +22,7 @@ import org.jacoco.core.runtime.WildcardMatcher;
 import org.jacoco.report.JavaNames;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -423,17 +424,21 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Returns whether the interval based dump or the HTTP server mode should be used.
+	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
+	 * the HTTP server is used.
 	 */
-	public boolean shouldUseHttpServerMode() {
-		return httpServerPort != null;
+	public AgentBase createAgent() throws IOException {
+		if (httpServerPort != null) {
+			return new TestImpactAgent(this);
+		} else {
+			return new Agent(this);
+		}
 	}
 
 	/**
-	 * Returns the port at which the http server should listen for test execution
-	 * information if enabled ({@link #shouldUseHttpServerMode()}).
+	 * Returns the port at which the http server should listen for test execution information or null if disabled.
 	 */
-	public int getHttpServerPort() {
+	public Integer getHttpServerPort() {
 		return httpServerPort;
 	}
 
