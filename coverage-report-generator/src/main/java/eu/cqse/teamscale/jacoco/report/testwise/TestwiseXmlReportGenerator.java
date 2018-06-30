@@ -24,8 +24,7 @@ import java.util.function.Predicate;
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.
  * <p>
- * The class files under test must be compiled with debug information, otherwise
- * source highlighting will not work.
+ * The class files under test must be compiled with debug information otherwise no coverage will be collected.
  */
 public class TestwiseXmlReportGenerator {
 
@@ -42,7 +41,7 @@ public class TestwiseXmlReportGenerator {
 	 * @param locationIncludeFilter     Filter for class files
 	 * @param logger                    The logger
 	 */
-	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, ILogger logger) {
+	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, ILogger logger) throws CoverageGenerationException {
 		this.executionDataReader = new CachingExecutionDataReader(logger);
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
 		this.logger = logger;
@@ -77,6 +76,7 @@ public class TestwiseXmlReportGenerator {
 		for (Dump dump : dumps) {
 			String testId = dump.info.getId();
 			if (testId.isEmpty()) {
+				// Ignore intermediate coverage that does not belong to any specific test
 				continue;
 			}
 			try {

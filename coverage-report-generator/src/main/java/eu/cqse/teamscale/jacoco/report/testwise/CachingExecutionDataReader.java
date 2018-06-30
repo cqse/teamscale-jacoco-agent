@@ -12,11 +12,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Helper class for analyzing class files, reading execution data and converting them to coverage data.
- * The class supports all major jacoco versions starting with 0.7.5 up to 0.8.x.
- * https://github.com/jacoco/jacoco/wiki/ExecFileVersions
  */
 class CachingExecutionDataReader {
 
@@ -31,29 +30,29 @@ class CachingExecutionDataReader {
 	/** Cached probes. */
 	private ProbesCache probesCache;
 
-	/** Analyzes the given class files and creates a lookup of which probes belong to which method. */
-	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter) {
+	/**
+	 * Analyzes the given class/jar/war/... files and creates a lookup of which probes belong to which method.
+	 */
+	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
 		if (probesCache != null) {
 			return;
 		}
 		probesCache = new ProbesCache();
-		AnalyzerCache newAnalyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
-		for (File classDir: classesDirectories) {
-			try {
-				if (classDir.exists()) {
-					newAnalyzer.analyzeAll(classDir);
+		AnalyzerCache analyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
+		for (File classDir : classesDirectories) {
+			if (classDir.exists()) {
+				try {
+					analyzer.analyzeAll(classDir);
+				} catch (IOException e) {
+					logger.error("Failed to analyze class files in " + classDir + "! " +
+							"Maybe the folder contains incompatible class files. " +
+							"Coverage for class files in this folder will be ignored.", e);
 				}
-			} catch (IOException e) {
-				logger.error(e);
 			}
 		}
 		if (probesCache.isEmpty()) {
-			StringBuilder builder = new StringBuilder();
-			for (File classesDirectory: classesDirectories) {
-				builder.append(classesDirectory.getPath());
-				builder.append(", ");
-			}
-			throw new RuntimeException("No class files found in the given directories! " + builder.toString());
+			String directoryList = classesDirectories.stream().map(File::getPath).collect(Collectors.joining(","));
+			throw new CoverageGenerationException("No class files found in the given directories! " + directoryList);
 		}
 	}
 
@@ -62,7 +61,7 @@ class CachingExecutionDataReader {
 	 */
 	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
 		TestCoverage testCoverage = new TestCoverage(testId);
-		for (ExecutionData executionData: executionDataStore.getContents()) {
+		for (ExecutionData executionData : executionDataStore.getContents()) {
 			testCoverage.add(probesCache.getCoverage(executionData));
 		}
 		return testCoverage;

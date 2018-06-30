@@ -1,6 +1,13 @@
 package eu.cqse.teamscale.jacoco.cache;
 
+/**
+ * Exception thrown during coverage generation.
+ */
 public class CoverageGenerationException extends Exception {
-	public CoverageGenerationException(String s) {
+
+	/** Constructor. */
+	public CoverageGenerationException(String message) {
+		super(message);
 	}
+
 }

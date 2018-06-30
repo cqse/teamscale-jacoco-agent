@@ -32,5 +32,4 @@ public class Benchmark implements AutoCloseable {
 		long endTime = System.nanoTime();
 		logger.debug("{} took {}s", description, (endTime - startTime) / 1_000_000_000L);
 	}
-
 }

@@ -15,4 +15,7 @@ public interface ILogger {
 
 	/** Logs at error level. */
 	void error(Throwable e);
+
+	/** Logs at error level. */
+	void error(String s, Throwable e);
 }
