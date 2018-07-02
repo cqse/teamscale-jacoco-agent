@@ -61,18 +61,28 @@ public class LoggingUtils {
 	public static ILogger wrap(Logger logger) {
 		return new ILogger() {
 			@Override
-			public void debug(String debugLog) {
-				logger.debug(debugLog);
+			public void debug(String message) {
+				logger.debug(message);
 			}
 
 			@Override
-			public void warn(String s, Throwable e) {
-				logger.warn(s, e);
+			public void warn(String message) {
+				logger.warn(message);
 			}
 
 			@Override
-			public void error(Throwable e) {
-				logger.error(e);
+			public void warn(String message, Throwable throwable) {
+				logger.warn(message, throwable);
+			}
+
+			@Override
+			public void error(Throwable throwable) {
+				logger.error(throwable);
+			}
+
+			@Override
+			public void error(String message, Throwable throwable) {
+				logger.error(message, throwable);
 			}
 		};
 	}

@@ -2,7 +2,7 @@ package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
+import eu.cqse.teamscale.jacoco.report.testwise.model.TestwiseCoverage;
 import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionData;
@@ -20,6 +20,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.
@@ -27,9 +30,6 @@ import java.util.function.Predicate;
  * The class files under test must be compiled with debug information otherwise no coverage will be collected.
  */
 public class TestwiseXmlReportGenerator {
-
-	/** The logger. */
-	private final ILogger logger;
 
 	/** The execution data reader and converter. */
 	private CachingExecutionDataReader executionDataReader;
@@ -44,7 +44,6 @@ public class TestwiseXmlReportGenerator {
 	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, ILogger logger) throws CoverageGenerationException {
 		this.executionDataReader = new CachingExecutionDataReader(logger);
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
-		this.logger = logger;
 	}
 
 	/** Reads the dumps from the given *.exec file. */
@@ -72,22 +71,23 @@ public class TestwiseXmlReportGenerator {
 
 	/** Creates the testwise report. */
 	private void convertToReport(OutputStream output, List<Dump> dumps) throws IOException {
-		TestwiseXmlReportWriter writer = new TestwiseXmlReportWriter(output);
-		for (Dump dump : dumps) {
-			String testId = dump.info.getId();
-			if (testId.isEmpty()) {
-				// Ignore intermediate coverage that does not belong to any specific test
-				continue;
-			}
-			try {
-				TestCoverage testCoverage = executionDataReader.buildCoverage(testId, dump.store);
-				writer.writeTestCoverage(testCoverage);
-			} catch (CoverageGenerationException e) {
-				logger.error(e);
-			}
-		}
+		TestwiseCoverage testwiseCoverage = executionDataReader.buildCoverage(dumps);
+		writeReportToStream(output, testwiseCoverage);
+	}
 
-		writer.closeReport();
+	/** Converts to given testwise coverage to an XML report and writes it to the given output stream. */
+	private void writeReportToStream(OutputStream output, TestwiseCoverage testwiseCoverage) throws IOException {
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(TestwiseCoverage.class);
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+			// output pretty printed
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+			jaxbMarshaller.marshal(testwiseCoverage, output);
+		} catch (JAXBException e) {
+			throw new IOException("Converting testwise coverage to XML failed!", e);
+		}
 	}
 
 	/** Collects dumps per session. */

@@ -3,7 +3,9 @@ package eu.cqse.teamscale.jacoco.report.testwise;
 import eu.cqse.teamscale.jacoco.cache.AnalyzerCache;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.cache.ProbesCache;
+import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestCoverage;
+import eu.cqse.teamscale.jacoco.report.testwise.model.TestwiseCoverage;
 import eu.cqse.teamscale.jacoco.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -11,6 +13,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -57,7 +60,30 @@ class CachingExecutionDataReader {
 	}
 
 	/**
-	 * Converts the given store to coverage data. The coverage will only contain line coverage information.
+	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
+	 */
+	public TestwiseCoverage buildCoverage(List<Dump> dumps) {
+		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+		for (Dump dump : dumps) {
+			String testId = dump.info.getId();
+			if (testId.isEmpty()) {
+				// Ignore intermediate coverage that does not belong to any specific test
+				logger.warn("Found a session with empty name! This could indicate that coverage is dumped also for " +
+						"coverage in between tests or that the given test name was empty");
+				continue;
+			}
+			try {
+				TestCoverage testCoverage = buildCoverage(testId, dump.store);
+				testwiseCoverage.add(testCoverage);
+			} catch (CoverageGenerationException e) {
+				logger.error("Failed to generate coverage for test " + testId + "! Skipping to the next test.", e);
+			}
+		}
+		return testwiseCoverage;
+	}
+
+	/**
+	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
 	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
 		TestCoverage testCoverage = new TestCoverage(testId);

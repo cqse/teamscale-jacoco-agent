@@ -10,6 +10,8 @@ dependencies {
 
     implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
 
+    implementation 'javax.xml.bind:jaxb-api:2.3.0'
+
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.8.0'
     testImplementation 'org.mockito:mockito-core:2.19.0'

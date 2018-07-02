@@ -8,14 +8,17 @@ package eu.cqse.teamscale.jacoco.util;
 public interface ILogger {
 
 	/** Logs at debug level. */
-	void debug(String debugLog);
+	void debug(String message);
 
 	/** Logs at warning level. */
-	void warn(String s, Throwable e);
+	void warn(String message);
+
+	/** Logs at warning level. */
+	void warn(String message, Throwable throwable);
 
 	/** Logs at error level. */
-	void error(Throwable e);
+	void error(Throwable throwable);
 
 	/** Logs at error level. */
-	void error(String s, Throwable e);
+	void error(String message, Throwable throwable);
 }

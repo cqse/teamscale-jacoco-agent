@@ -22,17 +22,27 @@ public class FileCoverageTest {
 	}
 
 	@Test
-	public void merge() {
+	public void merge_doesMergeRanges() {
 		FileCoverage fileCoverage = new FileCoverage("path", "file");
 		fileCoverage.addLine(1);
 		fileCoverage.addLineRange(new LineRange(3, 4));
 		fileCoverage.addLineRange(7, 10);
 
-		fileCoverage.merge(Arrays.asList(
-				new LineRange(1, 3),
-				new LineRange(12, 14)
-		));
+		FileCoverage otherFileCoverage = new FileCoverage("path", "file");
+		fileCoverage.addLineRange(1, 3);
+		fileCoverage.addLineRange(12, 14);
+		fileCoverage.merge(otherFileCoverage);
 		assertEquals("1-4,7-10,12-14", fileCoverage.getCompactifiedRangesAsString());
+	}
+
+	@Test(expected = AssertionError.class)
+	public void merge_doesNotAllowMergeOfTwoDifferentFiles() {
+		FileCoverage fileCoverage = new FileCoverage("path", "file");
+		fileCoverage.addLine(1);
+
+		FileCoverage otherFileCoverage = new FileCoverage("path", "file2");
+		fileCoverage.addLineRange(1, 3);
+		fileCoverage.merge(otherFileCoverage);
 	}
 
 	@Test

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
+import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.TestwiseXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
@@ -37,7 +38,7 @@ public class TestImpactAgent extends AgentBase {
 	private List<Dump> dumps = new ArrayList<>();
 
 	/** Constructor. */
-	public TestImpactAgent(AgentOptions options) throws IllegalStateException {
+	public TestImpactAgent(AgentOptions options) throws IllegalStateException, CoverageGenerationException {
 		super(options);
 		this.options = options;
 		this.generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(), wrap(logger));
