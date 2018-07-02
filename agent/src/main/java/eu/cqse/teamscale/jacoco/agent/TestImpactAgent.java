@@ -66,6 +66,11 @@ public class TestImpactAgent extends AgentBase {
 			handleTestEnd(testId);
 			return "success";
 		});
+
+		post("/dump", (request, response) -> {
+			dumpReport();
+			return "success";
+		});
 	}
 
 	/** Handles the start of a new test case by setting the session ID. */
