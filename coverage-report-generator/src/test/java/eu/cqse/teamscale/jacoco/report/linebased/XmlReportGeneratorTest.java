@@ -38,9 +38,8 @@ public class XmlReportGeneratorTest extends CCSMTestCaseBase {
 	 */
 	@Test
 	public void testDifferentClassesWithTheSameNameShouldThrowException() throws Exception {
-		assertThatThrownBy(() -> {
-			runGenerator("different-duplicate-classes", false);
-		}).isExactlyInstanceOf(IOException.class).hasCauseExactlyInstanceOf(IllegalStateException.class);
+		assertThatThrownBy(() -> runGenerator("different-duplicate-classes", false))
+				.isExactlyInstanceOf(IOException.class).hasCauseExactlyInstanceOf(IllegalStateException.class);
 	}
 
 	/**

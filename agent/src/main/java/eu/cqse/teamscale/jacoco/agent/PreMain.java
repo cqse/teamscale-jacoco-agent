@@ -5,11 +5,10 @@ import org.apache.logging.log4j.LogManager;
 
 import java.lang.instrument.Instrumentation;
 
+/** Container class for the premain entry point for the agent. */
 public class PreMain {
 
-	/**
-	 * Entry point for the agent, called by the JVM.
-	 */
+	/** Entry point for the agent, called by the JVM. */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
 		try {

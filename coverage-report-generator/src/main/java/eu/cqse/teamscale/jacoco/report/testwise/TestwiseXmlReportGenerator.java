@@ -57,7 +57,7 @@ public class TestwiseXmlReportGenerator {
 		return dumpCollector.dumps;
 	}
 
-	/** Reads the dumps from the given *.exec file. */
+	/** Converts the given *.exec file to a XML report. */
 	public String convert(File executionDataFile) throws IOException {
 		return convert(readDumps(executionDataFile));
 	}

@@ -28,14 +28,14 @@ public class TestImpactAgent extends AgentBase {
 	/** The agent options. */
 	private AgentOptions options;
 
-	/** Converts binary data to XML. */
+	/** Generates XMl reports from binary execution data. */
 	private TestwiseXmlReportGenerator generator;
 
 	/** Timestamp at which the report was dumped the last time. */
 	private long lastDumpTimestamp = System.currentTimeMillis();
 
 	/** List of dumps, one for each test. */
-	private List<Dump> dumps = new ArrayList<>();
+	private final List<Dump> dumps = new ArrayList<>();
 
 	/** Constructor. */
 	public TestImpactAgent(AgentOptions options) throws IllegalStateException, CoverageGenerationException {

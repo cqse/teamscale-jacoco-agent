@@ -243,7 +243,7 @@ public class AgentOptions {
 				try {
 					additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
 				} catch (InvalidPathException e) {
-					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'");
+					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
 				}
 				break;
 			case "ignore-duplicates":

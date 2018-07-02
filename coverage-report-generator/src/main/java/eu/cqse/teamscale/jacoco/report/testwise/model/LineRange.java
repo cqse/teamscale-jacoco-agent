@@ -4,7 +4,7 @@ package eu.cqse.teamscale.jacoco.report.testwise.model;
 public class LineRange {
 
 	/** Indicates that no specific line has been set yet. */
-	private static int UNKNOWN_LINE = -1;
+	private static final int UNKNOWN_LINE = -1;
 
 	/** The start line (1-based). The initial value is {@link #UNKNOWN_LINE} if not set via the constructor. */
 	private int start;

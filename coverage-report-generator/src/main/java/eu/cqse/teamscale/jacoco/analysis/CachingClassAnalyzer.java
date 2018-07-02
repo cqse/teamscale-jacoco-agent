@@ -15,7 +15,7 @@ import org.jacoco.core.internal.flow.MethodProbesVisitor;
  */
 public class CachingClassAnalyzer extends ClassProbesVisitor {
 
-	/** The probes cache. */
+	/** The cache, which contains a probe lookups for the current class. */
 	private final ClassCoverageLookup classCoverageLookup;
 
 	/**
