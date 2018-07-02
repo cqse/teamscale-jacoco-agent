@@ -1,18 +1,21 @@
 package eu.cqse.teamscale.jacoco.report.testwise.model;
 
-import org.jacoco.core.analysis.ISourceNode;
-
 /** Holds a line range with start and end (both inclusive and 1-based). */
-public class LineRange implements Comparable<LineRange> {
+public class LineRange {
 
-	/** The start line (1-based) */
-	private int start = ISourceNode.UNKNOWN_LINE;
+	/** Indicates that no specific line has been set yet. */
+	private static int UNKNOWN_LINE = -1;
 
-	/** The end line (1-based) */
-	private int end = ISourceNode.UNKNOWN_LINE;
+	/** The start line (1-based). The initial value is {@link #UNKNOWN_LINE} if not set via the constructor. */
+	private int start;
 
-	/** Constructor. */
+	/** The end line (1-based). The initial value is {@link #UNKNOWN_LINE} if not set via the constructor. */
+	private int end;
+
+	/** Constructs a line range with start and end set to {@link #UNKNOWN_LINE}. */
 	public LineRange() {
+		start = UNKNOWN_LINE;
+		end = UNKNOWN_LINE;
 	}
 
 	/** Constructor. */
@@ -23,10 +26,10 @@ public class LineRange implements Comparable<LineRange> {
 
 	/** Adjusts either the start or end of the range to include the given line afterwards. */
 	public void adjustToContain(int line) {
-		if (start > line || end == ISourceNode.UNKNOWN_LINE) {
+		if (start > line || start == UNKNOWN_LINE) {
 			start = line;
 		}
-		if (end < line) {
+		if (end < line || end == UNKNOWN_LINE) {
 			end = line;
 		}
 	}
@@ -41,17 +44,15 @@ public class LineRange implements Comparable<LineRange> {
 		return end;
 	}
 
-	@Override
-	public String toString() {
+	/**
+	 * Returns the line range as used in the XML report.
+	 * A range is returned as e.g. 2-5 or simply 3 if the start and end are equal.
+	 */
+	public String toReportString() {
 		if (start == end) {
 			return String.valueOf(start);
 		} else {
 			return start + "-" + end;
 		}
-	}
-
-	@Override
-	public int compareTo(LineRange o) {
-		return this.start - o.start;
 	}
 }

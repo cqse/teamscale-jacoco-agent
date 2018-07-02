@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlElement;
 /** Generic holder of test coverage of a single test based on line-ranges. */
 public class TestCoverage {
 
-	/** The external ID of the test. */
+	/** The external ID of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
 	@XmlAttribute
 	public String externalId;
 
@@ -23,7 +23,7 @@ public class TestCoverage {
 		this.externalId = externalId;
 	}
 
-	/** Adds the {@link FileCoverage} to into the map,  but filters out empty coverage. */
+	/** Adds the {@link FileCoverage} to into the map, but filters out file coverage that is null or empty. */
 	public void add(FileCoverage fileCoverage) {
 		if (fileCoverage == null || fileCoverage.isEmpty()) {
 			return;
@@ -32,7 +32,7 @@ public class TestCoverage {
 		pathCoverage.add(fileCoverage);
 	}
 
-	/** Adds the {@link FileCoverage}s to into the map,  but filters out empty ones. */
+	/** Adds the {@link FileCoverage}s into the map,  but filters out empty ones. */
 	public void addAll(List<FileCoverage> fileCoverageList) {
 		for (FileCoverage fileCoverage : fileCoverageList) {
 			add(fileCoverage);

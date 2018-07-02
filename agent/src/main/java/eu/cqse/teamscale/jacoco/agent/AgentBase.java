@@ -35,6 +35,26 @@ public abstract class AgentBase {
 	}
 
 	/**
+	 * Dumps the current execution data, converts it and writes it to the
+	 * {@link #store}. Logs any errors, never throws an exception.
+	 */
+	protected void dumpReport() {
+		logger.debug("Starting dump");
+
+		try {
+			dumpReportUnsafe();
+		} catch (Throwable t) {
+			// we want to catch anything in order to avoid crashing the whole system under test
+			logger.error("Dump job failed with an exception", t);
+		}
+	}
+
+	/**
+	 * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
+	 */
+	protected abstract void dumpReportUnsafe();
+
+	/**
 	 * Registers a shutdown hook that stops the timer and dumps coverage a final
 	 * time.
 	 */

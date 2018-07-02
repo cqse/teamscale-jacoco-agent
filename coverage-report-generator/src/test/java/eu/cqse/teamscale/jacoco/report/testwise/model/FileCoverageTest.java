@@ -32,7 +32,7 @@ public class FileCoverageTest {
 		fileCoverage.addLineRange(1, 3);
 		fileCoverage.addLineRange(12, 14);
 		fileCoverage.merge(otherFileCoverage);
-		assertEquals("1-4,7-10,12-14", fileCoverage.getCompactifiedRangesAsString());
+		assertEquals("1-4,7-10,12-14", fileCoverage.computeCompactifiedRangesAsString());
 	}
 
 	@Test(expected = AssertionError.class)
@@ -51,6 +51,6 @@ public class FileCoverageTest {
 		fileCoverage.addLine(1);
 		fileCoverage.addLineRange(new LineRange(3, 4));
 		fileCoverage.addLineRange(6, 10);
-		assertEquals("1,3-4,6-10", fileCoverage.getCompactifiedRangesAsString());
+		assertEquals("1,3-4,6-10", fileCoverage.computeCompactifiedRangesAsString());
 	}
 }

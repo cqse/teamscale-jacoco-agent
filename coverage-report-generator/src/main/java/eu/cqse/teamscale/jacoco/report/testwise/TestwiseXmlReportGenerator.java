@@ -94,7 +94,7 @@ public class TestwiseXmlReportGenerator {
 	private class DumpCollector implements IExecutionDataVisitor, ISessionInfoVisitor {
 
 		/** List of dumps. */
-		public List<Dump> dumps = new ArrayList<>();
+		public final List<Dump> dumps = new ArrayList<>();
 
 		/** The store to which coverage is currently written to. */
 		private ExecutionDataStore store;

@@ -46,25 +46,9 @@ public class Agent extends AgentBase {
 		dumpReport();
 	}
 
-	/**
-	 * Dumps the current execution data, converts it and writes it to the
-	 * {@link #store}. Logs any errors, never throws an exception.
-	 */
-	private void dumpReport() {
-		logger.debug("Starting dump");
-
-		try {
-			dumpReportUnsafe();
-		} catch (Throwable t) {
-			// we want to catch anything in order to avoid killing the regular job
-			logger.error("Dump job failed with an exception. Retrying later", t);
-		}
-	}
-
-	/**
-	 * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
-	 */
-	private void dumpReportUnsafe() {
+	/** Performs the actual dump but does not handle e.g. OutOfMemoryErrors. */
+	@Override
+	protected void dumpReportUnsafe() {
 		Dump dump;
 		try {
 			dump = controller.dumpAndReset();

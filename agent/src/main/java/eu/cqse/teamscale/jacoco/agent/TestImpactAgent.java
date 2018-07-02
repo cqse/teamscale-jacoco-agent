@@ -90,24 +90,10 @@ public class TestImpactAgent extends AgentBase {
 	}
 
 	/**
-	 * Dumps the current execution data, converts it and writes it to the
-	 * {@link #store}. Logs any errors, never throws an exception.
-	 */
-	private void dumpReport() {
-		logger.debug("Starting dump");
-
-		try {
-			dumpReportUnsafe();
-		} catch (Throwable t) {
-			// we want to catch anything in order to avoid crashing the whole system under test
-			logger.error("Dump job failed with an exception", t);
-		}
-	}
-
-	/**
 	 * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
 	 */
-	private void dumpReportUnsafe() {
+	@Override
+	protected void dumpReportUnsafe() {
 		String xml;
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			xml = generator.convert(dumps);

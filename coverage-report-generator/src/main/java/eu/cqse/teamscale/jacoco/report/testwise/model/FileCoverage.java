@@ -3,8 +3,9 @@ package eu.cqse.teamscale.jacoco.report.testwise.model;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -53,19 +54,20 @@ public class FileCoverage {
 
 	/**
 	 * Merges all overlapping and neighboring {@link LineRange}s.
-	 * E.g. a list of [[1-5],[3-7],[8-10],[12-14]] gets [[1-10],[12-14]]
+	 * E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes [[1-10],[12-14]]
 	 */
 	public static List<LineRange> compactifyRanges(List<LineRange> intervals) {
-		if (intervals.size() < 2)
+		if (intervals.size() < 2) {
 			return intervals;
+		}
 
-		Collections.sort(intervals);
+		intervals.sort(Comparator.comparingInt(LineRange::getStart));
 
 		LineRange first = intervals.get(0);
 		int start = first.getStart();
 		int end = first.getEnd();
 
-		ArrayList<LineRange> compactifiedRanges = new ArrayList<>();
+		List<LineRange> compactifiedRanges = new ArrayList<>();
 
 		for (int i = 1; i < intervals.size(); i++) {
 			LineRange current = intervals.get(i);
@@ -86,24 +88,18 @@ public class FileCoverage {
 	/**
 	 * Returns a compact string representation of the covered line ranges.
 	 * Overlapping and directly neighboring ranges are merged and ranges sorted by start line.
-	 * Individual ranges are separated by commas. E.g. 1-5,7,9-11
+	 * Individual ranges are separated by commas. E.g. 1-5,7,9-11.
+	 * This also updates the {@link #coveredRanges} to the compactified format.
 	 */
-	public String getCompactifiedRangesAsString() {
+	public String computeCompactifiedRangesAsString() {
 		coveredRanges = compactifyRanges(coveredRanges);
-		StringBuilder nrString = new StringBuilder();
-		for (LineRange lineRange : coveredRanges) {
-			if (nrString.length() > 0) {
-				nrString.append(",");
-			}
-			nrString.append(lineRange.toString());
-		}
-		return nrString.toString();
+		return coveredRanges.stream().map(LineRange::toReportString).collect(Collectors.joining(";"));
 	}
 
 	/** Returns a lines element used for XML serialization containing all ranges in the compactified format. */
 	@XmlElement
 	public LinesElement getLines() {
-		return new LinesElement(getCompactifiedRangesAsString());
+		return new LinesElement(computeCompactifiedRangesAsString());
 	}
 
 	/** Returns true if there is no coverage for the file yet. */
