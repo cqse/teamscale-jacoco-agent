@@ -32,7 +32,7 @@ public class TestCoverage {
 		pathCoverage.add(fileCoverage);
 	}
 
-	/** Adds the {@link FileCoverage}s into the map,  but filters out empty ones. */
+	/** Adds the {@link FileCoverage}s into the map, but filters out empty ones. */
 	public void addAll(List<FileCoverage> fileCoverageList) {
 		for (FileCoverage fileCoverage : fileCoverageList) {
 			add(fileCoverage);
