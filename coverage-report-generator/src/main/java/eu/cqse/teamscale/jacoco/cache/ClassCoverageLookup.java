@@ -30,7 +30,7 @@ public class ClassCoverageLookup {
 	 * List of method's line ranges. The index in this list corresponds to the probe ID.
 	 * So the same {@link LineRange}s can appear multiple times in the list if a method contains more than one probe.
 	 */
-	private List<LineRange> probes = new ArrayList<>();
+	private final List<LineRange> probes = new ArrayList<>();
 
 	/**
 	 * Holds the line range of the currently analyzed method.
@@ -44,7 +44,7 @@ public class ClassCoverageLookup {
 	 * Constructor.
 	 *
 	 * @param className Classname as stored in the bytecode e.g. com/company/Example
-	 * */
+	 */
 	ClassCoverageLookup(String className) {
 		this.className = className;
 	}

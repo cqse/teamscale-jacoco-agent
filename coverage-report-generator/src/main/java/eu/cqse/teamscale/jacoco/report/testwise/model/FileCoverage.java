@@ -15,11 +15,11 @@ public class FileCoverage {
 
 	/** The file system path of the file not including the file itself. */
 	@XmlTransient
-	public String path;
+	public final String path;
 
 	/** The name of the file. */
 	@XmlAttribute(name = "name")
-	public String fileName;
+	public final String fileName;
 
 	/** A list of line ranges that have been covered. */
 	private List<LineRange> coveredRanges = new ArrayList<>();
@@ -93,7 +93,7 @@ public class FileCoverage {
 	 */
 	public String computeCompactifiedRangesAsString() {
 		coveredRanges = compactifyRanges(coveredRanges);
-		return coveredRanges.stream().map(LineRange::toReportString).collect(Collectors.joining(";"));
+		return coveredRanges.stream().map(LineRange::toReportString).collect(Collectors.joining(","));
 	}
 
 	/** Returns a lines element used for XML serialization containing all ranges in the compactified format. */

@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class TestwiseCoverage {
 
     /** A mapping from test ID to {@link TestCoverage}. */
-    private Map<String, TestCoverage> tests = new HashMap<>();
+    private final Map<String, TestCoverage> tests = new HashMap<>();
 
     /**
      * Adds the {@link TestCoverage} to the map.

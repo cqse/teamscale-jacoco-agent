@@ -55,4 +55,9 @@ public class LineRange {
 			return start + "-" + end;
 		}
 	}
+
+	@Override
+	public String toString() {
+		return toReportString();
+	}
 }

@@ -22,7 +22,7 @@ public class FileCoverageTest {
 	}
 
 	@Test
-	public void merge_doesMergeRanges() {
+	public void mergeDoesMergeRanges() {
 		FileCoverage fileCoverage = new FileCoverage("path", "file");
 		fileCoverage.addLine(1);
 		fileCoverage.addLineRange(new LineRange(3, 4));
@@ -36,7 +36,7 @@ public class FileCoverageTest {
 	}
 
 	@Test(expected = AssertionError.class)
-	public void merge_doesNotAllowMergeOfTwoDifferentFiles() {
+	public void mergeDoesNotAllowMergeOfTwoDifferentFiles() {
 		FileCoverage fileCoverage = new FileCoverage("path", "file");
 		fileCoverage.addLine(1);
 

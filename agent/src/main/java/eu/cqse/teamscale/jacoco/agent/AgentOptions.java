@@ -23,7 +23,6 @@ import org.jacoco.core.runtime.WildcardMatcher;
 import org.jacoco.report.JavaNames;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -152,7 +151,7 @@ public class AgentOptions {
 		}
 
 		String[] optionParts = options.split(",");
-		for (String optionPart: optionParts) {
+		for (String optionPart : optionParts) {
 			handleOption(optionPart);
 		}
 
@@ -174,7 +173,7 @@ public class AgentOptions {
 
 		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
 				"You must specify at least one directory or zip that contains class files");
-		for (File path: classDirectoriesOrZips) {
+		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
@@ -264,7 +263,8 @@ public class AgentOptions {
 			case "teamscale-server-url":
 				teamscaleServer.url = parseUrl(value);
 				if (teamscaleServer.url == null) {
-					throw new AgentOptionParseException("Invalid URL " + value + " given for option 'teamscale-server-url'!");
+					throw new AgentOptionParseException(
+							"Invalid URL " + value + " given for option 'teamscale-server-url'!");
 				}
 				break;
 			case "teamscale-project":
@@ -290,7 +290,8 @@ public class AgentOptions {
 					httpServerPort = Integer.parseInt(value);
 					teamscaleServer.reportFormat = TESTWISE_COVERAGE;
 				} catch (NumberFormatException e) {
-					throw new AgentOptionParseException("Invalid port number " + value + " given for option 'http-server-port'!");
+					throw new AgentOptionParseException(
+							"Invalid port number " + value + " given for option 'http-server-port'!");
 				}
 				break;
 			default:

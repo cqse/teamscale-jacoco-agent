@@ -11,10 +11,10 @@ public class PathCoverage {
 
 	/** File system path. */
 	@XmlAttribute(name = "name")
-	public String path;
+	public final String path;
 
 	/** Mapping from file names to {@link FileCoverage}. */
-	private Map<String, FileCoverage> fileCoverageList = new HashMap<>();
+	private final Map<String, FileCoverage> fileCoverageList = new HashMap<>();
 
 	/** Constructor. */
 	public PathCoverage(String path) {

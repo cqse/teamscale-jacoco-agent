@@ -13,7 +13,7 @@ public class TestCoverage {
 
 	/** The external ID of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
 	@XmlAttribute
-	public String externalId;
+	public final String externalId;
 
 	/** Mapping from path names to all files on this path. */
 	private final Map<String, PathCoverage> pathCoverageList = new HashMap<>();

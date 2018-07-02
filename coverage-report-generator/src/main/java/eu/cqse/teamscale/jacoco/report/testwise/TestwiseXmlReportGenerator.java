@@ -62,7 +62,7 @@ public class TestwiseXmlReportGenerator {
 		return convert(readDumps(executionDataFile));
 	}
 
-	/** Creates the report. */
+	/** Converts the given dumps to a report. */
 	public String convert(List<Dump> dumps) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		convertToReport(output, dumps);
