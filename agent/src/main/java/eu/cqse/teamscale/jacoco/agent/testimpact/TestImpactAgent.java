@@ -3,12 +3,16 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package eu.cqse.teamscale.jacoco.agent;
+package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import eu.cqse.teamscale.jacoco.agent.AgentBase;
+import eu.cqse.teamscale.jacoco.agent.AgentOptions;
+import eu.cqse.teamscale.jacoco.agent.ITestListener;
+import eu.cqse.teamscale.jacoco.agent.JaCoCoCoverageListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;

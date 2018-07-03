@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.agent;
+package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;

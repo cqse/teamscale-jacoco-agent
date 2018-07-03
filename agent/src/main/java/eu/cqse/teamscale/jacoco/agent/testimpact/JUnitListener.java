@@ -1,6 +1,7 @@
-package eu.cqse.teamscale.jacoco.agent;
+package eu.cqse.teamscale.jacoco.agent.testimpact;
 
-import eu.cqse.teamscale.jacoco.agent.JUnitReport.TestCase;
+import eu.cqse.teamscale.jacoco.agent.ITestListener;
+import eu.cqse.teamscale.jacoco.agent.testimpact.JUnitReport.TestCase;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestwiseCoverage;
@@ -14,7 +15,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 
-import static eu.cqse.teamscale.jacoco.agent.TestImpactAgent.INTERNAL_ID_QUERY_PARAM;
+import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.INTERNAL_ID_QUERY_PARAM;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
 
 /**

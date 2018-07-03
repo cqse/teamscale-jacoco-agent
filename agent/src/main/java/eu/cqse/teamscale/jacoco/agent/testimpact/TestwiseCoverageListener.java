@@ -1,7 +1,9 @@
-package eu.cqse.teamscale.jacoco.agent;
+package eu.cqse.teamscale.jacoco.agent.testimpact;
 
+import eu.cqse.teamscale.jacoco.agent.AgentOptions;
+import eu.cqse.teamscale.jacoco.agent.ITestListener;
+import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.TestwiseXmlReportGenerator;

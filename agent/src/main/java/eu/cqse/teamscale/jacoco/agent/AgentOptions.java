@@ -13,6 +13,7 @@ import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
+import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
