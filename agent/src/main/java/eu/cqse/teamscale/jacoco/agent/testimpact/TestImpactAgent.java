@@ -56,16 +56,16 @@ public class TestImpactAgent extends AgentBase {
 		this.options = options;
 		Set<ITeamscaleService.EReportFormat> reportFormats = options.getHttpServerReportFormats();
 		if (reportFormats.contains(TEST_LIST)) {
-			testListeners.add(new TestDetailsCollector(controller, options, logger));
+			testListeners.add(new TestDetailsCollector());
 		}
 		if (reportFormats.contains(TESTWISE_COVERAGE)) {
-			testListeners.add(new TestwiseCoverageCollector(controller, options, logger));
+			testListeners.add(new TestwiseCoverageCollector(controller, options));
 		}
 		if (reportFormats.contains(JUNIT)) {
 			testListeners.add(new JUnitReportCollector());
 		}
 		if (reportFormats.contains(JACOCO)) {
-			testListeners.add(new JaCoCoCoverageListener(options, logger));
+			testListeners.add(new JaCoCoCoverageListener(options));
 		}
 
 

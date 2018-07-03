@@ -36,7 +36,7 @@ public class JaCoCoCoverageListener implements ITestListener {
 	private final ExecutionDataStore executionDataStore = new ExecutionDataStore();
 
 	/** Constructor. */
-	public JaCoCoCoverageListener(AgentOptions options, Logger logger) {
+	public JaCoCoCoverageListener(AgentOptions options) {
 		this.generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(), options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 	}

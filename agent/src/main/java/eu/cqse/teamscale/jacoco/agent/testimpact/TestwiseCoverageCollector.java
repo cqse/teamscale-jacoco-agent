@@ -36,7 +36,7 @@ public class TestwiseCoverageCollector implements ITestListener {
 	/** List of dumps, one for each test. */
 	private final List<Dump> dumps = new ArrayList<>();
 
-	public TestwiseCoverageCollector(JacocoRuntimeController controller, AgentOptions options, Logger logger) throws CoverageGenerationException {
+	public TestwiseCoverageCollector(JacocoRuntimeController controller, AgentOptions options) throws CoverageGenerationException {
 		this.controller = controller;
 		this.generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(), wrap(logger));

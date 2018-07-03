@@ -48,6 +48,7 @@ public class JUnitReportCollector implements ITestListener {
 
 		if (!request.queryParams().contains(INTERNAL_ID_QUERY_PARAM)) {
 			logger.error("The query does not contain the required query parameter '" + INTERNAL_ID_QUERY_PARAM + "'");
+			return;
 		}
 		String internalId = request.queryParams(INTERNAL_ID_QUERY_PARAM);
 		String className = StringUtils.removeLastPart(internalId, '/');

@@ -38,6 +38,7 @@ dependencies {
 	implementation 'com.sparkjava:spark-core:2.7.2'
 
 	implementation 'javax.xml.bind:jaxb-api:2.3.0'
+	implementation 'com.google.code.gson:gson:2.8.5'
 
 	implementation project(':eu.cqse.teamscale.coverage.report.generator')
 
