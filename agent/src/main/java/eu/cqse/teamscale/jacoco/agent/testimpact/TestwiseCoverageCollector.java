@@ -22,7 +22,7 @@ import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 /**
  * Test listener which is capable of generating testwise coverage reports.
  */
-public class TestwiseCoverageListener implements ITestListener {
+public class TestwiseCoverageCollector implements ITestListener {
 
 	/** The logger. */
 	protected final Logger logger = LogManager.getLogger(this);
@@ -36,7 +36,7 @@ public class TestwiseCoverageListener implements ITestListener {
 	/** List of dumps, one for each test. */
 	private final List<Dump> dumps = new ArrayList<>();
 
-	public TestwiseCoverageListener(JacocoRuntimeController controller, AgentOptions options, Logger logger) throws CoverageGenerationException {
+	public TestwiseCoverageCollector(JacocoRuntimeController controller, AgentOptions options, Logger logger) throws CoverageGenerationException {
 		this.controller = controller;
 		this.generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(), wrap(logger));

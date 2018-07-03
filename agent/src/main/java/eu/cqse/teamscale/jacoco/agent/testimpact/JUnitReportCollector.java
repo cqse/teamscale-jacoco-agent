@@ -21,7 +21,7 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleSe
 /**
  * Test listener, which is capable of generating JUnit reports for the tests that have been executed.
  */
-public class JUnitListener implements ITestListener {
+public class JUnitReportCollector implements ITestListener {
 
 	/** The logger. */
 	protected final Logger logger = LogManager.getLogger(this);
@@ -33,7 +33,7 @@ public class JUnitListener implements ITestListener {
 	private long startTimestamp = 0L;
 
 	/** Constructor. */
-	public JUnitListener() {
+	public JUnitReportCollector() {
 	}
 
 	@Override

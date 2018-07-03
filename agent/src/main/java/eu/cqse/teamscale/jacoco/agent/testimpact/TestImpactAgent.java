@@ -22,6 +22,7 @@ import spark.Request;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
 import static spark.Spark.port;
 import static spark.Spark.post;
 import static spark.Spark.stop;
@@ -43,7 +44,10 @@ public class TestImpactAgent extends AgentBase {
 	/** Timestamp at which the report was dumped the last time. */
 	private long lastDumpTimestamp = System.currentTimeMillis();
 
-	/** List of tests listeners that produce individual test artifacts. */
+	/**
+	 * List of tests listeners that produce individual test artifacts.
+	 * The uploads happen in the order from first to last listener.
+	 */
 	private final List<ITestListener> testListeners = new ArrayList<>();
 
 	/** Constructor. */
@@ -51,11 +55,14 @@ public class TestImpactAgent extends AgentBase {
 		super(options);
 		this.options = options;
 		Set<ITeamscaleService.EReportFormat> reportFormats = options.getHttpServerReportFormats();
+		if (reportFormats.contains(TEST_LIST)) {
+			testListeners.add(new TestDetailsCollector(controller, options, logger));
+		}
 		if (reportFormats.contains(TESTWISE_COVERAGE)) {
-			testListeners.add(new TestwiseCoverageListener(controller, options, logger));
+			testListeners.add(new TestwiseCoverageCollector(controller, options, logger));
 		}
 		if (reportFormats.contains(JUNIT)) {
-			testListeners.add(new JUnitListener());
+			testListeners.add(new JUnitReportCollector());
 		}
 		if (reportFormats.contains(JACOCO)) {
 			testListeners.add(new JaCoCoCoverageListener(options, logger));
