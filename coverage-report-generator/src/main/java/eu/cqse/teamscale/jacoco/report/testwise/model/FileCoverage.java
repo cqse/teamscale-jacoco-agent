@@ -2,13 +2,13 @@ package eu.cqse.teamscale.jacoco.report.testwise.model;
 
 import org.conqat.lib.commons.assertion.CCSMAssert;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /** Holds coverage of a single file. */
 public class FileCoverage {

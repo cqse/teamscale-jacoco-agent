@@ -1,22 +1,22 @@
 package eu.cqse.teamscale.jacoco.cache;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import eu.cqse.teamscale.jacoco.report.testwise.model.FileCoverage;
 import eu.cqse.teamscale.jacoco.report.testwise.model.LineRange;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.data.ExecutionData;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Holds information about a class' probes and to which line ranges they refer.
- *
+ * <p>
  * - Create an instance of this class for every analyzed java class.
  * - Set the file name of the java source file from which the class has been created.
  * - Then call for every method in the class {@link #addLine(int)} and {@link #addProbe(int)} for all probes and lines
- *   that belong to the method and call {@link #finishMethod()} to signal that the next calls belong to another method.
+ * that belong to the method and call {@link #finishMethod()} to signal that the next calls belong to another method.
  * - Afterwards call {@link #getFileCoverage(ExecutionData)} to transform probes ({@link ExecutionData}) for this class
- *   into covered lines ({@link FileCoverage}).
+ * into covered lines ({@link FileCoverage}).
  */
 public class ClassCoverageLookup {
 
@@ -49,7 +49,7 @@ public class ClassCoverageLookup {
 		this.className = className;
 	}
 
-	/**Sets the file name of the currently analyzed class (without path). */
+	/** Sets the file name of the currently analyzed class (without path). */
 	public void setSourceFileName(String sourceFileName) {
 		this.sourceFileName = sourceFileName;
 	}

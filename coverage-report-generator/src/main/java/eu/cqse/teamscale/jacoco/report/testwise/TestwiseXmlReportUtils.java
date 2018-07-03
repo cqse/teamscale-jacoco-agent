@@ -2,11 +2,11 @@ package eu.cqse.teamscale.jacoco.report.testwise;
 
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestwiseCoverage;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /** Utilities for testwise coverage reports. */
 public class TestwiseXmlReportUtils {

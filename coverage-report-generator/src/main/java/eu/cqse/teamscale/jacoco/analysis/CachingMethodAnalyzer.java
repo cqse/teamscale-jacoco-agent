@@ -72,7 +72,7 @@ public class CachingMethodAnalyzer extends MethodProbesVisitor {
 		LabelInfo.resetDone(dflt);
 		LabelInfo.resetDone(labels);
 		visitSwitchTarget(dflt);
-		for (final Label l: labels) {
+		for (final Label l : labels) {
 			visitSwitchTarget(l);
 		}
 	}

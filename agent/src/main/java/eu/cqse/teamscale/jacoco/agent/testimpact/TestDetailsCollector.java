@@ -51,4 +51,3 @@ public class TestDetailsCollector implements ITestListener {
 		report.clear();
 	}
 }
-

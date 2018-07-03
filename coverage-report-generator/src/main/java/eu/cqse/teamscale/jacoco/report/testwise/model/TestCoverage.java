@@ -1,12 +1,12 @@
 package eu.cqse.teamscale.jacoco.report.testwise.model;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 
 /** Generic holder of test coverage of a single test based on line-ranges. */
 public class TestCoverage {

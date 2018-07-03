@@ -82,7 +82,7 @@ public class JaCoCoXmlReportGenerator {
 
 		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);
 
-		for (File file: codeDirectoriesOrArchives) {
+		for (File file : codeDirectoriesOrArchives) {
 			analyzer.analyzeAll(file);
 		}
 

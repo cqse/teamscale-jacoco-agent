@@ -20,9 +20,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
 import static eu.cqse.teamscale.jacoco.report.testwise.TestwiseXmlReportUtils.writeReportToStream;
 

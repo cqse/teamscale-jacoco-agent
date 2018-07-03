@@ -1,10 +1,10 @@
 package eu.cqse.teamscale.jacoco.report.testwise.model;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 
 /** Container for {@link FileCoverage}s of the same path. */
 public class PathCoverage {
