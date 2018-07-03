@@ -37,6 +37,8 @@ dependencies {
 	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
 	implementation 'com.sparkjava:spark-core:2.7.2'
 
+	implementation 'javax.xml.bind:jaxb-api:2.3.0'
+
 	implementation project(':eu.cqse.teamscale.coverage.report.generator')
 
 	testImplementation 'junit:junit:4.12'

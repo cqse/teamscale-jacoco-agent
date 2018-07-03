@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /** Creates an XML report from binary execution data. */
-public class XmlReportGenerator {
+public class JaCoCoXmlReportGenerator {
 
 	/** The logger. */
 	private final ILogger logger;
@@ -37,8 +37,8 @@ public class XmlReportGenerator {
 	private final boolean ignoreNonidenticalDuplicateClassFiles;
 
 	/** Constructor. */
-	public XmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
-							  boolean ignoreDuplicates, ILogger logger) {
+	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
+									boolean ignoreDuplicates, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.ignoreNonidenticalDuplicateClassFiles = ignoreDuplicates;
 		this.locationIncludeFilter = locationIncludeFilter;

@@ -10,6 +10,7 @@ import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
@@ -27,12 +28,13 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
 
 /**
  * Parses agent command line options.
@@ -95,7 +97,7 @@ public class AgentOptions {
 	/**
 	 * The directory to write the XML traces to.
 	 */
-	private Path outputDir = null;
+	private Path outputDirectory = null;
 
 	/**
 	 * The URL to which to upload coverage zips.
@@ -132,10 +134,21 @@ public class AgentOptions {
 	 */
 	private PairList<String, String> additionalJacocoOptions = new PairList<>();
 
-	/** The teamscale server to which coverage should be uploaded. */
+	/**
+	 * The teamscale server to which coverage should be uploaded.
+	 */
 	private TeamscaleServer teamscaleServer = new TeamscaleServer();
 
-	/** The port on which the HTTP server should be listening. */
+	/**
+	 * The report artifacts that should be produced and stored.
+	 * Only applies for the Test Impact mode.
+	 */
+	private Set<EReportFormat> httpServerReportFormats = CollectionUtils
+			.asUnmodifiableHashSet(TESTWISE_COVERAGE, JACOCO, JUNIT, TEST_LIST);
+
+	/**
+	 * The port on which the HTTP server should be listening.
+	 */
 	private Integer httpServerPort = null;
 
 	/**
@@ -179,8 +192,8 @@ public class AgentOptions {
 		}
 
 		validator.ensure(() -> {
-			CCSMAssert.isNotNull(outputDir, "You must specify an output directory");
-			FileSystemUtils.ensureDirectoryExists(outputDir.toFile());
+			CCSMAssert.isNotNull(outputDirectory, "You must specify an output directory");
+			FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
 		});
 
 		if (loggingConfig != null) {
@@ -196,11 +209,18 @@ public class AgentOptions {
 			});
 		}
 
+		validator.isTrue(!useTestImpactMode() || uploadUrl == null, "'upload-url' option is " +
+				"incompatible with Test Impact mode!");
+
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
+
+		validator.isTrue(uploadUrl == null || teamscaleServer.hasAllRequiredFieldsNull(),
+				"You did provide 'upload-url' and some 'teamscale-' option at the same time, but only one of " +
+						"them can be used!");
 
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
@@ -216,92 +236,153 @@ public class AgentOptions {
 			throw new AgentOptionParseException("Got an option without any value: " + optionPart);
 		}
 
-		String key = keyAndValue[0];
+		String key = keyAndValue[0].toLowerCase();
 		String value = keyAndValue[1];
 
-		switch (key.toLowerCase()) {
+		if (key.startsWith("jacoco-")) {
+			additionalJacocoOptions.add(key.substring(7), value);
+			return;
+		} else if (key.startsWith("teamscale-") && handleTeamscaleOptions(key, value)) {
+			return;
+		} else if (key.startsWith("http-server-") && handleHttpServerOptions(key, value)) {
+			return;
+		} else if (handleAgentOptions(key, value)) {
+			return;
+		}
+		throw new AgentOptionParseException("Unknown option: " + key);
+	}
+
+	/**
+	 * Handles all command line options for the agent without special prefix.
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	private boolean handleAgentOptions(String key, String value) throws AgentOptionParseException {
+		switch (key) {
 			case "logging-config":
 				loggingConfig = parsePath(key, value);
-				break;
+				return true;
 			case "interval":
 				try {
 					dumpIntervalInMinutes = Integer.parseInt(value);
 				} catch (NumberFormatException e) {
 					throw new AgentOptionParseException("Non-numeric value given for option 'interval'");
 				}
-				break;
+				return true;
 			case "out":
-				outputDir = parsePath(key, value);
-				break;
+				outputDirectory = parsePath(key, value);
+				return true;
 			case "upload-url":
 				uploadUrl = parseUrl(value);
 				if (uploadUrl == null) {
 					throw new AgentOptionParseException("Invalid URL given for option 'upload-url'");
 				}
-				break;
+				return true;
 			case "upload-metadata":
 				try {
 					additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
 				} catch (InvalidPathException e) {
 					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
 				}
-				break;
+				return true;
 			case "ignore-duplicates":
 				shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
-				break;
+				return true;
 			case "includes":
 				jacocoIncludes = value.replaceAll(";", ":");
 				locationIncludeFilters = new WildcardMatcher(jacocoIncludes);
-				break;
+				return true;
 			case "excludes":
 				jacocoExcludes = value.replaceAll(";", ":");
 				locationExcludeFilters = new WildcardMatcher(jacocoExcludes);
-				break;
+				return true;
 			case "class-dir":
 				classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);
-				break;
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Handles all command line options prefixed with "teamscale-".
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	private boolean handleTeamscaleOptions(String key, String value) throws AgentOptionParseException {
+		switch (key) {
 			case "teamscale-server-url":
 				teamscaleServer.url = parseUrl(value);
 				if (teamscaleServer.url == null) {
 					throw new AgentOptionParseException(
 							"Invalid URL " + value + " given for option 'teamscale-server-url'!");
 				}
-				break;
+				return true;
 			case "teamscale-project":
 				teamscaleServer.project = value;
-				break;
+				return true;
 			case "teamscale-user":
 				teamscaleServer.userName = value;
-				break;
+				return true;
 			case "teamscale-access-token":
 				teamscaleServer.userAccessToken = value;
-				break;
+				return true;
 			case "teamscale-partition":
 				teamscaleServer.partition = value;
-				break;
+				return true;
 			case "teamscale-commit":
 				teamscaleServer.commit = parseCommit(value);
-				break;
+				return true;
 			case "teamscale-message":
 				teamscaleServer.message = value;
-				break;
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Handles all command line options prefixed with "http-server-".
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	private boolean handleHttpServerOptions(String key, String value) throws AgentOptionParseException {
+		switch (key) {
+			case "http-server-formats":
+				httpServerReportFormats = parseReportFormats(value);
+				return true;
 			case "http-server-port":
 				try {
 					httpServerPort = Integer.parseInt(value);
-					teamscaleServer.reportFormat = TESTWISE_COVERAGE;
 				} catch (NumberFormatException e) {
 					throw new AgentOptionParseException(
 							"Invalid port number " + value + " given for option 'http-server-port'!");
 				}
-				break;
+				return true;
 			default:
-				if (key.toLowerCase().startsWith("jacoco-")) {
-					additionalJacocoOptions.add(key.substring(7), value);
-					break;
-				}
-
-				throw new AgentOptionParseException("Unknown option: " + key);
+				return false;
 		}
+	}
+
+	/**
+	 * Parses a comma-separated list of report formats like TESTWISE_COVERAGE,JUNIT.
+	 */
+	private Set<EReportFormat> parseReportFormats(String reportFormatsString) throws AgentOptionParseException {
+		String[] reportFormatString = reportFormatsString.trim().split(",");
+		if (reportFormatString.length == 0) {
+			throw new AgentOptionParseException("'http-server-reports' is empty!");
+		}
+		Set<EReportFormat> reportFormats = new HashSet<>();
+		for (String format : reportFormatString) {
+			try {
+				EReportFormat eReportFormat = EReportFormat.valueOf(format);
+				reportFormats.add(eReportFormat);
+			} catch (IllegalArgumentException e) {
+				throw new AgentOptionParseException(
+						"Invalid report format '" + format + "' for parameter 'http-server-reports'!", e);
+			}
+		}
+		return reportFormats;
 	}
 
 	/**
@@ -394,7 +475,7 @@ public class AgentOptions {
 	 * Creates the store to use for the coverage XMLs.
 	 */
 	public IXmlStore createStore() {
-		TimestampedFileStore fileStore = new TimestampedFileStore(outputDir);
+		TimestampedFileStore fileStore = new TimestampedFileStore(outputDirectory);
 		if (uploadUrl != null) {
 			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
 		}
@@ -430,11 +511,23 @@ public class AgentOptions {
 	 * the HTTP server is used.
 	 */
 	public AgentBase createAgent() throws CoverageGenerationException {
-		if (httpServerPort != null) {
+		if (useTestImpactMode()) {
 			return new TestImpactAgent(this);
 		} else {
 			return new Agent(this);
 		}
+	}
+
+	/** Returns whether the config indicates to use Test Impact mode. */
+	private boolean useTestImpactMode() {
+		return httpServerPort != null;
+	}
+
+	/**
+	 * Returns a set of report formats that the server should produce and dump to the store.
+	 */
+	public Set<EReportFormat> getHttpServerReportFormats() {
+		return httpServerReportFormats;
 	}
 
 	/**

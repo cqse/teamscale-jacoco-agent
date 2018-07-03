@@ -2,6 +2,7 @@ package eu.cqse.teamscale.jacoco.agent.store.upload.teamscale;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -41,17 +42,17 @@ public class TeamscaleUploadStore implements IXmlStore {
     }
 
     @Override
-    public void store(String xml) {
+    public void store(String xml, EReportFormat format) {
         try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
-            if (!tryUploading(xml)) {
+            if (!tryUploading(xml, format)) {
                 logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
-                failureStore.store(xml);
+                failureStore.store(xml, format);
             }
         }
     }
 
     /** Performs the upload and returns <code>true</code> if successful. */
-    private boolean tryUploading(String xml) {
+    private boolean tryUploading(String xml, EReportFormat format) {
         logger.debug("Uploading coverage to {}", teamscaleServer);
 
         try {
@@ -59,7 +60,7 @@ public class TeamscaleUploadStore implements IXmlStore {
                     teamscaleServer.project,
                     teamscaleServer.commit,
                     teamscaleServer.partition,
-                    teamscaleServer.reportFormat,
+                    format,
                     teamscaleServer.message,
                     RequestBody.create(MultipartBody.FORM, xml)
             ).execute();

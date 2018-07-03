@@ -1,7 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent.convert;
 
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.report.linebased.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.report.linebased.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +37,7 @@ public class Converter {
 		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(
 				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters());
 		Logger logger = LogManager.getLogger(this);
-		XmlReportGenerator generator = new XmlReportGenerator(arguments.getClassDirectoriesOrZips(),
+		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
 				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {

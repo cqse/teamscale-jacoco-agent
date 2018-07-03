@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 /** Tests report generation with and without duplicate classes. */
-public class XmlReportGeneratorTest extends CCSMTestCaseBase {
+public class JaCoCoXmlReportGeneratorTest extends CCSMTestCaseBase {
 
 	/** Ensures that the normal case runs without exceptions. */
 	@Test
@@ -64,7 +64,7 @@ public class XmlReportGeneratorTest extends CCSMTestCaseBase {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
 				CollectionUtils.emptyList());
-		new XmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter, shouldIgnoreDuplicates,
+		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter, shouldIgnoreDuplicates,
 				mock(ILogger.class)).convert(createDummyDump());
 	}
 

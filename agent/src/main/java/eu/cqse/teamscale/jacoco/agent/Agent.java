@@ -5,14 +5,16 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.report.linebased.XmlReportGenerator;
+import eu.cqse.teamscale.jacoco.report.linebased.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.Timer;
 
 import java.io.IOException;
 import java.time.Duration;
 
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
 import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /**
@@ -22,7 +24,7 @@ import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 public class Agent extends AgentBase {
 
 	/** Converts binary data to XML. */
-	private XmlReportGenerator generator;
+	private JaCoCoXmlReportGenerator generator;
 
 	/** Regular dump task. */
 	private final Timer timer;
@@ -31,7 +33,7 @@ public class Agent extends AgentBase {
 	public Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
 
-		generator = new XmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
+		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
 				options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
 		timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
@@ -65,6 +67,6 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		store.store(xml);
+		store.store(xml, JACOCO);
 	}
 }

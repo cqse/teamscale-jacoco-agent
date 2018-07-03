@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -23,9 +25,7 @@ public class TimestampedFileStore implements IXmlStore {
 	/** The directory to which to write the XML files. */
 	private final Path outputDirectory;
 
-	/**
-	 * Constructor.
-	 */
+	/** Constructor. */
 	public TimestampedFileStore(Path outputDirectory) {
 		this.outputDirectory = outputDirectory;
 	}
@@ -37,15 +37,24 @@ public class TimestampedFileStore implements IXmlStore {
 
 	/** {@inheritDoc} */
 	@Override
-	public void store(String xml) {
+	public void store(String xml, EReportFormat format) {
 		try (Benchmark benchmark = new Benchmark("Writing the report to a file")) {
-			long currentTime = System.currentTimeMillis();
-			Path outputPath = outputDirectory.resolve("jacoco-coverage-" + currentTime + ".xml");
+			Path outputPath = outputDirectory.resolve(getFileName(format));
 			try {
 				FileSystemUtils.writeFile(outputPath.toFile(), xml);
 			} catch (IOException e) {
 				logger.error("Failed to write XML to {}", outputPath, e);
 			}
+		}
+	}
+
+	private String getFileName(EReportFormat format) {
+		long currentTime = System.currentTimeMillis();
+		switch (format) {
+			case JACOCO:
+				return "jacoco-coverage-" + currentTime + ".xml";
+			default:
+				return format.name().toLowerCase().replace('_', '-') + "-" + currentTime + ".xml";
 		}
 	}
 

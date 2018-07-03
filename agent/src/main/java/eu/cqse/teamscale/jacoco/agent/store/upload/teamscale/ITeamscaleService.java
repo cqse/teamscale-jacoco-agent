@@ -16,7 +16,9 @@ public interface ITeamscaleService {
     /** Enum of report formats. */
     enum EReportFormat {
         JACOCO,
-        TESTWISE_COVERAGE
+        TESTWISE_COVERAGE,
+        JUNIT,
+        TEST_LIST
     }
 
     /** Report upload API. */

@@ -62,8 +62,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"
 ```
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
-- `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
+- `http-server-formats` (optional): the port at which the agent should start an HTTP server that listens for test events 
   (See `Test impact mode` below for details).
+- `http-server-formats` (optional): a comma-separated list of report formats that should be generated. Can be one or more 
+  of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE,JACOCO,JUNIT,TEST_LIST`.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -76,8 +78,8 @@ The log file is written to the working directory of the profiled Java process by
 ## Test impact mode
 
 The agent can be used in a Test Impact scenario to collect testwise coverage. The test system (the application executing 
-the test specification) can inform the agent of when a test is started and finished via a REST API. 
-The agent then generates reports that contain method-based testwise coverage.
+the test specification) can inform the agent of when a test starts and finished via a REST API. 
+The agent then generates reports that contain method-based testwise coverage (if not disabled via `http-server-formats`).
 The HTTP server is started when `http-server-port` is set (Recommended port is 8000).
 
 The agent accepts `POST` queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
