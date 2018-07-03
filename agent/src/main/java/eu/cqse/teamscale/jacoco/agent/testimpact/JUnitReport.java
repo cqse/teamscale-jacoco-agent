@@ -15,6 +15,7 @@ class JUnitReport {
 	@XmlElement(name = "testcase")
 	List<TestCase> testCaseList = new ArrayList<>();
 
+	/** Holds execution information for a single test case. */
 	public static class TestCase {
 
 		/** The fully qualified class name of the test class. */
@@ -29,9 +30,14 @@ class JUnitReport {
 		@XmlAttribute(name = "time")
 		public final String durationInSeconds;
 
-		@XmlElement(name = "error")
+		/** Information about the test failure. If it is null the test did not fail. */
+		@XmlElement(name = "failure")
 		public Failure failure = null;
 
+		/**
+		 * Whether the test has been skipped/ignored. Null indicates that the flag has not been set,
+		 * which basically means false. But results in not getting the attribute in the XML.
+		 */
 		@XmlAttribute(name = "ignored")
 		public Boolean ignored = null;
 
@@ -44,7 +50,7 @@ class JUnitReport {
 		/** Container for an error message/stacktrace etc. */
 		public static class Failure {
 
-			/** The actual error. */
+			/** The actual failure. */
 			@XmlValue
 			private String failureOutput;
 

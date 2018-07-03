@@ -24,15 +24,11 @@ public class TestDetailsCollector implements ITestListener {
 	/** The logger. */
 	protected final Logger logger = LogManager.getLogger(this);
 
-	/** Contains all test cases that have been executed so far. */
-	private List<TestDetails> report = new ArrayList<>();
+	/** Contains all test details for all tests that have been executed so far. */
+	private final List<TestDetails> testDetailsList = new ArrayList<>();
 
 	@Override
 	public void onTestStart(Request request, Dump dump) {
-	}
-
-	@Override
-	public void onTestFinish(Request request, Dump dump) {
 		if (!request.queryParams().contains(INTERNAL_ID_QUERY_PARAM)) {
 			logger.error("The query does not contain the required query parameter '" + INTERNAL_ID_QUERY_PARAM + "'");
 			return;
@@ -41,13 +37,18 @@ public class TestDetailsCollector implements ITestListener {
 		String externalId = request.params(TEST_ID_PARAMETER);
 		String testName = StringUtils.getLastPart(internalId, '/');
 		TestDetails testDetails = new TestDetails(externalId, internalId, null, testName);
-		report.add(testDetails);
+		this.testDetailsList.add(testDetails);
+	}
+
+	@Override
+	public void onTestFinish(Request request, Dump dump) {
+		// Nothing to do here since we have already saved the test details for the current test in #onTestStart
 	}
 
 	@Override
 	public void onDump(IXmlStore store) {
-		String reportString = new Gson().toJson(report);
+		String reportString = new Gson().toJson(testDetailsList);
 		store.store(reportString, TEST_LIST);
-		report.clear();
+		testDetailsList.clear();
 	}
 }

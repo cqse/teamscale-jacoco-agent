@@ -26,15 +26,11 @@ public class JUnitReportCollector implements ITestListener {
 	/** The logger. */
 	protected final Logger logger = LogManager.getLogger(this);
 
-	/** Contains all test cases that have been executed so far. */
+	/** Contains test execution information of all tests that have been executed so far in JUnit report format. */
 	private final JUnitReport report = new JUnitReport();
 
 	/** The start time of the currently running test. */
 	private long startTimestamp = 0L;
-
-	/** Constructor. */
-	public JUnitReportCollector() {
-	}
 
 	@Override
 	public void onTestStart(Request request, Dump dump) {
