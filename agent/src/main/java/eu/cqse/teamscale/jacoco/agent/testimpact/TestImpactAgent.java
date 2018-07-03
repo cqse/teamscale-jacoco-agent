@@ -5,10 +5,6 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import eu.cqse.teamscale.jacoco.agent.AgentBase;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
@@ -18,6 +14,10 @@ import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import spark.Request;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;

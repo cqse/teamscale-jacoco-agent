@@ -5,21 +5,19 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent.convert;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+import eu.cqse.teamscale.jacoco.agent.commandline.ICommand;
+import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-
-import eu.cqse.teamscale.jacoco.agent.commandline.ICommand;
-import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates all command line options for the convert command for parsing
@@ -29,7 +27,7 @@ import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 public class ConvertCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
-	@Parameter(names = { "--classDir", "--jar", "-c" }, required = true, description = ""
+	@Parameter(names = {"--classDir", "--jar", "-c"}, required = true, description = ""
 			+ "The directories or zip/ear/jar/war/... files that contain the compiled Java classes being profiled."
 			+ " Searches recursively, including inside zips.")
 	/* package */ List<String> classDirectoriesOrZips = new ArrayList<>();
@@ -37,7 +35,7 @@ public class ConvertCommand implements ICommand {
 	/**
 	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = { "--filter", "-f" }, description = ""
+	@Parameter(names = {"--filter", "-f"}, description = ""
 			+ "Ant-style include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
@@ -48,7 +46,7 @@ public class ConvertCommand implements ICommand {
 	/**
 	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = { "--exclude", "-e" }, description = ""
+	@Parameter(names = {"--exclude", "-e"}, description = ""
 			+ "Ant-style exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
@@ -57,16 +55,16 @@ public class ConvertCommand implements ICommand {
 	/* package */ List<String> locationExcludeFilters = new ArrayList<>();
 
 	/** The directory to write the XML traces to. */
-	@Parameter(names = { "--in", "-i" }, required = true, description = "" + "The binary .exec file to read.")
+	@Parameter(names = {"--in", "-i"}, required = true, description = "" + "The binary .exec file to read.")
 	/* package */ String inputFile = "";
 
 	/** The directory to write the XML traces to. */
-	@Parameter(names = { "--out", "-o" }, required = true, description = ""
+	@Parameter(names = {"--out", "-o"}, required = true, description = ""
 			+ "The file to write the generated XML report to.")
 	/* package */ String outputFile = "";
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	@Parameter(names = { "--ignore-duplicates", "-d" }, required = false, arity = 1, description = ""
+	@Parameter(names = {"--ignore-duplicates", "-d"}, required = false, arity = 1, description = ""
 			+ "Whether to ignore duplicate, non-identical class files."
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
 	/* package */ boolean shouldIgnoreDuplicateClassFiles = false;

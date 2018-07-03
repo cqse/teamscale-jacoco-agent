@@ -1,8 +1,8 @@
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
-import eu.cqse.teamscale.jacoco.agent.testimpact.JUnitReport.TestCase;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.testimpact.JUnitReport.TestCase;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.testwise.model.TestwiseCoverage;
 import org.apache.logging.log4j.LogManager;
@@ -15,8 +15,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 
-import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.INTERNAL_ID_QUERY_PARAM;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
+import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.INTERNAL_ID_QUERY_PARAM;
 
 /**
  * Test listener, which is capable of generating JUnit reports for the tests that have been executed.

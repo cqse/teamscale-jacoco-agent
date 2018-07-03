@@ -1,16 +1,14 @@
 package eu.cqse.teamscale.jacoco.agent.store.file;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
-import eu.cqse.teamscale.jacoco.util.Benchmark;
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Writes XMLs to files in a folder. The files are timestamped with the time of

@@ -26,7 +26,8 @@ public abstract class AgentBase {
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
-			throw new IllegalStateException("JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
+			throw new IllegalStateException(
+					"JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
 		}
 		store = options.createStore();
 

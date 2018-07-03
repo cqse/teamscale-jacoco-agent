@@ -5,11 +5,11 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent.commandline;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.string.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Helper class to allow for multiple validations to occur.

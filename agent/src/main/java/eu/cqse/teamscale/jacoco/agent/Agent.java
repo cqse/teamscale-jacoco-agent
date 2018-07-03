@@ -5,7 +5,6 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.linebased.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
@@ -33,7 +32,8 @@ public class Agent extends AgentBase {
 	public Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
 
-		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(), options.getLocationIncludeFilter(),
+		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
+				options.getLocationIncludeFilter(),
 				options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
 		timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));

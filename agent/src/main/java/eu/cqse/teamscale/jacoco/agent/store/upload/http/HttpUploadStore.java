@@ -1,5 +1,18 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 
+import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
+import okhttp3.HttpUrl;
+import okhttp3.ResponseBody;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -7,21 +20,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-
-import eu.cqse.teamscale.jacoco.util.Benchmark;
-import okhttp3.HttpUrl;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * Uploads XMLs and metadata via HTTP multi-part form data requests.
