@@ -5,6 +5,8 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import eu.cqse.teamscale.jacoco.agent.AgentBase;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
@@ -13,10 +15,12 @@ import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.jacoco.dump.Dump;
+import org.apache.logging.log4j.Logger;
 import spark.Request;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
@@ -34,9 +38,6 @@ public class TestImpactAgent extends AgentBase {
 
 	/** Path parameter placeholder used in the http requests. */
 	public static final String TEST_ID_PARAMETER = ":testId";
-
-	/** The name of the query parameter that can be used to to transfer the internalId of the test. */
-	public static final String INTERNAL_ID_QUERY_PARAM = "internalId";
 
 	/** The agent options. */
 	private AgentOptions options;
@@ -67,7 +68,6 @@ public class TestImpactAgent extends AgentBase {
 		if (reportFormats.contains(JACOCO)) {
 			testListeners.add(new JaCoCoCoverageListener(options));
 		}
-
 
 		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
 
@@ -136,5 +136,30 @@ public class TestImpactAgent extends AgentBase {
 	protected void prepareShutdown() {
 		stop();
 		dumpReport();
+	}
+
+	/**
+	 * Returns the test details from the request body or null if no valid test details were given.
+	 */
+	public static TestDetails getTestDetailsFromRequest(Request request, Logger logger) {
+		String testDetailsString = request.body();
+		TestDetails testDetails;
+		try {
+			testDetails = new Gson().fromJson(testDetailsString, TestDetails.class);
+			if(testDetails == null) {
+				logger.error("No or invalid test details '"+ testDetailsString +"' given!");
+				return null;
+			}
+		} catch(JsonSyntaxException e) {
+			logger.error("No or invalid test details '"+ testDetailsString + "' given!", e);
+			return null;
+		}
+		String externalId = request.params(TEST_ID_PARAMETER);
+		if (!Objects.equals(testDetails.externalId, externalId)) {
+			logger.warn("The externalId '" + externalId + "' given as query parameter does not match with the " +
+					"externalId '" + testDetails.externalId + "' in the test details in the request body. The " +
+					"externalId from the request body is used.");
+		}
+		return testDetails;
 	}
 }

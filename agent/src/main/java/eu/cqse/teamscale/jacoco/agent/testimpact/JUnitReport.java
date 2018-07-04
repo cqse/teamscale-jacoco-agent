@@ -27,8 +27,7 @@ class JUnitReport {
 		public final String testName;
 
 		/** Test duration in seconds. */
-		@XmlAttribute(name = "time")
-		public final String durationInSeconds;
+		private double durationInSeconds;
 
 		/** Information about the test failure. If it is null the test did not fail. */
 		@XmlElement(name = "failure")
@@ -41,10 +40,20 @@ class JUnitReport {
 		@XmlAttribute(name = "ignored")
 		public Boolean ignored = null;
 
-		public TestCase(String className, String testName, double durationInSeconds) {
+		public TestCase(String className, String testName) {
 			this.className = className;
 			this.testName = testName;
-			this.durationInSeconds = String.format("%.3f", durationInSeconds);
+		}
+
+		/** Returns the duration in seconds as string with 3 trailing digits. */
+		@XmlAttribute(name = "time")
+		public String getDurationInSeconds() {
+			return String.format("%.3f", durationInSeconds);
+		}
+
+		/** @see #durationInSeconds */
+		public void setDurationInSeconds(double durationInSeconds) {
+			this.durationInSeconds = durationInSeconds;
 		}
 
 		/** Container for an error message/stacktrace etc. */

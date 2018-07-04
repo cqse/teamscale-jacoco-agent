@@ -16,7 +16,7 @@ import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
-import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.INTERNAL_ID_QUERY_PARAM;
+import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.getTestDetailsFromRequest;
 
 /**
  * Test listener, which is capable of generating JUnit reports for the tests that have been executed.
@@ -32,29 +32,38 @@ public class JUnitReportCollector implements ITestListener {
 	/** The start time of the currently running test. */
 	private long startTimestamp = 0L;
 
+	/** The  */
+	private TestCase currentTestCase = null;
+
 	@Override
 	public void onTestStart(Request request, Dump dump) {
 		startTimestamp = System.currentTimeMillis();
+
+		TestDetails testDetails = getTestDetailsFromRequest(request, logger);
+		if(testDetails == null) {
+			currentTestCase = null;
+			return;
+		}
+		String internalId = testDetails.internalId;
+		String className = StringUtils.removeLastPart(internalId, '/');
+		String testName = StringUtils.getLastPart(internalId, '/');
+		currentTestCase = new TestCase(className, testName);
 	}
 
 	@Override
 	public void onTestFinish(Request request, Dump dump) {
-		long endTimestamp = System.currentTimeMillis();
-		double durationInSeconds = (endTimestamp - startTimestamp) / 1000.0;
-
-		if (!request.queryParams().contains(INTERNAL_ID_QUERY_PARAM)) {
-			logger.error("The query does not contain the required query parameter '" + INTERNAL_ID_QUERY_PARAM + "'");
+		if(currentTestCase == null) {
 			return;
 		}
-		String internalId = request.queryParams(INTERNAL_ID_QUERY_PARAM);
-		String className = StringUtils.removeLastPart(internalId, '/');
-		String testName = StringUtils.getLastPart(internalId, '/');
-		TestCase testCase = new TestCase(className, testName, durationInSeconds);
+
+		long endTimestamp = System.currentTimeMillis();
+		currentTestCase.setDurationInSeconds((endTimestamp - startTimestamp) / 1000.0);
+
 		String failure = "";
 		if (!StringUtils.isEmpty(failure)) {
-			testCase.failure = new TestCase.Failure(failure);
+			currentTestCase.failure = new TestCase.Failure(failure);
 		}
-		report.testCaseList.add(testCase);
+		report.testCaseList.add(currentTestCase);
 	}
 
 	@Override

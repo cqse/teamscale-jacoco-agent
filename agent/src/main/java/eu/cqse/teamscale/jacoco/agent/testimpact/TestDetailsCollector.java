@@ -6,15 +6,13 @@ import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.conqat.lib.commons.string.StringUtils;
 import spark.Request;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
-import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.INTERNAL_ID_QUERY_PARAM;
-import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.TEST_ID_PARAMETER;
+import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.getTestDetailsFromRequest;
 
 /**
  * Test listener, which is capable of generating JUnit reports for the tests that have been executed.
@@ -29,15 +27,10 @@ public class TestDetailsCollector implements ITestListener {
 
 	@Override
 	public void onTestStart(Request request, Dump dump) {
-		if (!request.queryParams().contains(INTERNAL_ID_QUERY_PARAM)) {
-			logger.error("The query does not contain the required query parameter '" + INTERNAL_ID_QUERY_PARAM + "'");
-			return;
+		TestDetails testDetails = getTestDetailsFromRequest(request, logger);
+		if (testDetails != null) {
+			this.testDetailsList.add(testDetails);
 		}
-		String internalId = request.queryParams(INTERNAL_ID_QUERY_PARAM);
-		String externalId = request.params(TEST_ID_PARAMETER);
-		String testName = StringUtils.getLastPart(internalId, '/');
-		TestDetails testDetails = new TestDetails(externalId, internalId, null, testName);
-		this.testDetailsList.add(testDetails);
 	}
 
 	@Override

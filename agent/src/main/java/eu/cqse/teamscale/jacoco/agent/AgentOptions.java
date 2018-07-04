@@ -244,6 +244,11 @@ public class AgentOptions {
 		String key = keyAndValue[0].toLowerCase();
 		String value = keyAndValue[1];
 
+		// Remove quotes, which may be used to pass arguments with spaces via the command line
+		if(value.startsWith("\"") && value.endsWith("\"")) {
+			value = value.substring(1, value.length() - 1);
+		}
+
 		if (key.startsWith("jacoco-")) {
 			additionalJacocoOptions.add(key.substring(7), value);
 			return;
@@ -370,18 +375,17 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Parses a comma-separated list of report formats like TESTWISE_COVERAGE,JUNIT.
+	 * Parses a semicolon-separated list of report formats like TESTWISE_COVERAGE;JUNIT.
 	 */
 	private Set<EReportFormat> parseReportFormats(String reportFormatsString) throws AgentOptionParseException {
-		String[] reportFormatString = reportFormatsString.trim().split(",");
-		if (reportFormatString.length == 0) {
-			throw new AgentOptionParseException("'http-server-reports' is empty!");
+		List<String> reportFormatString = splitMultiOptionValue(reportFormatsString.trim());
+		if (reportFormatString.size() == 0) {
+			throw new AgentOptionParseException("'http-server-formats' is empty!");
 		}
 		Set<EReportFormat> reportFormats = new HashSet<>();
 		for (String format : reportFormatString) {
 			try {
-				EReportFormat eReportFormat = EReportFormat.valueOf(format);
-				reportFormats.add(eReportFormat);
+				reportFormats.add(EReportFormat.valueOf(format.trim()));
 			} catch (IllegalArgumentException e) {
 				throw new AgentOptionParseException(
 						"Invalid report format '" + format + "' for parameter 'http-server-reports'!", e);
@@ -488,6 +492,11 @@ public class AgentOptions {
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
 		return fileStore;
+	}
+
+	/** @see #teamscaleServer */
+	public TeamscaleServer getTeamscaleServerOptions() {
+		return teamscaleServer;
 	}
 
 	/**

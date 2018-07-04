@@ -64,8 +64,9 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `http-server-formats` (optional): the port at which the agent should start an HTTP server that listens for test events 
   (See `Test impact mode` below for details).
-- `http-server-formats` (optional): a comma-separated list of report formats that should be generated. Can be one or more 
-  of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE,JACOCO,JUNIT,TEST_LIST`.
+- `http-server-formats` (optional): a semicolon-separated list of report formats that should be generated. Can be one or more 
+  of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
+  more data might be required by the REST endpoints see `Test impact mode` below for details.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -82,12 +83,32 @@ the test specification) can inform the agent of when a test starts and finished 
 The agent then generates reports that contain method-based testwise coverage (if not disabled via `http-server-formats`).
 The HTTP server is started when `http-server-port` is set (Recommended port is 8000).
 
-The agent accepts `POST` queries of the form `http://127.0.0.1:8000/test/start/myTestId` and 
-`http://127.0.0.1:8000/test/end/myTestId`. The ID can be an arbitrary string that the test system uses to identify the test.
+The `interval` commandline argument behaves slightly different in Test Impact mode. It does not dump any coverage 
+during a test, but in between tests when the given interval has exceeded, when the `/dump` endpoint has been called or 
+when the program shuts down.
+
+Tests are identified by the `externalId`. The ID can be an arbitrary string that the test system uses to identify the test.
 When uploading test details before the coverage the `externalId` must be the same as this ID.
 
-The `interval` commandline argument behaves slightly different in the Test Impact mode. It does not dump any coverage 
-during a test, but only in between them and when the program shuts down.
+The agent's REST API has the following endpoints:
+- `[POST] /test/start/{externalId}` Signals to the agent that the test with the given externalId is about to start. If the 
+  `http-server-formats` flag contains `TEST_LIST` and/or `JUNIT` the request body must also contain test details in JSON 
+  format like the following:
+  ```json
+  {
+     "internalId": "some/logical/path/to/the/test",
+     "externalId": "437334-7484-1",
+     "displayName": "This is my test",
+     "sourcePath": "some/logical/path/to/the/test",
+     "content": "revision3"
+  }
+  ```
+  More information on the test details can be found in TEST_IMPACT_ANALYSIS_DOC.
+
+- `[POST] /test/end/{externalId}` Signals to the agent that the test with the given externalId has just finished.
+
+- `[POST] /dump` Makes the agent dump all collected artifacts to the configured output location (file system or Teamscale).
+
 
 ## Additional steps for WebSphere
 

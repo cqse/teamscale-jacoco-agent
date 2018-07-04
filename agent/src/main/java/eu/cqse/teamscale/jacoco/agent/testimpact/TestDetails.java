@@ -6,7 +6,7 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
  */
 public class TestDetails {
 
-	/** Unique name of the test case which can be used by the build system to find and execute the test. */
+	/** Unique name of the test case which can be used by an external build system to find and execute the test. */
 	public final String externalId;
 
 	/** Unique name of the test case by using a path like hierarchical description, which can be shown in the UI. */
