@@ -2,9 +2,9 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.testimpact.JUnitReport.TestCase;
+import eu.cqse.teamscale.jacoco.report.junit.JUnitReport;
+import eu.cqse.teamscale.jacoco.report.junit.JUnitReport.TestCase;
 import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.report.testwise.model.TestwiseCoverage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.string.StringUtils;
@@ -17,6 +17,7 @@ import java.io.StringWriter;
 
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
 import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.getTestDetailsFromRequest;
+import static eu.cqse.teamscale.jacoco.report.junit.JUnitReportGenerator.generateJUnitReport;
 
 /**
  * Test listener, which is capable of generating JUnit reports for the tests that have been executed.
@@ -68,17 +69,15 @@ public class JUnitReportCollector implements ITestListener {
 
 	@Override
 	public void onDump(IXmlStore store) {
-		StringWriter xmlStringWriter = new StringWriter();
+		String xml;
 		try {
-			JAXBContext jaxbContext = JAXBContext.newInstance(TestwiseCoverage.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			jaxbMarshaller.marshal(report, xmlStringWriter);
+			xml = generateJUnitReport(report);
 		} catch (JAXBException e) {
 			logger.error("Converting JUnit report failed!", e);
+			return;
 		}
 
-		store.store(xmlStringWriter.toString(), JUNIT);
+		store.store(xml, JUNIT);
 		report.testCaseList.clear();
 	}
 }

@@ -52,7 +52,8 @@ The following options are available:
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string 
-  which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in Teamscale's UI.
+  which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in 
+  Teamscale's UI.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. You can get this info from your VCS during the build e.g. for Git via 
@@ -108,7 +109,6 @@ The agent's REST API has the following endpoints:
 - `[POST] /test/end/{externalId}` Signals to the agent that the test with the given externalId has just finished.
 
 - `[POST] /dump` Makes the agent dump all collected artifacts to the configured output location (file system or Teamscale).
-
 
 ## Additional steps for WebSphere
 

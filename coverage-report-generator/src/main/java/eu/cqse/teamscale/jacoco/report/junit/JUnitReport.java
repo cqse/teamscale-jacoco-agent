@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.agent.testimpact;
+package eu.cqse.teamscale.jacoco.report.junit;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -9,11 +9,11 @@ import java.util.List;
 
 /** Container for a JUnit test report. */
 @XmlRootElement(name = "testsuite")
-class JUnitReport {
+public class JUnitReport {
 
 	/** List of test cases contained in the test suite. */
 	@XmlElement(name = "testcase")
-	List<TestCase> testCaseList = new ArrayList<>();
+	public final List<TestCase> testCaseList = new ArrayList<>();
 
 	/** Holds execution information for a single test case. */
 	public static class TestCase {

@@ -36,7 +36,7 @@ public class TimestampedFileStore implements IXmlStore {
 	/** {@inheritDoc} */
 	@Override
 	public void store(String xml, EReportFormat format) {
-		try (Benchmark benchmark = new Benchmark("Writing the report to a file")) {
+		try (Benchmark benchmark = new Benchmark("Writing the " + format + " report to a file")) {
 			Path outputPath = outputDirectory.resolve(getFileName(format));
 			try {
 				FileSystemUtils.writeFile(outputPath.toFile(), xml);
@@ -51,6 +51,8 @@ public class TimestampedFileStore implements IXmlStore {
 		switch (format) {
 			case JACOCO:
 				return "jacoco-coverage-" + currentTime + ".xml";
+			case TEST_LIST:
+				return "test-list-" + currentTime + ".json";
 			default:
 				return format.name().toLowerCase().replace('_', '-') + "-" + currentTime + ".xml";
 		}

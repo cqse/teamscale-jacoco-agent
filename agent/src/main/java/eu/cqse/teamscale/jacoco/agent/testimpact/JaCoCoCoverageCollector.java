@@ -1,5 +1,7 @@
-package eu.cqse.teamscale.jacoco.agent;
+package eu.cqse.teamscale.jacoco.agent.testimpact;
 
+import eu.cqse.teamscale.jacoco.agent.AgentOptions;
+import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.dump.Dump;
 import eu.cqse.teamscale.jacoco.report.linebased.JaCoCoXmlReportGenerator;
@@ -21,7 +23,7 @@ import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
  * Test listener, which is capable of generating line-based JaCoCo coverage reports for the whole system
  * independent from the testwise coverage.
  */
-public class JaCoCoCoverageListener implements ITestListener {
+public class JaCoCoCoverageCollector implements ITestListener {
 
 	/** The logger. */
 	protected final Logger logger = LogManager.getLogger(this);
@@ -36,7 +38,7 @@ public class JaCoCoCoverageListener implements ITestListener {
 	private final ExecutionDataStore executionDataStore = new ExecutionDataStore();
 
 	/** Constructor. */
-	public JaCoCoCoverageListener(AgentOptions options) {
+	public JaCoCoCoverageCollector(AgentOptions options) {
 		this.generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(), options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 	}

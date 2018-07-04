@@ -10,7 +10,6 @@ import com.google.gson.JsonSyntaxException;
 import eu.cqse.teamscale.jacoco.agent.AgentBase;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
-import eu.cqse.teamscale.jacoco.agent.JaCoCoCoverageListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
@@ -66,8 +65,10 @@ public class TestImpactAgent extends AgentBase {
 			testListeners.add(new JUnitReportCollector());
 		}
 		if (reportFormats.contains(JACOCO)) {
-			testListeners.add(new JaCoCoCoverageListener(options));
+			testListeners.add(new JaCoCoCoverageCollector(options));
 		}
+
+		logger.info("Collecting formats: "+reportFormats);
 
 		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
 

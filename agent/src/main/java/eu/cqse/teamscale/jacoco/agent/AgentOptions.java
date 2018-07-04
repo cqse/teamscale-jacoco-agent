@@ -388,7 +388,7 @@ public class AgentOptions {
 				reportFormats.add(EReportFormat.valueOf(format.trim()));
 			} catch (IllegalArgumentException e) {
 				throw new AgentOptionParseException(
-						"Invalid report format '" + format + "' for parameter 'http-server-reports'!", e);
+						"Invalid report format '" + format + "' for parameter 'http-server-formats'!", e);
 			}
 		}
 		return reportFormats;
