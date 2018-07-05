@@ -73,11 +73,44 @@ The log file is written to the working directory of the profiled Java process by
 
 ## Additional steps for WebSphere
 
-For web applications running in WebSphere, please also apply this additional JVM parameter:
+Register the agent in WebSphere's `startServer.bat` or `startServer.sh`.
+Please also apply this additional JVM parameter:
 
     -Xshareclasses:none
 
 This option disables a WebSphere internal class cache that causes problems with the profiler.
+
+Please set the agent's `includes` parameter so that the WebSphere code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for JBoss
+
+Register the agent in the `JAVA_OPTS` environment variable in the `run.conf` file inside the JBoss
+installation directory.
+
+Please set the agent's `includes` parameter so that the JBoss code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for Wildfly
+
+Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf` or `domain.conf`
+file inside the Wildfly installation directory - depending on which "mode" is used; probably standalone.
+
+Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for Tomcat
+
+Register the agent in the `CATALINA_OPTS` environment variable inside the `bin/setenv.sh` or `bin/setenv.bat`
+script in the Tomcat installation directory. Create this file if it does not yet exist.
+
+Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for Java Web Start
+
+Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
+
 
 ## `ignore-duplicates`
 
