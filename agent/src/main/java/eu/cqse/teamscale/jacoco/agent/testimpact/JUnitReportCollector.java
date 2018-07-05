@@ -33,7 +33,7 @@ public class JUnitReportCollector implements ITestListener {
 	/** The start time of the currently running test. */
 	private long startTimestamp = 0L;
 
-	/** The  */
+	/** The currently running test or null if there is no test started. */
 	private TestCase currentTestCase = null;
 
 	@Override

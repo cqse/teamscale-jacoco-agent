@@ -12,8 +12,10 @@ import java.util.Collections;
 import static org.conqat.lib.commons.collections.CollectionUtils.emptyList;
 import static org.mockito.Mockito.mock;
 
+/** Tests for the {@link TestwiseXmlReportGenerator} class. */
 public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
 
+	/** Tests that the {@link TestwiseXmlReportGenerator} produces the expected output. */
 	@Test
 	public void testTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");

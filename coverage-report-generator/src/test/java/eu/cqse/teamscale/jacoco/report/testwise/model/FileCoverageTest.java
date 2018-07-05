@@ -7,8 +7,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/** Tests the {@link FileCoverage} class. */
 public class FileCoverageTest {
 
+	/** Tests the compactification algorithm for line ranges. */
 	@Test
 	public void compactifyRanges() {
 		List<LineRange> input = Arrays.asList(
@@ -21,6 +23,7 @@ public class FileCoverageTest {
 		assertEquals("[1-10, 12-14]", result.toString());
 	}
 
+	/** Tests the merge of two {@link FileCoverage} objects. */
 	@Test
 	public void mergeDoesMergeRanges() {
 		FileCoverage fileCoverage = new FileCoverage("path", "file");
@@ -35,6 +38,7 @@ public class FileCoverageTest {
 		assertEquals("1-4,7-10,12-14", fileCoverage.computeCompactifiedRangesAsString());
 	}
 
+	/** Tests that two {@link FileCoverage} objects from different files throws an exception. */
 	@Test(expected = AssertionError.class)
 	public void mergeDoesNotAllowMergeOfTwoDifferentFiles() {
 		FileCoverage fileCoverage = new FileCoverage("path", "file");
@@ -45,6 +49,7 @@ public class FileCoverageTest {
 		fileCoverage.merge(otherFileCoverage);
 	}
 
+	/** Tests the transformation from line ranges into its string representation. */
 	@Test
 	public void getRangesAsString() {
 		FileCoverage fileCoverage = new FileCoverage("path", "file");

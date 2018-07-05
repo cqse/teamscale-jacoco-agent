@@ -48,7 +48,6 @@ public class Agent extends AgentBase {
 		dumpReport();
 	}
 
-	/** Performs the actual dump but does not handle e.g. OutOfMemoryErrors. */
 	@Override
 	protected void dumpReportUnsafe() {
 		Dump dump;

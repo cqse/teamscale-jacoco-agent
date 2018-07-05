@@ -123,9 +123,6 @@ public class TestImpactAgent extends AgentBase {
 		}
 	}
 
-	/**
-	 * Performs the actual dump but does not handle e.g. OutOfMemoryErrors.
-	 */
 	@Override
 	protected void dumpReportUnsafe() {
 		for (ITestListener testListener : testListeners) {

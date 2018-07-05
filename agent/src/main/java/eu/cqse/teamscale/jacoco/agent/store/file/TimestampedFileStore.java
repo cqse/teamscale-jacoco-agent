@@ -46,6 +46,7 @@ public class TimestampedFileStore implements IXmlStore {
 		}
 	}
 
+	/** Returns the file name at which coverage of the given format should be dumped. */
 	private String getFileName(EReportFormat format) {
 		long currentTime = System.currentTimeMillis();
 		switch (format) {

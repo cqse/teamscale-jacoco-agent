@@ -69,7 +69,7 @@ public class AgentOptionsTest {
 		assertThat(teamscaleServer.message).isEqualTo("This is my message");
 	}
 
-	/** Tests the options for . */
+	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws AgentOptionParseException {
 		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.," +
