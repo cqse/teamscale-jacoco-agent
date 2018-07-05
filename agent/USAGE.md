@@ -67,6 +67,8 @@ You can pass additional options directly to the original JaCoCo agent by prefixi
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
 for a list of all available options.
 
+__The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
+
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
 The log file is written to the working directory of the profiled Java process by default.
@@ -193,6 +195,12 @@ the raw JaCoCo conversion will not allow.
 __The caveats listed in the above `ignore-duplicates` section still apply!__
 
 # Troubleshooting
+
+## My application fails to start after registering the agent
+
+Most likely, you provided invalid parameters to the agent. Please check the agent's directory for a log file.
+If that does not exist, please check stdout of your application. If the agent can't write its log file, it
+will report the errors on stdout.
 
 ## Produced coverage files are huge
 
