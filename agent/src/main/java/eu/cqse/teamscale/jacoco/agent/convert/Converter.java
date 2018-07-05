@@ -1,8 +1,8 @@
 package eu.cqse.teamscale.jacoco.agent.convert;
 
-import eu.cqse.teamscale.jacoco.dump.Dump;
-import eu.cqse.teamscale.jacoco.report.linebased.JaCoCoXmlReportGenerator;
-import eu.cqse.teamscale.jacoco.util.AntPatternIncludeFilter;
+import eu.cqse.teamscale.report.jacoco.dump.Dump;
+import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import eu.cqse.teamscale.report.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

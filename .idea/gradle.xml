@@ -11,8 +11,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/agent" />
             <option value="$PROJECT_DIR$/buildSrc" />
-            <option value="$PROJECT_DIR$/coverage-report-generator" />
             <option value="$PROJECT_DIR$/javaws-wrapper" />
+            <option value="$PROJECT_DIR$/report-generator" />
           </set>
         </option>
         <option name="useAutoImport" value="true" />

@@ -6,6 +6,7 @@
 package eu.cqse.teamscale.jacoco.util;
 
 import eu.cqse.teamscale.jacoco.agent.Agent;
+import eu.cqse.teamscale.report.util.ILogger;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;

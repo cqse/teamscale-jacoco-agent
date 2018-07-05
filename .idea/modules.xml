@@ -15,6 +15,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_main.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_main.iml" group="eu.cqse.teamscale.jacoco_buildSrc" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_test.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_test.iml" group="eu.cqse.teamscale.jacoco_buildSrc" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator.iml" group="report-generator" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator_main.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator_main.iml" group="report-generator" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator_test.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator_test.iml" group="report-generator" />
     </modules>
   </component>
 </project>

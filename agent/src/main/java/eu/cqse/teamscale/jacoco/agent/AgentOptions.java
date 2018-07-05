@@ -14,7 +14,7 @@ import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.E
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
-import eu.cqse.teamscale.jacoco.cache.CoverageGenerationException;
+import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;

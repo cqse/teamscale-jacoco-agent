@@ -39,7 +39,7 @@ dependencies {
 
 	implementation 'com.google.code.gson:gson:2.8.5'
 
-	implementation project(':eu.cqse.teamscale.coverage.report.generator')
+	implementation project(':report-generator')
 
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.assertj:assertj-core:3.8.0'

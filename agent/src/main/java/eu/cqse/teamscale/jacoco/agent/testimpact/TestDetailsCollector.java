@@ -3,7 +3,7 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
 import com.google.gson.Gson;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.dump.Dump;
+import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import spark.Request;

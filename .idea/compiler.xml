@@ -22,6 +22,8 @@
       <module name="eu.cqse.teamscale.testwise.coverage.generator_test" target="1.8" />
       <module name="jacoco_main" target="1.8" />
       <module name="jacoco_test" target="1.8" />
+      <module name="report-generator_main" target="1.8" />
+      <module name="report-generator_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
