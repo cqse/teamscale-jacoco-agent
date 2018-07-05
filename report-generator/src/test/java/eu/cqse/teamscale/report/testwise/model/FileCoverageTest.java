@@ -1,7 +1,5 @@
 package eu.cqse.teamscale.report.testwise.model;
 
-import eu.cqse.teamscale.report.testwise.model.FileCoverage;
-import eu.cqse.teamscale.report.testwise.model.LineRange;
 import org.junit.Test;
 
 import java.util.Arrays;
