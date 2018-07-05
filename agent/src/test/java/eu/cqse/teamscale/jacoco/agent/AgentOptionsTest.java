@@ -1,11 +1,9 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.agent.AgentOptions.AgentOptionParseException;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
 import org.junit.Test;
 
-import java.util.Set;
 import java.util.function.Predicate;
 
 import static eu.cqse.teamscale.jacoco.agent.AgentOptions.getClassName;

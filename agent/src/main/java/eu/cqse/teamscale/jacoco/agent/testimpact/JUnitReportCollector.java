@@ -59,9 +59,9 @@ public class JUnitReportCollector implements ITestListener {
 
 		String failure = "";
 		if (!StringUtils.isEmpty(failure)) {
-			currentTestCase.failure = new TestCase.Failure(failure);
+			currentTestCase.setFailure(new TestCase.Failure(failure));
 		}
-		report.testCaseList.add(currentTestCase);
+		report.add(currentTestCase);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class JUnitReportCollector implements ITestListener {
 		}
 
 		store.store(xml, JUNIT);
-		report.testCaseList.clear();
+		report.reset();
 	}
 }
 

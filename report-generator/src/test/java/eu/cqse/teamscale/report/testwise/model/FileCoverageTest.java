@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.report.testwise.jacoco.model;
+package eu.cqse.teamscale.report.testwise.model;
 
 import eu.cqse.teamscale.report.testwise.model.FileCoverage;
 import eu.cqse.teamscale.report.testwise.model.LineRange;

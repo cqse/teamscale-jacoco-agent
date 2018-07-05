@@ -1,6 +1,5 @@
 package eu.cqse.teamscale.report.testwise.jacoco;
 
-import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator;
 import eu.cqse.teamscale.report.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;

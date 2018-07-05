@@ -1,6 +1,5 @@
 package eu.cqse.teamscale.report.jacoco;
 
-import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.report.util.ILogger;
