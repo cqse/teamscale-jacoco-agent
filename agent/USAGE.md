@@ -106,7 +106,10 @@ The agent's REST API has the following endpoints:
   ```
   More information on the test details can be found in TEST_IMPACT_ANALYSIS_DOC.
 
-- `[POST] /test/end/{externalId}` Signals to the agent that the test with the given externalId has just finished.
+- `[POST] /test/end/{externalId}` Signals to the agent that the test with the given externalId has just finished. 
+  Optionally the query can have a `result` query parameter attached to indicate the test execution result. It can be 
+  set to one of the following values: `PASSED`, `IGNORED`, `SKIPPED`, `FAILURE`, `ERROR`. Additionally the last three 
+  values can have additional information attached to the body of the request with a stacktrace for example.
 
 - `[POST] /dump` Makes the agent dump all collected artifacts to the configured output location (file system or Teamscale).
 

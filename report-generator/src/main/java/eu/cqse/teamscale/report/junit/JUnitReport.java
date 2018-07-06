@@ -43,12 +43,20 @@ public class JUnitReport {
 		@XmlElement(name = "failure")
 		private Failure failure = null;
 
+		/** Information about the test error. If it is null the test did not fail. */
+		@XmlElement(name = "error")
+		private Error error = null;
+
 		/**
-		 * Whether the test has been skipped/ignored. Null indicates that the flag has not been set,
+		 * Whether the test has been ignored. Null indicates that the flag has not been set,
 		 * which basically means false. But results in not getting the attribute in the XML.
 		 */
 		@XmlAttribute(name = "ignored")
 		private Boolean ignored = null;
+
+		/** Whether the test has been skipped. */
+		@XmlAttribute(name = "skipped")
+		private Skipped skipped = null;
 
 		/** Constructor. */
 		public TestCase(String className, String testName) {
@@ -68,8 +76,13 @@ public class JUnitReport {
 		}
 
 		/** @see #failure */
-		public void setFailure(Failure failure) {
-			this.failure = failure;
+		public void setFailure(String failure) {
+			this.failure = new TestCase.Failure(failure);
+		}
+
+		/** @see #failure */
+		public void setError(String error) {
+			this.error = new TestCase.Error(error);
 		}
 
 		/** @see #ignored */
@@ -77,7 +90,12 @@ public class JUnitReport {
 			this.ignored = ignored;
 		}
 
-		/** Container for an error message/stacktrace etc. */
+		/** @see #skipped */
+		public void setSkipped(String skipReason) {
+			this.skipped = new Skipped(skipReason);
+		}
+
+		/** Container for a failure message/stacktrace etc. */
 		public static class Failure {
 
 			/** The actual failure. */
@@ -87,6 +105,32 @@ public class JUnitReport {
 			/** Constructor. */
 			public Failure(String failure) {
 				failureOutput = failure;
+			}
+		}
+
+		/** Container for an error message/stacktrace etc. */
+		public static class Error {
+
+			/** The actual error. */
+			@XmlValue
+			private final String errorOutput;
+
+			/** Constructor. */
+			public Error(String error) {
+				errorOutput = error;
+			}
+		}
+
+		/** Container for a skip reason */
+		public static class Skipped {
+
+			/** The reason the test was skipped. */
+			@XmlValue
+			private final String skipReason;
+
+			/** Constructor. */
+			public Skipped(String skipReason) {
+				this.skipReason = skipReason;
 			}
 		}
 	}

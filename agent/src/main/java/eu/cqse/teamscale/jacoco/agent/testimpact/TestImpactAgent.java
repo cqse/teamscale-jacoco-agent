@@ -12,8 +12,8 @@ import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
-import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
+import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import org.apache.logging.log4j.Logger;
 import spark.Request;
 
@@ -68,7 +68,7 @@ public class TestImpactAgent extends AgentBase {
 			testListeners.add(new JaCoCoCoverageCollector(options));
 		}
 
-		logger.info("Collecting formats: "+reportFormats);
+		logger.info("Collecting formats: " + reportFormats);
 
 		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
 
@@ -144,12 +144,12 @@ public class TestImpactAgent extends AgentBase {
 		TestDetails testDetails;
 		try {
 			testDetails = new Gson().fromJson(testDetailsString, TestDetails.class);
-			if(testDetails == null) {
-				logger.error("No or invalid test details '"+ testDetailsString +"' given!");
+			if (testDetails == null) {
+				logger.error("No or invalid test details '" + testDetailsString + "' given!");
 				return null;
 			}
-		} catch(JsonSyntaxException e) {
-			logger.error("No or invalid test details '"+ testDetailsString + "' given!", e);
+		} catch (JsonSyntaxException e) {
+			logger.error("No or invalid test details '" + testDetailsString + "' given!", e);
 			return null;
 		}
 		String externalId = request.params(TEST_ID_PARAMETER);

@@ -53,7 +53,7 @@ public class TeamscaleUploadStore implements IXmlStore {
 
 	/** Performs the upload and returns <code>true</code> if successful. */
 	private boolean tryUploading(String xml, EReportFormat format) {
-		logger.debug("Uploading coverage to {}", teamscaleServer);
+		logger.debug("Uploading {} artifact to {}", format.name(), teamscaleServer);
 
 		try {
 			Response<ResponseBody> response = api.uploadReport(
@@ -61,7 +61,7 @@ public class TeamscaleUploadStore implements IXmlStore {
 					teamscaleServer.commit,
 					teamscaleServer.partition + getPartitionSuffix(format),
 					format,
-					teamscaleServer.message,
+					teamscaleServer.message + " (" + format.name() + ")",
 					RequestBody.create(MultipartBody.FORM, xml)
 			).execute();
 			if (response.isSuccessful()) {

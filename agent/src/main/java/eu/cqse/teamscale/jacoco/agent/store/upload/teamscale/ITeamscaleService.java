@@ -47,6 +47,6 @@ public interface ITeamscaleService {
 			String message,
 			RequestBody report
 	) {
-		return uploadExternalReport(projectName, reportFormat, commit, true, true, partition, message, report);
+		return uploadExternalReport(projectName, reportFormat, commit, true, false, partition, message, report);
 	}
 }
