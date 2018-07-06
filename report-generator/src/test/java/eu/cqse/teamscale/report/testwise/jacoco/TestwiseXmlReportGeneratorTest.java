@@ -29,6 +29,6 @@ public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
 		return new TestwiseXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter,
 				mock(ILogger.class))
-				.convert(useTestFile(execFileName));
+				.convertToString(useTestFile(execFileName));
 	}
 }

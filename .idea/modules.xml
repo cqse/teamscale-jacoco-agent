@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-report-generator/eu.cqse.teamscale.coverage.report.generator.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-report-generator/eu.cqse.teamscale.coverage.report.generator.iml" group="eu.cqse.teamscale.coverage.report.generator" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-report-generator/eu.cqse.teamscale.coverage.report.generator_main.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-report-generator/eu.cqse.teamscale.coverage.report.generator_main.iml" group="eu.cqse.teamscale.coverage.report.generator" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-report-generator/eu.cqse.teamscale.coverage.report.generator_test.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-report-generator/eu.cqse.teamscale.coverage.report.generator_test.iml" group="eu.cqse.teamscale.coverage.report.generator" />
       <module fileurl="file://$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" filepath="$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" group="eu.cqse.teamscale.jacoco.agent" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" group="eu.cqse.teamscale.jacoco.agent" />

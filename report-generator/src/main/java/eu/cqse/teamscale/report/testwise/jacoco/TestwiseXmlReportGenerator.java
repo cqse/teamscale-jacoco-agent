@@ -1,10 +1,9 @@
 package eu.cqse.teamscale.report.testwise.jacoco;
 
-import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
+import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
 import eu.cqse.teamscale.report.util.ILogger;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -12,16 +11,14 @@ import org.jacoco.core.data.IExecutionDataVisitor;
 import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.writeReportToStream;
+import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.getReportAsString;
 
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.
@@ -45,6 +42,28 @@ public class TestwiseXmlReportGenerator {
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
 	}
 
+	/** Converts the given *.exec file to a XML report. */
+	public String convertToString(File executionDataFile) throws IOException {
+		TestwiseCoverage testwiseCoverage = convert(executionDataFile);
+		return getReportAsString(testwiseCoverage);
+	}
+
+	/** Converts the given dumps to a report. */
+	public String convertToString(List<Dump> dumps) throws IOException {
+		TestwiseCoverage testwiseCoverage = convert(dumps);
+		return getReportAsString(testwiseCoverage);
+	}
+
+	/** Converts the given dumps to a report. */
+	public TestwiseCoverage convert(List<Dump> dumps) {
+		return executionDataReader.buildCoverage(dumps);
+	}
+
+	/** Converts the given dumps to a report. */
+	public TestwiseCoverage convert(File executionDataFile) throws IOException {
+		return executionDataReader.buildCoverage(readDumps(executionDataFile));
+	}
+
 	/** Reads the dumps from the given *.exec file. */
 	private List<Dump> readDumps(File executionDataFile) throws IOException {
 		FileInputStream input = new FileInputStream(executionDataFile);
@@ -54,24 +73,6 @@ public class TestwiseXmlReportGenerator {
 		executionDataReader.setSessionInfoVisitor(dumpCollector);
 		executionDataReader.read();
 		return dumpCollector.dumps;
-	}
-
-	/** Converts the given *.exec file to a XML report. */
-	public String convert(File executionDataFile) throws IOException {
-		return convert(readDumps(executionDataFile));
-	}
-
-	/** Converts the given dumps to a report. */
-	public String convert(List<Dump> dumps) throws IOException {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		convertToReport(output, dumps);
-		return output.toString(FileSystemUtils.UTF8_ENCODING);
-	}
-
-	/** Creates the testwise report. */
-	private void convertToReport(OutputStream output, List<Dump> dumps) throws IOException {
-		TestwiseCoverage testwiseCoverage = executionDataReader.buildCoverage(dumps);
-		writeReportToStream(output, testwiseCoverage);
 	}
 
 	/** Collects dumps per session. */

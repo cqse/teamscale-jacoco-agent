@@ -61,7 +61,7 @@ public class TestwiseCoverageCollector implements ITestListener {
 	public void onDump(IXmlStore store) {
 		String xml;
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			xml = generator.convert(dumps);
+			xml = generator.convertToString(dumps);
 		} catch (IOException e) {
 			logger.error("Converting binary dumps to XML failed", e);
 			return;
