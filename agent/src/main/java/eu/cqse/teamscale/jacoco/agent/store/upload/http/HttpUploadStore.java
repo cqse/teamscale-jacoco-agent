@@ -54,7 +54,7 @@ public class HttpUploadStore implements IXmlStore {
 	/** {@inheritDoc} */
 	@Override
 	public void store(String xml, EReportFormat format) {
-		CCSMAssert.isFalse(format == EReportFormat.JACOCO, "HTTP upload does only support JaCoCo " +
+		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "HTTP upload does only support JaCoCo " +
 				"coverage and cannot be used with Test Impact mode.");
 		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUploading(xml)) {
