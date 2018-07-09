@@ -14,6 +14,8 @@
       <module name="eu.cqse.teamscale.jacoco.testwise.coverage.generator_test" target="1.8" />
       <module name="eu.cqse.teamscale.jacoco_buildSrc_main" target="1.8" />
       <module name="eu.cqse.teamscale.jacoco_buildSrc_test" target="1.8" />
+      <module name="eu.cqse.teamscale.report.generator_main" target="1.8" />
+      <module name="eu.cqse.teamscale.report.generator_test" target="1.8" />
       <module name="eu.cqse.teamscale.testwise.coverage.generator.closure_main" target="1.8" />
       <module name="eu.cqse.teamscale.testwise.coverage.generator.closure_test" target="1.8" />
       <module name="eu.cqse.teamscale.testwise.coverage.generator.jacoco_main" target="1.8" />
