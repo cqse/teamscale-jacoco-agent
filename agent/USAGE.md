@@ -55,11 +55,19 @@ The following options are available:
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in Teamscale's UI.
 - `teamscale-commit`: the commit (Format: "branch:timestamp") which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed. You can get this info from your VCS during the build e.g. for Git via 
+  from the VCS that was deployed. As an alternative the agent accepts values supplied via `Branch` and 
+  `Timestamp` entries in the jar/war's `META-INF/MANIFEST.MF` file.
+  
+  You can get the commit info from your VCS e.g. for Git via 
   
 ```bash
-echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"`
+echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
 ```
+
+  Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
+  Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
+  returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
+  instead.
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 

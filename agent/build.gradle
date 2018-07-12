@@ -37,6 +37,8 @@ dependencies {
 
 	compile 'com.squareup.retrofit2:retrofit:2.4.0'
 
+	compile 'com.jcabi:jcabi-manifests:1.1'
+
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.assertj:assertj-core:3.8.0'
 }
