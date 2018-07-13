@@ -1,5 +1,5 @@
 ext {
-	appVersion = '8.1.0'
+	appVersion = '8.2.0'
 }
 
 subprojects {
