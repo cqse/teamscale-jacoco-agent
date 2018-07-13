@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import com.jcabi.manifests.Manifests;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
@@ -173,10 +174,24 @@ public class AgentOptions {
 			handleOption(optionPart);
 		}
 
-		validate();
+		// If we want to send coverage directly to Teamscale, but no commit is set
+        // try to read the commit from the manifest
+        if (!teamscaleServer.hasAllRequiredFieldsNull() && teamscaleServer.commit == null) {
+            teamscaleServer.commit = getCommitFromManifest();
+        }validate();
 	}
 
-	/**
+	/** Reads the Branch and Timestamp entries from the MANIFEST.MF if they exist. */
+    private CommitDescriptor getCommitFromManifest() {
+        if (Manifests.exists("Branch") && Manifests.exists("Timestamp")) {
+            String branch = Manifests.read("Branch");
+            String timestamp = Manifests.read("Timestamp");
+            return new CommitDescriptor(branch, timestamp);
+        }
+        return null;
+    }
+
+    /**
 	 * @see #originalOptionsString
 	 */
 	public String getOriginalOptionsString() {

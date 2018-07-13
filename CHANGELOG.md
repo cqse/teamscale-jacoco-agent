@@ -2,8 +2,11 @@ We use [semantic versioning][semver]
 
 # Next release
 
-# 8.2.0
+# 8.3.0
 - [feature] added Test Impact mode via `http-server-port`
+
+# 8.2.0
+- [feature] added ability to read commit branch and timestamp from MANIFEST.MF
 
 # 8.1.0
 - [feature] added options to configure coverage upload to Teamscale

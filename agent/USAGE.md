@@ -56,11 +56,19 @@ The following options are available:
   Teamscale's UI.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed. You can get this info from your VCS during the build e.g. for Git via 
+  from the VCS that was deployed. As an alternative the agent accepts values supplied via `Branch` and 
+  `Timestamp` entries in the jar/war's `META-INF/MANIFEST.MF` file.
+  
+  You can get the commit info from your VCS e.g. for Git via 
   
 ```bash
-echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"`
+echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
 ```
+
+  Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
+  Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
+  returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
+  instead.
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `http-server-formats` (optional): the port at which the agent should start an HTTP server that listens for test events 
@@ -72,6 +80,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%at000"
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
 for a list of all available options.
+
+__The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
@@ -115,11 +125,44 @@ The agent's REST API has the following endpoints:
 
 ## Additional steps for WebSphere
 
-For web applications running in WebSphere, please also apply this additional JVM parameter:
+Register the agent in WebSphere's `startServer.bat` or `startServer.sh`.
+Please also apply this additional JVM parameter:
 
     -Xshareclasses:none
 
 This option disables a WebSphere internal class cache that causes problems with the profiler.
+
+Please set the agent's `includes` parameter so that the WebSphere code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for JBoss
+
+Register the agent in the `JAVA_OPTS` environment variable in the `run.conf` file inside the JBoss
+installation directory.
+
+Please set the agent's `includes` parameter so that the JBoss code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for Wildfly
+
+Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf` or `domain.conf`
+file inside the Wildfly installation directory - depending on which "mode" is used; probably standalone.
+
+Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for Tomcat
+
+Register the agent in the `CATALINA_OPTS` environment variable inside the `bin/setenv.sh` or `bin/setenv.bat`
+script in the Tomcat installation directory. Create this file if it does not yet exist.
+
+Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+## Additional steps for Java Web Start
+
+Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
+
 
 ## `ignore-duplicates`
 
@@ -202,6 +245,12 @@ the raw JaCoCo conversion will not allow.
 __The caveats listed in the above `ignore-duplicates` section still apply!__
 
 # Troubleshooting
+
+## My application fails to start after registering the agent
+
+Most likely, you provided invalid parameters to the agent. Please check the agent's directory for a log file.
+If that does not exist, please check stdout of your application. If the agent can't write its log file, it
+will report the errors on stdout.
 
 ## Produced coverage files are huge
 
