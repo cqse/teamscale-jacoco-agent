@@ -15,10 +15,30 @@ public interface ITeamscaleService {
 
 	/** Enum of report formats. */
 	enum EReportFormat {
-		JACOCO,
-		TESTWISE_COVERAGE,
-		JUNIT,
-		TEST_LIST
+		JACOCO("JaCoCo Coverage", "", "xml"),
+		TESTWISE_COVERAGE("Testwise Coverage", "/Tests", "xml"),
+		JUNIT("JUnit Test Results", "/Test Results", "xml"),
+		TEST_LIST("Test List", "/Tests", "json");
+
+		/** File extension of the report. */
+		public final String extension;
+
+		/** A readable name for the report type. */
+		public final String readableName;
+
+		/**
+		 * The suffix that should be appended to the partition.
+		 * We need this, because Teamscale marks every uniform path as deleted if uploaded to the same partition even if
+		 * the upload does touch different type of data. E.g. JUnit upload will remove all file paths uploaded via JaCoCo
+		 * coverage. Furthermore test details and testwise coverage need to be in the same partition.
+		 */
+		public  final String partitionSuffix;
+
+		EReportFormat(String readableName, String partitionSuffix, String extension) {
+			this.readableName = readableName;
+			this.partitionSuffix = partitionSuffix;
+			this.extension = extension;
+		}
 	}
 
 	/** Report upload API. */

@@ -13,7 +13,7 @@ public class TestDetails {
 	public final String internalId;
 
 	/**
-	 * Path to the source ot the method. Will be equal to uniformPath in most cases, but e.g. @Test methods in a Base
+	 * Path to the source of the method. Will be equal to uniformPath in most cases, but e.g. @Test methods in a Base
 	 * class will have the sourcePath pointing to the Base class which contains the actual implementation whereas
 	 * uniformPath will contain the the class name of the most specific subclass, from where it was actually executed.
 	 */

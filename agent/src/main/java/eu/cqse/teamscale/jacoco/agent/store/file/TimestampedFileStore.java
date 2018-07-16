@@ -52,10 +52,8 @@ public class TimestampedFileStore implements IXmlStore {
 		switch (format) {
 			case JACOCO:
 				return "jacoco-coverage-" + currentTime + ".xml";
-			case TEST_LIST:
-				return "test-list-" + currentTime + ".json";
 			default:
-				return format.name().toLowerCase().replace('_', '-') + "-" + currentTime + ".xml";
+				return format.name().toLowerCase().replace('_', '-') + "-" + currentTime + "."+format.extension;
 		}
 	}
 

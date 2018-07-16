@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.report.testwise.jacoco.cache;
 
 import eu.cqse.teamscale.report.testwise.model.FileCoverage;
+import eu.cqse.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 
 import java.util.HashMap;
@@ -29,13 +30,19 @@ public class ProbesCache {
 	 * Converts the given {@link ExecutionData} to {@link FileCoverage} using the cached lookups or null if the class
 	 * file of this class has not been included in the analysis or was not covered.
 	 */
-	public FileCoverage getCoverage(ExecutionData executionData) throws CoverageGenerationException {
+	public FileCoverage getCoverage(ExecutionData executionData, ILogger logger) throws CoverageGenerationException {
 		long classId = executionData.getId();
-		if (!containsClassId(classId) || !executionData.hasHits()) {
+		if (!containsClassId(classId)) {
+			logger.debug("Found coverage for a class " + classId + " that was not provided. Either you did not provide " +
+					"all relevant class files or you did not adjust the include/exclude filters on the agent to exclude " +
+					"coverage from irrelevant code.");
+			return null;
+		}
+		if (!executionData.hasHits()) {
 			return null;
 		}
 
-		return classCoverageLookups.get(classId).getFileCoverage(executionData);
+		return classCoverageLookups.get(classId).getFileCoverage(executionData, logger);
 	}
 
 	/** Returns true if the cache does not contains coverage for any class. */

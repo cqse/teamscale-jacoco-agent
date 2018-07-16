@@ -1,6 +1,5 @@
 package eu.cqse.teamscale.jacoco.agent;
 
-import eu.cqse.teamscale.jacoco.agent.AgentOptions.AgentOptionParseException;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
 import org.junit.Test;
 
@@ -48,7 +47,8 @@ public class AgentOptionsTest {
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.," +
+		new AgentOptionsParser();
+		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
 				"teamscale-user=build," +
@@ -70,7 +70,8 @@ public class AgentOptionsTest {
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.," +
+		new AgentOptionsParser();
+		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
 				"http-server-port=8081," +
 				"http-server-formats=TESTWISE_COVERAGE;TEST_LIST;JUNIT");
 		assertThat(agentOptions.getHttpServerReportFormats()).containsExactlyInAnyOrder(TESTWISE_COVERAGE, TEST_LIST, JUNIT);
@@ -79,13 +80,13 @@ public class AgentOptionsTest {
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
-		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.,includes=" + filterString);
+		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,includes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
-		AgentOptions agentOptions = new AgentOptions("out=.,class-dir=.,excludes=" + filterString);
+		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 

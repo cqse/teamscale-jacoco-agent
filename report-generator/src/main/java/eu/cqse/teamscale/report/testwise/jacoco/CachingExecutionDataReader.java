@@ -88,7 +88,7 @@ class CachingExecutionDataReader {
 	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
 		TestCoverage testCoverage = new TestCoverage(testId);
 		for (ExecutionData executionData : executionDataStore.getContents()) {
-			testCoverage.add(probesCache.getCoverage(executionData));
+			testCoverage.add(probesCache.getCoverage(executionData, logger));
 		}
 		return testCoverage;
 	}

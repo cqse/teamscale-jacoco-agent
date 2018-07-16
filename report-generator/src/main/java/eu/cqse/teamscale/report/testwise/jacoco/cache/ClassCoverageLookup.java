@@ -2,6 +2,7 @@ package eu.cqse.teamscale.report.testwise.jacoco.cache;
 
 import eu.cqse.teamscale.report.testwise.model.FileCoverage;
 import eu.cqse.teamscale.report.testwise.model.LineRange;
+import eu.cqse.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.data.ExecutionData;
 
@@ -15,8 +16,8 @@ import java.util.List;
  * - Set the file name of the java source file from which the class has been created.
  * - Then call for every method in the class {@link #addLine(int)} and {@link #addProbe(int)} for all probes and lines
  * that belong to the method and call {@link #finishMethod()} to signal that the next calls belong to another method.
- * - Afterwards call {@link #getFileCoverage(ExecutionData)} to transform probes ({@link ExecutionData}) for this class
- * into covered lines ({@link FileCoverage}).
+ * - Afterwards call {@link #getFileCoverage(ExecutionData, ILogger)} to transform probes ({@link ExecutionData}) for
+ * this class into covered lines ({@link FileCoverage}).
  */
 public class ClassCoverageLookup {
 
@@ -85,8 +86,13 @@ public class ClassCoverageLookup {
 		currentMethod = new LineRange();
 	}
 
-	/** Generates {@link FileCoverage} from an {@link ExecutionData}. */
-	public FileCoverage getFileCoverage(ExecutionData executionData) throws CoverageGenerationException {
+	/**
+	 * Generates {@link FileCoverage} from an {@link ExecutionData}.
+	 * {@link ExecutionData} holds coverage of exactly one class (whereby inner classes are a separate class).
+	 * This method returns a {@link FileCoverage} object which is later merged with the {@link FileCoverage} of other
+	 * classes that reside in the same file.
+	 */
+	public FileCoverage getFileCoverage(ExecutionData executionData, ILogger logger) throws CoverageGenerationException {
 		boolean[] executedProbes = executionData.getProbes();
 
 		if (checkProbeInvariant(executedProbes)) {
@@ -100,9 +106,15 @@ public class ClassCoverageLookup {
 		for (int i = 0; i < probes.size(); i++) {
 			LineRange lineRange = probes.get(i);
 			// lineRange is null if the probe is outside of a method
-			if (executedProbes[i] && lineRange != null) {
-				fileCoverage.addLineRange(lineRange);
-			}
+			if (executedProbes[i])
+				if (lineRange != null) {
+					fileCoverage.addLineRange(lineRange);
+				} else {
+					logger.debug(sourceFileName + " " + className + " did contain a covered probe " + i + "(of " +
+							executedProbes.length + ") that could not be " +
+							"matched to any method. This could be a bug in the profiler tooling. Please report it back " +
+							"to CQSE.");
+				}
 		}
 
 		return fileCoverage;

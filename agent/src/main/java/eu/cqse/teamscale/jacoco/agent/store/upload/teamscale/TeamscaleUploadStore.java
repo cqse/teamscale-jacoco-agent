@@ -53,15 +53,15 @@ public class TeamscaleUploadStore implements IXmlStore {
 
 	/** Performs the upload and returns <code>true</code> if successful. */
 	private boolean tryUploading(String xml, EReportFormat format) {
-		logger.debug("Uploading {} artifact to {}", format.name(), teamscaleServer);
+		logger.debug("Uploading {} artifact to {}", format.readableName, teamscaleServer);
 
 		try {
 			Response<ResponseBody> response = api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,
-					teamscaleServer.partition + getPartitionSuffix(format),
+					teamscaleServer.partition + format.partitionSuffix,
 					format,
-					teamscaleServer.message + " (" + format.name() + ")",
+					teamscaleServer.message + " (" + format.readableName + ")",
 					RequestBody.create(MultipartBody.FORM, xml)
 			).execute();
 			if (response.isSuccessful()) {
@@ -81,27 +81,6 @@ public class TeamscaleUploadStore implements IXmlStore {
 		} catch (IOException e) {
 			logger.error("Failed to upload coverage to {}. Probably a network problem", teamscaleServer, e);
 			return false;
-		}
-	}
-
-	/**
-	 * Returns the suffix that should be appended to the partition.
-	 * We need this, because Teamscale marks every uniform path as deleted if uploaded to the same partition even if
-	 * the upload does touch different type of data. E.g. JUnit upload will remove all file paths uploaded via JaCoCo
-	 * coverage. Furthermore test details and testwise coverage needs to be in the same partition.
-	 */
-	private String getPartitionSuffix(EReportFormat format) {
-		switch (format) {
-			case JACOCO:
-				return "";
-			case TEST_LIST:
-				return "/Tests";
-			case TESTWISE_COVERAGE:
-				return "/Tests";
-			case JUNIT:
-				return "/Test Results";
-			default:
-				return "/" + format.name();
 		}
 	}
 

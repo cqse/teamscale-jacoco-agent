@@ -12,8 +12,8 @@ public class PreMain {
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
 		try {
-			agentOptions = new AgentOptions(options);
-		} catch (AgentOptions.AgentOptionParseException e) {
+			agentOptions = AgentOptionsParser.parse(options);
+		} catch (AgentOptionParseException e) {
 			LoggingUtils.initializeDefaultLogging();
 			LogManager.getLogger(PreMain.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
 			System.err.println("Failed to parse agent options: " + e.getMessage());
