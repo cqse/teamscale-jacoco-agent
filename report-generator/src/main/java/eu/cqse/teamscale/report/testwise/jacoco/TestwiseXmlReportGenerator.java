@@ -37,9 +37,9 @@ public class TestwiseXmlReportGenerator {
 	 * @param locationIncludeFilter     Filter for class files
 	 * @param logger                    The logger
 	 */
-	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, ILogger logger) throws CoverageGenerationException {
+	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
 		this.executionDataReader = new CachingExecutionDataReader(logger);
-		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter);
+		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, ignoreNonidenticalDuplicateClassFiles);
 	}
 
 	/** Converts the given *.exec file to a XML report. */

@@ -40,7 +40,7 @@ public class TestwiseCoverageCollector implements ITestListener {
 	public TestwiseCoverageCollector(JacocoRuntimeController controller, AgentOptions options) throws CoverageGenerationException {
 		this.controller = controller;
 		this.generator = new TestwiseXmlReportGenerator(options.getClassDirectoriesOrZips(),
-				options.getLocationIncludeFilter(), wrap(logger));
+				options.getLocationIncludeFilter(), options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 	}
 
 	@Override

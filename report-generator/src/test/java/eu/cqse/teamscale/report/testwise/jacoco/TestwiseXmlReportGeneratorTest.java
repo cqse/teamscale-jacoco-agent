@@ -27,7 +27,7 @@ public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
 	private String runGenerator(String testDataFolder, String execFileName) throws Exception {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
-		return new TestwiseXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter,
+		return new TestwiseXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter, true,
 				mock(ILogger.class))
 				.convertToString(useTestFile(execFileName));
 	}

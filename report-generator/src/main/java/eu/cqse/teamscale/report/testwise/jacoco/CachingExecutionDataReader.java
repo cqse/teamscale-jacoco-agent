@@ -36,11 +36,11 @@ class CachingExecutionDataReader {
 	/**
 	 * Analyzes the given class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
+	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles) throws CoverageGenerationException {
 		if (probesCache != null) {
 			return;
 		}
-		probesCache = new ProbesCache();
+		probesCache = new ProbesCache(logger, ignoreNonidenticalDuplicateClassFiles);
 		AnalyzerCache analyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
 		for (File classDir : classesDirectories) {
 			if (classDir.exists()) {
@@ -88,7 +88,7 @@ class CachingExecutionDataReader {
 	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
 		TestCoverage testCoverage = new TestCoverage(testId);
 		for (ExecutionData executionData : executionDataStore.getContents()) {
-			testCoverage.add(probesCache.getCoverage(executionData, logger));
+			testCoverage.add(probesCache.getCoverage(executionData));
 		}
 		return testCoverage;
 	}

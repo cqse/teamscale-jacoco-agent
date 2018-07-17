@@ -15,13 +15,10 @@ public interface ITeamscaleService {
 
 	/** Enum of report formats. */
 	enum EReportFormat {
-		JACOCO("JaCoCo Coverage", "", "xml"),
-		TESTWISE_COVERAGE("Testwise Coverage", "/Tests", "xml"),
-		JUNIT("JUnit Test Results", "/Test Results", "xml"),
-		TEST_LIST("Test List", "/Tests", "json");
-
-		/** File extension of the report. */
-		public final String extension;
+		JACOCO("JaCoCo Coverage", "", "jacoco-coverage", "xml"),
+		TESTWISE_COVERAGE("Testwise Coverage", "/Tests", "testwise-coverage", "xml"),
+		JUNIT("JUnit Test Results", "/Test Results", "junit", "xml"),
+		TEST_LIST("Test List", "/Tests", "test-list", "json");
 
 		/** A readable name for the report type. */
 		public final String readableName;
@@ -34,9 +31,16 @@ public interface ITeamscaleService {
 		 */
 		public  final String partitionSuffix;
 
-		EReportFormat(String readableName, String partitionSuffix, String extension) {
+		/** Prefix to use when writing the report to the file system. */
+		public final String filePrefix;
+
+		/** File extension of the report. */
+		public final String extension;
+
+		EReportFormat(String readableName, String partitionSuffix, String filePrefix, String extension) {
 			this.readableName = readableName;
 			this.partitionSuffix = partitionSuffix;
+			this.filePrefix = filePrefix;
 			this.extension = extension;
 		}
 	}

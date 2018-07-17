@@ -37,23 +37,13 @@ public class TimestampedFileStore implements IXmlStore {
 	@Override
 	public void store(String xml, EReportFormat format) {
 		try (Benchmark benchmark = new Benchmark("Writing the " + format + " report to a file")) {
-			Path outputPath = outputDirectory.resolve(getFileName(format));
+			long currentTime = System.currentTimeMillis();
+			Path outputPath = outputDirectory.resolve(format.filePrefix + "-" + currentTime + "." + format.extension);
 			try {
 				FileSystemUtils.writeFile(outputPath.toFile(), xml);
 			} catch (IOException e) {
 				logger.error("Failed to write XML to {}", outputPath, e);
 			}
-		}
-	}
-
-	/** Returns the file name at which coverage of the given format should be dumped. */
-	private String getFileName(EReportFormat format) {
-		long currentTime = System.currentTimeMillis();
-		switch (format) {
-			case JACOCO:
-				return "jacoco-coverage-" + currentTime + ".xml";
-			default:
-				return format.name().toLowerCase().replace('_', '-') + "-" + currentTime + "."+format.extension;
 		}
 	}
 
