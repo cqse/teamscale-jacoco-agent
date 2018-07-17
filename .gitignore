@@ -1,5 +1,6 @@
 .gradle/
-/*/build/
+**/build/**
+**/out/**
 /*/bin/
 /*/test-tmp/
 .gradletasknamecache
@@ -7,3 +8,4 @@
 .idea/uiDesigner.xml
 .idea/workspace.xml
 .idea/modules/
+**/test-tmp/**

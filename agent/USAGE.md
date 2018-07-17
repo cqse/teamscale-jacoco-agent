@@ -24,7 +24,7 @@ The following options are available:
 - `out` (required): the path to a writable directory where the generated coverage XML files will be stored.
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon.
-- `interval`: the interval in minutes between dumps of the current coverage to an XML file
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -52,8 +52,9 @@ The following options are available:
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string 
-  which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in Teamscale's UI.
-- `teamscale-commit`: the commit (Format: "branch:timestamp") which has been used to build the system under test.
+  which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in 
+  Teamscale's UI.
+- `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. As an alternative the agent accepts values supplied via `Branch` and 
   `Timestamp` entries in the jar/war's `META-INF/MANIFEST.MF` file.
@@ -70,6 +71,11 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   instead.
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
+- `http-server-formats` (optional): the port at which the agent should start an HTTP server that listens for test events 
+  (See `Test impact mode` below for details).
+- `http-server-formats` (optional): a semicolon-separated list of report formats that should be generated. Can be one or more 
+  of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
+  more data might be required by the REST endpoints see `Test impact mode` below for details.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -80,6 +86,42 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
 The log file is written to the working directory of the profiled Java process by default.
+
+## Test impact mode
+
+The agent can be used in a Test Impact scenario to collect testwise coverage. The test system (the application executing 
+the test specification) can inform the agent of when a test starts and finished via a REST API. 
+The agent then generates reports that contain method-based testwise coverage (if not disabled via `http-server-formats`).
+The HTTP server is started when `http-server-port` is set (Recommended port is 8000).
+
+The `interval` commandline argument behaves slightly different in Test Impact mode. It does not dump any coverage 
+during a test, but in between tests when the given interval has exceeded, when the `/dump` endpoint has been called or 
+when the program shuts down.
+
+Tests are identified by the `externalId`. The ID can be an arbitrary string that the test system uses to identify the test.
+When uploading test details before the coverage the `externalId` must be the same as this ID.
+
+The agent's REST API has the following endpoints:
+- `[POST] /test/start/{externalId}` Signals to the agent that the test with the given externalId is about to start. If the 
+  `http-server-formats` flag contains `TEST_LIST` and/or `JUNIT` the request body must also contain test details in JSON 
+  format like the following:
+  ```json
+  {
+     "internalId": "some/logical/path/to/the/test",
+     "externalId": "437334-7484-1",
+     "displayName": "This is my test",
+     "sourcePath": "some/logical/path/to/the/test",
+     "content": "revision3"
+  }
+  ```
+  More information on the test details can be found in TEST_IMPACT_ANALYSIS_DOC.
+
+- `[POST] /test/end/{externalId}` Signals to the agent that the test with the given externalId has just finished. 
+  Optionally the query can have a `result` query parameter attached to indicate the test execution result. It can be 
+  set to one of the following values: `PASSED`, `IGNORED`, `SKIPPED`, `FAILURE`, `ERROR`. Additionally the last three 
+  values can have additional information attached to the body of the request with a stacktrace for example.
+
+- `[POST] /dump` Makes the agent dump all collected artifacts to the configured output location (file system or Teamscale).
 
 ## Additional steps for WebSphere
 

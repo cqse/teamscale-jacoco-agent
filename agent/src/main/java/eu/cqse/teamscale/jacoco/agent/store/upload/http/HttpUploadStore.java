@@ -1,5 +1,18 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 
+import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
+import okhttp3.HttpUrl;
+import okhttp3.ResponseBody;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -7,18 +20,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-
-import eu.cqse.teamscale.jacoco.agent.util.Benchmark;
-import okhttp3.HttpUrl;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * Uploads XMLs and metadata via HTTP multi-part form data requests.
@@ -52,11 +53,13 @@ public class HttpUploadStore implements IXmlStore {
 
 	/** {@inheritDoc} */
 	@Override
-	public void store(String xml) {
+	public void store(String xml, EReportFormat format) {
+		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "HTTP upload does only support JaCoCo " +
+				"coverage and cannot be used with Test Impact mode.");
 		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUploading(xml)) {
 				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
-				failureStore.store(xml);
+				failureStore.store(xml, format);
 			}
 		}
 	}
@@ -95,7 +98,7 @@ public class HttpUploadStore implements IXmlStore {
 	private byte[] createZipFile(String xml) throws IOException {
 		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
-					OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream)) {
+				 OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream)) {
 				fillZipFile(zipOutputStream, writer, xml);
 			}
 			return byteArrayOutputStream.toByteArray();

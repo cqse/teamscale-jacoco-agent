@@ -33,4 +33,3 @@ If the artifcats have been removed already, trigger the build again in GitLab.
 - change `ext.jacocoVersion` in the build script
 - `gradlew dist`
 - **Do not commit unless you are upgrading to a newer version!**
-

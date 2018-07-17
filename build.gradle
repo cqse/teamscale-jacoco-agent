@@ -1,5 +1,9 @@
 ext {
-	appVersion = '8.2.0'
+	appVersion = '8.3.0'
+
+	// When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
+	jacocoVersion = '0.8.1'
+	log4jVersion = '2.8.2'
 }
 
 subprojects {

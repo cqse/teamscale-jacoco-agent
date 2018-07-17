@@ -19,28 +19,32 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.plugin-shadow'
 
 ext {
-	jacocoVersion = '0.8.1'
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
 
 dependencies {
-	compile "org.jacoco:org.jacoco.core:$jacocoVersion"
-	compile "org.jacoco:org.jacoco.report:$jacocoVersion"
-	compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
+	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	compile 'org.apache.logging.log4j:log4j-api:2.8.2'
-	compile 'org.apache.logging.log4j:log4j-core:2.8.2'
+	implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+	implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
 
-	compile 'io.reactivex.rxjava2:rxjava:2.1.2'
-	compile 'com.beust:jcommander:1.71'
-	compile 'org.conqat:org.conqat.lib.commons:0.20160822'
+	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
+	implementation 'com.beust:jcommander:1.71'
+	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
 
-	compile 'com.squareup.retrofit2:retrofit:2.4.0'
+	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+	implementation 'com.sparkjava:spark-core:2.7.2'
 
-	compile 'com.jcabi:jcabi-manifests:1.1'
+	implementation 'com.jcabi:jcabi-manifests:1.1'
 
-	testCompile 'junit:junit:4.12'
-	testCompile 'org.assertj:assertj-core:3.8.0'
+	implementation 'com.google.code.gson:gson:2.8.5'
+
+	implementation project(':report-generator')
+
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
@@ -52,8 +56,14 @@ shadowJar {
     // update
     version = null
     manifest {
-        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.Agent'
+        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
     }
+
+	// Don't relocate since this breaks the XML generation (uses reflection internally)
+	relocate 'javax.xml.bind', 'javax.xml.bind'
+
+	// Don't relocate our own code
+	relocate 'eu.cqse', 'eu.cqse'
 
     // ensures that log4j resource files are also relocated properly
     transform(Log4j2PluginsFileTransformer)
