@@ -9,6 +9,7 @@ import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
@@ -24,12 +25,16 @@ import org.jacoco.core.runtime.WildcardMatcher;
 import org.jacoco.report.JavaNames;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
@@ -175,7 +180,6 @@ public class AgentOptions {
 		validator.isTrue(uploadUrl == null || teamscaleServer.hasAllRequiredFieldsNull(),
 				"You did provide 'upload-url' and some 'teamscale-' option at the same time, but only one of " +
 						"them can be used!");
-
 		return validator;
 	}
 

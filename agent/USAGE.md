@@ -56,8 +56,7 @@ The following options are available:
   Teamscale's UI.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed. As an alternative the agent accepts values supplied via `Branch` and 
-  `Timestamp` entries in the jar/war's `META-INF/MANIFEST.MF` file.
+  from the VCS that was deployed.
   
   You can get the commit info from your VCS e.g. for Git via 
   
@@ -69,6 +68,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
+  
+- `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
+  `Branch` and  `Timestamp` entries in the jar/war's `META-INF/MANIFEST.MF` file. This option can either be set to point 
+  directly to the jar/war file. If set to `classpath` only the jars on the classpath are considered.
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `http-server-formats` (optional): the port at which the agent should start an HTTP server that listens for test events 
