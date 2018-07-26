@@ -39,16 +39,16 @@ import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.r
  * @since 1.0
  */
 @API(status = INTERNAL, since = "1.0")
-public class CustomConsoleTestExecutor extends CustomTestExecutorBase {
+public class TestExecutor extends CustomTestExecutorBase {
 
 	private final List<String> tests;
 
-	public CustomConsoleTestExecutor(CustomCommandLineOptions options, List<String> tests) {
+	public TestExecutor(CustomCommandLineOptions options, List<String> tests) {
 		this(options, LauncherFactory::create, tests);
 	}
 
 	// for tests only
-	private CustomConsoleTestExecutor(CustomCommandLineOptions options, Supplier<Launcher> launcherSupplier, List<String> tests) {
+	private TestExecutor(CustomCommandLineOptions options, Supplier<Launcher> launcherSupplier, List<String> tests) {
 		super(options, launcherSupplier);
 		this.tests = tests;
 	}

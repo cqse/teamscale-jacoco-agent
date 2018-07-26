@@ -6,17 +6,23 @@ import org.jacoco.agent.rt.RT;
 import java.io.IOException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Translates test start and finish event into actions for the locally running jacoco agent.
+ */
 public class JaCoCoAgentController {
 
+	/** Singleton instance for this class.  */
 	private static JaCoCoAgentController singleton;
 
+	/** Reference to the jacoco agent. */
 	private final IAgent agent;
-	private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
+	/** Constructor. */
 	private JaCoCoAgentController(IAgent agent) {
 		this.agent = agent;
 	}
 
+	/** Returns a singleton instance of the controller. */
 	public static synchronized JaCoCoAgentController getInstance() {
 		if (singleton == null) {
 			try {
@@ -28,14 +34,13 @@ public class JaCoCoAgentController {
 		return singleton;
 	}
 
+	/**
+	 * Called when a test starts.
+	 * Resets coverage and sets the session id.
+	 */
 	public synchronized void onTestStart(String testId) {
-		// Make sure test case execution does not overlap
-		lock.writeLock().lock();
-
 		// Reset coverage generated in between the test runs
 		agent.reset();
-
-		// Set the session id
 		agent.setSessionId(testId);
 	}
 
@@ -49,8 +54,6 @@ public class JaCoCoAgentController {
 			agent.setSessionId("");
 		} catch (IOException e) {
 			throw new JacocoControllerError(e);
-		} finally {
-			lock.writeLock().unlock();
 		}
 	}
 }

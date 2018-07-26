@@ -6,6 +6,7 @@ import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 
+/** Implementation of the {@link TestExecutionListener} interface provided by the JUnit platform. */
 public class JUnit5TestListenerExtension implements TestExecutionListener {
 
 	@Override
