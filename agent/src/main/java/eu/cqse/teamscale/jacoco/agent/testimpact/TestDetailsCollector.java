@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import com.google.gson.Gson;
+import eu.cqse.teamscale.client.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
@@ -11,7 +12,7 @@ import spark.Request;
 import java.util.ArrayList;
 import java.util.List;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
+import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
 import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.getTestDetailsFromRequest;
 
 /**

@@ -1,9 +1,28 @@
+buildscript {
+	repositories {
+		maven {
+			url 'https://plugins.gradle.org/m2/'
+		}
+	}
+	dependencies {
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+		classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
+	}
+}
+
 ext {
 	appVersion = '8.3.0'
+	pluginVersion = '0.1.19'
+	reportGeneratorVersion = '1.0.4'
+	teamscaleClientVersion = '0.1.4'
 
 	// When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
 	jacocoVersion = '0.8.1'
 	log4jVersion = '2.8.2'
+
+	cqseMavenRepositoryUrl = 'scp://ext1.cqse.eu:2222/var/www/share/exchange/public/maven'
+	cqseMavenRepositoryUser = 'www-data'
+	cqseMavenRepositoryPrivateKey = '/Users/florian/.ssh/id_rsa'
 }
 
 subprojects {
@@ -15,3 +34,16 @@ subprojects {
 	}
 }
 
+task deployGradlePlugin(dependsOn: [
+		':coverage-conductor:uploadArchives',
+		':report-generator:uploadShadow',
+		':teamscale-gradle-plugin:uploadArchives',
+		':teamscale-client:uploadArchives'
+])
+
+task installGradlePlugin(dependsOn: [
+		':coverage-conductor:install',
+		':report-generator:install',
+		':teamscale-gradle-plugin:install',
+		':teamscale-client:install'
+])

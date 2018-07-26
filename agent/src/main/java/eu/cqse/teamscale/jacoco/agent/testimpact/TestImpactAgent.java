@@ -7,11 +7,12 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import eu.cqse.teamscale.client.EReportFormat;
+import eu.cqse.teamscale.client.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.AgentBase;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import org.apache.logging.log4j.Logger;
@@ -22,10 +23,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
+import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
+import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
+import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
 import static spark.Spark.port;
 import static spark.Spark.post;
 import static spark.Spark.stop;
@@ -54,7 +55,7 @@ public class TestImpactAgent extends AgentBase {
 	public TestImpactAgent(AgentOptions options) throws IllegalStateException, CoverageGenerationException {
 		super(options);
 		this.options = options;
-		Set<ITeamscaleService.EReportFormat> reportFormats = options.getHttpServerReportFormats();
+		Set<EReportFormat> reportFormats = options.getHttpServerReportFormats();
 		if (reportFormats.contains(TEST_LIST)) {
 			testListeners.add(new TestDetailsCollector());
 		}

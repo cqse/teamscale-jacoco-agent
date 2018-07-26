@@ -1,0 +1,65 @@
+buildscript {
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.51'
+    }
+}
+
+apply plugin: "kotlin"
+apply plugin: "java"
+apply plugin: 'maven'
+
+group 'eu.cqse'
+version pluginVersion
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+}
+
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.51'
+    implementation project(path: ':coverage-conductor')
+    implementation project(path: ':report-generator', configuration: 'shadow')
+    implementation project(':teamscale-client')
+
+    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '3.2.0.201312181205-r'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+
+    deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Version': version
+    }
+}
+
+// At the moment we are stuck with the old maven plugin until support for private key
+// files is added or we add a dedicated user with a password to our server.
+// https://github.com/gradle/gradle/issues/1263
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: cqseMavenRepositoryUrl) {
+                authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+            }
+        }
+    }
+}

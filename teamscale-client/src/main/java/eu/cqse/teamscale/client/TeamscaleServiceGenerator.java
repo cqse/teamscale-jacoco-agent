@@ -1,29 +1,35 @@
-package eu.cqse.teamscale.jacoco.agent.store.upload.teamscale;
+package eu.cqse.teamscale.client;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.util.Base64;
 
-public class BasicAuthServiceGenerator {
+/** Helper class for generating a teamscale compatible service. */
+public class TeamscaleServiceGenerator {
 
 	/**
 	 * Generates a {@link Retrofit} instance for the given
-	 * service, which uses basic auth to authenticate against the server.
+	 * service, which uses basic auth to authenticate against the server and which sets the accept header to json.
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String password) {
-		OkHttpClient httpClient = new OkHttpClient.Builder()
-				.addInterceptor(getBasicAuthInterceptor(username, password))
-				.build();
+		OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
-		return new Retrofit.Builder()
+		httpClient.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, password));
+		httpClient.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
+				.header("Accept", "application/json").build()));
+
+		OkHttpClient client = httpClient.build();
+		Retrofit retrofit = new Retrofit.Builder()
 				.baseUrl(baseUrl)
-				.client(httpClient)
-				.build()
-				.create(serviceClass);
+				.client(client)
+				.addConverterFactory(GsonConverterFactory.create())
+				.build();
+		return retrofit.create(serviceClass);
 	}
 
 	/**

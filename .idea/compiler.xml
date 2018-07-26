@@ -2,6 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="coverage-conductor_main" target="1.8" />
+      <module name="coverage-conductor_test" target="1.8" />
       <module name="eu.cqse.teamscale.coverage.report.generator.jacoco_main" target="1.8" />
       <module name="eu.cqse.teamscale.coverage.report.generator.jacoco_test" target="1.8" />
       <module name="eu.cqse.teamscale.coverage.report.generator_main" target="1.8" />
@@ -26,6 +28,10 @@
       <module name="jacoco_test" target="1.8" />
       <module name="report-generator_main" target="1.8" />
       <module name="report-generator_test" target="1.8" />
+      <module name="teamscale-client_main" target="1.8" />
+      <module name="teamscale-client_test" target="1.8" />
+      <module name="teamscale-gradle-plugin_main" target="1.8" />
+      <module name="teamscale-gradle-plugin_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

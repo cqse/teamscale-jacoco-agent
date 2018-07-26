@@ -25,7 +25,8 @@ public class TestCoverage {
 
 	/** Adds the {@link FileCoverage} to into the map, but filters out file coverage that is null or empty. */
 	public void add(FileCoverage fileCoverage) {
-		if (fileCoverage == null || fileCoverage.isEmpty()) {
+		if (fileCoverage == null || fileCoverage.isEmpty()
+				|| fileCoverage.fileName == null || fileCoverage.path == null) {
 			return;
 		}
 		PathCoverage pathCoverage = pathCoverageList.computeIfAbsent(fileCoverage.path, PathCoverage::new);

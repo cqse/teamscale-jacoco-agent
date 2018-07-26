@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.agent.testimpact;
+package eu.cqse.teamscale.client;
 
 /**
  * Contains details about a test.

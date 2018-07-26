@@ -17,6 +17,92 @@ responsibility of the test framework to execute only those.
 
 Since Teamscale does not have knowledge beforehand of which tests are available for execution, the list of available 
 tests has to be uploaded to Teamscale.
+which part of the system we can find out which tests are impacted by a given change.
+More concrete this means we have to gather coverage information per test case.
+
+Teamscale with its Test Impact Analysis augments this data with source code change
+information and calculates the impacted tests for one or more changes. Its then the
+responsibility of the test framework to execute only those.
+
+## Setup
+
+### Gradle
+
+Most of the work can be automated by using the `teamscale-gradle-plugin`.
+
+**Requirements:**
+ - Gradle 4.6
+ - Tests are executed via JUnit Platform
+
+Add this to the top of your root `build.gradle` file.
+```groovy
+buildscript {
+	repositories {
+    mavenCentral()
+		maven { url 'https://share.cqse.eu/public/maven/' }
+	}
+	dependencies {
+		classpath 'eu.cqse:teamscale-gradle-plugin:1.2'
+	}
+}
+
+apply plugin: 'teamscale'
+
+teamscale {
+    url = 'https://mycompany.com/teamsale'
+    user = 'build'
+    accessToken = '7fa5.....'
+    projectId = 'example-project-id'
+
+    // Partition
+    partition = 'Unit Tests'
+
+    // The commit message to show for the uploaded reports (optional, Default: 'Gradle Upload')
+    message = 'Gradle Upload'
+
+    // The report formats that should be uploaded to Teamscale (optional, Default: [TESTWISE_COVERAGE, JUNIT, JACOCO])
+    reportFormats = [TESTWISE_COVERAGE, JUNIT, JACOCO]
+
+    // The following is optional. By default the plugin looks for a git
+    // repository in the project's root directory and takes the branch and
+    // timestamp of the currently checked out commit.
+    branch = 'master'
+    timestamp = 1521800427000L // Timestamp in milliseconds
+}
+```
+
+Any of those settings can be overridden in the test task's closure. This is comes in handy if you have multiple test tasks.
+
+```groovy
+task unitTest(type: Test) {
+    useJUnitPlatform {
+        excludeTags 'integration'
+    }
+    teamscale {
+        partition = 'Unit Tests'
+    }
+}
+
+task integrationTest(type: Test) {
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+    teamscale {
+        partition = 'Integration Tests'
+    }
+}
+```
+The Teamscale plugin generates a special task for every test task you define suffixed with `CPT` (short for **c**overage **p**er **t**est) e.g. `unitTestCPT`.
+This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
+Afterwards `TESTWISE_COVERAGE`, `JACOCO` and `JUNIT` reports are uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a TESTWISE_COVERAGE report for all tests.
+
+Uploading reports can also be triggered independently of the `CPT` task with `unitTestReportUpload`. Adding `-x unitTestReportUpload` lets you disable the automatic upload.
+
+### Technical details
+
+#### 1. Upload Test Details
+
+Since Teamscale does not have knowledge beforehand of which tests are available for execution, the list of available tests has to be be uploaded to Teamscale.
 
 ```json
 [

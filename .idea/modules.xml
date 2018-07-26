@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor.iml" group="coverage-conductor" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_main.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_main.iml" group="coverage-conductor" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_test.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_test.iml" group="coverage-conductor" />
       <module fileurl="file://$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" filepath="$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" group="eu.cqse.teamscale.jacoco.agent" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" group="eu.cqse.teamscale.jacoco.agent" />
@@ -15,6 +18,12 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator.iml" group="report-generator" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator_main.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator_main.iml" group="report-generator" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator_test.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator_test.iml" group="report-generator" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/teamscale-client/teamscale-client.iml" filepath="$PROJECT_DIR$/.idea/modules/teamscale-client/teamscale-client.iml" group="teamscale-client" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/teamscale-client/teamscale-client_main.iml" filepath="$PROJECT_DIR$/.idea/modules/teamscale-client/teamscale-client_main.iml" group="teamscale-client" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/teamscale-client/teamscale-client_test.iml" filepath="$PROJECT_DIR$/.idea/modules/teamscale-client/teamscale-client_test.iml" group="teamscale-client" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/teamscale-gradle-plugin/teamscale-gradle-plugin.iml" filepath="$PROJECT_DIR$/.idea/modules/teamscale-gradle-plugin/teamscale-gradle-plugin.iml" group="teamscale-gradle-plugin" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/teamscale-gradle-plugin/teamscale-gradle-plugin_main.iml" filepath="$PROJECT_DIR$/.idea/modules/teamscale-gradle-plugin/teamscale-gradle-plugin_main.iml" group="teamscale-gradle-plugin" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/teamscale-gradle-plugin/teamscale-gradle-plugin_test.iml" filepath="$PROJECT_DIR$/.idea/modules/teamscale-gradle-plugin/teamscale-gradle-plugin_test.iml" group="teamscale-gradle-plugin" />
     </modules>
   </component>
 </project>

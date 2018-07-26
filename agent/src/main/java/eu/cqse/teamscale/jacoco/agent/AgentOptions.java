@@ -9,8 +9,8 @@ import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
+import eu.cqse.teamscale.client.EReportFormat;
+import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
+import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
+import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
+import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
 
 /**
  * Parses agent command line options.

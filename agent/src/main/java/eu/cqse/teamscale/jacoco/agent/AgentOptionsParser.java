@@ -6,9 +6,9 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import com.jcabi.manifests.Manifests;
+import eu.cqse.teamscale.client.CommitDescriptor;
+import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.string.StringUtils;
