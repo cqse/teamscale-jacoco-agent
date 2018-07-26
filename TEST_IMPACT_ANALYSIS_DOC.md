@@ -11,19 +11,6 @@ Teamscale with its Test Impact Analysis augments this data with source code chan
 information and calculates the impacted tests for one or more changes. It's then the
 responsibility of the test framework to execute only those.
 
-## Technical details
-
-### 1. Upload Test Details
-
-Since Teamscale does not have knowledge beforehand of which tests are available for execution, the list of available 
-tests has to be uploaded to Teamscale.
-which part of the system we can find out which tests are impacted by a given change.
-More concrete this means we have to gather coverage information per test case.
-
-Teamscale with its Test Impact Analysis augments this data with source code change
-information and calculates the impacted tests for one or more changes. Its then the
-responsibility of the test framework to execute only those.
-
 ## Setup
 
 ### Gradle
@@ -49,25 +36,64 @@ buildscript {
 apply plugin: 'teamscale'
 
 teamscale {
-    url = 'https://mycompany.com/teamsale'
-    user = 'build'
-    accessToken = '7fa5.....'
-    projectId = 'example-project-id'
-
-    // Partition
-    partition = 'Unit Tests'
-
-    // The commit message to show for the uploaded reports (optional, Default: 'Gradle Upload')
-    message = 'Gradle Upload'
-
-    // The report formats that should be uploaded to Teamscale (optional, Default: [TESTWISE_COVERAGE, JUNIT, JACOCO])
-    reportFormats = [TESTWISE_COVERAGE, JUNIT, JACOCO]
+    server {
+        url = 'https://mycompany.com/teamsale'
+        userName = 'build'
+        userAccessToken = '7fa5.....'
+        project = 'example-project-id'
+    }
+    testImpactMode = true
 
     // The following is optional. By default the plugin looks for a git
     // repository in the project's root directory and takes the branch and
     // timestamp of the currently checked out commit.
-    branch = 'master'
-    timestamp = 1521800427000L // Timestamp in milliseconds
+    commit {
+        branch = 'master'
+        timestamp = 1521800427000L // Timestamp in milliseconds
+    }
+    
+
+    // The commit message to show for the uploaded reports (optional, Default: 'Gradle Upload')
+    message = 'Gradle Upload'
+
+    // The reports that should be uploaded to Teamscale
+    report {
+        // The partition in Teamscale
+        partition = 'Unit Tests'
+        
+        // Uploads testwise coverage
+        testwiseCoverage()
+        
+        // Uploads jUnit reports
+        jUnit()
+        
+        // Uploads google closure coverage (together with the java coverage) as testwise coverage
+        googleClosureCoverage { js ->
+            // The directory in which the google closure coverage files reside after the test
+            js.destination = files("$rootDir/engine/com.teamscale.test/ui-test-coverage")
+            // Ant patterns for which files to include/exclude in the final report
+            js.excludes = ["**/google-closure-library/**", "**.soy.generated.js", "soyutils_usegoog.js"]
+        }
+    }
+    
+    // For performance reasons the classes to be instrumented and analyzed can be filtered to only include the relevant 
+    // ones. Includes and excludes have to be specified as ant pattern with / as separators. (Optional)
+    agent {
+        excludes = [
+            '**/generated/**'
+        ]
+        includes = [
+            'com/package/my/**',
+            'org/mine/**'
+        ]
+    }
+    
+    // Similar to the standard test task addition includes for the test discovery can be specified
+    // The patterns have to be regular expressions (Optional)
+    include 'com.mine.test.system.*'
+    exclude '.*TeamscaleUITest'
+    exclude '.*ETestProjectSetupTest'
+
 }
 ```
 
@@ -78,18 +104,14 @@ task unitTest(type: Test) {
     useJUnitPlatform {
         excludeTags 'integration'
     }
-    teamscale {
-        partition = 'Unit Tests'
-    }
+    teamscale.report.partition = 'Unit Tests'
 }
 
 task integrationTest(type: Test) {
     useJUnitPlatform {
         includeTags 'integration'
     }
-    teamscale {
-        partition = 'Integration Tests'
-    }
+    teamscale.report.partition = 'Integration Tests'
 }
 ```
 The Teamscale plugin generates a special task for every test task you define suffixed with `CPT` (short for **c**overage **p**er **t**est) e.g. `unitTestCPT`.
@@ -98,11 +120,12 @@ Afterwards `TESTWISE_COVERAGE`, `JACOCO` and `JUNIT` reports are uploaded to Tea
 
 Uploading reports can also be triggered independently of the `CPT` task with `unitTestReportUpload`. Adding `-x unitTestReportUpload` lets you disable the automatic upload.
 
-### Technical details
+## Technical details
 
-#### 1. Upload Test Details
+### 1. Upload Test Details
 
-Since Teamscale does not have knowledge beforehand of which tests are available for execution, the list of available tests has to be be uploaded to Teamscale.
+Since Teamscale does not have knowledge beforehand of which tests are available for execution, the list of available 
+tests has to be uploaded to Teamscale.
 
 ```json
 [
