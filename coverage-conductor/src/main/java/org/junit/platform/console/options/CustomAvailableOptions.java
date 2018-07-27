@@ -21,7 +21,6 @@ class CustomAvailableOptions {
 	// General options
 	private final OptionSpec<Void> help;
 	private final OptionSpec<Void> disableAnsiColors;
-	private final OptionSpec<Path> additionalClasspathEntries;
 
 	private final OptionSpec<Details> details;
 	private final OptionSpec<Theme> theme;
@@ -69,14 +68,6 @@ class CustomAvailableOptions {
 
 		disableAnsiColors = parser.accepts("disable-ansi-colors",
 				"Disable ANSI colors in output (not supported by all terminals).");
-
-		additionalClasspathEntries = parser.acceptsAll(asList(CP_OPTION, "classpath", "class-path"), //
-				"Provide additional classpath entries -- for example, for adding engines and their dependencies. "
-						+ "This option can be repeated.") //
-				.withRequiredArg() //
-				.withValuesConvertedBy(new PathConverter()) //
-				.withValuesSeparatedBy(File.pathSeparatorChar) //
-				.describedAs("path1" + File.pathSeparator + "path2" + File.pathSeparator + "...");
 
 		// --- Reports ---------------------------------------------------------
 
@@ -238,7 +229,6 @@ class CustomAvailableOptions {
 		result.setAnsiColorOutputDisabled(detectedOptions.has(this.disableAnsiColors));
 		result.setDetails(detectedOptions.valueOf(this.details));
 		result.setTheme(detectedOptions.valueOf(this.theme));
-		result.setAdditionalClasspathEntries(detectedOptions.valuesOf(this.additionalClasspathEntries));
 
 		// Reports
 		result.setReportsDir(detectedOptions.valueOf(this.reportsDir));
@@ -263,6 +253,5 @@ class CustomAvailableOptions {
 		result.setIncludedEngines(detectedOptions.valuesOf(this.includeEngine));
 		result.setExcludedEngines(detectedOptions.valuesOf(this.excludeEngine));
 	}
-
 }
 

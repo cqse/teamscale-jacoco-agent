@@ -10,15 +10,7 @@
 
 package org.junit.platform.console.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import eu.cqse.teamscale.client.TestDetails;
-import org.apiguardian.api.API;
 import org.junit.platform.console.options.CustomCommandLineOptions;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -28,23 +20,32 @@ import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherFactory;
 
-import static org.apiguardian.api.API.Status.INTERNAL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.junit.platform.engine.TestDescriptor.Type.TEST;
 
 /**
- * @since 1.0
+ *
  */
-@API(status = INTERNAL, since = "1.0")
-public class CustomConsoleTestDetailsCollector extends CustomTestExecutorBase {
+public class CustomConsoleTestDetailsCollector {
+	private final CustomCommandLineOptions options;
+	private final Supplier<Launcher> launcherSupplier;
 
 	private final Pattern matcher = Pattern.compile(".*\\[(?:class|runner):([^]]+)\\].*");
 
 	public CustomConsoleTestDetailsCollector(CustomCommandLineOptions options) {
-		super(options, LauncherFactory::create);
+		this.options = options;
+		this.launcherSupplier = LauncherFactory::create;
 	}
 
-	public List<TestDetails> execute() throws Exception {
-		return new CustomContextClassLoaderExecutor(createCustomClassLoader()).invoke(this::retrieveTestDetails);
+	public List<TestDetails> execute() {
+		return retrieveTestDetails();
 	}
 
 	private List<TestDetails> retrieveTestDetails() {

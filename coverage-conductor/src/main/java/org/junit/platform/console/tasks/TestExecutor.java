@@ -12,6 +12,7 @@ package org.junit.platform.console.tasks;
 
 import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.apiguardian.api.API;
+import org.junit.platform.console.ConsoleLauncherExecutionResult;
 import org.junit.platform.console.options.CustomCommandLineOptions;
 import org.junit.platform.console.options.Details;
 import org.junit.platform.console.options.Theme;
@@ -24,6 +25,9 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -31,15 +35,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static org.apiguardian.api.API.Status.INTERNAL;
 import static org.junit.platform.console.tasks.ConsoleInterceptor.ignoreOut;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 /**
- * @since 1.0
+ *
  */
-@API(status = INTERNAL, since = "1.0")
-public class TestExecutor extends CustomTestExecutorBase {
+public class TestExecutor  {
+	protected final CustomCommandLineOptions options;
+	protected final Supplier<Launcher> launcherSupplier;
 
 	private final List<String> tests;
 
@@ -49,12 +53,15 @@ public class TestExecutor extends CustomTestExecutorBase {
 
 	// for tests only
 	private TestExecutor(CustomCommandLineOptions options, Supplier<Launcher> launcherSupplier, List<String> tests) {
-		super(options, launcherSupplier);
+		this.options = options;
+		this.launcherSupplier = launcherSupplier;
 		this.tests = tests;
 	}
 
-	public TestExecutionSummary execute(PrintWriter out) throws Exception {
-		return new CustomContextClassLoaderExecutor(createCustomClassLoader()).invoke(() -> executeTests(out));
+	public TestExecutionSummary execute(OutputStream outStream) {
+		try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outStream)))) {
+			return executeTests(out);
+		}
 	}
 
 	private TestExecutionSummary executeTests(PrintWriter out) {
