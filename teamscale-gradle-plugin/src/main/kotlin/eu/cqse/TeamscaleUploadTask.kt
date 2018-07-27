@@ -5,7 +5,6 @@ import eu.cqse.teamscale.client.CommitDescriptor
 import eu.cqse.teamscale.client.EReportFormat
 import eu.cqse.teamscale.client.TeamscaleClient
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.net.ConnectException
@@ -32,7 +31,8 @@ open class TeamscaleUploadTask : DefaultTask() {
 
         for (report in reports) {
             val reportFiles = listFileTree(report.report, report.format)
-            logger.info("Uploading ${reportFiles.size} ${report.format.name} report(s)...")
+            logger.info("Uploading ${reportFiles.size} ${report.format.name} report(s) " +
+                    "to $commitDescriptor (Partition ${report.partition})...")
             if (reportFiles.isEmpty()) {
                 logger.info("Skipped empty upload!")
                 continue

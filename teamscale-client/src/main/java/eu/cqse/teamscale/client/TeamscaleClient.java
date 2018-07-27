@@ -9,6 +9,7 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +36,6 @@ public class TeamscaleClient {
 	}
 
 	private void uploadReportBodys(EReportFormat reportFormat, CommitDescriptor commitDescriptor, String partition, String message, Collection<File> files) throws IOException {
-		System.out.println("Uploading reports to " + commitDescriptor.toString() + " (" + partition + ")");
 		List<MultipartBody.Part> partList = files.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);
 			return MultipartBody.Part.createFormData("report", file.getName(), requestBody);
@@ -49,29 +49,19 @@ public class TeamscaleClient {
 		}
 	}
 
-	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor, String partition, String message) throws IOException {
-		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, report);
-		uploadReportBody(reportFormat, commitDescriptor, partition, message, requestFile);
-	}
-
-	private void uploadReportBody(EReportFormat reportFormat, CommitDescriptor commitDescriptor, String partition, String message, RequestBody requestFile) throws IOException {
-		System.out.println("Uploading report to " + commitDescriptor.toString() + " (" + partition + ")");
-		service.uploadReport(projectId, commitDescriptor, partition, reportFormat, message, requestFile);
-	}
-
 	public void uploadTestList(List<TestDetails> list, CommitDescriptor commitDescriptor, String partition, String message) throws IOException {
 		Gson gson = new Gson();
 		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, gson.toJson(list));
-		uploadReportBody(EReportFormat.TEST_LIST, commitDescriptor, partition, message, requestFile);
+		service.uploadReport(projectId, commitDescriptor, partition, EReportFormat.TEST_LIST, message, requestFile);
 	}
 
-	public Response<List<String>> getImpactedTests(CommitDescriptor commitDescriptor, String partition) throws IOException {
-		System.out.print("Getting impacted tests");
+	public Response<List<String>> getImpactedTests(CommitDescriptor baseline, CommitDescriptor endCommit, String partition, PrintWriter out) throws IOException {
+		out.print("Getting impacted tests");
 		Response<List<String>> impactedTests;
 		int attempts = 0;
 		do {
 			if (attempts > 1) {
-				System.out.print(".");
+				out.print(".");
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -79,14 +69,14 @@ public class TeamscaleClient {
 				}
 			}
 			impactedTests = service
-					.getImpactedTests(projectId, "", commitDescriptor.commitBefore(), commitDescriptor, partition)
+					.getImpactedTests(projectId, "", baseline, endCommit, partition)
 					.execute();
 			attempts++;
 			if (attempts > MAX_RETRY) {
 				return impactedTests;
 			}
 		} while (impactedTests.isSuccessful() && impactedTests.body() == null);
-		System.out.println();
+		out.println();
 		return impactedTests;
 	}
 }

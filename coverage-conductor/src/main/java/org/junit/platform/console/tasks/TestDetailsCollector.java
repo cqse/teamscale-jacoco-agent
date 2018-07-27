@@ -11,7 +11,8 @@
 package org.junit.platform.console.tasks;
 
 import eu.cqse.teamscale.client.TestDetails;
-import org.junit.platform.console.options.CustomCommandLineOptions;
+import org.junit.platform.console.Logger;
+import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
@@ -30,31 +31,38 @@ import java.util.regex.Pattern;
 
 import static org.junit.platform.engine.TestDescriptor.Type.TEST;
 
-/**
- *
- */
-public class CustomConsoleTestDetailsCollector {
-	private final CustomCommandLineOptions options;
+/** Collects test details for all tests that match the given options. */
+public class TestDetailsCollector {
+
+	/** Pattern that matches the classes fully qualified class name in JUnit's uniqueId as first capture group. */
+	private static final Pattern FULL_CLASS_NAME_PATTERN = Pattern.compile(".*\\[(?:class|runner):([^]]+)\\].*");
+
+	/** The logger. */
+	private final Logger logger;
+
+	/** A {@link Launcher} factory. */
 	private final Supplier<Launcher> launcherSupplier;
 
-	private final Pattern matcher = Pattern.compile(".*\\[(?:class|runner):([^]]+)\\].*");
-
-	public CustomConsoleTestDetailsCollector(CustomCommandLineOptions options) {
-		this.options = options;
+	/** Constructor. */
+	public TestDetailsCollector(Logger logger) {
+		this.logger = logger;
 		this.launcherSupplier = LauncherFactory::create;
 	}
 
-	public List<TestDetails> execute() {
-		return retrieveTestDetails();
-	}
-
-	private List<TestDetails> retrieveTestDetails() {
+	/**
+	 * Starts collecting the test details for the given options.
+	 *
+	 * @return Returns a list with all test details or null if an unexpected error occurred.
+	 */
+	public List<TestDetails> collect(ImpactedTestsExecutorCommandLineOptions options) {
 		Launcher launcher = launcherSupplier.get();
-		LauncherDiscoveryRequest discoveryRequest = new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions());
+		LauncherDiscoveryRequest discoveryRequest = new DiscoveryRequestCreator()
+				.toDiscoveryRequest(options.toJUnitOptions());
 		TestPlan fullTestPlan = launcher.discover(discoveryRequest);
 		return retrieveTestDetailsFromTestPlan(fullTestPlan);
 	}
 
+	/** Extracts the test details from the JUnit test plan. */
 	private List<TestDetails> retrieveTestDetailsFromTestPlan(TestPlan fullTestPlan) {
 		Set<TestIdentifier> roots = fullTestPlan.getRoots();
 		ArrayList<TestDetails> allAvailableTestDetails = new ArrayList<>();
@@ -62,8 +70,9 @@ public class CustomConsoleTestDetailsCollector {
 		return allAvailableTestDetails;
 	}
 
+	/** Recursively traverses the test plan to collect all test details in a depth-first-search manner. */
 	private void collectTestDetailsList(TestPlan testPlan, Set<TestIdentifier> roots, List<TestDetails> result) {
-		for (TestIdentifier testIdentifier: roots) {
+		for (TestIdentifier testIdentifier : roots) {
 			if (testIdentifier.getType() == TEST) {
 				Optional<TestSource> source = testIdentifier.getSource();
 				if (source.isPresent() && source.get() instanceof MethodSource) {
@@ -71,9 +80,9 @@ public class CustomConsoleTestDetailsCollector {
 					String sourcePath = ms.getClassName().replace('.', '/');
 
 					String uniqueId = testIdentifier.getUniqueId();
-					String uniformPath = getTestUniformPath(testIdentifier);
+					String internalId = getTestInternalId(testIdentifier);
 					String displayName = testIdentifier.getDisplayName();
-					result.add(new TestDetails(uniqueId, uniformPath, sourcePath, displayName, ""));
+					result.add(new TestDetails(uniqueId, internalId, sourcePath, displayName, ""));
 				}
 			}
 
@@ -81,11 +90,17 @@ public class CustomConsoleTestDetailsCollector {
 		}
 	}
 
-	private String getTestUniformPath(TestIdentifier testIdentifier) {
-		Matcher matcher = this.matcher.matcher(testIdentifier.getUniqueId());
+	/** Builds the internal ID which will later be displayed in Teamscale. */
+	private String getTestInternalId(TestIdentifier testIdentifier) {
+		return getFullyQualifiedClassName(testIdentifier) + '/' + testIdentifier.getLegacyReportingName();
+	}
+
+	/** Tries to extract the fully qualified class name from the given test identifier. */
+	private String getFullyQualifiedClassName(TestIdentifier testIdentifier) {
+		Matcher matcher = FULL_CLASS_NAME_PATTERN.matcher(testIdentifier.getUniqueId());
 		String fullClassName = "unknown-class";
 		if (!matcher.matches()) {
-			System.err.println("Unable to find class name for " + testIdentifier.getUniqueId());
+			logger.error("Unable to find class name for " + testIdentifier.getUniqueId());
 
 			MethodSource ms = (MethodSource) testIdentifier.getSource().orElse(null);
 			if (ms != null) {
@@ -94,6 +109,6 @@ public class CustomConsoleTestDetailsCollector {
 		} else {
 			fullClassName = matcher.group(1);
 		}
-		return fullClassName.replace('.', '/') + '/' + testIdentifier.getLegacyReportingName();
+		return fullClassName.replace('.', '/');
 	}
 }

@@ -38,9 +38,7 @@ public class CommitDescriptor implements Serializable {
 		return new CommitDescriptor(branchName, timestamp + "p1");
 	}
 
-	/**
-	 * Returns a string representation of the commit in a Teamscale REST API compatible format.
-	 */
+	/** Returns a string representation of the commit in a Teamscale REST API compatible format. */
 	@Override
 	public String toString() {
 		return branchName + ":" + timestamp;

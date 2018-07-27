@@ -37,7 +37,7 @@ open class ImpactedTestsExecutor : JavaExec() {
     init {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
-        main = "org.junit.platform.console.CustomConsoleLauncher"
+        main = "org.junit.platform.console.ImpactedTestsExecutor"
         outputs.upToDateWhen { false }
     }
 

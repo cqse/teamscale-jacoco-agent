@@ -1,7 +1,7 @@
 package org.junit.platform.console.options;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.io.PrintWriter;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -12,10 +12,10 @@ import org.junit.platform.console.shadow.joptsimple.OptionException;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
 
-public class JOptSimpleCustomCommandLineOptionsParser {
+public class TestExecutorCommandLineOptionsParser {
 
-	public CustomCommandLineOptions parse(String... arguments) {
-		CustomAvailableOptions availableOptions = getAvailableOptions();
+	public ImpactedTestsExecutorCommandLineOptions parse(String... arguments) {
+		AvailableImpactedTestsExecutorCommandLineOptions availableOptions = getAvailableOptions();
 		OptionParser parser = availableOptions.getParser();
 		try {
 			OptionSet detectedOptions = parser.parse(arguments);
@@ -25,7 +25,7 @@ public class JOptSimpleCustomCommandLineOptionsParser {
 		}
 	}
 
-	public void printHelp(Writer writer) {
+	public void printHelp(PrintWriter writer) {
 		OptionParser optionParser = getAvailableOptions().getParser();
 		optionParser.formatHelpWith(new OrderPreservingHelpFormatter());
 		try {
@@ -35,8 +35,8 @@ public class JOptSimpleCustomCommandLineOptionsParser {
 		}
 	}
 
-	private CustomAvailableOptions getAvailableOptions() {
-		return new CustomAvailableOptions();
+	private AvailableImpactedTestsExecutorCommandLineOptions getAvailableOptions() {
+		return new AvailableImpactedTestsExecutorCommandLineOptions();
 	}
 
 	private static final class OrderPreservingHelpFormatter extends BuiltinHelpFormatter {

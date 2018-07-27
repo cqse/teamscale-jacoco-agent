@@ -1,8 +1,5 @@
 package org.junit.platform.console.options;
 
-import java.io.File;
-import java.nio.file.Path;
-
 import eu.cqse.teamscale.client.CommitDescriptor;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
@@ -10,9 +7,12 @@ import org.junit.platform.console.shadow.joptsimple.OptionSpec;
 import org.junit.platform.console.shadow.joptsimple.util.PathConverter;
 import org.junit.platform.engine.discovery.ClassNameFilter;
 
+import java.io.File;
+import java.nio.file.Path;
+
 import static java.util.Arrays.asList;
 
-class CustomAvailableOptions {
+class AvailableImpactedTestsExecutorCommandLineOptions {
 
 	private static final String CP_OPTION = "cp";
 
@@ -54,12 +54,12 @@ class CustomAvailableOptions {
 	private final OptionSpec<String> userAccessToken;
 	private final OptionSpec<String> partition;
 
-	//    private final OptionSpec<String> baseline;
+	private final OptionSpec<String> baseline;
 	private final OptionSpec<String> end;
 
 	private final OptionSpec<Void> runAllTests;
 
-	CustomAvailableOptions() {
+	AvailableImpactedTestsExecutorCommandLineOptions() {
 
 		// --- General Purpose -------------------------------------------------
 
@@ -85,7 +85,8 @@ class CustomAvailableOptions {
 				.defaultsTo(CommandLineOptions.DEFAULT_DETAILS);
 
 		theme = parser.accepts("details-theme",
-				"Select an output details tree theme for when tests are executed. Use one of: " + asList(Theme.values())) //
+				"Select an output details tree theme for when tests are executed. Use one of: " + asList(
+						Theme.values())) //
 				.withRequiredArg() //
 				.ofType(Theme.class) //
 				.withValuesConvertedBy(new ThemeConverter()) //
@@ -186,9 +187,9 @@ class CustomAvailableOptions {
 				"Partition of the tests")
 				.withRequiredArg();
 
-//        baseline = parser.accepts("baseline",
-//                "The baseline commit")
-//                .withRequiredArg();
+		baseline = parser.accepts("baseline",
+				"The baseline commit")
+				.withRequiredArg();
 
 		end = parser.accepts("end",
 				"The end commit")
@@ -203,9 +204,9 @@ class CustomAvailableOptions {
 		return parser;
 	}
 
-	CustomCommandLineOptions toCustomCommandLineOptions(OptionSet detectedOptions) {
+	ImpactedTestsExecutorCommandLineOptions toCustomCommandLineOptions(OptionSet detectedOptions) {
 
-		CustomCommandLineOptions result = new CustomCommandLineOptions();
+		ImpactedTestsExecutorCommandLineOptions result = new ImpactedTestsExecutorCommandLineOptions();
 		toJUnitCommandLineOptions(detectedOptions, result.toJUnitOptions());
 
 		result.server.url = detectedOptions.valueOf(this.url);
@@ -216,8 +217,13 @@ class CustomAvailableOptions {
 
 		result.runAllTests = detectedOptions.has(this.runAllTests);
 
-//        result.baselineCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.baseline));
 		result.endCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.end));
+		String baseline = detectedOptions.valueOf(this.baseline);
+		if (baseline == null) {
+			result.baseline = result.endCommit.commitBefore();
+		} else {
+			result.baseline = CommitDescriptor.parse(baseline);
+		}
 
 		return result;
 	}

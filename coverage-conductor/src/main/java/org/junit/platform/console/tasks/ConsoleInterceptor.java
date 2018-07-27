@@ -1,15 +1,18 @@
 package org.junit.platform.console.tasks;
 
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+/** Handles intercepting calls to System.out called during the tests. */
 public class ConsoleInterceptor {
 
+	/** Some callable code. */
 	public interface Block {
+		/** Execute the block of code. */
 		void call();
 	}
 
+	/** Executes the given code and discards all System.out stream inputs. */
 	public static void ignoreOut(Block block) {
 		OutputStream discardingOutputStream = new OutputStream() {
 			@Override
@@ -25,18 +28,5 @@ public class ConsoleInterceptor {
 		} finally {
 			System.setOut(oldStream);
 		}
-	}
-
-	public static String copyOut(Block block) throws Exception {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		PrintStream printStream = new PrintStream(bos, true);
-		PrintStream oldStream = System.out;
-		System.setOut(printStream);
-		try {
-			block.call();
-		} finally {
-			System.setOut(oldStream);
-		}
-		return bos.toString();
 	}
 }

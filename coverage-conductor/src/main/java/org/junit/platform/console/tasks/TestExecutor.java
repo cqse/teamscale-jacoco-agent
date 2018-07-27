@@ -11,9 +11,8 @@
 package org.junit.platform.console.tasks;
 
 import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
-import org.apiguardian.api.API;
-import org.junit.platform.console.ConsoleLauncherExecutionResult;
-import org.junit.platform.console.options.CustomCommandLineOptions;
+import org.junit.platform.console.Logger;
+import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.Details;
 import org.junit.platform.console.options.Theme;
 import org.junit.platform.engine.DiscoverySelector;
@@ -25,9 +24,6 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -39,55 +35,56 @@ import static org.junit.platform.console.tasks.ConsoleInterceptor.ignoreOut;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 /**
- *
+ * Runs a set of given tests.
  */
-public class TestExecutor  {
-	protected final CustomCommandLineOptions options;
-	protected final Supplier<Launcher> launcherSupplier;
+public class TestExecutor {
 
-	private final List<String> tests;
+	/** The logger. */
+	private final Logger logger;
 
-	public TestExecutor(CustomCommandLineOptions options, List<String> tests) {
-		this(options, LauncherFactory::create, tests);
-	}
+	/** The command line options. */
+	private final ImpactedTestsExecutorCommandLineOptions options;
 
-	// for tests only
-	private TestExecutor(CustomCommandLineOptions options, Supplier<Launcher> launcherSupplier, List<String> tests) {
+	/** A {@link Launcher} factory. */
+	private final Supplier<Launcher> launcherSupplier;
+
+	/** Constructor. */
+	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger) {
 		this.options = options;
-		this.launcherSupplier = launcherSupplier;
-		this.tests = tests;
+		this.logger = logger;
+		this.launcherSupplier = LauncherFactory::create;
 	}
 
-	public TestExecutionSummary execute(OutputStream outStream) {
-		try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outStream)))) {
-			return executeTests(out);
-		}
+	/** Executes the given list of tests. */
+	public TestExecutionSummary executeTests(List<String> tests) {
+		logger.message("Executing " + tests.size() + " impacted tests...");
+		return executeRequest(generateImpactedDiscoveryRequest(tests));
 	}
 
-	private TestExecutionSummary executeTests(PrintWriter out) {
+	/** Executes all tests included in {@link #options}. */
+	public TestExecutionSummary executeAllTests() {
+		LauncherDiscoveryRequest result;
+		logger.message("Executing all tests...");
+		result = new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions());
+		LauncherDiscoveryRequest discoveryRequest = result;
+
+		return executeRequest(discoveryRequest);
+	}
+
+	private TestExecutionSummary executeRequest(LauncherDiscoveryRequest discoveryRequest) {
 		Launcher launcher = launcherSupplier.get();
-
-		LauncherDiscoveryRequest discoveryRequest;
-		if (tests == null) {
-			System.out.println("Executing all tests...");
-			discoveryRequest = new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions());
-		} else {
-			System.out.println("Executing " + tests.size() + " impacted tests...");
-			discoveryRequest = generateImpactedDiscoveryRequest();
-		}
-
-		SummaryGeneratingListener summaryListener = registerListeners(out, launcher);
+		SummaryGeneratingListener summaryListener = registerListeners(launcher);
 		ignoreOut(() -> launcher.execute(discoveryRequest));
 
 		TestExecutionSummary summary = summaryListener.getSummary();
 		if (summary.getTotalFailureCount() > 0 || options.getDetails() != Details.NONE) {
-			printSummary(summary, out);
+			printSummary(summary);
 		}
 
 		return summary;
 	}
 
-	private LauncherDiscoveryRequest generateImpactedDiscoveryRequest() {
+	private LauncherDiscoveryRequest generateImpactedDiscoveryRequest(List<String> tests) {
 		List<DiscoverySelector> discoverySelectors = new ArrayList<>();
 		for (String impactedTestCase : tests) {
 			discoverySelectors.add(DiscoverySelectors.selectUniqueId(impactedTestCase));
@@ -95,7 +92,7 @@ public class TestExecutor  {
 		return request().selectors(discoverySelectors).build();
 	}
 
-	private SummaryGeneratingListener registerListeners(PrintWriter out, Launcher launcher) {
+	private SummaryGeneratingListener registerListeners(Launcher launcher) {
 		// always register summary generating listener
 		SummaryGeneratingListener summaryListener = new SummaryGeneratingListener();
 		launcher.registerTestExecutionListeners(summaryListener);
@@ -103,9 +100,9 @@ public class TestExecutor  {
 		JUnit5TestListenerExtension jacocoListener = new JUnit5TestListenerExtension();
 		launcher.registerTestExecutionListeners(jacocoListener);
 		// optionally, register test plan execution details printing listener
-		createDetailsPrintingListener(out).ifPresent(launcher::registerTestExecutionListeners);
+		createDetailsPrintingListener(logger.out).ifPresent(launcher::registerTestExecutionListeners);
 		// optionally, register XML reports writing listener
-		createXmlWritingListener(out).ifPresent(launcher::registerTestExecutionListeners);
+		createXmlWritingListener(logger.out).ifPresent(launcher::registerTestExecutionListeners);
 		return summaryListener;
 	}
 
@@ -131,12 +128,12 @@ public class TestExecutor  {
 		return options.getReportsDir().map(reportsDir -> new XmlReportsWritingListener(reportsDir, out));
 	}
 
-	private void printSummary(TestExecutionSummary summary, PrintWriter out) {
+	private void printSummary(TestExecutionSummary summary) {
 		// Otherwise the failures have already been printed in detail
 		if (EnumSet.of(Details.NONE, Details.SUMMARY, Details.TREE).contains(options.getDetails())) {
-			summary.printFailuresTo(out);
+			summary.printFailuresTo(logger.err);
 		}
-		summary.printTo(out);
+		summary.printTo(logger.out);
 	}
 
 }

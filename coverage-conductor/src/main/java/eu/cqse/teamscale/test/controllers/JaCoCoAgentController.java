@@ -23,7 +23,7 @@ public class JaCoCoAgentController {
 	}
 
 	/** Returns a singleton instance of the controller. */
-	public static synchronized JaCoCoAgentController getInstance() {
+	public static JaCoCoAgentController getInstance() {
 		if (singleton == null) {
 			try {
 				singleton = new JaCoCoAgentController(RT.getAgent());
@@ -38,13 +38,17 @@ public class JaCoCoAgentController {
 	 * Called when a test starts.
 	 * Resets coverage and sets the session id.
 	 */
-	public synchronized void onTestStart(String testId) {
+	public void onTestStart(String testId) {
 		// Reset coverage generated in between the test runs
 		agent.reset();
 		agent.setSessionId(testId);
 	}
 
-	public synchronized void onTestFinish(String testId) {
+	/**
+	 * Called when a test finished.
+	 * Dumps the coverage of the test to the output file.
+	 */
+	public void onTestFinish(String testId) {
 		try {
 			agent.dump(true);
 
