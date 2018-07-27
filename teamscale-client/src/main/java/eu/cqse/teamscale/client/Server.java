@@ -2,7 +2,6 @@ package eu.cqse.teamscale.client;
 
 import java.util.Objects;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class Server {
 
 	/** The url of the teamscale server.  */

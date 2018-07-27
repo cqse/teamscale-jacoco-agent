@@ -80,9 +80,7 @@ public class ImpactedTestsExecutor {
 		return executeTests(client, options);
 	}
 
-	/**
-	 * Discovers all tests that match the given filters in #options.
-	 */
+	/** Discovers all tests that match the given filters in #options. */
 	private List<TestDetails> getTestDetails(ImpactedTestsExecutorCommandLineOptions options) {
 		List<TestDetails> availableTestDetails = new TestDetailsCollector(logger).collect(options);
 

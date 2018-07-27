@@ -25,7 +25,11 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	public CommitDescriptor endCommit;
 
 	/** Regular JUnit console command line options. */
-	private CommandLineOptions commandLineOptions = new CommandLineOptions();
+	private CommandLineOptions commandLineOptions;
+
+	public ImpactedTestsExecutorCommandLineOptions(CommandLineOptions jUnitResult) {
+		commandLineOptions = jUnitResult;
+	}
 
 	/** Whether help should be displayed.  */
 	public boolean isDisplayHelp() {
