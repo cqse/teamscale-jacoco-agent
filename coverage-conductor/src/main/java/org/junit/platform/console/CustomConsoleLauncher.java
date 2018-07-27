@@ -74,9 +74,7 @@ public class CustomConsoleLauncher {
 		}
 	}
 
-	/**
-	 * Executes the impacted tests.
-	 */
+	/** Executes the impacted tests. */
 	private ConsoleLauncherExecutionResult discoverAndExecuteTests(CustomCommandLineOptions options, PrintWriter out) {
 		List<TestDetails> availableTestDetails = getTestDetails(options);
 
