@@ -1,7 +1,6 @@
 package org.junit.platform.console.options;
 
 import eu.cqse.teamscale.client.CommitDescriptor;
-import eu.cqse.teamscale.client.Server;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -27,6 +26,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	/** Regular JUnit console command line options. */
 	private CommandLineOptions commandLineOptions;
 
+	/** Constructor. */
 	public ImpactedTestsExecutorCommandLineOptions(CommandLineOptions jUnitResult) {
 		commandLineOptions = jUnitResult;
 	}

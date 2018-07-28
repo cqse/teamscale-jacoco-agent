@@ -29,7 +29,7 @@ dependencies {
 jar {
     classifier = null
     manifest {
-        attributes 'Premain-Class': 'eu.cqse.teamscale.test.PreMain'
+        attributes 'Premain-Class': 'eu.cqse.teamscale.PreMain'
     }
 }
 

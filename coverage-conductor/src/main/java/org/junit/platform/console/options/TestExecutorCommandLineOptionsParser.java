@@ -41,6 +41,7 @@ public class TestExecutorCommandLineOptionsParser {
 		}
 	}
 
+	/** Returns the available command line options. */
 	private AvailableImpactedTestsExecutorCommandLineOptions getAvailableOptions() {
 		return new AvailableImpactedTestsExecutorCommandLineOptions();
 	}

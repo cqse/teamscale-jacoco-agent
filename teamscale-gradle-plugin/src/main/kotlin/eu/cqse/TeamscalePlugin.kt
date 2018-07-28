@@ -82,7 +82,7 @@ open class TeamscalePlugin : Plugin<Project> {
         cptRunTestTask.apply {
             testTask = gradleTestTask
             configuration = config
-            commitDescriptor = commit
+            endCommit = commit
             configure(project)
         }
 

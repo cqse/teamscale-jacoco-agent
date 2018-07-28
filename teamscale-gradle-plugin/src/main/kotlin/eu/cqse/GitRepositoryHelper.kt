@@ -11,8 +11,10 @@ import org.eclipse.jgit.revwalk.RevWalk
 import java.io.File
 import java.io.IOException
 
+/** Helper class for Git repository actions. */
 object GitRepositoryHelper {
 
+    /** Returns the last commit in the given git repository. */
     @Throws(IOException::class)
     fun getHeadCommitDescriptor(baseDirectory: File): CommitDescriptor {
         val git = Git.open(baseDirectory)
@@ -36,6 +38,5 @@ object GitRepositoryHelper {
         } finally {
             revWalk.release()
         }
-
     }
 }

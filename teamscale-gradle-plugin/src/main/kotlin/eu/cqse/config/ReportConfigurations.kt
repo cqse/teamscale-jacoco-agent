@@ -11,13 +11,23 @@ import org.gradle.api.tasks.testing.Test
 import java.io.File
 import java.io.Serializable
 
+/** Base class for report configurations that should be generated and uploaded. */
 open class ReportConfigurationBase(
-        var format: EReportFormat
+
+    /** The report format. */
+    var format: EReportFormat
+
 ) : Serializable {
 
+    /** The partition */
     var partition: String? = null
     var message: String? = null
     var destination: File? = null
+
+    /**
+     * Whether the report should be uploaded or not.
+     * If it is null the report should not even be created.
+     */
     var upload: Boolean? = null
 
     fun setDestination(destination: String) {
@@ -25,8 +35,10 @@ open class ReportConfigurationBase(
     }
 
     open fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
-        return destination ?: project.file("${project.buildDir}/reports/${format.name.toLowerCase()}/" +
-                (format.name.toLowerCase() + "-" + project.name + "-" + gradleTestTask.name + "." + format.extension))
+        return destination ?: project.file(
+            "${project.buildDir}/reports/${format.name.toLowerCase()}/" +
+                    (format.name.toLowerCase() + "-" + project.name + "-" + gradleTestTask.name + "." + format.extension)
+        )
     }
 
     open fun copyWithDefault(toCopy: ReportConfigurationBase, default: ReportConfigurationBase) {
@@ -43,10 +55,10 @@ open class ReportConfigurationBase(
 
     fun getReport(project: Project, gradleTestTask: Test): Report {
         return Report(
-                format = format,
-                report = getDestinationOrDefault(project, gradleTestTask),
-                message = message ?: "${format.readableName} gradle upload",
-                partition = getTransformedPartition(project)
+            format = format,
+            report = getDestinationOrDefault(project, gradleTestTask),
+            message = message ?: "${format.readableName} gradle upload",
+            partition = getTransformedPartition(project)
         )
     }
 }
@@ -74,8 +86,8 @@ class ClosureConfiguration : Serializable {
     }
 
     fun getFilter() = AntPatternIncludeFilter(
-            includes ?: emptyList(),
-            excludes ?: emptyList()
+        includes ?: emptyList(),
+        excludes ?: emptyList()
     )
 
     fun copyWithDefault(toCopy: ClosureConfiguration, default: ClosureConfiguration) {

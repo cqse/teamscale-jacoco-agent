@@ -5,24 +5,24 @@ import java.io.Serializable
 
 class Reports : Serializable {
 
-    /** The partition for which artifacts are uploaded.  */
+    val testwiseCoverage = TestwiseCoverageConfiguration()
+    val jUnit = JUnitReportConfiguration()
+    val jacoco = JacocoReportConfiguration()
+    val googleClosureCoverage = ClosureConfiguration()
+
+    /** The partition for which artifacts are uploaded. This sets the partition for all reports. */
     fun setPartition(value: String) {
         testwiseCoverage.partition = testwiseCoverage.partition ?: value
         jUnit.partition = jUnit.partition ?: value
         jacoco.partition = jacoco.partition ?: value
     }
 
-    /** The partition for which artifacts are uploaded.  */
+    /** The partition for which artifacts are uploaded. This sets the message for all reports. */
     fun setMessage(value: String) {
         testwiseCoverage.message = testwiseCoverage.message ?: value
         jUnit.message = jUnit.message ?: value
         jacoco.message = jacoco.message ?: value
     }
-
-    val testwiseCoverage = TestwiseCoverageConfiguration()
-    val jUnit = JUnitReportConfiguration()
-    val jacoco = JacocoReportConfiguration()
-    val googleClosureCoverage = ClosureConfiguration()
 
     fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration>?) {
         testwiseCoverage.upload = true

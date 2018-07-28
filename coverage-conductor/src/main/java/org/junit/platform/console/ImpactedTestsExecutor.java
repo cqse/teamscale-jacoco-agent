@@ -74,7 +74,7 @@ public class ImpactedTestsExecutor {
 			return ConsoleLauncherExecutionResult.success();
 		}
 
-		TeamscaleClient client = new TeamscaleClient(options.server);
+		TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName, options.server.userAccessToken, options.server.project);
 		uploadTestDetails(options, availableTestDetails, client);
 
 		return executeTests(client, options);

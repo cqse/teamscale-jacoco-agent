@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.test;
+package eu.cqse.teamscale;
 
 import org.jacoco.agent.rt.internal_c13123e.core.runtime.AgentOptions;
 

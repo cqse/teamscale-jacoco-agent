@@ -9,28 +9,52 @@ import eu.cqse.teamscale.report.util.ILogger
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.util.RelativePathUtil
 import java.io.File
 
+/**
+ * Task which runs impacted tests.
+ */
 open class ImpactedTestsExecutor : JavaExec() {
 
+    /** Command line switch to activate running all tests. */
     @Input
-    @Option(option = "run-all-tests", description = "When set to true runs all tests, but still collects testwise coverage. By default only impacted tests are executed.")
+    @Option(
+        option = "run-all-tests",
+        description = "When set to true runs all tests, but still collects testwise coverage. By default only impacted tests are executed."
+    )
     var runAllTests: Boolean = false
 
+    /**
+     * Reference to the test task for which this task acts as a
+     * stand-in when executing impacted tests.
+     */
     lateinit var testTask: Test
 
+    /**
+     * Reference to the configuration that should be used for this task.
+     */
     @Input
     lateinit var configuration: TeamscalePluginExtension
-    @Input
-    lateinit var commitDescriptor: CommitDescriptor
 
+    /**
+     * The (current) commit at which test details should be uploaded to.
+     * Furthermore all changes in this commit are considered for test impact analysis.
+     */
+    @Input
+    lateinit var endCommit: CommitDescriptor
+
+    /** The file to write the jacoco execution data to. */
     private lateinit var executionData: File
 
+    /**  */
     @Input
     private lateinit var platformOptions: JUnitPlatformOptions
 
@@ -75,7 +99,7 @@ open class ImpactedTestsExecutor : JavaExec() {
         val argument = ArgumentAppender(builder, workingDir)
         builder.append("-javaagent:")
         val agentJar = project.configurations.getByName("coverageConductor")
-                .filter { it.name.startsWith("coverage-conductor") }.first()
+            .filter { it.name.startsWith("coverage-conductor") }.first()
         builder.append(RelativePathUtil.relativePath(workingDir, agentJar))
         builder.append("=")
         argument.append("destfile", executionData)
@@ -105,16 +129,20 @@ open class ImpactedTestsExecutor : JavaExec() {
             return
         }
 
-        val generator = TestwiseXmlReportGenerator(classDirectories.files, configuration.agent.getFilter(), true, createLogger())
+        val generator =
+            TestwiseXmlReportGenerator(classDirectories.files, configuration.agent.getFilter(), true, createLogger())
         val testwiseCoverage = generator.convert(executionData)
         val jsCoverageData = configuration.report.googleClosureCoverage.destination ?: emptySet()
         if (!jsCoverageData.isEmpty()) {
-            val closureTestwiseCoverage = ClosureTestwiseCoverageGenerator(jsCoverageData,
-                    configuration.report.googleClosureCoverage.getFilter()).readTestCoverage()
+            val closureTestwiseCoverage = ClosureTestwiseCoverageGenerator(
+                jsCoverageData,
+                configuration.report.googleClosureCoverage.getFilter()
+            ).readTestCoverage()
             testwiseCoverage.merge(closureTestwiseCoverage)
         }
         TestwiseXmlReportUtils.writeReportToFile(
-                configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask), testwiseCoverage)
+            configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask), testwiseCoverage
+        )
     }
 
     fun configure(project: Project) {
@@ -125,12 +153,13 @@ open class ImpactedTestsExecutor : JavaExec() {
 
     private fun getCoverageConductorArgs(): List<String> {
         val args = mutableListOf(
-                "--url", configuration.server.url!!,
-                "--project", configuration.server.project!!,
-                "--user", configuration.server.userName!!,
-                "--access-token", configuration.server.userAccessToken!!,
-                "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
-                "--end", commitDescriptor.toString())
+            "--url", configuration.server.url!!,
+            "--project", configuration.server.project!!,
+            "--user", configuration.server.userName!!,
+            "--access-token", configuration.server.userAccessToken!!,
+            "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
+            "--end", endCommit.toString()
+        )
 
         if (runAllTests) {
             args.add("--all")
@@ -138,9 +167,10 @@ open class ImpactedTestsExecutor : JavaExec() {
 
         addFilters(platformOptions, args)
 
-        //TODO make optional
-        args.add("--reports-dir")
-        args.add(configuration.report.jUnit.getDestinationOrDefault(project, testTask).absolutePath)
+        if(configuration.report.jUnit.upload != null) {
+            args.add("--reports-dir")
+            args.add(configuration.report.jUnit.getDestinationOrDefault(project, testTask).absolutePath)
+        }
 
         val rootDirs = mutableListOf<File>()
         getSourceSets(project).forEach { sourceSet ->

@@ -12,8 +12,8 @@ package org.junit.platform.console.tasks;
 
 import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.Logger;
-import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.Details;
+import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.Theme;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -34,9 +34,7 @@ import java.util.function.Supplier;
 import static org.junit.platform.console.tasks.ConsoleInterceptor.ignoreOut;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
-/**
- * Runs a set of given tests.
- */
+/** Runs a set of given tests. */
 public class TestExecutor {
 
 	/** The logger. */
@@ -71,19 +69,18 @@ public class TestExecutor {
 		return executeRequest(discoveryRequest);
 	}
 
+	/** Executes the tests described by the given discovery request. */
 	private TestExecutionSummary executeRequest(LauncherDiscoveryRequest discoveryRequest) {
 		Launcher launcher = launcherSupplier.get();
-		SummaryGeneratingListener summaryListener = registerListeners(launcher);
+		SummaryGeneratingListener summaryListener = registerTestListeners(launcher);
 		ignoreOut(() -> launcher.execute(discoveryRequest));
 
 		TestExecutionSummary summary = summaryListener.getSummary();
-		if (summary.getTotalFailureCount() > 0 || options.getDetails() != Details.NONE) {
-			printSummary(summary);
-		}
-
+		printSummary(summary);
 		return summary;
 	}
 
+	/** Creates a discovery request from the given list of unique test IDs. */
 	private LauncherDiscoveryRequest generateImpactedDiscoveryRequest(List<String> tests) {
 		List<DiscoverySelector> discoverySelectors = new ArrayList<>();
 		for (String impactedTestCase : tests) {
@@ -92,13 +89,17 @@ public class TestExecutor {
 		return request().selectors(discoverySelectors).build();
 	}
 
-	private SummaryGeneratingListener registerListeners(Launcher launcher) {
+	/**
+	 * Registers all needed test listeners
+	 *
+	 * @return the summary generating listener
+	 */
+	private SummaryGeneratingListener registerTestListeners(Launcher launcher) {
 		// always register summary generating listener
 		SummaryGeneratingListener summaryListener = new SummaryGeneratingListener();
 		launcher.registerTestExecutionListeners(summaryListener);
 		// Add jacoco aware test execution listener
-		JUnit5TestListenerExtension jacocoListener = new JUnit5TestListenerExtension();
-		launcher.registerTestExecutionListeners(jacocoListener);
+		launcher.registerTestExecutionListeners(new JUnit5TestListenerExtension());
 		// optionally, register test plan execution details printing listener
 		createDetailsPrintingListener(logger.out).ifPresent(launcher::registerTestExecutionListeners);
 		// optionally, register XML reports writing listener
@@ -106,6 +107,7 @@ public class TestExecutor {
 		return summaryListener;
 	}
 
+	/** Create a listener printing the test process to the console. */
 	private Optional<TestExecutionListener> createDetailsPrintingListener(PrintWriter out) {
 		boolean disableAnsiColors = options.isAnsiColorOutputDisabled();
 		Theme theme = options.getTheme();
@@ -124,16 +126,20 @@ public class TestExecutor {
 		}
 	}
 
+	/** Creates a listener that creates a jUnit report for the executed tests. */
 	private Optional<TestExecutionListener> createXmlWritingListener(PrintWriter out) {
 		return options.getReportsDir().map(reportsDir -> new XmlReportsWritingListener(reportsDir, out));
 	}
 
+	/** Prints the test summary to the logger. */
 	private void printSummary(TestExecutionSummary summary) {
-		// Otherwise the failures have already been printed in detail
-		if (EnumSet.of(Details.NONE, Details.SUMMARY, Details.TREE).contains(options.getDetails())) {
-			summary.printFailuresTo(logger.err);
+		if (summary.getTotalFailureCount() > 0 || options.getDetails() != Details.NONE) {
+			// Otherwise the failures have already been printed in detail
+			if (EnumSet.of(Details.NONE, Details.SUMMARY, Details.TREE).contains(options.getDetails())) {
+				summary.printFailuresTo(logger.error);
+			}
+			summary.printTo(logger.out);
 		}
-		summary.printTo(logger.out);
 	}
 
 }

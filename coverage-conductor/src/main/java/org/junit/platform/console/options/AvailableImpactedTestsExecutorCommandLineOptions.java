@@ -8,7 +8,7 @@ import org.junit.platform.console.shadow.joptsimple.OptionSpec;
 import static java.util.Arrays.asList;
 
 /** Helper class to parse command line options. */
-class AvailableImpactedTestsExecutorCommandLineOptions {
+public class AvailableImpactedTestsExecutorCommandLineOptions {
 
 	/** Available options from jUnit */
 	private AvailableOptions jUnitOptions;

@@ -27,11 +27,6 @@ public class TeamscaleClient {
 	private final String projectId;
 
 	/** Constructor. */
-	public TeamscaleClient(Server server) {
-		this(server.url, server.userName, server.userAccessToken, server.project);
-	}
-
-	/** Constructor. */
 	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator

@@ -8,6 +8,7 @@ public class ConsoleInterceptor {
 
 	/** Some callable code. */
 	public interface Block {
+
 		/** Execute the block of code. */
 		void call();
 	}
