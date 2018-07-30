@@ -9,7 +9,7 @@ import java.util.Optional;
 public class ImpactedTestsExecutorCommandLineOptions {
 
 	/** Connection details of the Teamscale server. */
-	public Server server = new Server();
+	public final Server server = new Server();
 
 	/** The partition to upload test details to and get impacted tests from. */
 	public String partition;
@@ -41,7 +41,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 		return commandLineOptions.getDetails();
 	}
 
-	/** Whether to use unicode or ascii art to print tree structures in the test summary. */
+	/** Which theme to use e.g. whether to use unicode or ascii art to print tree structures in the test summary. */
 	public Theme getTheme() {
 		return commandLineOptions.getTheme();
 	}
@@ -51,7 +51,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 		return commandLineOptions.isAnsiColorOutputDisabled();
 	}
 
-	/** The dir in which to write the junit and test details reports. */
+	/** The dir in which to write the JUnit and test details reports. */
 	public Optional<Path> getReportsDir() {
 		return commandLineOptions.getReportsDir();
 	}

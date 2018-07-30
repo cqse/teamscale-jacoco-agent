@@ -36,7 +36,7 @@ public class ImpactedTestsExecutor {
 	/** Logger used to print status to the console during test retrieval and execution. */
 	private final Logger logger;
 
-	/** The entry point for the impacted tests executor. */
+	/** The main entry point for the impacted tests executor. */
 	public static void main(String... args) {
 		try (Logger logger = new Logger(System.out, System.err)) {
 			ImpactedTestsExecutor consoleLauncher = new ImpactedTestsExecutor(logger);

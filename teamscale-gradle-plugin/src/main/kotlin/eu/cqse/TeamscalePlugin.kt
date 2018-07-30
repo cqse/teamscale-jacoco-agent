@@ -101,6 +101,7 @@ open class TeamscalePlugin : Plugin<Project> {
         impactedTestsExecutorTask.apply {
             testTask = gradleTestTask
             configuration = config
+            baselineCommit = config.commit.getCommitDescriptor().commitBefore()
             endCommit = config.commit.getCommitDescriptor()
             // Copy dependencies from gradle test task
             dependsOn(gradleTestTask.dependsOn)

@@ -7,32 +7,32 @@ import java.io.IOException
 import java.io.Serializable
 
 class Commit : Serializable {
-    /** The branch at which the artifacts belong to.  */
-    var branch: String? = null
+    /** The branch to which the artifacts belong to. */
+    var branchName: String? = null
         set(value) {
             field = value?.trim()
         }
 
-    /** The timestamp of the commit that has been used to generate the artifacts.  */
+    /** The timestamp of the commit that has been used to generate the artifacts. */
     var timestamp: String? = null
         set(value) {
             field = value?.trim()
         }
 
     fun getCommitDescriptor(): CommitDescriptor {
-        return CommitDescriptor(branch, timestamp)
+        return CommitDescriptor(branchName, timestamp)
     }
 
     fun copyWithDefault(toCopy: Commit, default: Commit) {
-        branch = toCopy.branch ?: default.branch
+        branchName = toCopy.branchName ?: default.branchName
         timestamp = toCopy.timestamp ?: default.timestamp
     }
 
     fun validate(project: Project, testTaskName: String): Boolean {
         return try {
-            if (branch == null || timestamp == null) {
+            if (branchName == null || timestamp == null) {
                 val commit = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
-                branch = branch ?: commit.branchName
+                branchName = branchName ?: commit.branchName
                 timestamp = timestamp ?: commit.timestamp
             }
             true

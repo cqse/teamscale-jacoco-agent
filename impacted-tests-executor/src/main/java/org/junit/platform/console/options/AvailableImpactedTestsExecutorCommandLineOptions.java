@@ -82,13 +82,8 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 
 		result.runAllTests = detectedOptions.has(this.runAllTests);
 
+		result.baseline = CommitDescriptor.parse(detectedOptions.valueOf(this.baseline));
 		result.endCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.end));
-		String baseline = detectedOptions.valueOf(this.baseline);
-		if (baseline == null) {
-			result.baseline = result.endCommit.commitBefore();
-		} else {
-			result.baseline = CommitDescriptor.parse(baseline);
-		}
 
 		return result;
 	}

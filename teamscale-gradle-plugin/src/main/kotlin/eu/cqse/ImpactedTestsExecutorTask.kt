@@ -16,7 +16,6 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
-import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.util.RelativePathUtil
 import java.io.File
 
@@ -44,8 +43,15 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     lateinit var configuration: TeamscalePluginExtension
 
     /**
+     * The baseline commit. All changes after this commit are considered
+     * for test impact analysis.
+     */
+    @Input
+    lateinit var baselineCommit: CommitDescriptor
+
+    /**
      * The (current) commit at which test details should be uploaded to.
-     * Furthermore all changes in this commit are considered for test impact analysis.
+     * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
     @Input
     lateinit var endCommit: CommitDescriptor
@@ -152,6 +158,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             "--user", configuration.server.userName!!,
             "--access-token", configuration.server.userAccessToken!!,
             "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
+            "--baseline", baselineCommit.toString(),
             "--end", endCommit.toString()
         )
 
