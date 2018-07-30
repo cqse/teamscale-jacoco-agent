@@ -20,14 +20,16 @@ import org.gradle.util.GradleVersion
  * The plugin needs a gradle version of 4.6 or higher. */
 open class TeamscalePlugin : Plugin<Project> {
 
-    /** The version of the teamscale gradle plugin and coverage conductor.  */
+    companion object {
+        /** The name of the extension used to configure the plugin. */
+        const val teamscaleExtensionName = "teamscale"
+
+        /** The name of the configuration that holds the impacted test executor and its dependencies. */
+        const val impactedTestExecutorConfiguration = "impactedTestsExecutor"
+    }
+
+    /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
     private var pluginVersion = BuildVersion.buildVersion
-
-    /** The name of the extension used to configure the plugin. */
-    private val teamscaleExtensionName = "teamscale"
-
-    /** The name of the configuration that holds the impacted test executor and its dependencies. */
-    private val impactedTestExecutorConfiguration = "coverageConductor"
 
     /** Applies the teamscale plugin against the given project.  */
     override fun apply(project: Project) {
@@ -44,11 +46,11 @@ open class TeamscalePlugin : Plugin<Project> {
             it.setUrl("https://share.cqse.eu/public/maven/")
         }
 
-        // Add coverage conductor to a custom configuration that will later be used to
-        // create the classpath for the custom task created by this plugin.
+        // Add impacted tests executor to a custom configuration that will later be used to
+        // create the classpath for the ImpactedTestsExecutorTask created by this plugin.
         project.configurations.maybeCreate(impactedTestExecutorConfiguration)
             .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("eu.cqse:coverage-conductor:$pluginVersion"))
+                dependencies.add(project.dependencies.create("eu.cqse:impacted-tests-executor:$pluginVersion"))
             }
 
         // Add the teamscale extension also to all test tasks

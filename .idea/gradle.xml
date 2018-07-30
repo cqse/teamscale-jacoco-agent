@@ -11,7 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/agent" />
             <option value="$PROJECT_DIR$/buildSrc" />
-            <option value="$PROJECT_DIR$/coverage-conductor" />
+            <option value="$PROJECT_DIR$/impacted-tests-executor" />
             <option value="$PROJECT_DIR$/javaws-wrapper" />
             <option value="$PROJECT_DIR$/report-generator" />
             <option value="$PROJECT_DIR$/teamscale-client" />

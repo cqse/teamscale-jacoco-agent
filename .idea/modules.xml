@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor.iml" group="coverage-conductor" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_main.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_main.iml" group="coverage-conductor" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_test.iml" filepath="$PROJECT_DIR$/.idea/modules/coverage-conductor/coverage-conductor_test.iml" group="coverage-conductor" />
       <module fileurl="file://$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" filepath="$PROJECT_DIR$/.idea/eu.cqse.teamscale.jacoco.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent.iml" group="eu.cqse.teamscale.jacoco.agent" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" filepath="$PROJECT_DIR$/.idea/modules/agent/eu.cqse.teamscale.jacoco.agent_main.iml" group="eu.cqse.teamscale.jacoco.agent" />
@@ -15,6 +12,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_main.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_main.iml" group="eu.cqse.teamscale.jacoco_buildSrc" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_test.iml" filepath="$PROJECT_DIR$/.idea/modules/eu.cqse.teamscale.jacoco_buildSrc_test.iml" group="eu.cqse.teamscale.jacoco_buildSrc" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/impacted-tests-executor/impacted-tests-executor.iml" filepath="$PROJECT_DIR$/.idea/modules/impacted-tests-executor/impacted-tests-executor.iml" group="impacted-tests-executor" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/impacted-tests-executor/impacted-tests-executor_main.iml" filepath="$PROJECT_DIR$/.idea/modules/impacted-tests-executor/impacted-tests-executor_main.iml" group="impacted-tests-executor" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/impacted-tests-executor/impacted-tests-executor_test.iml" filepath="$PROJECT_DIR$/.idea/modules/impacted-tests-executor/impacted-tests-executor_test.iml" group="impacted-tests-executor" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator.iml" group="report-generator" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator_main.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator_main.iml" group="report-generator" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/report-generator/report-generator_test.iml" filepath="$PROJECT_DIR$/.idea/modules/report-generator/report-generator_test.iml" group="report-generator" />

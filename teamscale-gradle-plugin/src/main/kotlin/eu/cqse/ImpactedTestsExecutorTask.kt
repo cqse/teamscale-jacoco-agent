@@ -71,8 +71,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
         args(getImpactedTestExecutorProgramArguments())
 
-        logger.debug("Starting coverage conductor with jvm args $jvmArgs")
-        logger.debug("Starting coverage conductor with args $args")
+        logger.debug("Starting impacted tests executor with jvm args $jvmArgs")
+        logger.debug("Starting impacted tests executor with args $args")
         logger.debug("With workingDir $workingDir")
 
         super.exec()
@@ -85,7 +85,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             classpath = testTask.classpath
         }
 
-        classpath = classpath.plus(project.configurations.getByName("coverageConductor"))
+        classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
         logger.debug("Starting impacted tests with classpath ${classpath.files}")
     }
 
@@ -94,8 +94,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         val builder = StringBuilder()
         val argument = ArgumentAppender(builder, workingDir)
         builder.append("-javaagent:")
-        val agentJar = project.configurations.getByName("coverageConductor")
-            .filter { it.name.startsWith("coverage-conductor") }.first()
+        val agentJar = project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration)
+            .filter { it.name.startsWith("impacted-tests-executor") }.first()
         builder.append(RelativePathUtil.relativePath(workingDir, agentJar))
         builder.append("=")
         argument.append("destfile", executionData)
