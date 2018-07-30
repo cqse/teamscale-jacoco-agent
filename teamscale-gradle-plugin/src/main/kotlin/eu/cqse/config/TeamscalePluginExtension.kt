@@ -2,6 +2,7 @@ package eu.cqse.config
 
 import org.gradle.api.Action
 import org.gradle.api.Project
+import java.io.IOException
 import java.io.Serializable
 
 /**
@@ -56,8 +57,11 @@ open class TeamscalePluginExtension : Serializable {
 
     /**  */
     fun validate(project: Project, testTaskName: String): Boolean {
-        if(testImpactMode == true) {
-            return report.testwiseCoverage.validate(project, testTaskName) && report.jUnit.validate(project, testTaskName)
+        if (testImpactMode == true) {
+            return commit.validate(project, testTaskName) && report.testwiseCoverage.validate(project, testTaskName) && report.jUnit.validate(
+                project,
+                testTaskName
+            )
         }
         return true
     }

@@ -8,6 +8,7 @@ import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils
 import eu.cqse.teamscale.report.util.ILogger
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
+import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.JavaExec
@@ -19,10 +20,8 @@ import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.util.RelativePathUtil
 import java.io.File
 
-/**
- * Task which runs impacted tests.
- */
-open class ImpactedTestsExecutor : JavaExec() {
+/** Task which runs the impacted tests. */
+open class ImpactedTestsExecutorTask : JavaExec() {
 
     /** Command line switch to activate running all tests. */
     @Input
@@ -54,10 +53,6 @@ open class ImpactedTestsExecutor : JavaExec() {
     /** The file to write the jacoco execution data to. */
     private lateinit var executionData: File
 
-    /**  */
-    @Input
-    private lateinit var platformOptions: JUnitPlatformOptions
-
     init {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
@@ -74,11 +69,11 @@ open class ImpactedTestsExecutor : JavaExec() {
 
         jvmArgs(getAgentJvmArg())
 
-        args(getCoverageConductorArgs())
+        args(getImpactedTestExecutorProgramArguments())
 
-        logger.debug("Starting coverage conductor with jvm args " + jvmArgs.toString())
-        logger.debug("Starting coverage conductor with args " + args.toString())
-        logger.debug("With workingDir " + workingDir.toString())
+        logger.debug("Starting coverage conductor with jvm args $jvmArgs")
+        logger.debug("Starting coverage conductor with args $args")
+        logger.debug("With workingDir $workingDir")
 
         super.exec()
 
@@ -91,9 +86,10 @@ open class ImpactedTestsExecutor : JavaExec() {
         }
 
         classpath = classpath.plus(project.configurations.getByName("coverageConductor"))
-        logger.debug("Starting impacted tests with classpath " + classpath.files.toString())
+        logger.debug("Starting impacted tests with classpath ${classpath.files}")
     }
 
+    /** Builds the jvm argument to start the impacted test executor. */
     private fun getAgentJvmArg(): String {
         val builder = StringBuilder()
         val argument = ArgumentAppender(builder, workingDir)
@@ -129,8 +125,12 @@ open class ImpactedTestsExecutor : JavaExec() {
             return
         }
 
-        val generator =
-            TestwiseXmlReportGenerator(classDirectories.files, configuration.agent.getFilter(), true, createLogger())
+        val generator = TestwiseXmlReportGenerator(
+            classDirectories.files,
+            configuration.agent.getFilter(),
+            true,
+            project.logger.wrapInILogger()
+        )
         val testwiseCoverage = generator.convert(executionData)
         val jsCoverageData = configuration.report.googleClosureCoverage.destination ?: emptySet()
         if (!jsCoverageData.isEmpty()) {
@@ -145,13 +145,7 @@ open class ImpactedTestsExecutor : JavaExec() {
         )
     }
 
-    fun configure(project: Project) {
-        this.dependsOn.add(getSourceSets(project).getByName("test").runtimeClasspath)
-        this.dependsOn.add(project.configurations.getByName("coverageConductor"))
-        platformOptions = (testTask.testFramework as JUnitPlatformTestFramework).options
-    }
-
-    private fun getCoverageConductorArgs(): List<String> {
+    private fun getImpactedTestExecutorProgramArguments(): List<String> {
         val args = mutableListOf(
             "--url", configuration.server.url!!,
             "--project", configuration.server.project!!,
@@ -165,15 +159,15 @@ open class ImpactedTestsExecutor : JavaExec() {
             args.add("--all")
         }
 
-        addFilters(platformOptions, args)
+        addFilters(args)
 
-        if(configuration.report.jUnit.upload != null) {
+        if (configuration.report.jUnit.upload != null) {
             args.add("--reports-dir")
             args.add(configuration.report.jUnit.getDestinationOrDefault(project, testTask).absolutePath)
         }
 
         val rootDirs = mutableListOf<File>()
-        getSourceSets(project).forEach { sourceSet ->
+        project.sourceSets.forEach { sourceSet ->
             val output = sourceSet.output
             rootDirs.addAll(output.classesDirs.files)
             rootDirs.add(output.resourcesDir)
@@ -184,7 +178,8 @@ open class ImpactedTestsExecutor : JavaExec() {
         return args
     }
 
-    private fun addFilters(platformOptions: JUnitPlatformOptions, args: MutableList<String>) {
+    private fun addFilters(args: MutableList<String>) {
+        val platformOptions = (testTask.testFramework as JUnitPlatformTestFramework).options
         platformOptions.includeTags.forEach { tag ->
             args.addAll(listOf("-t", tag))
         }
@@ -204,63 +199,22 @@ open class ImpactedTestsExecutor : JavaExec() {
             args.addAll(listOf("-N", classExcludePattern))
         }
     }
+}
 
-    private fun getSourceSets(project: Project): SourceSetContainer {
-        return project.convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    }
-
-    private fun createLogger(): ILogger {
-        return object : ILogger {
-            override fun debug(debugLog: String) {
-                logger.debug(debugLog)
-            }
-
-            override fun warn(message: String) {
-                logger.warn(message)
-            }
-
-            override fun warn(s: String, e: Throwable) {
-                logger.warn(s, e)
-            }
-
-            override fun error(e: Throwable) {
-                logger.error("", e)
-            }
-
-            override fun error(message: String, throwable: Throwable) {
-                logger.error(message, throwable)
-            }
-
-        }
-    }
-
-    private class ArgumentAppender(private val builder: StringBuilder, private val workingDirectory: File) {
-        private var anyArgs: Boolean = false
-
-        fun append(name: String, value: Any?) {
-            if (value == null) {
-                return
-            }
-
-            if (value is Collection<*>) {
-                if (!value.isEmpty()) {
-                    appendKeyValue(name, value.joinToString(":"))
-                }
-            } else if (value is File) {
-                appendKeyValue(name, RelativePathUtil.relativePath(workingDirectory, value))
-            } else {
-                appendKeyValue(name, value.toString())
-            }
-
-        }
-
-        private fun appendKeyValue(key: String, value: String) {
-            if (anyArgs) {
-                builder.append(",")
-            }
-
-            builder.append(key).append("=").append(value)
-            anyArgs = true
-        }
+/** Wraps the gradle log4j logger into an ILogger. */
+fun Logger.wrapInILogger(): ILogger {
+    val logger = this
+    return object : ILogger {
+        override fun debug(message: String) = logger.debug(message)
+        override fun warn(message: String) = logger.warn(message)
+        override fun warn(message: String, throwable: Throwable) = logger.warn(message, throwable)
+        override fun error(throwable: Throwable) = logger.error("", throwable)
+        override fun error(message: String, throwable: Throwable) = logger.error(message, throwable)
     }
 }
+
+/** Returns the sourceSets container of the given project. */
+val Project.sourceSets: SourceSetContainer
+    get() {
+        return convention.getPlugin(JavaPluginConvention::class.java).sourceSets
+    }
