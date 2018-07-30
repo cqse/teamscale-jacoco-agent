@@ -65,8 +65,6 @@ open class ReportConfigurationBase(
 
 class TestwiseCoverageConfiguration : ReportConfigurationBase(TESTWISE_COVERAGE)
 
-class JacocoReportConfiguration : ReportConfigurationBase(JACOCO)
-
 class JUnitReportConfiguration : ReportConfigurationBase(JUNIT) {
 
     override fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {

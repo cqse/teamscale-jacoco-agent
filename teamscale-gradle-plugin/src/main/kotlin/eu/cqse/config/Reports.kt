@@ -7,21 +7,18 @@ class Reports : Serializable {
 
     val testwiseCoverage = TestwiseCoverageConfiguration()
     val jUnit = JUnitReportConfiguration()
-    val jacoco = JacocoReportConfiguration()
     val googleClosureCoverage = ClosureConfiguration()
 
     /** The partition for which artifacts are uploaded. This sets the partition for all reports. */
     fun setPartition(value: String) {
         testwiseCoverage.partition = testwiseCoverage.partition ?: value
         jUnit.partition = jUnit.partition ?: value
-        jacoco.partition = jacoco.partition ?: value
     }
 
     /** The partition for which artifacts are uploaded. This sets the message for all reports. */
     fun setMessage(value: String) {
         testwiseCoverage.message = testwiseCoverage.message ?: value
         jUnit.message = jUnit.message ?: value
-        jacoco.message = jacoco.message ?: value
     }
 
     fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration>?) {
@@ -34,11 +31,6 @@ class Reports : Serializable {
         action?.execute(jUnit)
     }
 
-    fun jacoco(action: Action<in JacocoReportConfiguration>?) {
-        jacoco.upload = true
-        action?.execute(jacoco)
-    }
-
     fun googleClosureCoverage(action: Action<in ClosureConfiguration>) {
         action.execute(googleClosureCoverage)
     }
@@ -46,7 +38,6 @@ class Reports : Serializable {
     fun copyWithDefault(toCopy: Reports, default: Reports) {
         testwiseCoverage.copyWithDefault(toCopy.testwiseCoverage, default.testwiseCoverage)
         jUnit.copyWithDefault(toCopy.jUnit, default.jUnit)
-        jacoco.copyWithDefault(toCopy.jacoco, default.jacoco)
         googleClosureCoverage.copyWithDefault(toCopy.googleClosureCoverage, default.googleClosureCoverage)
     }
 
