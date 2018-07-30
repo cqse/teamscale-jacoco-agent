@@ -101,9 +101,9 @@ public class TestExecutor {
 		// Add jacoco aware test execution listener
 		launcher.registerTestExecutionListeners(new JUnit5TestListenerExtension());
 		// optionally, register test plan execution details printing listener
-		createDetailsPrintingListener(logger.out).ifPresent(launcher::registerTestExecutionListeners);
+		createDetailsPrintingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
 		// optionally, register XML reports writing listener
-		createXmlWritingListener(logger.out).ifPresent(launcher::registerTestExecutionListeners);
+		createXmlWritingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
 		return summaryListener;
 	}
 
@@ -138,7 +138,7 @@ public class TestExecutor {
 			if (EnumSet.of(Details.NONE, Details.SUMMARY, Details.TREE).contains(options.getDetails())) {
 				summary.printFailuresTo(logger.error);
 			}
-			summary.printTo(logger.out);
+			summary.printTo(logger.output);
 		}
 	}
 

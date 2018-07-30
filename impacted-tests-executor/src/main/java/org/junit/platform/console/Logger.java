@@ -1,9 +1,9 @@
 package org.junit.platform.console;
 
-import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 
 /** Logger to print to a given out and error stream. */
 public class Logger implements AutoCloseable {
@@ -15,7 +15,7 @@ public class Logger implements AutoCloseable {
 	private static final String ANSI_RESET = "\u001B[0m";
 
 	/** The normal output writer. */
-	public final PrintWriter out;
+	public final PrintWriter output;
 
 	/** The error output writer. */
 	public final PrintWriter error;
@@ -24,9 +24,9 @@ public class Logger implements AutoCloseable {
 	private boolean ansiColorEnabled;
 
 	/** Constructor. */
-	public Logger(PrintStream out, PrintStream error) {
-		this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)));
-		this.error = new PrintWriter(new BufferedWriter(new OutputStreamWriter(error)));
+	public Logger(PrintStream outStream, PrintStream errorStream) {
+		output = new PrintWriter(new OutputStreamWriter(outStream, Charset.forName("UTF-8")), true);
+		error = new PrintWriter(new OutputStreamWriter(errorStream, Charset.forName("UTF-8")), true);
 	}
 
 	/** @see #ansiColorEnabled */
@@ -37,26 +37,25 @@ public class Logger implements AutoCloseable {
 	/** Write the given exception to the error stream (stacktrace inclusive). */
 	public void error(Exception exception) {
 		exception.printStackTrace(error);
-		error.flush();
 	}
 
 	/** Prints the given message to the error stream. */
-	public void error(String error) {
+	public void error(String message) {
 		if(ansiColorEnabled) {
-			this.error.println(ANSI_RED + error + ANSI_RESET);
+			error.println(ANSI_RED + message + ANSI_RESET);
 		} else {
-			this.error.println(error);
+			error.println(message);
 		}
 	}
 
 	/** Prints the given message to the out stream. */
 	public void message(String message) {
-		out.println(message);
+		output.println(message);
 	}
 
 	@Override
 	public void close() {
 		error.close();
-		out.close();
+		output.close();
 	}
 }

@@ -55,7 +55,7 @@ public class ImpactedTestsExecutor {
 		TestExecutorCommandLineOptionsParser commandLineOptionsParser = new TestExecutorCommandLineOptionsParser();
 		ImpactedTestsExecutorCommandLineOptions options = commandLineOptionsParser.parse(args);
 		if (options.isDisplayHelp()) {
-			commandLineOptionsParser.printHelp(logger.out);
+			commandLineOptionsParser.printHelp(logger.output);
 			return ConsoleLauncherExecutionResult.success();
 		}
 		logger.setAnsiColorEnabled(!options.isAnsiColorOutputDisabled());
@@ -142,7 +142,7 @@ public class ImpactedTestsExecutor {
 	/** Queries Teamscale for impacted tests. */
 	private List<String> getImpactedTestsFromTeamscale(TeamscaleClient client, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
-			Response<List<String>> response = client.getImpactedTests(options.baseline, options.endCommit, options.partition, logger.out);
+			Response<List<String>> response = client.getImpactedTests(options.baseline, options.endCommit, options.partition, logger.output);
 			if (response.isSuccessful()) {
 				return response.body();
 			} else {

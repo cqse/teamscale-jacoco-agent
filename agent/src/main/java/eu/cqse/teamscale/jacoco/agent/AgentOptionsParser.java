@@ -143,11 +143,9 @@ public class AgentOptionsParser {
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
-				options.locationIncludeFilters = new WildcardMatcher(options.jacocoIncludes);
 				return true;
 			case "excludes":
 				options.jacocoExcludes = value.replaceAll(";", ":");
-				options.locationExcludeFilters = new WildcardMatcher(options.jacocoExcludes);
 				return true;
 			case "class-dir":
 				options.classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);

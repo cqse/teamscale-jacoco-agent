@@ -106,6 +106,7 @@ open class TeamscalePlugin : Plugin<Project> {
             // Copy dependencies from gradle test task
             dependsOn(gradleTestTask.dependsOn)
             dependsOn.add(project.configurations.getByName(impactedTestExecutorConfiguration))
+            dependsOn.add(project.sourceSets.getByName("test").runtimeClasspath)
         }
 
         val teamscaleUploadTask = project.rootProject.tasks

@@ -77,14 +77,14 @@ teamscale {
     }
     
     // For performance reasons the classes to be instrumented and analyzed can be filtered to only include the relevant 
-    // ones. Includes and excludes have to be specified as ant pattern with / as separators. (Optional)
+    // ones. Includes and excludes have to be specified as wildcard pattern with ? and * as placeholders. (Optional)
     agent {
         excludes = [
-            '**/generated/**'
+            '*.generated.*'
         ]
         includes = [
-            'com/package/my/**',
-            'org/mine/**'
+            'com.package.my.*',
+            'org.mine.MyClass'
         ]
         // Where to store the JaCoCo exec file (Optional)
         executionData = file("...")

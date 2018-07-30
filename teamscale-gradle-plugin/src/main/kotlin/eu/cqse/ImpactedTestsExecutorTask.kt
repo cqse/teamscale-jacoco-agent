@@ -200,7 +200,12 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         platformOptions.excludeEngines.forEach { engineId ->
             args.addAll(listOf("-E", engineId))
         }
-        testTask.includes.forEach { classIncludePattern ->
+        val includes = testTask.includes
+        // JUnit by default only includes classes ending with Test, but we want to include all classes.
+        if (includes.isEmpty()) {
+            args.addAll(listOf("-n", ".*"))
+        }
+        includes.forEach { classIncludePattern ->
             args.addAll(listOf("-n", AntPatternUtils.convertPattern(classIncludePattern, false).pattern()))
         }
         testTask.excludes.forEach { classExcludePattern ->

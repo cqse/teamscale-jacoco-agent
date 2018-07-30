@@ -1,6 +1,6 @@
 package eu.cqse.config
 
-import eu.cqse.teamscale.report.util.AntPatternIncludeFilter
+import eu.cqse.teamscale.report.util.ClasspathWildcardIncludeFilter
 import org.gradle.api.Project
 import org.gradle.api.Task
 import java.io.File
@@ -28,11 +28,14 @@ class AgentConfiguration : Serializable {
         executionData = toCopy.executionData ?: default.executionData
         dumpClasses = toCopy.dumpClasses ?: default.dumpClasses ?: false
         dumpDirectory = toCopy.dumpDirectory ?: default.dumpDirectory
-        includes = toCopy.includes ?: default.includes ?: emptyList()
-        excludes = toCopy.excludes ?: default.excludes ?: emptyList()
+        includes = toCopy.includes ?: default.includes
+        excludes = toCopy.excludes ?: default.excludes
     }
 
     fun getFilter(): Predicate<String>? {
-        return AntPatternIncludeFilter(includes, excludes)
+        return ClasspathWildcardIncludeFilter(
+            includes?.joinToString(":") { "*$it".replace('/', '.') },
+            excludes?.joinToString(":") { "*$it".replace('/', '.') }
+        )
     }
 }
