@@ -116,10 +116,10 @@ open class TeamscalePlugin : Plugin<Project> {
             commitDescriptor = config.commit.getCommitDescriptor()
 
             if (config.report.testwiseCoverage.upload == true) {
-                addReport(config.report.testwiseCoverage.getReport(project, gradleTestTask))
+                reports.add(config.report.testwiseCoverage.getReport(project, gradleTestTask))
             }
             if (config.report.jUnit.upload == true) {
-                addReport(config.report.jUnit.getReport(project, gradleTestTask))
+                reports.add(config.report.jUnit.getReport(project, gradleTestTask))
             }
         }
     }
