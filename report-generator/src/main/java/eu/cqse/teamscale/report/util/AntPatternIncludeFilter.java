@@ -23,7 +23,7 @@ public class AntPatternIncludeFilter implements Predicate<String> {
 	/** The include filters. Empty means include everything. */
 	private final List<Pattern> locationIncludeFilters;
 
-	/** The exclude filterns. Empty means exclude nothing. */
+	/** The exclude filters. Empty means exclude nothing. */
 	private final List<Pattern> locationExcludeFilters;
 
 	/** Constructor. */

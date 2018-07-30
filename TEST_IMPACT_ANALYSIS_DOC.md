@@ -86,14 +86,14 @@ teamscale {
             'com/package/my/**',
             'org/mine/**'
         ]
+        // Where to store the JaCoCo exec file (Optional)
+        executionData = file("...")
+        // Allows to dump all loaded classes to a directory and use them to generate the report
+        // Might be needed when doing additional class transformations e.g. by another profiler
+        // (Optional)
+        dumpClasses = true
+        dumpDirectory = file("...")
     }
-    
-    // Similar to the standard test task addition includes for the test discovery can be specified
-    // The patterns have to be regular expressions (Optional)
-    include 'com.mine.test.system.*'
-    exclude '.*TeamscaleUITest'
-    exclude '.*ETestProjectSetupTest'
-
 }
 ```
 

@@ -5,6 +5,7 @@ import eu.cqse.teamscale.client.CommitDescriptor
 import eu.cqse.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
 import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator
 import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils
+import eu.cqse.teamscale.report.util.AntPatternUtils
 import eu.cqse.teamscale.report.util.ILogger
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
@@ -199,11 +200,11 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         platformOptions.excludeEngines.forEach { engineId ->
             args.addAll(listOf("-E", engineId))
         }
-        configuration.includes.forEach { classIncludePattern ->
-            args.addAll(listOf("-n", classIncludePattern))
+        testTask.includes.forEach { classIncludePattern ->
+            args.addAll(listOf("-n", AntPatternUtils.convertPattern(classIncludePattern, false).pattern()))
         }
-        configuration.excludes.forEach { classExcludePattern ->
-            args.addAll(listOf("-N", classExcludePattern))
+        testTask.excludes.forEach { classExcludePattern ->
+            args.addAll(listOf("-N", AntPatternUtils.convertPattern(classExcludePattern, false).pattern()))
         }
     }
 }

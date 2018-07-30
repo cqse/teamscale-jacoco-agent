@@ -41,20 +41,6 @@ open class TeamscalePluginExtension : Serializable {
         action.execute(agent)
     }
 
-    val includes = mutableListOf<String>()
-
-    /** Configures the reports to be uploaded. */
-    fun include(pattern: String) {
-        includes.add(pattern)
-    }
-
-    val excludes = mutableListOf<String>()
-
-    /** Configures the reports to be uploaded. */
-    fun exclude(pattern: String) {
-        excludes.add(pattern)
-    }
-
     /**
      * @return True if all required fields have been set otherwise false.
      */
@@ -81,10 +67,6 @@ open class TeamscalePluginExtension : Serializable {
             merged.report.copyWithDefault(task.report, root.report)
             merged.agent.copyWithDefault(task.agent, root.agent)
             merged.testImpactMode = task.testImpactMode ?: root.testImpactMode
-            merged.includes.addAll(task.includes)
-            merged.includes.addAll(root.includes)
-            merged.excludes.addAll(task.excludes)
-            merged.excludes.addAll(root.excludes)
             return merged
         }
     }
