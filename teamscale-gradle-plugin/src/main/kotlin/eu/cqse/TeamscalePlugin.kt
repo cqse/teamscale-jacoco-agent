@@ -13,19 +13,23 @@ import org.gradle.util.GradleVersion
  * Root entry point for the Teamscale plugin.
  *
  * The plugin applies the Java plugin and a root extension named teamscale.
- * Each Test task configured in the project the plugin creates a new task suffixed with CPT that executes the same set
- * of tests, but additionally collects testwise coverage and executes only impacted tests.
+ * Each Test task configured in the project the plugin creates a new task suffixed with {@value #impactedTestsSuffix}
+ * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
  * Furthermore all reports configured are uploaded to Teamscale after the tests have been executed.
  *
  * The plugin needs a gradle version of 4.6 or higher. */
 open class TeamscalePlugin : Plugin<Project> {
 
     companion object {
+
         /** The name of the extension used to configure the plugin. */
         const val teamscaleExtensionName = "teamscale"
 
         /** The name of the configuration that holds the impacted test executor and its dependencies. */
         const val impactedTestExecutorConfiguration = "impactedTestsExecutor"
+
+        /** The suffix that gets appended to the name of the ImpactedTestsExecutorTask. */
+        private const val impactedTestsSuffix = "Impacted"
     }
 
     /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
@@ -57,8 +61,8 @@ open class TeamscalePlugin : Plugin<Project> {
         project.tasks.withType(Test::class.java) { gradleTestTask ->
             gradleTestTask.extensions.create(teamscaleExtensionName, TeamscalePluginExtension::class.java)
 
-            // Create the CPT task when the Test task is registered to allow client-side modifications of the classpath
-            project.tasks.create("${gradleTestTask.name}CPT", ImpactedTestsExecutorTask::class.java)
+            // Create the Impacted task when the Test task is registered to allow client-side modifications of the classpath
+            project.tasks.create("${gradleTestTask.name}$impactedTestsSuffix", ImpactedTestsExecutorTask::class.java)
         }
 
         project.afterEvaluate {
@@ -69,12 +73,18 @@ open class TeamscalePlugin : Plugin<Project> {
                 val root = project.extensions.getByType(TeamscalePluginExtension::class.java)
                 val task = gradleTestTask.extensions.getByType(TeamscalePluginExtension::class.java)
                 val config = TeamscalePluginExtension.merge(root, task)
-                val cptRunTestTask = project.tasks.getByName("${gradleTestTask.name}CPT") as ImpactedTestsExecutorTask
-                cptRunTestTask.onlyIf { config.testImpactMode ?: false }
+                val impactedTestsExecutorTask =
+                    project.tasks.getByName("${gradleTestTask.name}$impactedTestsSuffix") as ImpactedTestsExecutorTask
+                impactedTestsExecutorTask.onlyIf { config.testImpactMode ?: false }
                 if (!config.validate(project, gradleTestTask.name)) {
                     return@withType
                 }
-                configureTestwiseCoverageCollectingTestWrapperTask(project, gradleTestTask, config, cptRunTestTask)
+                configureTestwiseCoverageCollectingTestWrapperTask(
+                    project,
+                    gradleTestTask,
+                    config,
+                    impactedTestsExecutorTask
+                )
             }
         }
     }
@@ -84,26 +94,22 @@ open class TeamscalePlugin : Plugin<Project> {
         project: Project,
         gradleTestTask: Test,
         config: TeamscalePluginExtension,
-        cptRunTestTask: ImpactedTestsExecutorTask
+        impactedTestsExecutorTask: ImpactedTestsExecutorTask
     ) {
-        project.logger.info("Configuring CPT task for ${project.name}:${gradleTestTask.name}")
+        project.logger.info("Configuring impacted tests executor task for ${project.name}:${gradleTestTask.name}")
 
-        // CPT test task
-        cptRunTestTask.apply {
+        impactedTestsExecutorTask.apply {
             testTask = gradleTestTask
             configuration = config
             endCommit = config.commit.getCommitDescriptor()
-            dependsOn.add(project.sourceSets.getByName("test").runtimeClasspath)
+            // Copy dependencies from gradle test task
+            dependsOn(gradleTestTask.dependsOn)
             dependsOn.add(project.configurations.getByName(impactedTestExecutorConfiguration))
         }
 
-        // Copy dependencies from gradle test task
-        cptRunTestTask.dependsOn(gradleTestTask.dependsOn)
-
-        // Report upload task
         val teamscaleUploadTask = project.rootProject.tasks
             .maybeCreate("${gradleTestTask.name}ReportUpload", TeamscaleUploadTask::class.java)
-        cptRunTestTask.finalizedBy(teamscaleUploadTask)
+        impactedTestsExecutorTask.finalizedBy(teamscaleUploadTask)
 
         teamscaleUploadTask.apply {
             server = config.server

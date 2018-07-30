@@ -114,11 +114,11 @@ task integrationTest(type: Test) {
     teamscale.report.partition = 'Integration Tests'
 }
 ```
-The Teamscale plugin generates a special task for every test task you define suffixed with `CPT` (short for **c**overage **p**er **t**est) e.g. `unitTestCPT`.
+The Teamscale plugin generates a special task for every test task you define suffixed with `Impacted` e.g. `unitTestImpacted`.
 This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
 Afterwards `TESTWISE_COVERAGE`, `JACOCO` and `JUNIT` reports are uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a TESTWISE_COVERAGE report for all tests.
 
-Uploading reports can also be triggered independently of the `CPT` task with `unitTestReportUpload`. Adding `-x unitTestReportUpload` lets you disable the automatic upload.
+Uploading reports can also be triggered independently of the `Impacted` task with `unitTestReportUpload`. Adding `-x unitTestReportUpload` lets you disable the automatic upload.
 
 ## Technical details
 
