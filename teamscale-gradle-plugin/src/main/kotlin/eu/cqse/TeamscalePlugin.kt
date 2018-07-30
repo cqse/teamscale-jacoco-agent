@@ -58,7 +58,7 @@ open class TeamscalePlugin : Plugin<Project> {
                 val config = TeamscalePluginExtension.merge(root, task)
                 val cptRunTestTask = project.tasks.getByName("${gradleTestTask.name}CPT") as ImpactedTestsExecutor
                 cptRunTestTask.onlyIf { config.testImpactMode ?: false }
-                if (!config.report.validate()) {
+                if (!config.validate(project, gradleTestTask.name)) {
                     return@withType
                 }
                 configureTestwiseCoverageCollectingTestWrapperTask(project, gradleTestTask, config, cptRunTestTask)
@@ -74,7 +74,7 @@ open class TeamscalePlugin : Plugin<Project> {
         val commit = try {
             config.commit.getCommit(project.rootDir)
         } catch (e: IOException) {
-            project.logger.error("Could not determine teamscale upload commit for ${project.name} $gradleTestTask", e)
+            project.logger.error("Could not determine Teamscale upload commit for ${project.name} $gradleTestTask", e)
             return
         }
 

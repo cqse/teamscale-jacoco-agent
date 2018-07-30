@@ -1,6 +1,7 @@
 package eu.cqse.config
 
 import org.gradle.api.Action
+import org.gradle.api.Project
 import java.io.Serializable
 
 /**
@@ -22,7 +23,7 @@ open class TeamscalePluginExtension : Serializable {
         action.execute(commit)
     }
 
-    /** Creates CPT tasks for all tests if enabled */
+    /** Creates CPT tasks for all tests if enabled. */
     var testImpactMode: Boolean? = null
 
     val report = Reports()
@@ -53,6 +54,13 @@ open class TeamscalePluginExtension : Serializable {
         excludes.add(pattern)
     }
 
+    /**  */
+    fun validate(project: Project, testTaskName: String): Boolean {
+        if(testImpactMode == true) {
+            return report.testwiseCoverage.validate(project, testTaskName) && report.jUnit.validate(project, testTaskName)
+        }
+        return true
+    }
 
     companion object {
         fun merge(root: TeamscalePluginExtension, task: TeamscalePluginExtension): TeamscalePluginExtension {

@@ -19,9 +19,13 @@ open class ReportConfigurationBase(
 
 ) : Serializable {
 
-    /** The partition */
+    /** The partition for which artifacts are uploaded. */
     var partition: String? = null
+
+    /** The message that shows up for the upload in Teamscale. */
     var message: String? = null
+
+    /** The destination where the report should be written to. */
     var destination: File? = null
 
     /**
@@ -30,17 +34,20 @@ open class ReportConfigurationBase(
      */
     var upload: Boolean? = null
 
+    /** @see #destination */
     fun setDestination(destination: String) {
         this.destination = File(destination)
     }
 
+    /** Returns the destination set for the report or the default destination if not set. */
     open fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
         return destination ?: project.file(
             "${project.buildDir}/reports/${format.name.toLowerCase()}/" +
-                    (format.name.toLowerCase() + "-" + project.name + "-" + gradleTestTask.name + "." + format.extension)
+                    "${format.name.toLowerCase()}-${project.name}-${gradleTestTask.name}.${format.extension}"
         )
     }
 
+    /** Creates a copy of the report configuration, setting all non-set values to their default value. */
     open fun copyWithDefault(toCopy: ReportConfigurationBase, default: ReportConfigurationBase) {
         destination = toCopy.destination ?: default.destination
         message = toCopy.message ?: default.message
@@ -53,6 +60,7 @@ open class ReportConfigurationBase(
         return "$partition/${project.name}${format.partitionSuffix}"
     }
 
+    /** Returns a report specification used in the TeamscaleUploadTask. */
     fun getReport(project: Project, gradleTestTask: Test): Report {
         return Report(
             format = format,
@@ -61,34 +69,58 @@ open class ReportConfigurationBase(
             partition = getTransformedPartition(project)
         )
     }
+
+    /** Returns true if all required fields are set. */
+    fun validate(project: Project, testTaskName: String): Boolean {
+        if (upload == true && partition == null) {
+            project.logger.error("No partition set for ${format.readableName} upload of ${project.name}:$testTaskName!")
+            return false
+        }
+        return true
+    }
 }
 
+/** Configuration for the testwise coverage report. */
 class TestwiseCoverageConfiguration : ReportConfigurationBase(TESTWISE_COVERAGE)
 
+/** Configuration for the jUnit report. */
 class JUnitReportConfiguration : ReportConfigurationBase(JUNIT) {
 
+    /** @inheritDoc */
     override fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
         return destination ?: project.file("${project.buildDir}/reports/junit/${gradleTestTask.name}")
     }
 
 }
 
-class ClosureConfiguration : Serializable {
+/** Configuration for the google closure coverage. */
+class GoogleClosureConfiguration : Serializable {
 
+    /**
+     * The directories in which the reports can be found after the tests.
+     * This plugin does not generate them, but only collects them afterwards.
+     */
     var destination: Set<File>? = null
-    var excludes: List<String>? = null
+
+    /** Ant include patterns for js files that should be contained in the testwise coverage report. */
     var includes: List<String>? = null
 
+    /** Ant exclude patterns for js files that should not be contained in the testwise coverage report. */
+    var excludes: List<String>? = null
+
+    /** @see #destination */
     fun setDestination(files: FileCollection) {
         destination = files.files
     }
 
+    /** Returns a predicate with the include/exclude patterns. */
     fun getFilter() = AntPatternIncludeFilter(
         includes ?: emptyList(),
         excludes ?: emptyList()
     )
 
-    fun copyWithDefault(toCopy: ClosureConfiguration, default: ClosureConfiguration) {
+    /** Creates a copy of the report configuration, setting all non-set values to their default value. */
+    fun copyWithDefault(toCopy: GoogleClosureConfiguration, default: GoogleClosureConfiguration) {
         destination = toCopy.destination ?: default.destination
         excludes = toCopy.excludes ?: default.excludes
         includes = toCopy.includes ?: default.includes
