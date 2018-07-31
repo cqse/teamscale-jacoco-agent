@@ -31,9 +31,10 @@ open class TeamscaleUploadTask : DefaultTask() {
         logger.info("Uploading to $server at $commitDescriptor...")
         val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
 
-        for (report in reports) {
-            val reportFiles = listFileTree(report.report, report.format.extension)
-            logger.info("Uploading ${reportFiles.size} ${report.format.name} report(s) to partition ${report.partition}...")
+        for ((key, reports) in reports.groupBy { Triple(it.format, it.partition, it.message) }) {
+            val (format, partition, message) = key
+            val reportFiles = reports.flatMap { listFileTree(it.report, format.extension) }
+            logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
             if (reportFiles.isEmpty()) {
                 logger.info("Skipped empty upload!")
                 continue
@@ -41,8 +42,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
             try {
                 client.uploadReports(
-                    report.format, reportFiles, commitDescriptor,
-                    report.partition, "${report.message} (${report.partition})"
+                    format, reportFiles, commitDescriptor, partition, "$message ($partition)"
                 )
             } catch (e: ConnectException) {
                 logger.error("Upload failed (${e.message})")

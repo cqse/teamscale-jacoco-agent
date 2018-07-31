@@ -56,7 +56,7 @@ open class ReportConfigurationBase(
     }
 
     /** Takes the partition base name and a report format and merges it into a partition name. */
-    fun getTransformedPartition(project: Project): String {
+    open fun getTransformedPartition(project: Project): String {
         return "$partition/${project.name}${format.partitionSuffix}"
     }
 
@@ -73,7 +73,7 @@ open class ReportConfigurationBase(
     /** Returns true if all required fields are set. */
     fun validate(project: Project, testTaskName: String): Boolean {
         if (upload == true && partition == null) {
-            project.logger.error("No partition set for ${format.readableName} upload of ${project.name}:$testTaskName!")
+            project.logger.debug("No partition set for ${format.readableName} upload of ${project.name}:$testTaskName!")
             return false
         }
         return true
@@ -89,6 +89,11 @@ class JUnitReportConfiguration : ReportConfigurationBase(JUNIT) {
     /** @inheritDoc */
     override fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
         return destination ?: project.file("${project.buildDir}/reports/junit/${gradleTestTask.name}")
+    }
+
+    /** Takes the partition base name and a report format and merges it into a partition name. */
+    override fun getTransformedPartition(project: Project): String {
+        return "$partition"
     }
 
 }
