@@ -2,8 +2,10 @@ package eu.cqse.config
 
 import java.io.Serializable
 
+/** Configuration of the Teamscale server. */
 data class Server(
-    /** The url of the teamscale server.   */
+
+    /** The url of the Teamscale server. */
     var url: String? = null,
 
     /** The project id for which artifacts should be uploaded.   */

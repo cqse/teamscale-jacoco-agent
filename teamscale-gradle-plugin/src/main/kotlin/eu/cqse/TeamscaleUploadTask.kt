@@ -27,10 +27,12 @@ open class TeamscaleUploadTask : DefaultTask() {
 
     /** Executes the report upload. */
     @TaskAction
-    fun action() {
+    fun uploadReports() {
         logger.info("Uploading to $server at $commitDescriptor...")
         val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
 
+        // We want to upload e.g. all JUnit test reports that go to the same partition
+        // as one commit so we group them before uploading them
         for ((key, reports) in reports.groupBy { Triple(it.format, it.partition, it.message) }) {
             val (format, partition, message) = key
             val reportFiles = reports.flatMap { listFileTree(it.report, format.extension) }

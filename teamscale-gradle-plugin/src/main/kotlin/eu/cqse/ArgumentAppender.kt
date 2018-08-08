@@ -12,7 +12,7 @@ class ArgumentAppender(private val builder: StringBuilder, private val workingDi
     /** Whether there have already been arguments appended. */
     private var anyArgs: Boolean = false
 
-    /** Appends the  */
+    /** Appends the given key value pair as an argument for the javaagent. */
     fun append(name: String, value: Any?) {
         if (value == null) {
             return

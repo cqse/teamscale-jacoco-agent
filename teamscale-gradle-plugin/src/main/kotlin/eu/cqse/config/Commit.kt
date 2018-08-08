@@ -6,7 +6,9 @@ import org.gradle.api.Project
 import java.io.IOException
 import java.io.Serializable
 
+/** The commit object which holds the end commit for which we do Test Impact Analysis. */
 class Commit : Serializable {
+
     /** The branch to which the artifacts belong to. */
     var branchName: String? = null
         set(value) {
@@ -14,13 +16,14 @@ class Commit : Serializable {
         }
 
     /** The timestamp of the commit that has been used to generate the artifacts. */
-    var timestamp: String? = null
-        set(value) {
-            field = value?.trim()
-        }
+    var timestamp: Long? = null
+
+    fun setTimestamp(value: String) {
+        timestamp = value.trim().toLong()
+    }
 
     fun getCommitDescriptor(): CommitDescriptor {
-        return CommitDescriptor(branchName, timestamp)
+        return CommitDescriptor(branchName!!, timestamp!!)
     }
 
     fun copyWithDefault(toCopy: Commit, default: Commit) {
