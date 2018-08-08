@@ -16,14 +16,13 @@ class Commit : Serializable {
         }
 
     /** The timestamp of the commit that has been used to generate the artifacts. */
-    var timestamp: Long? = null
-
-    fun setTimestamp(value: String) {
-        timestamp = value.trim().toLong()
-    }
+    var timestamp: String? = null
+        set(value) {
+            field = value?.trim()
+        }
 
     fun getCommitDescriptor(): CommitDescriptor {
-        return CommitDescriptor(branchName!!, timestamp!!)
+        return CommitDescriptor(branchName, timestamp)
     }
 
     fun copyWithDefault(toCopy: Commit, default: Commit) {

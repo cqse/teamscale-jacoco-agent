@@ -9,51 +9,42 @@ public class CommitDescriptor implements Serializable {
 	/** Branch name of the commit. */
 	public final String branchName;
 
-	/** Timestamp of the commit. */
-	public final long timestamp;
-
 	/**
-	 * Selects the commit #previousCommitsShift commits before the given timestamp.
-	 * This is useful to select the commit before as baseline by appending p1. The
-	 * actual resolution happens in Teamscale.
+	 * Timestamp of the commit.
+	 * The timestamp is a string here because be also want to be able to handle HEAD and 123456p1.
 	 */
-	private final int previousCommitsShift;
+	public final String timestamp;
 
 	/** Constructor. */
-	public CommitDescriptor(String branchName, long timestamp) {
-		this(branchName, timestamp, 0);
+	public CommitDescriptor(String branchName, String timestamp) {
+		this.branchName = branchName;
+		this.timestamp = timestamp;
 	}
 
 	/** Constructor. */
-	private CommitDescriptor(String branchName, long timestamp, int previousCommitsShift) {
-		this.branchName = branchName;
-		this.timestamp = timestamp;
-		this.previousCommitsShift = previousCommitsShift;
+	public CommitDescriptor(String branchName, long timestamp) {
+		this(branchName, String.valueOf(timestamp));
 	}
 
 	/** Parses the given commit descriptor string. */
 	public static CommitDescriptor parse(String commit) {
 		if (commit.contains(":")) {
 			String[] split = commit.split(":");
-			return new CommitDescriptor(split[0], Long.parseLong(split[1]));
+			return new CommitDescriptor(split[0], split[1]);
 		} else {
-			return new CommitDescriptor("master", Long.parseLong(commit));
+			return new CommitDescriptor("master", commit);
 		}
 	}
 
 	/** Returns a commit descriptor with appended p1, which teamscale interprets as the commit before. */
 	public CommitDescriptor commitBefore() {
-		return new CommitDescriptor(branchName, timestamp, 1);
+		return new CommitDescriptor(branchName, timestamp + "p1");
 	}
 
 	/** Returns a string representation of the commit in a Teamscale REST API compatible format. */
 	@Override
 	public String toString() {
-		if (previousCommitsShift == 0) {
-			return branchName + ":" + timestamp;
-		} else {
-			return branchName + ":" + timestamp + "p" + previousCommitsShift;
-		}
+		return branchName + ":" + timestamp;
 	}
 
 	@Override
@@ -61,12 +52,12 @@ public class CommitDescriptor implements Serializable {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CommitDescriptor that = (CommitDescriptor) o;
-		return Objects.equals(branchName, that.branchName) && Objects.equals(timestamp, that.timestamp) && Objects
-				.equals(previousCommitsShift, that.previousCommitsShift);
+		return Objects.equals(branchName, that.branchName) &&
+				Objects.equals(timestamp, that.timestamp);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(branchName, timestamp, previousCommitsShift);
+		return Objects.hash(branchName, timestamp);
 	}
 }
