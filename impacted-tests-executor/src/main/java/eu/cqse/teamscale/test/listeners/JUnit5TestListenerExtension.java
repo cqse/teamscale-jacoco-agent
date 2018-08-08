@@ -11,14 +11,14 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 
 	@Override
 	public void executionStarted(TestIdentifier testIdentifier) {
-		if (testIdentifier.getType() == TestDescriptor.Type.TEST) {
+		if (testIdentifier.isTest()) {
 			JaCoCoAgentController.getInstance().onTestStart(testIdentifier.getUniqueId());
 		}
 	}
 
 	@Override
 	public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-		if (testIdentifier.getType() == TestDescriptor.Type.TEST) {
+		if (testIdentifier.isTest()) {
 			JaCoCoAgentController.getInstance().onTestFinish(testIdentifier.getUniqueId());
 		}
 	}

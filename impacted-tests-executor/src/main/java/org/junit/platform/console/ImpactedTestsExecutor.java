@@ -74,7 +74,8 @@ public class ImpactedTestsExecutor {
 			return ConsoleLauncherExecutionResult.success();
 		}
 
-		TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName, options.server.userAccessToken, options.server.project);
+		TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
+				options.server.userAccessToken, options.server.project);
 		uploadTestDetails(options, availableTestDetails, client);
 
 		return executeTests(client, options);
@@ -101,7 +102,7 @@ public class ImpactedTestsExecutor {
 			testExecutionSummary = testExecutor.executeAllTests();
 		} else {
 			List<String> impactedTests = getImpactedTestsFromTeamscale(client, options);
-			if(impactedTests == null) {
+			if (impactedTests == null) {
 				testExecutionSummary = testExecutor.executeAllTests();
 			} else {
 				testExecutionSummary = testExecutor.executeTests(impactedTests);
@@ -142,9 +143,14 @@ public class ImpactedTestsExecutor {
 	/** Queries Teamscale for impacted tests. */
 	private List<String> getImpactedTestsFromTeamscale(TeamscaleClient client, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
-			Response<List<String>> response = client.getImpactedTests(options.baseline, options.endCommit, options.partition, logger.output);
+			Response<List<String>> response = client
+					.getImpactedTests(options.baseline, options.endCommit, options.partition, logger.output);
 			if (response.isSuccessful()) {
-				return response.body();
+				List<String> testList = response.body();
+				if (testList == null) {
+					logger.error("Teamscale was not able to determine impacted tests.");
+				}
+				return testList;
 			} else {
 				logger.error("Retrieval of impacted tests failed");
 				logger.error(response.code() + " " + response.message());

@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.51'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.60'
     }
 }
 
@@ -31,7 +31,7 @@ configurations {
 
 dependencies {
     implementation gradleApi()
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.51'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.60'
 
     implementation project(path: ':report-generator', configuration: 'shadow')
     implementation project(':teamscale-client')

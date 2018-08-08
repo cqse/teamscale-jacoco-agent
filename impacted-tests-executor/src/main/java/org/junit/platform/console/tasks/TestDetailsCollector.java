@@ -34,7 +34,12 @@ import static org.junit.platform.engine.TestDescriptor.Type.TEST;
 /** Collects test details for all tests that match the given options. */
 public class TestDetailsCollector {
 
-	/** Pattern that matches the classes fully qualified class name in JUnit's uniqueId as first capture group. */
+	/**
+	 * Pattern that matches the classes fully qualified class name in JUnit's uniqueId as first capture group.
+	 * The test's uniqueId is something similar to:
+	 * [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[method:testAdd()]
+	 * [engine:junit-vintage]/[runner:com.example.project.JUnit4Test]/[test:testAdd(com.example.project.JUnit4Test)]
+	 */
 	private static final Pattern FULL_CLASS_NAME_PATTERN = Pattern.compile(".*\\[(?:class|runner):([^]]+)\\].*");
 
 	/** The logger. */
@@ -73,7 +78,7 @@ public class TestDetailsCollector {
 	/** Recursively traverses the test plan to collect all test details in a depth-first-search manner. */
 	private void collectTestDetailsList(TestPlan testPlan, Set<TestIdentifier> roots, List<TestDetails> result) {
 		for (TestIdentifier testIdentifier : roots) {
-			if (testIdentifier.getType() == TEST) {
+			if (testIdentifier.isTest()) {
 				Optional<TestSource> source = testIdentifier.getSource();
 				if (source.isPresent() && source.get() instanceof MethodSource) {
 					MethodSource ms = (MethodSource) source.get();
@@ -82,7 +87,7 @@ public class TestDetailsCollector {
 					String uniqueId = testIdentifier.getUniqueId();
 					String internalId = getTestInternalId(testIdentifier);
 					String displayName = testIdentifier.getDisplayName();
-					result.add(new TestDetails(uniqueId, internalId, sourcePath, displayName, ""));
+					result.add(new TestDetails(uniqueId, internalId, sourcePath, displayName, null));
 				}
 			}
 
@@ -90,7 +95,11 @@ public class TestDetailsCollector {
 		}
 	}
 
-	/** Builds the internal ID which will later be displayed in Teamscale. */
+	/**
+	 * Builds the internal ID which will later be displayed in Teamscale.
+	 * We are using the legacy reporting name here, since this matches the format also used in the JUnit reports,
+	 * which we need to map together in Teamscale.
+	 */
 	private String getTestInternalId(TestIdentifier testIdentifier) {
 		return getFullyQualifiedClassName(testIdentifier) + '/' + testIdentifier.getLegacyReportingName();
 	}

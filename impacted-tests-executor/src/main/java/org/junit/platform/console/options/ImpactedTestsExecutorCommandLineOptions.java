@@ -18,7 +18,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	public boolean runAllTests;
 
 	/** The baseline commit used for TIA. */
-    public CommitDescriptor baseline;
+	public CommitDescriptor baseline;
 
 	/** The end commit used for TIA and for uploading the coverage. */
 	public CommitDescriptor endCommit;
@@ -31,7 +31,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 		commandLineOptions = jUnitResult;
 	}
 
-	/** Whether help should be displayed.  */
+	/** Whether help should be displayed. */
 	public boolean isDisplayHelp() {
 		return commandLineOptions.isDisplayHelp();
 	}

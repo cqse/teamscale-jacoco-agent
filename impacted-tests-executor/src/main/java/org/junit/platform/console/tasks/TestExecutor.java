@@ -61,12 +61,8 @@ public class TestExecutor {
 
 	/** Executes all tests included in {@link #options}. */
 	public TestExecutionSummary executeAllTests() {
-		LauncherDiscoveryRequest result;
 		logger.message("Executing all tests...");
-		result = new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions());
-		LauncherDiscoveryRequest discoveryRequest = result;
-
-		return executeRequest(discoveryRequest);
+		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions()));
 	}
 
 	/** Executes the tests described by the given discovery request. */
