@@ -4,14 +4,13 @@ import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 
 import java.io.IOException;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Translates test start and finish event into actions for the locally running jacoco agent.
  */
 public class JaCoCoAgentController {
 
-	/** Singleton instance for this class.  */
+	/** Singleton instance for this class. */
 	private static JaCoCoAgentController singleton;
 
 	/** Reference to the jacoco agent. */

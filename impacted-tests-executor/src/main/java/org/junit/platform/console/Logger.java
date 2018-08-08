@@ -41,7 +41,7 @@ public class Logger implements AutoCloseable {
 
 	/** Prints the given message to the error stream. */
 	public void error(String message) {
-		if(ansiColorEnabled) {
+		if (ansiColorEnabled) {
 			error.println(ANSI_RED + message + ANSI_RESET);
 		} else {
 			error.println(message);

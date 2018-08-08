@@ -1,7 +1,6 @@
 package eu.cqse.teamscale.test.listeners;
 
 import eu.cqse.teamscale.test.controllers.JaCoCoAgentController;
-import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;

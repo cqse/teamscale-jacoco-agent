@@ -29,8 +29,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.platform.engine.TestDescriptor.Type.TEST;
-
 /** Collects test details for all tests that match the given options. */
 public class TestDetailsCollector {
 

@@ -2,7 +2,8 @@ package eu.cqse.config
 
 import eu.cqse.Report
 import eu.cqse.teamscale.client.EReportFormat
-import eu.cqse.teamscale.client.EReportFormat.*
+import eu.cqse.teamscale.client.EReportFormat.JUNIT
+import eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE
 import eu.cqse.teamscale.report.util.AntPatternIncludeFilter
 import org.gradle.api.Project
 import org.gradle.api.Task
