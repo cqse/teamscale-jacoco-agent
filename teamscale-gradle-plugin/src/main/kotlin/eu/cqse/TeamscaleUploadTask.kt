@@ -52,7 +52,7 @@ open class TeamscaleUploadTask : DefaultTask() {
     }
 
     /** Recursively lists all files in the given directory that match the specified extension. */
-    private fun listFileTree(file: File, extension: String?): Collection<File> {
+    private fun listFileTree(file: File, extension: String): Collection<File> {
         return file.walkTopDown().filter { it.isFile && it.extension.equals(extension, ignoreCase = true) }.toSet()
     }
 }
