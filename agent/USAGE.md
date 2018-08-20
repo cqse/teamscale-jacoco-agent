@@ -76,6 +76,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `http-server-formats` (optional): a semicolon-separated list of report formats that should be generated. Can be one or more 
   of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
   more data might be required by the REST endpoints see `Test impact mode` below for details.
+- `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
+  which are either separated by line breaks (recommended for readability) or by commas.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -134,6 +136,10 @@ This option disables a WebSphere internal class cache that causes problems with 
 
 Please set the agent's `includes` parameter so that the WebSphere code is not being profiled.
 This ensures that the performance of your application does not degrade.
+
+Also consider to use the `config-file` option as WebSphere 17 and probably other versions silently strip any option 
+parameters exceeding 500 characters without any error message, which can lead to very subtle bugs when running the 
+profiler.
 
 ## Additional steps for JBoss
 
