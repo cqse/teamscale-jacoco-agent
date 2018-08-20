@@ -1,5 +1,5 @@
 ext {
-	appVersion = '8.3.0'
+	appVersion = '8.4.0'
 
 	// When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
 	jacocoVersion = '0.8.1'

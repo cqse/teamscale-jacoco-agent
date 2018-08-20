@@ -77,7 +77,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
   more data might be required by the REST endpoints see `Test impact mode` below for details.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are either separated by line breaks (recommended for readability) or by commas.
+  which are separated by line breaks. The file may also contain comments starting with `#`.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation

@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 8.4.0
+- [feature] added `config-file` option
+
 # 8.3.0
 - [feature] added Test Impact mode via `http-server-port`
 

@@ -31,6 +31,9 @@ import java.util.Set;
  */
 public class AgentOptionsParser {
 
+	/** Character which starts a comment in the config file. */
+	private static final String COMMENT_PREFIX = "#";
+
 	/**
 	 * Parses the given command-line options.
 	 */
@@ -169,13 +172,18 @@ public class AgentOptionsParser {
 	 * separators.
 	 * e.g.
 	 * class-dir=out
+	 * # Some comment
 	 * includes=test.*,excludes=third.party.*
 	 */
 	private static void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
 		try {
-			String configParameters = FileSystemUtils.readFile(configFile);
-			String[] split = configParameters.split(",|[\n\r]+");
-			for (String optionKeyValue : split) {
+			String configFileContent = FileSystemUtils.readFile(configFile);
+			String[] keyValueStrings = configFileContent.split("[\\n\\r]+");
+			for (String optionKeyValue : keyValueStrings) {
+				String trimmedOption = optionKeyValue.trim();
+				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
+					continue;
+				}
 				handleOption(options, optionKeyValue);
 			}
 		} catch (FileNotFoundException e) {
