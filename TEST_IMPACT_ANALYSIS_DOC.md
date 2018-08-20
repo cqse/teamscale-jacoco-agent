@@ -118,7 +118,7 @@ The Teamscale plugin generates a special task for every test task you define suf
 This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
 Afterwards `TESTWISE_COVERAGE` and `JUNIT` reports are uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
 
-Uploading reports can also be triggered independently of the `Impacted` task with with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.
+Uploading reports can also be triggered independently of the `Impacted` task with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.
 
 ## Technical details
 

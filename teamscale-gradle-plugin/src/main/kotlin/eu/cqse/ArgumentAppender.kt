@@ -4,7 +4,7 @@ import org.gradle.util.RelativePathUtil
 import java.io.File
 
 /**
- * Builder for javaagent parameters.
+ * Builder for java agent parameters.
  * Produces something similar to option1=value1,option2=entry1:entry2:entry3,option3...
  */
 class ArgumentAppender(private val builder: StringBuilder, private val workingDirectory: File) {
