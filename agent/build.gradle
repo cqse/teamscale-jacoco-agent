@@ -59,9 +59,6 @@ shadowJar {
         attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
     }
 
-	// Don't relocate since this breaks the XML generation (uses reflection internally)
-	relocate 'javax.xml.bind', 'javax.xml.bind'
-
 	// Don't relocate our own code
 	relocate 'eu.cqse', 'eu.cqse'
 
