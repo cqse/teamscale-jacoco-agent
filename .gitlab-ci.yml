@@ -23,6 +23,28 @@ build:
       - javaws-wrapper/build/distributions
     expire_in: 1 week
 
+agent-dist:
+  stage: publish
+  dependencies:
+    - build
+  only:
+    - tags
+  artifacts:
+    name: "teamscale-jacoco-agent-dist-$CI_COMMIT_REF_NAME"
+    paths:
+      - agent/build/dist/teamscale-jacoco-agent.zip
+
+javaws-dist:
+  stage: publish
+  dependencies:
+    - build
+  only:
+    - tags
+  artifacts:
+    name: "javaws-dist-$CI_COMMIT_REF_NAME"
+    paths:
+      - agent/build/dist/javaws.zip
+
 docker-internal:
   image: registry.cqse.eu/cqse/build-docker
   stage: publish
