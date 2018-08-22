@@ -30,7 +30,7 @@ agent-dist:
   only:
     - tags
   script:
-    # Nothing to do here, we only publish the already built artifact
+    - # Nothing to do here, we only publish the already built artifact
   artifacts:
     name: "teamscale-jacoco-agent-dist-$CI_COMMIT_REF_NAME"
     paths:
@@ -43,7 +43,7 @@ javaws-dist:
   only:
     - tags
   script:
-    # Nothing to do here, we only publish the already built artifact
+    - # Nothing to do here, we only publish the already built artifact
   artifacts:
     name: "javaws-dist-$CI_COMMIT_REF_NAME"
     paths:
