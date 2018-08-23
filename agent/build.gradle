@@ -38,25 +38,31 @@ dependencies {
 
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
 shadowJar {
-    baseName = 'teamscale-jacoco-agent'
-    classifier = null
-    // since this is used as an agent, we want it to always have the same name
-    // otherwise people have to adjust their -javaagent parameters after every
-    // update
-    version = null
-    manifest {
-        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
-    }
+	baseName = 'teamscale-jacoco-agent'
+	classifier = null
+	// since this is used as an agent, we want it to always have the same name
+	// otherwise people have to adjust their -javaagent parameters after every
+	// update
+	version = null
+	manifest {
+		attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
 
-    // Don't relocate since this breaks the XML generation (uses reflection internally)
-    relocate 'javax.xml.bind', 'javax.xml.bind'
+		// The jaxb library, which we are shading is a multi release jar, so we have to explicitly "inherit" this attribute
+		attributes 'Multi-Release': 'true'
+	}
 
-    // Don't relocate our own code
-    relocate 'eu.cqse', 'eu.cqse'
+	// Don't relocate our own code
+	// The plugin-shadow plugin by default relocates all packages to shadow.* and we are overriding this here
+	relocate 'eu.cqse', 'eu.cqse'
 
-    // ensures that log4j resource files are also relocated properly
-    transform(Log4j2PluginsFileTransformer)
-    transform(Log4JResourceTransformer)
+	// Fix relocation of multi version jar
+	// Default would be shadow/META-INF/versions/9/, which is wrong
+	// See http://openjdk.java.net/jeps/238
+	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
+
+	// ensures that log4j resource files are also relocated properly
+	transform(Log4j2PluginsFileTransformer)
+	transform(Log4JResourceTransformer)
 }
 
 startShadowScripts {
@@ -82,13 +88,13 @@ distributions {
                 into 'documentation'
             }
 
-            filesMatching('**/VERSION.txt') {
-                filter {
-                    it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', outputVersion)
-                }
-            }
-        }
-    }
+			filesMatching('**/VERSION.txt') {
+				filter {
+					it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', outputVersion)
+				}
+			}
+		}
+	}
 }
 
 processResources {
@@ -151,4 +157,3 @@ task publishDockerImageDockerHub(type: Exec) {
 
 task dockerInternal(dependsOn: publishDockerImageInternal)
 task dockerHub(dependsOn: publishDockerImageDockerHub)
-

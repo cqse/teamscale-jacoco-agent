@@ -30,10 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
-import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
-import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
-import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
+import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
 
 /**
  * Parses agent command line options.
@@ -104,15 +101,14 @@ public class AgentOptions {
 	 * The report artifacts that should be produced and stored.
 	 * Only applies for the Test Impact mode.
 	 */
-	/* package */ Set<EReportFormat> httpServerReportFormats = CollectionUtils
-			.asUnmodifiableHashSet(TESTWISE_COVERAGE, JACOCO, JUNIT, TEST_LIST);
+	/* package */ Set<EReportFormat> httpServerReportFormats = CollectionUtils.asUnmodifiableHashSet(TESTWISE_COVERAGE);
 
 	/**
 	 * The port on which the HTTP server should be listening.
 	 */
 	/* package */ Integer httpServerPort = null;
 
-    /**
+	/**
 	 * @see #originalOptionsString
 	 */
 	public String getOriginalOptionsString() {
