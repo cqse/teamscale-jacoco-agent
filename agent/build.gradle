@@ -1,14 +1,14 @@
 import de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer
 
 buildscript {
-    repositories {
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
-    }
-    dependencies {
-        classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
-    }
+	repositories {
+		maven {
+			url 'https://plugins.gradle.org/m2/'
+		}
+	}
+	dependencies {
+		classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
+	}
 }
 
 apply plugin: 'java'
@@ -49,22 +49,24 @@ dependencies {
 
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
 shadowJar {
-    baseName = 'teamscale-jacoco-agent'
-    classifier = null
-    // since this is used as an agent, we want it to always have the same name
-    // otherwise people have to adjust their -javaagent parameters after every
-    // update
-    version = null
-    manifest {
-        attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
-    }
+	baseName = 'teamscale-jacoco-agent'
+	classifier = null
+	// since this is used as an agent, we want it to always have the same name
+	// otherwise people have to adjust their -javaagent parameters after every
+	// update
+	version = null
+	manifest {
+		attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
+	}
 
 	// Don't relocate our own code
+	// The plugin-shadow plugin by default relocates all packages to shadow.* and we are overriding this here
 	relocate 'eu.cqse', 'eu.cqse'
+	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
 
-    // ensures that log4j resource files are also relocated properly
-    transform(Log4j2PluginsFileTransformer)
-    transform(Log4JResourceTransformer)
+	// ensures that log4j resource files are also relocated properly
+	transform(Log4j2PluginsFileTransformer)
+	transform(Log4JResourceTransformer)
 }
 
 startShadowScripts {
@@ -90,11 +92,11 @@ distributions {
 				into 'documentation'
 			}
 
-            filesMatching('**/VERSION.txt') {
-                filter {
-                    it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', outputVersion)
-                }
-            }
+			filesMatching('**/VERSION.txt') {
+				filter {
+					it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', outputVersion)
+				}
+			}
 		}
 	}
 }
@@ -159,4 +161,3 @@ task publishDockerImageDockerHub(type: Exec) {
 
 task dockerInternal(dependsOn: publishDockerImageInternal)
 task dockerHub(dependsOn: publishDockerImageDockerHub)
-
