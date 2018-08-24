@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 
 /**
  * Parses agent command line options.
