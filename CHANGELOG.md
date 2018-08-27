@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 9.0.0
+- [breaking change] added `teamscale-commit-manifest-jar` option. Automatic fallback to MANIFEST.MF on classpath is no longer supported
+
 # 8.4.0
 - [feature] added `config-file` option
 

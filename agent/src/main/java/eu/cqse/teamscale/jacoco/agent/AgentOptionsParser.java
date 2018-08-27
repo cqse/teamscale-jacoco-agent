@@ -5,7 +5,6 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import com.jcabi.manifests.Manifests;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
@@ -16,6 +15,7 @@ import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 /**
  * Parses agent command line options.
@@ -52,34 +54,12 @@ public class AgentOptionsParser {
 			handleOption(options, optionPart);
 		}
 
-		if (shouldUseFallbackToManifest(options)) {
-			options.teamscaleServer.commit = getCommitFromManifest();
-		}
-
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
 		}
 		return options;
 	}
-
-	/**
-	 * If we want to send coverage directly to Teamscale, but no commit is set
-	 * try to read the commit from the manifest.
-	 */
-	private static boolean shouldUseFallbackToManifest(AgentOptions options) {
-		return !options.teamscaleServer.hasAllRequiredFieldsNull() && options.teamscaleServer.commit == null;
-	}
-
-	/** Reads the Branch and Timestamp entries from the MANIFEST.MF if they exist. */
-    private static CommitDescriptor getCommitFromManifest() {
-        if (Manifests.exists("Branch") && Manifests.exists("Timestamp")) {
-            String branch = Manifests.read("Branch");
-            String timestamp = Manifests.read("Timestamp");
-            return new CommitDescriptor(branch, timestamp);
-        }
-        return null;
-    }
 
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
@@ -224,11 +204,34 @@ public class AgentOptionsParser {
 			case "teamscale-commit":
 				options.teamscaleServer.commit = parseCommit(value);
 				return true;
+			case "teamscale-commit-manifest-jar":
+				options.teamscaleServer.commit = getCommitFromManifest(new File(value));
+				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
 			default:
 				return false;
+		}
+	}
+
+	/**
+	 * Reads `Branch` and `Timestamp` entries from the given jar/war file and
+	 * builds a commit descriptor out of it.
+	 */
+	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
+		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+			Manifest mf = jarStream.getManifest();
+			String branch = mf.getMainAttributes().getValue("Branch");
+			String timestamp = mf.getMainAttributes().getValue("Timestamp");
+			if (branch == null) {
+				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
+			} else if (timestamp == null) {
+				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
+			}
+			return new CommitDescriptor(branch, timestamp);
+		} catch (IOException e) {
+			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
 		}
 	}
 

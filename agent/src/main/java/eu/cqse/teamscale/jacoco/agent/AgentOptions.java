@@ -171,7 +171,6 @@ public class AgentOptions {
 		validator.isTrue(uploadUrl == null || teamscaleServer.hasAllRequiredFieldsNull(),
 				"You did provide 'upload-url' and some 'teamscale-' option at the same time, but only one of " +
 						"them can be used!");
-
 		return validator;
 	}
 

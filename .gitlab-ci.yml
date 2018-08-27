@@ -29,7 +29,7 @@ dist-agent:
     - tags
   script:
     - echo "Publishing agent dist"
-    - ./gradlew :agent:dist
+    - ./gradlew :eu.cqse.teamscale.jacoco.agent:dist
   artifacts:
     name: "teamscale-jacoco-agent-dist-$CI_COMMIT_REF_NAME"
     paths:
@@ -42,7 +42,7 @@ dist-javaws:
     - tags
   script:
     - echo "Publishing javaws dist"
-    - ./gradlew :javaws-wrapper:dist
+    - ./gradlew :eu.cqse.teamscale.jacoco.javaws:dist
   artifacts:
     name: "javaws-dist-$CI_COMMIT_REF_NAME"
     paths:
