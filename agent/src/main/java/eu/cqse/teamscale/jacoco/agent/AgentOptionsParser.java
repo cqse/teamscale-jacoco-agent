@@ -94,7 +94,7 @@ public class AgentOptionsParser {
 		String value = keyAndValue[1];
 
 		// Remove quotes, which may be used to pass arguments with spaces via the command line
-		if(value.startsWith("\"") && value.endsWith("\"")) {
+		if (value.startsWith("\"") && value.endsWith("\"")) {
 			value = value.substring(1, value.length() - 1);
 		}
 
@@ -173,13 +173,13 @@ public class AgentOptionsParser {
 	 * e.g.
 	 * class-dir=out
 	 * # Some comment
-	 * includes=test.*,excludes=third.party.*
+	 * includes=test.*
+	 * excludes=third.party.*
 	 */
 	private static void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
 		try {
-			String configFileContent = FileSystemUtils.readFile(configFile);
-			String[] keyValueStrings = configFileContent.split("[\\n\\r]+");
-			for (String optionKeyValue : keyValueStrings) {
+			List<String> configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile);
+			for (String optionKeyValue : configFileKeyValues) {
 				String trimmedOption = optionKeyValue.trim();
 				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
 					continue;
@@ -188,9 +188,10 @@ public class AgentOptionsParser {
 			}
 		} catch (FileNotFoundException e) {
 			throw new AgentOptionParseException(
-					"File " + configFile.getAbsolutePath() + " not found given for option 'config-file'!", e);
+					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found!", e);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("An error occurred while reading the config file!", e);
+			throw new AgentOptionParseException(
+					"An error occurred while reading the config file " + configFile.getAbsolutePath() + "!", e);
 		}
 	}
 
