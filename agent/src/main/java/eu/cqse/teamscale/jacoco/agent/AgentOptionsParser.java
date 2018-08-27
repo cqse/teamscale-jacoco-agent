@@ -10,11 +10,13 @@ import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -30,6 +32,9 @@ import java.util.jar.Manifest;
  * Parses agent command line options.
  */
 public class AgentOptionsParser {
+
+	/** Character which starts a comment in the config file. */
+	private static final String COMMENT_PREFIX = "#";
 
 	/**
 	 * Parses the given command-line options.
@@ -93,6 +98,9 @@ public class AgentOptionsParser {
 	 */
 	private static boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
+			case "config-file":
+				readConfigFromFile(options, new File(value));
+				return true;
 			case "logging-config":
 				options.loggingConfig = parsePath(key, value);
 				return true;
@@ -135,6 +143,35 @@ public class AgentOptionsParser {
 				return true;
 			default:
 				return false;
+		}
+	}
+
+	/**
+	 * Reads configuration parameters from the given file.
+	 * The expected format is basically the same as for the command line, but line breaks are also considered as
+	 * separators.
+	 * e.g.
+	 * class-dir=out
+	 * # Some comment
+	 * includes=test.*
+	 * excludes=third.party.*
+	 */
+	private static void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
+		try {
+			List<String> configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile);
+			for (String optionKeyValue : configFileKeyValues) {
+				String trimmedOption = optionKeyValue.trim();
+				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
+					continue;
+				}
+				handleOption(options, optionKeyValue);
+			}
+		} catch (FileNotFoundException e) {
+			throw new AgentOptionParseException(
+					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found!", e);
+		} catch (IOException e) {
+			throw new AgentOptionParseException(
+					"An error occurred while reading the config file " + configFile.getAbsolutePath() + "!", e);
 		}
 	}
 
@@ -183,7 +220,7 @@ public class AgentOptionsParser {
 	 * builds a commit descriptor out of it.
 	 */
 	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
-		try(JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
 			Manifest mf = jarStream.getManifest();
 			String branch = mf.getMainAttributes().getValue("Branch");
 			String timestamp = mf.getMainAttributes().getValue("Timestamp");

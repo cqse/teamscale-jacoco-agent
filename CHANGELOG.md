@@ -3,6 +3,7 @@ We use [semantic versioning][semver]
 # Next release
 
 # 8.4.0
+- [feature] added `config-file` option
 - [feature] added `teamscale-commit-manifest-jar` option
 
 # 8.3.1
