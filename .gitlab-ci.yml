@@ -33,7 +33,7 @@ dist-agent:
   artifacts:
     name: "teamscale-jacoco-agent-dist-$CI_COMMIT_REF_NAME"
     paths:
-      - agent/build/dist/teamscale-jacoco-agent.zip
+      - agent/build/distributions/teamscale-jacoco-agent.zip
     expire_in: 1 yrs
 
 dist-javaws:
@@ -46,7 +46,7 @@ dist-javaws:
   artifacts:
     name: "javaws-dist-$CI_COMMIT_REF_NAME"
     paths:
-      - agent/build/dist/javaws.zip
+      - javaws-wrapper/build/distributions/javaws.zip
     expire_in: 1 yrs
 
 docker-internal:
