@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 8.4.0
+- [feature] added `config-file` option
+
 # 8.3.1
 - [fix] fixed class conflict with JAXB in WebSphere
 
