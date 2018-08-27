@@ -56,7 +56,7 @@ The following options are available:
   Teamscale's UI.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed.
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
   
   You can get the commit info from your VCS e.g. for Git via 
   
