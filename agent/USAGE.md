@@ -56,8 +56,7 @@ The following options are available:
   Teamscale's UI.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed. As an alternative the agent accepts values supplied via `Branch` and 
-  `Timestamp` entries in the jar/war's `META-INF/MANIFEST.MF` file.
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
   
   You can get the commit info from your VCS e.g. for Git via 
   
@@ -70,12 +69,17 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
   
+- `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
+  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file.
+  
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
   (See `Test impact mode` below for details).
 - `http-server-formats` (optional): a semicolon-separated list of report formats that should be generated. Can be one or more 
   of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
   more data might be required by the REST endpoints see `Test impact mode` below for details.
+- `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
+  which are separated by line breaks. The file may also contain comments starting with `#`.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -134,6 +138,10 @@ This option disables a WebSphere internal class cache that causes problems with 
 
 Please set the agent's `includes` parameter so that the WebSphere code is not being profiled.
 This ensures that the performance of your application does not degrade.
+
+Also consider to use the `config-file` option as WebSphere 17 and probably other versions silently strip any option 
+parameters exceeding 500 characters without any error message, which can lead to very subtle bugs when running the 
+profiler.
 
 ## Additional steps for JBoss
 

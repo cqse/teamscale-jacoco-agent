@@ -5,16 +5,19 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import com.jcabi.manifests.Manifests;
 import eu.cqse.teamscale.client.CommitDescriptor;
 import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,11 +25,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 /**
  * Parses agent command line options.
  */
 public class AgentOptionsParser {
+
+	/** Character which starts a comment in the config file. */
+	private static final String COMMENT_PREFIX = "#";
 
 	/**
 	 * Parses the given command-line options.
@@ -46,34 +54,12 @@ public class AgentOptionsParser {
 			handleOption(options, optionPart);
 		}
 
-		if (shouldUseFallbackToManifest(options)) {
-			options.teamscaleServer.commit = getCommitFromManifest();
-		}
-
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
 		}
 		return options;
 	}
-
-	/**
-	 * If we want to send coverage directly to Teamscale, but no commit is set
-	 * try to read the commit from the manifest.
-	 */
-	private static boolean shouldUseFallbackToManifest(AgentOptions options) {
-		return !options.teamscaleServer.hasAllRequiredFieldsNull() && options.teamscaleServer.commit == null;
-	}
-
-	/** Reads the Branch and Timestamp entries from the MANIFEST.MF if they exist. */
-    private static CommitDescriptor getCommitFromManifest() {
-        if (Manifests.exists("Branch") && Manifests.exists("Timestamp")) {
-            String branch = Manifests.read("Branch");
-            String timestamp = Manifests.read("Timestamp");
-            return new CommitDescriptor(branch, timestamp);
-        }
-        return null;
-    }
 
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
@@ -88,7 +74,7 @@ public class AgentOptionsParser {
 		String value = keyAndValue[1];
 
 		// Remove quotes, which may be used to pass arguments with spaces via the command line
-		if(value.startsWith("\"") && value.endsWith("\"")) {
+		if (value.startsWith("\"") && value.endsWith("\"")) {
 			value = value.substring(1, value.length() - 1);
 		}
 
@@ -112,6 +98,9 @@ public class AgentOptionsParser {
 	 */
 	private static boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
+			case "config-file":
+				readConfigFromFile(options, new File(value));
+				return true;
 			case "logging-config":
 				options.loggingConfig = parsePath(key, value);
 				return true;
@@ -156,6 +145,35 @@ public class AgentOptionsParser {
 	}
 
 	/**
+	 * Reads configuration parameters from the given file.
+	 * The expected format is basically the same as for the command line, but line breaks are also considered as
+	 * separators.
+	 * e.g.
+	 * class-dir=out
+	 * # Some comment
+	 * includes=test.*
+	 * excludes=third.party.*
+	 */
+	private static void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
+		try {
+			List<String> configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile);
+			for (String optionKeyValue : configFileKeyValues) {
+				String trimmedOption = optionKeyValue.trim();
+				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
+					continue;
+				}
+				handleOption(options, optionKeyValue);
+			}
+		} catch (FileNotFoundException e) {
+			throw new AgentOptionParseException(
+					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found!", e);
+		} catch (IOException e) {
+			throw new AgentOptionParseException(
+					"An error occurred while reading the config file " + configFile.getAbsolutePath() + "!", e);
+		}
+	}
+
+	/**
 	 * Handles all command line options prefixed with "teamscale-".
 	 *
 	 * @return true if it has successfully process the given option.
@@ -184,11 +202,34 @@ public class AgentOptionsParser {
 			case "teamscale-commit":
 				options.teamscaleServer.commit = parseCommit(value);
 				return true;
+			case "teamscale-commit-manifest-jar":
+				options.teamscaleServer.commit = getCommitFromManifest(new File(value));
+				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
 			default:
 				return false;
+		}
+	}
+
+	/**
+	 * Reads `Branch` and `Timestamp` entries from the given jar/war file and
+	 * builds a commit descriptor out of it.
+	 */
+	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
+		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+			Manifest mf = jarStream.getManifest();
+			String branch = mf.getMainAttributes().getValue("Branch");
+			String timestamp = mf.getMainAttributes().getValue("Timestamp");
+			if (branch == null) {
+				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
+			} else if (timestamp == null) {
+				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
+			}
+			return new CommitDescriptor(branch, timestamp);
+		} catch (IOException e) {
+			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
 		}
 	}
 
