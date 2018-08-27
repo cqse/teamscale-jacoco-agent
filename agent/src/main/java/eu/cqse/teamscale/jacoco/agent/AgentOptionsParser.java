@@ -183,8 +183,7 @@ public class AgentOptionsParser {
 	 * builds a commit descriptor out of it.
 	 */
 	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
-		try {
-			JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile));
+		try(JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
 			Manifest mf = jarStream.getManifest();
 			String branch = mf.getMainAttributes().getValue("Branch");
 			String timestamp = mf.getMainAttributes().getValue("Timestamp");
