@@ -73,7 +73,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file.
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
-- `http-server-formats` (optional): the port at which the agent should start an HTTP server that listens for test events 
+- `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
   (See `Test impact mode` below for details).
 - `http-server-formats` (optional): a semicolon-separated list of report formats that should be generated. Can be one or more 
   of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
