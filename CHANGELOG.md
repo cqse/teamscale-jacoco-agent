@@ -5,6 +5,9 @@ We use [semantic versioning][semver]
 # 8.4.0
 - [feature] added `config-file` option
 
+# 8.3.1
+- [fix] fixed class conflict with JAXB in WebSphere
+
 # 8.3.0
 - [feature] added Test Impact mode via `http-server-port`
 
