@@ -7,3 +7,8 @@ addons:
   apt:
     packages:
     - pandoc
+    - texlive-latex-base
+    - texlive-latex-extra
+    - texlive-fonts-recommended
+    - texlive-fonts-extra
+    - lmodern
