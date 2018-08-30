@@ -21,7 +21,7 @@
 ### Publishing
 
 After merging, please create a GitHub Release tag with the version number, e.g. `v8.1.0`
-All tags are built automatically using [Travis CI](https://travis-ci.com/cqse/teamscale-jacoco-agent) and [Docker Cloud Build](https://cloud.docker.com/swarm/cqse/repository/registry-1.docker.io/cqse/teamscale-jacoco-agent/general) with the release binaries being uploaded to the GitHub Releases.
+All tags are built automatically using [Travis CI](https://travis-ci.com/cqse/teamscale-jacoco-agent) and [Docker Cloud Build](https://cloud.docker.com/swarm/cqse/repository/docker/cqse/teamscale-jacoco-client) with the release binaries being uploaded to the GitHub Releases.
 
 Only use releases from tagged commits. This ensures that we always know which code is running in production.
 
