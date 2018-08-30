@@ -1,3 +1,7 @@
+plugins {
+	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -20,31 +24,19 @@ startShadowScripts {
 	applicationName = 'javaws'
 }
 
-task doc(type: Exec) {
-	def outputDir = file('build/doc')
-	outputs.dir outputDir
-
-	doFirst {
-		mkdir outputDir
-	}
-
-	commandLine 'pandoc', 'README.md', '-o', "$outputDir/README.pdf"
-}
-
 distributions {
 	shadow {
 		baseName = 'javaws'
 		contents {
-			from(doc) {
-				include '**'
+			from(readmeToPdf) {
 				into 'documentation'
 			}
 
 			from(project(':eu.cqse.teamscale.jacoco.agent').tasks.shadowJar) {
 				rename(/.*/, 'agent.jar')
 			}
-			from(project(':eu.cqse.teamscale.jacoco.agent').tasks.doc) {
-				rename(/.*/, 'agent-userguide.pdf')
+			from(project(':eu.cqse.teamscale.jacoco.agent').tasks.usageToPdf) {
+				rename('USAGE.pdf', 'agent-userguide.pdf')
 				into 'documentation'
 			}
 		}

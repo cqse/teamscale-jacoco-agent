@@ -11,6 +11,10 @@ buildscript {
 	}
 }
 
+plugins {
+	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
 // we don't want to cause conflicts between our dependencies and the target application
@@ -78,23 +82,13 @@ startShadowScripts {
 	applicationName = 'convert'
 }
 
-task doc(type: Exec) {
-	def outputDir = file('build/doc')
-	outputs.dir outputDir
-
-	doFirst {
-		mkdir outputDir
-	}
-	commandLine 'pandoc', 'USAGE.md', '-o', "$outputDir/userguide.pdf"
-}
-
 distributions {
 	shadow {
 		baseName = 'teamscale-jacoco-agent'
 		contents {
-			from(doc) {
-				include '**'
+			from(usageToPdf) {
 				into 'documentation'
+				rename 'USAGE.pdf', 'userguide.pdf'
 			}
 
 			filesMatching('**/VERSION.txt') {
