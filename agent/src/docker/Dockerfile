@@ -10,7 +10,7 @@ RUN ./gradlew :eu.cqse.teamscale.jacoco.agent:assemble
 FROM alpine:latest
 
 RUN mkdir -p /agent
-COPY --from=build agent/build/libs/teamscale-jacoco-agent.jar /agent
+COPY --from=build /src/agent/build/libs/teamscale-jacoco-agent.jar /agent
 
 VOLUME /agent
 
