@@ -114,10 +114,6 @@ processResources {
 	}
 }
 
-task dist {
-	dependsOn shadowDistZip
-}
-
 task copyDockerFiles(type: Copy) {
 	dependsOn shadowJar
 

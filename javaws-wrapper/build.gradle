@@ -50,8 +50,3 @@ distributions {
 		}
 	}
 }
-
-task dist {
-	dependsOn shadowDistZip
-}
-
