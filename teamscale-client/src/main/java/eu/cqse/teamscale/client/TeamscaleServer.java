@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.jacoco.agent.store.upload.teamscale;
+package eu.cqse.teamscale.client;
 
 import okhttp3.HttpUrl;
 

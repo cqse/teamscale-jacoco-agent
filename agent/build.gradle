@@ -1,48 +1,37 @@
 import de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer
 
-buildscript {
-	repositories {
-		maven {
-			url 'https://plugins.gradle.org/m2/'
-		}
-	}
-	dependencies {
-		classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
-	}
-}
-
-apply plugin: 'java'
-apply plugin: 'application'
 // we don't want to cause conflicts between our dependencies and the target application
 // since the agent will be loaded with the same class loader as the profiled application
 // so we use plugin-shadow instead of shadow to relocate all of our dependencies
 apply plugin: 'com.github.johnrengelman.plugin-shadow'
+apply plugin: 'application'
 
 ext {
-	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
+    outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
 
 dependencies {
-	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+    implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
+    implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-	implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
 
-	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
-	implementation 'com.beust:jcommander:1.71'
-	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
+    implementation 'com.beust:jcommander:1.71'
+    implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
 
-	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-	implementation 'com.sparkjava:spark-core:2.7.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.sparkjava:spark-core:2.7.2'
 
 	implementation 'com.google.code.gson:gson:2.8.5'
 
-	implementation project(':report-generator')
+    implementation project(':teamscale-client')
+    implementation project(':report-generator')
 
-	testImplementation 'junit:junit:4.12'
-	testImplementation 'org.assertj:assertj-core:3.8.0'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
@@ -75,27 +64,27 @@ shadowJar {
 }
 
 startShadowScripts {
-	applicationName = 'convert'
+    applicationName = 'convert'
 }
 
 task doc(type: Exec) {
-	def outputDir = file('build/doc')
-	outputs.dir outputDir
+    def outputDir = file('build/doc')
+    outputs.dir outputDir
 
-	doFirst {
-		mkdir outputDir
-	}
-	commandLine 'pandoc', 'USAGE.md', '-o', "$outputDir/userguide.pdf"
+    doFirst {
+        mkdir outputDir
+    }
+    commandLine 'pandoc', 'USAGE.md', '-o', "$outputDir/userguide.pdf"
 }
 
 distributions {
-	shadow {
-		baseName = 'teamscale-jacoco-agent'
-		contents {
-			from(doc) {
-				include '**'
-				into 'documentation'
-			}
+    shadow {
+        baseName = 'teamscale-jacoco-agent'
+        contents {
+            from(doc) {
+                include '**'
+                into 'documentation'
+            }
 
 			filesMatching('**/VERSION.txt') {
 				filter {
@@ -107,61 +96,61 @@ distributions {
 }
 
 processResources {
-	filesMatching('**/app.properties') {
-		filter {
-			it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
-		}
-	}
+    filesMatching('**/app.properties') {
+        filter {
+            it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
+        }
+    }
 }
 
 task dist {
-	dependsOn shadowDistZip
+    dependsOn shadowDistZip
 }
 
 task copyDockerFiles(type: Copy) {
-	dependsOn shadowJar
+    dependsOn shadowJar
 
-	doFirst {
-		mkdir 'build/docker'
-	}
+    doFirst {
+        mkdir 'build/docker'
+    }
 
-	from('src/docker') {
-		include 'Dockerfile'
-	}
-	from(shadowJar) {
-		rename(/.*/, 'agent.jar')
-	}
+    from('src/docker') {
+        include 'Dockerfile'
+    }
+    from(shadowJar) {
+        rename(/.*/, 'agent.jar')
+    }
 
-	into 'build/docker'
+    into 'build/docker'
 }
 
 task buildDockerImage(type: Exec) {
-	dependsOn copyDockerFiles
+    dependsOn copyDockerFiles
 
-	workingDir 'build/docker'
-	commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-agent:${outputVersion}"
+    workingDir 'build/docker'
+    commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-agent:${outputVersion}"
 }
 
 task tagDockerImage(type: Exec) {
-	dependsOn buildDockerImage
+    dependsOn buildDockerImage
 
-	commandLine 'docker', 'tag', "cqse/teamscale-jacoco-agent:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
+    commandLine 'docker', 'tag', "cqse/teamscale-jacoco-agent:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
 }
 
 task publishDockerImageInternal(type: Exec) {
-	dependsOn tagDockerImage
+    dependsOn tagDockerImage
 
-	commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
+    commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
 }
 
 task loginDockerHub(type: Exec) {
-	commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
+    commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
 }
 
 task publishDockerImageDockerHub(type: Exec) {
-	dependsOn tagDockerImage, loginDockerHub
+    dependsOn tagDockerImage, loginDockerHub
 
-	commandLine 'docker', 'push', "cqse/teamscale-jacoco-agent:${outputVersion}"
+    commandLine 'docker', 'push', "cqse/teamscale-jacoco-agent:${outputVersion}"
 }
 
 task dockerInternal(dependsOn: publishDockerImageInternal)

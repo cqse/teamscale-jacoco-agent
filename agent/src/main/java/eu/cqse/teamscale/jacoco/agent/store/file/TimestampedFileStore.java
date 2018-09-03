@@ -1,7 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent.store.file;
 
+import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

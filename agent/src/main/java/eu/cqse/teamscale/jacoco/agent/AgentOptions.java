@@ -9,19 +9,18 @@ import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
+import eu.cqse.teamscale.client.EReportFormat;
+import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import eu.cqse.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
-import org.jacoco.report.JavaNames;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -31,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 
 /**
  * Parses agent command line options.
@@ -47,18 +46,6 @@ public class AgentOptions {
 	 * The directories and/or zips that contain all class files being profiled.
 	 */
 	/* package */ List<File> classDirectoriesOrZips = new ArrayList<>();
-
-	/**
-	 * Include patterns to apply during JaCoCo's traversal of class files. If null
-	 * then everything is included.
-	 */
-	/* package */ WildcardMatcher locationIncludeFilters = null;
-
-	/**
-	 * Exclude patterns to apply during JaCoCo's traversal of class files. If null
-	 * then nothing is excluded.
-	 */
-	/* package */ WildcardMatcher locationExcludeFilters = null;
 
 	/**
 	 * The logging configuration file.
@@ -286,33 +273,11 @@ public class AgentOptions {
 	}
 
 	/**
-	 * @see #locationIncludeFilters
-	 * @see #locationExcludeFilters
+	 * @see #jacocoIncludes
+	 * @see #jacocoExcludes
 	 */
 	public Predicate<String> getLocationIncludeFilter() {
-		return path -> {
-			String className = getClassName(path);
-			// first check includes
-			if (locationIncludeFilters != null && !locationIncludeFilters.matches(className)) {
-				return false;
-			}
-			// if they match, check excludes
-			return locationExcludeFilters == null || !locationExcludeFilters.matches(className);
-		};
+		return new ClasspathWildcardIncludeFilter(jacocoIncludes, jacocoExcludes);
 	}
 
-	/**
-	 * Returns the normalized class name of the given class file's path.
-	 */
-	/* package */
-	static String getClassName(String path) {
-		String[] parts = FileSystemUtils.normalizeSeparators(path).split("@");
-		if (parts.length == 0) {
-			return "";
-		}
-
-		String pathInsideJar = parts[parts.length - 1];
-		String pathWithoutExtension = StringUtils.removeLastPart(pathInsideJar, '.');
-		return new JavaNames().getQualifiedClassName(pathWithoutExtension);
-	}
 }

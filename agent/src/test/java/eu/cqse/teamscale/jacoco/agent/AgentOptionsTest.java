@@ -1,30 +1,17 @@
 package eu.cqse.teamscale.jacoco.agent;
 
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleServer;
+import eu.cqse.teamscale.client.TeamscaleServer;
 import org.junit.Test;
 
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.jacoco.agent.AgentOptions.getClassName;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TEST_LIST;
+import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
+import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
-
-	/** Tests path to class name conversion. */
-	@Test
-	public void testPathToClassNameConversion() {
-		assertThat(getClassName("file.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
-		assertThat(getClassName("file.jar@com/foo/Bar$Goo.class")).isEqualTo("com.foo.Bar.Goo");
-		assertThat(getClassName("file1.jar@goo/file2.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
-		assertThat(getClassName("com/foo/Bar.class")).isEqualTo("com.foo.Bar");
-		assertThat(getClassName(
-				"C:\\client-daily\\client\\plugins\\com.customer.something.client_1.2.3.4.1234566778.jar@com/customer/something/SomeClass.class"))
-				.isEqualTo("com.customer.something.SomeClass");
-	}
 
 	/** Tests include pattern matching. */
 	@Test
@@ -70,7 +57,6 @@ public class AgentOptionsTest {
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws AgentOptionParseException {
-		new AgentOptionsParser();
 		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
 				"http-server-port=8081," +
 				"http-server-formats=TESTWISE_COVERAGE;TEST_LIST;JUNIT");

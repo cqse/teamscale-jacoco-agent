@@ -1,15 +1,16 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.teamscale;
 
+import eu.cqse.teamscale.client.ITeamscaleService;
+import eu.cqse.teamscale.client.EReportFormat;
+import eu.cqse.teamscale.client.TeamscaleServer;
+import eu.cqse.teamscale.client.TeamscaleServiceGenerator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import retrofit2.Response;
 
 import java.io.IOException;
 
@@ -33,7 +34,7 @@ public class TeamscaleUploadStore implements IXmlStore {
 		this.failureStore = failureStore;
 		this.teamscaleServer = teamscaleServer;
 
-		api = BasicAuthServiceGenerator.createService(
+		api = TeamscaleServiceGenerator.createService(
 				ITeamscaleService.class,
 				teamscaleServer.url,
 				teamscaleServer.userName,
@@ -56,30 +57,17 @@ public class TeamscaleUploadStore implements IXmlStore {
 		logger.debug("Uploading {} artifact to {}", format.readableName, teamscaleServer);
 
 		try {
-			Response<ResponseBody> response = api.uploadReport(
+			api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,
 					teamscaleServer.partition + format.partitionSuffix,
 					format,
 					teamscaleServer.message + " (" + format.readableName + ")",
 					RequestBody.create(MultipartBody.FORM, xml)
-			).execute();
-			if (response.isSuccessful()) {
-				return true;
-			}
-
-			ResponseBody body = response.body();
-			String bodyString;
-			if (body == null) {
-				bodyString = "<no body>";
-			} else {
-				bodyString = body.string();
-			}
-			logger.error("Failed to upload coverage to {}. Request failed with error code {}. Response body:\n{}",
-					teamscaleServer, response.code(), bodyString);
-			return false;
+			);
+			return true;
 		} catch (IOException e) {
-			logger.error("Failed to upload coverage to {}. Probably a network problem", teamscaleServer, e);
+			logger.error("Failed to upload coverage to {}", teamscaleServer, e);
 			return false;
 		}
 	}

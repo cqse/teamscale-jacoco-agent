@@ -100,6 +100,12 @@ public class ClassCoverageLookup {
 					sourceFileName + " " + className + " (" + probes.size() + " vs " + executedProbes.length + ")! " +
 					"This is a bug in the profiler tooling. Please report it back to CQSE.");
 		}
+		if (sourceFileName == null) {
+			logger.warn(
+					"No source file name found for class " + className + "! This class was probably not compiled with " +
+							"debug information enabled!");
+			return null;
+		}
 
 		String packageName = StringUtils.removeLastPart(className, '/');
 		final FileCoverage fileCoverage = new FileCoverage(packageName, sourceFileName);

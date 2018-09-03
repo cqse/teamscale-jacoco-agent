@@ -34,4 +34,16 @@ public class TestwiseCoverage {
 	public Collection<TestCoverage> getTests() {
 		return tests.values();
 	}
+
+	/**
+	 * Merges the given {@link TestwiseCoverage} with this one.
+	 *
+	 * @return Returns a reference to this
+	 */
+	public TestwiseCoverage merge(TestwiseCoverage testwiseCoverage) {
+		for (TestCoverage value : testwiseCoverage.getTests()) {
+			this.add(value);
+		}
+		return this;
+	}
 }

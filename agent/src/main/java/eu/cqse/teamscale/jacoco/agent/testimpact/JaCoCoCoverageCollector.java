@@ -16,7 +16,7 @@ import spark.Request;
 
 import java.io.IOException;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
+import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
 import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /**

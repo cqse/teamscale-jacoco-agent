@@ -1,0 +1,48 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group 'eu.cqse'
+version pluginVersion
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+
+    implementation project(':teamscale-client')
+
+    implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.2.0'
+    implementation group: 'org.junit.platform', name: 'junit-platform-launcher', version: '1.2.0'
+    implementation group: 'org.junit.platform', name: 'junit-platform-engine', version: '1.2.0'
+    implementation group: 'org.junit.platform', name: 'junit-platform-console', version: '1.2.0'
+    testRuntime("org.junit.vintage:junit-vintage-engine:4.12.3")
+
+    deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+}
+
+jar {
+    classifier = null
+    manifest {
+        attributes 'Premain-Class': 'eu.cqse.teamscale.PreMain'
+    }
+}
+
+// At the moment we are stuck with the old maven plugin until support for private key
+// files is added or we add a dedicated user with a password to our server.
+// https://github.com/gradle/gradle/issues/1263
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: cqseMavenRepositoryUrl) {
+                authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+            }
+        }
+    }
+}

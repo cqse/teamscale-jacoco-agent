@@ -11,6 +11,9 @@
 include ':agent'
 include ':javaws-wrapper'
 include ':report-generator'
+include ':teamscale-gradle-plugin'
+include ':impacted-tests-executor'
+include ':teamscale-client'
 
 rootProject.name = 'eu.cqse.teamscale.jacoco'
 project(':javaws-wrapper').name = 'eu.cqse.teamscale.jacoco.javaws'

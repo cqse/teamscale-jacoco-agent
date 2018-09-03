@@ -9,6 +9,8 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -21,7 +23,7 @@ public class AntPatternIncludeFilter implements Predicate<String> {
 	/** The include filters. Empty means include everything. */
 	private final List<Pattern> locationIncludeFilters;
 
-	/** The exclude filterns. Empty means exclude nothing. */
+	/** The exclude filters. Empty means exclude nothing. */
 	private final List<Pattern> locationExcludeFilters;
 
 	/** Constructor. */

@@ -13,7 +13,7 @@ import eu.cqse.teamscale.jacoco.util.Timer;
 import java.io.IOException;
 import java.time.Duration;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JACOCO;
+import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
 import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /**

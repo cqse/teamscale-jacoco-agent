@@ -1,5 +1,6 @@
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
+import eu.cqse.teamscale.client.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
@@ -13,7 +14,7 @@ import spark.Request;
 import javax.xml.bind.JAXBException;
 import java.util.Arrays;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.JUNIT;
+import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
 import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.getTestDetailsFromRequest;
 import static eu.cqse.teamscale.report.junit.JUnitReportGenerator.generateJUnitReport;
 
