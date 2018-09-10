@@ -61,6 +61,7 @@ shadowJar {
 	// ensures that log4j resource files are also relocated properly
 	transform(Log4j2PluginsFileTransformer)
 	transform(Log4JResourceTransformer)
+	mergeServiceFiles()
 }
 
 startShadowScripts {
