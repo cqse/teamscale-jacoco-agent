@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 9.0.1
+- [fix] NativeWebSocketServletContainerInitializer not found
+
 # 9.0.0
 - [breaking change] added `teamscale-commit-manifest-jar` option. Automatic fallback to MANIFEST.MF on classpath is no longer supported
 
