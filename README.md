@@ -7,10 +7,15 @@
 
 ## Documentation
 
-* [Teamscale JaCoCo Agent](agent/USAGE.md)
+* [Teamscale JaCoCo Agent](agent/README.md)
 * [Java Web Start Wrapper](javaws-wrapper/README.md)
 
 ## Development
+
+### Build locally
+
+* Import in Eclipse/IntelliJ as Gradle project
+* Command line: `./gradlew assemble`
 
 ### Contributing
 
@@ -20,7 +25,8 @@
 
 ### Publishing
 
-After merging, please create a GitHub Release tag with the version number, e.g. `v8.1.0`
+After merging, please create a GitHub Release tag with the version number, e.g. `v8.1.0`.
+Releases are numbered according to semantic versioning (see full [Changelog](CHANGELOG.md]).
 All tags are built automatically using [Travis CI](https://travis-ci.com/cqse/teamscale-jacoco-agent) and [Docker Cloud Build](https://cloud.docker.com/swarm/cqse/repository/docker/cqse/teamscale-jacoco-client) with the release binaries being uploaded to the GitHub Releases.
 
 Only use releases from tagged commits. This ensures that we always know which code is running in production.
