@@ -7,10 +7,15 @@
 
 ## Documentation
 
-* [Teamscale JaCoCo Agent](agent/USAGE.md)
+* [Teamscale JaCoCo Agent](agent/README.md)
 * [Java Web Start Wrapper](javaws-wrapper/README.md)
 
 ## Development
+
+### Build locally
+
+* Import in Eclipse/IntelliJ as Gradle project
+* Command line: `./gradlew assemble`
 
 ### Contributing
 

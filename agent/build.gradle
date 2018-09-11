@@ -86,9 +86,9 @@ distributions {
 	shadow {
 		baseName = 'teamscale-jacoco-agent'
 		contents {
-			from(usageToPdf) {
+			from(readmeToPdf) {
 				into 'documentation'
-				rename 'USAGE.pdf', 'userguide.pdf'
+				rename 'README.pdf', 'userguide.pdf'
 			}
 
 			filesMatching('**/VERSION.txt') {
