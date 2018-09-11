@@ -1,6 +1,5 @@
 import de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer
 
-<<<<<<< HEAD
 buildscript {
 	repositories {
 		maven {
@@ -18,27 +17,10 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'application'
-||||||| merged common ancestors
-buildscript {
-	repositories {
-		maven {
-			url 'https://plugins.gradle.org/m2/'
-		}
-	}
-	dependencies {
-		classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
-	}
-}
-
-apply plugin: 'java'
-apply plugin: 'application'
-=======
->>>>>>> origin/master
 // we don't want to cause conflicts between our dependencies and the target application
 // since the agent will be loaded with the same class loader as the profiled application
 // so we use plugin-shadow instead of shadow to relocate all of our dependencies
 apply plugin: 'com.github.johnrengelman.plugin-shadow'
-apply plugin: 'application'
 
 ext {
     outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
@@ -127,113 +109,3 @@ processResources {
         }
     }
 }
-<<<<<<< HEAD
-||||||| merged common ancestors
-
-task dist {
-	dependsOn shadowDistZip
-}
-
-task copyDockerFiles(type: Copy) {
-	dependsOn shadowJar
-
-	doFirst {
-		mkdir 'build/docker'
-	}
-
-	from('src/docker') {
-		include 'Dockerfile'
-	}
-	from(shadowJar) {
-		rename(/.*/, 'agent.jar')
-	}
-
-	into 'build/docker'
-}
-
-task buildDockerImage(type: Exec) {
-	dependsOn copyDockerFiles
-
-	workingDir 'build/docker'
-	commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task tagDockerImage(type: Exec) {
-	dependsOn buildDockerImage
-
-	commandLine 'docker', 'tag', "cqse/teamscale-jacoco-agent:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task publishDockerImageInternal(type: Exec) {
-	dependsOn tagDockerImage
-
-	commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task loginDockerHub(type: Exec) {
-	commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
-}
-
-task publishDockerImageDockerHub(type: Exec) {
-	dependsOn tagDockerImage, loginDockerHub
-
-	commandLine 'docker', 'push', "cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task dockerInternal(dependsOn: publishDockerImageInternal)
-task dockerHub(dependsOn: publishDockerImageDockerHub)
-=======
-
-task dist {
-    dependsOn shadowDistZip
-}
-
-task copyDockerFiles(type: Copy) {
-    dependsOn shadowJar
-
-    doFirst {
-        mkdir 'build/docker'
-    }
-
-    from('src/docker') {
-        include 'Dockerfile'
-    }
-    from(shadowJar) {
-        rename(/.*/, 'agent.jar')
-    }
-
-    into 'build/docker'
-}
-
-task buildDockerImage(type: Exec) {
-    dependsOn copyDockerFiles
-
-    workingDir 'build/docker'
-    commandLine 'docker', 'build', '.', '-t', "cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task tagDockerImage(type: Exec) {
-    dependsOn buildDockerImage
-
-    commandLine 'docker', 'tag', "cqse/teamscale-jacoco-agent:${outputVersion}", "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task publishDockerImageInternal(type: Exec) {
-    dependsOn tagDockerImage
-
-    commandLine 'docker', 'push', "registry.cqse.eu/cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task loginDockerHub(type: Exec) {
-    commandLine 'docker', 'login', '-u', 'cqsestreitel', '-p', System.env.DOCKER_HUB_PASSWORD
-}
-
-task publishDockerImageDockerHub(type: Exec) {
-    dependsOn tagDockerImage, loginDockerHub
-
-    commandLine 'docker', 'push', "cqse/teamscale-jacoco-agent:${outputVersion}"
-}
-
-task dockerInternal(dependsOn: publishDockerImageInternal)
-task dockerHub(dependsOn: publishDockerImageDockerHub)
->>>>>>> origin/master
