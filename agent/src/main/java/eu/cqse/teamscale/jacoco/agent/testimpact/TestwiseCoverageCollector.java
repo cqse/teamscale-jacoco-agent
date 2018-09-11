@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat.TESTWISE_COVERAGE;
+import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /**

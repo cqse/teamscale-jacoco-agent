@@ -5,6 +5,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'application'
 
 dependencies {
 	compile 'org.conqat:org.conqat.lib.commons:0.20160822'
@@ -37,7 +38,7 @@ distributions {
 				rename('README.pdf', 'agent-userguide.pdf')
 				into 'documentation'
 			}
-			
+
 			from(project(':eu.cqse.teamscale.jacoco.agent').tasks.shadowJar) {
 				rename(/.*/, 'agent.jar')
 			}

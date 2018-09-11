@@ -5,9 +5,9 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import eu.cqse.teamscale.client.CommitDescriptor;
+import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.CommitDescriptor;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -132,11 +132,9 @@ public class AgentOptionsParser {
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
-				options.locationIncludeFilters = new WildcardMatcher(options.jacocoIncludes);
 				return true;
 			case "excludes":
 				options.jacocoExcludes = value.replaceAll(";", ":");
-				options.locationExcludeFilters = new WildcardMatcher(options.jacocoExcludes);
 				return true;
 			case "class-dir":
 				options.classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);

@@ -1,8 +1,8 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 
+import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.ITeamscaleService.EReportFormat;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;

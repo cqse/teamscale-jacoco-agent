@@ -43,7 +43,7 @@ public class ClosureTestwiseCoverageGenerator {
 	 * @param closureCoverageDirectories Root directory that contains the Google closure coverage reports.
 	 * @param locationIncludeFilter      Filter for js files
 	 */
-	public ClosureTestwiseCoverageGenerator(List<File> closureCoverageDirectories, Predicate<String> locationIncludeFilter) {
+	public ClosureTestwiseCoverageGenerator(Collection<File> closureCoverageDirectories, Predicate<String> locationIncludeFilter) {
 		this.closureCoverageDirectories = closureCoverageDirectories;
 		this.locationIncludeFilter = locationIncludeFilter;
 	}
@@ -56,7 +56,7 @@ public class ClosureTestwiseCoverageGenerator {
 		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
 		for (File closureCoverageDirectory : closureCoverageDirectories) {
 			List<File> coverageFiles = FileSystemUtils.listFilesRecursively(closureCoverageDirectory,
-					file -> FileSystemUtils.getFileExtension(file).equals("json"));
+					file -> "json".equals(FileSystemUtils.getFileExtension(file)));
 			for (File coverageReportFile : coverageFiles) {
 				testwiseCoverage.add(readTestCoverage(coverageReportFile));
 			}

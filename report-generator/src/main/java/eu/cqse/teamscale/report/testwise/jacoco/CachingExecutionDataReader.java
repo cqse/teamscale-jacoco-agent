@@ -68,7 +68,7 @@ class CachingExecutionDataReader {
 			String testId = dump.info.getId();
 			if (testId.isEmpty()) {
 				// Ignore intermediate coverage that does not belong to any specific test
-				logger.warn("Found a session with empty name! This could indicate that coverage is dumped also for " +
+				logger.debug("Found a session with empty name! This could indicate that coverage is dumped also for " +
 						"coverage in between tests or that the given test name was empty");
 				continue;
 			}
@@ -85,7 +85,7 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	public TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
+	private TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
 		TestCoverage testCoverage = new TestCoverage(testId);
 		for (ExecutionData executionData : executionDataStore.getContents()) {
 			testCoverage.add(probesCache.getCoverage(executionData));

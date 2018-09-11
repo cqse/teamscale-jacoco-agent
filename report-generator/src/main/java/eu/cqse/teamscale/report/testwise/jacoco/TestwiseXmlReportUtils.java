@@ -17,6 +17,10 @@ public class TestwiseXmlReportUtils {
 
 	/** Converts to given testwise coverage to an XML report and writes it to the given file. */
 	public static void writeReportToFile(File report, TestwiseCoverage testwiseCoverage) throws IOException {
+		File directory = report.getParentFile();
+		if (!directory.isDirectory() && !directory.mkdirs()) {
+			throw new IOException("Failed to create directory " + directory.getAbsolutePath());
+		}
 		try (FileOutputStream output = new FileOutputStream(report)) {
 			TestwiseXmlReportUtils.writeReportToStream(output, testwiseCoverage);
 		}

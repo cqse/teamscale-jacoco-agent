@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.getReportAsString;
@@ -37,7 +39,7 @@ public class TestwiseXmlReportGenerator {
 	 * @param locationIncludeFilter     Filter for class files
 	 * @param logger                    The logger
 	 */
-	public TestwiseXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
+	public TestwiseXmlReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
 		this.executionDataReader = new CachingExecutionDataReader(logger);
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, ignoreNonidenticalDuplicateClassFiles);
 	}

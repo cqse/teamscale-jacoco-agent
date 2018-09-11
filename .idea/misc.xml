@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="EntryPointsManager">
-    <list size="2">
+    <list size="4">
       <item index="0" class="java.lang.String" itemvalue="javax.xml.bind.annotation.XmlAttribute" />
       <item index="1" class="java.lang.String" itemvalue="javax.xml.bind.annotation.XmlElement" />
+      <item index="2" class="java.lang.String" itemvalue="org.gradle.api.tasks.TaskAction" />
+      <item index="3" class="java.lang.String" itemvalue="org.gradle.api.tasks.options.Option" />
     </list>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK" />

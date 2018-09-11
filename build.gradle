@@ -1,17 +1,54 @@
-ext {
-	appVersion = '9.0.0'
+buildscript {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+        classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
+    }
+}
 
-	// When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
-	jacocoVersion = '0.8.1'
-	log4jVersion = '2.8.2'
+ext {
+    appVersion = '9.0.1'
+    pluginVersion = '0.1.24'
+    reportGeneratorVersion = '1.0.7'
+    teamscaleClientVersion = '0.1.5'
+
+    // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
+    jacocoVersion = '0.8.1'
+    log4jVersion = '2.8.2'
+
+    // Needed to deploy the artifacts to our public share
+    // Your public RSA key needs to be stored on the share to be able to deploy (Ask Timo)
+    cqseMavenRepositoryPrivateKey = System.getProperty("user.home") + '/.ssh/id_rsa'
+    println cqseMavenRepositoryPrivateKey
+    cqseMavenRepositoryUrl = 'scp://ext1.cqse.eu:2222/var/www/share/exchange/public/maven'
+    cqseMavenRepositoryUser = 'www-data'
 }
 
 subprojects {
-	repositories {
-		ivy {
-			url 'https://share.cqse.eu/svn/artifacts/ivy'
-		}
-		jcenter()
-	}
+    repositories {
+        ivy {
+            url 'https://share.cqse.eu/svn/artifacts/ivy'
+        }
+        jcenter()
+    }
 }
 
+// Installs the plugin to your local maven repository
+task installGradlePlugin(dependsOn: [
+        ':impacted-tests-executor:install',
+        ':report-generator:install',
+        ':teamscale-gradle-plugin:install',
+        ':teamscale-client:install'
+])
+
+// Deploys the plugin to the public share
+task deployGradlePlugin(dependsOn: [
+        ':impacted-tests-executor:uploadArchives',
+        ':report-generator:uploadShadow',
+        ':teamscale-gradle-plugin:uploadArchives',
+        ':teamscale-client:uploadArchives'
+])
