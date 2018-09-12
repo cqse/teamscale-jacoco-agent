@@ -93,6 +93,9 @@ public class JUnitReportCollector implements ITestListener {
 
 	@Override
 	public void onDump(IXmlStore store) {
+		if (report.isEmpty()) {
+			return;
+		}
 		String xml;
 		try {
 			xml = generateJUnitReport(report);
