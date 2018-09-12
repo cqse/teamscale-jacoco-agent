@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 9.0.2
+- [fix] prevent log files from flooding disk with default log4j config files
+
 # 9.0.1
 - [fix] NativeWebSocketServletContainerInitializer not found
 
