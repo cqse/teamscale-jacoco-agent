@@ -171,6 +171,62 @@ This ensures that the performance of your application does not degrade.
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
 
+## Store Commit to Manifest
+
+As it is very convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
+especially when tests are executed independently from the build.
+
+### Maven
+
+To configure this for the maven build add the following to your top level `pom.xml`.
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-war-plugin</artifactId> <!-- Works also for the maven-jar-plugin -->
+    ...
+    <configuration>
+         ...
+        <resourceEncoding>UTF-8</resourceEncoding>
+        <archive>
+            <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+            <manifestEntries>
+                <Branch>${branch}</Branch>
+                <Timestamp>${timestamp}</Timestamp>
+            </manifestEntries>
+        </archive>
+    </configuration>
+</plugin>
+```
+
+When executing maven pass in the branch and timestamp to Maven:
+```sh
+mvn ... -Dbranch=$BRANCH_NAME -Dtimestamp=$(git --no-pager log -n1 --format="%ct000")
+```
+
+### Gradle
+
+```groovy
+plugins {
+	id 'org.ajoberstar.grgit' version '2.3.0'
+}
+
+jar {
+	manifest {
+		attributes 'Branch': System.getProperty("branch")
+		attributes 'Timestamp': grgit.log {
+			maxCommits = 1
+		}[0].dateTime.toInstant().getEpochSecond() * 1000L
+	}
+}
+```
+
+```sh
+./gradlew ... -Pbranch=master
+```
 
 ## `ignore-duplicates`
 

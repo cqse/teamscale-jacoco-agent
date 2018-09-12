@@ -222,9 +222,9 @@ public class AgentOptionsParser {
 			Manifest mf = jarStream.getManifest();
 			String branch = mf.getMainAttributes().getValue("Branch");
 			String timestamp = mf.getMainAttributes().getValue("Timestamp");
-			if (branch == null) {
+			if (StringUtils.isEmpty(branch)) {
 				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
-			} else if (timestamp == null) {
+			} else if (StringUtils.isEmpty(timestamp)) {
 				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
 			}
 			return new CommitDescriptor(branch, timestamp);
