@@ -8,7 +8,7 @@
 	    	<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n"/>
 	    </Console>
 		<RollingFile name="RollingFile" fileName="${log-path}/cqse-jacoco-agent.log"
-				filePattern="${log-path}/cqse-jacoco-agent-%d{yyyy-MM-dd}-%i.log">
+				filePattern="${log-path}/cqse-jacoco-agent-%i.log">
 			<PatternLayout
 				pattern="%d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} - %msg%n" />
 			<Policies>
