@@ -171,10 +171,10 @@ This ensures that the performance of your application does not degrade.
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
 
-## Store Commit to Manifest
+## Store Commit in Manifest
 
 As it is very convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
-especially when tests are executed independently from the build.
+especially when tests are executed independently from the build. The following assumes that we are using a Git repository.
 
 ### Maven
 
@@ -219,13 +219,13 @@ jar {
 		attributes 'Branch': System.getProperty("branch")
 		attributes 'Timestamp': grgit.log {
 			maxCommits = 1
-		}[0].dateTime.toInstant().getEpochSecond() * 1000L
+		}.first().dateTime.toInstant().toEpochMilli()
 	}
 }
 ```
 
 ```sh
-./gradlew ... -Pbranch=master
+./gradlew jar -Dbranch=master
 ```
 
 ## `ignore-duplicates`
