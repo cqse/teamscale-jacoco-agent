@@ -41,6 +41,9 @@ public class TestDetailsCollector implements ITestListener {
 
 	@Override
 	public void onDump(IXmlStore store) {
+		if (testDetailsList.isEmpty()) {
+			return;
+		}
 		String reportString = new Gson().toJson(testDetailsList);
 		store.store(reportString, TEST_LIST);
 		testDetailsList.clear();

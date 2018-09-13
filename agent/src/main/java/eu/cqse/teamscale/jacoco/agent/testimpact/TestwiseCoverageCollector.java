@@ -4,10 +4,10 @@ import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator;
-import eu.cqse.teamscale.jacoco.util.Benchmark;
+import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import spark.Request;
@@ -59,6 +59,9 @@ public class TestwiseCoverageCollector implements ITestListener {
 
 	@Override
 	public void onDump(IXmlStore store) {
+		if (dumps.isEmpty()) {
+			return;
+		}
 		String xml;
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			xml = generator.convertToString(dumps);

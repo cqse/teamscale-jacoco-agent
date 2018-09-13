@@ -1,9 +1,18 @@
-from alpine:latest
+# --- build image ---
 
-run mkdir -p /agent
-add agent.jar /agent/agent.jar
-volume /agent
+FROM openjdk:8 as build
+ADD . /src
+WORKDIR /src
+RUN ./gradlew :eu.cqse.teamscale.jacoco.agent:assemble
+
+# --- production image ---
+
+FROM alpine:latest
+
+RUN mkdir -p /agent
+COPY --from=build /src/agent/build/libs/teamscale-jacoco-agent.jar /agent
+
+VOLUME /agent
 
 # make the image do nothing when started
 CMD /bin/sh -c "trap ':' TERM INT; sleep 3600 & wait"
-

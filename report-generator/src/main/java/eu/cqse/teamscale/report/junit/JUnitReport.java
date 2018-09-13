@@ -25,6 +25,11 @@ public class JUnitReport {
 		testCaseList.clear();
 	}
 
+	/** Returns whether the report contains any tests. */
+	public boolean isEmpty() {
+		return testCaseList.isEmpty();
+	}
+
 	/** Holds execution information for a single test case. */
 	public static class TestCase {
 
