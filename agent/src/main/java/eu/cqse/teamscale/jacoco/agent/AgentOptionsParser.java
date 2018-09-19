@@ -219,12 +219,12 @@ public class AgentOptionsParser {
 	 */
 	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
-			Manifest mf = jarStream.getManifest();
-			String branch = mf.getMainAttributes().getValue("Branch");
-			String timestamp = mf.getMainAttributes().getValue("Timestamp");
-			if (branch == null) {
+			Manifest manifest = jarStream.getManifest();
+			String branch = manifest.getMainAttributes().getValue("Branch");
+			String timestamp = manifest.getMainAttributes().getValue("Timestamp");
+			if (StringUtils.isEmpty(branch)) {
 				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
-			} else if (timestamp == null) {
+			} else if (StringUtils.isEmpty(timestamp)) {
 				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
 			}
 			return new CommitDescriptor(branch, timestamp);
