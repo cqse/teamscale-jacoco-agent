@@ -1,6 +1,8 @@
 We use [semantic versioning][semver]
 
 # Next release
+- [feature] make agent log INFO and above to `agentdir/logs` by default
+- [fix] isolate agent further from the application to prevent some log4j errors
 
 # 9.0.3
 - [fix] Test Impact Mode: Empty reports are no longer dumped
