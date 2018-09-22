@@ -6,8 +6,11 @@
 package eu.cqse.teamscale.jacoco.util;
 
 import eu.cqse.teamscale.jacoco.agent.Agent;
+import eu.cqse.teamscale.jacoco.agent.PreMain;
 import eu.cqse.teamscale.report.util.ILogger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -19,8 +22,11 @@ import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Helps initialize the logging framework properly.
@@ -37,10 +43,33 @@ public class LoggingUtils {
 
 	/** Initializes the logging to the default configured in the Jar. */
 	public static void initializeDefaultLogging() {
+		URISyntaxException caughtException = null;
+		Path logDirectory;
+		try {
+			URI jarFileUri = PreMain.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+			// we assume that the dist zip is extracted and the agent jar not moved
+			// Then the log dir should be next to the bin/ dir
+			logDirectory = Paths.get(jarFileUri).getParent().getParent().resolve("logs").toAbsolutePath();
+		} catch (URISyntaxException e) {
+			// we can't log the exception yet since logging is not yet initialized
+			caughtException = e;
+			// fall back to the working directory
+			logDirectory = Paths.get(".").toAbsolutePath();
+		}
+
+		// pass the path to the log directory to the logging config XML
+		ThreadContext.put("defaultLogDir", logDirectory.toString());
+
 		URL url = Agent.class.getResource("log4j2-default.xml");
 		InputStream stream = Agent.class.getResourceAsStream("log4j2-default.xml");
 		ConfigurationSource source = new ConfigurationSource(stream, url);
 		Configurator.initialize(null, source);
+
+		if (caughtException != null) {
+			LogManager.getLogger(LoggingUtils.class)
+					.error("Failed to resolve path to the agent JAR. Logging to current working directory {}",
+							logDirectory, caughtException);
+		}
 	}
 
 	/**
