@@ -18,3 +18,5 @@ include ':teamscale-client'
 rootProject.name = 'eu.cqse.teamscale.jacoco'
 project(':javaws-wrapper').name = 'eu.cqse.teamscale.jacoco.javaws'
 project(':agent').name = 'eu.cqse.teamscale.jacoco.agent'
+include 'sample-app'
+
