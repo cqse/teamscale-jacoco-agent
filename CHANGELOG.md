@@ -1,6 +1,6 @@
 We use [semantic versioning][semver]
 
-# Next release
+# 10.0.0
 - [feature] make agent log INFO and above to `agentdir/logs` by default
 - [fix] isolate agent further from the application to prevent some log4j errors
 
