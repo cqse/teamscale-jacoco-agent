@@ -5,12 +5,15 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import eu.cqse.teamscale.jacoco.util.Timer;
+import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import eu.cqse.teamscale.report.jacoco.dump.Dump;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 
 import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
@@ -28,8 +31,29 @@ public class Agent extends AgentBase {
 	/** Regular dump task. */
 	private final Timer timer;
 
+	/** Entry point for the agent, called by the JVM. */
+	public static void premain(String options, Instrumentation instrumentation) throws Exception {
+		AgentOptions agentOptions;
+		try {
+			agentOptions = AgentOptionsParser.parse(options);
+		} catch (AgentOptionParseException e) {
+			LoggingUtils.initializeDefaultLogging();
+			LogManager.getLogger(Agent.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
+			System.err.println("Failed to parse agent options: " + e.getMessage());
+			throw e;
+		}
+
+		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+
+		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
+		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
+
+		AgentBase agent = agentOptions.createAgent();
+		agent.registerShutdownHook();
+	}
+
 	/** Constructor. */
-	public Agent(AgentOptions options) throws IllegalStateException {
+	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
