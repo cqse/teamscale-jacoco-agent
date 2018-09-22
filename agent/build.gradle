@@ -31,10 +31,10 @@ dependencies {
     implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
     implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+	compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
+	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
     implementation 'com.beust:jcommander:1.71'
     implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
 

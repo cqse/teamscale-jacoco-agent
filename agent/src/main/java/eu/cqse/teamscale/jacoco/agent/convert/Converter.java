@@ -1,15 +1,15 @@
 package eu.cqse.teamscale.jacoco.agent.convert;
 
-import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
-import eu.cqse.teamscale.report.util.AntPatternIncludeFilter;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
+import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import eu.cqse.teamscale.report.jacoco.dump.Dump;
+import eu.cqse.teamscale.report.util.AntPatternIncludeFilter;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
@@ -36,7 +36,7 @@ public class Converter {
 
 		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(
 				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters());
-		Logger logger = LogManager.getLogger(this);
+		Logger logger = LoggingUtils.getLogger(this);
 		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
 				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 

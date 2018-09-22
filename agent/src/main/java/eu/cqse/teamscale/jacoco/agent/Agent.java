@@ -10,7 +10,6 @@ import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import eu.cqse.teamscale.jacoco.util.Timer;
 import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -38,14 +37,14 @@ public class Agent extends AgentBase {
 			agentOptions = AgentOptionsParser.parse(options);
 		} catch (AgentOptionParseException e) {
 			LoggingUtils.initializeDefaultLogging();
-			LogManager.getLogger(Agent.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
+			LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
 			System.err.println("Failed to parse agent options: " + e.getMessage());
 			throw e;
 		}
 
 		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 
-		LogManager.getLogger(Agent.class).info("Starting JaCoCo's agent");
+		LoggingUtils.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
 		AgentBase agent = agentOptions.createAgent();

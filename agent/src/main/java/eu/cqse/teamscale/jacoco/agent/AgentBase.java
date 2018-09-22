@@ -1,9 +1,9 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
+import org.slf4j.Logger;
 
 /**
  * Base class for agent implementations. Handles logger shutdown,
@@ -14,7 +14,7 @@ import org.jacoco.agent.rt.RT;
 public abstract class AgentBase {
 
 	/** The logger. */
-	protected final Logger logger = LogManager.getLogger(this);
+	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Controls the JaCoCo runtime. */
 	protected final JacocoRuntimeController controller;
@@ -63,9 +63,7 @@ public abstract class AgentBase {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			prepareShutdown();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
-
-			// manually shut down the logging system since we prevented automatic shutdown
-			LogManager.shutdown();
+			LoggingUtils.shutDownLogging();
 		}));
 	}
 

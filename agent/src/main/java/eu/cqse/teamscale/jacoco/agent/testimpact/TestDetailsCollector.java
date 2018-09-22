@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import eu.cqse.teamscale.client.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import spark.Request;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import static eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent.getTestD
 public class TestDetailsCollector implements ITestListener {
 
 	/** The logger. */
-	protected final Logger logger = LogManager.getLogger(this);
+	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Contains all test details for all tests that have been executed so far. */
 	private final List<TestDetails> testDetailsList = new ArrayList<>();

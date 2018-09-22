@@ -15,7 +15,7 @@ import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import spark.Request;
 
 import java.util.ArrayList;

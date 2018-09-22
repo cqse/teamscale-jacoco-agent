@@ -3,15 +3,15 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
+import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.data.SessionInfoStore;
+import org.slf4j.Logger;
 import spark.Request;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
 public class JaCoCoCoverageCollector implements ITestListener {
 
 	/** The logger. */
-	protected final Logger logger = LogManager.getLogger(this);
+	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Generates XML reports from binary execution data. */
 	private JaCoCoXmlReportGenerator generator;
