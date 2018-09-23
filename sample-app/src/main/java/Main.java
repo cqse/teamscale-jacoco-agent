@@ -1,9 +1,10 @@
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.LoggerFactory;
 
 public class Main {
 
 	public static void main(String[] args) {
-		LogManager.getLogger("testlogger").error("testing logging with incompatible log4j version");
+		System.out.println("starting sample-app");
+		LoggerFactory.getLogger("testlogger").error("testing logging with incompatible logback version");
 	}
 
 }
