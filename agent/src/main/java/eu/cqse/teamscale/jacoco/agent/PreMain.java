@@ -27,7 +27,7 @@ public class PreMain {
 
 		// we must use reflection to access the agent's methods because we don't share
 		// the agent's classloader
-		String agentName = PreMain.class.getPackage().getName() + ".Agent";
+		String agentName = PreMain.class.getPackage().getName() + ".AgentBase";
 		Class<?> agentClass = classloader.loadClass(agentName);
 		Method method = agentClass.getMethod("premain", String.class, Instrumentation.class);
 		method.invoke(null, options, instrumentation);
