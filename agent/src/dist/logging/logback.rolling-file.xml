@@ -4,11 +4,11 @@
 
 	<appender name="RollingFile" class="shadow.ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- TODO: adjust the path where the log file should be written -->
-		<file>${defaultLogDir}/cqse-jacoco-agent.log</file>
+		<file>${defaultLogDir}/teamscale-jacoco-agent.log</file>
 
 		<rollingPolicy class="shadow.ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<!-- TODO: adjust the path where the log file should be written -->
-			<fileNamePattern>${defaultLogDir}/cqse-jacoco-agent-%i.log.zip</fileNamePattern>
+			<fileNamePattern>${defaultLogDir}/teamscale-jacoco-agent-%i.log.zip</fileNamePattern>
 			<minIndex>1</minIndex>
 			<maxIndex>10</maxIndex>
 		</rollingPolicy>
