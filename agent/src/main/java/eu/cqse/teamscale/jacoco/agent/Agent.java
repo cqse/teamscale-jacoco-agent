@@ -39,6 +39,7 @@ public class Agent extends AgentBase {
 			LoggingUtils.initializeDefaultLogging();
 			LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
 			System.err.println("Failed to parse agent options: " + e.getMessage());
+			LoggingUtils.shutDownLogging();
 			throw e;
 		}
 

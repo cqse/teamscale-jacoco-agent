@@ -1,13 +1,8 @@
-import de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer
-
 buildscript {
 	repositories {
 		maven {
 			url 'https://plugins.gradle.org/m2/'
 		}
-	}
-	dependencies {
-		classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
 	}
 }
 
@@ -74,9 +69,6 @@ shadowJar {
 	// See http://openjdk.java.net/jeps/238
 	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
 
-	// ensures that log4j resource files are also relocated properly
-	transform(Log4j2PluginsFileTransformer)
-	transform(Log4JResourceTransformer)
 	mergeServiceFiles()
 }
 

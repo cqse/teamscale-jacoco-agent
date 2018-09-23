@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+	<define name="defaultLogDir" class="eu.cqse.teamscale.jacoco.util.LogDirectoryPropertyDefiner" />
+
+	<appender name="CONSOLE" class="shadow.ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%date{yyyy-MM-dd HH:mm:ss} %-5level %logger{35} - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	<appender name="RollingFile" class="shadow.ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- TODO: adjust the path where the log file should be written -->
 		<file>${defaultLogDir}/cqse-jacoco-agent.log</file>
 
-		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+		<rollingPolicy class="shadow.ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<fileNamePattern>cqse-jacoco-agent-%i.log.zip</fileNamePattern>
 			<minIndex>1</minIndex>
 			<maxIndex>10</maxIndex>
 		</rollingPolicy>
 
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+		<triggeringPolicy class="shadow.ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
 			<maxFileSize>1MB</maxFileSize>
 		</triggeringPolicy>
 
