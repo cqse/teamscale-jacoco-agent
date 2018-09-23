@@ -13,7 +13,8 @@
 		<file>${defaultLogDir}/cqse-jacoco-agent.log</file>
 
 		<rollingPolicy class="shadow.ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<fileNamePattern>cqse-jacoco-agent-%i.log.zip</fileNamePattern>
+			<!-- TODO: adjust the path where the log file should be written -->
+			<fileNamePattern>${defaultLogDir}/cqse-jacoco-agent-%i.log.zip</fileNamePattern>
 			<minIndex>1</minIndex>
 			<maxIndex>10</maxIndex>
 		</rollingPolicy>
