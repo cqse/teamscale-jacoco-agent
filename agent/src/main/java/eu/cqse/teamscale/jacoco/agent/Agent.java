@@ -30,28 +30,6 @@ public class Agent extends AgentBase {
 	/** Regular dump task. */
 	private final Timer timer;
 
-	/** Entry point for the agent, called by the JVM. */
-	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		AgentOptions agentOptions;
-		try {
-			agentOptions = AgentOptionsParser.parse(options);
-		} catch (AgentOptionParseException e) {
-			LoggingUtils.initializeDefaultLogging();
-			LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
-			System.err.println("Failed to parse agent options: " + e.getMessage());
-			LoggingUtils.shutDownLogging();
-			throw e;
-		}
-
-		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
-
-		LoggingUtils.getLogger(Agent.class).info("Starting JaCoCo's agent");
-		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
-
-		AgentBase agent = agentOptions.createAgent();
-		agent.registerShutdownHook();
-	}
-
 	/** Constructor. */
 	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
