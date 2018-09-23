@@ -47,7 +47,10 @@ public class LoggingUtils {
 		return (LoggerContext) LoggerFactory.getILoggerFactory();
 	}
 
-	/** C.f. https://logback.qos.ch/manual/configuration.html */
+	/**
+	 * Reconfigures the logger context to use the configuration XML from the given input stream.
+	 * C.f. https://logback.qos.ch/manual/configuration.html
+	 */
 	private static void reconfigureLoggerContext(InputStream stream) {
 		LoggerContext loggerContext = getLoggerContext();
 		try {
