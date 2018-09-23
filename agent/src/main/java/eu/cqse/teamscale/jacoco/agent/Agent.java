@@ -6,13 +6,11 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.util.Benchmark;
-import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import eu.cqse.teamscale.jacoco.util.Timer;
 import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 
 import static eu.cqse.teamscale.client.EReportFormat.JACOCO;
