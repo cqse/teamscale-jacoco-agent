@@ -2,7 +2,6 @@ package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.util.LoggingUtils;
-import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
@@ -45,7 +44,7 @@ public abstract class AgentBase {
 			agentOptions = AgentOptionsParser.parse(options);
 		} catch (AgentOptionParseException e) {
 			LoggingUtils.initializeDefaultLogging();
-			LoggingUtils.getLogger(Agent.class).fatal("Failed to parse agent options: " + e.getMessage(), e);
+			LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
 			System.err.println("Failed to parse agent options: " + e.getMessage());
 			LoggingUtils.shutDownLogging();
 			throw e;
