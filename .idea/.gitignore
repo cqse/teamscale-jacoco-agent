@@ -1,4 +1,8 @@
 # ignore all .idea files except  ...
+*
+
+# this file
+!.gitignore
 
 # Version Control configuration
 !vcs.xml
@@ -15,6 +19,3 @@
 !copyrights
 !misc.xml
 !sqldialects.xml
-
-# ignore the rest
-*

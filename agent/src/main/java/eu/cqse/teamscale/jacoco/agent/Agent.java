@@ -5,10 +5,10 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.Timer;
+import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import eu.cqse.teamscale.report.jacoco.dump.Dump;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -29,7 +29,7 @@ public class Agent extends AgentBase {
 	private final Timer timer;
 
 	/** Constructor. */
-	public Agent(AgentOptions options) throws IllegalStateException {
+	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),

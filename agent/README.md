@@ -89,7 +89,7 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
-The log file is written to the working directory of the profiled Java process by default.
+The log file is written to the agent's directory in the subdirectory `logs` by default.
 
 ## Test impact mode
 
