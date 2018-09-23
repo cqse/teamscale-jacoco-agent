@@ -1,5 +1,9 @@
 We use [semantic versioning][semver]
 
+# 11.0.0
+
+- [breaking change] switched to logback for logging. All logging configurations must be replaced with logback XMLs
+
 # 10.0.0
 - [feature] make agent log INFO and above to `agentdir/logs` by default
 - [fix] isolate agent further from the application to prevent some log4j errors

@@ -43,7 +43,7 @@ The following options are available:
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
-- `logging-config`: path to a Log4J configuration XML file (other configuration formats are not supported at the moment).
+- `logging-config`: path to a [logback][] configuration XML file (other configuration formats are not supported at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console.
 - `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
@@ -342,7 +342,7 @@ information.
 
 ## How to change the log level
 
-Set an appropriate Log4J logging configuration XML. See the agent options description above for how to do this.
+Set an appropriate logback logging configuration XML. See the agent options description above for how to do this.
 
 ## How to see which files/folders are filtered due to the `includes` and `excludes` parameters
 
@@ -353,4 +353,5 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [so-duplicates]: https://stackoverflow.com/questions/11673356/jacoco-cant-add-different-class-with-same-name-org-hamcrest-basedescription
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
 [jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
+[logback]: https://logback.qos.ch/manual/index.html
 
