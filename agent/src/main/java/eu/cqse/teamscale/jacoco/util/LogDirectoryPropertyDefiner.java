@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
+/** Defines a property that contains the default path to which log files should be written. */
 public class LogDirectoryPropertyDefiner extends PropertyDefinerBase {
 	@Override
 	public String getPropertyValue() {
