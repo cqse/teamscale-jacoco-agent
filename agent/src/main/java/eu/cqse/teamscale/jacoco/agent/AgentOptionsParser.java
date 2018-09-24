@@ -105,7 +105,7 @@ public class AgentOptionsParser {
 	private static boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case "config-file":
-				readConfigFromFile(options, new File(value));
+				readConfigFromFile(options, parsePath("config-file", value).toFile());
 				return true;
 			case "logging-config":
 				options.loggingConfig = parsePath(key, value);
