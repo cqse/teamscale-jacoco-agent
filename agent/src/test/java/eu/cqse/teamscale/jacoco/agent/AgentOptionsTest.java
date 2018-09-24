@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.client.TeamscaleServer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +24,8 @@ public class AgentOptionsTest {
 	@Rule
 	public TemporaryFolder testFolder = new TemporaryFolder();
 
+	private String oldWorkingDir = System.getProperty("user.dir");
+
 	@Before
 	public void setUp() throws IOException {
 		testFolder.create();
@@ -31,6 +34,11 @@ public class AgentOptionsTest {
 		testFolder.newFolder("plugins", "inner");
 		testFolder.newFile("plugins/some_other_file.jar");
 		testFolder.newFile("plugins/file_with_manifest2.jar");
+	}
+
+	@After
+	public void tearDown() {
+		System.setProperty("user.dir", oldWorkingDir);
 	}
 
 	/** Tests include pattern matching. */
@@ -111,7 +119,7 @@ public class AgentOptionsTest {
 		assertMatches(".", "plugins/file_*.jar", "plugins/file_with_manifest2.jar");
 		assertMatches(".", "*/file_*.jar", "plugins/file_with_manifest2.jar");
 		assertMatches("plugins/inner", "..", "plugins");
-		assertMatches("plugins/inner", "..", "plugins");
+		assertMatches("plugins/inner", "../s*", "plugins/some_other_file.jar");
 
 		assertFails(".", "**.jar", "Multiple files match the given pattern! " +
 				"Only one match is allowed. Candidates are: [plugins/some_other_file.jar, " +
