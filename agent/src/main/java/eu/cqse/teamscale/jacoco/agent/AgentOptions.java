@@ -5,12 +5,12 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import eu.cqse.teamscale.client.EReportFormat;
+import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
-import eu.cqse.teamscale.client.EReportFormat;
-import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
@@ -20,7 +20,6 @@ import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.jacoco.core.runtime.WildcardMatcher;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -280,4 +279,8 @@ public class AgentOptions {
 		return new ClasspathWildcardIncludeFilter(jacocoIncludes, jacocoExcludes);
 	}
 
+	/** Whether coverage should be dumped in regular intervals. */
+	public boolean shouldDumpInIntervals() {
+		return dumpIntervalInMinutes > 0;
+	}
 }

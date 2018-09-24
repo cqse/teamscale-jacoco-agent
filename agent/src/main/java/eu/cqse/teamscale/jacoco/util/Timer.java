@@ -51,22 +51,6 @@ public class Timer {
 		job = executor.scheduleAtFixedRate(runnable, duration.toMinutes(), duration.toMinutes(), TimeUnit.MINUTES);
 	}
 
-	/**
-	 * Waits until this timer is stopped or the scheduled job throws an exception.
-	 */
-	public void waitUntilTimerIsStopped() {
-		if (job == null) {
-			return;
-		}
-
-		try {
-			// this blocks until the periodic job is cancelled or throws an exception
-			job.get();
-		} catch (InterruptedException | ExecutionException e) {
-			// ignore exception
-		}
-	}
-
 	/** Stops the regular job, possibly aborting it. */
 	public synchronized void stop() {
 		job.cancel(false);
