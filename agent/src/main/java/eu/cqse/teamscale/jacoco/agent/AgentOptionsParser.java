@@ -31,7 +31,8 @@ import java.util.function.Predicate;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Parses agent command line options.
@@ -145,7 +146,7 @@ public class AgentOptionsParser {
 				options.classDirectoriesOrZips = CollectionUtils
 						.mapWithException(splitMultiOptionValue(value),
 								singleValue -> parsePath("class-dir", singleValue)).stream()
-						.map(Path::toFile).collect(Collectors.toList());
+						.map(Path::toFile).collect(toList());
 				return true;
 			default:
 				return false;
@@ -304,17 +305,20 @@ public class AgentOptionsParser {
 
 	/** Parses the value as a ant pattern to a file or directory. */
 	private static Path parsePathFromPattern(String optionName, String value) throws AgentOptionParseException {
-		Pair<File, String> fileAndPattern = splitIntoBaseDirAndPattern(value);
+		Pair<String, String> fileAndPattern = splitIntoBaseDirAndPattern(value);
+		String baseDir = fileAndPattern.getFirst();
 		String pattern = fileAndPattern.getSecond();
-		Path basePath = fileAndPattern.getFirst().toPath();
+
+		File workingDir = new File(".").getAbsoluteFile();
+		Path basePath = workingDir.toPath().resolve(baseDir).toAbsolutePath();
 
 		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
 		Predicate<Path> filter = path -> pathMatcher.matcher(basePath.relativize(path).toString()).matches();
 
 		List<Path> matchingPaths;
 		try {
-			matchingPaths = Files.walk(basePath).peek(System.out::println).filter(filter)
-					.collect(Collectors.toList());
+			matchingPaths = Files.walk(basePath).filter(filter)
+					.collect(toList());
 		} catch (IOException e) {
 			throw new AgentOptionParseException(
 					"Invalid path given for option " + optionName + ": " + value + "!", e);
@@ -323,12 +327,12 @@ public class AgentOptionsParser {
 		if (matchingPaths.isEmpty()) {
 			throw new AgentOptionParseException(
 					"Invalid path given for option " + optionName + ": " + value + "! The pattern " + pattern +
-							" did not match any files in " + fileAndPattern.getFirst()
-							.getAbsolutePath() + "!");
+							" did not match any files in " + basePath.toAbsolutePath() + "!");
 		} else if (matchingPaths.size() > 1) {
 			throw new AgentOptionParseException(
 					"Multiple files match the given pattern! Only one match is allowed. " +
-							"Candidates are: " + matchingPaths);
+							"Candidates are: " + matchingPaths.stream().map(basePath::relativize)
+							.collect(toList()));
 		}
 		Path path = matchingPaths.get(0);
 		System.out.println("Found matching file " + path + " for option " + optionName);
@@ -340,7 +344,7 @@ public class AgentOptionsParser {
 	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
 	 * placeholders, and a pattern suffix.
 	 */
-	private static Pair<File, String> splitIntoBaseDirAndPattern(String value) {
+	private static Pair<String, String> splitIntoBaseDirAndPattern(String value) {
 		String[] pathSegments = value.split("[\\/]");
 		int firstSegmentWithPattern = pathSegments.length;
 		for (int i = 0; i < pathSegments.length; i++) {
@@ -354,9 +358,10 @@ public class AgentOptionsParser {
 				.join(File.pathSeparator, Arrays.asList(pathSegments).subList(0, firstSegmentWithPattern));
 		String pattern = String.join(File.separator,
 				Arrays.asList(pathSegments).subList(firstSegmentWithPattern, pathSegments.length));
-		return new Pair<>(new File(baseDir), pattern);
+		return new Pair<>(baseDir, pattern);
 	}
 
+	/** Returns whether the given path (segment) contains ant pattern characters (?,*). */
 	private static boolean isPathWithPattern(String currentPathSegment) {
 		return currentPathSegment.contains("?") || currentPathSegment.contains("*");
 	}
