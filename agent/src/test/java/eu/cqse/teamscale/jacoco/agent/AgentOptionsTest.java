@@ -24,8 +24,6 @@ public class AgentOptionsTest {
 	@Rule
 	public TemporaryFolder testFolder = new TemporaryFolder();
 
-	private String oldWorkingDir = System.getProperty("user.dir");
-
 	@Before
 	public void setUp() throws IOException {
 		testFolder.create();
@@ -34,11 +32,6 @@ public class AgentOptionsTest {
 		testFolder.newFolder("plugins", "inner");
 		testFolder.newFile("plugins/some_other_file.jar");
 		testFolder.newFile("plugins/file_with_manifest2.jar");
-	}
-
-	@After
-	public void tearDown() {
-		System.setProperty("user.dir", oldWorkingDir);
 	}
 
 	/** Tests include pattern matching. */
@@ -105,49 +98,61 @@ public class AgentOptionsTest {
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
-	/** Tests path resolution with and without patterns and with relative and absolute paths. */
+	/** Tests path resolution with absolute path. */
 	@Test
-	public void testPathResolution() throws AgentOptionParseException, IOException {
-		// Test with absolute path
-		assertMatches(".", testFolder.getRoot().getAbsolutePath(), "");
+	public void testPathResolutionForAbsolutePath() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches(".", testFolder.getRoot().getAbsolutePath(), "");
+	}
 
-		// Test with relative path
-		assertMatches(".", ".", "");
-		assertMatches("plugins", "../file_with_manifest1.jar", "file_with_manifest1.jar");
+	/** Tests path resolution with relative paths. */
+	@Test
+	public void testPathResolutionForRelativePath() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches(".", ".", "");
+		assertInputInWorkingDirectoryMatches("plugins", "../file_with_manifest1.jar", "file_with_manifest1.jar");
+	}
 
-		// Test with pattern
-		assertMatches(".", "plugins/file_*.jar", "plugins/file_with_manifest2.jar");
-		assertMatches(".", "*/file_*.jar", "plugins/file_with_manifest2.jar");
-		assertMatches("plugins/inner", "..", "plugins");
-		assertMatches("plugins/inner", "../s*", "plugins/some_other_file.jar");
+	/** Tests path resolution with patterns and relative paths. */
+	@Test
+	public void testPathResolutionWithPatternsAndRelativePaths() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches(".", "plugins/file_*.jar", "plugins/file_with_manifest2.jar");
+		assertInputInWorkingDirectoryMatches(".", "*/file_*.jar", "plugins/file_with_manifest2.jar");
+		assertInputInWorkingDirectoryMatches("plugins/inner", "..", "plugins");
+		assertInputInWorkingDirectoryMatches("plugins/inner", "../s*", "plugins/some_other_file.jar");
+	}
 
-		assertFails(".", "**.jar", "Multiple files match the given pattern! " +
+	/** Tests path resolution with patterns and absolute paths. */
+	@Test
+	public void testPathResolutionWithPatternsAndAbsolutePaths() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches("plugins", testFolder.getRoot().getAbsolutePath() + "/plugins/file_*.jar",
+				"plugins/file_with_manifest2.jar");
+	}
+
+	/** Tests path resolution with incorrect input. */
+	@Test
+	public void testPathResolutionWithPatternErrorCases() {
+		assertPathResolutionInWorkingDirFailsWith(".", "**.jar", "Multiple files match the given pattern! " +
 				"Only one match is allowed. Candidates are: [plugins/some_other_file.jar, " +
 				"plugins/file_with_manifest2.jar, file_with_manifest1.jar]");
 
-		assertFails(".", "**.war", "Invalid path given for option option-name: " +
+		assertPathResolutionInWorkingDirFailsWith(".", "**.war", "Invalid path given for option option-name: " +
 				"**.war! The pattern **.war did not match any files in");
 	}
 
-	private void assertMatches(String workingDir, String input, String expected) throws AgentOptionParseException, IOException {
-		setWorkingDirectory(new File(testFolder.getRoot(), workingDir));
-		Path actualPath = AgentOptionsParser.parsePath("option-name", input);
-		Path expectedPath = new File(testFolder.getRoot(), expected).toPath();
-		assertThat(getCanonicalPath(actualPath)).isEqualByComparingTo(getCanonicalPath(expectedPath));
+	private void assertInputInWorkingDirectoryMatches(String workingDir, String input, String expected) throws AgentOptionParseException {
+		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
+		File actualFile = AgentOptionsParser.parseFile("option-name", workingDirectory, input);
+		File expectedFile = new File(testFolder.getRoot(), expected);
+		assertThat(getNormalizedPath(actualFile)).isEqualByComparingTo(getNormalizedPath(expectedFile));
 	}
 
-	/** Resolves the path to its canonical path. */
-	private static Path getCanonicalPath(Path path) throws IOException {
-		return path.toFile().getCanonicalFile().toPath();
+	/** Resolves the path to its absolute normalized path. */
+	private static Path getNormalizedPath(File file) {
+		return file.getAbsoluteFile().toPath().normalize();
 	}
 
-	private void assertFails(String workingDir, String input, String expectedMessage) {
-		setWorkingDirectory(new File(testFolder.getRoot(), workingDir));
-		assertThatThrownBy(() -> AgentOptionsParser.parsePath("option-name", input))
+	private void assertPathResolutionInWorkingDirFailsWith(String workingDir, String input, String expectedMessage) {
+		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
+		assertThatThrownBy(() -> AgentOptionsParser.parseFile("option-name", workingDirectory, input))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(expectedMessage);
-	}
-
-	private static void setWorkingDirectory(File workingDirectory) {
-		System.setProperty("user.dir", workingDirectory.getAbsolutePath());
 	}
 }

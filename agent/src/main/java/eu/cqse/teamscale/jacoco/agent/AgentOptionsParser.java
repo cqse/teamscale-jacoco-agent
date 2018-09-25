@@ -105,7 +105,7 @@ public class AgentOptionsParser {
 	private static boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case "config-file":
-				readConfigFromFile(options, parsePath("config-file", value).toFile());
+				readConfigFromFile(options, parseFile(key, value));
 				return true;
 			case "logging-config":
 				options.loggingConfig = parsePath(key, value);
@@ -144,9 +144,7 @@ public class AgentOptionsParser {
 				return true;
 			case "class-dir":
 				options.classDirectoriesOrZips = CollectionUtils
-						.mapWithException(splitMultiOptionValue(value),
-								singleValue -> parsePath("class-dir", singleValue)).stream()
-						.map(Path::toFile).collect(toList());
+						.mapWithException(splitMultiOptionValue(value), singleValue -> parseFile(key, singleValue));
 				return true;
 			default:
 				return false;
@@ -212,8 +210,7 @@ public class AgentOptionsParser {
 				options.teamscaleServer.commit = parseCommit(value);
 				return true;
 			case "teamscale-commit-manifest-jar":
-				options.teamscaleServer.commit = getCommitFromManifest(
-						parsePath("teamscale-commit-manifest-jar", value));
+				options.teamscaleServer.commit = getCommitFromManifest(parseFile(key, value));
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
@@ -227,11 +224,11 @@ public class AgentOptionsParser {
 	 * Reads `Branch` and `Timestamp` entries from the given jar/war file and
 	 * builds a commit descriptor out of it.
 	 */
-	private static CommitDescriptor getCommitFromManifest(Path jarFile) throws AgentOptionParseException {
-		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile.toFile()))) {
-			Manifest mf = jarStream.getManifest();
-			String branch = mf.getMainAttributes().getValue("Branch");
-			String timestamp = mf.getMainAttributes().getValue("Timestamp");
+	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
+		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+			Manifest manifest = jarStream.getManifest();
+			String branch = manifest.getMainAttributes().getValue("Branch");
+			String timestamp = manifest.getMainAttributes().getValue("Timestamp");
 			if (branch == null) {
 				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
 			} else if (StringUtils.isEmpty(timestamp)) {
@@ -240,7 +237,7 @@ public class AgentOptionsParser {
 			System.out.println("Found " + branch + ":" + timestamp);
 			return new CommitDescriptor(branch, timestamp);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Reading jar " + jarFile.toAbsolutePath() + " failed!", e);
+			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
 		}
 	}
 
@@ -288,28 +285,51 @@ public class AgentOptionsParser {
 	}
 
 	/**
+	 * Parses the given value as a {@link File}.
+	 */
+	/* package */
+	static File parseFile(String optionName, String value) throws AgentOptionParseException {
+		return parsePath(optionName, new File("."), value).toFile();
+	}
+
+	/**
 	 * Parses the given value as a {@link Path}.
 	 */
 	/* package */
 	static Path parsePath(String optionName, String value) throws AgentOptionParseException {
+		return parsePath(optionName, new File("."), value);
+	}
+
+	/**
+	 * Parses the given value as a {@link File}.
+	 */
+	/* package */
+	static File parseFile(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
+		return parsePath(optionName, workingDirectory, value).toFile();
+	}
+
+	/**
+	 * Parses the given value as a {@link Path}.
+	 */
+	/* package */
+	static Path parsePath(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
 		if (isPathWithPattern(value)) {
-			return parsePathFromPattern(optionName, value);
-		} else {
-			try {
-				return Paths.get(value);
-			} catch (InvalidPathException e) {
-				throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + value, e);
-			}
+			return parseFileFromPattern(workingDirectory, optionName, value);
+		}
+		try {
+			return workingDirectory.toPath().resolve(Paths.get(value));
+		} catch (InvalidPathException e) {
+			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + value, e);
 		}
 	}
 
 	/** Parses the value as a ant pattern to a file or directory. */
-	private static Path parsePathFromPattern(String optionName, String value) throws AgentOptionParseException {
+	private static Path parseFileFromPattern(File workingDirectory, String optionName, String value) throws AgentOptionParseException {
 		Pair<String, String> fileAndPattern = splitIntoBaseDirAndPattern(value);
 		String baseDir = fileAndPattern.getFirst();
 		String pattern = fileAndPattern.getSecond();
 
-		File workingDir = new File(".").getAbsoluteFile();
+		File workingDir = workingDirectory.getAbsoluteFile();
 		Path basePath = workingDir.toPath().resolve(baseDir).toAbsolutePath();
 
 		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
@@ -334,7 +354,7 @@ public class AgentOptionsParser {
 							"Candidates are: " + matchingPaths.stream().map(basePath::relativize)
 							.collect(toList()));
 		}
-		Path path = matchingPaths.get(0);
+		Path path = matchingPaths.get(0).normalize();
 		System.out.println("Found matching file " + path + " for option " + optionName);
 
 		return path;
@@ -345,7 +365,7 @@ public class AgentOptionsParser {
 	 * placeholders, and a pattern suffix.
 	 */
 	private static Pair<String, String> splitIntoBaseDirAndPattern(String value) {
-		String[] pathSegments = value.split("[\\/]");
+		String[] pathSegments = value.split("[\\\\/]");
 		int firstSegmentWithPattern = pathSegments.length;
 		for (int i = 0; i < pathSegments.length; i++) {
 			String currentPathSegment = pathSegments[i];
@@ -354,8 +374,7 @@ public class AgentOptionsParser {
 				break;
 			}
 		}
-		String baseDir = String
-				.join(File.pathSeparator, Arrays.asList(pathSegments).subList(0, firstSegmentWithPattern));
+		String baseDir = String.join(File.separator, Arrays.asList(pathSegments).subList(0, firstSegmentWithPattern));
 		String pattern = String.join(File.separator,
 				Arrays.asList(pathSegments).subList(firstSegmentWithPattern, pathSegments.length));
 		return new Pair<>(baseDir, pattern);
