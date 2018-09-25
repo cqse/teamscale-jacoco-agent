@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next release
 
+# 9.1.0
+- [feature] dump interval of 0 only dumps at the end
+
 # 9.0.3
 - [fix] Test Impact Mode: Empty reports are no longer dumped
 - [fix] Test Impact Mode: JUnit is uploaded before testwise coverage
