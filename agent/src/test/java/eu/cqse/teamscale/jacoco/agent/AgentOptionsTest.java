@@ -142,12 +142,8 @@ public class AgentOptionsTest {
 	/** Tests path resolution with incorrect input. */
 	@Test
 	public void testPathResolutionWithPatternErrorCases() {
-		assertPathResolutionInWorkingDirFailsWith(".", "**.jar", "Multiple files match the given pattern! " +
-				"Only one match is allowed. Candidates are: [plugins/some_other_file.jar, " +
-				"plugins/file_with_manifest2.jar, file_with_manifest1.jar]");
-
 		assertPathResolutionInWorkingDirFailsWith(".", "**.war", "Invalid path given for option option-name: " +
-				"**.war! The pattern **.war did not match any files in");
+				"**.war. The pattern **.war did not match any files in");
 	}
 
 	private void assertInputInWorkingDirectoryMatches(String workingDir, String input, String expected) throws AgentOptionParseException {

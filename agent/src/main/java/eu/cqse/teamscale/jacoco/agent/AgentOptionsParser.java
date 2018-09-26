@@ -33,6 +33,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -341,7 +342,7 @@ public class AgentOptionsParser {
 		String pattern = fileAndPattern.getSecond();
 
 		File workingDir = workingDirectory.getAbsoluteFile();
-		Path basePath = workingDir.toPath().resolve(baseDir).toAbsolutePath();
+		Path basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath();
 
 		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
 		Predicate<Path> filter = path -> pathMatcher.matcher(basePath.relativize(path).toString()).matches();
@@ -351,19 +352,18 @@ public class AgentOptionsParser {
 			matchingPaths = Files.walk(basePath).filter(filter).sorted().collect(toList());
 		} catch (IOException e) {
 			throw new AgentOptionParseException(
-					"Invalid path given for option " + optionName + ": " + value + "!", e);
+					"Invalid path given for option " + optionName + ": " + value, e);
 		}
 
 		if (matchingPaths.isEmpty()) {
 			throw new AgentOptionParseException(
-					"Invalid path given for option " + optionName + ": " + value + "! The pattern " + pattern +
+					"Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
 							" did not match any files in " + basePath.toAbsolutePath() + "!");
 		} else if (matchingPaths.size() > 1) {
 			logger.warn(
 					"Multiple files match the given pattern! The first one is used, but consider to adjust the " +
 							"pattern to match only one file. Candidates are: " + matchingPaths.stream()
-							.map(basePath::relativize)
-							.collect(toList()));
+							.map(basePath::relativize).map(Path::toString).collect(joining(", ")));
 		}
 		Path path = matchingPaths.get(0).normalize();
 		logger.info("Found matching file " + path + " for option " + optionName);
@@ -376,19 +376,16 @@ public class AgentOptionsParser {
 	 * placeholders, and a pattern suffix.
 	 */
 	private Pair<String, String> splitIntoBaseDirAndPattern(String value) {
-		String[] pathSegments = value.split("[\\\\/]");
-		int firstSegmentWithPattern = pathSegments.length;
-		for (int i = 0; i < pathSegments.length; i++) {
-			String currentPathSegment = pathSegments[i];
-			if (isPathWithPattern(currentPathSegment)) {
-				firstSegmentWithPattern = i;
-				break;
+		Path pathWithPattern = Paths.get(value);
+		Path baseDir = pathWithPattern;
+		while (isPathWithPattern(baseDir.toString())) {
+			baseDir = baseDir.getParent();
+			if (baseDir == null) {
+				return new Pair<>("", value);
 			}
 		}
-		String baseDir = String.join(File.separator, Arrays.asList(pathSegments).subList(0, firstSegmentWithPattern));
-		String pattern = String.join(File.separator,
-				Arrays.asList(pathSegments).subList(firstSegmentWithPattern, pathSegments.length));
-		return new Pair<>(baseDir, pattern);
+		String pattern = baseDir.relativize(pathWithPattern).toString();
+		return new Pair<>(baseDir.toString(), pattern);
 	}
 
 	/** Returns whether the given path (segment) contains ant pattern characters (?,*). */
