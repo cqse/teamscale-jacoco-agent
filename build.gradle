@@ -11,7 +11,7 @@ buildscript {
 }
 
 ext {
-    appVersion = '9.0.3'
+    appVersion = '9.1.0'
     pluginVersion = '0.1.24'
     reportGeneratorVersion = '1.0.7'
     teamscaleClientVersion = '0.1.5'
