@@ -71,7 +71,9 @@ public class TestImpactAgent extends AgentBase {
 
 		logger.info("Collecting formats: " + reportFormats);
 
-		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+		if (options.shouldDumpInIntervals()) {
+			logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+		}
 
 		initServer();
 	}
@@ -118,7 +120,8 @@ public class TestImpactAgent extends AgentBase {
 		}
 
 		// If the last dump was longer ago than the specified interval dump report
-		if (lastDumpTimestamp + options.getDumpIntervalInMillis() < System.currentTimeMillis()) {
+		if (lastDumpTimestamp + options.getDumpIntervalInMillis() < System.currentTimeMillis() && options
+				.shouldDumpInIntervals()) {
 			dumpReport();
 			lastDumpTimestamp = System.currentTimeMillis();
 		}

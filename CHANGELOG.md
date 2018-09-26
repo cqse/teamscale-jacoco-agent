@@ -5,6 +5,9 @@ We use [semantic versioning][semver]
 # 9.1.1
 - [feature] Paths passed to the agent can now be relative and contain ant patterns
 
+# 9.1.0
+- [feature] dump interval of 0 only dumps at the end
+
 # 9.0.3
 - [fix] Test Impact Mode: Empty reports are no longer dumped
 - [fix] Test Impact Mode: JUnit is uploaded before testwise coverage

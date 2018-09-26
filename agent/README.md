@@ -24,7 +24,8 @@ The following options are available:
 - `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format)
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format)
-- `interval`: the interval in minutes between dumps of the current coverage to an XML file.
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
+  0 coverage is only dumped at JVM shutdown.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
