@@ -1,7 +1,6 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.client.TeamscaleServer;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,11 +54,11 @@ public class AgentOptionsTest {
 	/** Interval options test. */
 	@Test
 	public void testIntervalOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.");
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.");
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(60);
-		agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,interval=0");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=0");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
-		agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,interval=30");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=30");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(true);
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(30);
 	}
@@ -67,8 +66,7 @@ public class AgentOptionsTest {
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
-		new AgentOptionsParser();
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
 				"teamscale-user=build," +
@@ -90,7 +88,7 @@ public class AgentOptionsTest {
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
 				"http-server-port=8081," +
 				"http-server-formats=TESTWISE_COVERAGE;TEST_LIST;JUNIT");
 		assertThat(agentOptions.getHttpServerReportFormats())
@@ -100,13 +98,15 @@ public class AgentOptionsTest {
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,includes=" + filterString);
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
+				.parse("out=.,class-dir=.,includes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,excludes=" + filterString);
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
+				.parse("out=.,class-dir=.,excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
@@ -152,7 +152,7 @@ public class AgentOptionsTest {
 
 	private void assertInputInWorkingDirectoryMatches(String workingDir, String input, String expected) throws AgentOptionParseException {
 		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
-		File actualFile = AgentOptionsParser.parseFile("option-name", workingDirectory, input);
+		File actualFile = getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input);
 		File expectedFile = new File(testFolder.getRoot(), expected);
 		assertThat(getNormalizedPath(actualFile)).isEqualByComparingTo(getNormalizedPath(expectedFile));
 	}
@@ -164,7 +164,12 @@ public class AgentOptionsTest {
 
 	private void assertPathResolutionInWorkingDirFailsWith(String workingDir, String input, String expectedMessage) {
 		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
-		assertThatThrownBy(() -> AgentOptionsParser.parseFile("option-name", workingDirectory, input))
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(expectedMessage);
+	}
+
+	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
+		return new AgentOptionsParser(new DummyLogger());
 	}
 }

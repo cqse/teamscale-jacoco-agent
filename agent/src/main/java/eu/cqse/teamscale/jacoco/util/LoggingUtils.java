@@ -67,6 +67,11 @@ public class LoggingUtils {
 			}
 
 			@Override
+			public void info(String message) {
+				logger.info(message);
+			}
+
+			@Override
 			public void warn(String message) {
 				logger.warn(message);
 			}
