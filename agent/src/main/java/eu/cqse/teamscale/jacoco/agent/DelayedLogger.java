@@ -1,8 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.report.util.ILogger;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,54 +13,49 @@ import java.util.List;
 public class DelayedLogger implements ILogger {
 
 	/** Buffered list of log levels. */
-	private final List<Level> logLevels = new ArrayList<>();
-
-	/** Buffered list of log messages. */
-	private final List<String> logMessages = new ArrayList<>();
-
-	/** Buffered list of logged {@link Throwable}s. */
-	private final List<Throwable> logThrowables = new ArrayList<>();
+	private final List<ILoggerAction> logActions = new ArrayList<>();
 
 	@Override
 	public void debug(String message) {
-		add(Level.DEBUG, message, null);
+		logActions.add(logger -> logger.debug(message));
 	}
 
 	@Override
 	public void info(String message) {
-		add(Level.INFO, message, null);
+		logActions.add(logger -> logger.info(message));
 	}
 
 	@Override
 	public void warn(String message) {
-		add(Level.WARN, message, null);
+		logActions.add(logger -> logger.warn(message));
 	}
 
 	@Override
 	public void warn(String message, Throwable throwable) {
-		add(Level.WARN, message, null);
+		logActions.add(logger -> logger.warn(message, throwable));
 	}
 
 	@Override
 	public void error(Throwable throwable) {
-		add(Level.ERROR, null, throwable);
+		logActions.add(logger -> logger.error(throwable.getMessage(), throwable));
 	}
 
 	@Override
 	public void error(String message, Throwable throwable) {
-		add(Level.ERROR, message, throwable);
+		logActions.add(logger -> logger.error(message, throwable));
 	}
 
-	private void add(Level level, String message, Throwable throwable) {
-		logLevels.add(level);
-		logMessages.add(message);
-		logThrowables.add(throwable);
-	}
-
-	/** Writes the logs to the given log4j logger. */
+	/** Writes the logs to the given slf4j logger. */
 	public void logTo(Logger logger) {
-		for (int i = 0; i < logLevels.size(); i++) {
-			logger.log(logLevels.get(i), logMessages.get(i), logThrowables.get(i));
-		}
+		logActions.forEach(action -> action.log(logger));
+	}
+
+	/** An action to be executed on a logger. */
+	private interface ILoggerAction {
+
+		/** Executes the action on the given logger. */
+		void log(Logger logger);
+
 	}
 }
+

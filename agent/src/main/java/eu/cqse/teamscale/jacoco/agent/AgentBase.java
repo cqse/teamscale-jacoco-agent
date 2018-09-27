@@ -42,11 +42,14 @@ public abstract class AgentBase {
 	/** Called by the actual premain method once the agent is isolated from the rest of the application. */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
+		DelayedLogger delayedLogger = new DelayedLogger();
 		try {
-			agentOptions = AgentOptionsParser.parse(options);
+			agentOptions = AgentOptionsParser.parse(options, delayedLogger);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = LoggingUtils.initializeDefaultLogging()) {
-				LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
+				Logger logger = LoggingUtils.getLogger(PreMain.class);
+				delayedLogger.logTo(logger);
+				logger.error("Failed to parse agent options: " + e.getMessage(), e);
 				System.err.println("Failed to parse agent options: " + e.getMessage());
 				throw e;
 			}
@@ -54,7 +57,9 @@ public abstract class AgentBase {
 
 		loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 
-		LoggingUtils.getLogger(Agent.class).info("Starting JaCoCo's agent");
+		Logger logger = LoggingUtils.getLogger(Agent.class);
+		delayedLogger.logTo(logger);
+		logger.info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
 		AgentBase agent = agentOptions.createAgent();
