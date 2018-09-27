@@ -43,6 +43,8 @@ public class AgentOptionsParser {
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
+	public static final String QUESTION_REPLACEMENT = "!@";
+	public static final String ASTERISK_REPLACEMENT = "#@";
 
 	/** Logger. */
 	private final ILogger logger;
@@ -378,23 +380,31 @@ public class AgentOptionsParser {
 	/**
 	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
 	 * placeholders, and a pattern suffix.
+	 * We need to replace the pattern characters with stand-ins, because ? and * are not allowed as path characters on windows.
 	 */
 	private Pair<String, String> splitIntoBaseDirAndPattern(String value) {
-		Path pathWithPattern = Paths.get(value);
+		String pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT);
+		Path pathWithPattern = Paths.get(pathWithArtificialPattern);
 		Path baseDir = pathWithPattern;
-		while (isPathWithPattern(baseDir.toString())) {
+		while (isPathWithArtificialPattern(baseDir.toString())) {
 			baseDir = baseDir.getParent();
 			if (baseDir == null) {
 				return new Pair<>("", value);
 			}
 		}
-		String pattern = baseDir.relativize(pathWithPattern).toString();
+		String pattern = baseDir.relativize(pathWithPattern).toString().replace(QUESTION_REPLACEMENT, "?")
+				.replace(ASTERISK_REPLACEMENT, "*");
 		return new Pair<>(baseDir.toString(), pattern);
 	}
 
-	/** Returns whether the given path (segment) contains ant pattern characters (?,*). */
-	private static boolean isPathWithPattern(String currentPathSegment) {
-		return currentPathSegment.contains("?") || currentPathSegment.contains("*");
+	/** Returns whether the given path contains ant pattern characters (?,*). */
+	private static boolean isPathWithPattern(String path) {
+		return path.contains("?") || path.contains("*");
+	}
+
+	/** Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link #ASTERISK_REPLACEMENT}). */
+	private static boolean isPathWithArtificialPattern(String path) {
+		return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT);
 	}
 
 	/**

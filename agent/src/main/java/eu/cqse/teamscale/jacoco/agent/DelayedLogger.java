@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class DelayedLogger implements ILogger {
 
-	/** Buffered list of log levels. */
+	/** List of log actions that will be executed once the logger is initialized. */
 	private final List<ILoggerAction> logActions = new ArrayList<>();
 
 	@Override
