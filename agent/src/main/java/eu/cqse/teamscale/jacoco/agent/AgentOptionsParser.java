@@ -43,8 +43,12 @@ public class AgentOptionsParser {
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
-	public static final String QUESTION_REPLACEMENT = "!@";
-	public static final String ASTERISK_REPLACEMENT = "#@";
+
+	/** Stand-in for the question mark operator. */
+	private static final String QUESTION_REPLACEMENT = "!@";
+
+	/** Stand-in for the asterisk operator. */
+	private static final String ASTERISK_REPLACEMENT = "#@";
 
 	/** Logger. */
 	private final ILogger logger;
