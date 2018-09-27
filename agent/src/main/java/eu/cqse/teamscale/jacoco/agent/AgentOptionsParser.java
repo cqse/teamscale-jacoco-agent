@@ -8,16 +8,19 @@ package eu.cqse.teamscale.jacoco.agent;
 import eu.cqse.teamscale.client.CommitDescriptor;
 import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
+import eu.cqse.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.collections.Pair;
+import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
-import org.jacoco.core.runtime.WildcardMatcher;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,8 +28,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Parses agent command line options.
@@ -36,10 +44,30 @@ public class AgentOptionsParser {
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
+	/** Stand-in for the question mark operator. */
+	private static final String QUESTION_REPLACEMENT = "!@";
+
+	/** Stand-in for the asterisk operator. */
+	private static final String ASTERISK_REPLACEMENT = "#@";
+
+	/** Logger. */
+	private final ILogger logger;
+
+	public AgentOptionsParser(ILogger logger) {
+		this.logger = logger;
+	}
+
 	/**
 	 * Parses the given command-line options.
 	 */
-	public static AgentOptions parse(String optionsString) throws AgentOptionParseException {
+	public static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
+		return new AgentOptionsParser(logger).parse(optionsString);
+	}
+
+	/**
+	 * Parses the given command-line options.
+	 */
+	/* package */ AgentOptions parse(String optionsString) throws AgentOptionParseException {
 		if (StringUtils.isEmpty(optionsString)) {
 			throw new AgentOptionParseException(
 					"No agent options given. You must at least provide an output directory (out)"
@@ -64,7 +92,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
-	private static void handleOption(AgentOptions options, String optionPart) throws AgentOptionParseException {
+	private void handleOption(AgentOptions options, String optionPart) throws AgentOptionParseException {
 		String[] keyAndValue = optionPart.split("=", 2);
 		if (keyAndValue.length < 2) {
 			throw new AgentOptionParseException("Got an option without any value: " + optionPart);
@@ -96,10 +124,10 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	private static boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case "config-file":
-				readConfigFromFile(options, new File(value));
+				readConfigFromFile(options, parseFile(key, value));
 				return true;
 			case "logging-config":
 				options.loggingConfig = parsePath(key, value);
@@ -137,7 +165,8 @@ public class AgentOptionsParser {
 				options.jacocoExcludes = value.replaceAll(";", ":");
 				return true;
 			case "class-dir":
-				options.classDirectoriesOrZips = CollectionUtils.map(splitMultiOptionValue(value), File::new);
+				options.classDirectoriesOrZips = CollectionUtils
+						.mapWithException(splitMultiOptionValue(value), singleValue -> parseFile(key, singleValue));
 				return true;
 			default:
 				return false;
@@ -154,7 +183,7 @@ public class AgentOptionsParser {
 	 * includes=test.*
 	 * excludes=third.party.*
 	 */
-	private static void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
+	private void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
 		try {
 			List<String> configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile);
 			for (String optionKeyValue : configFileKeyValues) {
@@ -178,7 +207,7 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	private static boolean handleTeamscaleOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case "teamscale-server-url":
 				options.teamscaleServer.url = parseUrl(value);
@@ -203,7 +232,7 @@ public class AgentOptionsParser {
 				options.teamscaleServer.commit = parseCommit(value);
 				return true;
 			case "teamscale-commit-manifest-jar":
-				options.teamscaleServer.commit = getCommitFromManifest(new File(value));
+				options.teamscaleServer.commit = getCommitFromManifest(parseFile(key, value));
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
@@ -217,7 +246,7 @@ public class AgentOptionsParser {
 	 * Reads `Branch` and `Timestamp` entries from the given jar/war file and
 	 * builds a commit descriptor out of it.
 	 */
-	private static CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
+	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
 			Manifest manifest = jarStream.getManifest();
 			String branch = manifest.getMainAttributes().getValue("Branch");
@@ -227,6 +256,7 @@ public class AgentOptionsParser {
 			} else if (StringUtils.isEmpty(timestamp)) {
 				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
 			}
+			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
 			return new CommitDescriptor(branch, timestamp);
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
@@ -238,7 +268,7 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	private static boolean handleHttpServerOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleHttpServerOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case "http-server-formats":
 				options.httpServerReportFormats = parseReportFormats(value);
@@ -259,7 +289,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses a semicolon-separated list of report formats like TESTWISE_COVERAGE;JUNIT.
 	 */
-	private static Set<EReportFormat> parseReportFormats(String reportFormatsString) throws AgentOptionParseException {
+	private Set<EReportFormat> parseReportFormats(String reportFormatsString) throws AgentOptionParseException {
 		List<String> reportFormatString = splitMultiOptionValue(reportFormatsString.trim());
 		if (reportFormatString.size() == 0) {
 			throw new AgentOptionParseException("'http-server-formats' is empty!");
@@ -277,14 +307,108 @@ public class AgentOptionsParser {
 	}
 
 	/**
+	 * Parses the given value as a {@link File}.
+	 */
+	/* package */ File parseFile(String optionName, String value) throws AgentOptionParseException {
+		return parsePath(optionName, new File("."), value).toFile();
+	}
+
+	/**
 	 * Parses the given value as a {@link Path}.
 	 */
-	private static Path parsePath(String optionName, String value) throws AgentOptionParseException {
+	/* package */ Path parsePath(String optionName, String value) throws AgentOptionParseException {
+		return parsePath(optionName, new File("."), value);
+	}
+
+	/**
+	 * Parses the given value as a {@link File}.
+	 */
+	/* package */ File parseFile(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
+		return parsePath(optionName, workingDirectory, value).toFile();
+	}
+
+	/**
+	 * Parses the given value as a {@link Path}.
+	 */
+	/* package */ Path parsePath(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
+		if (isPathWithPattern(value)) {
+			return parseFileFromPattern(workingDirectory, optionName, value);
+		}
 		try {
-			return Paths.get(value);
+			return workingDirectory.toPath().resolve(Paths.get(value));
 		} catch (InvalidPathException e) {
 			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + value, e);
 		}
+	}
+
+	/** Parses the value as a ant pattern to a file or directory. */
+	private Path parseFileFromPattern(File workingDirectory, String optionName, String value) throws AgentOptionParseException {
+		Pair<String, String> baseDirAndPattern = splitIntoBaseDirAndPattern(value);
+		String baseDir = baseDirAndPattern.getFirst();
+		String pattern = baseDirAndPattern.getSecond();
+
+		File workingDir = workingDirectory.getAbsoluteFile();
+		Path basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath();
+
+		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
+		Predicate<Path> filter = path -> pathMatcher
+				.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
+
+		List<Path> matchingPaths;
+		try {
+			matchingPaths = Files.walk(basePath).filter(filter).sorted().collect(toList());
+		} catch (IOException e) {
+			throw new AgentOptionParseException(
+					"Could not recursively list files in directory " + basePath + " in order to resolve pattern " + pattern + " given for option " + optionName,
+					e);
+		}
+
+		if (matchingPaths.isEmpty()) {
+			throw new AgentOptionParseException(
+					"Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
+							" did not match any files in " + basePath.toAbsolutePath() + "!");
+		} else if (matchingPaths.size() > 1) {
+			logger.warn(
+					"Multiple files match the pattern " + pattern + " in " + basePath
+							.toString() + " for option " + optionName + "! " +
+							"The first one is used, but consider to adjust the " +
+							"pattern to match only one file. Candidates are: " + matchingPaths.stream()
+							.map(basePath::relativize).map(Path::toString).collect(joining(", ")));
+		}
+		Path path = matchingPaths.get(0).normalize();
+		logger.info("Using file " + path + " for option " + optionName);
+
+		return path;
+	}
+
+	/**
+	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
+	 * placeholders, and a pattern suffix.
+	 * We need to replace the pattern characters with stand-ins, because ? and * are not allowed as path characters on windows.
+	 */
+	private Pair<String, String> splitIntoBaseDirAndPattern(String value) {
+		String pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT);
+		Path pathWithPattern = Paths.get(pathWithArtificialPattern);
+		Path baseDir = pathWithPattern;
+		while (isPathWithArtificialPattern(baseDir.toString())) {
+			baseDir = baseDir.getParent();
+			if (baseDir == null) {
+				return new Pair<>("", value);
+			}
+		}
+		String pattern = baseDir.relativize(pathWithPattern).toString().replace(QUESTION_REPLACEMENT, "?")
+				.replace(ASTERISK_REPLACEMENT, "*");
+		return new Pair<>(baseDir.toString(), pattern);
+	}
+
+	/** Returns whether the given path contains ant pattern characters (?,*). */
+	private static boolean isPathWithPattern(String path) {
+		return path.contains("?") || path.contains("*");
+	}
+
+	/** Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link #ASTERISK_REPLACEMENT}). */
+	private static boolean isPathWithArtificialPattern(String path) {
+		return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT);
 	}
 
 	/**
@@ -319,5 +443,4 @@ public class AgentOptionsParser {
 	private static List<String> splitMultiOptionValue(String value) {
 		return Arrays.asList(value.split(";"));
 	}
-
 }

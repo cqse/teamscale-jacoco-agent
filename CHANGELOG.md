@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [feature] Paths passed to the agent can now be relative and contain ant patterns
 
 # 10.0.0
 - [breaking change] switched to logback for logging. All logging configurations must be replaced

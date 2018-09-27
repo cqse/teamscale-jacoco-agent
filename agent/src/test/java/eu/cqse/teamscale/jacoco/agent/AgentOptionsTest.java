@@ -1,17 +1,37 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.client.TeamscaleServer;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Predicate;
 
 import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
 import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
+
+	@Rule
+	public TemporaryFolder testFolder = new TemporaryFolder();
+
+	@Before
+	public void setUp() throws IOException {
+		testFolder.create();
+		testFolder.newFile("file_with_manifest1.jar");
+		testFolder.newFolder("plugins");
+		testFolder.newFolder("plugins", "inner");
+		testFolder.newFile("plugins/some_other_file.jar");
+		testFolder.newFile("plugins/file_with_manifest2.jar");
+	}
 
 	/** Tests include pattern matching. */
 	@Test
@@ -34,11 +54,11 @@ public class AgentOptionsTest {
 	/** Interval options test. */
 	@Test
 	public void testIntervalOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.");
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.");
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(60);
-		agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,interval=0");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=0");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
-		agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,interval=30");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=30");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(true);
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(30);
 	}
@@ -46,8 +66,7 @@ public class AgentOptionsTest {
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
-		new AgentOptionsParser();
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
 				"teamscale-user=build," +
@@ -69,23 +88,84 @@ public class AgentOptionsTest {
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
 				"http-server-port=8081," +
 				"http-server-formats=TESTWISE_COVERAGE;TEST_LIST;JUNIT");
-		assertThat(agentOptions.getHttpServerReportFormats()).containsExactlyInAnyOrder(TESTWISE_COVERAGE, TEST_LIST, JUNIT);
+		assertThat(agentOptions.getHttpServerReportFormats())
+				.containsExactlyInAnyOrder(TESTWISE_COVERAGE, TEST_LIST, JUNIT);
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,includes=" + filterString);
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
+				.parse("out=.,class-dir=.,includes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
-		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,excludes=" + filterString);
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
+				.parse("out=.,class-dir=.,excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().test(string);
 	}
 
+	/** Tests path resolution with absolute path. */
+	@Test
+	public void testPathResolutionForAbsolutePath() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches(".", testFolder.getRoot().getAbsolutePath(), "");
+	}
+
+	/** Tests path resolution with relative paths. */
+	@Test
+	public void testPathResolutionForRelativePath() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches(".", ".", "");
+		assertInputInWorkingDirectoryMatches("plugins", "../file_with_manifest1.jar", "file_with_manifest1.jar");
+	}
+
+	/** Tests path resolution with patterns and relative paths. */
+	@Test
+	public void testPathResolutionWithPatternsAndRelativePaths() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches(".", "plugins/file_*.jar", "plugins/file_with_manifest2.jar");
+		assertInputInWorkingDirectoryMatches(".", "*/file_*.jar", "plugins/file_with_manifest2.jar");
+		assertInputInWorkingDirectoryMatches("plugins/inner", "..", "plugins");
+		assertInputInWorkingDirectoryMatches("plugins/inner", "../s*", "plugins/some_other_file.jar");
+	}
+
+	/** Tests path resolution with patterns and absolute paths. */
+	@Test
+	public void testPathResolutionWithPatternsAndAbsolutePaths() throws AgentOptionParseException {
+		assertInputInWorkingDirectoryMatches("plugins", testFolder.getRoot().getAbsolutePath() + "/plugins/file_*.jar",
+				"plugins/file_with_manifest2.jar");
+	}
+
+	/** Tests path resolution with incorrect input. */
+	@Test
+	public void testPathResolutionWithPatternErrorCases() {
+		assertPathResolutionInWorkingDirFailsWith(".", "**.war", "Invalid path given for option option-name: " +
+				"**.war. The pattern **.war did not match any files in");
+	}
+
+	private void assertInputInWorkingDirectoryMatches(String workingDir, String input, String expected) throws AgentOptionParseException {
+		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
+		File actualFile = getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input);
+		File expectedFile = new File(testFolder.getRoot(), expected);
+		assertThat(getNormalizedPath(actualFile)).isEqualByComparingTo(getNormalizedPath(expectedFile));
+	}
+
+	/** Resolves the path to its absolute normalized path. */
+	private static Path getNormalizedPath(File file) {
+		return file.getAbsoluteFile().toPath().normalize();
+	}
+
+	private void assertPathResolutionInWorkingDirFailsWith(String workingDir, String input, String expectedMessage) {
+		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(expectedMessage);
+	}
+
+	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
+		return new AgentOptionsParser(new DummyLogger());
+	}
 }

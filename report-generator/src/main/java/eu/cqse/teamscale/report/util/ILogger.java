@@ -10,6 +10,9 @@ public interface ILogger {
 	/** Logs at debug level. */
 	void debug(String message);
 
+	/** Logs at info level. */
+	void info(String message);
+
 	/** Logs at warning level. */
 	void warn(String message);
 

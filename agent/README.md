@@ -21,9 +21,9 @@ Where
 
 The following options are available:
 
-- `out` (required): the path to a writable directory where the generated coverage XML files will be stored.
+- `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format)
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon.
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
@@ -46,7 +46,7 @@ The following options are available:
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `logging-config`: path to a [logback][] configuration XML file (other configuration formats are not supported at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
-  `logging` folder, e.g. to enable debug logging or log directly to the console.
+  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format)
 - `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
@@ -71,7 +71,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   instead.
   
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
-  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file.
+  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format)
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
@@ -80,7 +80,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
   more data might be required by the REST endpoints see `Test impact mode` below for details.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are separated by line breaks. The file may also contain comments starting with `#`.
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -91,6 +91,11 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
 The log file is written to the agent's directory in the subdirectory `logs` by default.
+
+### Path format
+
+All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant 
+patterns with `*`, `**` and `?`.
 
 ## Test impact mode
 
