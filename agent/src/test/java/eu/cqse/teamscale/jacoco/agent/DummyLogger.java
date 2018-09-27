@@ -6,31 +6,31 @@ import eu.cqse.teamscale.report.util.ILogger;
 public class DummyLogger implements ILogger {
 	@Override
 	public void debug(String message) {
-
+		// nothing to do here
 	}
 
 	@Override
 	public void info(String message) {
-
+		// nothing to do here
 	}
 
 	@Override
 	public void warn(String message) {
-
+		// nothing to do here
 	}
 
 	@Override
 	public void warn(String message, Throwable throwable) {
-
+		// nothing to do here
 	}
 
 	@Override
 	public void error(Throwable throwable) {
-
+		// nothing to do here
 	}
 
 	@Override
 	public void error(String message, Throwable throwable) {
-
+		// nothing to do here
 	}
 }
