@@ -1,6 +1,6 @@
 We use [semantic versioning][semver]
 
-# Next version
+# 10.1.0
 - [feature] Paths passed to the agent can now be relative and contain ant patterns
 
 # 10.0.0
