@@ -44,7 +44,7 @@ public class AgentOptionsParser {
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
-	/** List of log entries that we buffer here for later when the logging framework is initialized. */
+	/** Logger. */
 	private final ILogger logger;
 
 	public AgentOptionsParser(ILogger logger) {
@@ -250,7 +250,7 @@ public class AgentOptionsParser {
 			} else if (StringUtils.isEmpty(timestamp)) {
 				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
 			}
-			logger.debug("Found " + branch + ":" + timestamp);
+			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
 			return new CommitDescriptor(branch, timestamp);
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
@@ -337,22 +337,24 @@ public class AgentOptionsParser {
 
 	/** Parses the value as a ant pattern to a file or directory. */
 	private Path parseFileFromPattern(File workingDirectory, String optionName, String value) throws AgentOptionParseException {
-		Pair<String, String> fileAndPattern = splitIntoBaseDirAndPattern(value);
-		String baseDir = fileAndPattern.getFirst();
-		String pattern = fileAndPattern.getSecond();
+		Pair<String, String> baseDirAndPattern = splitIntoBaseDirAndPattern(value);
+		String baseDir = baseDirAndPattern.getFirst();
+		String pattern = baseDirAndPattern.getSecond();
 
 		File workingDir = workingDirectory.getAbsoluteFile();
 		Path basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath();
 
 		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
-		Predicate<Path> filter = path -> pathMatcher.matcher(basePath.relativize(path).toString()).matches();
+		Predicate<Path> filter = path -> pathMatcher
+				.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
 
 		List<Path> matchingPaths;
 		try {
 			matchingPaths = Files.walk(basePath).filter(filter).sorted().collect(toList());
 		} catch (IOException e) {
 			throw new AgentOptionParseException(
-					"Invalid path given for option " + optionName + ": " + value, e);
+					"Could not recursively list files in directory " + basePath + " in order to resolve pattern " + pattern + " given for option " + optionName,
+					e);
 		}
 
 		if (matchingPaths.isEmpty()) {
@@ -361,12 +363,14 @@ public class AgentOptionsParser {
 							" did not match any files in " + basePath.toAbsolutePath() + "!");
 		} else if (matchingPaths.size() > 1) {
 			logger.warn(
-					"Multiple files match the given pattern! The first one is used, but consider to adjust the " +
+					"Multiple files match the pattern " + pattern + " in " + basePath
+							.toString() + " for option " + optionName + "! " +
+							"The first one is used, but consider to adjust the " +
 							"pattern to match only one file. Candidates are: " + matchingPaths.stream()
 							.map(basePath::relativize).map(Path::toString).collect(joining(", ")));
 		}
 		Path path = matchingPaths.get(0).normalize();
-		logger.info("Found matching file " + path + " for option " + optionName);
+		logger.info("Using file " + path + " for option " + optionName);
 
 		return path;
 	}
