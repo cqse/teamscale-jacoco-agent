@@ -1,9 +1,11 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
+import org.slf4j.Logger;
+
+import java.lang.instrument.Instrumentation;
 
 /**
  * Base class for agent implementations. Handles logger shutdown,
@@ -14,13 +16,15 @@ import org.jacoco.agent.rt.RT;
 public abstract class AgentBase {
 
 	/** The logger. */
-	protected final Logger logger = LogManager.getLogger(this);
+	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Controls the JaCoCo runtime. */
 	protected final JacocoRuntimeController controller;
 
 	/** Stores the XML files. */
 	protected final IXmlStore store;
+
+	private static LoggingUtils.LoggingResources loggingResources;
 
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		try {
@@ -33,6 +37,28 @@ public abstract class AgentBase {
 
 		logger.info("Starting JaCoCo agent with options: {}", options.getOriginalOptionsString());
 		logger.info("Storage method: {}", store.describe());
+	}
+
+	/** Called by the actual premain method once the agent is isolated from the rest of the application. */
+	public static void premain(String options, Instrumentation instrumentation) throws Exception {
+		AgentOptions agentOptions;
+		try {
+			agentOptions = AgentOptionsParser.parse(options);
+		} catch (AgentOptionParseException e) {
+			try (LoggingUtils.LoggingResources ignored = LoggingUtils.initializeDefaultLogging()) {
+				LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
+				System.err.println("Failed to parse agent options: " + e.getMessage());
+				throw e;
+			}
+		}
+
+		loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+
+		LoggingUtils.getLogger(Agent.class).info("Starting JaCoCo's agent");
+		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
+
+		AgentBase agent = agentOptions.createAgent();
+		agent.registerShutdownHook();
 	}
 
 	/**
@@ -59,13 +85,11 @@ public abstract class AgentBase {
 	 * Registers a shutdown hook that stops the timer and dumps coverage a final
 	 * time.
 	 */
-	public void registerShutdownHook() {
+	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			prepareShutdown();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
-
-			// manually shut down the logging system since we prevented automatic shutdown
-			LogManager.shutdown();
+			loggingResources.close();
 		}));
 	}
 

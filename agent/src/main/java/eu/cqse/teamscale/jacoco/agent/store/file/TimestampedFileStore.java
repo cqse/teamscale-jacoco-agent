@@ -3,9 +3,9 @@ package eu.cqse.teamscale.jacoco.agent.store.file;
 import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ import java.nio.file.Path;
 public class TimestampedFileStore implements IXmlStore {
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** The directory to which to write the XML files. */
 	private final Path outputDirectory;

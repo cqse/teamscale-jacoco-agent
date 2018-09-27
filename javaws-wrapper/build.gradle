@@ -1,11 +1,9 @@
 plugins {
 	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
+	id 'java'
+	id 'application'
+	id 'com.github.johnrengelman.shadow'
 }
-
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'application'
 
 dependencies {
 	compile 'org.conqat:org.conqat.lib.commons:0.20160822'

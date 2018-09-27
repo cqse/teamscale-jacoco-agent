@@ -6,10 +6,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.convert.ConvertCommand;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.JaCoCo;
+import org.slf4j.Logger;
 
 import java.util.ResourceBundle;
 
@@ -25,7 +25,7 @@ public class Main {
 	}
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** The default arguments that will always be parsed. */
 	private final DefaultArguments defaultArguments = new DefaultArguments();

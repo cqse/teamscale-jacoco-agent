@@ -1,7 +1,6 @@
 package eu.cqse.teamscale.jacoco.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * Measures how long a certain piece of code takes and logs it to the debug log.
@@ -12,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 public class Benchmark implements AutoCloseable {
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** The time when the resource was created. */
 	private final long startTime;

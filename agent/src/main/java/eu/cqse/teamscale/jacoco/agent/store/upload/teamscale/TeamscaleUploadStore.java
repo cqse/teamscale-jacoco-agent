@@ -1,16 +1,16 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.teamscale;
 
-import eu.cqse.teamscale.client.ITeamscaleService;
 import eu.cqse.teamscale.client.EReportFormat;
+import eu.cqse.teamscale.client.ITeamscaleService;
 import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.client.TeamscaleServiceGenerator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ import java.io.IOException;
 public class TeamscaleUploadStore implements IXmlStore {
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** The store to write failed uploads to. */
 	private final TimestampedFileStore failureStore;

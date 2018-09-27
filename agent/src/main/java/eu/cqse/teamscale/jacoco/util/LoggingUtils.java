@@ -5,21 +5,18 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.util;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 import eu.cqse.teamscale.jacoco.agent.Agent;
 import eu.cqse.teamscale.report.util.ILogger;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Path;
 
 /**
@@ -27,38 +24,67 @@ import java.nio.file.Path;
  */
 public class LoggingUtils {
 
-	static {
-		// since we will be logging from our own shutdown hook, we must disable the
-		// log4j one. Otherwise it logs a warning to the console on shutdown. Due to
-		// this, we need to manually shutdown the logging engine in our own shutdown
-		// hook
-		ConfigurationFactory.setConfigurationFactory(new ShutdownHookDisablingConfigurationFactory());
+	/** Returns a logger for the given object's class. */
+	public static Logger getLogger(Object object) {
+		return LoggerFactory.getLogger(object.getClass());
+	}
+
+	/** Returns a logger for the given class. */
+	public static Logger getLogger(Class<?> object) {
+		return LoggerFactory.getLogger(object);
+	}
+
+	/** Class to use with try-with-resources to close the logging framework's resources. */
+	public static class LoggingResources implements AutoCloseable {
+
+		@Override
+		public void close() {
+			getLoggerContext().stop();
+		}
 	}
 
 	/** Initializes the logging to the default configured in the Jar. */
-	public static void initializeDefaultLogging() {
-		URL url = Agent.class.getResource("log4j2-default.xml");
-		InputStream stream = Agent.class.getResourceAsStream("log4j2-default.xml");
-		ConfigurationSource source = new ConfigurationSource(stream, url);
-		Configurator.initialize(null, source);
+	public static LoggingResources initializeDefaultLogging() {
+		InputStream stream = Agent.class.getResourceAsStream("logback-default.xml");
+		reconfigureLoggerContext(stream);
+		return new LoggingResources();
+	}
+
+	private static LoggerContext getLoggerContext() {
+		return (LoggerContext) LoggerFactory.getILoggerFactory();
+	}
+
+	/**
+	 * Reconfigures the logger context to use the configuration XML from the given input stream.
+	 * C.f. https://logback.qos.ch/manual/configuration.html
+	 */
+	private static void reconfigureLoggerContext(InputStream stream) {
+		LoggerContext loggerContext = getLoggerContext();
+		try {
+			JoranConfigurator configurator = new JoranConfigurator();
+			configurator.setContext(loggerContext);
+			loggerContext.reset();
+			configurator.doConfigure(stream);
+		} catch (JoranException je) {
+			// StatusPrinter will handle this
+		}
+		StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
 	}
 
 	/**
 	 * Initializes the logging from the given file. If that is <code>null</code>,
 	 * uses {@link #initializeDefaultLogging()} instead.
 	 */
-	public static void initializeLogging(Path loggingConfigFile) throws IOException {
+	public static LoggingResources initializeLogging(Path loggingConfigFile) throws IOException {
 		if (loggingConfigFile == null) {
-			initializeDefaultLogging();
-			return;
+			return initializeDefaultLogging();
 		}
 
-		ConfigurationSource source = new ConfigurationSource(new FileInputStream(loggingConfigFile.toFile()),
-				loggingConfigFile.toFile());
-		Configurator.initialize(null, source);
+		reconfigureLoggerContext(new FileInputStream(loggingConfigFile.toFile()));
+		return new LoggingResources();
 	}
 
-	/** Wraps the given log4j logger into an {@link ILogger}. */
+	/** Wraps the given slf4j logger into an {@link ILogger}. */
 	public static ILogger wrap(Logger logger) {
 		return new ILogger() {
 			@Override
@@ -83,7 +109,7 @@ public class LoggingUtils {
 
 			@Override
 			public void error(Throwable throwable) {
-				logger.error(throwable);
+				logger.error(throwable.getMessage(), throwable);
 			}
 
 			@Override
@@ -91,39 +117,6 @@ public class LoggingUtils {
 				logger.error(message, throwable);
 			}
 		};
-	}
-
-	/** Factory for XML config files that disables the shutdown hook. */
-	private static class ShutdownHookDisablingConfigurationFactory extends ConfigurationFactory {
-
-		/** {@inheritDoc} */
-		@Override
-		protected String[] getSupportedTypes() {
-			return XmlConfigurationFactory.SUFFIXES;
-		}
-
-		/** {@inheritDoc} */
-		@Override
-		public Configuration getConfiguration(LoggerContext loggerContext, ConfigurationSource source) {
-			return new ShutdownHookDisablingConfiguration(loggerContext, source);
-		}
-
-	}
-
-	/** Default XML configuration that forces the shutdown hook to be disabled. */
-	public static class ShutdownHookDisablingConfiguration extends XmlConfiguration {
-
-		/** Constructor. */
-		public ShutdownHookDisablingConfiguration(LoggerContext loggerContext, ConfigurationSource configSource) {
-			super(loggerContext, configSource);
-		}
-
-		/** {@inheritDoc} */
-		@Override
-		public boolean isShutdownHookEnabled() {
-			return false;
-		}
-
 	}
 
 }

@@ -1,16 +1,3 @@
-import de.sebastianboegl.gradle.plugins.shadow.transformers.Log4j2PluginsFileTransformer
-
-buildscript {
-	repositories {
-		maven {
-			url 'https://plugins.gradle.org/m2/'
-		}
-	}
-	dependencies {
-		classpath 'de.sebastianboegl.gradle.plugins:shadow-log4j-transformer:2.2.0'
-	}
-}
-
 plugins {
 	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
 }
@@ -31,10 +18,10 @@ dependencies {
     implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
     implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+	implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
+	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
     implementation 'com.beust:jcommander:1.71'
     implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
 
@@ -74,9 +61,6 @@ shadowJar {
 	// See http://openjdk.java.net/jeps/238
 	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
 
-	// ensures that log4j resource files are also relocated properly
-	transform(Log4j2PluginsFileTransformer)
-	transform(Log4JResourceTransformer)
 	mergeServiceFiles()
 }
 

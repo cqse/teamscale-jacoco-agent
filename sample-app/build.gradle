@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow'
+}
+
+sourceCompatibility = 1.8
+version 'unspecified'
+mainClassName = 'Main'
+
+dependencies {
+    // this logback version is the oldest one available that I could get to work and possibly incompatible
+    // with the one used in the agent. This way, we can test if the shadowing works correctly
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.0.0'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.0'
+}
