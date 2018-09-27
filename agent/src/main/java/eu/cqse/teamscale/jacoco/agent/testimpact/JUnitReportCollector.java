@@ -3,12 +3,12 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
 import eu.cqse.teamscale.client.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.junit.JUnitReport;
 import eu.cqse.teamscale.report.junit.JUnitReport.TestCase;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.string.StringUtils;
+import org.slf4j.Logger;
 import spark.Request;
 
 import javax.xml.bind.JAXBException;
@@ -27,7 +27,7 @@ public class JUnitReportCollector implements ITestListener {
 	private static final String QUERY_RESULT_PARAM = "result";
 
 	/** The logger. */
-	protected final Logger logger = LogManager.getLogger(this);
+	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Contains test execution information of all tests that have been executed so far in JUnit report format. */
 	private final JUnitReport report = new JUnitReport();

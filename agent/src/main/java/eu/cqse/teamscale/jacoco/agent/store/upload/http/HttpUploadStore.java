@@ -4,12 +4,12 @@ import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
+import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.slf4j.Logger;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
@@ -27,7 +27,7 @@ import java.util.zip.ZipOutputStream;
 public class HttpUploadStore implements IXmlStore {
 
 	/** The logger. */
-	private final Logger logger = LogManager.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** The store to write failed uploads to. */
 	private final TimestampedFileStore failureStore;

@@ -29,7 +29,7 @@ public class Agent extends AgentBase {
 	private Timer timer;
 
 	/** Constructor. */
-	public Agent(AgentOptions options) throws IllegalStateException {
+	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
