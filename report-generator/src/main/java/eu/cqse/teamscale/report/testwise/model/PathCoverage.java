@@ -1,5 +1,7 @@
 package eu.cqse.teamscale.report.testwise.model;
 
+import org.conqat.lib.commons.collections.CollectionUtils;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.Collection;
@@ -7,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Container for {@link FileCoverage}s of the same path. */
-public class PathCoverage {
+public class PathCoverage implements Comparable<PathCoverage> {
 
 	/** File system path. */
 	@XmlAttribute(name = "name")
@@ -37,6 +39,11 @@ public class PathCoverage {
 	/** Returns a collection of {@link FileCoverage}s associated with this path. */
 	@XmlElement(name = "file")
 	public Collection<FileCoverage> getFiles() {
-		return fileCoverageList.values();
+		return CollectionUtils.sort(fileCoverageList.values());
+	}
+
+	@Override
+	public int compareTo(PathCoverage o) {
+		return this.path.compareTo(o.path);
 	}
 }

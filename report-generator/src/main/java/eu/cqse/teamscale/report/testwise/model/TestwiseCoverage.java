@@ -1,9 +1,12 @@
 package eu.cqse.teamscale.report.testwise.model;
 
+import org.conqat.lib.commons.collections.CollectionUtils;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /** Container for coverage produced by multiple tests. */
@@ -31,8 +34,8 @@ public class TestwiseCoverage {
 
 	/** Returns a collection of all tests contained in this container. */
 	@XmlElement(name = "test")
-	public Collection<TestCoverage> getTests() {
-		return tests.values();
+	public List<TestCoverage> getTests() {
+		return CollectionUtils.sort(tests.values());
 	}
 
 	/**

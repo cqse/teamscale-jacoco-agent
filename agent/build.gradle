@@ -37,6 +37,10 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
+test {
+	testLogging.exceptionFormat "full"
+}
+
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
 shadowJar {
 	baseName = 'teamscale-jacoco-agent'

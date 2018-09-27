@@ -1,5 +1,7 @@
 package eu.cqse.teamscale.report.testwise.model;
 
+import org.conqat.lib.commons.collections.CollectionUtils;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.Collection;
@@ -9,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /** Generic holder of test coverage of a single test based on line-ranges. */
-public class TestCoverage {
+public class TestCoverage implements Comparable<TestCoverage> {
 
 	/** The external ID of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
 	@XmlAttribute
@@ -50,11 +52,16 @@ public class TestCoverage {
 	/** Returns a collection of {@link PathCoverage}s associated with the test. */
 	@XmlElement(name = "path")
 	public Collection<PathCoverage> getPaths() {
-		return pathCoverageList.values();
+		return CollectionUtils.sort(pathCoverageList.values());
 	}
 
 	/** Returns true if there is no coverage for the test yet. */
 	public boolean isEmpty() {
 		return pathCoverageList.isEmpty();
+	}
+
+	@Override
+	public int compareTo(TestCoverage o) {
+		return this.externalId.compareTo(o.externalId);
 	}
 }

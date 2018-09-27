@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /** Holds coverage of a single file. */
-public class FileCoverage {
+public class FileCoverage implements Comparable<FileCoverage> {
 
 	/** The file system path of the file not including the file itself. */
 	@XmlTransient
@@ -105,6 +105,11 @@ public class FileCoverage {
 	/** Returns true if there is no coverage for the file yet. */
 	public boolean isEmpty() {
 		return coveredRanges.isEmpty();
+	}
+
+	@Override
+	public int compareTo(FileCoverage o) {
+		return fileName.compareTo(o.fileName);
 	}
 
 	/** Container for the "lines" xml tag. */
