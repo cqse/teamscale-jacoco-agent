@@ -1,13 +1,14 @@
 We use [semantic versioning][semver]
 
-# 11.0.0
+# 10.0.0
 - [breaking change] switched to logback for logging. All logging configurations must be replaced
   with logback XMLs. This fixes Java 10 compatibility issues with Log4j by removing Log4j from
   the agent
-
-# 10.0.0
 - [feature] make agent log INFO and above to `agentdir/logs` by default
-- [fix] isolate agent further from the application to prevent some log4j errors
+- [fix] isolate agent further from the application to prevent errors from conflicting library versions
+
+# 9.1.0
+- [feature] dump interval of 0 only dumps at the end
 
 # 9.0.3
 - [fix] Test Impact Mode: Empty reports are no longer dumped

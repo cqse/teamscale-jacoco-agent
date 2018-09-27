@@ -26,7 +26,7 @@ public class Agent extends AgentBase {
 	private JaCoCoXmlReportGenerator generator;
 
 	/** Regular dump task. */
-	private final Timer timer;
+	private Timer timer;
 
 	/** Constructor. */
 	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
@@ -36,15 +36,18 @@ public class Agent extends AgentBase {
 				options.getLocationIncludeFilter(),
 				options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
-		timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
-		timer.start();
-
-		logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+		if (options.shouldDumpInIntervals()) {
+			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
+			timer.start();
+			logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+		}
 	}
 
 	@Override
 	protected void prepareShutdown() {
-		timer.stop();
+		if (timer != null) {
+			timer.stop();
+		}
 		dumpReport();
 	}
 

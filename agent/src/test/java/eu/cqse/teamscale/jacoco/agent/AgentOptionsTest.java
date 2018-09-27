@@ -31,6 +31,18 @@ public class AgentOptionsTest {
 				"C:\\client-daily\\client\\plugins\\com.customer.something.client_1.2.3.4.1234566778.jar@com/customer/something/SomeClass.class");
 	}
 
+	/** Interval options test. */
+	@Test
+	public void testIntervalOptions() throws AgentOptionParseException {
+		AgentOptions agentOptions = AgentOptionsParser.parse("out=.,class-dir=.");
+		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(60);
+		agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,interval=0");
+		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
+		agentOptions = AgentOptionsParser.parse("out=.,class-dir=.,interval=30");
+		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(true);
+		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(30);
+	}
+
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
