@@ -1,5 +1,7 @@
 We use [semantic versioning][semver]
 
+# Next version
+
 # 10.0.0
 - [breaking change] switched to logback for logging. All logging configurations must be replaced
   with logback XMLs. This fixes Java 10 compatibility issues with Log4j by removing Log4j from
