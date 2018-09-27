@@ -1,15 +1,11 @@
-version 'unspecified'
-
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow'
 }
 
+sourceCompatibility = 1.8
+version 'unspecified'
 mainClassName = 'Main'
 
 dependencies {

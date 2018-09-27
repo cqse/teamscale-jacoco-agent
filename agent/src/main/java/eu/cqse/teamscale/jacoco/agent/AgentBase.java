@@ -24,6 +24,8 @@ public abstract class AgentBase {
 	/** Stores the XML files. */
 	protected final IXmlStore store;
 
+	private static LoggingUtils.LoggingResources loggingResources;
+
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
@@ -43,14 +45,14 @@ public abstract class AgentBase {
 		try {
 			agentOptions = AgentOptionsParser.parse(options);
 		} catch (AgentOptionParseException e) {
-			LoggingUtils.initializeDefaultLogging();
-			LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
-			System.err.println("Failed to parse agent options: " + e.getMessage());
-			LoggingUtils.shutDownLogging();
-			throw e;
+			try (LoggingUtils.LoggingResources ignored = LoggingUtils.initializeDefaultLogging()) {
+				LoggingUtils.getLogger(Agent.class).error("Failed to parse agent options: " + e.getMessage(), e);
+				System.err.println("Failed to parse agent options: " + e.getMessage());
+				throw e;
+			}
 		}
 
-		LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+		loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 
 		LoggingUtils.getLogger(Agent.class).info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
@@ -83,11 +85,11 @@ public abstract class AgentBase {
 	 * Registers a shutdown hook that stops the timer and dumps coverage a final
 	 * time.
 	 */
-	public void registerShutdownHook() {
+	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			prepareShutdown();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
-			LoggingUtils.shutDownLogging();
+			loggingResources.close();
 		}));
 	}
 

@@ -24,23 +24,30 @@ import java.nio.file.Path;
  */
 public class LoggingUtils {
 
-	/** Returns a logger for the given object or class. */
+	/** Returns a logger for the given object's class. */
 	public static Logger getLogger(Object object) {
-		if (object instanceof Class) {
-			return LoggerFactory.getLogger((Class<?>) object);
-		}
 		return LoggerFactory.getLogger(object.getClass());
 	}
 
-	/** Initializes the logging to the default configured in the Jar. */
-	public static void initializeDefaultLogging() {
-		InputStream stream = Agent.class.getResourceAsStream("logback-default.xml");
-		reconfigureLoggerContext(stream);
+	/** Returns a logger for the given class. */
+	public static Logger getLogger(Class<?> object) {
+		return LoggerFactory.getLogger(object);
 	}
 
-	/** Releases all resources associated with the logging framework. Must be called from a shutdown hook. */
-	public static void shutDownLogging() {
-		getLoggerContext().stop();
+	/** Class to use with try-with-resources to close the logging framework's resources. */
+	public static class LoggingResources implements AutoCloseable {
+
+		@Override
+		public void close() {
+			getLoggerContext().stop();
+		}
+	}
+
+	/** Initializes the logging to the default configured in the Jar. */
+	public static LoggingResources initializeDefaultLogging() {
+		InputStream stream = Agent.class.getResourceAsStream("logback-default.xml");
+		reconfigureLoggerContext(stream);
+		return new LoggingResources();
 	}
 
 	private static LoggerContext getLoggerContext() {
@@ -68,16 +75,16 @@ public class LoggingUtils {
 	 * Initializes the logging from the given file. If that is <code>null</code>,
 	 * uses {@link #initializeDefaultLogging()} instead.
 	 */
-	public static void initializeLogging(Path loggingConfigFile) throws IOException {
+	public static LoggingResources initializeLogging(Path loggingConfigFile) throws IOException {
 		if (loggingConfigFile == null) {
-			initializeDefaultLogging();
-			return;
+			return initializeDefaultLogging();
 		}
 
 		reconfigureLoggerContext(new FileInputStream(loggingConfigFile.toFile()));
+		return new LoggingResources();
 	}
 
-	/** Wraps the given log4j logger into an {@link ILogger}. */
+	/** Wraps the given slf4j logger into an {@link ILogger}. */
 	public static ILogger wrap(Logger logger) {
 		return new ILogger() {
 			@Override
