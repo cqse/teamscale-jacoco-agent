@@ -34,7 +34,8 @@ public class TeamscaleServiceGenerator {
 
 		@Override
 		public Response intercept(Chain chain) throws IOException {
-			return chain.proceed(chain.request().newBuilder().header("Accept", "application/json").build());
+			Request newRequest = chain.request().newBuilder().header("Accept", "application/json").build();
+			return chain.proceed(newRequest);
 		}
 	}
 
@@ -46,10 +47,8 @@ public class TeamscaleServiceGenerator {
 		String basic = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
 
 		return chain -> {
-			Request original = chain.request();
-			Request request = original.newBuilder()
-					.header("Authorization", basic).build();
-			return chain.proceed(request);
+			Request newRequest = chain.request().newBuilder().header("Authorization", basic).build();
+			return chain.proceed(newRequest);
 		};
 	}
 }
