@@ -81,6 +81,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   more data might be required by the REST endpoints see `Test impact mode` below for details.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+- `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
+  even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
+  You might need to make your self-signed certificates available to the agent via a keystore. See
+  [the Teamscale userguide's section on that topic][ts-userguide] for how to do that.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -360,4 +364,4 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
 [jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
 [logback]: https://logback.qos.ch/manual/index.html
-
+[ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf
