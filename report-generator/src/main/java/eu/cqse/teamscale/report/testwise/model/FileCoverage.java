@@ -11,15 +11,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /** Holds coverage of a single file. */
-public class FileCoverage implements Comparable<FileCoverage> {
+public class FileCoverage {
 
 	/** The file system path of the file not including the file itself. */
-	@XmlTransient
-	public final String path;
+	private final String path;
 
 	/** The name of the file. */
-	@XmlAttribute(name = "name")
-	public final String fileName;
+	private final String fileName;
 
 	/** A list of line ranges that have been covered. */
 	private List<LineRange> coveredRanges = new ArrayList<>();
@@ -28,6 +26,24 @@ public class FileCoverage implements Comparable<FileCoverage> {
 	public FileCoverage(String path, String file) {
 		this.path = path;
 		this.fileName = file;
+	}
+
+	/** @see #path */
+	@XmlTransient
+	public String getPath() {
+		return path;
+	}
+
+	/** @see #fileName */
+	@XmlAttribute(name = "name")
+	public String getFileName() {
+		return fileName;
+	}
+
+	/** Returns a lines element used for XML serialization containing all ranges in the compactified format. */
+	@XmlElement
+	public LinesElement getLines() {
+		return new LinesElement(computeCompactifiedRangesAsString());
 	}
 
 	/** Adds a line as covered. */
@@ -96,20 +112,9 @@ public class FileCoverage implements Comparable<FileCoverage> {
 		return coveredRanges.stream().map(LineRange::toReportString).collect(Collectors.joining(","));
 	}
 
-	/** Returns a lines element used for XML serialization containing all ranges in the compactified format. */
-	@XmlElement
-	public LinesElement getLines() {
-		return new LinesElement(computeCompactifiedRangesAsString());
-	}
-
 	/** Returns true if there is no coverage for the file yet. */
 	public boolean isEmpty() {
 		return coveredRanges.isEmpty();
-	}
-
-	@Override
-	public int compareTo(FileCoverage o) {
-		return fileName.compareTo(o.fileName);
 	}
 
 	/** Container for the "lines" xml tag. */

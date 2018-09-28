@@ -4,7 +4,7 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,18 +24,18 @@ public class TestwiseCoverage {
 		if (coverage == null || coverage.isEmpty()) {
 			return;
 		}
-		if (tests.containsKey(coverage.externalId)) {
-			TestCoverage testCoverage = tests.get(coverage.externalId);
+		if (tests.containsKey(coverage.getExternalId())) {
+			TestCoverage testCoverage = tests.get(coverage.getExternalId());
 			testCoverage.addAll(coverage.getFiles());
 		} else {
-			tests.put(coverage.externalId, coverage);
+			tests.put(coverage.getExternalId(), coverage);
 		}
 	}
 
 	/** Returns a collection of all tests contained in this container. */
 	@XmlElement(name = "test")
 	public List<TestCoverage> getTests() {
-		return CollectionUtils.sort(tests.values());
+		return CollectionUtils.sort(tests.values(), Comparator.comparing(TestCoverage::getExternalId));
 	}
 
 	/**

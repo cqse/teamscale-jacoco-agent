@@ -5,17 +5,17 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /** Generic holder of test coverage of a single test based on line-ranges. */
-public class TestCoverage implements Comparable<TestCoverage> {
+public class TestCoverage {
 
 	/** The external ID of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
-	@XmlAttribute
-	public final String externalId;
+	private final String externalId;
 
 	/** Mapping from path names to all files on this path. */
 	private final Map<String, PathCoverage> pathCoverageList = new HashMap<>();
@@ -25,13 +25,25 @@ public class TestCoverage implements Comparable<TestCoverage> {
 		this.externalId = externalId;
 	}
 
+	/** @see #externalId */
+	@XmlAttribute
+	public String getExternalId() {
+		return externalId;
+	}
+
+	/** Returns a collection of {@link PathCoverage}s associated with the test. */
+	@XmlElement(name = "path")
+	public Collection<PathCoverage> getPaths() {
+		return CollectionUtils.sort(pathCoverageList.values(), Comparator.comparing(PathCoverage::getPath));
+	}
+
 	/** Adds the {@link FileCoverage} to into the map, but filters out file coverage that is null or empty. */
 	public void add(FileCoverage fileCoverage) {
 		if (fileCoverage == null || fileCoverage.isEmpty()
-				|| fileCoverage.fileName == null || fileCoverage.path == null) {
+				|| fileCoverage.getFileName() == null || fileCoverage.getPath() == null) {
 			return;
 		}
-		PathCoverage pathCoverage = pathCoverageList.computeIfAbsent(fileCoverage.path, PathCoverage::new);
+		PathCoverage pathCoverage = pathCoverageList.computeIfAbsent(fileCoverage.getPath(), PathCoverage::new);
 		pathCoverage.add(fileCoverage);
 	}
 
@@ -49,19 +61,8 @@ public class TestCoverage implements Comparable<TestCoverage> {
 				.collect(Collectors.toList());
 	}
 
-	/** Returns a collection of {@link PathCoverage}s associated with the test. */
-	@XmlElement(name = "path")
-	public Collection<PathCoverage> getPaths() {
-		return CollectionUtils.sort(pathCoverageList.values());
-	}
-
 	/** Returns true if there is no coverage for the test yet. */
 	public boolean isEmpty() {
 		return pathCoverageList.isEmpty();
-	}
-
-	@Override
-	public int compareTo(TestCoverage o) {
-		return this.externalId.compareTo(o.externalId);
 	}
 }
