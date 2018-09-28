@@ -2,11 +2,12 @@ package eu.cqse.teamscale.client;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import java.io.IOException;
 import java.util.Base64;
 
 /** Helper class for generating a teamscale compatible service. */
@@ -17,19 +18,21 @@ public class TeamscaleServiceGenerator {
 	 * service, which uses basic auth to authenticate against the server and which sets the accept header to json.
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String password) {
-		OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-
-		httpClient.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, password));
-		httpClient.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
-				.header("Accept", "application/json").build()));
-
-		OkHttpClient client = httpClient.build();
-		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl(baseUrl)
-				.client(client)
-				.addConverterFactory(GsonConverterFactory.create())
-				.build();
+		Retrofit retrofit = HttpUtils.createRetrofit(
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(GsonConverterFactory.create()),
+				okHttpBuilder -> okHttpBuilder
+						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, password))
+						.addInterceptor(new AcceptJsonInterceptor())
+		);
 		return retrofit.create(serviceClass);
+	}
+
+	private static class AcceptJsonInterceptor implements Interceptor {
+
+		@Override
+		public Response intercept(Chain chain) throws IOException {
+			return chain.proceed(chain.request().newBuilder().header("Accept", "application/json").build());
+		}
 	}
 
 	/**

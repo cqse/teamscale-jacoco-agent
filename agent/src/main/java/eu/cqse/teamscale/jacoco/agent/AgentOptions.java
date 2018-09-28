@@ -72,6 +72,14 @@ public class AgentOptions {
 	/* package */ int dumpIntervalInMinutes = 60;
 
 	/**
+	 * Whether to validate SSL certificates or simply ignore them.
+	 * We disable this by default on purpose in order to make the initial setup of the agent as smooth
+	 * as possible. Many users have self-signed certificates that cause problems.
+	 * Users that need this feature can turn it on deliberately.
+	 */
+	/* package */ boolean validateSsl = false;
+
+	/**
 	 * Whether to ignore duplicate, non-identical class files.
 	 */
 	/* package */ boolean shouldIgnoreDuplicateClassFiles = true;
@@ -265,10 +273,10 @@ public class AgentOptions {
 	}
 
 	/**
-	 * @see #loggingConfig
+	 * @see #validateSsl
 	 */
-	public void setLoggingConfig(Path loggingConfig) {
-		this.loggingConfig = loggingConfig;
+	public boolean shouldValidateSsl() {
+		return validateSsl;
 	}
 
 	/**

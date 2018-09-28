@@ -3,6 +3,7 @@ package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import eu.cqse.teamscale.client.HttpUtils;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import okhttp3.HttpUrl;
@@ -47,7 +48,7 @@ public class HttpUploadStore implements IXmlStore {
 		this.uploadUrl = uploadUrl;
 		this.additionalMetaDataFiles = additionalMetaDataFiles;
 
-		Retrofit retrofit = new Retrofit.Builder().baseUrl(uploadUrl).build();
+		Retrofit retrofit = HttpUtils.createRetrofit(retrofitBuilder -> retrofitBuilder.baseUrl(uploadUrl));
 		api = retrofit.create(IHttpUploadApi.class);
 	}
 
@@ -56,7 +57,7 @@ public class HttpUploadStore implements IXmlStore {
 	public void store(String xml, EReportFormat format) {
 		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "HTTP upload does only support JaCoCo " +
 				"coverage and cannot be used with Test Impact mode.");
-		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
+		try (Benchmark ignored = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUploading(xml)) {
 				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
 				failureStore.store(xml, format);
