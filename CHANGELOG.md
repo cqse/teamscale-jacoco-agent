@@ -1,6 +1,10 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [breaking change] Agent now ignores SSL certificates by default and only turns on validation if
+  `validate-ssl=true` is passed in the agent arguments. Existing setups will continue to work but
+  validation will be disabled from this version on
+- [fix] Agent uses higher timeouts (20s) for all HTTP connections to account for slow networks
 
 # 10.1.0
 - [feature] Paths passed to the agent can now be relative and contain ant patterns
