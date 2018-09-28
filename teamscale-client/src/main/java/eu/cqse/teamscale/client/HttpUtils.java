@@ -24,11 +24,17 @@ public class HttpUtils {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */
-	public static boolean shouldValidateSsl = false;
+	private static boolean shouldValidateSsl = false;
+
+	/** @see #shouldValidateSsl */
+	public static void setShouldValidateSsl(boolean shouldValidateSsl) {
+		HttpUtils.shouldValidateSsl = shouldValidateSsl;
+	}
 
 	/** Creates a new {@link Retrofit} with proper defaults. The instance can be customized with the given action. */
 	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction) {
 		return createRetrofit(retrofitBuilderAction, okHttpBuilder -> {
+			// nothing to do
 		});
 	}
 
@@ -40,7 +46,7 @@ public class HttpUtils {
 										  Consumer<OkHttpClient.Builder> okHttpBuilderAction) {
 		OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
 		setDefaults(httpClientBuilder);
-		setUpSllValidation(httpClientBuilder);
+		setUpSslValidation(httpClientBuilder);
 		okHttpBuilderAction.accept(httpClientBuilder);
 
 		Retrofit.Builder builder = new Retrofit.Builder().client(httpClientBuilder.build());
@@ -60,7 +66,7 @@ public class HttpUtils {
 	/**
 	 * Enables or disables SSL certificate validation for the {@link Retrofit} instance
 	 */
-	private static void setUpSllValidation(OkHttpClient.Builder builder) {
+	private static void setUpSslValidation(OkHttpClient.Builder builder) {
 		if (shouldValidateSsl) {
 			// this is the default behaviour
 			return;

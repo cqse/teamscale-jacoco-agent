@@ -61,7 +61,7 @@ public abstract class AgentBase {
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 
-		HttpUtils.shouldValidateSsl = agentOptions.validateSsl;
+		HttpUtils.setShouldValidateSsl(agentOptions.validateSsl);
 
 		logger.info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_c13123e.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
