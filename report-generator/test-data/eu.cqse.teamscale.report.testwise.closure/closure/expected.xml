@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
-    <test externalId="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testCreateGlobalRole">
+    <test uniformPath="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testCreateGlobalRole">
         <path name="com/teamscale/ui/admin">
             <file name="AdminBackupView.js">
                 <lines nr="21-22"/>
@@ -146,7 +146,7 @@
             </file>
         </path>
     </test>
-    <test externalId="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDeleteGlobalRole">
+    <test uniformPath="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDeleteGlobalRole">
         <path name="com/teamscale/ui/admin">
             <file name="AdminBackupView.js">
                 <lines nr="21-22"/>
@@ -283,7 +283,7 @@
             </file>
         </path>
     </test>
-    <test externalId="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDeleteProjectRole">
+    <test uniformPath="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDeleteProjectRole">
         <path name="com/teamscale/ui/admin">
             <file name="AdminBackupView.js">
                 <lines nr="21-22"/>
@@ -420,7 +420,7 @@
             </file>
         </path>
     </test>
-    <test externalId="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDuplicateRole">
+    <test uniformPath="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDuplicateRole">
         <path name="com/teamscale/ui/admin">
             <file name="AdminBackupView.js">
                 <lines nr="21-22"/>
@@ -566,7 +566,7 @@
             </file>
         </path>
     </test>
-    <test externalId="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testEditRole">
+    <test uniformPath="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testEditRole">
         <path name="com/teamscale/ui/admin">
             <file name="AdminBackupView.js">
                 <lines nr="21-22"/>
@@ -833,7 +833,7 @@
             </file>
         </path>
     </test>
-    <test externalId="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testRenameRole">
+    <test uniformPath="com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testRenameRole">
         <path name="com/teamscale/ui/admin">
             <file name="AdminBackupView.js">
                 <lines nr="21-22"/>

@@ -74,7 +74,7 @@ open class ReportConfigurationBase(
     /** Returns true if all required fields are set. */
     fun validate(project: Project, testTaskName: String): Boolean {
         if (upload == true && partition == null) {
-            project.logger.debug("No partition set for ${format.readableName} upload of ${project.name}:$testTaskName!")
+            project.logger.info("No partition set for ${format.readableName} upload of ${project.name}:$testTaskName!")
             return false
         }
         return true

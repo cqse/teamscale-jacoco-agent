@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.report.testwise.jacoco;
 
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
+import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -16,7 +17,7 @@ import java.io.OutputStream;
 public class TestwiseXmlReportUtils {
 
 	/** Converts to given testwise coverage to an XML report and writes it to the given file. */
-	public static void writeReportToFile(File report, TestwiseCoverage testwiseCoverage) throws IOException {
+	public static void writeReportToFile(File report, TestwiseCoverageReport testwiseCoverage) throws IOException {
 		File directory = report.getParentFile();
 		if (!directory.isDirectory() && !directory.mkdirs()) {
 			throw new IOException("Failed to create directory " + directory.getAbsolutePath());
@@ -27,14 +28,14 @@ public class TestwiseXmlReportUtils {
 	}
 
 	/** Converts to given testwise coverage to an XML report and writes it to the given output stream. */
-	public static String getReportAsString(TestwiseCoverage testwiseCoverage) throws IOException {
+	public static String getReportAsString(TestwiseCoverageReport testwiseCoverage) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		writeReportToStream(output, testwiseCoverage);
 		return output.toString(FileSystemUtils.UTF8_ENCODING);
 	}
 
 	/** Converts to given testwise coverage to an XML report and writes it to the given output stream. */
-	public static void writeReportToStream(OutputStream output, TestwiseCoverage testwiseCoverage) throws IOException {
+	public static void writeReportToStream(OutputStream output, TestwiseCoverageReport testwiseCoverage) throws IOException {
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(TestwiseCoverage.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();

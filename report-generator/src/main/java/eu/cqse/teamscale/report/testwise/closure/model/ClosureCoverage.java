@@ -6,7 +6,7 @@ import java.util.List;
 public class ClosureCoverage {
 
 	/** External ID of the test that produced the coverage. */
-	public String externalId;
+	public String uniformPath;
 
 	/** Holds a list of all covered js files with absolute path. */
 	public List<String> fileNames;

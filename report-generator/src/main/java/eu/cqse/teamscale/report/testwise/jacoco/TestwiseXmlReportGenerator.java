@@ -44,18 +44,6 @@ public class TestwiseXmlReportGenerator {
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, ignoreNonidenticalDuplicateClassFiles);
 	}
 
-	/** Converts the given *.exec file to a XML report. */
-	public String convertToString(File executionDataFile) throws IOException {
-		TestwiseCoverage testwiseCoverage = convert(executionDataFile);
-		return getReportAsString(testwiseCoverage);
-	}
-
-	/** Converts the given dumps to a report. */
-	public String convertToString(List<Dump> dumps) throws IOException {
-		TestwiseCoverage testwiseCoverage = convert(dumps);
-		return getReportAsString(testwiseCoverage);
-	}
-
 	/** Converts the given dumps to a report. */
 	public TestwiseCoverage convert(List<Dump> dumps) {
 		return executionDataReader.buildCoverage(dumps);

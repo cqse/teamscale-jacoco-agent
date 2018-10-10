@@ -48,20 +48,17 @@ public class TeamscaleClient {
 		}
 	}
 
-	/** Uploads the given test details to Teamscale. */
-	public void uploadTestList(List<TestDetails> list, CommitDescriptor commitDescriptor, String partition, String message) throws IOException {
-		Gson gson = new Gson();
-		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, gson.toJson(list));
-		service.uploadReport(projectId, commitDescriptor, partition, EReportFormat.TEST_LIST, message, requestFile);
-	}
-
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
 	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
 	 */
-	public Response<List<String>> getImpactedTests(CommitDescriptor baseline, CommitDescriptor endCommit, String partition, PrintWriter out) throws IOException {
+	public Response<List<String>> getImpactedTests(List<TestDetails> list, CommitDescriptor baseline, CommitDescriptor endCommit, String partition, PrintWriter out) throws IOException {
 		out.print("Getting impacted tests");
+
+		Gson gson = new Gson();
+		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, gson.toJson(list));
+
 		Response<List<String>> impactedTests;
 		int attempts = 0;
 		do {
@@ -74,7 +71,7 @@ public class TeamscaleClient {
 				}
 			}
 			impactedTests = service
-					.getImpactedTests(projectId, "", baseline, endCommit, partition)
+					.getImpactedTests(projectId, "", baseline, endCommit, partition, requestFile)
 					.execute();
 			attempts++;
 			if (attempts > MAX_RETRY) {

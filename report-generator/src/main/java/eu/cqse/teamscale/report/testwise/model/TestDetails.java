@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.client;
+package eu.cqse.teamscale.report.testwise.model;
 
 /**
  * Contains details about a test.

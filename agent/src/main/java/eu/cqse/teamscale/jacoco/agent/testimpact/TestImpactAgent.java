@@ -8,7 +8,7 @@ package eu.cqse.teamscale.jacoco.agent.testimpact;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import eu.cqse.teamscale.client.EReportFormat;
-import eu.cqse.teamscale.client.TestDetails;
+import eu.cqse.teamscale.report.testwise.model.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.AgentBase;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
@@ -157,10 +157,10 @@ public class TestImpactAgent extends AgentBase {
 			return null;
 		}
 		String externalId = request.params(TEST_ID_PARAMETER);
-		if (!Objects.equals(testDetails.externalId, externalId)) {
-			logger.warn("The externalId '" + externalId + "' given as query parameter does not match with the " +
-					"externalId '" + testDetails.externalId + "' in the test details in the request body. The " +
-					"externalId from the request body is used.");
+		if (!Objects.equals(testDetails.uniformPath, externalId)) {
+			logger.warn("The uniformPath '" + externalId + "' given as query parameter does not match with the " +
+					"uniformPath '" + testDetails.uniformPath + "' in the test details in the request body. The " +
+					"uniformPath from the request body is used.");
 		}
 		return testDetails;
 	}

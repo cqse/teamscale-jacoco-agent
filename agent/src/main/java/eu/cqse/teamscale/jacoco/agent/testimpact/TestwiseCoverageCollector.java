@@ -9,6 +9,7 @@ import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
 import org.slf4j.Logger;
 import spark.Request;
 
@@ -18,6 +19,7 @@ import java.util.List;
 
 import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 import static eu.cqse.teamscale.jacoco.util.LoggingUtils.wrap;
+import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.getReportAsString;
 
 /**
  * Test listener which is capable of generating testwise coverage reports.
@@ -64,7 +66,8 @@ public class TestwiseCoverageCollector implements ITestListener {
 		}
 		String xml;
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			xml = generator.convertToString(dumps);
+			TestwiseCoverage testwiseCoverage = generator.convert(dumps);
+			xml = getReportAsString(testwiseCoverage);
 		} catch (IOException e) {
 			logger.error("Converting binary dumps to XML failed", e);
 			return;

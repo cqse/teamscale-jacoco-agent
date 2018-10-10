@@ -53,7 +53,8 @@ public interface ITeamscaleService {
 			@Path("uniformPath") String testUniformPathPrefix,
 			@Query("baseline") CommitDescriptor baseline,
 			@Query("end") CommitDescriptor end,
-			@Query("partitions") String partition
+			@Query("partitions") String partition,
+			RequestBody report
 	);
 
 	/**

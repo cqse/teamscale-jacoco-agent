@@ -1,7 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
 import com.google.gson.Gson;
-import eu.cqse.teamscale.client.TestDetails;
+import eu.cqse.teamscale.report.testwise.model.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.util.LoggingUtils;

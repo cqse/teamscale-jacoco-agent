@@ -10,23 +10,17 @@ import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.getReportAsString;
-import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.writeReportToStream;
-
 /**
  * Creates {@link TestwiseCoverage} from Google closure coverage files. The given {@link ClosureCoverage} files must be
- * augmented with the {@link ClosureCoverage#externalId} field, which is not part of the Google closure coverage
+ * augmented with the {@link ClosureCoverage#uniformPath} field, which is not part of the Google closure coverage
  * specification.
  */
 public class ClosureTestwiseCoverageGenerator {
@@ -81,10 +75,10 @@ public class ClosureTestwiseCoverageGenerator {
 
 	/** Converts the given {@link ClosureCoverage} to {@link TestCoverage}. */
 	private TestCoverage convertToTestCoverage(ClosureCoverage coverage) {
-		if (StringUtils.isEmpty(coverage.externalId)) {
+		if (StringUtils.isEmpty(coverage.uniformPath)) {
 			return null;
 		}
-		TestCoverage testCoverage = new TestCoverage(coverage.externalId);
+		TestCoverage testCoverage = new TestCoverage(coverage.uniformPath);
 		PairList<String, List<Boolean>> executedLines = PairList.zip(coverage.fileNames, coverage.executedLines);
 		for (Pair<String, List<Boolean>> fileNameAndExecutedLines : executedLines) {
 			if (!locationIncludeFilter.test(fileNameAndExecutedLines.getFirst())) {

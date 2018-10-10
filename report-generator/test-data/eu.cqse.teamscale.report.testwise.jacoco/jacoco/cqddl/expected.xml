@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <report>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/commons/collections">
             <file name="PairList.java">
                 <lines nr="59-79,115,120-124,142-157,162-163,171-174,185-186"/>
@@ -29,7 +29,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/commons/assertion">
             <file name="CCSMAssert.java">
                 <lines nr="44-45,131-132,145-146,250-253"/>
@@ -68,7 +68,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/commons/assertion">
             <file name="CCSMAssert.java">
                 <lines nr="44-45,131-132,145-146,250-253"/>
@@ -102,7 +102,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testNestedLists(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testNestedLists(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/commons/collections">
             <file name="PairList.java">
                 <lines nr="59-79,115,120-124,142-157,162-163,171-174,185-186"/>
@@ -131,7 +131,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testPrimitiveTypes(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testPrimitiveTypes(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/cqddl">
             <file name="CQDDL.java">
                 <lines nr="53-78"/>
@@ -155,7 +155,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testReferences(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testReferences(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/commons/collections">
             <file name="PairList.java">
                 <lines nr="59-79,115,120-124,142-157,162-163,171-174,185-186"/>
@@ -184,7 +184,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testSimpleLists(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testSimpleLists(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/commons/collections">
             <file name="PairList.java">
                 <lines nr="59-79,91-95,110,115,120-124,142-157,162-163,171-174,185-186,572"/>
@@ -213,7 +213,7 @@
             </file>
         </path>
     </test>
-    <test externalId="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testStrings(org.conqat.lib.cqddl.CQDDLTest)]">
+    <test uniformPath="[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testStrings(org.conqat.lib.cqddl.CQDDLTest)]">
         <path name="org/conqat/lib/cqddl">
             <file name="CQDDL.java">
                 <lines nr="53-78"/>

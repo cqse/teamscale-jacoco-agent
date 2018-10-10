@@ -116,7 +116,7 @@ public class ClassCoverageLookup {
 				if (lineRange != null) {
 					fileCoverage.addLineRange(lineRange);
 				} else {
-					logger.debug(sourceFileName + " " + className + " did contain a covered probe " + i + "(of " +
+					logger.info(sourceFileName + " " + className + " did contain a covered probe " + i + "(of " +
 							executedProbes.length + ") that could not be " +
 							"matched to any method. This could be a bug in the profiler tooling. Please report it back " +
 							"to CQSE.");

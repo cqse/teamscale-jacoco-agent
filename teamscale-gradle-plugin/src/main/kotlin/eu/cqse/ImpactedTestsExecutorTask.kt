@@ -78,13 +78,15 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
         args(getImpactedTestExecutorProgramArguments())
 
-        logger.debug("Starting impacted tests executor with jvm args $jvmArgs")
-        logger.debug("Starting impacted tests executor with args $args")
-        logger.debug("With workingDir $workingDir")
+        logger.info("Starting impacted tests executor with jvm args $jvmArgs")
+        logger.info("Starting impacted tests executor with args $args")
+        logger.info("With workingDir $workingDir")
 
-        super.exec()
-
-        generateCoverageReport()
+        try {
+            super.exec()
+        } finally {
+            generateCoverageReport()
+        }
     }
 
     private fun prepareClassPath() {
@@ -206,11 +208,25 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             args.addAll(listOf("-n", ".*"))
         }
         includes.forEach { classIncludePattern ->
-            args.addAll(listOf("-n", AntPatternUtils.convertPattern(classIncludePattern, false).pattern()))
+            args.addAll(listOf("-n", normalizeAntPattern(classIncludePattern).pattern()))
         }
         testTask.excludes.forEach { classExcludePattern ->
-            args.addAll(listOf("-N", AntPatternUtils.convertPattern(classExcludePattern, false).pattern()))
+            args.addAll(listOf("-N", normalizeAntPattern(classExcludePattern).pattern()))
         }
+    }
+
+    companion object {
+
+        fun normalizeAntPattern(antPattern: String) =
+            AntPatternUtils.convertPattern(normalize(antPattern), false)
+
+        fun normalize(pattern: String): String {
+            return pattern
+                .replace("\\.class$".toRegex(), "")
+                .replace("[/\\\\]".toRegex(), ".")
+                .replace(".?\\*\\*.?".toRegex(), "**")
+        }
+
     }
 }
 

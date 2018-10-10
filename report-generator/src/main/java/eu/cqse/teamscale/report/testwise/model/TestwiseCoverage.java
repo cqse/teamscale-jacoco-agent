@@ -1,16 +1,9 @@
 package eu.cqse.teamscale.report.testwise.model;
 
-import org.conqat.lib.commons.collections.CollectionUtils;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /** Container for coverage produced by multiple tests. */
-@XmlRootElement(name = "report")
 public class TestwiseCoverage {
 
 	/** A mapping from test ID to {@link TestCoverage}. */
@@ -24,18 +17,12 @@ public class TestwiseCoverage {
 		if (coverage == null || coverage.isEmpty()) {
 			return;
 		}
-		if (tests.containsKey(coverage.getExternalId())) {
-			TestCoverage testCoverage = tests.get(coverage.getExternalId());
+		if (tests.containsKey(coverage.getUniformPath())) {
+			TestCoverage testCoverage = tests.get(coverage.getUniformPath());
 			testCoverage.addAll(coverage.getFiles());
 		} else {
-			tests.put(coverage.getExternalId(), coverage);
+			tests.put(coverage.getUniformPath(), coverage);
 		}
-	}
-
-	/** Returns a collection of all tests contained in this container. */
-	@XmlElement(name = "test")
-	public List<TestCoverage> getTests() {
-		return CollectionUtils.sort(tests.values(), Comparator.comparing(TestCoverage::getExternalId));
 	}
 
 	/**
@@ -44,7 +31,7 @@ public class TestwiseCoverage {
 	 * @return Returns a reference to this
 	 */
 	public TestwiseCoverage merge(TestwiseCoverage testwiseCoverage) {
-		for (TestCoverage value : testwiseCoverage.getTests()) {
+		for (TestCoverage value : testwiseCoverage.tests.values()) {
 			this.add(value);
 		}
 		return this;

@@ -1,6 +1,6 @@
 package eu.cqse.teamscale.jacoco.agent.testimpact;
 
-import eu.cqse.teamscale.client.TestDetails;
+import eu.cqse.teamscale.report.testwise.model.TestDetails;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.util.LoggingUtils;
@@ -47,7 +47,7 @@ public class JUnitReportCollector implements ITestListener {
 			currentTestCase = null;
 			return;
 		}
-		String internalId = testDetails.internalId;
+		String internalId = testDetails.uniformPath;
 		String className = StringUtils.removeLastPart(internalId, '/');
 		String testName = StringUtils.getLastPart(internalId, '/');
 		currentTestCase = new TestCase(className, testName);

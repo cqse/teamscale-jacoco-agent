@@ -108,17 +108,17 @@ The `interval` commandline argument behaves slightly different in Test Impact mo
 during a test, but in between tests when the given interval has exceeded, when the `/dump` endpoint has been called or 
 when the program shuts down.
 
-Tests are identified by the `externalId`. The ID can be an arbitrary string that the test system uses to identify the test.
-When uploading test details before the coverage the `externalId` must be the same as this ID.
+Tests are identified by the `uniformPath`. The ID can be an arbitrary string that the test system uses to identify the test.
+When uploading test details before the coverage the `uniformPath` must be the same as this ID.
 
 The agent's REST API has the following endpoints:
-- `[POST] /test/start/{externalId}` Signals to the agent that the test with the given externalId is about to start. If the 
+- `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start. If the 
   `http-server-formats` flag contains `TEST_LIST` and/or `JUNIT` the request body must also contain test details in JSON 
   format like the following:
   ```json
   {
-     "internalId": "some/logical/path/to/the/test",
-     "externalId": "437334-7484-1",
+     "uniformPath": "some/logical/path/to/the/test",
+     "uniformPath": "437334-7484-1",
      "displayName": "This is my test",
      "sourcePath": "some/logical/path/to/the/test",
      "content": "revision3"
@@ -126,7 +126,7 @@ The agent's REST API has the following endpoints:
   ```
   More information on the test details can be found in TEST_IMPACT_ANALYSIS_DOC.
 
-- `[POST] /test/end/{externalId}` Signals to the agent that the test with the given externalId has just finished. 
+- `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished. 
   Optionally the query can have a `result` query parameter attached to indicate the test execution result. It can be 
   set to one of the following values: `PASSED`, `IGNORED`, `SKIPPED`, `FAILURE`, `ERROR`. Additionally the last three 
   values can have additional information attached to the body of the request with a stacktrace for example.

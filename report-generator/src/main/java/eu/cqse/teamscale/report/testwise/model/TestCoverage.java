@@ -4,6 +4,7 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlValue;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,25 +15,23 @@ import java.util.stream.Collectors;
 /** Generic holder of test coverage of a single test based on line-ranges. */
 public class TestCoverage {
 
-	/** The external ID of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
-	private final String externalId;
+	/** The uniformPath of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
+	private final String uniformPath;
 
 	/** Mapping from path names to all files on this path. */
 	private final Map<String, PathCoverage> pathCoverageList = new HashMap<>();
 
 	/** Constructor. */
-	public TestCoverage(String externalId) {
-		this.externalId = externalId;
+	public TestCoverage(String uniformPath) {
+		this.uniformPath = uniformPath;
 	}
 
-	/** @see #externalId */
-	@XmlAttribute
-	public String getExternalId() {
-		return externalId;
+	/** @see #uniformPath */
+	public String getUniformPath() {
+		return uniformPath;
 	}
 
 	/** Returns a collection of {@link PathCoverage}s associated with the test. */
-	@XmlElement(name = "path")
 	public Collection<PathCoverage> getPaths() {
 		return CollectionUtils.sort(pathCoverageList.values(), Comparator.comparing(PathCoverage::getPath));
 	}
@@ -65,4 +64,5 @@ public class TestCoverage {
 	public boolean isEmpty() {
 		return pathCoverageList.isEmpty();
 	}
+
 }
