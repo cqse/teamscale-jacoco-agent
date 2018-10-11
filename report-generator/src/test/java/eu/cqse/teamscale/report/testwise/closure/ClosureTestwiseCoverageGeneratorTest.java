@@ -1,5 +1,6 @@
 package eu.cqse.teamscale.report.testwise.closure;
 
+import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGeneratorTest;
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
 import eu.cqse.teamscale.report.util.AntPatternIncludeFilter;
 import org.conqat.lib.commons.collections.CollectionUtils;
@@ -35,6 +36,6 @@ public class ClosureTestwiseCoverageGeneratorTest extends CCSMTestCaseBase {
 		TestwiseCoverage testwiseCoverage = new ClosureTestwiseCoverageGenerator(
 				Collections.singletonList(coverageFolder), includeFilter)
 				.readTestCoverage();
-		return getReportAsString(testwiseCoverage);
+		return getReportAsString(TestwiseXmlReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
 	}
 }

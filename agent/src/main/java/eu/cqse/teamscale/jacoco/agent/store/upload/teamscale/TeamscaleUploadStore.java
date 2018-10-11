@@ -60,7 +60,7 @@ public class TeamscaleUploadStore implements IXmlStore {
 			api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,
-					teamscaleServer.partition + format.partitionSuffix,
+					teamscaleServer.partition,
 					format,
 					teamscaleServer.message + " (" + format.readableName + ")",
 					RequestBody.create(MultipartBody.FORM, xml)

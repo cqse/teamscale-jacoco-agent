@@ -70,6 +70,20 @@ public class JacocoRuntimeController {
 		}
 	}
 
+	/**
+	 * Dumps execution data to a file and resets it.
+	 *
+	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping
+	 *                       should simply be retried later if this ever happens.
+	 */
+	public void dump() throws DumpException {
+		try {
+			agent.dump(true);
+		} catch (IOException e) {
+			throw new DumpException(e.getMessage(), e);
+		}
+	}
+
 	/** Resets already collected coverage. */
 	public void reset() {
 		agent.reset();

@@ -24,25 +24,21 @@ tests has to be uploaded to Teamscale.
 [
   {
     "uniformPath": "com/example/JUnit5Test/myFirstTest",
-    "displayName": "My 1st JUnit 5 test! 😎",
-    "uniformPath": "[engine:junit-jupiter]/[class:com.example.JUnit5Test]/[method:myFirstTest(org.junit.jupiter.api.TestInfo)]"
+    "displayName": "My 1st JUnit 5 test! 😎"
   },
   {
     "uniformPath": "com/example/JUnit4Test/testAdd",
-    "displayName": "testAdd",
-    "uniformPath": "[engine:junit-vintage]/[runner:com.example.JUnit4Test]/[test:testAdd(com.example.project.JUnit4Test)]"
+    "displayName": "testAdd"
   },
   {
     "uniformPath": "com/example/JUnit4Test/systemTest",
-    "displayName": "systemTest",
-    "uniformPath": "[engine:junit-vintage]/[runner:com.example.JUnit4Test]/[test:systemTest(com.example.project.JUnit4Test)]"
+    "displayName": "systemTest"
   }
 ]
 ```
 
 - `uniformPath` Is a file system like path, which is used to uniquely identify a test within Teamscale and should be 
   chosen accordingly. It is furthermore used to make the set of tests hierarchically navigable within Teamscale.
-- `uniformPath` Is an identifier of the test which is used within the test execution tool.
 - `displayName` *(optional)* Is a human readable name of the test itself used for UI only.
 - `sourcePath` *(optional)* Path to the source of the method if the test is specified in a programming language and is 
   known to Teamscale. Will be equal to `uniformPath` in most cases, but e.g. in JUnit `@Test` annotated methods in a base 

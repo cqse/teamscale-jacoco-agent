@@ -82,10 +82,9 @@ public class TestDetailsCollector {
 					MethodSource ms = (MethodSource) source.get();
 					String sourcePath = ms.getClassName().replace('.', '/');
 
-					String uniqueId = testIdentifier.getUniqueId();
-					String internalId = getTestInternalId(testIdentifier);
-					String displayName = testIdentifier.getDisplayName();
-					result.add(new TestDetails(uniqueId, internalId, sourcePath, displayName, null));
+					String testUniformPath = getTestUniformPath(testIdentifier, logger);
+					String displayName = testIdentifier.getDisplayName(); //TODO decide
+					result.add(new TestDetails(testUniformPath, sourcePath, null));
 				}
 			}
 
@@ -98,12 +97,12 @@ public class TestDetailsCollector {
 	 * We are using the legacy reporting name here, since this matches the format also used in the JUnit reports,
 	 * which we need to map together in Teamscale.
 	 */
-	private String getTestInternalId(TestIdentifier testIdentifier) {
-		return getFullyQualifiedClassName(testIdentifier) + '/' + testIdentifier.getLegacyReportingName();
+	public static String getTestUniformPath(TestIdentifier testIdentifier, Logger logger) {
+		return getFullyQualifiedClassName(testIdentifier, logger) + '/' + testIdentifier.getLegacyReportingName();
 	}
 
 	/** Tries to extract the fully qualified class name from the given test identifier. */
-	private String getFullyQualifiedClassName(TestIdentifier testIdentifier) {
+	private static String getFullyQualifiedClassName(TestIdentifier testIdentifier, Logger logger) {
 		Matcher matcher = FULL_CLASS_NAME_PATTERN.matcher(testIdentifier.getUniqueId());
 		String fullClassName = "unknown-class";
 		if (!matcher.matches()) {

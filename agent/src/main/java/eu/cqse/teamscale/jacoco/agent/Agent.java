@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.Timer;
 import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -28,9 +29,15 @@ public class Agent extends AgentBase {
 	/** Regular dump task. */
 	private Timer timer;
 
+	/** Stores the XML files. */
+	protected final IXmlStore store;
+
 	/** Constructor. */
 	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
 		super(options);
+
+		store = options.createStore();
+		logger.info("Storage method: {}", store.describe());
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
@@ -51,8 +58,22 @@ public class Agent extends AgentBase {
 		dumpReport();
 	}
 
-	@Override
-	protected void dumpReportUnsafe() {
+	/**
+	 * Dumps the current execution data, converts it and writes it to the
+	 * {@link #store}. Logs any errors, never throws an exception.
+	 */
+	private void dumpReport() {
+		logger.debug("Starting dump");
+
+		try {
+			dumpReportUnsafe();
+		} catch (Throwable t) {
+			// we want to catch anything in order to avoid crashing the whole system under test
+			logger.error("Dump job failed with an exception", t);
+		}
+	}
+
+	private void dumpReportUnsafe() {
 		Dump dump;
 		try {
 			dump = controller.dumpAndReset();

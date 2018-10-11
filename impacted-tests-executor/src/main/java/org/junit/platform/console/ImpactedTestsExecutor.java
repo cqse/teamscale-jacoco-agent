@@ -13,10 +13,17 @@ package org.junit.platform.console;
 import com.google.gson.GsonBuilder;
 import eu.cqse.teamscale.client.TeamscaleClient;
 import eu.cqse.teamscale.client.TestDetails;
+import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator;
+import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import eu.cqse.teamscale.report.testwise.model.TestExecution;
+import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
+import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport;
+import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.TestExecutorCommandLineOptionsParser;
 import org.junit.platform.console.tasks.TestDetailsCollector;
 import org.junit.platform.console.tasks.TestExecutor;
+import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import retrofit2.Response;
 
@@ -25,7 +32,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.getReportAsString;
 
 /**
  * The {@code ImpactedTestsExecutor} is a stand-alone application for executing impacted tests
@@ -74,18 +85,44 @@ public class ImpactedTestsExecutor {
 			return ConsoleLauncherExecutionResult.success();
 		}
 
-		TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
-				options.server.userAccessToken, options.server.project);
-		uploadTestDetails(options, availableTestDetails, client);
+		JUnit5TestListenerExtension testListenerExtension = new JUnit5TestListenerExtension(options.agentUrl, logger);
 
-		return executeTests(client, options);
+		ConsoleLauncherExecutionResult executionResult = executeTests(options, availableTestDetails, testListenerExtension);
+
+		List<TestExecution> testExecutions = testListenerExtension.getTestExecutions();
+
+		/** Generates XML reports from binary execution data. */
+		TestwiseXmlReportGenerator generator = null;
+		try {
+			List<File> selectedClasspathEntries = options.toJUnitOptions().getSelectedClasspathEntries().stream().map(
+					Path::toFile).collect(Collectors.toList());
+			generator = new TestwiseXmlReportGenerator(
+					selectedClasspathEntries,
+					s -> true /* TODO */, true /* TODO options.shouldIgnoreDuplicateClassFiles() */,
+					logger);
+			String xml;
+			try {
+				TestwiseCoverage testwiseCoverage = generator.convert(dumps);
+				// TODO inject js coverage somehow
+				TestwiseCoverageReport report = TestwiseCoverageReport
+						.createFrom(availableTestDetails, testwiseCoverage.getTests(), testExecutions);
+				xml = getReportAsString(report);
+			} catch (IOException e) {
+				logger.error("Converting binary dumps to XML failed", e);
+				return;
+			}
+		} catch (CoverageGenerationException e) {
+			e.printStackTrace();
+		}
+
+		return executionResult;
 	}
 
 	/** Discovers all tests that match the given filters in #options. */
 	private List<TestDetails> getTestDetails(ImpactedTestsExecutorCommandLineOptions options) {
 		List<TestDetails> availableTestDetails = new TestDetailsCollector(logger).collect(options);
 
-		logger.message("Found " + availableTestDetails.size() + " tests");
+		logger.info("Found " + availableTestDetails.size() + " tests");
 
 		// Write out test details to file (for debugging purposes)
 		if (options.getReportsDir().isPresent()) {
@@ -95,13 +132,13 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Executes either all tests if set via the command line options or queries Teamscale for the impacted tests and executes those. */
-	private ConsoleLauncherExecutionResult executeTests(TeamscaleClient client, ImpactedTestsExecutorCommandLineOptions options) {
-		TestExecutor testExecutor = new TestExecutor(options, logger);
+	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails, TestExecutionListener testListenerExtension) {
+		TestExecutor testExecutor = new TestExecutor(options, logger, testListenerExtension);
 		TestExecutionSummary testExecutionSummary;
 		if (options.runAllTests) {
 			testExecutionSummary = testExecutor.executeAllTests();
 		} else {
-			List<String> impactedTests = getImpactedTestsFromTeamscale(client, options);
+			List<String> impactedTests = getImpactedTestsFromTeamscale(options, availableTestDetails);
 			if (impactedTests == null) {
 				testExecutionSummary = testExecutor.executeAllTests();
 			} else {
@@ -127,24 +164,14 @@ public class ImpactedTestsExecutor {
 		}
 	}
 
-	/** Uploads the test details to Teamscale. */
-	private void uploadTestDetails(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails, TeamscaleClient client) {
-		try {
-			logger.message("Uploading reports to " + options.endCommit.toString() + " (" + options.partition + ")");
-			client.uploadTestList(availableTestDetails, options.endCommit,
-					options.partition, "Test list upload (" + options.partition + ")");
-		} catch (IOException e) {
-			logger.error("Test details upload failed (" + e.getMessage() + ")");
-			// The test executor will fallback to execute all tests since Teamscale will return no impacted tests in
-			// this case.
-		}
-	}
-
 	/** Queries Teamscale for impacted tests. */
-	private List<String> getImpactedTestsFromTeamscale(TeamscaleClient client, ImpactedTestsExecutorCommandLineOptions options) {
+	private List<String> getImpactedTestsFromTeamscale(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) {
 		try {
+			TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
+					options.server.userAccessToken, options.server.project);
 			Response<List<String>> response = client
-					.getImpactedTests(options.baseline, options.endCommit, options.partition, logger.output);
+					.getImpactedTests(availableTestDetails, options.baseline, options.endCommit, options.partition,
+							logger.output);
 			if (response.isSuccessful()) {
 				List<String> testList = response.body();
 				if (testList == null) {

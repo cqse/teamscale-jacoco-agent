@@ -270,8 +270,8 @@ public class AgentOptionsParser {
 	 */
 	private boolean handleHttpServerOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
-			case "http-server-formats":
-				options.httpServerReportFormats = parseReportFormats(value);
+			case "test-env":
+				options.testEnvironmentVariable = value;
 				return true;
 			case "http-server-port":
 				try {

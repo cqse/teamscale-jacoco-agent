@@ -134,24 +134,25 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             return
         }
 
-        val generator = TestwiseXmlReportGenerator(
-            classDirectories.files,
-            configuration.agent.getFilter(),
-            true,
-            project.logger.wrapInILogger()
-        )
-        val testwiseCoverage = generator.convert(executionData)
-        val jsCoverageData = configuration.report.googleClosureCoverage.destination ?: emptySet()
-        if (!jsCoverageData.isEmpty()) {
-            val closureTestwiseCoverage = ClosureTestwiseCoverageGenerator(
-                jsCoverageData,
-                configuration.report.googleClosureCoverage.getFilter()
-            ).readTestCoverage()
-            testwiseCoverage.merge(closureTestwiseCoverage)
-        }
-        TestwiseXmlReportUtils.writeReportToFile(
-            configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask), testwiseCoverage
-        )
+        // TODO Fix report generation
+//        val generator = TestwiseXmlReportGenerator(
+//            classDirectories.files,
+//            configuration.agent.getFilter(),
+//            true,
+//            project.logger.wrapInILogger()
+//        )
+//        val testwiseCoverage = generator.convert(executionData)
+//        val jsCoverageData = configuration.report.googleClosureCoverage.destination ?: emptySet()
+//        if (!jsCoverageData.isEmpty()) {
+//            val closureTestwiseCoverage = ClosureTestwiseCoverageGenerator(
+//                jsCoverageData,
+//                configuration.report.googleClosureCoverage.getFilter()
+//            ).readTestCoverage()
+//            testwiseCoverage.merge(closureTestwiseCoverage)
+//        }
+//        TestwiseXmlReportUtils.writeReportToFile(
+//            configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask), testwiseCoverage
+//        )
     }
 
     private fun getImpactedTestExecutorProgramArguments(): List<String> {
@@ -171,10 +172,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
         addFilters(args)
 
-        if (configuration.report.jUnit.upload != null) {
-            args.add("--reports-dir")
-            args.add(configuration.report.jUnit.getDestinationOrDefault(project, testTask).absolutePath)
-        }
+        args.add("--reports-dir")
+        args.add(configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask).absolutePath)
 
         val rootDirs = mutableListOf<File>()
         project.sourceSets.forEach { sourceSet ->

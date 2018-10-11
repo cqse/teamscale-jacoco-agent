@@ -2,11 +2,11 @@ package eu.cqse.config
 
 import eu.cqse.Report
 import eu.cqse.teamscale.client.EReportFormat
-import eu.cqse.teamscale.client.EReportFormat.JUNIT
 import eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE
 import eu.cqse.teamscale.report.util.AntPatternIncludeFilter
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.Transformer
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.testing.Test
 import java.io.File
@@ -35,6 +35,14 @@ open class ReportConfigurationBase(
      */
     var upload: Boolean? = null
 
+    /** Transformer that  */
+    var partitionTransformer: Transformer<String, Project>? = null
+
+    /** Convenience method for setting the transformer to append the project name to the partition. */
+    fun uploadPerModule() {
+        partitionTransformer = Transformer { project -> "$partition/${project.name}" }
+    }
+
     /** @see #destination */
     fun setDestination(destination: String) {
         this.destination = File(destination)
@@ -54,11 +62,14 @@ open class ReportConfigurationBase(
         message = toCopy.message ?: default.message
         partition = toCopy.partition ?: default.partition
         upload = toCopy.upload ?: default.upload
+        partitionTransformer = toCopy.partitionTransformer ?: default.partitionTransformer ?:
+                Transformer { "$partition" }
     }
 
     /** Takes the partition base name and a report format and merges it into a partition name. */
     open fun getTransformedPartition(project: Project): String {
-        return "$partition/${project.name}${format.partitionSuffix}"
+        return partitionTransformer?.transform(project) ?: partition
+        ?: throw IllegalArgumentException("No partition set for ${project.name}")
     }
 
     /** Returns a report specification used in the TeamscaleUploadTask. */
@@ -83,21 +94,6 @@ open class ReportConfigurationBase(
 
 /** Configuration for the testwise coverage report. */
 class TestwiseCoverageConfiguration : ReportConfigurationBase(TESTWISE_COVERAGE)
-
-/** Configuration for the jUnit report. */
-class JUnitReportConfiguration : ReportConfigurationBase(JUNIT) {
-
-    /** @inheritDoc */
-    override fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
-        return destination ?: project.file("${project.buildDir}/reports/junit/${gradleTestTask.name}")
-    }
-
-    /** Takes the partition base name and a report format and merges it into a partition name. */
-    override fun getTransformedPartition(project: Project): String {
-        return "$partition"
-    }
-
-}
 
 /** Configuration for the google closure coverage. */
 class GoogleClosureConfiguration : Serializable {

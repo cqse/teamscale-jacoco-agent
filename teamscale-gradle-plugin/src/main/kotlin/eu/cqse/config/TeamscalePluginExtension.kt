@@ -48,9 +48,6 @@ open class TeamscalePluginExtension : Serializable {
             return commit.validate(project, testTaskName) && report.testwiseCoverage.validate(
                 project,
                 testTaskName
-            ) && report.jUnit.validate(
-                project,
-                testTaskName
             )
         }
         return true

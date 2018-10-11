@@ -1,6 +1,7 @@
 package org.junit.platform.console.options;
 
 import eu.cqse.teamscale.client.CommitDescriptor;
+import okhttp3.HttpUrl;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -25,6 +26,9 @@ public class ImpactedTestsExecutorCommandLineOptions {
 
 	/** Regular JUnit console command line options. */
 	private CommandLineOptions commandLineOptions;
+
+	/** The url (including port) at which the agent listens. */
+	public HttpUrl agentUrl;
 
 	/** Constructor. */
 	public ImpactedTestsExecutorCommandLineOptions(CommandLineOptions jUnitResult) {

@@ -10,7 +10,6 @@
 
 package org.junit.platform.console.tasks;
 
-import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.Logger;
 import org.junit.platform.console.options.Details;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
@@ -46,22 +45,26 @@ public class TestExecutor {
 	/** A {@link Launcher} factory. */
 	private final Supplier<Launcher> launcherSupplier;
 
+	/** Test execution listener */
+	private TestExecutionListener testListenerExtension;
+
 	/** Constructor. */
-	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger) {
+	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger, TestExecutionListener testListenerExtension) {
 		this.options = options;
 		this.logger = logger;
+		this.testListenerExtension = testListenerExtension;
 		this.launcherSupplier = LauncherFactory::create;
 	}
 
 	/** Executes the given list of tests. */
 	public TestExecutionSummary executeTests(List<String> tests) {
-		logger.message("Executing " + tests.size() + " impacted tests...");
+		logger.info("Executing " + tests.size() + " impacted tests...");
 		return executeRequest(generateImpactedDiscoveryRequest(tests));
 	}
 
 	/** Executes all tests included in {@link #options}. */
 	public TestExecutionSummary executeAllTests() {
-		logger.message("Executing all tests...");
+		logger.info("Executing all tests...");
 		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions()));
 	}
 
@@ -95,7 +98,7 @@ public class TestExecutor {
 		SummaryGeneratingListener summaryListener = new SummaryGeneratingListener();
 		launcher.registerTestExecutionListeners(summaryListener);
 		// Add jacoco aware test execution listener
-		launcher.registerTestExecutionListeners(new JUnit5TestListenerExtension());
+		launcher.registerTestExecutionListeners(testListenerExtension);
 		// optionally, register test plan execution details printing listener
 		createDetailsPrintingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
 		// optionally, register XML reports writing listener

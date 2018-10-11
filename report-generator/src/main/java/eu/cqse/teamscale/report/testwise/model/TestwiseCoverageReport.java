@@ -4,6 +4,7 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,11 @@ public class TestwiseCoverageReport {
 	 * Adds the {@link TestCoverage} to the map.
 	 * If there is already a test with the same ID the coverage is merged.
 	 */
-	public static TestwiseCoverageReport createFrom(List<TestDetails> testDetailsList, List<TestCoverage> testCoverage, List<TestExecution> testExecutions) {
+	public static TestwiseCoverageReport createFrom(
+			Collection<TestDetails> testDetailsList,
+			Collection<TestCoverage> testCoverage,
+			Collection<TestExecution> testExecutions
+	) {
 		TestwiseCoverageReport report = new TestwiseCoverageReport();
 		for (TestDetails testDetails : testDetailsList) {
 			TestInfoContainer container = new TestInfoContainer(testDetails.uniformPath);

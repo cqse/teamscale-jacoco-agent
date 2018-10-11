@@ -1,5 +1,6 @@
 package eu.cqse.teamscale.report.testwise.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,5 +36,9 @@ public class TestwiseCoverage {
 			this.add(value);
 		}
 		return this;
+	}
+
+	public Collection<TestCoverage> getTests() {
+		return tests.values();
 	}
 }

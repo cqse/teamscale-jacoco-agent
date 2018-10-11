@@ -5,19 +5,16 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
-import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
-import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
-import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import eu.cqse.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import eu.cqse.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
@@ -26,10 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
-
-import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 
 /**
  * Parses agent command line options.
@@ -97,10 +91,9 @@ public class AgentOptions {
 	/* package */ TeamscaleServer teamscaleServer = new TeamscaleServer();
 
 	/**
-	 * The report artifacts that should be produced and stored.
-	 * Only applies for the Test Impact mode.
+	 * The name of the environment variable that holds the test uniform path.
 	 */
-	/* package */ Set<EReportFormat> httpServerReportFormats = CollectionUtils.asUnmodifiableHashSet(TESTWISE_COVERAGE);
+	/* package */ String testEnvironmentVariable = null;
 
 	/**
 	 * The port on which the HTTP server should be listening.
@@ -145,8 +138,8 @@ public class AgentOptions {
 			});
 		}
 
-		validator.isTrue(!useTestImpactMode() || uploadUrl == null, "'upload-url' option is " +
-				"incompatible with Test Impact mode!");
+		validator.isTrue(!useTestwiseCoverageMode() || uploadUrl == null, "'upload-url' option is " +
+				"incompatible with Testwise coverage mode!");
 
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
@@ -164,7 +157,7 @@ public class AgentOptions {
 	 * Returns the options to pass to the JaCoCo agent.
 	 */
 	public String createJacocoAgentOptions() {
-		StringBuilder builder = new StringBuilder("output=none");
+		StringBuilder builder = new StringBuilder(getModeSpecificOptions());
 		if (jacocoIncludes != null) {
 			builder.append(",includes=").append(jacocoIncludes);
 		}
@@ -179,13 +172,26 @@ public class AgentOptions {
 		return builder.toString();
 	}
 
+	private String getModeSpecificOptions() {
+		if (!useTestwiseCoverageMode()) {
+			return "output=none";
+		} else {
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.append("destfile=" + new File(outputDirectory.toFile(), "jacoco.exec").getAbsolutePath());
+			if (testEnvironmentVariable == null) {
+				stringBuilder.append(",append=false");
+			}
+			return stringBuilder.toString();
+		}
+	}
+
 	/**
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws CoverageGenerationException {
-		if (useTestImpactMode()) {
-			return new TestImpactAgent(this);
+	public AgentBase createAgent() {
+		if (useTestwiseCoverageMode()) {
+			return new TestwiseCoverageAgent(this);
 		} else {
 			return new Agent(this);
 		}
@@ -225,13 +231,6 @@ public class AgentOptions {
 	}
 
 	/**
-	 * @see #dumpIntervalInMinutes
-	 */
-	public int getDumpIntervalInMillis() {
-		return dumpIntervalInMinutes * 60_000;
-	}
-
-	/**
 	 * @see #shouldIgnoreDuplicateClassFiles
 	 */
 	public boolean shouldIgnoreDuplicateClassFiles() {
@@ -239,15 +238,8 @@ public class AgentOptions {
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */
-	private boolean useTestImpactMode() {
-		return httpServerPort != null;
-	}
-
-	/**
-	 * Returns a set of report formats that the server should produce and dump to the store.
-	 */
-	public Set<EReportFormat> getHttpServerReportFormats() {
-		return httpServerReportFormats;
+	private boolean useTestwiseCoverageMode() {
+		return httpServerPort != null || testEnvironmentVariable != null;
 	}
 
 	/**
@@ -255,6 +247,13 @@ public class AgentOptions {
 	 */
 	public Integer getHttpServerPort() {
 		return httpServerPort;
+	}
+
+	/**
+	 * Returns the name of the environment variable to read the test uniform path from.
+	 */
+	public String getTestEnvironmentVariableName() {
+		return testEnvironmentVariable;
 	}
 
 	/**

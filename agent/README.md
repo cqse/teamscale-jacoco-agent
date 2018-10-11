@@ -21,11 +21,9 @@ Where
 
 The following options are available:
 
+### General options
+
 - `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format)
-- `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format)
-- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
-  0 coverage is only dumped at JVM shutdown.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -35,8 +33,32 @@ The following options are available:
   of the package name. We recommend always using this form).
   Make sure to include **all** relevant application code
   but no external libraries. For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
-- `excludes`: exclude patterns for classes. Same syntax as the `includes` parameter.
+- `excludes` (optional): exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
+- `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+  
+You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
+`jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
+for a list of all available options.
+
+__The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
+
+__Please check the produced log file for errors and warnings before using the agent in any productive setting.__
+
+The log file is written to the agent's directory in the subdirectory `logs` by default.
+
+#### Path format
+
+All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant 
+patterns with `*`, `**` and `?`.
+
+### Options for normal mode
+
+- `class-dir` (required): the path under which all class files of the profiled application are stored. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format)
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
+  0 coverage is only dumped at JVM shutdown.
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.
@@ -74,64 +96,37 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format)
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
-- `http-server-port` (optional): the port at which the agent should start an HTTP server that listens for test events 
-  (See `Test impact mode` below for details).
-- `http-server-formats` (optional): a semicolon-separated list of report formats that should be generated. Can be one or more 
-  of `TESTWISE_COVERAGE`, `TEST_LIST`, `JACOCO` and `JUNIT`. Default is `TESTWISE_COVERAGE`. Depending on the formats 
-  more data might be required by the REST endpoints see `Test impact mode` below for details.
-- `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
 
-You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
-`jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
-for a list of all available options.
+## Testwise coverage mode
 
-__The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
+The testwise coverage mode allows to record coverage per test, which is needed for test impact analysis. This means that
+you can distinguish later, which test did produce which coverage.
 
-__Please check the produced log file for errors and warnings before using the agent in any productive setting.__
+Tests are identified by the `uniformPath`, which is a file system like path that is used to uniquely identify a test 
+within Teamscale and should be chosen accordingly. It is furthermore used to make the set of tests hierarchically 
+navigable within Teamscale.
 
-The log file is written to the agent's directory in the subdirectory `logs` by default.
+There are two basic scenarios to distinguish between.
 
-### Path format
+### 1. The system under test is restarted for every test case
 
-All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant 
-patterns with `*`, `**` and `?`.
+To record coverage in this setting an environment variable must be set to the test's uniform path before starting the 
+system under test. New coverage is always appended to the existing coverage file, so the test system is responsible for 
+cleaning the output directory before starting a new test run.
 
-## Test impact mode
+- `test-env` (required): the name of an environment variable that holds the name of the test's uniform path
 
-The agent can be used in a Test Impact scenario to collect testwise coverage. The test system (the application executing 
-the test specification) can inform the agent of when a test starts and finished via a REST API. 
-The agent then generates reports that contain method-based testwise coverage (if not disabled via `http-server-formats`).
-The HTTP server is started when `http-server-port` is set (Recommended port is 8000).
+### 2. The system under test is started once
 
-The `interval` commandline argument behaves slightly different in Test Impact mode. It does not dump any coverage 
-during a test, but in between tests when the given interval has exceeded, when the `/dump` endpoint has been called or 
-when the program shuts down.
+The test system (the application executing the test specification) can inform the agent of when a test started and 
+finished via a REST API. The corresponding server listens at the specified port.
 
-Tests are identified by the `uniformPath`. The ID can be an arbitrary string that the test system uses to identify the test.
-When uploading test details before the coverage the `uniformPath` must be the same as this ID.
-
+- `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
+  (Recommended port is 8000)
+  
 The agent's REST API has the following endpoints:
-- `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start. If the 
-  `http-server-formats` flag contains `TEST_LIST` and/or `JUNIT` the request body must also contain test details in JSON 
-  format like the following:
-  ```json
-  {
-     "uniformPath": "some/logical/path/to/the/test",
-     "uniformPath": "437334-7484-1",
-     "displayName": "This is my test",
-     "sourcePath": "some/logical/path/to/the/test",
-     "content": "revision3"
-  }
-  ```
-  More information on the test details can be found in TEST_IMPACT_ANALYSIS_DOC.
-
-- `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished. 
-  Optionally the query can have a `result` query parameter attached to indicate the test execution result. It can be 
-  set to one of the following values: `PASSED`, `IGNORED`, `SKIPPED`, `FAILURE`, `ERROR`. Additionally the last three 
-  values can have additional information attached to the body of the request with a stacktrace for example.
-
-- `[POST] /dump` Makes the agent dump all collected artifacts to the configured output location (file system or Teamscale).
+- `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
+- `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
 
 ## Additional steps for WebSphere
 

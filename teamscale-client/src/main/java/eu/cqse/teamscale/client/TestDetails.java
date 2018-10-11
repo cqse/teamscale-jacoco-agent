@@ -16,9 +16,6 @@ public class TestDetails {
 	 */
 	public final String sourcePath;
 
-	/** The name of the test case in a human readable form. */
-	public final String displayName;
-
 	/**
 	 * Some kind of content to tell whether the test specification has changed. Can be revision number or
 	 * hash over the specification or similar.
@@ -26,10 +23,9 @@ public class TestDetails {
 	public final String content;
 
 	/** Constructor. */
-	public TestDetails(String uniformPath, String sourcePath, String displayName, String content) {
+	public TestDetails(String uniformPath, String sourcePath, String content) {
 		this.uniformPath = uniformPath;
 		this.sourcePath = sourcePath;
-		this.displayName = displayName;
 		this.content = content;
 	}
 }

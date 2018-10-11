@@ -8,6 +8,7 @@ import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFram
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.GradleVersion
+import java.io.File
 
 /**
  * Root entry point for the Teamscale plugin.
@@ -98,6 +99,7 @@ open class TeamscalePlugin : Plugin<Project> {
     ) {
         project.logger.info("Configuring impacted tests executor task for ${project.name}:${gradleTestTask.name}")
 
+
         impactedTestsExecutorTask.apply {
             testTask = gradleTestTask
             configuration = config
@@ -119,9 +121,6 @@ open class TeamscalePlugin : Plugin<Project> {
 
             if (config.report.testwiseCoverage.upload == true) {
                 reports.add(config.report.testwiseCoverage.getReport(project, gradleTestTask))
-            }
-            if (config.report.jUnit.upload == true) {
-                reports.add(config.report.jUnit.getReport(project, gradleTestTask))
             }
         }
     }
