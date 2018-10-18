@@ -9,7 +9,9 @@ import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.client.TeamscaleServer;
 import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import eu.cqse.teamscale.jacoco.agent.testimpact.TestImpactAgent;
@@ -108,6 +110,16 @@ public class AgentOptions {
 	/* package */ Integer httpServerPort = null;
 
 	/**
+	 * The URL of the azure file storage to which to upload the coverage zips to.
+	 */
+	/* package */ HttpUrl azureFileStorage = null;
+
+	/**
+	 * The access key for the azure file storage. Only works together with {@see #azureFileStorage}.
+	 */
+	/* package */ String azureFileStorageKey = null;
+
+	/**
 	 * @see #originalOptionsString
 	 */
 	public String getOriginalOptionsString() {
@@ -157,6 +169,11 @@ public class AgentOptions {
 		validator.isTrue(uploadUrl == null || teamscaleServer.hasAllRequiredFieldsNull(),
 				"You did provide 'upload-url' and some 'teamscale-' option at the same time, but only one of " +
 						"them can be used!");
+
+		validator.isTrue((azureFileStorage == null) == (azureFileStorageKey == null),
+				"If you want to upload data to an azure file storage you need to provide both " +
+						"'upload-azure-url' and `upload-azure-key' ");
+
 		return validator;
 	}
 
@@ -183,7 +200,7 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws CoverageGenerationException {
+	public AgentBase createAgent() throws CoverageGenerationException, UploadStoreException {
 		if (useTestImpactMode()) {
 			return new TestImpactAgent(this);
 		} else {
@@ -194,7 +211,7 @@ public class AgentOptions {
 	/**
 	 * Creates the store to use for the coverage XMLs.
 	 */
-	public IXmlStore createStore() {
+	public IXmlStore createStore() throws UploadStoreException {
 		TimestampedFileStore fileStore = new TimestampedFileStore(outputDirectory);
 		if (uploadUrl != null) {
 			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
@@ -202,6 +219,12 @@ public class AgentOptions {
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
+
+		if (azureFileStorage != null) {
+			return new AzureFileStorageUploadStore(fileStore, azureFileStorage, azureFileStorageKey,
+					additionalMetaDataFiles);
+		}
+
 		return fileStore;
 	}
 

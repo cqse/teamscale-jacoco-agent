@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.jacoco.agent;
 
+import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.Timer;
 import eu.cqse.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -29,7 +30,7 @@ public class Agent extends AgentBase {
 	private Timer timer;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
+	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploadStoreException {
 		super(options);
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),

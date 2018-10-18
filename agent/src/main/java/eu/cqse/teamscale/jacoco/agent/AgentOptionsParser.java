@@ -168,6 +168,15 @@ public class AgentOptionsParser {
 				options.classDirectoriesOrZips = CollectionUtils
 						.mapWithException(splitMultiOptionValue(value), singleValue -> parseFile(key, singleValue));
 				return true;
+			case "upload-azure-url":
+				options.azureFileStorage = parseUrl(value);
+				if (options.azureFileStorage == null) {
+					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
+				}
+				return true;
+			case "upload-azure-key":
+				options.azureFileStorageKey = value;
+				return true;
 			default:
 				return false;
 		}
