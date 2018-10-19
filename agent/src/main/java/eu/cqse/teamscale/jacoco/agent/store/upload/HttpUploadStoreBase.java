@@ -8,7 +8,6 @@ import eu.cqse.teamscale.jacoco.util.Benchmark;
 import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
-import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 import retrofit2.Response;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -50,19 +48,18 @@ public abstract class HttpUploadStoreBase<T> implements IXmlStore {
 		api = getApi(retrofit);
 	}
 
-	/** TODO */
+	/** Returns the API for creating request to the http store */
 	protected abstract T getApi(Retrofit retrofit);
 
-	/** TODO */
-	protected abstract Set<EReportFormat> getSupportedFormats();
+	/** Checks if the report format of the XML is supported by this uploader. */
+	protected abstract void checkReportFormat(EReportFormat format);
 
-	/** TODO */
+	/** Uploads the coverage zip to the server */
 	protected abstract Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException, UploadStoreException;
 
 	@Override
 	public void store(String xml, EReportFormat format) {
-		CCSMAssert.isTrue(getSupportedFormats().contains(format), "Upload does only support JaCoCo " +
-				"coverage and cannot be used with Test Impact mode.");
+		checkReportFormat(format);
 		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUploading(xml)) {
 				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
@@ -72,7 +69,7 @@ public abstract class HttpUploadStoreBase<T> implements IXmlStore {
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
-	private boolean tryUploading(String xml) {
+	protected boolean tryUploading(String xml) {
 		logger.debug("Uploading coverage to {}", uploadUrl);
 
 		byte[] zipFileBytes;

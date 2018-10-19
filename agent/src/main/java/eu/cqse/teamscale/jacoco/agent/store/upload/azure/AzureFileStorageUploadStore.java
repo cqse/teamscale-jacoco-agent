@@ -8,16 +8,15 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import org.conqat.lib.commons.assertion.CCSMAssert;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,14 +34,25 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 
 public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploaApi> {
 
-	/** Pattern matches the host of a azure file storage */
+	/**
+	 * Pattern matches the host of a azure file storage
+	 */
 	public static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
 			.compile("^(\\w*)\\.file\\.core\\.windows\\.net$");
-	/** The access key for the azure file storage */
+
+	/**
+	 * The access key for the azure file storage
+	 */
 	private final String accessKey;
-	/** The account for the azure file storage */
+
+	/**
+	 * The account for the azure file storage
+	 */
 	private final String account;
 
+	/**
+	 * Constructor.
+	 */
 	public AzureFileStorageUploadStore(TimestampedFileStore failureStore, HttpUrl uploadUrl, String accessKey, List<Path> additionalMetaDataFiles) throws UploadStoreException {
 		super(failureStore, uploadUrl, additionalMetaDataFiles);
 		this.accessKey = accessKey;
@@ -51,7 +61,9 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 		checkPath();
 	}
 
-	/** Extracts and returns the account of the provided azure file storage from the URL. */
+	/**
+	 * Extracts and returns the account of the provided azure file storage from the URL.
+	 */
 	private String getAccount() throws UploadStoreException {
 		Matcher matcher = AZURE_FILE_STORAGE_HOST_PATTERN.matcher(this.uploadUrl.host());
 		if (matcher.matches()) {
@@ -74,8 +86,9 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 	}
 
 	@Override
-	protected Set<EReportFormat> getSupportedFormats() {
-		return EnumSet.of(EReportFormat.JACOCO);
+	protected void checkReportFormat(EReportFormat format) {
+		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "Azure HTTP upload does only support JaCoCo " +
+				"coverage and cannot be used with Test Impact mode.");
 	}
 
 	@Override
@@ -117,12 +130,16 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 		}
 	}
 
-	/** Creates a file name for the zip-archive containing the coverage. */
+	/**
+	 * Creates a file name for the zip-archive containing the coverage.
+	 */
 	private String createFileName() {
 		return String.format("%s-%s.zip", EReportFormat.JACOCO.filePrefix, System.currentTimeMillis());
 	}
 
-	/** Checks if the file with the given name exists */
+	/**
+	 * Checks if the file with the given name exists
+	 */
 	private Response<Void> checkFile(String fileName) throws IOException, UploadStoreException {
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;
@@ -140,7 +157,9 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 		return api.head(filePath, headers, queryParameters).execute();
 	}
 
-	/** Checks if the directory given by the specified path does exist. */
+	/**
+	 * Checks if the directory given by the specified path does exist.
+	 */
 	private Response<Void> checkDirectory(String directoryPath) throws IOException, UploadStoreException {
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 
