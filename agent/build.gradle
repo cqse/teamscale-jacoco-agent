@@ -1,13 +1,16 @@
 plugins {
 	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
+	id 'java'
+	id 'application'
+
+	// we don't want to cause conflicts between our dependencies and the target application
+	// since the agent will be loaded with the same class loader as the profiled application
+	// so we use the shadow plugin to relocate our dependencies
+	id 'com.github.johnrengelman.shadow' version '4.0.1'
+	id 'maven'
 }
 
-apply plugin: 'java'
-apply plugin: 'application'
-// we don't want to cause conflicts between our dependencies and the target application
-// since the agent will be loaded with the same class loader as the profiled application
-// so we use plugin-shadow instead of shadow to relocate all of our dependencies
-apply plugin: 'com.github.johnrengelman.plugin-shadow'
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 ext {
     outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
@@ -42,6 +45,7 @@ test {
 }
 
 mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
+
 shadowJar {
 	baseName = 'teamscale-jacoco-agent'
 	classifier = null
@@ -67,6 +71,12 @@ shadowJar {
 
 	mergeServiceFiles()
 }
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+	target = tasks.shadowJar
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 startShadowScripts {
     applicationName = 'convert'
@@ -96,4 +106,19 @@ processResources {
             it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
         }
     }
+}
+
+
+// At the moment we are stuck with the old maven plugin until support for private key
+// files is added or we add a dedicated user with a password to our server.
+// https://github.com/gradle/gradle/issues/1263
+uploadShadow {
+	repositories {
+		mavenDeployer {
+			configuration = configurations.deployerJars
+			repository(url: cqseMavenRepositoryUrl) {
+				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+			}
+		}
+	}
 }
