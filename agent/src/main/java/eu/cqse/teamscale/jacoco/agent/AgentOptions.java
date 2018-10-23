@@ -172,16 +172,12 @@ public class AgentOptions {
 		return builder.toString();
 	}
 
+	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
 		if (!useTestwiseCoverageMode()) {
 			return "output=none";
 		} else {
-			StringBuilder stringBuilder = new StringBuilder();
-			stringBuilder.append("destfile=" + new File(outputDirectory.toFile(), "jacoco.exec").getAbsolutePath());
-			if (testEnvironmentVariable == null) {
-				stringBuilder.append(",append=false");
-			}
-			return stringBuilder.toString();
+			return "sessionid=,destfile=" + new File(outputDirectory.toFile(), "jacoco.exec").getAbsolutePath();
 		}
 	}
 

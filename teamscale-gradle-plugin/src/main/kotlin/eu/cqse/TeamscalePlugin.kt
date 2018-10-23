@@ -8,7 +8,6 @@ import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFram
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.GradleVersion
-import java.io.File
 
 /**
  * Root entry point for the Teamscale plugin.
@@ -29,12 +28,18 @@ open class TeamscalePlugin : Plugin<Project> {
         /** The name of the configuration that holds the impacted test executor and its dependencies. */
         const val impactedTestExecutorConfiguration = "impactedTestsExecutor"
 
+        /** The name of the configuration that holds the teamscale jacoco agent and its dependencies. */
+        const val teamscaleJaCoCoAgentConfiguration = "teamscaleJaCoCoAgent"
+
         /** The suffix that gets appended to the name of the ImpactedTestsExecutorTask. */
         private const val impactedTestsSuffix = "Impacted"
     }
 
     /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
     private var pluginVersion = BuildVersion.buildVersion
+
+    /** The version of the teamscale jacoco agent.  */
+    private var agentVersion = BuildVersion.agentVersion
 
     /** Applies the teamscale plugin against the given project.  */
     override fun apply(project: Project) {
@@ -56,6 +61,13 @@ open class TeamscalePlugin : Plugin<Project> {
         project.configurations.maybeCreate(impactedTestExecutorConfiguration)
             .defaultDependencies { dependencies ->
                 dependencies.add(project.dependencies.create("eu.cqse:impacted-tests-executor:$pluginVersion"))
+            }
+
+        // Add teamscale jacoco agent to a custom configuration that will later be used to
+        // to generate testwise coverage if enabled.
+        project.configurations.maybeCreate(teamscaleJaCoCoAgentConfiguration)
+            .defaultDependencies { dependencies ->
+                dependencies.add(project.dependencies.create("eu.cqse:agent:$agentVersion"))
             }
 
         // Add the teamscale extension also to all test tasks
@@ -99,7 +111,6 @@ open class TeamscalePlugin : Plugin<Project> {
     ) {
         project.logger.info("Configuring impacted tests executor task for ${project.name}:${gradleTestTask.name}")
 
-
         impactedTestsExecutorTask.apply {
             testTask = gradleTestTask
             configuration = config
@@ -111,9 +122,20 @@ open class TeamscalePlugin : Plugin<Project> {
             dependsOn.add(project.sourceSets.getByName("test").runtimeClasspath)
         }
 
-        val teamscaleUploadTask = project.rootProject.tasks
+        val projectAggregationContext = if(config.report.uploadPerModule) project else project.rootProject
+
+        val teamscaleReportTask = projectAggregationContext.tasks
+            .maybeCreate("${gradleTestTask.name}Report", TeamscaleReportTask::class.java)
+        impactedTestsExecutorTask.finalizedBy(teamscaleReportTask)
+
+        teamscaleReportTask.apply {
+            testTask = gradleTestTask
+            configuration = config
+        }
+
+        val teamscaleUploadTask = projectAggregationContext.tasks
             .maybeCreate("${gradleTestTask.name}ReportUpload", TeamscaleUploadTask::class.java)
-        impactedTestsExecutorTask.finalizedBy(teamscaleUploadTask)
+        teamscaleReportTask.finalizedBy(teamscaleUploadTask)
 
         teamscaleUploadTask.apply {
             server = config.server

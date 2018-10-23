@@ -30,6 +30,12 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	/** The url (including port) at which the agent listens. */
 	public HttpUrl agentUrl;
 
+	/** Path to the exec coverage file. */
+	public Path jacocoCoverageFile;
+
+	/** Path to additional js coverage. */
+	public Path jsCoverageDir;
+
 	/** Constructor. */
 	public ImpactedTestsExecutorCommandLineOptions(CommandLineOptions jUnitResult) {
 		commandLineOptions = jUnitResult;

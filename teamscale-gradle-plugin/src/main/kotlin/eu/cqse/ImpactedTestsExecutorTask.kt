@@ -2,14 +2,9 @@ package eu.cqse
 
 import eu.cqse.config.TeamscalePluginExtension
 import eu.cqse.teamscale.client.CommitDescriptor
-import eu.cqse.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
-import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator
-import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils
 import eu.cqse.teamscale.report.util.AntPatternUtils
-import eu.cqse.teamscale.report.util.ILogger
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
-import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.JavaExec
@@ -19,6 +14,7 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.RelativePathUtil
 import java.io.File
+import java.util.regex.Pattern
 
 /** Task which runs the impacted tests. */
 open class ImpactedTestsExecutorTask : JavaExec() {
@@ -64,7 +60,6 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
         main = "org.junit.platform.console.ImpactedTestsExecutor"
-        outputs.upToDateWhen { false }
     }
 
     @TaskAction
@@ -72,21 +67,24 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         prepareClassPath()
         executionData = configuration.agent.getExecutionData(project, testTask)
 
+        if (executionData.exists()) {
+            logger.debug("Removing old execution data file at ${executionData.absolutePath}")
+            executionData.delete()
+        }
+
         workingDir = testTask.workingDir
 
-        jvmArgs(getAgentJvmArg())
+        if (configuration.agent.isLocalAgent()) {
+            jvmArgs(getAgentJvmArg())
+        }
 
         args(getImpactedTestExecutorProgramArguments())
 
-        logger.info("Starting impacted tests executor with jvm args $jvmArgs")
+        logger.info("Starting agent with jvm args $jvmArgs")
         logger.info("Starting impacted tests executor with args $args")
         logger.info("With workingDir $workingDir")
 
-        try {
-            super.exec()
-        } finally {
-            generateCoverageReport()
-        }
+        super.exec()
     }
 
     private fun prepareClassPath() {
@@ -103,8 +101,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         val builder = StringBuilder()
         val argument = ArgumentAppender(builder, workingDir)
         builder.append("-javaagent:")
-        val agentJar = project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration)
-            .filter { it.name.startsWith("impacted-tests-executor") }.first()
+        val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
+            .filter { it.name.startsWith("agent") }.first()
         builder.append(RelativePathUtil.relativePath(workingDir, agentJar))
         builder.append("=")
         argument.append("destfile", executionData)
@@ -115,44 +113,10 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             argument.append("classdumpdir", configuration.agent.getDumpDirectory(project))
         }
 
+        // Settings for testwise coverage mode
+        argument.append("http-server-port", configuration.agent.localPort)
+
         return builder.toString()
-    }
-
-    /**
-     * Generates a testwise coverage from the execution data and merges it with eventually existing closure coverage.
-     */
-    private fun generateCoverageReport() {
-        logger.info("Generating coverage report...")
-        val classDirectories = if (configuration.agent.dumpClasses == true) {
-            project.files(configuration.agent.getDumpDirectory(project))
-        } else {
-            classpath
-        }
-
-        if (!executionData.exists()) {
-            logger.error("No execution data provided!")
-            return
-        }
-
-        // TODO Fix report generation
-//        val generator = TestwiseXmlReportGenerator(
-//            classDirectories.files,
-//            configuration.agent.getFilter(),
-//            true,
-//            project.logger.wrapInILogger()
-//        )
-//        val testwiseCoverage = generator.convert(executionData)
-//        val jsCoverageData = configuration.report.googleClosureCoverage.destination ?: emptySet()
-//        if (!jsCoverageData.isEmpty()) {
-//            val closureTestwiseCoverage = ClosureTestwiseCoverageGenerator(
-//                jsCoverageData,
-//                configuration.report.googleClosureCoverage.getFilter()
-//            ).readTestCoverage()
-//            testwiseCoverage.merge(closureTestwiseCoverage)
-//        }
-//        TestwiseXmlReportUtils.writeReportToFile(
-//            configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask), testwiseCoverage
-//        )
     }
 
     private fun getImpactedTestExecutorProgramArguments(): List<String> {
@@ -163,7 +127,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             "--access-token", configuration.server.userAccessToken!!,
             "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
             "--baseline", baselineCommit.toString(),
-            "--end", endCommit.toString()
+            "--end", endCommit.toString(),
+            "--agent-url", configuration.agent.url.toString()
         )
 
         if (runAllTests) {
@@ -173,7 +138,12 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         addFilters(args)
 
         args.add("--reports-dir")
-        args.add(configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask).absolutePath)
+        args.add(
+            configuration.report.testwiseCoverage.getTempDestination(
+                project,
+                testTask
+            ).absolutePath
+        )
 
         val rootDirs = mutableListOf<File>()
         project.sourceSets.forEach { sourceSet ->
@@ -216,7 +186,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
     companion object {
 
-        fun normalizeAntPattern(antPattern: String) =
+        fun normalizeAntPattern(antPattern: String): Pattern =
             AntPatternUtils.convertPattern(normalize(antPattern), false)
 
         fun normalize(pattern: String): String {
@@ -226,19 +196,6 @@ open class ImpactedTestsExecutorTask : JavaExec() {
                 .replace(".?\\*\\*.?".toRegex(), "**")
         }
 
-    }
-}
-
-/** Wraps the gradle log4j logger into an ILogger. */
-fun Logger.wrapInILogger(): ILogger {
-    val logger = this
-    return object : ILogger {
-        override fun debug(message: String) = logger.debug(message)
-        override fun info(message: String) = logger.info(message)
-        override fun warn(message: String) = logger.warn(message)
-        override fun warn(message: String, throwable: Throwable) = logger.warn(message, throwable)
-        override fun error(throwable: Throwable) = logger.error("", throwable)
-        override fun error(message: String, throwable: Throwable) = logger.error(message, throwable)
     }
 }
 

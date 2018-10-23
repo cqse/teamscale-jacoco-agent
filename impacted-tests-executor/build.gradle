@@ -13,7 +13,6 @@ configurations {
 }
 
 dependencies {
-	implementation project(':agent')
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 
@@ -28,9 +27,6 @@ dependencies {
 
 jar {
 	classifier = null
-	manifest {
-		attributes 'Premain-Class': 'eu.cqse.teamscale.PreMain'
-	}
 }
 
 // At the moment we are stuck with the old maven plugin until support for private key

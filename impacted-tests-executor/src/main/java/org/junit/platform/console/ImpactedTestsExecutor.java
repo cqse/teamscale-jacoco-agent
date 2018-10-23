@@ -13,6 +13,7 @@ package org.junit.platform.console;
 import com.google.gson.GsonBuilder;
 import eu.cqse.teamscale.client.TeamscaleClient;
 import eu.cqse.teamscale.client.TestDetails;
+import eu.cqse.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator;
 import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.report.testwise.model.TestExecution;
@@ -33,10 +34,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.getReportAsString;
+import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.writeReportToFile;
 
 /**
  * The {@code ImpactedTestsExecutor} is a stand-alone application for executing impacted tests
@@ -87,33 +89,11 @@ public class ImpactedTestsExecutor {
 
 		JUnit5TestListenerExtension testListenerExtension = new JUnit5TestListenerExtension(options.agentUrl, logger);
 
-		ConsoleLauncherExecutionResult executionResult = executeTests(options, availableTestDetails, testListenerExtension);
+		ConsoleLauncherExecutionResult executionResult = executeTests(options, availableTestDetails,
+				testListenerExtension);
 
 		List<TestExecution> testExecutions = testListenerExtension.getTestExecutions();
 
-		/** Generates XML reports from binary execution data. */
-		TestwiseXmlReportGenerator generator = null;
-		try {
-			List<File> selectedClasspathEntries = options.toJUnitOptions().getSelectedClasspathEntries().stream().map(
-					Path::toFile).collect(Collectors.toList());
-			generator = new TestwiseXmlReportGenerator(
-					selectedClasspathEntries,
-					s -> true /* TODO */, true /* TODO options.shouldIgnoreDuplicateClassFiles() */,
-					logger);
-			String xml;
-			try {
-				TestwiseCoverage testwiseCoverage = generator.convert(dumps);
-				// TODO inject js coverage somehow
-				TestwiseCoverageReport report = TestwiseCoverageReport
-						.createFrom(availableTestDetails, testwiseCoverage.getTests(), testExecutions);
-				xml = getReportAsString(report);
-			} catch (IOException e) {
-				logger.error("Converting binary dumps to XML failed", e);
-				return;
-			}
-		} catch (CoverageGenerationException e) {
-			e.printStackTrace();
-		}
 
 		return executionResult;
 	}
@@ -138,7 +118,7 @@ public class ImpactedTestsExecutor {
 		if (options.runAllTests) {
 			testExecutionSummary = testExecutor.executeAllTests();
 		} else {
-			List<String> impactedTests = getImpactedTestsFromTeamscale(options, availableTestDetails);
+			List<String> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails, options);
 			if (impactedTests == null) {
 				testExecutionSummary = testExecutor.executeAllTests();
 			} else {
@@ -165,13 +145,13 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Queries Teamscale for impacted tests. */
-	private List<String> getImpactedTestsFromTeamscale(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) {
+	private List<String> getImpactedTestsFromTeamscale(List<TestDetails> availableTestDetails, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
+			logger.output.print("Getting impacted tests");
 			TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
 					options.server.userAccessToken, options.server.project);
 			Response<List<String>> response = client
-					.getImpactedTests(availableTestDetails, options.baseline, options.endCommit, options.partition,
-							logger.output);
+					.getImpactedTests(availableTestDetails, options.baseline, options.endCommit, options.partition);
 			if (response.isSuccessful()) {
 				List<String> testList = response.body();
 				if (testList == null) {

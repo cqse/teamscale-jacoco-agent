@@ -47,7 +47,8 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Implementation-Version': version
+        attributes 'Implementation-Version': pluginVersion
+        attributes 'Specification-Version': appVersion
     }
 }
 

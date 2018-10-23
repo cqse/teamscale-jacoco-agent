@@ -17,20 +17,34 @@ import java.util.stream.Collectors;
 /** Helper class to interact with Teamscale. */
 public class TeamscaleClient {
 
-	/** Maximum number of times to retry getting the impacted tests from Teamscale. */
-	private static final int MAX_RETRY = 100;
-
 	/** Teamscale service implementation. */
 	private final ITeamscaleService service;
 
 	/** The project ID within Teamscale.  */
 	private final String projectId;
+	private Gson gson = new Gson();
 
 	/** Constructor. */
 	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken);
+	}
+
+	/**
+	 * Tries to retrieve the impacted tests from Teamscale.
+	 *
+	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
+	 */
+	public Response<List<String>> getImpactedTests(List<TestDetails> list, CommitDescriptor baseline, CommitDescriptor endCommit, String partition) throws IOException {
+		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, gson.toJson(list));
+		Response<List<String>> impactedTests = service
+				.getImpactedTests(projectId, "", baseline, endCommit, partition, requestFile)
+				.execute();
+		if (!impactedTests.isSuccessful() || impactedTests.body() == null) {
+			return null;
+		}
+		return impactedTests;
 	}
 
 	/** Uploads multiple reports to Teamscale. */
@@ -46,39 +60,5 @@ public class TeamscaleClient {
 		if (!response.isSuccessful()) {
 			throw new IOException(response.errorBody().string());
 		}
-	}
-
-	/**
-	 * Tries to retrieve the impacted tests from Teamscale.
-	 *
-	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
-	 */
-	public Response<List<String>> getImpactedTests(List<TestDetails> list, CommitDescriptor baseline, CommitDescriptor endCommit, String partition, PrintWriter out) throws IOException {
-		out.print("Getting impacted tests");
-
-		Gson gson = new Gson();
-		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, gson.toJson(list));
-
-		Response<List<String>> impactedTests;
-		int attempts = 0;
-		do {
-			if (attempts > 1) {
-				out.print(".");
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			impactedTests = service
-					.getImpactedTests(projectId, "", baseline, endCommit, partition, requestFile)
-					.execute();
-			attempts++;
-			if (attempts > MAX_RETRY) {
-				return impactedTests;
-			}
-		} while (impactedTests.isSuccessful() && impactedTests.body() == null);
-		out.println();
-		return impactedTests;
 	}
 }

@@ -11,9 +11,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
-import static eu.cqse.teamscale.client.EReportFormat.JUNIT;
-import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
-import static eu.cqse.teamscale.client.EReportFormat.TEST_LIST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -90,10 +87,9 @@ public class AgentOptionsTest {
 	public void testHttpServerOptions() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
 				"http-server-port=8081," +
-				"http-server-formats=TESTWISE_COVERAGE;TEST_LIST;JUNIT");
-		assertThat(agentOptions.getHttpServerReportFormats())
-				.containsExactlyInAnyOrder(TESTWISE_COVERAGE, TEST_LIST, JUNIT);
+				"test-env=TEST");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
+		assertThat(agentOptions.getTestEnvironmentVariableName()).isEqualTo("TEST");
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */

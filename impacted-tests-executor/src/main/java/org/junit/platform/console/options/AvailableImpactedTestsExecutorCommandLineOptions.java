@@ -1,9 +1,13 @@
 package org.junit.platform.console.options;
 
 import eu.cqse.teamscale.client.CommitDescriptor;
+import okhttp3.HttpUrl;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
 import org.junit.platform.console.shadow.joptsimple.OptionSpec;
+import org.junit.platform.console.shadow.joptsimple.util.PathConverter;
+
+import java.nio.file.Path;
 
 import static java.util.Arrays.asList;
 
@@ -27,6 +31,8 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	private final OptionSpec<String> end;
 
 	private final OptionSpec<Void> runAllTests;
+
+	private OptionSpec<String> agentUrl;
 
 	/** Constructor. */
 	AvailableImpactedTestsExecutorCommandLineOptions() {
@@ -62,6 +68,10 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 
 		runAllTests = parser.acceptsAll(asList("all", "run-all-tests"),
 				"Partition of the tests");
+
+		agentUrl = parser.accepts("agent-url",
+				"Url of the teamscale jacoco agent that generates coverage for the system")
+				.withRequiredArg();
 	}
 
 	/** Returns an options parser with the available options set. */
@@ -84,6 +94,8 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 
 		result.baseline = CommitDescriptor.parse(detectedOptions.valueOf(this.baseline));
 		result.endCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.end));
+
+		result.agentUrl = HttpUrl.parse(detectedOptions.valueOf(this.agentUrl));
 
 		return result;
 	}

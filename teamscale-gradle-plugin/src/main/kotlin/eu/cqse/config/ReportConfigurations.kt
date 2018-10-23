@@ -56,6 +56,14 @@ open class ReportConfigurationBase(
         )
     }
 
+    /** Returns the destination set for the report or the default destination if not set. */
+    open fun getTempDestination(project: Project, gradleTestTask: Task): File {
+        return project.file(
+            "${project.buildDir}/tmp/${format.name.toLowerCase()}/" +
+                    "${format.name.toLowerCase()}-${project.name}-${gradleTestTask.name}-${format.name}"
+        )
+    }
+
     /** Creates a copy of the report configuration, setting all non-set values to their default value. */
     open fun copyWithDefault(toCopy: ReportConfigurationBase, default: ReportConfigurationBase) {
         destination = toCopy.destination ?: default.destination

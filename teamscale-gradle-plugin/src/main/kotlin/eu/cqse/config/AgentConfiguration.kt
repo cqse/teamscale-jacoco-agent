@@ -1,6 +1,7 @@
 package eu.cqse.config
 
 import eu.cqse.teamscale.report.util.ClasspathWildcardIncludeFilter
+import okhttp3.HttpUrl
 import org.gradle.api.Project
 import org.gradle.api.Task
 import java.io.File
@@ -14,6 +15,22 @@ class AgentConfiguration : Serializable {
     var dumpDirectory: File? = null
     var includes: List<String>? = null
     var excludes: List<String>? = null
+
+    private var remoteUrl: HttpUrl? = null
+
+    var localPort: Int = 8000
+        private set
+
+    fun isLocalAgent(): Boolean {
+        return remoteUrl == null
+    }
+
+    val url
+        get() = remoteUrl ?: "http://127.0.0.1:$localPort/"
+
+    fun useRemoteAgent(url: String) {
+        this.remoteUrl = HttpUrl.parse(url)
+    }
 
     fun getExecutionData(project: Project, gradleTestTask: Task): File {
         return executionData

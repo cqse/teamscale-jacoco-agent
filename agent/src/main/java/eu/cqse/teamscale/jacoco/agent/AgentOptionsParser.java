@@ -111,7 +111,7 @@ public class AgentOptionsParser {
 			return;
 		} else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
 			return;
-		} else if (key.startsWith("http-server-") && handleHttpServerOptions(options, key, value)) {
+		} else if (handleHttpServerOptions(options, key, value)) {
 			return;
 		} else if (handleAgentOptions(options, key, value)) {
 			return;
@@ -284,26 +284,6 @@ public class AgentOptionsParser {
 			default:
 				return false;
 		}
-	}
-
-	/**
-	 * Parses a semicolon-separated list of report formats like TESTWISE_COVERAGE;JUNIT.
-	 */
-	private Set<EReportFormat> parseReportFormats(String reportFormatsString) throws AgentOptionParseException {
-		List<String> reportFormatString = splitMultiOptionValue(reportFormatsString.trim());
-		if (reportFormatString.size() == 0) {
-			throw new AgentOptionParseException("'http-server-formats' is empty!");
-		}
-		Set<EReportFormat> reportFormats = new HashSet<>();
-		for (String format : reportFormatString) {
-			try {
-				reportFormats.add(EReportFormat.valueOf(format.trim()));
-			} catch (IllegalArgumentException e) {
-				throw new AgentOptionParseException(
-						"Invalid report format '" + format + "' for parameter 'http-server-formats'!", e);
-			}
-		}
-		return reportFormats;
 	}
 
 	/**

@@ -28,14 +28,14 @@ public class TestwiseCoverage {
 
 	/**
 	 * Merges the given {@link TestwiseCoverage} with this one.
-	 *
-	 * @return Returns a reference to this
 	 */
-	public TestwiseCoverage merge(TestwiseCoverage testwiseCoverage) {
+	public void add(TestwiseCoverage testwiseCoverage) {
+		if (testwiseCoverage == null) {
+			return;
+		}
 		for (TestCoverage value : testwiseCoverage.tests.values()) {
 			this.add(value);
 		}
-		return this;
 	}
 
 	public Collection<TestCoverage> getTests() {
