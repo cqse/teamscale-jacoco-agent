@@ -124,7 +124,7 @@ class GoogleClosureConfiguration : Serializable {
     }
 
     /** Returns a predicate with the include/exclude patterns. */
-    fun getFilter() = AntPatternIncludeFilter(
+    fun getFilter() = FileNameFilter(
         includes ?: emptyList(),
         excludes ?: emptyList()
     )
@@ -134,5 +134,11 @@ class GoogleClosureConfiguration : Serializable {
         destination = toCopy.destination ?: default.destination
         excludes = toCopy.excludes ?: default.excludes
         includes = toCopy.includes ?: default.includes
+    }
+
+    class FileNameFilter(private val includes: List<String>, private val excludes: List<String>) : Serializable {
+
+        /** Returns a predicate with the include/exclude patterns. */
+        fun getPredicate() = AntPatternIncludeFilter(includes, excludes)
     }
 }

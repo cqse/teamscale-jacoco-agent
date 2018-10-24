@@ -10,6 +10,8 @@ plugins {
 	id 'maven'
 }
 
+version appVersion
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 ext {
@@ -108,6 +110,12 @@ processResources {
     }
 }
 
+install {
+	repositories.mavenInstaller {
+		configuration = configurations.shadow
+		pom.whenConfigured { it.dependencies.clear() }
+	}
+}
 
 // At the moment we are stuck with the old maven plugin until support for private key
 // files is added or we add a dedicated user with a password to our server.

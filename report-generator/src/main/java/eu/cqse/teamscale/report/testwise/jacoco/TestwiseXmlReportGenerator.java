@@ -45,8 +45,12 @@ public class TestwiseXmlReportGenerator {
 	}
 
 	/** Converts the given dumps to a report. */
-	public TestwiseCoverage convert(List<Dump> dumps) {
-		return executionDataReader.buildCoverage(dumps);
+	public TestwiseCoverage convert(Collection<File> executionDataFiles) throws IOException {
+		TestwiseCoverage aggregatedTestwiseCoverage = new TestwiseCoverage();
+		for (File executionDataFile : executionDataFiles) {
+			aggregatedTestwiseCoverage.add(executionDataReader.buildCoverage(readDumps(executionDataFile)));
+		}
+		return aggregatedTestwiseCoverage;
 	}
 
 	/** Converts the given dumps to a report. */

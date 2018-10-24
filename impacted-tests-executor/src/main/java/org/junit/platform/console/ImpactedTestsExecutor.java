@@ -87,15 +87,7 @@ public class ImpactedTestsExecutor {
 			return ConsoleLauncherExecutionResult.success();
 		}
 
-		JUnit5TestListenerExtension testListenerExtension = new JUnit5TestListenerExtension(options.agentUrl, logger);
-
-		ConsoleLauncherExecutionResult executionResult = executeTests(options, availableTestDetails,
-				testListenerExtension);
-
-		List<TestExecution> testExecutions = testListenerExtension.getTestExecutions();
-
-
-		return executionResult;
+		return executeTests(options, availableTestDetails);
 	}
 
 	/** Discovers all tests that match the given filters in #options. */
@@ -104,7 +96,7 @@ public class ImpactedTestsExecutor {
 
 		logger.info("Found " + availableTestDetails.size() + " tests");
 
-		// Write out test details to file (for debugging purposes)
+		// Write out test details to file
 		if (options.getReportsDir().isPresent()) {
 			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails);
 		}
@@ -112,8 +104,8 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Executes either all tests if set via the command line options or queries Teamscale for the impacted tests and executes those. */
-	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails, TestExecutionListener testListenerExtension) {
-		TestExecutor testExecutor = new TestExecutor(options, logger, testListenerExtension);
+	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) {
+		TestExecutor testExecutor = new TestExecutor(options, logger);
 		TestExecutionSummary testExecutionSummary;
 		if (options.runAllTests) {
 			testExecutionSummary = testExecutor.executeAllTests();
@@ -135,7 +127,7 @@ public class ImpactedTestsExecutor {
 			return;
 		}
 
-		File reportFile = new File(reportDir, "testDetails.json");
+		File reportFile = new File(reportDir, "test-list.json");
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(reportFile)))) {
 			out.print(new GsonBuilder().setPrettyPrinting().create().toJson(testDetails));
 		} catch (IOException e) {
@@ -147,7 +139,7 @@ public class ImpactedTestsExecutor {
 	/** Queries Teamscale for impacted tests. */
 	private List<String> getImpactedTestsFromTeamscale(List<TestDetails> availableTestDetails, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
-			logger.output.print("Getting impacted tests");
+			logger.output.println("Getting impacted tests...");
 			TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
 					options.server.userAccessToken, options.server.project);
 			Response<List<String>> response = client

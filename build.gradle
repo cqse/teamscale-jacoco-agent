@@ -1,8 +1,8 @@
 ext {
     appVersion = '10.1.0'
-    pluginVersion = '0.1.25'
-    reportGeneratorVersion = '1.0.7'
-    teamscaleClientVersion = '0.1.5'
+    pluginVersion = '0.2.0'
+    reportGeneratorVersion = '1.1.0'
+    teamscaleClientVersion = '0.2.0'
 
     // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
     jacocoVersion = '0.8.1'
@@ -17,17 +17,19 @@ ext {
 }
 
 subprojects {
+    group 'eu.cqse'
+    
     configurations {
         deployerJars
     }
-    
+
     repositories {
         ivy {
             url 'https://share.cqse.eu/svn/artifacts/ivy'
         }
         jcenter()
     }
-    
+
     dependencies {
         deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
     }
@@ -35,6 +37,7 @@ subprojects {
 
 // Installs the plugin to your local maven repository
 task installGradlePlugin(dependsOn: [
+        ':agent:install',
         ':impacted-tests-executor:install',
         ':report-generator:install',
         ':teamscale-gradle-plugin:install',
@@ -43,6 +46,7 @@ task installGradlePlugin(dependsOn: [
 
 // Deploys the plugin to the public share
 task deployGradlePlugin(dependsOn: [
+        ':agent:uploadShadow',
         ':impacted-tests-executor:uploadArchives',
         ':report-generator:uploadShadow',
         ':teamscale-gradle-plugin:uploadArchives',

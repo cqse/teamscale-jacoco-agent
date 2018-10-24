@@ -1,7 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+	id 'java'
+	id 'maven'
+}
 
-group 'eu.cqse'
 version pluginVersion
 
 repositories {

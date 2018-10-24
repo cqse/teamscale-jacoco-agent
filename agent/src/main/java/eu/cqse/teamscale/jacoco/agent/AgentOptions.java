@@ -21,8 +21,12 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
 /**
@@ -113,7 +117,7 @@ public class AgentOptions {
 	/* package */ Validator getValidator() {
 		Validator validator = new Validator();
 
-		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
+		validator.isTrue(!getClassDirectoriesOrZips().isEmpty() || useTestwiseCoverageMode(),
 				"You must specify at least one directory or zip that contains class files");
 		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
@@ -177,7 +181,9 @@ public class AgentOptions {
 		if (!useTestwiseCoverageMode()) {
 			return "output=none";
 		} else {
-			return "sessionid=,destfile=" + new File(outputDirectory.toFile(), "jacoco.exec").getAbsolutePath();
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
+			return "sessionid=,destfile=" + new File(outputDirectory.toFile(),
+					"jacoco-" + dateFormat.format(new Date()) + ".exec").getAbsolutePath();
 		}
 	}
 

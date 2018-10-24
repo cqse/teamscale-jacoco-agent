@@ -32,11 +32,6 @@ class AgentConfiguration : Serializable {
         this.remoteUrl = HttpUrl.parse(url)
     }
 
-    fun getExecutionData(project: Project, gradleTestTask: Task): File {
-        return executionData
-            ?: project.file("${project.buildDir}/jacoco/${project.name}-${gradleTestTask.name}.exec")
-    }
-
     fun getDumpDirectory(project: Project): File {
         return dumpDirectory ?: project.file("${project.buildDir}/classesDump")
     }

@@ -14,6 +14,7 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.RelativePathUtil
 import java.io.File
+import java.nio.file.Files
 import java.util.regex.Pattern
 
 /** Task which runs the impacted tests. */
@@ -53,8 +54,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @Input
     lateinit var endCommit: CommitDescriptor
 
-    /** The file to write the jacoco execution data to. */
-    private lateinit var executionData: File
+    /** The directory to write the jacoco execution data to. */
+    private lateinit var tempDir: File
 
     init {
         group = "Teamscale"
@@ -65,11 +66,11 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @TaskAction
     override fun exec() {
         prepareClassPath()
-        executionData = configuration.agent.getExecutionData(project, testTask)
+        tempDir = configuration.report.testwiseCoverage.getTempDestination(project, testTask)
 
-        if (executionData.exists()) {
-            logger.debug("Removing old execution data file at ${executionData.absolutePath}")
-            executionData.delete()
+        if (tempDir.exists()) {
+            logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
+            tempDir.deleteRecursively()
         }
 
         workingDir = testTask.workingDir
@@ -102,10 +103,10 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         val argument = ArgumentAppender(builder, workingDir)
         builder.append("-javaagent:")
         val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
-            .filter { it.name.startsWith("agent") }.first()
+            .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
         builder.append(RelativePathUtil.relativePath(workingDir, agentJar))
         builder.append("=")
-        argument.append("destfile", executionData)
+        argument.append("out", tempDir)
         argument.append("includes", configuration.agent.includes)
         argument.append("excludes", configuration.agent.excludes)
 

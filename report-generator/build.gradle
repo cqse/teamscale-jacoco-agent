@@ -3,9 +3,9 @@ plugins {
 	id 'java-library'
 	id 'maven'
 }
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
-group 'eu.cqse'
 version reportGeneratorVersion
 
 dependencies {

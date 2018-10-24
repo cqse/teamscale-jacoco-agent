@@ -1,7 +1,8 @@
-apply plugin: 'java-library'
-apply plugin: 'maven'
+plugins {
+    id 'java-library'
+    id 'maven'
+}
 
-group 'eu.cqse'
 version teamscaleClientVersion
 
 dependencies {

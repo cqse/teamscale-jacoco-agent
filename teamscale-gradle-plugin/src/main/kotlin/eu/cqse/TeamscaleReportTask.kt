@@ -1,6 +1,8 @@
 package eu.cqse
 
 import com.google.gson.Gson
+import eu.cqse.config.AgentConfiguration
+import eu.cqse.config.GoogleClosureConfiguration
 import eu.cqse.config.TeamscalePluginExtension
 import eu.cqse.teamscale.client.EReportFormat
 import eu.cqse.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
@@ -13,8 +15,7 @@ import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport
 import eu.cqse.teamscale.report.util.ILogger
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.Test
 import java.io.File
 
@@ -27,18 +28,42 @@ open class TeamscaleReportTask : DefaultTask() {
      */
     lateinit var testTask: Test
 
+    private val gson = Gson()
+
     /**
      * Reference to the configuration that should be used for this task.
      */
-    @Input
     lateinit var configuration: TeamscalePluginExtension
+
+    /* Task inputs */
+
+    private val agentConfiguration: AgentConfiguration
+        @Input
+        get() = configuration.agent
+
+    private val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
+        @Input
+        get() = configuration.report.googleClosureCoverage.getFilter()
+
+    private val closureCoverageDir: Set<File>
+        @InputFiles
+        get() = configuration.report.googleClosureCoverage.destination ?: emptySet()
+
+    private val testArtifactsDir
+        @InputDirectory
+        get() = configuration.report.testwiseCoverage.getTempDestination(project, testTask)
+
+    /* Task outputs */
+
+    private val reportFile
+        @OutputFile
+        get() = configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask)
+
 
     init {
         group = "Teamscale"
         description = "Generates a testwise coverage report"
     }
-
-    private val gson = Gson()
 
     /**
      * Generates a testwise coverage from the execution data and merges it with eventually existing closure coverage.
@@ -47,67 +72,72 @@ open class TeamscaleReportTask : DefaultTask() {
     fun generateTestwiseCoverageReport() {
         logger.info("Generating coverage report...")
 
-        val tempDestination = configuration.report.testwiseCoverage.getTempDestination(project, testTask)
-        val testDetails = readObjects(tempDestination, EReportFormat.TEST_LIST, TestDetailsList::class.java)
-        val testExecutions = readObjects(tempDestination, EReportFormat.TEST_EXECUTION, TestExecutionList::class.java)
+        val testDetails = readObjects(testArtifactsDir, EReportFormat.TEST_LIST, TestDetailsList::class.java)
+        val testExecutions = readObjects(testArtifactsDir, EReportFormat.TEST_EXECUTION, TestExecutionList::class.java)
 
         val testwiseCoverage = getJaCoCoTestwiseCoverage() ?: return
         testwiseCoverage.add(getClosureTestwiseCoverage())
 
+        logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
+
         val report = TestwiseCoverageReport.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
         TestwiseXmlReportUtils.writeReportToFile(
-            configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask), report
+            reportFile, report
         )
     }
 
     private fun getJaCoCoTestwiseCoverage(): TestwiseCoverage? {
-        val executionData = configuration.agent.getExecutionData(project, testTask)
-
-        val classDirectories = if (configuration.agent.dumpClasses == true) {
-            project.files(configuration.agent.getDumpDirectory(project))
+        val classDirectories = if (agentConfiguration.dumpClasses == true) {
+            project.files(agentConfiguration.getDumpDirectory(project))
         } else {
             testTask.classpath
         }
 
-        if (!executionData.exists()) {
+        if (!testArtifactsDir.exists()) {
             logger.error("No execution data provided!")
             return null
         }
+        val jacocoExecutionData = listFiles(testArtifactsDir, "jacoco", "exec")
+        logger.info("Generating testwise coverage for $jacocoExecutionData")
 
         val generator = TestwiseXmlReportGenerator(
             classDirectories.files,
-            configuration.agent.getFilter(),
+            agentConfiguration.getFilter(),
             true,
             project.logger.wrapInILogger()
         )
-        return generator.convert(executionData)
+        return generator.convert(jacocoExecutionData)
     }
 
     private fun getClosureTestwiseCoverage(): TestwiseCoverage? {
-        val jsCoverageData = configuration.report.googleClosureCoverage.destination ?: emptySet()
+        val jsCoverageData = closureCoverageDir
         if (jsCoverageData.isEmpty()) {
             return null
         }
         return ClosureTestwiseCoverageGenerator(
             jsCoverageData,
-            configuration.report.googleClosureCoverage.getFilter()
+            closureIncludeFilter.getPredicate()
         ).readTestCoverage()
     }
 
 
     /** Recursively lists all files in the given directory that match the specified extension. */
     private fun <T> readObjects(file: File, format: EReportFormat, `class`: Class<out Collection<T>>): Collection<T> {
-        return file.walkTopDown().filter {
-            it.isFile && it.name.startsWith(format.filePrefix) && it.extension.equals(
-                format.extension,
-                ignoreCase = true
-            )
-        }.toSet().flatMap {
+        return listFiles(file, format.filePrefix, format.extension).flatMap {
             gson.fromJson(
                 it.reader(),
                 `class`
             )
         }
+    }
+
+    private fun listFiles(file: File, prefix: String, extension: String): Set<File> {
+        return file.walkTopDown().filter {
+            it.isFile && it.name.startsWith(prefix) && it.extension.equals(
+                extension,
+                ignoreCase = true
+            )
+        }.toSet()
     }
 
     private class TestDetailsList : ArrayList<TestDetails>()

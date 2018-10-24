@@ -1,6 +1,5 @@
 package eu.cqse.teamscale.report.testwise.jacoco;
 
-import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
@@ -37,7 +36,7 @@ public class TestwiseXmlReportUtils {
 	/** Converts to given testwise coverage to an XML report and writes it to the given output stream. */
 	public static void writeReportToStream(OutputStream output, TestwiseCoverageReport testwiseCoverage) throws IOException {
 		try {
-			JAXBContext jaxbContext = JAXBContext.newInstance(TestwiseCoverage.class);
+			JAXBContext jaxbContext = JAXBContext.newInstance(TestwiseCoverageReport.class);
 			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
 			// output pretty printed

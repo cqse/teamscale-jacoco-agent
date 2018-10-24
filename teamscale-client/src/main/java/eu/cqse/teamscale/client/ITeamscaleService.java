@@ -6,6 +6,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -41,20 +42,21 @@ public interface ITeamscaleService {
 			@Query("format") EReportFormat format,
 			@Query("t") CommitDescriptor commit,
 			@Query("adjusttimestamp") boolean adjustTimestamp,
+			@Query("movetolastcommit") boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
 			@Part List<MultipartBody.Part> report
 	);
 
 	/** Test Impact API. */
-	@GET("p/{projectName}/test-impact/{uniformPath}")
+	@POST("p/{projectName}/test-impact/{uniformPath}")
 	Call<List<String>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Path("uniformPath") String testUniformPathPrefix,
 			@Query("baseline") CommitDescriptor baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			RequestBody report
+			@Body List<TestDetails> report
 	);
 
 	/**

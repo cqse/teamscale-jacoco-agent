@@ -10,6 +10,9 @@
 
 package org.junit.platform.console.tasks;
 
+import com.google.gson.GsonBuilder;
+import eu.cqse.teamscale.report.testwise.model.TestExecution;
+import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.Logger;
 import org.junit.platform.console.options.Details;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
@@ -23,6 +26,10 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -46,13 +53,13 @@ public class TestExecutor {
 	private final Supplier<Launcher> launcherSupplier;
 
 	/** Test execution listener */
-	private TestExecutionListener testListenerExtension;
+	private JUnit5TestListenerExtension testListenerExtension;
 
 	/** Constructor. */
-	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger, TestExecutionListener testListenerExtension) {
+	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger) {
 		this.options = options;
 		this.logger = logger;
-		this.testListenerExtension = testListenerExtension;
+		this.testListenerExtension = new JUnit5TestListenerExtension(options.agentUrl, logger);
 		this.launcherSupplier = LauncherFactory::create;
 	}
 
@@ -74,9 +81,30 @@ public class TestExecutor {
 		SummaryGeneratingListener summaryListener = registerTestListeners(launcher);
 		ignoreOut(() -> launcher.execute(discoveryRequest));
 
+		List<TestExecution> testExecutions = testListenerExtension.getTestExecutions();
+		if (options.getReportsDir().isPresent()) {
+			writeTestExecutionReport(options.getReportsDir().get().toFile(), testExecutions);
+		}
+
 		TestExecutionSummary summary = summaryListener.getSummary();
 		printSummary(summary);
 		return summary;
+	}
+
+	/** Writes the given test executions to a report file. */
+	private void writeTestExecutionReport(File reportDir, List<TestExecution> testExecutions) {
+		if (!reportDir.isDirectory() && !reportDir.mkdirs()) {
+			logger.error("Failed to create directory " + reportDir.getAbsolutePath());
+			return;
+		}
+
+		File reportFile = new File(reportDir, "test-execution.json");
+		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(reportFile)))) {
+			out.print(new GsonBuilder().setPrettyPrinting().create().toJson(testExecutions));
+		} catch (IOException e) {
+			// We don't want to break the tests because writing the testDetails failed.
+			logger.error(e);
+		}
 	}
 
 	/** Creates a discovery request from the given list of unique test IDs. */
@@ -101,8 +129,6 @@ public class TestExecutor {
 		launcher.registerTestExecutionListeners(testListenerExtension);
 		// optionally, register test plan execution details printing listener
 		createDetailsPrintingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
-		// optionally, register XML reports writing listener
-		createXmlWritingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
 		return summaryListener;
 	}
 

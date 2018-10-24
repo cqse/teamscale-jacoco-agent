@@ -1,6 +1,5 @@
 package eu.cqse.teamscale.client;
 
-import com.google.gson.Gson;
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -9,7 +8,6 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,9 +18,8 @@ public class TeamscaleClient {
 	/** Teamscale service implementation. */
 	private final ITeamscaleService service;
 
-	/** The project ID within Teamscale.  */
+	/** The project ID within Teamscale. */
 	private final String projectId;
-	private Gson gson = new Gson();
 
 	/** Constructor. */
 	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId) {
@@ -36,10 +33,9 @@ public class TeamscaleClient {
 	 *
 	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
 	 */
-	public Response<List<String>> getImpactedTests(List<TestDetails> list, CommitDescriptor baseline, CommitDescriptor endCommit, String partition) throws IOException {
-		RequestBody requestFile = RequestBody.create(MultipartBody.FORM, gson.toJson(list));
+	public Response<List<String>> getImpactedTests(List<TestDetails> testList, CommitDescriptor baseline, CommitDescriptor endCommit, String partition) throws IOException {
 		Response<List<String>> impactedTests = service
-				.getImpactedTests(projectId, "", baseline, endCommit, partition, requestFile)
+				.getImpactedTests(projectId, "", baseline, endCommit, partition, testList)
 				.execute();
 		if (!impactedTests.isSuccessful() || impactedTests.body() == null) {
 			return null;
@@ -54,9 +50,9 @@ public class TeamscaleClient {
 			return MultipartBody.Part.createFormData("report", file.getName(), requestBody);
 		}).collect(Collectors.toList());
 
-		Response<ResponseBody> response = service.uploadExternalReports(projectId, reportFormat, commitDescriptor, true,
-				partition, message, partList)
-				.execute();
+		Response<ResponseBody> response = service
+				.uploadExternalReports(projectId, reportFormat, commitDescriptor, true, true, partition, message,
+						partList).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException(response.errorBody().string());
 		}

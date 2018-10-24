@@ -67,7 +67,7 @@ open class TeamscalePlugin : Plugin<Project> {
         // to generate testwise coverage if enabled.
         project.configurations.maybeCreate(teamscaleJaCoCoAgentConfiguration)
             .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("eu.cqse:agent:$agentVersion"))
+                dependencies.add(project.dependencies.create("eu.cqse:teamscale-jacoco-agent:$agentVersion"))
             }
 
         // Add the teamscale extension also to all test tasks
