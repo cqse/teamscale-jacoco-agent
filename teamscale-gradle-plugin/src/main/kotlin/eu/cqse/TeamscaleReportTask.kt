@@ -51,7 +51,7 @@ open class TeamscaleReportTask : DefaultTask() {
 
     private val testArtifactsDir
         @InputDirectory
-        get() = configuration.report.testwiseCoverage.getTempDestination(project, testTask)
+        get() = configuration.agent.getTempDestination(project, testTask)
 
     /* Task outputs */
 

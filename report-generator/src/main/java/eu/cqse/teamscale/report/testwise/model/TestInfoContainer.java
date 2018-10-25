@@ -57,6 +57,10 @@ public class TestInfoContainer {
 	/** Returns a collection of {@link PathCoverage}s associated with the test. */
 	@XmlElement(name = "path")
 	public Collection<PathCoverage> getPaths() {
+		if (coverage == null) {
+			System.err.println("No coverage for test '" + uniformPath + "'");
+			return null;
+		}
 		return coverage.getPaths();
 	}
 

@@ -1,5 +1,6 @@
 package eu.cqse.config
 
+import eu.cqse.ArgumentAppender
 import eu.cqse.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
 import org.gradle.api.Project
@@ -18,7 +19,7 @@ class AgentConfiguration : Serializable {
 
     private var remoteUrl: HttpUrl? = null
 
-    var localPort: Int = 8000
+    var localPort: Int = 8123
         private set
 
     fun isLocalAgent(): Boolean {
@@ -36,6 +37,13 @@ class AgentConfiguration : Serializable {
         return dumpDirectory ?: project.file("${project.buildDir}/classesDump")
     }
 
+    /** Returns the destination set for the report or the default destination if not set. */
+    open fun getTempDestination(project: Project, gradleTestTask: Task): File {
+        return project.file(
+            "${project.buildDir}/tmp/jacoco/${project.name}-${gradleTestTask.name}"
+        )
+    }
+
     fun copyWithDefault(toCopy: AgentConfiguration, default: AgentConfiguration) {
         executionData = toCopy.executionData ?: default.executionData
         dumpClasses = toCopy.dumpClasses ?: default.dumpClasses ?: false
@@ -49,5 +57,18 @@ class AgentConfiguration : Serializable {
             includes?.joinToString(":") { "*$it".replace('/', '.') },
             excludes?.joinToString(":") { "*$it".replace('/', '.') }
         )
+    }
+
+    fun appendArguments(argument: ArgumentAppender, project: Project, gradleTestTask: Task) {
+        argument.append("out", getTempDestination(project, gradleTestTask))
+        argument.append("includes", includes)
+        argument.append("excludes", excludes)
+
+        if (dumpClasses == true) {
+            argument.append("classdumpdir", getDumpDirectory(project))
+        }
+
+        // Settings for testwise coverage mode
+        argument.append("http-server-port", localPort)
     }
 }

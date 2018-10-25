@@ -14,7 +14,6 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.RelativePathUtil
 import java.io.File
-import java.nio.file.Files
 import java.util.regex.Pattern
 
 /** Task which runs the impacted tests. */
@@ -66,7 +65,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @TaskAction
     override fun exec() {
         prepareClassPath()
-        tempDir = configuration.report.testwiseCoverage.getTempDestination(project, testTask)
+        tempDir = configuration.agent.getTempDestination(project, testTask)
 
         if (tempDir.exists()) {
             logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
@@ -106,16 +105,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
         builder.append(RelativePathUtil.relativePath(workingDir, agentJar))
         builder.append("=")
-        argument.append("out", tempDir)
-        argument.append("includes", configuration.agent.includes)
-        argument.append("excludes", configuration.agent.excludes)
 
-        if (configuration.agent.dumpClasses == true) {
-            argument.append("classdumpdir", configuration.agent.getDumpDirectory(project))
-        }
-
-        // Settings for testwise coverage mode
-        argument.append("http-server-port", configuration.agent.localPort)
+        configuration.agent.appendArguments(argument, project, testTask)
 
         return builder.toString()
     }
@@ -139,12 +130,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         addFilters(args)
 
         args.add("--reports-dir")
-        args.add(
-            configuration.report.testwiseCoverage.getTempDestination(
-                project,
-                testTask
-            ).absolutePath
-        )
+        args.add(tempDir.absolutePath)
 
         val rootDirs = mutableListOf<File>()
         project.sourceSets.forEach { sourceSet ->

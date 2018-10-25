@@ -10,6 +10,7 @@ import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -41,7 +42,11 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 	public void executionStarted(TestIdentifier testIdentifier) {
 		if (testIdentifier.isTest()) {
 			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
-			controller.testStarted(testUniformPath);
+			try {
+				controller.testStarted(testUniformPath).execute();
+			} catch (IOException e) {
+				logger.error(e);
+			}
 			executionStartTime = System.currentTimeMillis();
 		}
 	}
@@ -50,7 +55,11 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 	public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
 		if (testIdentifier.isTest()) {
 			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
-			controller.testFinished(testUniformPath);
+			try {
+				controller.testFinished(testUniformPath).execute();
+			} catch (IOException e) {
+				logger.error(e);
+			}
 			long executionEndTime = System.currentTimeMillis();
 			long duration = executionEndTime - executionStartTime;
 			String message = getMessage(testExecutionResult.getThrowable());

@@ -151,11 +151,6 @@ public class TestExecutor {
 		}
 	}
 
-	/** Creates a listener that creates a jUnit report for the executed tests. */
-	private Optional<TestExecutionListener> createXmlWritingListener(PrintWriter out) {
-		return options.getReportsDir().map(reportsDir -> new XmlReportsWritingListener(reportsDir, out));
-	}
-
 	/** Prints the test summary to the logger. */
 	private void printSummary(TestExecutionSummary summary) {
 		if (summary.getTotalFailureCount() > 0 || options.getDetails() != Details.NONE) {
