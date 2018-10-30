@@ -3,7 +3,7 @@ package eu.cqse.teamscale.jacoco.agent.store.upload.azure;
 import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.HttpUploadStoreBase;
+import eu.cqse.teamscale.jacoco.agent.store.upload.UploadStoreBase;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -32,52 +32,45 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_WRITE;
 
-public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploaApi> {
+/** Uploads the coverage archive to a provided azure file storage. */
+public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploaApi> {
 
-	/**
-	 * Pattern matches the host of a azure file storage
-	 */
+	/** Pattern matches the host of a azure file storage */
 	public static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
 			.compile("^(\\w*)\\.file\\.core\\.windows\\.net$");
 
-	/**
-	 * The access key for the azure file storage
-	 */
+	/** The access key for the azure file storage */
 	private final String accessKey;
 
-	/**
-	 * The account for the azure file storage
-	 */
+	/** The account for the azure file storage */
 	private final String account;
 
-	/**
-	 * Constructor.
-	 */
+	/** Constructor. */
 	public AzureFileStorageUploadStore(TimestampedFileStore failureStore, HttpUrl uploadUrl, String accessKey, List<Path> additionalMetaDataFiles) throws UploadStoreException {
 		super(failureStore, uploadUrl, additionalMetaDataFiles);
 		this.accessKey = accessKey;
 		this.account = getAccount();
 
-		checkPath();
+		validateUploadUrl();
 	}
 
-	/**
-	 * Extracts and returns the account of the provided azure file storage from the URL.
-	 */
+	/** Extracts and returns the account of the provided azure file storage from the URL. */
 	private String getAccount() throws UploadStoreException {
 		Matcher matcher = AZURE_FILE_STORAGE_HOST_PATTERN.matcher(this.uploadUrl.host());
 		if (matcher.matches()) {
 			return matcher.group(1);
 		} else {
 			throw new UploadStoreException(
-					String.format("URL malformed. Must be in the format \"<account>.file.core.windows.net\", but" +
-							"was is instead: %s", uploadUrl));
+					String.format(
+							"URL is malformed. Must be in the format " +
+									"\"https://<account>.file.core.windows.net/<share>/\", but was instead: %s",
+							uploadUrl));
 		}
 	}
 
 	@Override
 	public String describe() {
-		return String.format("Uploading coverage to the Azure File Storage at {}", this.uploadUrl);
+		return String.format("Uploading coverage to the Azure File Storage at %s", this.uploadUrl);
 	}
 
 	@Override
@@ -87,7 +80,7 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 
 	@Override
 	protected void checkReportFormat(EReportFormat format) {
-		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "Azure HTTP upload does only support JaCoCo " +
+		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "Azure file upload does only support JaCoCo " +
 				"coverage and cannot be used with Test Impact mode.");
 	}
 
@@ -95,7 +88,7 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 	protected Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException, UploadStoreException {
 		String fileName = createFileName();
 		if (checkFile(fileName).isSuccessful()) {
-			System.out.println("File exists!!!");
+			logger.warn(String.format("The file %s does already exists at %s", fileName, uploadUrl));
 		}
 
 		createFile(zipFileBytes, fileName);
@@ -103,16 +96,20 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 	}
 
 	/**
-	 * Makes sure that the given path is valid and that it exists on the file storage.
+	 * Makes sure that the upload url is valid and that it exists on the file storage.
 	 * If some directories do not exists, they will be created.
 	 */
-	private void checkPath() throws UploadStoreException {
+	private void validateUploadUrl() throws UploadStoreException {
 		List<String> pathParts = this.uploadUrl.pathSegments();
+
+		for (String part : pathParts) {
+			System.out.println(part);
+		}
 
 		if (pathParts.size() < 2) {
 			throw new UploadStoreException(String.format(
 					"%s is too short for a file path on the storage. " +
-							"There must be at least two parts: /<share>/<directory>/"));
+							"At least the share must be provided: https://<account>.file.core.windows.net/<share>/"));
 		}
 
 		try {
@@ -125,21 +122,17 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 		} catch (IOException e) {
 			throw new UploadStoreException(String.format(
 					"Checking the validity of %s failed. " +
-							"There is probably something wrong with the URL or a problem with the account/key.",
+							"There is probably something wrong with the URL or a problem with the account/key: ",
 					this.uploadUrl.url().getPath()), e);
 		}
 	}
 
-	/**
-	 * Creates a file name for the zip-archive containing the coverage.
-	 */
+	/** Creates a file name for the zip-archive containing the coverage. */
 	private String createFileName() {
 		return String.format("%s-%s.zip", EReportFormat.JACOCO.filePrefix, System.currentTimeMillis());
 	}
 
-	/**
-	 * Checks if the file with the given name exists
-	 */
+	/** Checks if the file with the given name exists */
 	private Response<Void> checkFile(String fileName) throws IOException, UploadStoreException {
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;
@@ -157,9 +150,7 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 		return api.head(filePath, headers, queryParameters).execute();
 	}
 
-	/**
-	 * Checks if the directory given by the specified path does exist.
-	 */
+	/** Checks if the directory given by the specified path does exist. */
 	private Response<Void> checkDirectory(String directoryPath) throws IOException, UploadStoreException {
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 
@@ -179,7 +170,7 @@ public class AzureFileStorageUploadStore extends HttpUploadStoreBase<IAzureUploa
 
 	/**
 	 * Creates the directory specified by the given path.
-	 * The path must contain the share where it should be created on. //TODO: check path
+	 * The path must contain the share where it should be created on.
 	 */
 	private Response<ResponseBody> createDirectory(String directoryPath) throws IOException, UploadStoreException {
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();

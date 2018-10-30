@@ -2,7 +2,7 @@ package eu.cqse.teamscale.jacoco.agent.store.upload.http;
 
 import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import eu.cqse.teamscale.jacoco.agent.store.upload.HttpUploadStoreBase;
+import eu.cqse.teamscale.jacoco.agent.store.upload.UploadStoreBase;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Uploads XMLs and metadata via HTTP multi-part form data requests.
  */
-public class HttpUploadStore extends HttpUploadStoreBase<IHttpUploadApi> {
+public class HttpUploadStore extends UploadStoreBase<IHttpUploadApi> {
 	/** Constructor. */
 	public HttpUploadStore(TimestampedFileStore failureStore, HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
 		super(failureStore, uploadUrl, additionalMetaDataFiles);
@@ -44,5 +44,4 @@ public class HttpUploadStore extends HttpUploadStoreBase<IHttpUploadApi> {
 		return "Uploading to " + uploadUrl + " (fallback in case of network errors to: " + failureStore.describe()
 				+ ")";
 	}
-
 }

@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public abstract class HttpUploadStoreBase<T> implements IXmlStore {
+/** Base class for uploading the coverage zip to a provided url */
+public abstract class UploadStoreBase<T> implements IXmlStore {
 
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
@@ -39,7 +40,7 @@ public abstract class HttpUploadStoreBase<T> implements IXmlStore {
 	protected final T api;
 
 	/** Constructor. */
-	public HttpUploadStoreBase(TimestampedFileStore failureStore, HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
+	public UploadStoreBase(TimestampedFileStore failureStore, HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
 		this.failureStore = failureStore;
 		this.uploadUrl = uploadUrl;
 		this.additionalMetaDataFiles = additionalMetaDataFiles;

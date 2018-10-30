@@ -169,8 +169,8 @@ public class AgentOptionsParser {
 						.mapWithException(splitMultiOptionValue(value), singleValue -> parseFile(key, singleValue));
 				return true;
 			case "upload-azure-url":
-				options.azureFileStorage = parseUrl(value);
-				if (options.azureFileStorage == null) {
+				options.azureFileStorageUrl = parseUrl(value);
+				if (options.azureFileStorageUrl == null) {
 					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
 				}
 				return true;

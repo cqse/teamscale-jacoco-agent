@@ -2,57 +2,57 @@ package eu.cqse.teamscale.jacoco.agent.store.upload.azure;
 
 /** Constants for the names of HTTP header used in a request to an Azure file storage. */
 public class AzureHttpHeader {
-	/** Header */
+	/** x-ms content length */
 	public static final String X_MS_CONTENT_LENGTH = "x-ms-content-length";
 
-	/** Header */
+	/** x-ms date */
 	public static final String X_MS_DATE = "x-ms-date";
 
-	/** Header */
+	/** x-ms range */
 	public static final String X_MS_RANGE = "x-ms-range";
 
-	/** Header */
+	/** x-ms type */
 	public static final String X_MS_TYPE = "x-ms-type";
 
-	/** Header */
+	/** x-ms version */
 	public static final String X_MS_VERSION = "x-ms-version";
 
-	/** Header */
+	/** x-ms write */
 	public static final String X_MS_WRITE = "x-ms-write";
 
-	/** Header */
+	/** Authorization */
 	public static final String AUTHORIZATION = "Authorization";
 
-	/** Header */
+	/** Content-Encoding */
 	public static final String CONTENT_ENCODING = "Content-Encoding";
 
-	/** Header */
+	/** Content-Language */
 	public static final String CONTENT_LANGUAGE = "Content-Language";
 
-	/** Header */
+	/** Content-Length */
 	public static final String CONTENT_LENGTH = "Content-Length";
 
-	/** Header */
+	/** Content-MD5 */
 	public static final String CONTENT_MD_5 = "Content-MD5";
 
-	/** Header */
+	/** Content-Type */
 	public static final String CONTENT_TYPE = "Content-Type";
 
-	/** Header */
+	/** Date */
 	public static final String DATE = "Date";
 
-	/** Header */
+	/** If-Unmodified-Since */
 	public static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 
-	/** Header */
+	/** If-Modified-Since */
 	public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
 
-	/** Header */
+	/** If-Match */
 	public static final String IF_MATCH = "If-Match";
 
-	/** Header */
+	/** If-None-Match */
 	public static final String IF_NONE_MATCH = "If-None-Match";
 
-	/** Header */
+	/** Range */
 	public static final String RANGE = "Range";
 }

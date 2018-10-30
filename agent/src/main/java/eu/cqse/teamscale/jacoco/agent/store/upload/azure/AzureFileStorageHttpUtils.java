@@ -51,23 +51,23 @@ public class AzureFileStorageHttpUtils {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		return httpMethod + "\n"
-				+ getString(headers, CONTENT_ENCODING) + "\n" // content encoding
-				+ getString(headers, CONTENT_LANGUAGE) + "\n" // content language
-				+ getString(headers, CONTENT_LENGTH) + "\n" // content length
-				+ getString(headers, CONTENT_MD_5) + "\n" // content md5
-				+ getString(headers, CONTENT_TYPE) + "\n" // content type
-				+ getString(headers, DATE) + "\n" // date
-				+ getString(headers, IF_MODIFIED_SINCE) + "\n" // if modified since
-				+ getString(headers, IF_MATCH) + "\n" // if match
-				+ getString(headers, IF_NONE_MATCH) + "\n" // if none match
-				+ getString(headers, IF_UNMODIFIED_SINCE) + "\n" // if unmodified since
-				+ getString(headers, RANGE) + "\n" // range
+				+ getStringOrEmpty(headers, CONTENT_ENCODING) + "\n" // content encoding
+				+ getStringOrEmpty(headers, CONTENT_LANGUAGE) + "\n" // content language
+				+ getStringOrEmpty(headers, CONTENT_LENGTH) + "\n" // content length
+				+ getStringOrEmpty(headers, CONTENT_MD_5) + "\n" // content md5
+				+ getStringOrEmpty(headers, CONTENT_TYPE) + "\n" // content type
+				+ getStringOrEmpty(headers, DATE) + "\n" // date
+				+ getStringOrEmpty(headers, IF_MODIFIED_SINCE) + "\n" // if modified since
+				+ getStringOrEmpty(headers, IF_MATCH) + "\n" // if match
+				+ getStringOrEmpty(headers, IF_NONE_MATCH) + "\n" // if none match
+				+ getStringOrEmpty(headers, IF_UNMODIFIED_SINCE) + "\n" // if unmodified since
+				+ getStringOrEmpty(headers, RANGE) + "\n" // range
 				+ createCanonicalizedString(xmsHeader) + "\n"
 				+ createCanonicalizedResources(account, path, queryParameters);
 	}
 
 	/** Returns the value from the map for the given key or an empty string if the key does not exist. */
-	private static String getString(Map<String, String> map, String key) {
+	private static String getStringOrEmpty(Map<String, String> map, String key) {
 		return Objects.toString(map.get(key), "");
 	}
 
@@ -115,6 +115,7 @@ public class AzureFileStorageHttpUtils {
 		return FORMAT.format(LocalDateTime.now());
 	}
 
+	/** Simple enum for all available HTTP methods. */
 	public enum EHttpMethod {
 		PUT,
 		HEAD

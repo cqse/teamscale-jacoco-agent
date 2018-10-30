@@ -112,10 +112,10 @@ public class AgentOptions {
 	/**
 	 * The URL of the azure file storage to which to upload the coverage zips to.
 	 */
-	/* package */ HttpUrl azureFileStorage = null;
+	/* package */ HttpUrl azureFileStorageUrl = null;
 
 	/**
-	 * The access key for the azure file storage. Only works together with {@see #azureFileStorage}.
+	 * The access key for the azure file storage. Only works together with {@see #azureFileStorageUrl}.
 	 */
 	/* package */ String azureFileStorageKey = null;
 
@@ -170,9 +170,9 @@ public class AgentOptions {
 				"You did provide 'upload-url' and some 'teamscale-' option at the same time, but only one of " +
 						"them can be used!");
 
-		validator.isTrue((azureFileStorage == null) == (azureFileStorageKey == null),
+		validator.isTrue((azureFileStorageUrl == null) == (azureFileStorageKey == null),
 				"If you want to upload data to an azure file storage you need to provide both " +
-						"'upload-azure-url' and `upload-azure-key' ");
+						"'upload-azure-url' and 'upload-azure-key' ");
 
 		return validator;
 	}
@@ -220,8 +220,8 @@ public class AgentOptions {
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
 
-		if (azureFileStorage != null) {
-			return new AzureFileStorageUploadStore(fileStore, azureFileStorage, azureFileStorageKey,
+		if (azureFileStorageUrl != null) {
+			return new AzureFileStorageUploadStore(fileStore, azureFileStorageUrl, azureFileStorageKey,
 					additionalMetaDataFiles);
 		}
 

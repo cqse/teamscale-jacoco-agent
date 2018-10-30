@@ -5,10 +5,12 @@ package eu.cqse.teamscale.jacoco.agent.store;
  */
 public class UploadStoreException extends Exception {
 
+	/** Constructor */
 	public UploadStoreException(String message, Exception e) {
 		super(message, e);
 	}
 
+	/** Constructor */
 	public UploadStoreException(String message) {
 		super(message);
 	}
