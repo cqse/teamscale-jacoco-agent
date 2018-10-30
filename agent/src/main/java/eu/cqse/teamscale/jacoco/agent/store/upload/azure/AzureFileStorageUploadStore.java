@@ -102,10 +102,6 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploaApi>
 	private void validateUploadUrl() throws UploadStoreException {
 		List<String> pathParts = this.uploadUrl.pathSegments();
 
-		for (String part : pathParts) {
-			System.out.println(part);
-		}
-
 		if (pathParts.size() < 2) {
 			throw new UploadStoreException(String.format(
 					"%s is too short for a file path on the storage. " +
