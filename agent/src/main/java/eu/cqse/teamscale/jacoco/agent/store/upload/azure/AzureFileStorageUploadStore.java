@@ -33,7 +33,7 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_WRITE;
 
 /** Uploads the coverage archive to a provided azure file storage. */
-public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploaApi> {
+public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi> {
 
 	/** Pattern matches the host of a azure file storage */
 	public static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
@@ -74,8 +74,8 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploaApi>
 	}
 
 	@Override
-	protected IAzureUploaApi getApi(Retrofit retrofit) {
-		return retrofit.create(IAzureUploaApi.class);
+	protected IAzureUploadApi getApi(Retrofit retrofit) {
+		return retrofit.create(IAzureUploadApi.class);
 	}
 
 	@Override
