@@ -36,6 +36,7 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi> {
 
 	/** Pattern matches the host of a azure file storage */
+	// TODO (SA) make field private?
 	public static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
 			.compile("^(\\w*)\\.file\\.core\\.windows\\.net$");
 
@@ -80,6 +81,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 
 	@Override
 	protected void checkReportFormat(EReportFormat format) {
+		// TODO (SA) how is Test Impact mode reflected in the format? If it's not, should this point be dropped from the message?
 		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "Azure file upload does only support JaCoCo " +
 				"coverage and cannot be used with Test Impact mode.");
 	}
@@ -103,6 +105,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 		List<String> pathParts = this.uploadUrl.pathSegments();
 
 		if (pathParts.size() < 2) {
+			// TODO (SA) String.format is missing a parameter
 			throw new UploadStoreException(String.format(
 					"%s is too short for a file path on the storage. " +
 							"At least the share must be provided: https://<account>.file.core.windows.net/<share>/"));
@@ -133,6 +136,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;
 
+		// TODO (SA) assembling the headers is quite similar in all subsequent method. Can we extract duplication into an getDefaultHeaders helper or something?
 		Map<String, String> headers = new HashMap<>();
 		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
 		headers.put(X_MS_DATE, date);
@@ -214,6 +218,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	 * the given data, so the file should be exactly as big as the data, otherwise it will be partially filled or is
 	 * not big enough.
 	 */
+	// TODO (SA) if createFile and fillFile should always be called together, should we provide a createAndFillFile as the entry point?
 	private Response<ResponseBody> fillFile(byte[] zipFileBytes, String fileName) throws IOException, UploadStoreException {
 		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;

@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.azure;
 
 /** Constants for the names of HTTP header used in a request to an Azure file storage. */
+// TODO (SA) can we provide more semantic information in the comments, instead of repeating the field names? While content length is clear to me, range and type, for example, are not.
 public class AzureHttpHeader {
 	/** x-ms content length */
 	public static final String X_MS_CONTENT_LENGTH = "x-ms-content-length";

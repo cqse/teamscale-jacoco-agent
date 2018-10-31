@@ -41,15 +41,18 @@ public class AzureFileStorageHttpUtils {
 			ZoneId.of("GMT"));
 
 
-	/** Creates the string which must be signed as the authorization for the request. */
+	/** Creates the string that must be signed as the authorization for the request. */
 	private static String createSignString(EHttpMethod httpMethod, Map<String, String> headers, String account,
 										   String path, Map<String, String> queryParameters) {
+		// TODO (SA) should this assert the presence of the required headers?
 		CCSMAssert.isTrue(headers.size() > 0,
 				"Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set");
 
 		Map<String, String> xmsHeader = headers.entrySet().stream().filter(x -> x.getKey().startsWith("x-ms"))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+		// TODO (SA) Use String.join("\n", varargs) to avoid mistakes with missing/additional line breaks?
+		// TODO (SA) I would remove the comments, because they add no additional information over the constants.
 		return httpMethod + "\n"
 				+ getStringOrEmpty(headers, CONTENT_ENCODING) + "\n" // content encoding
 				+ getStringOrEmpty(headers, CONTENT_LANGUAGE) + "\n" // content language
@@ -93,6 +96,7 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Creates the string which is needed for the authorization of an azure file storage request. */
+	// TODO (SA) make method private?
 	public static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
 												Map<String, String> headers, Map<String, String> queryParameters)
 			throws UploadStoreException {
@@ -111,6 +115,7 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Returns the current date-time string, correctly formatted for an azue file storage request */
+	// TODO (SA) make method private?
 	public static String getCurrentDateTimeString() {
 		return FORMAT.format(LocalDateTime.now());
 	}

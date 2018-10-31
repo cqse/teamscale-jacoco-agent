@@ -109,8 +109,9 @@ public class AgentOptions {
 	 */
 	/* package */ Integer httpServerPort = null;
 
+	// TODO (SA) Encapsule both Azure properties into an AzureFileStorage object, like TeamscaleServer above, to clarify their interdependency?
 	/**
-	 * The URL of the azure file storage to which to upload the coverage zips to.
+	 * The URL of the azure file storage to upload the coverage zips to.
 	 */
 	/* package */ HttpUrl azureFileStorageUrl = null;
 
@@ -220,6 +221,7 @@ public class AgentOptions {
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
 
+		// TODO (SA) I can configure multiple stores (which validates just fine), but only the "first" one is considered. Should validation report an error on multiple stores?
 		if (azureFileStorageUrl != null) {
 			return new AzureFileStorageUploadStore(fileStore, azureFileStorageUrl, azureFileStorageKey,
 					additionalMetaDataFiles);

@@ -96,6 +96,8 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 
+	// TODO (SA) add a test for Azure configuration
+
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()

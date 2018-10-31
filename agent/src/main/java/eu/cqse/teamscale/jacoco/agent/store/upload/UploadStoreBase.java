@@ -70,6 +70,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
+	// TODO (SA) I think the conventional name for this method would be `tryUpload`, wouldn't it?
 	protected boolean tryUploading(String xml) {
 		logger.debug("Uploading coverage to {}", uploadUrl);
 
@@ -106,6 +107,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 	private byte[] createZipFile(String xml) throws IOException {
 		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
+				 // TODO (SA) specify encoding for writer.
 				 OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream)) {
 				fillZipFile(zipOutputStream, writer, xml);
 			}
