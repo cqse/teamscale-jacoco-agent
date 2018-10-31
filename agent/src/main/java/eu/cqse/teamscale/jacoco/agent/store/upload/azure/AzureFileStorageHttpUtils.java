@@ -72,7 +72,7 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Creates the string for the canonicalized resources. */
-	public static String createCanonicalizedResources(String account, String path, Map<String, String> options) {
+	private static String createCanonicalizedResources(String account, String path, Map<String, String> options) {
 		String canonicalizedResources = String.format("/%s%s", account, path);
 
 		if (options.size() > 0) {
@@ -83,7 +83,7 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Creates a string with a map where each key-value pair is in a newline separated by a colon. */
-	public static String createCanonicalizedString(Map<String, String> options) {
+	private static String createCanonicalizedString(Map<String, String> options) {
 		List<String> sortedKeys = new ArrayList<>(options.keySet());
 		sortedKeys.sort(String::compareTo);
 
@@ -106,7 +106,7 @@ public class AzureFileStorageHttpUtils {
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			throw new UploadStoreException("Something is really wrong...", e);
 		} catch (InvalidKeyException | IllegalArgumentException e) {
-			throw new UploadStoreException(String.format("The give access key is malformed: %s", key), e);
+			throw new UploadStoreException(String.format("The given access key is malformed: %s", key), e);
 		}
 	}
 
