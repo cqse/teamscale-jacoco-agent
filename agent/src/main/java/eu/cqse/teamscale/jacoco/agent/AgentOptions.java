@@ -170,7 +170,7 @@ public class AgentOptions {
 						"'azure-url' and 'azure-key' ");
 
 		List<Boolean> configuredStores = Arrays
-				.asList(azureFileStorageConfig.hasAllRequiredFieldsNull(), teamscaleServer.hasAllRequiredFieldsNull(),
+				.asList(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
 						uploadUrl != null).stream().filter(x -> x).collect(Collectors.toList());
 
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
