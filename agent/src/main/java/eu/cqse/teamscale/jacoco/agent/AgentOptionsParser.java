@@ -113,6 +113,8 @@ public class AgentOptionsParser {
 			return;
 		} else if (key.startsWith("http-server-") && handleHttpServerOptions(options, key, value)) {
 			return;
+		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
+			return;
 		} else if (handleAgentOptions(options, key, value)) {
 			return;
 		}
@@ -167,15 +169,6 @@ public class AgentOptionsParser {
 			case "class-dir":
 				options.classDirectoriesOrZips = CollectionUtils
 						.mapWithException(splitMultiOptionValue(value), singleValue -> parseFile(key, singleValue));
-				return true;
-			case "upload-azure-url":
-				options.azureFileStorageUrl = parseUrl(value);
-				if (options.azureFileStorageUrl == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
-				}
-				return true;
-			case "upload-azure-key":
-				options.azureFileStorageKey = value;
 				return true;
 			default:
 				return false;
@@ -245,6 +238,28 @@ public class AgentOptionsParser {
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Handles all command-line options prefixed with 'azure-'
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	private boolean handleAzureFileStorageOptions(AgentOptions options, String key, String value)
+			throws AgentOptionParseException {
+		switch (key) {
+			case "azure-url":
+				options.azureFileStorageConfig.url = parseUrl(value);
+				if (options.azureFileStorageConfig.url == null) {
+					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
+				}
+				return true;
+			case "azure-key":
+				options.azureFileStorageConfig.accessKey = value;
 				return true;
 			default:
 				return false;

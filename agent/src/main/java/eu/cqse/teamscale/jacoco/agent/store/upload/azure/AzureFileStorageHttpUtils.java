@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,44 +31,43 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_NONE_MATCH;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_UNMODIFIED_SINCE;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.RANGE;
+import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE;
+import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION;
 
 /** Utils class for communicating with an azure file storage. */
 public class AzureFileStorageHttpUtils {
 
 	/** Version of the azure file storage. Must be in every request */
-	public static final String VERSION = "2018-03-28";
+	private static final String VERSION = "2018-03-28";
 
 	/** Formatting pattern for every date in a request */
-	private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("E, d MMM y HH:mm:ss z").withZone(
+	private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("E, dd MMM y HH:mm:ss z").withZone(
 			ZoneId.of("GMT"));
 
 
 	/** Creates the string that must be signed as the authorization for the request. */
 	private static String createSignString(EHttpMethod httpMethod, Map<String, String> headers, String account,
 										   String path, Map<String, String> queryParameters) {
-		// TODO (SA) should this assert the presence of the required headers?
-		CCSMAssert.isTrue(headers.size() > 0,
+		CCSMAssert.isTrue(headers.keySet().containsAll(Arrays.asList(X_MS_DATE, X_MS_VERSION)),
 				"Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set");
 
 		Map<String, String> xmsHeader = headers.entrySet().stream().filter(x -> x.getKey().startsWith("x-ms"))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-		// TODO (SA) Use String.join("\n", varargs) to avoid mistakes with missing/additional line breaks?
-		// TODO (SA) I would remove the comments, because they add no additional information over the constants.
-		return httpMethod + "\n"
-				+ getStringOrEmpty(headers, CONTENT_ENCODING) + "\n" // content encoding
-				+ getStringOrEmpty(headers, CONTENT_LANGUAGE) + "\n" // content language
-				+ getStringOrEmpty(headers, CONTENT_LENGTH) + "\n" // content length
-				+ getStringOrEmpty(headers, CONTENT_MD_5) + "\n" // content md5
-				+ getStringOrEmpty(headers, CONTENT_TYPE) + "\n" // content type
-				+ getStringOrEmpty(headers, DATE) + "\n" // date
-				+ getStringOrEmpty(headers, IF_MODIFIED_SINCE) + "\n" // if modified since
-				+ getStringOrEmpty(headers, IF_MATCH) + "\n" // if match
-				+ getStringOrEmpty(headers, IF_NONE_MATCH) + "\n" // if none match
-				+ getStringOrEmpty(headers, IF_UNMODIFIED_SINCE) + "\n" // if unmodified since
-				+ getStringOrEmpty(headers, RANGE) + "\n" // range
-				+ createCanonicalizedString(xmsHeader) + "\n"
-				+ createCanonicalizedResources(account, path, queryParameters);
+		return String.join("\n", httpMethod.toString(),
+				getStringOrEmpty(headers, CONTENT_ENCODING),
+				getStringOrEmpty(headers, CONTENT_LANGUAGE),
+				getStringOrEmpty(headers, CONTENT_LENGTH),
+				getStringOrEmpty(headers, CONTENT_MD_5),
+				getStringOrEmpty(headers, CONTENT_TYPE),
+				getStringOrEmpty(headers, DATE),
+				getStringOrEmpty(headers, IF_MODIFIED_SINCE),
+				getStringOrEmpty(headers, IF_MATCH),
+				getStringOrEmpty(headers, IF_NONE_MATCH),
+				getStringOrEmpty(headers, IF_UNMODIFIED_SINCE),
+				getStringOrEmpty(headers, RANGE),
+				createCanonicalizedString(xmsHeader),
+				createCanonicalizedResources(account, path, queryParameters));
 	}
 
 	/** Returns the value from the map for the given key or an empty string if the key does not exist. */
@@ -96,7 +97,6 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Creates the string which is needed for the authorization of an azure file storage request. */
-	// TODO (SA) make method private?
 	public static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
 												Map<String, String> headers, Map<String, String> queryParameters)
 			throws UploadStoreException {
@@ -114,10 +114,12 @@ public class AzureFileStorageHttpUtils {
 		}
 	}
 
-	/** Returns the current date-time string, correctly formatted for an azue file storage request */
-	// TODO (SA) make method private?
-	public static String getCurrentDateTimeString() {
-		return FORMAT.format(LocalDateTime.now());
+	/** Returns the list of headers which must be present at every request */
+	public static Map<String, String> getBaseHeaders() {
+		Map<String, String> headers = new HashMap<>();
+		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
+		headers.put(X_MS_DATE, FORMAT.format(LocalDateTime.now()));
+		return headers;
 	}
 
 	/** Simple enum for all available HTTP methods. */

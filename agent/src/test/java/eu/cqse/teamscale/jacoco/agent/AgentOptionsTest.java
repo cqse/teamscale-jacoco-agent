@@ -96,7 +96,17 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 
-	// TODO (SA) add a test for Azure configuration
+	/** Tests the options for azure file storage upload */
+	@Test
+	public void testAzureFileStorageOptions() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
+				"azure-url=https://mrteamscaleshdev.file.core.windows.net/tstestshare/," +
+				"azure-key=Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
+		assertThat(agentOptions.azureFileStorageConfig.url.toString())
+				.isEqualTo("https://mrteamscaleshdev.file.core.windows.net/tstestshare/");
+		assertThat(agentOptions.azureFileStorageConfig.accessKey).isEqualTo(
+				"Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
+	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {

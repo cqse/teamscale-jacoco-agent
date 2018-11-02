@@ -4,7 +4,6 @@ import eu.cqse.teamscale.client.EReportFormat;
 import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.UploadStoreBase;
-import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -26,18 +25,15 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LENGTH;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_TYPE;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_CONTENT_LENGTH;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_RANGE;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_TYPE;
-import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION;
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_WRITE;
 
 /** Uploads the coverage archive to a provided azure file storage. */
 public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi> {
 
 	/** Pattern matches the host of a azure file storage */
-	// TODO (SA) make field private?
-	public static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
+	private static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
 			.compile("^(\\w*)\\.file\\.core\\.windows\\.net$");
 
 	/** The access key for the azure file storage */
@@ -47,9 +43,10 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	private final String account;
 
 	/** Constructor. */
-	public AzureFileStorageUploadStore(TimestampedFileStore failureStore, HttpUrl uploadUrl, String accessKey, List<Path> additionalMetaDataFiles) throws UploadStoreException {
-		super(failureStore, uploadUrl, additionalMetaDataFiles);
-		this.accessKey = accessKey;
+	public AzureFileStorageUploadStore(TimestampedFileStore failureStore, AzureFileStorageConfig config,
+									   List<Path> additionalMetaDataFiles) throws UploadStoreException {
+		super(failureStore, config.url, additionalMetaDataFiles);
+		this.accessKey = config.accessKey;
 		this.account = getAccount();
 
 		validateUploadUrl();
@@ -81,9 +78,8 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 
 	@Override
 	protected void checkReportFormat(EReportFormat format) {
-		// TODO (SA) how is Test Impact mode reflected in the format? If it's not, should this point be dropped from the message?
 		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "Azure file upload does only support JaCoCo " +
-				"coverage and cannot be used with Test Impact mode.");
+				"coverage.");
 	}
 
 	@Override
@@ -93,8 +89,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 			logger.warn(String.format("The file %s does already exists at %s", fileName, uploadUrl));
 		}
 
-		createFile(zipFileBytes, fileName);
-		return fillFile(zipFileBytes, fileName);
+		return createAndFillFile(zipFileBytes, fileName);
 	}
 
 	/**
@@ -105,10 +100,10 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 		List<String> pathParts = this.uploadUrl.pathSegments();
 
 		if (pathParts.size() < 2) {
-			// TODO (SA) String.format is missing a parameter
 			throw new UploadStoreException(String.format(
 					"%s is too short for a file path on the storage. " +
-							"At least the share must be provided: https://<account>.file.core.windows.net/<share>/"));
+							"At least the share must be provided: https://<account>.file.core.windows.net/<share>/",
+					uploadUrl.url().getPath()));
 		}
 
 		try {
@@ -133,14 +128,9 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 
 	/** Checks if the file with the given name exists */
 	private Response<Void> checkFile(String fileName) throws IOException, UploadStoreException {
-		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;
 
-		// TODO (SA) assembling the headers is quite similar in all subsequent method. Can we extract duplication into an getDefaultHeaders helper or something?
-		Map<String, String> headers = new HashMap<>();
-		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
-		headers.put(X_MS_DATE, date);
-
+		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 		Map<String, String> queryParameters = new HashMap<>();
 
 		String auth = AzureFileStorageHttpUtils
@@ -152,11 +142,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 
 	/** Checks if the directory given by the specified path does exist. */
 	private Response<Void> checkDirectory(String directoryPath) throws IOException, UploadStoreException {
-		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
-
-		Map<String, String> headers = new HashMap<>();
-		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
-		headers.put(X_MS_DATE, date);
+		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 
 		Map<String, String> queryParameters = new HashMap<>();
 		queryParameters.put("restype", "directory");
@@ -173,11 +159,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	 * The path must contain the share where it should be created on.
 	 */
 	private Response<ResponseBody> createDirectory(String directoryPath) throws IOException, UploadStoreException {
-		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
-
-		Map<String, String> headers = new HashMap<>();
-		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
-		headers.put(X_MS_DATE, date);
+		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 
 		Map<String, String> queryParameters = new HashMap<>();
 		queryParameters.put("restype", "directory");
@@ -189,17 +171,24 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 		return api.put(directoryPath, headers, queryParameters).execute();
 	}
 
+	/** Creates and fills a file with the given data and name. */
+	private Response<ResponseBody> createAndFillFile(byte[] zipFilBytes, String fileName) throws UploadStoreException, IOException {
+		Response<ResponseBody> response = createFile(zipFilBytes, fileName);
+		if (response.isSuccessful()) {
+			return fillFile(zipFilBytes, fileName);
+		}
+		logger.warn(String.format("Creation of file '%s' was unsuccessful.", fileName));
+		return response;
+	}
+
 	/**
 	 * Creates an empty file with the given name.
 	 * The size is defined by the length of the given byte array.
 	 */
 	private Response<ResponseBody> createFile(byte[] zipFileBytes, String fileName) throws IOException, UploadStoreException {
-		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;
 
-		Map<String, String> headers = new HashMap<>();
-		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
-		headers.put(X_MS_DATE, date);
+		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 		headers.put(X_MS_CONTENT_LENGTH, zipFileBytes.length + "");
 		headers.put(X_MS_TYPE, "file");
 
@@ -218,17 +207,13 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	 * the given data, so the file should be exactly as big as the data, otherwise it will be partially filled or is
 	 * not big enough.
 	 */
-	// TODO (SA) if createFile and fillFile should always be called together, should we provide a createAndFillFile as the entry point?
 	private Response<ResponseBody> fillFile(byte[] zipFileBytes, String fileName) throws IOException, UploadStoreException {
-		String date = AzureFileStorageHttpUtils.getCurrentDateTimeString();
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		String range = "bytes=0-" + (zipFileBytes.length - 1);
 		String contentType = "application/octet-stream";
 
-		Map<String, String> headers = new HashMap<>();
-		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
-		headers.put(X_MS_DATE, date);
+		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 		headers.put(X_MS_WRITE, "update");
 		headers.put(X_MS_RANGE, range);
 		headers.put(CONTENT_LENGTH, "" + zipFileBytes.length);

@@ -1,27 +1,33 @@
 package eu.cqse.teamscale.jacoco.agent.store.upload.azure;
 
 /** Constants for the names of HTTP header used in a request to an Azure file storage. */
-// TODO (SA) can we provide more semantic information in the comments, instead of repeating the field names? While content length is clear to me, range and type, for example, are not.
 public class AzureHttpHeader {
-	/** x-ms content length */
+	/** Same as {@link #CONTENT_LENGTH} */
 	public static final String X_MS_CONTENT_LENGTH = "x-ms-content-length";
 
-	/** x-ms date */
+	/** Same as {@link #DATE} */
 	public static final String X_MS_DATE = "x-ms-date";
 
-	/** x-ms range */
+	/** Same as {@link #RANGE} */
 	public static final String X_MS_RANGE = "x-ms-range";
 
-	/** x-ms type */
+	/** Type of filesystem object which the request is referring to. Can be 'file' or 'directory' */
 	public static final String X_MS_TYPE = "x-ms-type";
 
-	/** x-ms version */
+	/** Version of the Azure file storage API */
 	public static final String X_MS_VERSION = "x-ms-version";
 
-	/** x-ms write */
+	/**
+	 * Defines the type of write operation on a file. Can either be 'Update' or 'Clear'.
+	 * For 'Update' the 'Range' and 'Content-Length' headers must match, for 'Clear', 'Content-Length' must be set
+	 * to 0.
+	 */
 	public static final String X_MS_WRITE = "x-ms-write";
 
-	/** Authorization */
+	/**
+	 * Defines the authorization and must contain the account name and signature.
+	 * Must be given in the following format: Authorization="[SharedKey|SharedKeyLite] <AccountName>:<Signature>"
+	 */
 	public static final String AUTHORIZATION = "Authorization";
 
 	/** Content-Encoding */
@@ -33,27 +39,34 @@ public class AzureHttpHeader {
 	/** Content-Length */
 	public static final String CONTENT_LENGTH = "Content-Length";
 
-	/** Content-MD5 */
+	/** The md5 hash of the sent content. */
 	public static final String CONTENT_MD_5 = "Content-MD5";
 
 	/** Content-Type */
 	public static final String CONTENT_TYPE = "Content-Type";
 
-	/** Date */
+	/** The date time of the request */
 	public static final String DATE = "Date";
 
-	/** If-Unmodified-Since */
+	/** Only send the response if the entity has not been modified since a specific time. */
 	public static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 
-	/** If-Modified-Since */
+	/** Allows a 304 Not Modified to be returned if content is unchanged. */
 	public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
 
-	/** If-Match */
+	/**
+	 * Only perform the action if the client supplied entity matches the same entity on the server.
+	 * This is mainly for methods like PUT to only update a resource if it has not been modified
+	 * since the user last updated it.
+	 */
 	public static final String IF_MATCH = "If-Match";
 
-	/** If-None-Match */
+	/** Allows a 304 Not Modified to be returned if content is unchanged */
 	public static final String IF_NONE_MATCH = "If-None-Match";
 
-	/** Range */
+	/**
+	 * Specifies the range of bytes to be written. Both the start and end of the range must be specified.
+	 * Must be given in the following format: "bytes=startByte-endByte"
+	 */
 	public static final String RANGE = "Range";
 }

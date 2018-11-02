@@ -62,7 +62,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 	public void store(String xml, EReportFormat format) {
 		checkReportFormat(format);
 		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
-			if (!tryUploading(xml)) {
+			if (!tryUpload(xml)) {
 				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
 				failureStore.store(xml, format);
 			}
@@ -70,8 +70,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
-	// TODO (SA) I think the conventional name for this method would be `tryUpload`, wouldn't it?
-	protected boolean tryUploading(String xml) {
+	protected boolean tryUpload(String xml) {
 		logger.debug("Uploading coverage to {}", uploadUrl);
 
 		byte[] zipFileBytes;
@@ -88,8 +87,13 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 				return true;
 			}
 
-			logger.error("Failed to upload coverage to {}. Request failed with error code {}. Response body:\n{}",
-					uploadUrl, response.code(), String.valueOf(response.body()));
+			String errorBody = "";
+			if (response.errorBody() != null) {
+				errorBody = response.errorBody().string();
+			}
+
+			logger.error("Failed to upload coverage to {}. Request failed with error code {}. Error:\n{}",
+					uploadUrl, response.code(), errorBody);
 			return false;
 		} catch (IOException e) {
 			logger.error("Failed to upload coverage to {}. Probably a network problem", uploadUrl, e);
@@ -107,8 +111,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 	private byte[] createZipFile(String xml) throws IOException {
 		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
-				 // TODO (SA) specify encoding for writer.
-				 OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream)) {
+				 OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream, "UTF-8")) {
 				fillZipFile(zipOutputStream, writer, xml);
 			}
 			return byteArrayOutputStream.toByteArray();

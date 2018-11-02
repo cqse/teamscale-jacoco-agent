@@ -11,6 +11,7 @@ import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
 import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import eu.cqse.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
@@ -27,9 +28,11 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE;
 
@@ -109,16 +112,10 @@ public class AgentOptions {
 	 */
 	/* package */ Integer httpServerPort = null;
 
-	// TODO (SA) Encapsule both Azure properties into an AzureFileStorage object, like TeamscaleServer above, to clarify their interdependency?
 	/**
-	 * The URL of the azure file storage to upload the coverage zips to.
+	 * The configuration necessary to upload files to an azure file storage
 	 */
-	/* package */ HttpUrl azureFileStorageUrl = null;
-
-	/**
-	 * The access key for the azure file storage. Only works together with {@see #azureFileStorageUrl}.
-	 */
-	/* package */ String azureFileStorageKey = null;
+	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
 
 	/**
 	 * @see #originalOptionsString
@@ -167,13 +164,17 @@ public class AgentOptions {
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
-		validator.isTrue(uploadUrl == null || teamscaleServer.hasAllRequiredFieldsNull(),
-				"You did provide 'upload-url' and some 'teamscale-' option at the same time, but only one of " +
-						"them can be used!");
-
-		validator.isTrue((azureFileStorageUrl == null) == (azureFileStorageKey == null),
+		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
+						.hasAllRequiredFieldsNull()),
 				"If you want to upload data to an azure file storage you need to provide both " +
-						"'upload-azure-url' and 'upload-azure-key' ");
+						"'azure-url' and 'azure-key' ");
+
+		List<Boolean> configuredStores = Arrays
+				.asList(azureFileStorageConfig.hasAllRequiredFieldsNull(), teamscaleServer.hasAllRequiredFieldsNull(),
+						uploadUrl != null).stream().filter(x -> x).collect(Collectors.toList());
+
+		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
+				"such as a teamscale instance, upload url or azure file storage");
 
 		return validator;
 	}
@@ -221,9 +222,8 @@ public class AgentOptions {
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
 
-		// TODO (SA) I can configure multiple stores (which validates just fine), but only the "first" one is considered. Should validation report an error on multiple stores?
-		if (azureFileStorageUrl != null) {
-			return new AzureFileStorageUploadStore(fileStore, azureFileStorageUrl, azureFileStorageKey,
+		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
+			return new AzureFileStorageUploadStore(fileStore, azureFileStorageConfig,
 					additionalMetaDataFiles);
 		}
 
