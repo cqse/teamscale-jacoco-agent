@@ -35,7 +35,7 @@ import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.
 import static eu.cqse.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION;
 
 /** Utils class for communicating with an azure file storage. */
-public class AzureFileStorageHttpUtils {
+/* package */ class AzureFileStorageHttpUtils {
 
 	/** Version of the azure file storage. Must be in every request */
 	private static final String VERSION = "2018-03-28";
@@ -97,8 +97,8 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Creates the string which is needed for the authorization of an azure file storage request. */
-	public static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
-												Map<String, String> headers, Map<String, String> queryParameters)
+	/* package */ static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
+										 Map<String, String> headers, Map<String, String> queryParameters)
 			throws UploadStoreException {
 		String stringToSign = createSignString(method, headers, account, path, queryParameters);
 
@@ -115,7 +115,7 @@ public class AzureFileStorageHttpUtils {
 	}
 
 	/** Returns the list of headers which must be present at every request */
-	public static Map<String, String> getBaseHeaders() {
+	/* package */ static Map<String, String> getBaseHeaders() {
 		Map<String, String> headers = new HashMap<>();
 		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
 		headers.put(X_MS_DATE, FORMAT.format(LocalDateTime.now()));
