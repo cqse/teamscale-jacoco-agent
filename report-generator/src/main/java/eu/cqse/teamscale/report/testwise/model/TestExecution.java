@@ -38,7 +38,7 @@ public class TestExecution implements Serializable {
 	private final String uniformPath;
 
 	/** Duration of the execution in milliseconds. */
-	private final double durationMillis;
+	private final long durationMillis;
 
 	/** The actual execution result state. */
 	private final ETestExecutionResult result;
@@ -49,11 +49,11 @@ public class TestExecution implements Serializable {
 	 */
 	private final String message;
 
-	public TestExecution(String name, double durationMillis, ETestExecutionResult result) {
+	public TestExecution(String name, long durationMillis, ETestExecutionResult result) {
 		this(name, durationMillis, result, null);
 	}
 
-	public TestExecution(String name, double durationMillis, ETestExecutionResult result, String message) {
+	public TestExecution(String name, long durationMillis, ETestExecutionResult result, String message) {
 		this.uniformPath = name;
 		this.durationMillis = durationMillis;
 		this.result = result;
@@ -61,7 +61,7 @@ public class TestExecution implements Serializable {
 	}
 
 	/** @see #durationMillis */
-	public double getDurationMillis() {
+	public long getDurationMillis() {
 		return durationMillis;
 	}
 

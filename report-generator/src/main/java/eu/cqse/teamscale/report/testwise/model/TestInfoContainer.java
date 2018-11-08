@@ -43,9 +43,9 @@ public class TestInfoContainer {
 	}
 
 	/** @see TestExecution#durationMillis */
-	@XmlAttribute
-	public double getDurationMillis() {
-		return execution.getDurationMillis();
+	@XmlAttribute(name = "duration")
+	public double getDuration() {
+		return execution.getDurationMillis() / 1000.0;
 	}
 
 	/** @see TestExecution#result */

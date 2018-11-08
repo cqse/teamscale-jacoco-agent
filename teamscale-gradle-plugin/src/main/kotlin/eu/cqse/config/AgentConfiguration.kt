@@ -49,7 +49,7 @@ class AgentConfiguration : Serializable {
         dumpClasses = toCopy.dumpClasses ?: default.dumpClasses ?: false
         dumpDirectory = toCopy.dumpDirectory ?: default.dumpDirectory
         includes = toCopy.includes ?: default.includes
-        excludes = toCopy.excludes ?: default.excludes
+        excludes = toCopy.excludes ?: default.excludes ?: listOf("org.junit.**")
     }
 
     fun getFilter(): Predicate<String>? {

@@ -10,6 +10,7 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -49,7 +50,7 @@ public interface ITeamscaleService {
 	);
 
 	/** Test Impact API. */
-	@POST("p/{projectName}/test-impact/{uniformPath}")
+	@PUT("p/{projectName}/test-impact/{uniformPath}")
 	Call<List<String>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Path("uniformPath") String testUniformPathPrefix,

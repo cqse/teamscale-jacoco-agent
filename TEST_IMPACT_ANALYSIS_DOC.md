@@ -86,6 +86,31 @@ order to reduce the file size of the final report.
 </report>
 ```
 
+```dtd
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT report (test)+>
+<!ATTLIST report>
+
+<!ELEMENT test (path)+ (message)?>
+<!ATTLIST test uniformPath CDATA #REQUIRED>
+<!ATTLIST test duration CDATA #REQUIRED>
+<!ATTLIST test result (PASSED|IGNORED|SKIPPED|FAILURE|ERROR) #REQUIRED>
+<!ATTLIST test sourcePath CDATA>
+<!ATTLIST test content CDATA>
+
+<!ELEMENT message ANY>
+
+<!ELEMENT path (file)+>
+<!ATTLIST path name CDATA #REQUIRED>
+
+<!ELEMENT file (lines)*>
+<!ATTLIST file name CDATA #REQUIRED>
+
+<!ELEMENT lines EMPTY>
+<!ATTLIST lines nr CDATA #REQUIRED>
+```
+
 The report may then be uploaded to Teamscale via the `Report Upload` REST-API by specifying `TESTWISE_COVERAGE` as 
 report format.
 
