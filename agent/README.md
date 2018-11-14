@@ -59,16 +59,22 @@ The following options are available:
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
   
-  You can get the commit info from your VCS e.g. for Git via 
+  If **Git** is your VCS, you can get the commit info via
   
 ```bash
 echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
 ```
-
+  
   Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
   Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
+  
+  If **Subversion** is your VCS, you can get the timestamp part (but not the branch part) of the commit info via
+  
+  ```bash
+date -d `svn info --show-item last-changed-date` "+%s000"
+```
   
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format)
