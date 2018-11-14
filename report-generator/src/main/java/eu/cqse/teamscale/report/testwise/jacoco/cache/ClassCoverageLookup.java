@@ -1,6 +1,6 @@
 package eu.cqse.teamscale.report.testwise.jacoco.cache;
 
-import eu.cqse.teamscale.report.testwise.model.FileCoverage;
+import eu.cqse.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import eu.cqse.teamscale.report.testwise.model.LineRange;
 import eu.cqse.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.string.StringUtils;
@@ -17,7 +17,7 @@ import java.util.List;
  * - Then call for every method in the class {@link #addLine(int)} and {@link #addProbe(int)} for all probes and lines
  * that belong to the method and call {@link #finishMethod()} to signal that the next calls belong to another method.
  * - Afterwards call {@link #getFileCoverage(ExecutionData, ILogger)} to transform probes ({@link ExecutionData}) for
- * this class into covered lines ({@link FileCoverage}).
+ * this class into covered lines ({@link FileCoverageBuilder}).
  */
 public class ClassCoverageLookup {
 
@@ -87,12 +87,12 @@ public class ClassCoverageLookup {
 	}
 
 	/**
-	 * Generates {@link FileCoverage} from an {@link ExecutionData}.
+	 * Generates {@link FileCoverageBuilder} from an {@link ExecutionData}.
 	 * {@link ExecutionData} holds coverage of exactly one class (whereby inner classes are a separate class).
-	 * This method returns a {@link FileCoverage} object which is later merged with the {@link FileCoverage} of other
+	 * This method returns a {@link FileCoverageBuilder} object which is later merged with the {@link FileCoverageBuilder} of other
 	 * classes that reside in the same file.
 	 */
-	public FileCoverage getFileCoverage(ExecutionData executionData, ILogger logger) throws CoverageGenerationException {
+	public FileCoverageBuilder getFileCoverage(ExecutionData executionData, ILogger logger) throws CoverageGenerationException {
 		boolean[] executedProbes = executionData.getProbes();
 
 		if (checkProbeInvariant(executedProbes)) {
@@ -108,7 +108,7 @@ public class ClassCoverageLookup {
 		}
 
 		String packageName = StringUtils.removeLastPart(className, '/');
-		final FileCoverage fileCoverage = new FileCoverage(packageName, sourceFileName);
+		final FileCoverageBuilder fileCoverage = new FileCoverageBuilder(packageName, sourceFileName);
 		for (int i = 0; i < probes.size(); i++) {
 			LineRange lineRange = probes.get(i);
 			// lineRange is null if the probe is outside of a method

@@ -65,32 +65,21 @@ public class TestExecution implements Serializable {
 		return durationMillis;
 	}
 
+	/** @see #durationMillis */
+	public double getDurationSeconds() {
+		return durationMillis / 1000.0;
+	}
+
 	public ETestExecutionResult getResult() {
 		return result;
 	}
 
 	/** @see #message */
-	public Message getMessage() {
-		if (StringUtils.isEmpty(message)) {
-			return null;
-		}
-		return new Message(message);
+	public String getMessage() {
+		return message;
 	}
 
 	public String getUniformPath() {
 		return uniformPath;
-	}
-
-	/** Container for a failure message/stacktrace etc. or skip reason */
-	public static class Message {
-
-		/** The actual message. */
-		@XmlValue
-		private final String message;
-
-		/** Constructor. */
-		public Message(String message) {
-			this.message = message;
-		}
 	}
 }

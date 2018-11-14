@@ -4,7 +4,7 @@ import eu.cqse.teamscale.report.testwise.jacoco.cache.AnalyzerCache;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.ProbesCache;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
-import eu.cqse.teamscale.report.testwise.model.TestCoverage;
+import eu.cqse.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
 import eu.cqse.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
@@ -73,7 +73,7 @@ class CachingExecutionDataReader {
 				continue;
 			}
 			try {
-				TestCoverage testCoverage = buildCoverage(testId, dump.store);
+				TestCoverageBuilder testCoverage = buildCoverage(testId, dump.store);
 				testwiseCoverage.add(testCoverage);
 			} catch (CoverageGenerationException e) {
 				logger.error("Failed to generate coverage for test " + testId + "! Skipping to the next test.", e);
@@ -85,8 +85,8 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	private TestCoverage buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
-		TestCoverage testCoverage = new TestCoverage(testId);
+	private TestCoverageBuilder buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
+		TestCoverageBuilder testCoverage = new TestCoverageBuilder(testId);
 		for (ExecutionData executionData : executionDataStore.getContents()) {
 			testCoverage.add(probesCache.getCoverage(executionData));
 		}

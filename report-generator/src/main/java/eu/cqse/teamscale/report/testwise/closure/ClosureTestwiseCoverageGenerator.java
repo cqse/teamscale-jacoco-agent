@@ -2,8 +2,8 @@ package eu.cqse.teamscale.report.testwise.closure;
 
 import com.google.gson.Gson;
 import eu.cqse.teamscale.report.testwise.closure.model.ClosureCoverage;
-import eu.cqse.teamscale.report.testwise.model.FileCoverage;
-import eu.cqse.teamscale.report.testwise.model.TestCoverage;
+import eu.cqse.teamscale.report.testwise.model.builder.FileCoverageBuilder;
+import eu.cqse.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.collections.PairList;
@@ -43,7 +43,7 @@ public class ClosureTestwiseCoverageGenerator {
 	}
 
 	/**
-	 * Converts all JSON files in {@link #closureCoverageDirectories} to {@link TestCoverage}
+	 * Converts all JSON files in {@link #closureCoverageDirectories} to {@link TestCoverageBuilder}
 	 * and takes care of merging coverage distributed over multiple files.
 	 */
 	public TestwiseCoverage readTestCoverage() {
@@ -59,10 +59,10 @@ public class ClosureTestwiseCoverageGenerator {
 	}
 
 	/**
-	 * Reads the given JSON file and converts its content to {@link TestCoverage}.
+	 * Reads the given JSON file and converts its content to {@link TestCoverageBuilder}.
 	 * If this fails for some reason the method returns null.
 	 */
-	private TestCoverage readTestCoverage(File file) {
+	private TestCoverageBuilder readTestCoverage(File file) {
 		try {
 			FileReader fileReader = new FileReader(file);
 			ClosureCoverage coverage = new Gson().fromJson(fileReader, ClosureCoverage.class);
@@ -73,12 +73,12 @@ public class ClosureTestwiseCoverageGenerator {
 		return null;
 	}
 
-	/** Converts the given {@link ClosureCoverage} to {@link TestCoverage}. */
-	private TestCoverage convertToTestCoverage(ClosureCoverage coverage) {
+	/** Converts the given {@link ClosureCoverage} to {@link TestCoverageBuilder}. */
+	private TestCoverageBuilder convertToTestCoverage(ClosureCoverage coverage) {
 		if (StringUtils.isEmpty(coverage.uniformPath)) {
 			return null;
 		}
-		TestCoverage testCoverage = new TestCoverage(coverage.uniformPath);
+		TestCoverageBuilder testCoverage = new TestCoverageBuilder(coverage.uniformPath);
 		PairList<String, List<Boolean>> executedLines = PairList.zip(coverage.fileNames, coverage.executedLines);
 		for (Pair<String, List<Boolean>> fileNameAndExecutedLines : executedLines) {
 			if (!locationIncludeFilter.test(fileNameAndExecutedLines.getFirst())) {
@@ -88,7 +88,7 @@ public class ClosureTestwiseCoverageGenerator {
 			File coveredFile = new File(fileNameAndExecutedLines.getFirst());
 			List<Boolean> coveredLines = fileNameAndExecutedLines.getSecond();
 			String path = Optional.ofNullable(coveredFile.getParent()).orElse("");
-			FileCoverage fileCoverage = new FileCoverage(path, coveredFile.getName());
+			FileCoverageBuilder fileCoverage = new FileCoverageBuilder(path, coveredFile.getName());
 			for (int i = 0; i < coveredLines.size(); i++) {
 				if (coveredLines.get(i) != null && coveredLines.get(i)) {
 					fileCoverage.addLine(i + 1);

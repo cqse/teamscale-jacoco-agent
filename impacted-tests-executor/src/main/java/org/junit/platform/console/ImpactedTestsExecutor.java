@@ -13,18 +13,10 @@ package org.junit.platform.console;
 import com.google.gson.GsonBuilder;
 import eu.cqse.teamscale.client.TeamscaleClient;
 import eu.cqse.teamscale.client.TestDetails;
-import eu.cqse.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator;
-import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator;
-import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import eu.cqse.teamscale.report.testwise.model.TestExecution;
-import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage;
-import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport;
-import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.TestExecutorCommandLineOptionsParser;
 import org.junit.platform.console.tasks.TestDetailsCollector;
 import org.junit.platform.console.tasks.TestExecutor;
-import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import retrofit2.Response;
 
@@ -33,12 +25,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils.writeReportToFile;
 
 /**
  * The {@code ImpactedTestsExecutor} is a stand-alone application for executing impacted tests

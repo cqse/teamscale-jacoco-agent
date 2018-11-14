@@ -7,11 +7,11 @@ import eu.cqse.config.TeamscalePluginExtension
 import eu.cqse.teamscale.client.EReportFormat
 import eu.cqse.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
 import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator
-import eu.cqse.teamscale.report.testwise.jacoco.TestwiseXmlReportUtils
+import eu.cqse.teamscale.report.testwise.jacoco.TestwiseCoverageReportGenerator
 import eu.cqse.teamscale.report.testwise.model.TestDetails
 import eu.cqse.teamscale.report.testwise.model.TestExecution
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverage
-import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport
+import eu.cqse.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
 import eu.cqse.teamscale.report.util.ILogger
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
@@ -80,8 +80,8 @@ open class TeamscaleReportTask : DefaultTask() {
 
         logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
-        val report = TestwiseCoverageReport.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
-        TestwiseXmlReportUtils.writeReportToFile(
+        val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
+        TestwiseCoverageReportGenerator.writeReportToFile(
             reportFile, report
         )
     }

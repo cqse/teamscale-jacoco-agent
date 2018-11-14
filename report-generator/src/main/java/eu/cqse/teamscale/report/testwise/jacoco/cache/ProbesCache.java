@@ -1,10 +1,9 @@
 package eu.cqse.teamscale.report.testwise.jacoco.cache;
 
-import eu.cqse.teamscale.report.testwise.model.FileCoverage;
+import eu.cqse.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import eu.cqse.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -57,10 +56,10 @@ public class ProbesCache {
 	}
 
 	/**
-	 * Converts the given {@link ExecutionData} to {@link FileCoverage} using the cached lookups or null if the class
+	 * Converts the given {@link ExecutionData} to {@link FileCoverageBuilder} using the cached lookups or null if the class
 	 * file of this class has not been included in the analysis or was not covered.
 	 */
-	public FileCoverage getCoverage(ExecutionData executionData) throws CoverageGenerationException {
+	public FileCoverageBuilder getCoverage(ExecutionData executionData) throws CoverageGenerationException {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
 			logger.debug(
