@@ -107,17 +107,28 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 		}
 
 		try {
-			for (int i = 2; i <= pathParts.size() - 1; i++) {
-				String directoryPath = String.format("/%s/", String.join("/", pathParts.subList(0, i)));
-				if (!checkDirectory(directoryPath).isSuccessful()) {
-					createDirectory(directoryPath);
-				}
-			}
+			checkAndCreatePath(pathParts);
 		} catch (IOException e) {
 			throw new UploadStoreException(String.format(
 					"Checking the validity of %s failed. " +
 							"There is probably something wrong with the URL or a problem with the account/key: ",
 					this.uploadUrl.url().getPath()), e);
+		}
+	}
+
+	/**
+	 * Checks the directory path in the store url. Creates any missing directories.
+	 */
+	private void checkAndCreatePath(List<String> pathParts) throws IOException, UploadStoreException {
+		for (int i = 2; i <= pathParts.size() - 1; i++) {
+			String directoryPath = String.format("/%s/", String.join("/", pathParts.subList(0, i)));
+			if (!checkDirectory(directoryPath).isSuccessful()) {
+				Response<ResponseBody> mkdirResponse = createDirectory(directoryPath);
+				if (!mkdirResponse.isSuccessful()) {
+					throw new UploadStoreException(
+							String.format("Creation of path '/%s' was unsuccessful", directoryPath), mkdirResponse);
+				}
+			}
 		}
 	}
 
