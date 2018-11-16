@@ -58,21 +58,23 @@ The following options are available:
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
-- `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
-  https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case that the given
-  path does not yet exists at the given share, it will be created.
-- `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 
-  You can get the commit info from your VCS e.g. for Git via 
+  If **Git** is your VCS, you can get the commit info via
   
 ```bash
 echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
 ```
-
+  
   Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
   Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
+  
+  If **Subversion** is your VCS and your reposiory follows the SVN convention with `trunk`, `branches`, and `tags` directories, you can get the commit info via
+  
+  ```bash
+ echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
+```
   
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format)
@@ -85,6 +87,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   more data might be required by the REST endpoints see `Test impact mode` below for details.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+- `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
+  https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case that the given
+  path does not yet exists at the given share, it will be created.
+- `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
