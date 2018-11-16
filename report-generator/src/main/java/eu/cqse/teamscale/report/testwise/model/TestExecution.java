@@ -17,9 +17,6 @@
 +-------------------------------------------------------------------------*/
 package eu.cqse.teamscale.report.testwise.model;
 
-import org.conqat.lib.commons.string.StringUtils;
-
-import javax.xml.bind.annotation.XmlValue;
 import java.io.Serializable;
 
 /** Representation of a single test (method) execution. */

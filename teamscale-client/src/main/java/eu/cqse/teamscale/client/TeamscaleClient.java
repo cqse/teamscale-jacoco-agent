@@ -33,10 +33,17 @@ public class TeamscaleClient {
 	 *
 	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
 	 */
-	public Response<List<String>> getImpactedTests(List<TestDetails> testList, CommitDescriptor baseline, CommitDescriptor endCommit, String partition) throws IOException {
-		Response<List<String>> impactedTests = service
-				.getImpactedTests(projectId, "", baseline, endCommit, partition, testList)
-				.execute();
+	public Response<List<String>> getImpactedTests(List<TestDetails> testList, Long baseline, CommitDescriptor endCommit, String partition) throws IOException {
+		Response<List<String>> impactedTests;
+		if (baseline == null) {
+			impactedTests = service
+					.getImpactedTests(projectId, endCommit, partition, testList)
+					.execute();
+		} else {
+			impactedTests = service
+					.getImpactedTests(projectId, baseline, endCommit, partition, testList)
+					.execute();
+		}
 		if (!impactedTests.isSuccessful() || impactedTests.body() == null) {
 			return null;
 		}

@@ -4,9 +4,6 @@ import eu.cqse.teamscale.report.testwise.model.FileCoverage;
 import eu.cqse.teamscale.report.testwise.model.LineRange;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

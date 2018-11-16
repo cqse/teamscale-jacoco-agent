@@ -3,7 +3,7 @@ package eu.cqse.teamscale.client;
 /** Enum of report formats. */
 public enum EReportFormat {
 	JACOCO("JaCoCo Coverage", "jacoco-coverage", "xml"),
-	TESTWISE_COVERAGE("Testwise Coverage", "testwise-coverage", "xml"),
+	TESTWISE_COVERAGE("Testwise Coverage", "testwise-coverage", "json"),
 	TEST_LIST("Test List", "test-list", "json"),
 	TEST_EXECUTION("Test Execution", "test-execution", "json");
 

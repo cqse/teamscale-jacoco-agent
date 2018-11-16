@@ -22,7 +22,7 @@ public class TestIdentifierUtils {
 	 * which we need to map together in Teamscale.
 	 */
 	public static String getTestUniformPath(TestIdentifier testIdentifier, Logger logger) {
-		return getFullyQualifiedClassName(testIdentifier, logger) + '/' + testIdentifier.getDisplayName();
+		return getFullyQualifiedClassName(testIdentifier, logger) + '/' + testIdentifier.getLegacyReportingName();
 	}
 
 	/** Tries to extract the fully qualified class name from the given test identifier. */

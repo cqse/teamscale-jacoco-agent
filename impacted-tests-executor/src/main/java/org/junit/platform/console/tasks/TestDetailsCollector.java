@@ -77,7 +77,6 @@ public class TestDetailsCollector {
 					String sourcePath = ms.getClassName().replace('.', '/');
 
 					String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
-//					String displayName = testIdentifier.getDisplayName(); //TODO decide
 					result.add(new TestDetails(testUniformPath, sourcePath, null));
 				}
 			}

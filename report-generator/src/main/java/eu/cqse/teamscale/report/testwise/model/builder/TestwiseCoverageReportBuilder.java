@@ -5,8 +5,6 @@ import eu.cqse.teamscale.report.testwise.model.TestExecution;
 import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.conqat.lib.commons.collections.CollectionUtils;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
