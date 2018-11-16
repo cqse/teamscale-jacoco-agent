@@ -5,9 +5,6 @@ import okhttp3.HttpUrl;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
 import org.junit.platform.console.shadow.joptsimple.OptionSpec;
-import org.junit.platform.console.shadow.joptsimple.util.PathConverter;
-
-import java.nio.file.Path;
 
 import static java.util.Arrays.asList;
 
@@ -92,7 +89,9 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 
 		result.runAllTests = detectedOptions.has(this.runAllTests);
 
-		result.baseline = CommitDescriptor.parse(detectedOptions.valueOf(this.baseline));
+		if (detectedOptions.has(this.baseline)) {
+			result.baseline = Long.parseLong(detectedOptions.valueOf(this.baseline));
+		}
 		result.endCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.end));
 
 		result.agentUrl = HttpUrl.parse(detectedOptions.valueOf(this.agentUrl));

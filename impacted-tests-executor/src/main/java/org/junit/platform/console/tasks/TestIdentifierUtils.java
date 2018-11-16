@@ -18,8 +18,6 @@ public class TestIdentifierUtils {
 
 	/**
 	 * Builds the internal ID which will later be displayed in Teamscale.
-	 * We are using the legacy reporting name here, since this matches the format also used in the JUnit reports,
-	 * which we need to map together in Teamscale.
 	 */
 	public static String getTestUniformPath(TestIdentifier testIdentifier, Logger logger) {
 		return getFullyQualifiedClassName(testIdentifier, logger) + '/' + testIdentifier.getLegacyReportingName();

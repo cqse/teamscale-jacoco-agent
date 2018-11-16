@@ -19,7 +19,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	public boolean runAllTests;
 
 	/** The baseline commit used for TIA. */
-	public CommitDescriptor baseline;
+	public Long baseline;
 
 	/** The end commit used for TIA and for uploading the coverage. */
 	public CommitDescriptor endCommit;

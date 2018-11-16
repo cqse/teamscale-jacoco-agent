@@ -86,31 +86,6 @@ order to reduce the file size of the final report.
 </report>
 ```
 
-```dtd
-<?xml encoding="UTF-8"?>
-
-<!ELEMENT report (test)+>
-<!ATTLIST report>
-
-<!ELEMENT test (path)+ (message)?>
-<!ATTLIST test uniformPath CDATA #REQUIRED>
-<!ATTLIST test duration CDATA #REQUIRED>
-<!ATTLIST test result (PASSED|IGNORED|SKIPPED|FAILURE|ERROR) #REQUIRED>
-<!ATTLIST test sourcePath CDATA>
-<!ATTLIST test content CDATA>
-
-<!ELEMENT message ANY>
-
-<!ELEMENT path (file)+>
-<!ATTLIST path name CDATA #REQUIRED>
-
-<!ELEMENT file (lines)*>
-<!ATTLIST file name CDATA #REQUIRED>
-
-<!ELEMENT lines EMPTY>
-<!ATTLIST lines nr CDATA #REQUIRED>
-```
-
 The report may then be uploaded to Teamscale via the `Report Upload` REST-API by specifying `TESTWISE_COVERAGE` as 
 report format.
 
@@ -131,7 +106,7 @@ ___
 
 * **URL**
 
-  p/{projectName}/test-impact/{uniformPathPrefix}
+  p/{projectName}/test-impact
 
 * **Method:**
 
@@ -141,15 +116,16 @@ ___
 
    `projectName` Project identifier within Teamscale
 
-   `uniformPathPrefix` *(optional)* Tells the service to only return tests whose uniformPath starts with the given prefix.
-
 *  **Query Parameters**
 
-   `baseline=[branch]:[timestamp]` The baseline commit (when appending `p1` as postfix, the commit before the given one is chosen)
+   `baseline=[timestamp]` *(optional)* The baseline timestamp. A long value of the timestamp in milliseconds. 
+       Only changes to the code after the baseline will be considered for execution. If not specified all not yet covered 
+       changes will be considered.
 
-   `end=[branch]:[timestamp]` Identifies the commit which is associated with the upload (e.g. the commit for which coverage has been collected)
+   `end=[branch]:[timestamp]` Identifies the commit that has been used to build the system that we are about to test.
 
-   `partition=[string]` The partition to get impacted tests for.
+   `partitions=[string]` The partition to get impacted tests for. Multiple partitions could be specified as a comma 
+        separated list (Not recommended).
 
 * **Success Response:**
 
