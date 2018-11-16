@@ -10,9 +10,8 @@
 
 package org.junit.platform.console.tasks;
 
-import com.google.gson.GsonBuilder;
-import eu.cqse.teamscale.report.testwise.model.TestExecution;
-import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
+import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.Logger;
 import org.junit.platform.console.options.Details;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
@@ -26,10 +25,7 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -37,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static ReportUtils.writeListToFile;
 import static org.junit.platform.console.tasks.ConsoleInterceptor.ignoreOut;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
@@ -59,7 +56,7 @@ public class TestExecutor {
 	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger) {
 		this.options = options;
 		this.logger = logger;
-		this.testListenerExtension = new JUnit5TestListenerExtension(options.agentUrl, logger);
+		this.testListenerExtension = new JUnit5TestListenerExtension(options.getAgentUrl(), logger);
 		this.launcherSupplier = LauncherFactory::create;
 	}
 
@@ -93,18 +90,7 @@ public class TestExecutor {
 
 	/** Writes the given test executions to a report file. */
 	private void writeTestExecutionReport(File reportDir, List<TestExecution> testExecutions) {
-		if (!reportDir.isDirectory() && !reportDir.mkdirs()) {
-			logger.error("Failed to create directory " + reportDir.getAbsolutePath());
-			return;
-		}
-
-		File reportFile = new File(reportDir, "test-execution.json");
-		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(reportFile)))) {
-			out.print(new GsonBuilder().setPrettyPrinting().create().toJson(testExecutions));
-		} catch (IOException e) {
-			// We don't want to break the tests because writing the testDetails failed.
-			logger.error(e);
-		}
+		writeListToFile(reportDir, "test-execution.json", testExecutions);
 	}
 
 	/** Creates a discovery request from the given list of unique test IDs. */

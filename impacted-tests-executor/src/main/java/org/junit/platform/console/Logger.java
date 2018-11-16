@@ -1,6 +1,6 @@
 package org.junit.platform.console;
 
-import eu.cqse.teamscale.report.util.ILogger;
+import com.teamscale.report.util.ILogger;
 
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;

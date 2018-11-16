@@ -1,6 +1,6 @@
 package org.junit.platform.console.options;
 
-import eu.cqse.teamscale.client.CommitDescriptor;
+import com.teamscale.client.CommitDescriptor;
 import okhttp3.HttpUrl;
 
 import java.nio.file.Path;
@@ -10,25 +10,25 @@ import java.util.Optional;
 public class ImpactedTestsExecutorCommandLineOptions {
 
 	/** Connection details of the Teamscale server. */
-	public final Server server = new Server();
+	private final Server server = new Server();
 
 	/** The partition to upload test details to and get impacted tests from. */
-	public String partition;
+	private String partition;
 
 	/** Executes all tests, not only impacted ones if set. */
-	public boolean runAllTests;
+	private boolean runAllTests;
 
 	/** The baseline commit used for TIA. */
-	public Long baseline;
+	private Long baseline;
 
 	/** The end commit used for TIA and for uploading the coverage. */
-	public CommitDescriptor endCommit;
+	private CommitDescriptor endCommit;
 
 	/** Regular JUnit console command line options. */
 	private CommandLineOptions commandLineOptions;
 
 	/** The url (including port) at which the agent listens. */
-	public HttpUrl agentUrl;
+	private HttpUrl agentUrl;
 
 	/** Constructor. */
 	public ImpactedTestsExecutorCommandLineOptions(CommandLineOptions jUnitResult) {
@@ -63,5 +63,70 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	/** The normal JUnit command line options object. */
 	public CommandLineOptions toJUnitOptions() {
 		return commandLineOptions;
+	}
+
+	/** @see #server */
+	public Server getServer() {
+		return server;
+	}
+
+	/** @see #partition */
+	public String getPartition() {
+		return partition;
+	}
+
+	/** @see #partition */
+	public void setPartition(String partition) {
+		this.partition = partition;
+	}
+
+	/** @see #runAllTests */
+	public boolean isRunAllTests() {
+		return runAllTests;
+	}
+
+	/** @see #runAllTests */
+	public void setRunAllTests(boolean runAllTests) {
+		this.runAllTests = runAllTests;
+	}
+
+	/** @see #baseline */
+	public Long getBaseline() {
+		return baseline;
+	}
+
+	/** @see #baseline */
+	public void setBaseline(Long baseline) {
+		this.baseline = baseline;
+	}
+
+	/** @see #endCommit */
+	public CommitDescriptor getEndCommit() {
+		return endCommit;
+	}
+
+	/** @see #endCommit */
+	public void setEndCommit(CommitDescriptor endCommit) {
+		this.endCommit = endCommit;
+	}
+
+	/** @see #commandLineOptions */
+	public CommandLineOptions getCommandLineOptions() {
+		return commandLineOptions;
+	}
+
+	/** @see #commandLineOptions */
+	public void setCommandLineOptions(CommandLineOptions commandLineOptions) {
+		this.commandLineOptions = commandLineOptions;
+	}
+
+	/** @see #agentUrl */
+	public HttpUrl getAgentUrl() {
+		return agentUrl;
+	}
+
+	/** @see #agentUrl */
+	public void setAgentUrl(HttpUrl agentUrl) {
+		this.agentUrl = agentUrl;
 	}
 }

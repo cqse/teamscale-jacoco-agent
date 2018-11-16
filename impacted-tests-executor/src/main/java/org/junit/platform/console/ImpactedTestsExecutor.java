@@ -10,9 +10,9 @@
 
 package org.junit.platform.console;
 
-import com.google.gson.GsonBuilder;
-import eu.cqse.teamscale.client.TeamscaleClient;
-import eu.cqse.teamscale.client.TestDetails;
+import com.teamscale.client.TeamscaleClient;
+import com.teamscale.client.TestDetails;
+import com.teamscale.report.ReportGenerator;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.TestExecutorCommandLineOptionsParser;
 import org.junit.platform.console.tasks.TestDetailsCollector;
@@ -20,11 +20,8 @@ import org.junit.platform.console.tasks.TestExecutor;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import retrofit2.Response;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -69,16 +66,23 @@ public class ImpactedTestsExecutor {
 
 	/** Handles test detail collection and execution of the impacted tests. */
 	private ConsoleLauncherExecutionResult discoverAndExecuteTests(ImpactedTestsExecutorCommandLineOptions options) {
-		List<TestDetails> availableTestDetails = getTestDetails(options);
-		if (availableTestDetails.isEmpty()) {
-			return ConsoleLauncherExecutionResult.success();
+		List<TestDetails> availableTestDetails = null;
+		try {
+			availableTestDetails = getTestDetails(options);
+			if (availableTestDetails.isEmpty()) {
+				return ConsoleLauncherExecutionResult.success();
+			}
+		} catch (IOException e) {
+			logger.error("Failed to get test details", e);
+			logger.info("Falling back to execute all");
+			options.setRunAllTests(true);
 		}
 
 		return executeTests(options, availableTestDetails);
 	}
 
 	/** Discovers all tests that match the given filters in #options. */
-	private List<TestDetails> getTestDetails(ImpactedTestsExecutorCommandLineOptions options) {
+	private List<TestDetails> getTestDetails(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
 		List<TestDetails> availableTestDetails = new TestDetailsCollector(logger).collect(options);
 
 		logger.info("Found " + availableTestDetails.size() + " tests");
@@ -94,7 +98,7 @@ public class ImpactedTestsExecutor {
 	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) {
 		TestExecutor testExecutor = new TestExecutor(options, logger);
 		TestExecutionSummary testExecutionSummary;
-		if (options.runAllTests) {
+		if (options.isRunAllTests()) {
 			testExecutionSummary = testExecutor.executeAllTests();
 		} else {
 			List<String> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails, options);
@@ -108,29 +112,19 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Writes the given test details to a report file. */
-	private void writeTestDetailsReport(File reportDir, List<TestDetails> testDetails) {
-		if (!reportDir.isDirectory() && !reportDir.mkdirs()) {
-			logger.error("Failed to create directory " + reportDir.getAbsolutePath());
-			return;
-		}
-
-		File reportFile = new File(reportDir, "test-list.json");
-		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(reportFile)))) {
-			out.print(new GsonBuilder().setPrettyPrinting().create().toJson(testDetails));
-		} catch (IOException e) {
-			// We don't want to break the tests because writing the testDetails failed.
-			logger.error(e);
-		}
+	private void writeTestDetailsReport(File reportDir, List<TestDetails> testDetails) throws IOException {
+		ReportGenerator.writeReportToFile(new File(reportDir, "test-list.json"), testDetails);
 	}
 
 	/** Queries Teamscale for impacted tests. */
 	private List<String> getImpactedTestsFromTeamscale(List<TestDetails> availableTestDetails, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
 			logger.output.println("Getting impacted tests...");
-			TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
-					options.server.userAccessToken, options.server.project);
+			TeamscaleClient client = new TeamscaleClient(options.getServer().url, options.getServer().userName,
+					options.getServer().userAccessToken, options.getServer().project);
 			Response<List<String>> response = client
-					.getImpactedTests(availableTestDetails, options.baseline, options.endCommit, options.partition);
+					.getImpactedTests(availableTestDetails, options.getBaseline(), options.getEndCommit(),
+							options.getPartition());
 			if (response.isSuccessful()) {
 				List<String> testList = response.body();
 				if (testList == null) {

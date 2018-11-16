@@ -46,7 +46,7 @@ test {
 	testLogging.exceptionFormat "full"
 }
 
-mainClassName = 'eu.cqse.teamscale.jacoco.agent.Main'
+mainClassName = 'com.teamscale.jacoco.agent.Main'
 
 shadowJar {
 	baseName = 'teamscale-jacoco-agent'
@@ -56,7 +56,7 @@ shadowJar {
 	// update
 	version = null
 	manifest {
-		attributes 'Premain-Class': 'eu.cqse.teamscale.jacoco.agent.PreMain'
+		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
 
 		// The jaxb library, which we are shading is a multi release jar, so we have to explicitly "inherit" this attribute
 		attributes 'Multi-Release': 'true'

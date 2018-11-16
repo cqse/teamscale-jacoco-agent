@@ -13,7 +13,7 @@ dependencies {
 	compile 'org.apache.commons:commons-exec:1.3'
 }
 
-mainClassName = 'eu.cqse.teamscale.jacoco.javaws.Main'
+mainClassName = 'com.teamscale.jacoco.javaws.Main'
 
 shadowJar {
 	baseName = 'teamscale-javaws-wrapper'

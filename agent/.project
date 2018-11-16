@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>eu.cqse.teamscale.jacoco.agent</name>
-	<comment>Project eu.cqse.teamscale.jacoco.converter created by Buildship.</comment>
+	<name>com.teamscale.jacoco.agent</name>
+	<comment>Project com.teamscale.jacoco.converter created by Buildship.</comment>
 	<projects>
 	</projects>
 	<buildSpec>

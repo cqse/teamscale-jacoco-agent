@@ -10,7 +10,7 @@
 
 package org.junit.platform.console.tasks;
 
-import eu.cqse.teamscale.client.TestDetails;
+import com.teamscale.client.TestDetails;
 import org.junit.platform.console.Logger;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.engine.TestSource;
@@ -42,6 +42,7 @@ public class TestDetailsCollector {
 		this.launcherSupplier = LauncherFactory::create;
 	}
 
+	/** Discovers all test details for the given options. */
 	public List<TestDetails> collect(ImpactedTestsExecutorCommandLineOptions options) {
 		TestPlan fullTestPlan = buildTestPlan(options);
 		return retrieveTestDetailsFromTestPlan(fullTestPlan, logger);

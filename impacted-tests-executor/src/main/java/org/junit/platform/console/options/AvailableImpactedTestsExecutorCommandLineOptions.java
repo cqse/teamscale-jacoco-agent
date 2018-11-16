@@ -1,6 +1,6 @@
 package org.junit.platform.console.options;
 
-import eu.cqse.teamscale.client.CommitDescriptor;
+import com.teamscale.client.CommitDescriptor;
 import okhttp3.HttpUrl;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
@@ -81,20 +81,20 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 		CommandLineOptions jUnitResult = jUnitOptions.toCommandLineOptions(detectedOptions);
 		ImpactedTestsExecutorCommandLineOptions result = new ImpactedTestsExecutorCommandLineOptions(jUnitResult);
 
-		result.server.url = detectedOptions.valueOf(this.url);
-		result.server.project = detectedOptions.valueOf(this.project);
-		result.server.userName = detectedOptions.valueOf(this.userName);
-		result.server.userAccessToken = detectedOptions.valueOf(this.userAccessToken);
-		result.partition = detectedOptions.valueOf(this.partition);
+		result.getServer().url = detectedOptions.valueOf(this.url);
+		result.getServer().project = detectedOptions.valueOf(this.project);
+		result.getServer().userName = detectedOptions.valueOf(this.userName);
+		result.getServer().userAccessToken = detectedOptions.valueOf(this.userAccessToken);
+		result.setPartition(detectedOptions.valueOf(this.partition));
 
-		result.runAllTests = detectedOptions.has(this.runAllTests);
+		result.setRunAllTests(detectedOptions.has(this.runAllTests));
 
 		if (detectedOptions.has(this.baseline)) {
-			result.baseline = Long.parseLong(detectedOptions.valueOf(this.baseline));
+			result.setBaseline(Long.parseLong(detectedOptions.valueOf(this.baseline)));
 		}
-		result.endCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.end));
+		result.setEndCommit(CommitDescriptor.parse(detectedOptions.valueOf(this.end)));
 
-		result.agentUrl = HttpUrl.parse(detectedOptions.valueOf(this.agentUrl));
+		result.setAgentUrl(HttpUrl.parse(detectedOptions.valueOf(this.agentUrl)));
 
 		return result;
 	}

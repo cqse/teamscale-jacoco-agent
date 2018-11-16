@@ -7,7 +7,9 @@ import org.junit.platform.launcher.TestIdentifier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/** Utility classes for dealing with JUnit {@link TestIdentifier}s. */
 public class TestIdentifierUtils {
+
 	/**
 	 * Pattern that matches the classes fully qualified class name in JUnit's uniqueId as first capture group.
 	 * The test's uniqueId is something similar to:
@@ -16,9 +18,7 @@ public class TestIdentifierUtils {
 	 */
 	private static final Pattern FULL_CLASS_NAME_PATTERN = Pattern.compile(".*\\[(?:class|runner):([^]]+)\\].*");
 
-	/**
-	 * Builds the internal ID which will later be displayed in Teamscale.
-	 */
+	/** Builds the uniform path which will later be displayed in Teamscale. */
 	public static String getTestUniformPath(TestIdentifier testIdentifier, Logger logger) {
 		return getFullyQualifiedClassName(testIdentifier, logger) + '/' + testIdentifier.getLegacyReportingName();
 	}
