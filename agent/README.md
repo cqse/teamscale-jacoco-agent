@@ -70,10 +70,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
   
-  If **Subversion** is your VCS, you can get the timestamp part (but not the branch part) of the commit info via
+  If **Subversion** is your VCS and your reposiory follows the SVN convention with `trunk`, `branches`, and `tags` directories, you can get the commit info via
   
   ```bash
-date -d `svn info --show-item last-changed-date` "+%s000"
+ echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
 ```
   
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
