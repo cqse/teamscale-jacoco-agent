@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 10.2.0
+- [feature] Added option to upload to azure file storage
+
 # 10.1.0
 - [feature] Paths passed to the agent can now be relative and contain ant patterns
 

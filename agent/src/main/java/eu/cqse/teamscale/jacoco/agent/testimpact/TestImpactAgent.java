@@ -13,6 +13,7 @@ import eu.cqse.teamscale.jacoco.agent.AgentBase;
 import eu.cqse.teamscale.jacoco.agent.AgentOptions;
 import eu.cqse.teamscale.jacoco.agent.ITestListener;
 import eu.cqse.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
+import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.report.jacoco.dump.Dump;
 import eu.cqse.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class TestImpactAgent extends AgentBase {
 	private final List<ITestListener> testListeners = new ArrayList<>();
 
 	/** Constructor. */
-	public TestImpactAgent(AgentOptions options) throws IllegalStateException, CoverageGenerationException {
+	public TestImpactAgent(AgentOptions options) throws IllegalStateException, CoverageGenerationException, UploadStoreException {
 		super(options);
 		this.options = options;
 		Set<EReportFormat> reportFormats = options.getHttpServerReportFormats();

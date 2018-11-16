@@ -1,6 +1,7 @@
 package eu.cqse.teamscale.jacoco.agent;
 
 import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
+import eu.cqse.teamscale.jacoco.agent.store.UploadStoreException;
 import eu.cqse.teamscale.jacoco.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
@@ -26,7 +27,8 @@ public abstract class AgentBase {
 
 	private static LoggingUtils.LoggingResources loggingResources;
 
-	public AgentBase(AgentOptions options) throws IllegalStateException {
+	/** Constructor. */
+	public AgentBase(AgentOptions options) throws IllegalStateException, UploadStoreException {
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
