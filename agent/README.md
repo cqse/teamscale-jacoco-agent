@@ -59,7 +59,7 @@ The following options are available:
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
-  https://<account>.file.core.windows.net/\<share\>/(\<path\>). The \<path\> is optional; note, that in the case that the given
+  https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case that the given
   path does not yet exists at the given share, it will be created.
 - `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 
