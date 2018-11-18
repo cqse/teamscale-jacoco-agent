@@ -1,14 +1,14 @@
 package com.teamscale
 
 import com.google.gson.Gson
+import com.teamscale.client.TestDetails
 import com.teamscale.config.AgentConfiguration
 import com.teamscale.config.GoogleClosureConfiguration
 import com.teamscale.config.TeamscalePluginExtension
-import com.teamscale.client.EReportFormat
+import com.teamscale.report.ReportUtils
+import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
-import com.teamscale.report.testwise.jacoco.TestwiseXmlReportGenerator
-import com.teamscale.report.ReportGenerator
-import com.teamscale.report.testwise.model.TestDetails
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
@@ -72,8 +72,13 @@ open class TeamscaleReportTask : DefaultTask() {
     fun generateTestwiseCoverageReport() {
         logger.info("Generating coverage report...")
 
-        val testDetails = readObjects(testArtifactsDir, EReportFormat.TEST_LIST, TestDetailsList::class.java)
-        val testExecutions = readObjects(testArtifactsDir, EReportFormat.TEST_EXECUTION, TestExecutionList::class.java)
+        val testDetails =
+            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, testArtifactsDir)
+        val testExecutions = ReportUtils.readObjects(
+            ETestArtifactFormat.TEST_EXECUTION,
+            Array<TestExecution>::class.java,
+            testArtifactsDir
+        )
 
         val testwiseCoverage = getJaCoCoTestwiseCoverage() ?: return
         testwiseCoverage.add(getClosureTestwiseCoverage())
@@ -81,9 +86,7 @@ open class TeamscaleReportTask : DefaultTask() {
         logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
         val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
-        ReportGenerator.writeReportToFile(
-            reportFile, report
-        )
+        ReportUtils.writeReportToFile(reportFile, report)
     }
 
     private fun getJaCoCoTestwiseCoverage(): TestwiseCoverage? {
@@ -97,10 +100,10 @@ open class TeamscaleReportTask : DefaultTask() {
             logger.error("No execution data provided!")
             return null
         }
-        val jacocoExecutionData = listFiles(testArtifactsDir, "jacoco", "exec")
+        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, testArtifactsDir)
         logger.info("Generating testwise coverage for $jacocoExecutionData")
 
-        val generator = TestwiseXmlReportGenerator(
+        val generator = JaCoCoTestwiseReportGenerator(
             classDirectories.files,
             agentConfiguration.getFilter(),
             true,
@@ -119,29 +122,6 @@ open class TeamscaleReportTask : DefaultTask() {
             closureIncludeFilter.getPredicate()
         ).readTestCoverage()
     }
-
-
-    /** Recursively lists all files in the given directory that match the specified extension. */
-    private fun <T> readObjects(file: File, format: EReportFormat, `class`: Class<out Collection<T>>): Collection<T> {
-        return listFiles(file, format.filePrefix, format.extension).flatMap {
-            gson.fromJson(
-                it.reader(),
-                `class`
-            )
-        }
-    }
-
-    private fun listFiles(file: File, prefix: String, extension: String): Set<File> {
-        return file.walkTopDown().filter {
-            it.isFile && it.name.startsWith(prefix) && it.extension.equals(
-                extension,
-                ignoreCase = true
-            )
-        }.toSet()
-    }
-
-    private class TestDetailsList : ArrayList<TestDetails>()
-    private class TestExecutionList : ArrayList<TestExecution>()
 }
 
 /** Wraps the gradle log4j logger into an ILogger. */

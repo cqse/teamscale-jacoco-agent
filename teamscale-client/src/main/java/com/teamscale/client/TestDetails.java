@@ -2,7 +2,6 @@ package com.teamscale.client;
 
 /**
  * Contains details about a test.
- * This is mainly used to store the mapping from internalId to externalId and vice versa.
  */
 public class TestDetails {
 

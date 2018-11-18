@@ -1,9 +1,8 @@
-package eu.cqse.config
+package com.teamscale.config
 
-import eu.cqse.Report
-import eu.cqse.teamscale.client.EReportFormat
-import eu.cqse.teamscale.client.EReportFormat.TESTWISE_COVERAGE
-import eu.cqse.teamscale.report.util.AntPatternIncludeFilter
+import com.teamscale.Report
+import com.teamscale.client.EReportFormat
+import com.teamscale.report.util.AntPatternIncludeFilter
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.Transformer
@@ -12,13 +11,8 @@ import org.gradle.api.tasks.testing.Test
 import java.io.File
 import java.io.Serializable
 
-/** Base class for report configurations that should be generated and uploaded. */
-open class ReportConfigurationBase(
-
-    /** The report format. */
-    var format: EReportFormat
-
-) : Serializable {
+/** Configuration for the testwise coverage report. */
+open class TestwiseCoverageConfiguration : Serializable {
 
     /** The partition for which artifacts are uploaded. */
     var partition: String? = null
@@ -51,21 +45,21 @@ open class ReportConfigurationBase(
     /** Returns the destination set for the report or the default destination if not set. */
     open fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
         return destination ?: project.file(
-            "${project.buildDir}/reports/${format.name.toLowerCase()}/" +
-                    "${format.name.toLowerCase()}-${project.name}-${gradleTestTask.name}.${format.extension}"
+            "${project.buildDir}/reports/${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}/" +
+                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${project.name}-${gradleTestTask.name}.json"
         )
     }
 
     /** Returns the destination set for the report or the default destination if not set. */
     open fun getTempDestination(project: Project, gradleTestTask: Task): File {
         return project.file(
-            "${project.buildDir}/tmp/${format.name.toLowerCase()}/" +
-                    "${format.name.toLowerCase()}-${project.name}-${gradleTestTask.name}-${format.name}"
+            "${project.buildDir}/tmp/${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}/" +
+                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${project.name}-${gradleTestTask.name}-${EReportFormat.TESTWISE_COVERAGE.name}"
         )
     }
 
     /** Creates a copy of the report configuration, setting all non-set values to their default value. */
-    open fun copyWithDefault(toCopy: ReportConfigurationBase, default: ReportConfigurationBase) {
+    open fun copyWithDefault(toCopy: TestwiseCoverageConfiguration, default: TestwiseCoverageConfiguration) {
         destination = toCopy.destination ?: default.destination
         message = toCopy.message ?: default.message
         partition = toCopy.partition ?: default.partition
@@ -83,9 +77,9 @@ open class ReportConfigurationBase(
     /** Returns a report specification used in the TeamscaleUploadTask. */
     fun getReport(project: Project, gradleTestTask: Test): Report {
         return Report(
-            format = format,
+            format = EReportFormat.TESTWISE_COVERAGE,
             report = getDestinationOrDefault(project, gradleTestTask),
-            message = message ?: "${format.readableName} gradle upload",
+            message = message ?: "${EReportFormat.TESTWISE_COVERAGE.readableName} gradle upload",
             partition = getTransformedPartition(project)
         )
     }
@@ -93,15 +87,12 @@ open class ReportConfigurationBase(
     /** Returns true if all required fields are set. */
     fun validate(project: Project, testTaskName: String): Boolean {
         if (upload == true && partition == null) {
-            project.logger.info("No partition set for ${format.readableName} upload of ${project.name}:$testTaskName!")
+            project.logger.info("No partition set for ${EReportFormat.TESTWISE_COVERAGE.readableName} upload of ${project.name}:$testTaskName!")
             return false
         }
         return true
     }
 }
-
-/** Configuration for the testwise coverage report. */
-class TestwiseCoverageConfiguration : ReportConfigurationBase(TESTWISE_COVERAGE)
 
 /** Configuration for the google closure coverage. */
 class GoogleClosureConfiguration : Serializable {

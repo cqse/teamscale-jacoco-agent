@@ -1,6 +1,6 @@
-package eu.cqse.teamscale.report.testwise.jacoco.analysis;
+package com.teamscale.report.testwise.jacoco.analysis;
 
-import eu.cqse.teamscale.report.testwise.jacoco.cache.ClassCoverageLookup;
+import com.teamscale.report.testwise.jacoco.cache.ClassCoverageLookup;
 import org.jacoco.core.internal.flow.IFrame;
 import org.jacoco.core.internal.flow.LabelInfo;
 import org.jacoco.core.internal.flow.MethodProbesVisitor;

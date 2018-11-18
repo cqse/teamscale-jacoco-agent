@@ -1,6 +1,6 @@
-package eu.cqse.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder;
 
-import eu.cqse.teamscale.report.testwise.model.PathCoverage;
+import com.teamscale.report.testwise.model.PathCoverage;
 
 import java.util.Comparator;
 import java.util.HashMap;

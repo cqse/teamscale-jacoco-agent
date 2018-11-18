@@ -1,11 +1,11 @@
-package eu.cqse.teamscale.jacoco.agent.convert;
+package com.teamscale.jacoco.agent.convert;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,11 +23,11 @@ public class ConverterTest extends CCSMTestCaseBase {
 		File outputFile = createTmpFile("coverage.xml", "");
 
 		ConvertCommand arguments = new ConvertCommand();
-		arguments.inputFile = execFile.getAbsolutePath();
+		arguments.inputFiles = Collections.singletonList(execFile.getAbsolutePath());
 		arguments.outputFile = outputFile.getAbsolutePath();
-		arguments.classDirectoriesOrZips = Arrays.asList(classFile.getAbsolutePath());
+		arguments.classDirectoriesOrZips = Collections.singletonList(classFile.getAbsolutePath());
 
-		new Converter(arguments).run();
+		new Converter(arguments).runJaCoCoReportGeneration();
 
 		String xml = FileSystemUtils.readFileUTF8(outputFile);
 		System.err.println(xml);

@@ -1,7 +1,7 @@
-package eu.cqse.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder;
 
-import eu.cqse.teamscale.report.testwise.model.FileCoverage;
-import eu.cqse.teamscale.report.testwise.model.LineRange;
+import com.teamscale.report.testwise.model.FileCoverage;
+import com.teamscale.report.testwise.model.LineRange;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 
 import java.util.ArrayList;

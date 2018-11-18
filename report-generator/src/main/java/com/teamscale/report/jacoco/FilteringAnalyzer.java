@@ -3,9 +3,9 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package eu.cqse.teamscale.report.jacoco;
+package com.teamscale.report.jacoco;
 
-import eu.cqse.teamscale.report.util.ILogger;
+import com.teamscale.report.util.ILogger;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.ICoverageVisitor;
 import org.jacoco.core.data.ExecutionDataStore;

@@ -9,6 +9,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 version reportGeneratorVersion
 
 dependencies {
+	implementation project(':teamscale-client')
+
 	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"

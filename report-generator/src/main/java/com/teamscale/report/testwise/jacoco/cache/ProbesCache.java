@@ -1,7 +1,7 @@
-package eu.cqse.teamscale.report.testwise.jacoco.cache;
+package com.teamscale.report.testwise.jacoco.cache;
 
-import eu.cqse.teamscale.report.testwise.model.builder.FileCoverageBuilder;
-import eu.cqse.teamscale.report.util.ILogger;
+import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
+import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 
 import java.util.HashMap;

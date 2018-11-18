@@ -1,8 +1,8 @@
-package eu.cqse.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder;
 
-import eu.cqse.teamscale.report.testwise.model.TestDetails;
-import eu.cqse.teamscale.report.testwise.model.TestExecution;
-import eu.cqse.teamscale.report.testwise.model.TestInfo;
+import com.teamscale.client.TestDetails;
+import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestInfo;
 
 /** Generic container of all information about a specific test including details, execution info and coverage. */
 public class TestInfoBuilder {

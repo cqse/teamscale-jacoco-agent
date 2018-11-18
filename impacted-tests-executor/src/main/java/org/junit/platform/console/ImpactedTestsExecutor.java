@@ -12,7 +12,7 @@ package org.junit.platform.console;
 
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TestDetails;
-import com.teamscale.report.ReportGenerator;
+import com.teamscale.report.ReportUtils;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.TestExecutorCommandLineOptionsParser;
 import org.junit.platform.console.tasks.TestDetailsCollector;
@@ -65,7 +65,7 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Handles test detail collection and execution of the impacted tests. */
-	private ConsoleLauncherExecutionResult discoverAndExecuteTests(ImpactedTestsExecutorCommandLineOptions options) {
+	private ConsoleLauncherExecutionResult discoverAndExecuteTests(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
 		List<TestDetails> availableTestDetails = null;
 		try {
 			availableTestDetails = getTestDetails(options);
@@ -95,7 +95,7 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Executes either all tests if set via the command line options or queries Teamscale for the impacted tests and executes those. */
-	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) {
+	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) throws IOException {
 		TestExecutor testExecutor = new TestExecutor(options, logger);
 		TestExecutionSummary testExecutionSummary;
 		if (options.isRunAllTests()) {
@@ -113,7 +113,7 @@ public class ImpactedTestsExecutor {
 
 	/** Writes the given test details to a report file. */
 	private void writeTestDetailsReport(File reportDir, List<TestDetails> testDetails) throws IOException {
-		ReportGenerator.writeReportToFile(new File(reportDir, "test-list.json"), testDetails);
+		ReportUtils.writeReportToFile(new File(reportDir, "test-list.json"), testDetails);
 	}
 
 	/** Queries Teamscale for impacted tests. */

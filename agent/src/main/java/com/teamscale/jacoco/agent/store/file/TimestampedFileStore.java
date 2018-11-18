@@ -1,9 +1,9 @@
-package eu.cqse.teamscale.jacoco.agent.store.file;
+package com.teamscale.jacoco.agent.store.file;
 
-import eu.cqse.teamscale.client.EReportFormat;
-import eu.cqse.teamscale.jacoco.agent.store.IXmlStore;
-import eu.cqse.teamscale.jacoco.util.Benchmark;
-import eu.cqse.teamscale.jacoco.util.LoggingUtils;
+import com.teamscale.client.EReportFormat;
+import com.teamscale.jacoco.agent.store.IXmlStore;
+import com.teamscale.jacoco.util.Benchmark;
+import com.teamscale.jacoco.util.LoggingUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
@@ -35,10 +35,10 @@ public class TimestampedFileStore implements IXmlStore {
 
 	/** {@inheritDoc} */
 	@Override
-	public void store(String xml, EReportFormat format) {
-		try (Benchmark benchmark = new Benchmark("Writing the " + format + " report to a file")) {
+	public void store(String xml) {
+		try (Benchmark benchmark = new Benchmark("Writing the JaCoCo report to a file")) {
 			long currentTime = System.currentTimeMillis();
-			Path outputPath = outputDirectory.resolve(format.filePrefix + "-" + currentTime + "." + format.extension);
+			Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 			try {
 				FileSystemUtils.writeFile(outputPath.toFile(), xml);
 			} catch (IOException e) {

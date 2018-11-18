@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2017 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package eu.cqse.teamscale.jacoco.agent.commandline;
+package com.teamscale.jacoco.agent.commandline;
 
 /**
  * Interface for commands: argument parsing and execution.

@@ -1,7 +1,7 @@
-package eu.cqse.config
+package com.teamscale.config
 
-import eu.cqse.GitRepositoryHelper
-import eu.cqse.teamscale.client.CommitDescriptor
+import com.teamscale.GitRepositoryHelper
+import com.teamscale.client.CommitDescriptor
 import org.gradle.api.Project
 import java.io.IOException
 import java.io.Serializable

@@ -1,7 +1,7 @@
 ext {
-    appVersion = '10.1.0'
+    appVersion = '11.0.0'
     pluginVersion = '0.2.0'
-    reportGeneratorVersion = '1.1.0'
+    reportGeneratorVersion = '1.2.0'
     teamscaleClientVersion = '0.2.0'
 
     // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.

@@ -1,4 +1,4 @@
-package eu.cqse.config
+package com.teamscale.config
 
 import java.io.Serializable
 

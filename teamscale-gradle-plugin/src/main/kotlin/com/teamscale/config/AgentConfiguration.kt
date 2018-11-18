@@ -1,7 +1,7 @@
-package eu.cqse.config
+package com.teamscale.config
 
-import eu.cqse.ArgumentAppender
-import eu.cqse.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.ArgumentAppender
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -38,7 +38,7 @@ class AgentConfiguration : Serializable {
     }
 
     /** Returns the destination set for the report or the default destination if not set. */
-    open fun getTempDestination(project: Project, gradleTestTask: Task): File {
+    fun getTempDestination(project: Project, gradleTestTask: Task): File {
         return project.file(
             "${project.buildDir}/tmp/jacoco/${project.name}-${gradleTestTask.name}"
         )

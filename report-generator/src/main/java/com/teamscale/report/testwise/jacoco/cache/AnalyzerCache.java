@@ -1,8 +1,8 @@
-package eu.cqse.teamscale.report.testwise.jacoco.cache;
+package com.teamscale.report.testwise.jacoco.cache;
 
-import eu.cqse.teamscale.report.testwise.jacoco.analysis.CachingClassAnalyzer;
-import eu.cqse.teamscale.report.jacoco.FilteringAnalyzer;
-import eu.cqse.teamscale.report.util.ILogger;
+import com.teamscale.report.testwise.jacoco.analysis.CachingClassAnalyzer;
+import com.teamscale.report.jacoco.FilteringAnalyzer;
+import com.teamscale.report.util.ILogger;
 import org.jacoco.core.internal.data.CRC64;
 import org.jacoco.core.internal.flow.ClassProbesAdapter;
 import org.objectweb.asm.ClassReader;

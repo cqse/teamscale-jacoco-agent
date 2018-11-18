@@ -14,7 +14,6 @@ import com.teamscale.report.jacoco.dump.Dump;
 import java.io.IOException;
 import java.time.Duration;
 
-import static com.teamscale.client.EReportFormat.JACOCO;
 import static com.teamscale.jacoco.util.LoggingUtils.wrap;
 
 /**
@@ -90,6 +89,6 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		store.store(xml, JACOCO);
+		store.store(xml);
 	}
 }

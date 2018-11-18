@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.report.testwise.jacoco.cache;
+package com.teamscale.report.testwise.jacoco.cache;
 
 /**
  * Exception thrown during coverage generation.

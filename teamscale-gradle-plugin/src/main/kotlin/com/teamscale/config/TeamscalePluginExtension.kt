@@ -1,4 +1,4 @@
-package eu.cqse.config
+package com.teamscale.config
 
 import org.gradle.api.Action
 import org.gradle.api.Project

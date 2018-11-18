@@ -1,9 +1,9 @@
-package eu.cqse.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder;
 
-import eu.cqse.teamscale.report.testwise.model.TestDetails;
-import eu.cqse.teamscale.report.testwise.model.TestExecution;
-import eu.cqse.teamscale.report.testwise.model.TestInfo;
-import eu.cqse.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.client.TestDetails;
+import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestInfo;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.conqat.lib.commons.collections.CollectionUtils;
 
 import java.util.Collection;

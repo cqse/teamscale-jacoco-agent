@@ -24,7 +24,7 @@ import java.util.function.Predicate;
  * <p>
  * The class files under test must be compiled with debug information otherwise no coverage will be collected.
  */
-public class TestwiseXmlReportGenerator {
+public class JaCoCoTestwiseReportGenerator {
 
 	/** The execution data reader and converter. */
 	private CachingExecutionDataReader executionDataReader;
@@ -36,7 +36,7 @@ public class TestwiseXmlReportGenerator {
 	 * @param locationIncludeFilter     Filter for class files
 	 * @param logger                    The logger
 	 */
-	public TestwiseXmlReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
+	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
 		this.executionDataReader = new CachingExecutionDataReader(logger);
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, ignoreNonidenticalDuplicateClassFiles);
 	}

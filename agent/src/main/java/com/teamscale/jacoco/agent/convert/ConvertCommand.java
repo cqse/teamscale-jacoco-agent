@@ -3,13 +3,13 @@
 | Copyright (c) 2009-2017 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package eu.cqse.teamscale.jacoco.agent.convert;
+package com.teamscale.jacoco.agent.convert;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import eu.cqse.teamscale.jacoco.agent.commandline.ICommand;
-import eu.cqse.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.commandline.ICommand;
+import com.teamscale.jacoco.agent.commandline.Validator;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -18,6 +18,7 @@ import org.conqat.lib.commons.string.StringUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Encapsulates all command line options for the convert command for parsing
@@ -55,8 +56,9 @@ public class ConvertCommand implements ICommand {
 	/* package */ List<String> locationExcludeFilters = new ArrayList<>();
 
 	/** The directory to write the XML traces to. */
-	@Parameter(names = {"--in", "-i"}, required = true, description = "" + "The binary .exec file to read.")
-	/* package */ String inputFile = "";
+	@Parameter(names = {"--in", "-i"}, required = true, description = "" + "The binary .exec file(s), test details and " +
+			"test executions to read")
+	/* package */ List<String> inputFiles = new ArrayList<>();
 
 	/** The directory to write the XML traces to. */
 	@Parameter(names = {"--out", "-o"}, required = true, description = ""
@@ -69,9 +71,14 @@ public class ConvertCommand implements ICommand {
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
 	/* package */ boolean shouldIgnoreDuplicateClassFiles = false;
 
+	/** Whether to ignore duplicate, non-identical class files. */
+	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
+			"coverage or jacoco coverage should be generated.")
+	/* package */ boolean shouldGenerateTestwiseCoverage = false;
+
 	/** @see #classDirectoriesOrZips */
 	public List<File> getClassDirectoriesOrZips() {
-		return CollectionUtils.map(classDirectoriesOrZips, location -> new File(location));
+		return CollectionUtils.map(classDirectoriesOrZips, File::new);
 	}
 
 	/** @see #classDirectoriesOrZips */
@@ -99,9 +106,9 @@ public class ConvertCommand implements ICommand {
 		this.locationExcludeFilters = locationExcludeFilters;
 	}
 
-	/** @see #inputFile */
-	public File getInputFile() {
-		return new File(inputFile);
+	/** @see #inputFiles */
+	public List<File> getInputFiles() {
+		return inputFiles.stream().map(File::new).collect(Collectors.toList());
 	}
 
 	/** @see #outputFile */
@@ -131,8 +138,10 @@ public class ConvertCommand implements ICommand {
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
 
-		validator.isTrue(getInputFile().exists() && getInputFile().canRead(),
-				"Cannot read the input file " + getInputFile());
+		for (File inputFile : getInputFiles()) {
+			validator.isTrue(inputFile.exists() && inputFile.canRead(),
+					"Cannot read the input file " + inputFile);
+		}
 
 		validator.ensure(() -> {
 			CCSMAssert.isFalse(StringUtils.isEmpty(outputFile), "You must specify an output file");
@@ -147,7 +156,11 @@ public class ConvertCommand implements ICommand {
 	/** {@inheritDoc} */
 	@Override
 	public void run() throws Exception {
-		new Converter(this).run();
+		Converter converter = new Converter(this);
+		if (this.shouldGenerateTestwiseCoverage) {
+			converter.runTestwiseCoverageReportGeneration();
+		} else {
+			converter.runJaCoCoReportGeneration();
+		}
 	}
-
 }

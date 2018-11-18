@@ -1,6 +1,6 @@
 package com.teamscale.report.testwise.closure;
 
-import com.teamscale.report.testwise.jacoco.TestwiseXmlReportGeneratorTest;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGeneratorTest;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.util.AntPatternIncludeFilter;
 import org.conqat.lib.commons.collections.CollectionUtils;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static com.teamscale.report.ReportGenerator.getReportAsString;
+import static com.teamscale.report.ReportUtils.getReportAsString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Tests for {@link ClosureTestwiseCoverageGenerator}. */
@@ -38,6 +38,6 @@ public class ClosureTestwiseCoverageGeneratorTest extends CCSMTestCaseBase {
 		TestwiseCoverage testwiseCoverage = new ClosureTestwiseCoverageGenerator(
 				Collections.singletonList(coverageFolder), includeFilter)
 				.readTestCoverage();
-		return getReportAsString(TestwiseXmlReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
+		return getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
 	}
 }

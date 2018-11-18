@@ -1,8 +1,8 @@
 package com.teamscale.report.testwise.jacoco;
 
-import com.teamscale.report.ReportGenerator;
+import com.teamscale.client.TestDetails;
+import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestDetails;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
@@ -22,10 +22,10 @@ import java.util.Collections;
 import static org.conqat.lib.commons.collections.CollectionUtils.emptyList;
 import static org.mockito.Mockito.mock;
 
-/** Tests for the {@link TestwiseXmlReportGenerator} class. */
-public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
+/** Tests for the {@link JaCoCoTestwiseReportGenerator} class. */
+public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 
-	/** Tests that the {@link TestwiseXmlReportGenerator} produces the expected output. */
+	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
 	@Test
 	public void testTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
@@ -37,10 +37,10 @@ public class TestwiseXmlReportGeneratorTest extends CCSMTestCaseBase {
 	private String runGenerator(String testDataFolder, String execFileName) throws Exception {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
-		TestwiseCoverage testwiseCoverage = new TestwiseXmlReportGenerator(Collections.singletonList(classFileFolder),
+		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(Collections.singletonList(classFileFolder),
 				includeFilter, true,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
-		return ReportGenerator.getReportAsString(generateDummyReportFrom(testwiseCoverage));
+		return ReportUtils.getReportAsString(generateDummyReportFrom(testwiseCoverage));
 	}
 
 	/** Generates a dummy coverage report object that wraps the given {@link TestwiseCoverage}. */

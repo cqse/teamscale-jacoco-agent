@@ -1,12 +1,10 @@
 package com.teamscale.jacoco.agent.store;
 
-import com.teamscale.client.EReportFormat;
-
 /** Stores XML data permanently. */
 public interface IXmlStore {
 
 	/** Stores the given XML permanently. */
-	void store(String xml, EReportFormat format);
+	void store(String xml);
 
 	/** Human-readable description of the store. */
 	String describe();

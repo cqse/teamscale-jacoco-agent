@@ -53,13 +53,11 @@ public class HttpUploadStore implements IXmlStore {
 
 	/** {@inheritDoc} */
 	@Override
-	public void store(String xml, EReportFormat format) {
-		CCSMAssert.isTrue(format == EReportFormat.JACOCO, "HTTP upload does only support JaCoCo " +
-				"coverage and cannot be used with Test Impact mode.");
+	public void store(String xml) {
 		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUploading(xml)) {
 				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
-				failureStore.store(xml, format);
+				failureStore.store(xml);
 			}
 		}
 	}

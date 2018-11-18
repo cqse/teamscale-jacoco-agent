@@ -63,7 +63,7 @@ shadowJar {
 	}
 
 	// Don't relocate our own code
-	// The plugin-shadow plugin by default relocates all packages to shadow.* and we are overriding this here
+	// The relocateShadowJar configures by default to relocate all packages to shadow.* and we are overriding this here
 	relocate 'eu.cqse', 'eu.cqse'
 
 	// Fix relocation of multi version jar

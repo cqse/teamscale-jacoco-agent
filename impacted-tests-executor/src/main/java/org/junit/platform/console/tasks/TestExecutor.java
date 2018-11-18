@@ -10,6 +10,7 @@
 
 package org.junit.platform.console.tasks;
 
+import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.Logger;
@@ -26,6 +27,7 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -33,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static ReportUtils.writeListToFile;
 import static org.junit.platform.console.tasks.ConsoleInterceptor.ignoreOut;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
@@ -61,19 +62,19 @@ public class TestExecutor {
 	}
 
 	/** Executes the given list of tests. */
-	public TestExecutionSummary executeTests(List<String> tests) {
+	public TestExecutionSummary executeTests(List<String> tests) throws IOException {
 		logger.info("Executing " + tests.size() + " impacted tests...");
 		return executeRequest(generateImpactedDiscoveryRequest(tests));
 	}
 
 	/** Executes all tests included in {@link #options}. */
-	public TestExecutionSummary executeAllTests() {
+	public TestExecutionSummary executeAllTests() throws IOException {
 		logger.info("Executing all tests...");
 		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions()));
 	}
 
 	/** Executes the tests described by the given discovery request. */
-	private TestExecutionSummary executeRequest(LauncherDiscoveryRequest discoveryRequest) {
+	private TestExecutionSummary executeRequest(LauncherDiscoveryRequest discoveryRequest) throws IOException {
 		Launcher launcher = launcherSupplier.get();
 		SummaryGeneratingListener summaryListener = registerTestListeners(launcher);
 		ignoreOut(() -> launcher.execute(discoveryRequest));
@@ -89,8 +90,8 @@ public class TestExecutor {
 	}
 
 	/** Writes the given test executions to a report file. */
-	private void writeTestExecutionReport(File reportDir, List<TestExecution> testExecutions) {
-		writeListToFile(reportDir, "test-execution.json", testExecutions);
+	private void writeTestExecutionReport(File reportDir, List<TestExecution> testExecutions) throws IOException {
+		ReportUtils.writeReportToFile(new File(reportDir, "test-execution.json"), testExecutions);
 	}
 
 	/** Creates a discovery request from the given list of unique test IDs. */

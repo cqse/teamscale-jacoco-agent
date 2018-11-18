@@ -1,12 +1,11 @@
 package com.teamscale
 
-import com.teamscale.config.Server
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.client.TeamscaleClient
+import com.teamscale.config.Server
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import java.net.ConnectException
 
 /** Handles report uploads to Teamscale. */
@@ -31,14 +30,13 @@ open class TeamscaleUploadTask : DefaultTask() {
     @TaskAction
     fun uploadReports() {
         logger.info("Uploading to $server at $commitDescriptor...")
-        val client =
-            TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
+        val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
 
         // We want to upload e.g. all JUnit test reports that go to the same partition
         // as one commit so we group them before uploading them
         for ((key, reports) in reports.groupBy { Triple(it.format, it.partition, it.message) }) {
             val (format, partition, message) = key
-            val reportFiles = reports.flatMap { listFileTree(it.report, format.extension) }
+            val reportFiles = reports.map { it.report }
             logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
             if (reportFiles.isEmpty()) {
                 logger.info("Skipped empty upload!")
@@ -54,10 +52,5 @@ open class TeamscaleUploadTask : DefaultTask() {
                 throw e
             }
         }
-    }
-
-    /** Recursively lists all files in the given directory that match the specified extension. */
-    private fun listFileTree(file: File, extension: String): Collection<File> {
-        return file.walkTopDown().filter { it.isFile && it.extension.equals(extension, ignoreCase = true) }.toSet()
     }
 }
