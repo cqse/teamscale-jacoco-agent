@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.util.Benchmark;
 import com.teamscale.jacoco.util.Timer;
@@ -32,7 +33,7 @@ public class Agent extends AgentBase {
 	protected final IXmlStore store;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException {
+	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploadStoreException {
 		super(options);
 
 		store = options.createStore();

@@ -80,22 +80,34 @@ patterns with `*`, `**` and `?`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
-  
-  You can get the commit info from your VCS e.g. for Git via 
+
+  If **Git** is your VCS, you can get the commit info via
   
 ```bash
 echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
 ```
-
+  
   Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
   Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
   
+  If **Subversion** is your VCS and your reposiory follows the SVN convention with `trunk`, `branches`, and `tags` directories, you can get the commit info via
+  
+  ```bash
+ echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
+```
+  
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format)
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
+- `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+- `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
+  https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case that the given
+  path does not yet exists at the given share, it will be created.
+- `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 
 ## Testwise coverage mode
 

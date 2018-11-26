@@ -22,6 +22,7 @@ public abstract class AgentBase {
 
 	private static LoggingUtils.LoggingResources loggingResources;
 
+	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
