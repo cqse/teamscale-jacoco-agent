@@ -48,7 +48,7 @@ public class Converter {
 			loader.load(jacocoExecutionData);
 		}
 
-		SessionInfo sessionInfo = loader.getSessionInfoStore().getMerged("dummy");
+		SessionInfo sessionInfo = loader.getSessionInfoStore().getMerged("merged");
 		ExecutionDataStore executionDataStore = loader.getExecutionDataStore();
 
 		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(

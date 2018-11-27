@@ -56,7 +56,7 @@ public class TestDetailsCollector {
 	private TestPlan buildTestPlan(ImpactedTestsExecutorCommandLineOptions options) {
 		Launcher launcher = launcherSupplier.get();
 		LauncherDiscoveryRequest discoveryRequest = new DiscoveryRequestCreator()
-				.toDiscoveryRequest(options.toJUnitOptions());
+				.toDiscoveryRequest(options.getCommandLineOptions());
 		return launcher.discover(discoveryRequest);
 	}
 

@@ -40,13 +40,6 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     lateinit var configuration: TeamscalePluginExtension
 
     /**
-     * The baseline commit. All changes after this commit are considered
-     * for test impact analysis.
-     */
-    @Input
-    lateinit var baselineCommit: CommitDescriptor
-
-    /**
      * The (current) commit at which test details should be uploaded to.
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
@@ -65,7 +58,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @TaskAction
     override fun exec() {
         prepareClassPath()
-        tempDir = configuration.agent.getTempDestination(project, testTask)
+        tempDir = configuration.agent.getTestArtifactDestination(project, testTask)
 
         if (tempDir.exists()) {
             logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
@@ -118,7 +111,6 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             "--user", configuration.server.userName!!,
             "--access-token", configuration.server.userAccessToken!!,
             "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
-            "--baseline", baselineCommit.toString(),
             "--end", endCommit.toString(),
             "--agent-url", configuration.agent.url.toString()
         )
@@ -161,7 +153,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         val includes = testTask.includes
         // JUnit by default only includes classes ending with Test, but we want to include all classes.
         if (includes.isEmpty()) {
-            args.addAll(listOf("-n", ".*"))
+            // .* Needs to be set in quotes as windows expands this to all file names starting with dot otherwise
+            args.addAll(listOf("-n", "\".*\""))
         }
         includes.forEach { classIncludePattern ->
             args.addAll(listOf("-n", normalizeAntPattern(

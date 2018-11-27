@@ -52,7 +52,7 @@ public class TestwiseCoverageReportBuilder {
 			TestInfo testInfo = testInfoBuilder.build();
 			if (testInfo == null) {
 				System.err.println("No coverage for test '" + testInfoBuilder.getUniformPath() + "'");
-				return null;
+				continue;
 			}
 			report.tests.add(testInfo);
 		}

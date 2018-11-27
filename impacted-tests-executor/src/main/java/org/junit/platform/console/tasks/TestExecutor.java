@@ -70,7 +70,7 @@ public class TestExecutor {
 	/** Executes all tests included in {@link #options}. */
 	public TestExecutionSummary executeAllTests() throws IOException {
 		logger.info("Executing all tests...");
-		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions()));
+		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.getCommandLineOptions()));
 	}
 
 	/** Executes the tests described by the given discovery request. */

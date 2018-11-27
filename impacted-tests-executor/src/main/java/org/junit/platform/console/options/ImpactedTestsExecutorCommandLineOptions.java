@@ -25,7 +25,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	private CommitDescriptor endCommit;
 
 	/** Regular JUnit console command line options. */
-	private CommandLineOptions commandLineOptions;
+	private final CommandLineOptions commandLineOptions;
 
 	/** The url (including port) at which the agent listens. */
 	private HttpUrl agentUrl;
@@ -58,11 +58,6 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	/** The dir in which to write the JUnit and test details reports. */
 	public Optional<Path> getReportsDir() {
 		return commandLineOptions.getReportsDir();
-	}
-
-	/** The normal JUnit command line options object. */
-	public CommandLineOptions toJUnitOptions() {
-		return commandLineOptions;
 	}
 
 	/** @see #server */
@@ -113,11 +108,6 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	/** @see #commandLineOptions */
 	public CommandLineOptions getCommandLineOptions() {
 		return commandLineOptions;
-	}
-
-	/** @see #commandLineOptions */
-	public void setCommandLineOptions(CommandLineOptions commandLineOptions) {
-		this.commandLineOptions = commandLineOptions;
 	}
 
 	/** @see #agentUrl */

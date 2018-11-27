@@ -1,5 +1,5 @@
 {
-  "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testEditRole",
+  "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testEditRole",
   "fileNames": [
     "/Users/florian/Documents/CQSE/Teamscale/engine/com.teamscale.ui/resources/google-closure-library/closure/goog/base.js",
     "/Users/florian/Documents/CQSE/Teamscale/engine/com.teamscale.ui/resources/google-closure-library/closure/goog/debug/error.js",

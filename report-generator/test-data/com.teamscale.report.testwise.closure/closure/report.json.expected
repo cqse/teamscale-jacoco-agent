@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testCreateGlobalRole",
+      "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testCreateGlobalRole",
       "sourcePath": "/path/to/source",
       "content": "content",
       "duration": 0.077,
@@ -216,7 +216,7 @@
       ]
     },
     {
-      "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDeleteGlobalRole",
+      "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testDeleteGlobalRole",
       "sourcePath": "/path/to/source",
       "content": "content",
       "duration": 0.077,
@@ -419,7 +419,7 @@
       ]
     },
     {
-      "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDeleteProjectRole",
+      "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testDeleteProjectRole",
       "sourcePath": "/path/to/source",
       "content": "content",
       "duration": 0.078,
@@ -622,7 +622,7 @@
       ]
     },
     {
-      "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testDuplicateRole",
+      "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testDuplicateRole",
       "sourcePath": "/path/to/source",
       "content": "content",
       "duration": 0.074,
@@ -837,7 +837,7 @@
       ]
     },
     {
-      "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testEditRole",
+      "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testEditRole",
       "sourcePath": "/path/to/source",
       "content": "content",
       "duration": 0.069,
@@ -1225,7 +1225,7 @@
       ]
     },
     {
-      "uniformPath": "com.teamscale.test.ui.admin.AdminPerspectiveRoleViewTest#testRenameRole",
+      "uniformPath": "com/teamscale/test/ui/admin/AdminPerspectiveRoleViewTest/testRenameRole",
       "sourcePath": "/path/to/source",
       "content": "content",
       "duration": 0.071,

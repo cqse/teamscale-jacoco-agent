@@ -18,11 +18,7 @@ import static java.util.stream.Collectors.toList;
 /** Utilities for generating reports. */
 public class ReportUtils {
 
-	private static final Gson GSON;
-
-	static {
-		GSON = new GsonBuilder().setPrettyPrinting().create();
-	}
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	/** Converts to given testwise coverage report to a json report and writes it to the given file. */
 	public static <T> void writeReportToFile(File reportFile, T report) throws IOException {

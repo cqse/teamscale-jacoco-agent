@@ -51,7 +51,7 @@ open class TeamscaleReportTask : DefaultTask() {
 
     private val testArtifactsDir
         @InputDirectory
-        get() = configuration.agent.getTempDestination(project, testTask)
+        get() = configuration.agent.getTestArtifactDestination(project, testTask)
 
     /* Task outputs */
 

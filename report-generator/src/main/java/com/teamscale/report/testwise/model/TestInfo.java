@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Generic container of all information about a specific test as written to the report. */
-@SuppressWarnings({"unused", "FieldCanBeLocal"})
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public class TestInfo {
 
 	/** Unique name of the test case by using a path like hierarchical description, which can be shown in the UI. */
-	private final String uniformPath;
+	public final String uniformPath;
 
 	/**
 	 * Path to the source of the method. Will be equal to uniformPath in most cases, but e.g. @Test methods in a Base
@@ -24,16 +24,16 @@ public class TestInfo {
 	public final String content;
 
 	/** Duration of the execution in seconds. */
-	private final Double duration;
+	public final Double duration;
 
 	/** The actual execution result state. */
-	private final ETestExecutionResult result;
+	public final ETestExecutionResult result;
 
 	/**
 	 * Optional message given for test failures (normally contains a stack trace).
 	 * May be {@code null}.
 	 */
-	private final String message;
+	public final String message;
 
 	/** All paths that the test did cover. */
 	public final List<PathCoverage> paths = new ArrayList<>();
