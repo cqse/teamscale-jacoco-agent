@@ -1,10 +1,10 @@
 package com.teamscale.config
 
 import com.teamscale.ArgumentAppender
+import com.teamscale.TeamscalePlugin
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
 import org.gradle.api.Project
-import org.gradle.api.Task
 import java.io.File
 import java.io.Serializable
 import java.util.function.Predicate
@@ -68,12 +68,10 @@ class AgentConfiguration : Serializable {
      * Configures the Teamscale plugin to use a remote agent instead of a local one.
      * @param url The url (including the port) of the http server
      *            started by the remote agent in testwise coverage mode.
-     * @param testArtifactDestination names the folder into which
-     *            the execution files of the remote agent are written to.
      */
-    fun useRemoteAgent(url: String, testArtifactDestination: File) {
+    @JvmOverloads
+    fun useRemoteAgent(url: String = "http://127.0.0.1:8123/") {
         this.remoteUrl = HttpUrl.parse(url)
-        this.testArtifactDestination = testArtifactDestination
     }
 
     /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
@@ -82,9 +80,9 @@ class AgentConfiguration : Serializable {
     }
 
     /** Returns the directory into which test artifacts should be written to. */
-    fun getTestArtifactDestination(project: Project, gradleTestTask: Task): File {
+    fun getTestArtifactDestination(project: Project, taskName: String): File {
         return testArtifactDestination ?: project.file(
-            "${project.buildDir}/tmp/jacoco/${project.name}-${gradleTestTask.name}"
+            "${project.buildDir}/tmp/jacoco/${project.name}-$taskName"
         )
     }
 
@@ -96,22 +94,39 @@ class AgentConfiguration : Serializable {
         includes = toCopy.includes ?: default.includes
         excludes = toCopy.excludes ?: default.excludes ?: listOf("org.junit.**")
         localPort = toCopy.localPort ?: default.localPort ?: 8123
+        remoteUrl = toCopy.remoteUrl ?: default.remoteUrl
     }
 
     /** Returns a filter predicate that respects the configured include and exclude patterns. */
-    fun getFilter(): Predicate<String>? {
-        return ClasspathWildcardIncludeFilter(
-            includes?.joinToString(":") { "*$it".replace('/', '.') },
-            excludes?.joinToString(":") { "*$it".replace('/', '.') }
-        )
+    fun getFilter(): SerializableFilter {
+        return SerializableFilter(includes, excludes)
+    }
+
+    /** Builds the jvm argument to start the impacted test executor. */
+    fun getJvmArgs(project: Project, taskName: String): String {
+        val builder = StringBuilder()
+        val argument = ArgumentAppender(builder)
+        builder.append("-javaagent:")
+        val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
+            .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
+        builder.append(agentJar.canonicalPath)
+        builder.append("=")
+
+        appendArguments(argument, project, taskName)
+
+        return builder.toString()
     }
 
     /**
      * Appends the configuration for starting a local instance of the testwise coverage server to the
      * java agent arguments.
      */
-    fun appendArguments(argument: ArgumentAppender, project: Project, gradleTestTask: Task) {
-        argument.append("out", getTestArtifactDestination(project, gradleTestTask))
+    private fun appendArguments(
+        argument: ArgumentAppender,
+        project: Project,
+        taskName: String
+    ) {
+        argument.append("out", getTestArtifactDestination(project, taskName))
         argument.append("includes", includes)
         argument.append("excludes", excludes)
 
@@ -119,6 +134,18 @@ class AgentConfiguration : Serializable {
             argument.append("classdumpdir", getDumpDirectory(project))
         }
 
-        argument.append("http-server-port", localPort)
+        argument.append("http-server-port", if (isLocalAgent()) localPort else remoteUrl!!.port())
     }
+}
+
+class SerializableFilter(private val includes: List<String>?, private val excludes: List<String>?) : Serializable {
+
+    /** Returns a filter predicate that respects the configured include and exclude patterns. */
+    fun getPredicate(): Predicate<String>? {
+        return ClasspathWildcardIncludeFilter(
+            includes?.joinToString(":") { "*$it".replace('/', '.') },
+            excludes?.joinToString(":") { "*$it".replace('/', '.') }
+        )
+    }
+
 }

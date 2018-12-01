@@ -1,10 +1,13 @@
 package org.junit.platform.console.options;
 
+import com.sun.javafx.util.Utils;
 import com.teamscale.client.CommitDescriptor;
 import okhttp3.HttpUrl;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
 import org.junit.platform.console.shadow.joptsimple.OptionSpec;
+
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
@@ -79,6 +82,13 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	/** Converts the parsed parameters into a {@link ImpactedTestsExecutorCommandLineOptions} object. */
 	public ImpactedTestsExecutorCommandLineOptions toCommandLineOptions(OptionSet detectedOptions) {
 		CommandLineOptions jUnitResult = jUnitOptions.toCommandLineOptions(detectedOptions);
+		jUnitResult.setIncludedClassNamePatterns(
+				jUnitResult.getIncludedClassNamePatterns().stream().map(Utils::stripQuotes)
+						.collect(Collectors.toList()));
+		jUnitResult.setExcludedClassNamePatterns(
+				jUnitResult.getExcludedClassNamePatterns().stream().map(Utils::stripQuotes)
+						.collect(Collectors.toList()));
+
 		ImpactedTestsExecutorCommandLineOptions result = new ImpactedTestsExecutorCommandLineOptions(jUnitResult);
 
 		result.getServer().url = detectedOptions.valueOf(this.url);

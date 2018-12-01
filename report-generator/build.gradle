@@ -4,9 +4,12 @@ plugins {
 	id 'maven'
 }
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
 version reportGeneratorVersion
+
+configurations {
+	conqat
+	implementation.extendsFrom(conqat)
+}
 
 dependencies {
 	implementation project(':teamscale-client')
@@ -18,7 +21,7 @@ dependencies {
 	implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
 	implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
 
-	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+	conqat 'org.conqat:org.conqat.lib.commons:0.20160822'
 
 	implementation 'com.google.code.gson:gson:2.8.5'
 
@@ -31,20 +34,17 @@ test {
 	testLogging.exceptionFormat "full"
 }
 
+// Needed to bundle org.conqat.lib.commons into the report-generator
+// as this dependency is not available via mavenCentral
 shadowJar {
 	classifier = null
+	configurations = [project.configurations.conqat]
 }
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-	target = tasks.shadowJar
-}
-
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 install {
 	repositories.mavenInstaller {
 		configuration = configurations.shadow
-		pom.whenConfigured { it.dependencies.clear() }
+//		pom.whenConfigured { it.dependencies.clear() }
 	}
 }
 
@@ -58,7 +58,7 @@ uploadShadow {
 			repository(url: cqseMavenRepositoryUrl) {
 				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
 			}
-			pom.whenConfigured { it.dependencies.clear() }
+//			pom.whenConfigured { it.dependencies.clear() }
 		}
 	}
 }

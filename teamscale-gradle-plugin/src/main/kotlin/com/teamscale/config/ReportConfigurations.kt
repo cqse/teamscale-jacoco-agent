@@ -43,18 +43,10 @@ open class TestwiseCoverageConfiguration : Serializable {
     }
 
     /** Returns the destination set for the report or the default destination if not set. */
-    open fun getDestinationOrDefault(project: Project, gradleTestTask: Task): File {
+    open fun getDestinationOrDefault(project: Project, testTaskName: String): File {
         return destination ?: project.file(
             "${project.buildDir}/reports/${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}/" +
-                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${project.name}-${gradleTestTask.name}.json"
-        )
-    }
-
-    /** Returns the destination set for the report or the default destination if not set. */
-    open fun getTempDestination(project: Project, gradleTestTask: Task): File {
-        return project.file(
-            "${project.buildDir}/tmp/${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}/" +
-                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${project.name}-${gradleTestTask.name}-${EReportFormat.TESTWISE_COVERAGE.name}"
+                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${project.name}-$testTaskName.json"
         )
     }
 
@@ -78,7 +70,7 @@ open class TestwiseCoverageConfiguration : Serializable {
     fun getReport(project: Project, gradleTestTask: Test): Report {
         return Report(
             format = EReportFormat.TESTWISE_COVERAGE,
-            report = getDestinationOrDefault(project, gradleTestTask),
+            report = getDestinationOrDefault(project, gradleTestTask.name),
             message = message ?: "${EReportFormat.TESTWISE_COVERAGE.readableName} gradle upload",
             partition = getTransformedPartition(project)
         )

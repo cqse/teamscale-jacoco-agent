@@ -1,7 +1,7 @@
 package com.teamscale
 
-import com.teamscale.config.TeamscalePluginExtension
 import com.teamscale.client.CommitDescriptor
+import com.teamscale.config.TeamscalePluginExtension
 import com.teamscale.report.util.AntPatternUtils
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
@@ -12,7 +12,6 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
-import org.gradle.util.RelativePathUtil
 import java.io.File
 import java.util.regex.Pattern
 
@@ -58,7 +57,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @TaskAction
     override fun exec() {
         prepareClassPath()
-        tempDir = configuration.agent.getTestArtifactDestination(project, testTask)
+        tempDir = configuration.agent.getTestArtifactDestination(project, testTask.name)
 
         if (tempDir.exists()) {
             logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
@@ -68,7 +67,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         workingDir = testTask.workingDir
 
         if (configuration.agent.isLocalAgent()) {
-            jvmArgs(getAgentJvmArg())
+            jvmArgs(configuration.agent.getJvmArgs(project, testTask.name))
         }
 
         args(getImpactedTestExecutorProgramArguments())
@@ -87,21 +86,6 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
         classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
         logger.debug("Starting impacted tests with classpath ${classpath.files}")
-    }
-
-    /** Builds the jvm argument to start the impacted test executor. */
-    private fun getAgentJvmArg(): String {
-        val builder = StringBuilder()
-        val argument = ArgumentAppender(builder, workingDir)
-        builder.append("-javaagent:")
-        val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
-            .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
-        builder.append(RelativePathUtil.relativePath(workingDir, agentJar))
-        builder.append("=")
-
-        configuration.agent.appendArguments(argument, project, testTask)
-
-        return builder.toString()
     }
 
     private fun getImpactedTestExecutorProgramArguments(): List<String> {
@@ -128,7 +112,9 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         project.sourceSets.forEach { sourceSet ->
             val output = sourceSet.output
             rootDirs.addAll(output.classesDirs.files)
-            rootDirs.add(output.resourcesDir)
+            if (output.resourcesDir != null) {
+                rootDirs.add(output.resourcesDir!!)
+            }
             rootDirs.addAll(output.dirs.files)
         }
         args.addAll(listOf("--scan-class-path", rootDirs.joinToString(File.pathSeparator)))
@@ -157,14 +143,22 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             args.addAll(listOf("-n", "\".*\""))
         }
         includes.forEach { classIncludePattern ->
-            args.addAll(listOf("-n", normalizeAntPattern(
-                classIncludePattern
-            ).pattern()))
+            args.addAll(
+                listOf(
+                    "-n", '"' + normalizeAntPattern(
+                        classIncludePattern
+                    ).pattern() + '"'
+                )
+            )
         }
         testTask.excludes.forEach { classExcludePattern ->
-            args.addAll(listOf("-N", normalizeAntPattern(
-                classExcludePattern
-            ).pattern()))
+            args.addAll(
+                listOf(
+                    "-N", '"' + normalizeAntPattern(
+                        classExcludePattern
+                    ).pattern() + '"'
+                )
+            )
         }
     }
 

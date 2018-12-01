@@ -17,7 +17,7 @@ ext {
 }
 
 subprojects {
-    group 'eu.cqse'
+    group 'com.teamscale'
     
     configurations {
         deployerJars

@@ -4,7 +4,6 @@ plugins {
     id 'maven'
 }
 
-group 'eu.cqse'
 version pluginVersion
 
 dependencies {

@@ -87,6 +87,15 @@ public class ImpactedTestsExecutor {
 
 		logger.info("Found " + availableTestDetails.size() + " tests");
 
+		if (availableTestDetails.size() == 0) {
+			for (String includedClassNamePattern : options.getCommandLineOptions().getIncludedClassNamePatterns()) {
+				logger.info("Include: " + includedClassNamePattern);
+			}
+			for (String excludedClassNamePattern : options.getCommandLineOptions().getExcludedClassNamePatterns()) {
+				logger.info("Exclude: " + excludedClassNamePattern);
+			}
+		}
+
 		// Write out test details to file
 		if (options.getReportsDir().isPresent()) {
 			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails);

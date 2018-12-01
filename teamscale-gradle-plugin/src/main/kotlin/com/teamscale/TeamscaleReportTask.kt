@@ -1,9 +1,8 @@
 package com.teamscale
 
-import com.google.gson.Gson
 import com.teamscale.client.TestDetails
-import com.teamscale.config.AgentConfiguration
 import com.teamscale.config.GoogleClosureConfiguration
+import com.teamscale.config.SerializableFilter
 import com.teamscale.config.TeamscalePluginExtension
 import com.teamscale.report.ReportUtils
 import com.teamscale.report.testwise.ETestArtifactFormat
@@ -15,7 +14,10 @@ import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
 import com.teamscale.report.util.ILogger
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.testing.Test
 import java.io.File
 
@@ -23,12 +25,10 @@ import java.io.File
 open class TeamscaleReportTask : DefaultTask() {
 
     /**
-     * Reference to the test task for which this task acts as a
+     * Test task's name for which this task acts as a
      * stand-in when executing impacted tests.
      */
-    lateinit var testTask: Test
-
-    private val gson = Gson()
+    lateinit var testTaskName: String
 
     /**
      * Reference to the configuration that should be used for this task.
@@ -37,9 +37,9 @@ open class TeamscaleReportTask : DefaultTask() {
 
     /* Task inputs */
 
-    private val agentConfiguration: AgentConfiguration
+    private val agentFilter: SerializableFilter
         @Input
-        get() = configuration.agent
+        get() = configuration.agent.getFilter()
 
     private val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
         @Input
@@ -49,15 +49,17 @@ open class TeamscaleReportTask : DefaultTask() {
         @InputFiles
         get() = configuration.report.googleClosureCoverage.destination ?: emptySet()
 
-    private val testArtifactsDir
-        @InputDirectory
-        get() = configuration.agent.getTestArtifactDestination(project, testTask)
+    @InputFiles
+    val testArtifactsDirs = mutableListOf<File>()
+
+    @InputFiles
+    val classDirs = mutableListOf<File>()
 
     /* Task outputs */
 
     private val reportFile
         @OutputFile
-        get() = configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTask)
+        get() = configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTaskName)
 
 
     init {
@@ -73,11 +75,11 @@ open class TeamscaleReportTask : DefaultTask() {
         logger.info("Generating coverage report...")
 
         val testDetails =
-            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, testArtifactsDir)
+            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, testArtifactsDirs)
         val testExecutions = ReportUtils.readObjects(
             ETestArtifactFormat.TEST_EXECUTION,
             Array<TestExecution>::class.java,
-            testArtifactsDir
+            testArtifactsDirs
         )
 
         val testwiseCoverage = getJaCoCoTestwiseCoverage() ?: return
@@ -90,26 +92,29 @@ open class TeamscaleReportTask : DefaultTask() {
     }
 
     private fun getJaCoCoTestwiseCoverage(): TestwiseCoverage? {
-        val classDirectories = if (agentConfiguration.dumpClasses == true) {
-            project.files(agentConfiguration.getDumpDirectory(project))
-        } else {
-            testTask.classpath
-        }
-
-        if (!testArtifactsDir.exists()) {
+        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, testArtifactsDirs)
+        if (jacocoExecutionData.isEmpty()) {
             logger.error("No execution data provided!")
             return null
         }
-        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, testArtifactsDir)
         logger.info("Generating testwise coverage for $jacocoExecutionData")
 
         val generator = JaCoCoTestwiseReportGenerator(
-            classDirectories.files,
-            agentConfiguration.getFilter(),
+            classDirs,
+            agentFilter.getPredicate(),
             true,
             project.logger.wrapInILogger()
         )
         return generator.convert(jacocoExecutionData)
+    }
+
+    fun addTestCoverage(config: TeamscalePluginExtension, testTask: Test) {
+        val classDirectories = if (config.agent.dumpClasses == true) {
+            project.files(config.agent.getDumpDirectory(project))
+        } else {
+            testTask.classpath
+        }
+        classDirs.addAll(classDirectories.files)
     }
 
     private fun getClosureTestwiseCoverage(): TestwiseCoverage? {
