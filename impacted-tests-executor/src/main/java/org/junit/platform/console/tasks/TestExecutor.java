@@ -57,7 +57,7 @@ public class TestExecutor {
 	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger) {
 		this.options = options;
 		this.logger = logger;
-		this.testListenerExtension = new JUnit5TestListenerExtension(options.getAgentUrl(), logger);
+		this.testListenerExtension = new JUnit5TestListenerExtension(options.getAgentUrls(), logger);
 		this.launcherSupplier = LauncherFactory::create;
 	}
 

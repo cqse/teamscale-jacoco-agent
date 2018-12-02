@@ -7,9 +7,8 @@ import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
 import org.junit.platform.console.shadow.joptsimple.OptionSpec;
 
-import java.util.stream.Collectors;
-
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 /** Helper class to parse command line options. */
 public class AvailableImpactedTestsExecutorCommandLineOptions {
@@ -69,7 +68,7 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 		runAllTests = parser.acceptsAll(asList("all", "run-all-tests"),
 				"Partition of the tests");
 
-		agentUrl = parser.accepts("agent-url",
+		agentUrl = parser.acceptsAll(asList("agent-url", "agent"),
 				"Url of the teamscale jacoco agent that generates coverage for the system")
 				.withRequiredArg();
 	}
@@ -84,10 +83,10 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 		CommandLineOptions jUnitResult = jUnitOptions.toCommandLineOptions(detectedOptions);
 		jUnitResult.setIncludedClassNamePatterns(
 				jUnitResult.getIncludedClassNamePatterns().stream().map(Utils::stripQuotes)
-						.collect(Collectors.toList()));
+						.collect(toList()));
 		jUnitResult.setExcludedClassNamePatterns(
 				jUnitResult.getExcludedClassNamePatterns().stream().map(Utils::stripQuotes)
-						.collect(Collectors.toList()));
+						.collect(toList()));
 
 		ImpactedTestsExecutorCommandLineOptions result = new ImpactedTestsExecutorCommandLineOptions(jUnitResult);
 
@@ -104,7 +103,7 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 		}
 		result.setEndCommit(CommitDescriptor.parse(detectedOptions.valueOf(this.end)));
 
-		result.setAgentUrl(HttpUrl.parse(detectedOptions.valueOf(this.agentUrl)));
+		result.setAgentUrls(detectedOptions.valuesOf(this.agentUrl).stream().map(HttpUrl::parse).collect(toList()));
 
 		return result;
 	}

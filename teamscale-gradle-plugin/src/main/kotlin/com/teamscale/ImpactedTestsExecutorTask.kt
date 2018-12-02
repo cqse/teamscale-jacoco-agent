@@ -66,8 +66,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
         workingDir = testTask.workingDir
 
-        if (configuration.agent.isLocalAgent()) {
-            jvmArgs(configuration.agent.getJvmArgs(project, testTask.name))
+        if (configuration.agent.useLocalAgent != false) {
+            jvmArgs(configuration.agent.localAgent.getJvmArgs(project, testTask.name))
         }
 
         args(getImpactedTestExecutorProgramArguments())
@@ -95,9 +95,12 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             "--user", configuration.server.userName!!,
             "--access-token", configuration.server.userAccessToken!!,
             "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
-            "--end", endCommit.toString(),
-            "--agent-url", configuration.agent.url.toString()
+            "--end", endCommit.toString()
         )
+
+        configuration.agent.getAllAgents().forEach {
+            args.addAll(listOf("--agent", it.url.toString()))
+        }
 
         if (runAllTests) {
             args.add("--all")

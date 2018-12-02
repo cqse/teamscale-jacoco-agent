@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+
 /** Implementation of the {@link TestExecutionListener} interface provided by the JUnit platform. */
 public class JUnit5TestListenerExtension implements TestExecutionListener {
 
@@ -24,7 +26,7 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 	private Logger logger;
 
 	/** An API service to signal test start and end to the agent. */
-	private ITestwiseCoverageAgentApi apiService;
+	private List<ITestwiseCoverageAgentApi> apiServices;
 
 	/** List of tests that have been executed, skipped or failed. */
 	private final List<TestExecution> testExecutions = new ArrayList<>();
@@ -33,8 +35,8 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 	private long executionStartTime;
 
 	/** Constructor. */
-	public JUnit5TestListenerExtension(HttpUrl url, Logger logger) {
-		this.apiService = ITestwiseCoverageAgentApi.createService(url);
+	public JUnit5TestListenerExtension(List<HttpUrl> urls, Logger logger) {
+		this.apiServices = urls.stream().map(ITestwiseCoverageAgentApi::createService).collect(toList());
 		this.logger = logger;
 	}
 
@@ -43,7 +45,9 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 		if (testIdentifier.isTest()) {
 			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
 			try {
-				apiService.testStarted(testUniformPath).execute();
+				for (ITestwiseCoverageAgentApi apiService : apiServices) {
+					apiService.testStarted(testUniformPath).execute();
+				}
 			} catch (IOException e) {
 				logger.error(e);
 			}
@@ -56,7 +60,9 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 		if (testIdentifier.isTest()) {
 			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
 			try {
-				apiService.testFinished(testUniformPath).execute();
+				for (ITestwiseCoverageAgentApi apiService : apiServices) {
+					apiService.testFinished(testUniformPath).execute();
+				}
 			} catch (IOException e) {
 				logger.error(e);
 			}

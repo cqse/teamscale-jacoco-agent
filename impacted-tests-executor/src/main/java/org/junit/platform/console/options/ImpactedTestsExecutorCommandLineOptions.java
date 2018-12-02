@@ -4,6 +4,7 @@ import com.teamscale.client.CommitDescriptor;
 import okhttp3.HttpUrl;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /** Holds the actual values of the options configured via command line parameters. */
@@ -28,7 +29,7 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	private final CommandLineOptions commandLineOptions;
 
 	/** The url (including port) at which the agent listens. */
-	private HttpUrl agentUrl;
+	private List<HttpUrl> agentUrls;
 
 	/** Constructor. */
 	public ImpactedTestsExecutorCommandLineOptions(CommandLineOptions jUnitResult) {
@@ -110,13 +111,13 @@ public class ImpactedTestsExecutorCommandLineOptions {
 		return commandLineOptions;
 	}
 
-	/** @see #agentUrl */
-	public HttpUrl getAgentUrl() {
-		return agentUrl;
+	/** @see #agentUrls */
+	public List<HttpUrl> getAgentUrls() {
+		return agentUrls;
 	}
 
-	/** @see #agentUrl */
-	public void setAgentUrl(HttpUrl agentUrl) {
-		this.agentUrl = agentUrl;
+	/** @see #agentUrls */
+	public void setAgentUrls(List<HttpUrl> agentUrl) {
+		this.agentUrls = agentUrl;
 	}
 }

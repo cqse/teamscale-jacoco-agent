@@ -41,28 +41,32 @@ class AgentConfiguration : Serializable {
      */
     var excludes: List<String>? = null
 
-    /** The url of the remote testwise coverage server. */
-    private var remoteUrl: HttpUrl? = null
-
     /** The directory to store test artifacts into. */
     var testArtifactDestination: File? = null
 
     /** The port at which the local testwise coverage server should be started. */
     var localPort: Int? = null
-        private set
+
+    /** List of remote agents to connect to. */
+    var agents: MutableList<TeamscaleAgent> = mutableListOf()
 
     /**
-     * Returns whether tests run with a local agent attached to the same JVM
-     * as the test runner or whether the system under test runs in a
-     * different JVM.
+     * Returns whether an agent should be attached to the same JVM as the test runner.
      */
-    fun isLocalAgent(): Boolean {
-        return remoteUrl == null
+    var useLocalAgent: Boolean? = null
+
+    val localAgent: TeamscaleAgent by lazy {
+        TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:$localPort/"))
     }
 
-    /** The url of the testwise coverage server. */
-    val url
-        get() = remoteUrl ?: "http://127.0.0.1:$localPort/"
+    /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
+    fun getAllAgents(): List<TeamscaleAgent> {
+        val allAgents = ArrayList(agents)
+        if (useLocalAgent != false) {
+            allAgents.add(localAgent)
+        }
+        return allAgents
+    }
 
     /**
      * Configures the Teamscale plugin to use a remote agent instead of a local one.
@@ -70,8 +74,8 @@ class AgentConfiguration : Serializable {
      *            started by the remote agent in testwise coverage mode.
      */
     @JvmOverloads
-    fun useRemoteAgent(url: String = "http://127.0.0.1:8123/") {
-        this.remoteUrl = HttpUrl.parse(url)
+    fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
+        agents.add(TeamscaleAgent(HttpUrl.parse(url)))
     }
 
     /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
@@ -93,8 +97,9 @@ class AgentConfiguration : Serializable {
         dumpDirectory = toCopy.dumpDirectory ?: default.dumpDirectory
         includes = toCopy.includes ?: default.includes
         excludes = toCopy.excludes ?: default.excludes ?: listOf("org.junit.**")
+        useLocalAgent = toCopy.useLocalAgent ?: default.useLocalAgent ?: true
         localPort = toCopy.localPort ?: default.localPort ?: 8123
-        remoteUrl = toCopy.remoteUrl ?: default.remoteUrl
+        agents = mutableListOf(toCopy.agents, default.agents).flatten().toMutableList()
     }
 
     /** Returns a filter predicate that respects the configured include and exclude patterns. */
@@ -102,41 +107,45 @@ class AgentConfiguration : Serializable {
         return SerializableFilter(includes, excludes)
     }
 
-    /** Builds the jvm argument to start the impacted test executor. */
-    fun getJvmArgs(project: Project, taskName: String): String {
-        val builder = StringBuilder()
-        val argument = ArgumentAppender(builder)
-        builder.append("-javaagent:")
-        val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
-            .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
-        builder.append(agentJar.canonicalPath)
-        builder.append("=")
+    inner class TeamscaleAgent(val url: HttpUrl) {
 
-        appendArguments(argument, project, taskName)
+        /** Builds the jvm argument to start the impacted test executor. */
+        fun getJvmArgs(project: Project, taskName: String): String {
+            val builder = StringBuilder()
+            val argument = ArgumentAppender(builder)
+            builder.append("-javaagent:")
+            val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
+                .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
+            builder.append(agentJar.canonicalPath)
+            builder.append("=")
 
-        return builder.toString()
-    }
+            appendArguments(argument, project, taskName)
 
-    /**
-     * Appends the configuration for starting a local instance of the testwise coverage server to the
-     * java agent arguments.
-     */
-    private fun appendArguments(
-        argument: ArgumentAppender,
-        project: Project,
-        taskName: String
-    ) {
-        argument.append("out", getTestArtifactDestination(project, taskName))
-        argument.append("includes", includes)
-        argument.append("excludes", excludes)
-
-        if (dumpClasses == true) {
-            argument.append("classdumpdir", getDumpDirectory(project))
+            return builder.toString()
         }
 
-        argument.append("http-server-port", if (isLocalAgent()) localPort else remoteUrl!!.port())
+        /**
+         * Appends the configuration for starting a local instance of the testwise coverage server to the
+         * java agent arguments.
+         */
+        private fun appendArguments(
+            argument: ArgumentAppender,
+            project: Project,
+            taskName: String
+        ) {
+            argument.append("out", getTestArtifactDestination(project, taskName))
+            argument.append("includes", includes)
+            argument.append("excludes", excludes)
+
+            if (dumpClasses == true) {
+                argument.append("classdumpdir", getDumpDirectory(project))
+            }
+
+            argument.append("http-server-port", url.port())
+        }
     }
 }
+
 
 class SerializableFilter(private val includes: List<String>?, private val excludes: List<String>?) : Serializable {
 
