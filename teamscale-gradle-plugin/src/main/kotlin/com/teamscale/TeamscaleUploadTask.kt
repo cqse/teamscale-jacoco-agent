@@ -19,7 +19,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
     /** The list of reports to be uploaded. */
     @Input
-    val reports = mutableListOf<Report>()
+    val reports = mutableSetOf<Report>()
 
     init {
         group = "Teamscale"
@@ -36,7 +36,7 @@ open class TeamscaleUploadTask : DefaultTask() {
         // as one commit so we group them before uploading them
         for ((key, reports) in reports.groupBy { Triple(it.format, it.partition, it.message) }) {
             val (format, partition, message) = key
-            val reportFiles = reports.map { it.report }
+            val reportFiles = reports.map { it.reportFile }.distinct()
             logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
             if (reportFiles.isEmpty()) {
                 logger.info("Skipped empty upload!")

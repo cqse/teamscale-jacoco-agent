@@ -13,7 +13,7 @@ data class Report(
     val format: EReportFormat,
 
     /** The report file. */
-    val report: File,
+    val reportFile: File,
 
     /** The partition to upload the report to. */
     var partition: String,

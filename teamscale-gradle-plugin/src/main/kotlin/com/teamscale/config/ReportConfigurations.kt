@@ -4,7 +4,6 @@ import com.teamscale.Report
 import com.teamscale.client.EReportFormat
 import com.teamscale.report.util.AntPatternIncludeFilter
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.Transformer
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.testing.Test
@@ -43,10 +42,17 @@ open class TestwiseCoverageConfiguration : Serializable {
     }
 
     /** Returns the destination set for the report or the default destination if not set. */
-    open fun getDestinationOrDefault(project: Project, testTaskName: String): File {
+    open fun getDestinationOrDefault(
+        project: Project,
+        testTaskName: String,
+        partition: String
+    ): File {
         return destination ?: project.file(
-            "${project.buildDir}/reports/${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}/" +
-                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${project.name}-$testTaskName.json"
+            "${project.rootProject.buildDir}/reports/${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}/" +
+                    "${EReportFormat.TESTWISE_COVERAGE.name.toLowerCase()}-${partition.replace(
+                        "[ /\\\\]".toRegex(),
+                        "-"
+                    )}-$testTaskName.json"
         )
     }
 
@@ -68,11 +74,12 @@ open class TestwiseCoverageConfiguration : Serializable {
 
     /** Returns a report specification used in the TeamscaleUploadTask. */
     fun getReport(project: Project, gradleTestTask: Test): Report {
+        val partition = getTransformedPartition(project)
         return Report(
             format = EReportFormat.TESTWISE_COVERAGE,
-            report = getDestinationOrDefault(project, gradleTestTask.name),
+            reportFile = getDestinationOrDefault(project, gradleTestTask.name, partition),
             message = message ?: "${EReportFormat.TESTWISE_COVERAGE.readableName} gradle upload",
-            partition = getTransformedPartition(project)
+            partition = partition
         )
     }
 

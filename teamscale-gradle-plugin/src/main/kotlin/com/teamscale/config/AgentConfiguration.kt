@@ -5,6 +5,9 @@ import com.teamscale.TeamscalePlugin
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
 import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.testing.Test
 import java.io.File
 import java.io.Serializable
 import java.util.function.Predicate
@@ -100,6 +103,14 @@ class AgentConfiguration : Serializable {
         useLocalAgent = toCopy.useLocalAgent ?: default.useLocalAgent ?: true
         localPort = toCopy.localPort ?: default.localPort ?: 8123
         agents = mutableListOf(toCopy.agents, default.agents).flatten().toMutableList()
+    }
+
+    fun getClassFileDirs(project: Project, testTask: Test): Set<File> {
+        return if (dumpClasses == true) {
+            project.files(getDumpDirectory(project)).files
+        } else {
+            testTask.classpath.files
+        }
     }
 
     /** Returns a filter predicate that respects the configured include and exclude patterns. */

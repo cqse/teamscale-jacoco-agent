@@ -10,8 +10,6 @@ class Reports : Serializable {
     /** The destination where the reports should be written to. */
     var destination: File? = null
 
-    var uploadPerModule = false
-
     /** The testwise coverage configuration. */
     val testwiseCoverage = TestwiseCoverageConfiguration()
 

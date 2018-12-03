@@ -16,9 +16,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.testing.Test
 import java.io.File
 
 /** Task which runs the impacted tests. */
@@ -49,17 +48,20 @@ open class TeamscaleReportTask : DefaultTask() {
         @InputFiles
         get() = configuration.report.googleClosureCoverage.destination ?: emptySet()
 
-    @InputFiles
-    val testArtifactsDirs = mutableListOf<File>()
+    /** Report files to included artifacts. */
+    private val reportsToArtifacts = mutableMapOf<File, MutableList<File>>()
+
+    val testArtifacts
+        @InputFiles
+        get() = reportsToArtifacts.values.flatten()
 
     @InputFiles
     val classDirs = mutableListOf<File>()
 
     /* Task outputs */
-
-    private val reportFile
-        @OutputFile
-        get() = configuration.report.testwiseCoverage.getDestinationOrDefault(project, testTaskName)
+    val reportFiles
+        @OutputFiles
+        get() = reportsToArtifacts.keys
 
 
     init {
@@ -74,47 +76,44 @@ open class TeamscaleReportTask : DefaultTask() {
     fun generateTestwiseCoverageReport() {
         logger.info("Generating coverage report...")
 
-        val testDetails =
-            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, testArtifactsDirs)
-        val testExecutions = ReportUtils.readObjects(
-            ETestArtifactFormat.TEST_EXECUTION,
-            Array<TestExecution>::class.java,
-            testArtifactsDirs
-        )
-
-        val testwiseCoverage = getJaCoCoTestwiseCoverage() ?: return
-        testwiseCoverage.add(getClosureTestwiseCoverage())
-
-        logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
-
-        val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
-        ReportUtils.writeReportToFile(reportFile, report)
-    }
-
-    private fun getJaCoCoTestwiseCoverage(): TestwiseCoverage? {
-        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, testArtifactsDirs)
-        if (jacocoExecutionData.isEmpty()) {
-            logger.error("No execution data provided!")
-            return null
-        }
-        logger.info("Generating testwise coverage for $jacocoExecutionData")
-
         val generator = JaCoCoTestwiseReportGenerator(
             classDirs,
             agentFilter.getPredicate(),
             true,
             project.logger.wrapInILogger()
         )
-        return generator.convert(jacocoExecutionData)
+
+        for ((reportFile, artifacts) in reportsToArtifacts.entries) {
+            val testDetails =
+                ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, artifacts)
+            val testExecutions = ReportUtils.readObjects(
+                ETestArtifactFormat.TEST_EXECUTION,
+                Array<TestExecution>::class.java,
+                artifacts
+            )
+
+            val testwiseCoverage = getJaCoCoTestwiseCoverage(generator, artifacts) ?: return
+            testwiseCoverage.add(getClosureTestwiseCoverage())
+
+            logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
+
+            val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
+            ReportUtils.writeReportToFile(reportFile, report)
+        }
     }
 
-    fun addTestCoverage(config: TeamscalePluginExtension, testTask: Test) {
-        val classDirectories = if (config.agent.dumpClasses == true) {
-            project.files(config.agent.getDumpDirectory(project))
-        } else {
-            testTask.classpath
+    private fun getJaCoCoTestwiseCoverage(
+        generator: JaCoCoTestwiseReportGenerator,
+        artifacts: List<File>
+    ): TestwiseCoverage? {
+        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, artifacts)
+        if (jacocoExecutionData.isEmpty()) {
+            logger.error("No execution data provided!")
+            return null
         }
-        classDirs.addAll(classDirectories.files)
+        logger.info("Generating testwise coverage for $jacocoExecutionData")
+
+        return generator.convert(jacocoExecutionData)
     }
 
     private fun getClosureTestwiseCoverage(): TestwiseCoverage? {
@@ -126,6 +125,11 @@ open class TeamscaleReportTask : DefaultTask() {
             jsCoverageData,
             closureIncludeFilter.getPredicate()
         ).readTestCoverage()
+    }
+
+    fun addTestArtifactsDirs(reportFile: File, testArtifactDestination: File) {
+        val list = reportsToArtifacts[reportFile] ?: mutableListOf()
+        list.add(testArtifactDestination)
     }
 }
 

@@ -122,9 +122,9 @@ open class TeamscalePlugin : Plugin<Project> {
             dependsOn.add(project.sourceSets.getByName("test").runtimeClasspath)
         }
 
-        val projectAggregationContext = if (config.report.uploadPerModule) project else project.rootProject
+        val report = config.report.testwiseCoverage.getReport(project, gradleTestTask)
 
-        val teamscaleReportTask = projectAggregationContext.tasks
+        val teamscaleReportTask = project.rootProject.tasks
             .maybeCreate("${gradleTestTask.name}Report", TeamscaleReportTask::class.java)
         impactedTestsExecutorTask.finalizedBy(teamscaleReportTask)
 
@@ -132,11 +132,12 @@ open class TeamscalePlugin : Plugin<Project> {
             testTaskName = gradleTestTask.name
             configuration = config
 
-            addTestCoverage(config, gradleTestTask)
-            testArtifactsDirs.add(config.agent.getTestArtifactDestination(project, gradleTestTask.name))
+            classDirs.addAll(config.agent.getClassFileDirs(project, gradleTestTask))
+            val testArtifactDestination = config.agent.getTestArtifactDestination(project, gradleTestTask.name)
+            addTestArtifactsDirs(report.reportFile, testArtifactDestination)
         }
 
-        val teamscaleUploadTask = projectAggregationContext.tasks
+        val teamscaleUploadTask = project.rootProject.tasks
             .maybeCreate("${gradleTestTask.name}ReportUpload", TeamscaleUploadTask::class.java)
         teamscaleReportTask.finalizedBy(teamscaleUploadTask)
 
@@ -145,7 +146,7 @@ open class TeamscalePlugin : Plugin<Project> {
             commitDescriptor = config.commit.getCommitDescriptor()
 
             if (config.report.testwiseCoverage.upload == true) {
-                reports.add(config.report.testwiseCoverage.getReport(projectAggregationContext, gradleTestTask))
+                reports.add(report)
             }
         }
     }
