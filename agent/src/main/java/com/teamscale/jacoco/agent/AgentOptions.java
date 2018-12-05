@@ -198,7 +198,7 @@ public class AgentOptions {
 	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
 		if (useTestwiseCoverageMode()) {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.US);
 			return "sessionid=,destfile=" + new File(outputDirectory.toFile(),
 					"jacoco-" + dateFormat.format(new Date()) + ".exec").getAbsolutePath();
 		} else {

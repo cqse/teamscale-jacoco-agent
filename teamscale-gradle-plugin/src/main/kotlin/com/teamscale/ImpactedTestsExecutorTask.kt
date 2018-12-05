@@ -66,8 +66,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
         workingDir = testTask.workingDir
 
-        if (configuration.agent.useLocalAgent != false) {
-            jvmArgs(configuration.agent.localAgent.getJvmArgs(project, testTask.name))
+        configuration.agent.localAgent?.let {
+            jvmArgs(it.getJvmArgs(project, testTask.name))
         }
 
         args(getImpactedTestExecutorProgramArguments())

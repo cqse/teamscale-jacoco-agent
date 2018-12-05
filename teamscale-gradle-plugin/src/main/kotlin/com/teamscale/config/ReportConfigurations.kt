@@ -29,11 +29,17 @@ open class TestwiseCoverageConfiguration : Serializable {
     var upload: Boolean? = null
 
     /** Transformer that  */
-    var partitionTransformer: Transformer<String, Project>? = null
+    var partitionPrefix: Transformer<String, Project>? = null
+
+    /** Transformer that  */
+    var partitionTransformer: Transformer<String, String>? = null
+
+    /** Transformer that  */
+    var partitionSuffix: Transformer<String, Project>? = null
 
     /** Convenience method for setting the transformer to append the project name to the partition. */
     fun uploadPerModule() {
-        partitionTransformer = Transformer { project -> "$partition/${project.name}" }
+        partitionSuffix = Transformer { project -> "/${project.name}" }
     }
 
     /** @see #destination */
@@ -62,14 +68,18 @@ open class TestwiseCoverageConfiguration : Serializable {
         message = toCopy.message ?: default.message
         partition = toCopy.partition ?: default.partition
         upload = toCopy.upload ?: default.upload
-        partitionTransformer = toCopy.partitionTransformer ?: default.partitionTransformer ?:
-                Transformer { "$partition" }
+        partitionTransformer = toCopy.partitionTransformer ?: default.partitionTransformer ?: Transformer { p->p }
+        partitionPrefix = toCopy.partitionPrefix ?: default.partitionPrefix
+        partitionSuffix = toCopy.partitionSuffix ?: default.partitionSuffix
     }
 
     /** Takes the partition base name and a report format and merges it into a partition name. */
     open fun getTransformedPartition(project: Project): String {
-        return partitionTransformer?.transform(project) ?: partition
-        ?: throw IllegalArgumentException("No partition set for ${project.name}")
+        if(partition == null) {
+            throw IllegalArgumentException("No partition set for ${project.name}")
+        }
+        val partitionMiddlePart = (partitionTransformer?.transform(partition!!) ?: partition!!)
+        return (partitionPrefix?.transform(project) ?: "") + partitionMiddlePart + (partitionSuffix?.transform(project) ?: "")
     }
 
     /** Returns a report specification used in the TeamscaleUploadTask. */

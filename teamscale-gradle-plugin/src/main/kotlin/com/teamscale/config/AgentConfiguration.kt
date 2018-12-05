@@ -47,38 +47,38 @@ class AgentConfiguration : Serializable {
     /** The directory to store test artifacts into. */
     var testArtifactDestination: File? = null
 
-    /** The port at which the local testwise coverage server should be started. */
-    var localPort: Int? = null
+    /** The local agent's server url to connect to. */
+    var localAgent: TeamscaleAgent? = TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:8123/"))
 
-    /** List of remote agents to connect to. */
-    var agents: MutableList<TeamscaleAgent> = mutableListOf()
-
-    /**
-     * Returns whether an agent should be attached to the same JVM as the test runner.
-     */
-    var useLocalAgent: Boolean? = null
-
-    val localAgent: TeamscaleAgent by lazy {
-        TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:$localPort/"))
-    }
+    /** A remote agent's server url to connect to. */
+    var remoteAgent: TeamscaleAgent? = null
 
     /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
     fun getAllAgents(): List<TeamscaleAgent> {
-        val allAgents = ArrayList(agents)
-        if (useLocalAgent != false) {
-            allAgents.add(localAgent)
-        }
+        val allAgents = mutableListOf<TeamscaleAgent>()
+        localAgent?.let { allAgents.add(it) }
+        remoteAgent?.let { allAgents.add(it) }
         return allAgents
     }
 
     /**
-     * Configures the Teamscale plugin to use a remote agent instead of a local one.
+     * Configures the Teamscale plugin to use a local agent.
+     * @param url The url (including the port) of the http server
+     *            that should be started in testwise coverage mode for the local java process.
+     */
+    @JvmOverloads
+    fun useLocalAgent(url: String = "http://127.0.0.1:8123/") {
+        localAgent = TeamscaleAgent(HttpUrl.parse(url))
+    }
+
+    /**
+     * Configures the Teamscale plugin to use a remote agent additional to the local one.
      * @param url The url (including the port) of the http server
      *            started by the remote agent in testwise coverage mode.
      */
     @JvmOverloads
     fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
-        agents.add(TeamscaleAgent(HttpUrl.parse(url)))
+        remoteAgent = TeamscaleAgent(HttpUrl.parse(url))
     }
 
     /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
@@ -100,9 +100,8 @@ class AgentConfiguration : Serializable {
         dumpDirectory = toCopy.dumpDirectory ?: default.dumpDirectory
         includes = toCopy.includes ?: default.includes
         excludes = toCopy.excludes ?: default.excludes ?: listOf("org.junit.**")
-        useLocalAgent = toCopy.useLocalAgent ?: default.useLocalAgent ?: true
-        localPort = toCopy.localPort ?: default.localPort ?: 8123
-        agents = mutableListOf(toCopy.agents, default.agents).flatten().toMutableList()
+        localAgent = toCopy.localAgent ?: default.localAgent
+        remoteAgent = toCopy.remoteAgent ?: default.remoteAgent
     }
 
     fun getClassFileDirs(project: Project, testTask: Test): Set<File> {
