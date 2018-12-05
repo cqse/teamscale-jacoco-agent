@@ -9,7 +9,9 @@ import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.AgentOptions;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import spark.Request;
+import spark.Response;
 
+import static spark.Spark.get;
 import static spark.Spark.port;
 import static spark.Spark.post;
 import static spark.Spark.stop;
@@ -20,7 +22,7 @@ import static spark.Spark.stop;
 public class TestwiseCoverageAgent extends AgentBase {
 
 	/** Path parameter placeholder used in the http requests. */
-	public static final String TEST_ID_PARAMETER = ":testId";
+	private static final String TEST_ID_PARAMETER = ":testId";
 
 	/** The agent options. */
 	private AgentOptions options;
@@ -39,6 +41,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
 		port(options.getHttpServerPort());
 
+		get("/test", (request, response) -> controller.getSessionId());
+
 		post("/test/start/" + TEST_ID_PARAMETER, (request, response) -> {
 			handleTestStart(request);
 			return "success";
@@ -51,7 +55,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	/** Handles the start of a new test case by setting the session ID. */
-	private void handleTestStart(Request request) throws DumpException {
+	private void handleTestStart(Request request) {
 		logger.debug("Start test " + request.params(TEST_ID_PARAMETER));
 
 		// Dump and reset coverage so that we only record coverage that belongs to this particular test case.

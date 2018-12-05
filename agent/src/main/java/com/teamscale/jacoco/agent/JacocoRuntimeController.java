@@ -89,6 +89,11 @@ public class JacocoRuntimeController {
 		agent.reset();
 	}
 
+	/** Returns the current sessionId. */
+	public String getSessionId() {
+		return agent.getSessionId();
+	}
+
 	/**
 	 * Sets the current sessionId of the agent that can be used to identify
 	 * which coverage is recorded from now on.

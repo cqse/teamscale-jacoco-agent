@@ -142,6 +142,8 @@ finished via a REST API. The corresponding server listens at the specified port.
 The agent's REST API has the following endpoints:
 - `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
 - `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
+- `[GET] /test` Returns the name of the current test. The result will be empty when the test already finished or was 
+  not started yet.
 
 ## Additional steps for WebSphere
 
