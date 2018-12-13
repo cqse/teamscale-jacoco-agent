@@ -1,7 +1,7 @@
 package com.teamscale
 
 import com.teamscale.client.CommitDescriptor
-import com.teamscale.config.TeamscalePluginExtension
+import com.teamscale.config.TeamscaleTaskExtension
 import com.teamscale.report.util.AntPatternUtils
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
@@ -36,7 +36,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
      * Reference to the configuration that should be used for this task.
      */
     @Input
-    lateinit var configuration: TeamscalePluginExtension
+    lateinit var configuration: TeamscaleTaskExtension
 
     /**
      * The (current) commit at which test details should be uploaded to.
@@ -57,7 +57,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @TaskAction
     override fun exec() {
         prepareClassPath()
-        tempDir = configuration.agent.getTestArtifactDestination(project, testTask.name)
+        configuration.agent.destination
+        tempDir = configuration.agent.destination
 
         if (tempDir.exists()) {
             logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
@@ -67,7 +68,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         workingDir = testTask.workingDir
 
         configuration.agent.localAgent?.let {
-            jvmArgs(it.getJvmArgs(project, testTask.name))
+            jvmArgs(it.getJvmArgs())
         }
 
         args(getImpactedTestExecutorProgramArguments())

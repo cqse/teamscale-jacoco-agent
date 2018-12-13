@@ -65,6 +65,7 @@ shadowJar {
 	// Don't relocate our own code
 	// The relocateShadowJar configures by default to relocate all packages to shadow.* and we are overriding this here
 	relocate 'eu.cqse', 'eu.cqse'
+	relocate 'com.teamscale', 'com.teamscale'
 
 	// Fix relocation of multi version jar
 	// Default would be shadow/META-INF/versions/9/, which is wrong
@@ -127,6 +128,7 @@ uploadShadow {
 			repository(url: cqseMavenRepositoryUrl) {
 				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
 			}
+			pom.whenConfigured { it.dependencies.clear() }
 		}
 	}
 }

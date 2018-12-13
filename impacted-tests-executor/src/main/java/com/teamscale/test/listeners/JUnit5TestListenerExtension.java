@@ -9,11 +9,13 @@ import org.junit.platform.console.tasks.TestIdentifierUtils;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,10 +36,23 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 	/** Time when the current test execution started. */
 	private long executionStartTime;
 
+	/** The currently executed test plan. */
+	private TestPlan testPlan;
+
 	/** Constructor. */
 	public JUnit5TestListenerExtension(List<HttpUrl> urls, Logger logger) {
 		this.apiServices = urls.stream().map(ITestwiseCoverageAgentApi::createService).collect(toList());
 		this.logger = logger;
+	}
+
+	@Override
+	public void testPlanExecutionStarted(TestPlan testPlan) {
+		this.testPlan = testPlan;
+	}
+
+	@Override
+	public void testPlanExecutionFinished(TestPlan testPlan) {
+		this.testPlan = null;
 	}
 
 	@Override
@@ -99,10 +114,21 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 
 	@Override
 	public void executionSkipped(TestIdentifier testIdentifier, String reason) {
-		if (testIdentifier.isTest()) {
-			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
+		List<TestIdentifier> testIdentifiers = collectTestIdentifiers(testIdentifier);
+		for (TestIdentifier identifier : testIdentifiers) {
+			String testUniformPath = TestIdentifierUtils.getTestUniformPath(identifier, logger);
 			testExecutions.add(new TestExecution(testUniformPath, 0, ETestExecutionResult.SKIPPED, reason));
 		}
+	}
+
+	/** Returns a flattened list of all test leafs in the given test identifier. */
+	private List<TestIdentifier> collectTestIdentifiers(TestIdentifier testIdentifier) {
+		if (testIdentifier.isTest()) {
+			return Collections.singletonList(testIdentifier);
+		}
+		return testPlan.getChildren(testIdentifier).stream()
+				.flatMap(nestedTestIdentifier -> collectTestIdentifiers(nestedTestIdentifier).stream())
+				.collect(toList());
 	}
 
 	/** @see #testExecutions */

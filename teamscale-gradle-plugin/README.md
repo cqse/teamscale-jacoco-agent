@@ -50,9 +50,6 @@ teamscale {
         // Uploads testwise coverage
         testwiseCoverage()
         
-        // Uploads jUnit reports
-        jUnit()
-        
         // Uploads google closure coverage (together with the java coverage) as testwise coverage
         googleClosureCoverage { js ->
             // The directory in which the google closure coverage files reside after the test
@@ -62,23 +59,13 @@ teamscale {
         }
     }
     
-    // For performance reasons the classes to be instrumented and analyzed can be filtered to only include the relevant 
-    // ones. Includes and excludes have to be specified as wildcard pattern with ? and * as placeholders. (Optional)
+    //
     agent {
-        excludes = [
-            '*.generated.*'
-        ]
-        includes = [
-            'com.package.my.*',
-            'org.mine.MyClass'
-        ]
-        // Where to store the JaCoCo exec file (Optional)
-        executionData = file("...")
-        // Allows to dump all loaded classes to a directory and use them to generate the report
-        // Might be needed when doing additional class transformations e.g. by another profiler
-        // (Optional)
-        dumpClasses = true
-        dumpDirectory = file("...")
+        // Where to store the JaCoCo exec file and other test artifacts (Optional)
+        destination = file("...")
+        
+        // Configures the test runner
+        useRemoteAgent()
     }
 }
 ```
@@ -102,6 +89,6 @@ task integrationTest(type: Test) {
 ```
 The Teamscale plugin generates a special task for every test task you define suffixed with `Impacted` e.g. `unitTestImpacted`.
 This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
-Afterwards `TESTWISE_COVERAGE` and `JUNIT` reports are uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
+Afterwards a `TESTWISE_COVERAGE` report is uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
 
 Uploading reports can also be triggered independently of the `Impacted` task with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.

@@ -1,18 +1,23 @@
 package com.teamscale.config
 
+import com.teamscale.TeamscalePlugin
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.process.JavaForkOptions
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.Serializable
+
 
 /**
  * Holds all user configuration for the teamscale plugin.
  */
-open class TeamscalePluginExtension : Serializable {
+open class TeamscalePluginExtension(val project: Project) : Serializable {
 
-    val server = Server()
+    val server = ServerConfiguration(null)
 
     /** Configures the Teamscale server. */
-    fun server(action: Action<in Server>) {
+    fun server(action: Action<in ServerConfiguration>) {
         action.execute(server)
     }
 
@@ -33,13 +38,6 @@ open class TeamscalePluginExtension : Serializable {
         action.execute(report)
     }
 
-    val agent = AgentConfiguration()
-
-    /** Configures the jacoco agent options. */
-    fun agent(action: Action<in AgentConfiguration>) {
-        action.execute(agent)
-    }
-
     /**
      * @return True if all required fields have been set otherwise false.
      */
@@ -53,20 +51,18 @@ open class TeamscalePluginExtension : Serializable {
         return true
     }
 
-    companion object {
-
-        /**
-         * Merges the configuration of the teamscale root extension with the more specific task extension.
-         * Values set in the task extension will overwrite values set via the root extension.
-         */
-        fun merge(root: TeamscalePluginExtension, task: TeamscalePluginExtension): TeamscalePluginExtension {
-            val merged = TeamscalePluginExtension()
-            merged.server.copyWithDefault(task.server, root.server)
-            merged.commit.copyWithDefault(task.commit, root.commit)
-            merged.report.copyWithDefault(task.report, root.report)
-            merged.agent.copyWithDefault(task.agent, root.agent)
-            merged.testImpactMode = task.testImpactMode ?: root.testImpactMode
-            return merged
-        }
+    fun <T> applyTo(task: T) where T : Task, T : JavaForkOptions {
+        val jacocoTaskExtension: JacocoTaskExtension? = task.extensions.getByType(JacocoTaskExtension::class.java)
+        val extension =
+            task.extensions.create(
+                TeamscalePlugin.teamscaleExtensionName,
+                TeamscaleTaskExtension::class.java,
+                project,
+                this,
+                jacocoTaskExtension
+            )
+        extension.agent.setDestination(task.project.provider {
+            project.file("${project.buildDir}/jacoco/${project.name}-${task.name}")
+        })
     }
 }

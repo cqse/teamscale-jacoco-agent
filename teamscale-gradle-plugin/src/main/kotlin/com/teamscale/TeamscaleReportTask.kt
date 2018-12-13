@@ -4,6 +4,7 @@ import com.teamscale.client.TestDetails
 import com.teamscale.config.GoogleClosureConfiguration
 import com.teamscale.config.SerializableFilter
 import com.teamscale.config.TeamscalePluginExtension
+import com.teamscale.config.TeamscaleTaskExtension
 import com.teamscale.report.ReportUtils
 import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
@@ -32,7 +33,7 @@ open class TeamscaleReportTask : DefaultTask() {
     /**
      * Reference to the configuration that should be used for this task.
      */
-    lateinit var configuration: TeamscalePluginExtension
+    lateinit var configuration: TeamscaleTaskExtension
 
     /* Task inputs */
 

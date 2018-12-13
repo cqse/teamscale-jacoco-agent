@@ -5,47 +5,34 @@ import com.teamscale.TeamscalePlugin
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
 import org.gradle.api.Project
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.testing.Test
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.File
 import java.io.Serializable
 import java.util.function.Predicate
+
 
 /**
  * Configuration for the the Teamscale JaCoCo agent.
  * The agent can either be configured to run locally or to connect to an
  * already running remote testwise coverage server.
  */
-class AgentConfiguration : Serializable {
+class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskExtension) : Serializable {
 
-    /**
-     * Whether instrumented class files should be dumped to disk before instrumentation.
-     * This option needs to be set to true if other bytecode manipulation happens during
-     * runtime e.g. by another profiler to get coverage information.
-     */
-    var dumpClasses: Boolean? = null
+    /** The property object backing #destination. */
+    private var destinationProperty: Property<File> = project.objects.property(File::class.java)
 
-    /**
-     * The directory into which class files should be dumped (see #dumpClasses).
-     */
-    var dumpDirectory: File? = null
+    /** The destination directory to store test artifacts into. */
+    var destination: File
+        get() = destinationProperty.get()
+        set(value) {
+            destinationProperty.set(value)
+        }
 
-    /**
-     * List of include patterns (wildcard ? / * / **) of classes that should be instrumented.
-     * Will be matched against the fully qualified class name of the classes.
-     */
-    var includes: List<String>? = null
-
-    /**
-     * List of exclude patterns (wildcard ? / * / **) of classes that should not be instrumented.
-     * Default is "org.junit.**"
-     * Will be matched against the fully qualified class name of the classes.
-     */
-    var excludes: List<String>? = null
-
-    /** The directory to store test artifacts into. */
-    var testArtifactDestination: File? = null
+    fun setDestination(provider: Provider<File>) {
+        destinationProperty.set(provider)
+    }
 
     /** The local agent's server url to connect to. */
     var localAgent: TeamscaleAgent? = TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:8123/"))
@@ -81,46 +68,16 @@ class AgentConfiguration : Serializable {
         remoteAgent = TeamscaleAgent(HttpUrl.parse(url))
     }
 
-    /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
-    fun getDumpDirectory(project: Project): File {
-        return dumpDirectory ?: project.file("${project.buildDir}/classesDump")
-    }
-
-    /** Returns the directory into which test artifacts should be written to. */
-    fun getTestArtifactDestination(project: Project, taskName: String): File {
-        return testArtifactDestination ?: project.file(
-            "${project.buildDir}/tmp/jacoco/${project.name}-$taskName"
-        )
-    }
-
-    /** Creates a copy of the agent configuration, setting all non-set values to their default value. */
-    fun copyWithDefault(toCopy: AgentConfiguration, default: AgentConfiguration) {
-        testArtifactDestination = toCopy.testArtifactDestination ?: default.testArtifactDestination
-        dumpClasses = toCopy.dumpClasses ?: default.dumpClasses ?: false
-        dumpDirectory = toCopy.dumpDirectory ?: default.dumpDirectory
-        includes = toCopy.includes ?: default.includes
-        excludes = toCopy.excludes ?: default.excludes ?: listOf("org.junit.**")
-        localAgent = toCopy.localAgent ?: default.localAgent
-        remoteAgent = toCopy.remoteAgent ?: default.remoteAgent
-    }
-
-    fun getClassFileDirs(project: Project, testTask: Test): Set<File> {
-        return if (dumpClasses == true) {
-            project.files(getDumpDirectory(project)).files
-        } else {
-            testTask.classpath.files
-        }
-    }
-
     /** Returns a filter predicate that respects the configured include and exclude patterns. */
     fun getFilter(): SerializableFilter {
-        return SerializableFilter(includes, excludes)
+        return SerializableFilter(jacocoExtension.includes, jacocoExtension.excludes)
     }
 
     inner class TeamscaleAgent(val url: HttpUrl) {
 
         /** Builds the jvm argument to start the impacted test executor. */
-        fun getJvmArgs(project: Project, taskName: String): String {
+        fun getJvmArgs(
+        ): String {
             val builder = StringBuilder()
             val argument = ArgumentAppender(builder)
             builder.append("-javaagent:")
@@ -129,7 +86,7 @@ class AgentConfiguration : Serializable {
             builder.append(agentJar.canonicalPath)
             builder.append("=")
 
-            appendArguments(argument, project, taskName)
+            appendArguments(argument, jacocoExtension)
 
             return builder.toString()
         }
@@ -140,17 +97,11 @@ class AgentConfiguration : Serializable {
          */
         private fun appendArguments(
             argument: ArgumentAppender,
-            project: Project,
-            taskName: String
+            jacocoExtension: JacocoTaskExtension
         ) {
-            argument.append("out", getTestArtifactDestination(project, taskName))
-            argument.append("includes", includes)
-            argument.append("excludes", excludes)
-
-            if (dumpClasses == true) {
-                argument.append("classdumpdir", getDumpDirectory(project))
-            }
-
+            argument.append("out", destination)
+            argument.append("includes", jacocoExtension.includes)
+            argument.append("excludes", jacocoExtension.excludes)
             argument.append("http-server-port", url.port())
         }
     }
