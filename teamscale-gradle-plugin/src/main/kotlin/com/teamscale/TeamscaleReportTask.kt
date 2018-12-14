@@ -3,7 +3,6 @@ package com.teamscale
 import com.teamscale.client.TestDetails
 import com.teamscale.config.GoogleClosureConfiguration
 import com.teamscale.config.SerializableFilter
-import com.teamscale.config.TeamscalePluginExtension
 import com.teamscale.config.TeamscaleTaskExtension
 import com.teamscale.report.ReportUtils
 import com.teamscale.report.testwise.ETestArtifactFormat
@@ -14,6 +13,7 @@ import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
 import com.teamscale.report.util.ILogger
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -50,19 +50,19 @@ open class TeamscaleReportTask : DefaultTask() {
         get() = configuration.report.googleClosureCoverage.destination ?: emptySet()
 
     /** Report files to included artifacts. */
-    private val reportsToArtifacts = mutableMapOf<File, MutableList<File>>()
+    private val reportsToArtifacts = mutableMapOf<Report, MutableList<File>>()
 
     val testArtifacts
         @InputFiles
         get() = reportsToArtifacts.values.flatten()
 
     @InputFiles
-    val classDirs = mutableListOf<File>()
+    val classDirs = mutableListOf<FileCollection>()
 
     /* Task outputs */
     val reportFiles
         @OutputFiles
-        get() = reportsToArtifacts.keys
+        get() = reportsToArtifacts.keys.map { it.reportFile }
 
 
     init {
@@ -72,12 +72,13 @@ open class TeamscaleReportTask : DefaultTask() {
 
     private val jaCoCoTestwiseReportGenerator: JaCoCoTestwiseReportGenerator by lazy {
         JaCoCoTestwiseReportGenerator(
-            classDirs,
+            classDirs.flatMap { it.files },
             agentFilter.getPredicate(),
             true,
             project.logger.wrapInILogger()
         )
     }
+    lateinit var uploadTask: TeamscaleUploadTask
 
     /**
      * Generates a testwise coverage from the execution data and merges it with eventually existing closure coverage.
@@ -85,7 +86,7 @@ open class TeamscaleReportTask : DefaultTask() {
     @TaskAction
     fun generateTestwiseCoverageReport() {
         logger.info("Generating coverage reports...")
-        for ((reportFile, artifacts) in reportsToArtifacts.entries) {
+        for ((reportConfig, artifacts) in reportsToArtifacts.entries) {
             val testDetails =
                 ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, artifacts)
             val testExecutions = ReportUtils.readObjects(
@@ -100,8 +101,12 @@ open class TeamscaleReportTask : DefaultTask() {
             logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
             val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
-            logger.info("Writing report to $reportFile")
-            ReportUtils.writeReportToFile(reportFile, report)
+            logger.info("Writing report to ${reportConfig.reportFile}")
+            ReportUtils.writeReportToFile(reportConfig.reportFile, report)
+
+            if (reportConfig.upload) {
+                uploadTask.reports.add(reportConfig)
+            }
         }
     }
 
@@ -129,10 +134,10 @@ open class TeamscaleReportTask : DefaultTask() {
         ).readTestCoverage()
     }
 
-    fun addTestArtifactsDirs(reportFile: File, testArtifactDestination: File) {
-        val list = reportsToArtifacts[reportFile] ?: mutableListOf()
+    fun addTestArtifactsDirs(report: Report, testArtifactDestination: File) {
+        val list = reportsToArtifacts[report] ?: mutableListOf()
         list.add(testArtifactDestination)
-        reportsToArtifacts[reportFile] = list
+        reportsToArtifacts[report] = list
     }
 }
 

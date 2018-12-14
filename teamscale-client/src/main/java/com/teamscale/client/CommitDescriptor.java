@@ -36,11 +36,6 @@ public class CommitDescriptor implements Serializable {
 		}
 	}
 
-	/** Returns a commit descriptor with appended p1, which teamscale interprets as the commit before. */
-	public CommitDescriptor commitBefore() {
-		return new CommitDescriptor(branchName, timestamp + "p1");
-	}
-
 	/** Returns a string representation of the commit in a Teamscale REST API compatible format. */
 	@Override
 	public String toString() {

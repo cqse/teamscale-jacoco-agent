@@ -49,7 +49,8 @@ open class TeamscalePlugin : Plugin<Project> {
         project.plugins.apply(JavaPlugin::class.java)
         project.plugins.apply(JacocoPlugin::class.java)
 
-        val pluginExtension = project.extensions.create(teamscaleExtensionName, TeamscalePluginExtension::class.java, project)
+        val pluginExtension =
+            project.extensions.create(teamscaleExtensionName, TeamscalePluginExtension::class.java, project)
 
         if (GradleVersion.current() < GradleVersion.version("4.6")) {
             throw GradleException("The teamscale plugin requires Gradle version 4.6 or higher")
@@ -122,31 +123,34 @@ open class TeamscalePlugin : Plugin<Project> {
             dependsOn.add(project.sourceSets.getByName("test").runtimeClasspath)
         }
 
-        val reportConfig = config.getMergedReports()
-        val report = reportConfig.testwiseCoverage.getReport(project, gradleTestTask)
 
         val teamscaleReportTask = project.rootProject.tasks
             .maybeCreate("${gradleTestTask.name}Report", TeamscaleReportTask::class.java)
         impactedTestsExecutorTask.finalizedBy(teamscaleReportTask)
 
+        impactedTestsExecutorTask.reportTask = teamscaleReportTask
+
         teamscaleReportTask.apply {
             testTaskName = gradleTestTask.name
             configuration = config
-            classDirs.addAll(gradleTestTask.classpath.files)
-            addTestArtifactsDirs(report.reportFile, config.agent.destination)
         }
 
-        val teamscaleUploadTask = project.rootProject.tasks
-            .maybeCreate("${gradleTestTask.name}ReportUpload", TeamscaleUploadTask::class.java)
+        val teamscaleUploadTask = createTeamscaleUploadTask(config.parent, gradleTestTask.name, project.rootProject)
         teamscaleReportTask.finalizedBy(teamscaleUploadTask)
+        teamscaleReportTask.uploadTask = teamscaleUploadTask
+    }
 
+    private fun createTeamscaleUploadTask(
+        teamscalePluginExtension: TeamscalePluginExtension,
+        testTaskName: String,
+        rootProject: Project
+    ): TeamscaleUploadTask? {
+        val teamscaleUploadTask =
+            rootProject.tasks.maybeCreate("${testTaskName}ReportUpload", TeamscaleUploadTask::class.java)
         teamscaleUploadTask.apply {
-            server = config.server
-            commitDescriptor = config.parent.commit.getCommitDescriptor()
-
-            if (reportConfig.testwiseCoverage.upload == true) {
-                reports.add(report)
-            }
+            server = teamscalePluginExtension.server
+            commitDescriptor = teamscalePluginExtension.commit.getCommitDescriptor()
         }
+        return teamscaleUploadTask
     }
 }

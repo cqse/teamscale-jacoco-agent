@@ -10,13 +10,6 @@ import java.io.Serializable
  */
 open class TeamscaleTaskExtension(val project: Project, val parent: TeamscalePluginExtension, jacocoExtension: JacocoTaskExtension) : Serializable {
 
-    val server = ServerConfiguration(parent.server)
-
-    /** Configures the Teamscale server. */
-    fun server(action: Action<in ServerConfiguration>) {
-        action.execute(server)
-    }
-
     /** Creates Impacted tasks for all tests if enabled. */
     var testImpactMode: Boolean? = null
         get() = field ?: parent.testImpactMode

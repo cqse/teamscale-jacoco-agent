@@ -12,9 +12,11 @@ package org.junit.platform.console;
 
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TestDetails;
+import com.teamscale.client.TestForPrioritization;
 import com.teamscale.report.ReportUtils;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.TestExecutorCommandLineOptionsParser;
+import org.junit.platform.console.tasks.AvailableTests;
 import org.junit.platform.console.tasks.TestDetailsCollector;
 import org.junit.platform.console.tasks.TestExecutor;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
@@ -66,7 +68,7 @@ public class ImpactedTestsExecutor {
 
 	/** Handles test detail collection and execution of the impacted tests. */
 	private ConsoleLauncherExecutionResult discoverAndExecuteTests(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
-		List<TestDetails> availableTestDetails = null;
+		AvailableTests availableTestDetails = null;
 		try {
 			availableTestDetails = getTestDetails(options);
 			if (availableTestDetails.isEmpty()) {
@@ -82,8 +84,8 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Discovers all tests that match the given filters in #options. */
-	private List<TestDetails> getTestDetails(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
-		List<TestDetails> availableTestDetails = new TestDetailsCollector(logger).collect(options);
+	private AvailableTests getTestDetails(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
+		AvailableTests availableTestDetails = new TestDetailsCollector(logger).collect(options);
 
 		logger.info("Found " + availableTestDetails.size() + " tests");
 
@@ -98,23 +100,25 @@ public class ImpactedTestsExecutor {
 
 		// Write out test details to file
 		if (options.getReportsDir().isPresent()) {
-			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails);
+			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails.getList());
 		}
 		return availableTestDetails;
 	}
 
 	/** Executes either all tests if set via the command line options or queries Teamscale for the impacted tests and executes those. */
-	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails) throws IOException {
+	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, AvailableTests availableTestDetails) throws IOException {
 		TestExecutor testExecutor = new TestExecutor(options, logger);
 		TestExecutionSummary testExecutionSummary;
 		if (options.isRunAllTests()) {
 			testExecutionSummary = testExecutor.executeAllTests();
 		} else {
-			List<String> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails, options);
+			List<TestForPrioritization> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails.getList(),
+					options);
 			if (impactedTests == null) {
 				testExecutionSummary = testExecutor.executeAllTests();
 			} else {
-				testExecutionSummary = testExecutor.executeTests(impactedTests);
+				List<String> uniqueIds = availableTestDetails.convertToUniqueIds(impactedTests);
+				testExecutionSummary = testExecutor.executeTests(uniqueIds);
 			}
 		}
 		return ConsoleLauncherExecutionResult.forSummary(testExecutionSummary);
@@ -126,16 +130,16 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Queries Teamscale for impacted tests. */
-	private List<String> getImpactedTestsFromTeamscale(List<TestDetails> availableTestDetails, ImpactedTestsExecutorCommandLineOptions options) {
+	private List<TestForPrioritization> getImpactedTestsFromTeamscale(List<TestDetails> availableTestDetails, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
 			logger.output.println("Getting impacted tests...");
 			TeamscaleClient client = new TeamscaleClient(options.getServer().url, options.getServer().userName,
 					options.getServer().userAccessToken, options.getServer().project);
-			Response<List<String>> response = client
+			Response<List<TestForPrioritization>> response = client
 					.getImpactedTests(availableTestDetails, options.getBaseline(), options.getEndCommit(),
 							options.getPartition());
 			if (response.isSuccessful()) {
-				List<String> testList = response.body();
+				List<TestForPrioritization> testList = response.body();
 				if (testList == null) {
 					logger.error("Teamscale was not able to determine impacted tests.");
 				}

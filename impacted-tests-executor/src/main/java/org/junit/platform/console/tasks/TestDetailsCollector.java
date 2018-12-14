@@ -21,8 +21,6 @@ import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -43,7 +41,7 @@ public class TestDetailsCollector {
 	}
 
 	/** Discovers all test details for the given options. */
-	public List<TestDetails> collect(ImpactedTestsExecutorCommandLineOptions options) {
+	public AvailableTests collect(ImpactedTestsExecutorCommandLineOptions options) {
 		TestPlan fullTestPlan = buildTestPlan(options);
 		return retrieveTestDetailsFromTestPlan(fullTestPlan, logger);
 	}
@@ -61,15 +59,15 @@ public class TestDetailsCollector {
 	}
 
 	/** Extracts the test details from the JUnit test plan. */
-	public static List<TestDetails> retrieveTestDetailsFromTestPlan(TestPlan fullTestPlan, Logger logger) {
+	public static AvailableTests retrieveTestDetailsFromTestPlan(TestPlan fullTestPlan, Logger logger) {
 		Set<TestIdentifier> roots = fullTestPlan.getRoots();
-		ArrayList<TestDetails> allAvailableTestDetails = new ArrayList<>();
+		AvailableTests allAvailableTestDetails = new AvailableTests();
 		collectTestDetailsList(fullTestPlan, roots, allAvailableTestDetails, logger);
 		return allAvailableTestDetails;
 	}
 
 	/** Recursively traverses the test plan to collect all test details in a depth-first-search manner. */
-	private static void collectTestDetailsList(TestPlan testPlan, Set<TestIdentifier> roots, List<TestDetails> result, Logger logger) {
+	private static void collectTestDetailsList(TestPlan testPlan, Set<TestIdentifier> roots, AvailableTests result, Logger logger) {
 		for (TestIdentifier testIdentifier : roots) {
 			if (testIdentifier.isTest()) {
 				Optional<TestSource> source = testIdentifier.getSource();
@@ -78,7 +76,7 @@ public class TestDetailsCollector {
 					String sourcePath = ms.getClassName().replace('.', '/');
 
 					String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
-					result.add(new TestDetails(testUniformPath, sourcePath, null));
+					result.add(testIdentifier.getUniqueId(), new TestDetails(testUniformPath, sourcePath, null));
 				}
 			}
 

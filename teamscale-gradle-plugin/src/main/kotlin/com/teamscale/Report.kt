@@ -19,5 +19,8 @@ data class Report(
     var partition: String,
 
     /** The commit message shown in Teamscale for the upload. */
-    var message: String
+    var message: String,
+
+    /** Whether the report should be uploaded. */
+    val upload: Boolean
 )

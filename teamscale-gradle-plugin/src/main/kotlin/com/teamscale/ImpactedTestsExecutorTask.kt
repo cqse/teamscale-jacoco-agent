@@ -48,6 +48,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     /** The directory to write the jacoco execution data to. */
     private lateinit var tempDir: File
 
+    lateinit var reportTask: TeamscaleReportTask
+
     init {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
@@ -57,9 +59,8 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     @TaskAction
     override fun exec() {
         prepareClassPath()
-        configuration.agent.destination
-        tempDir = configuration.agent.destination
 
+        tempDir = configuration.agent.destination
         if (tempDir.exists()) {
             logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
             tempDir.deleteRecursively()
@@ -77,6 +78,12 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         logger.info("Starting impacted tests executor with args $args")
         logger.info("With workingDir $workingDir")
 
+
+        val reportConfig = configuration.getMergedReports()
+        val report = reportConfig.testwiseCoverage.getReport(project, testTask)
+        reportTask.addTestArtifactsDirs(report, configuration.agent.destination)
+        reportTask.classDirs.add(testTask.classpath)
+
         super.exec()
     }
 
@@ -91,10 +98,10 @@ open class ImpactedTestsExecutorTask : JavaExec() {
 
     private fun getImpactedTestExecutorProgramArguments(): List<String> {
         val args = mutableListOf(
-            "--url", configuration.server.url!!,
-            "--project", configuration.server.project!!,
-            "--user", configuration.server.userName!!,
-            "--access-token", configuration.server.userAccessToken!!,
+            "--url", configuration.parent.server.url!!,
+            "--project", configuration.parent.server.project!!,
+            "--user", configuration.parent.server.userName!!,
+            "--access-token", configuration.parent.server.userAccessToken!!,
             "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
             "--end", endCommit.toString()
         )

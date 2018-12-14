@@ -89,7 +89,8 @@ open class TestwiseCoverageConfiguration : Serializable {
             format = EReportFormat.TESTWISE_COVERAGE,
             reportFile = getDestinationOrDefault(project, gradleTestTask.name, partition),
             message = message ?: "${EReportFormat.TESTWISE_COVERAGE.readableName} gradle upload",
-            partition = partition
+            partition = partition,
+            upload = upload ?: false
         )
     }
 

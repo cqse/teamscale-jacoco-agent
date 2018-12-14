@@ -44,6 +44,13 @@ task installGradlePlugin(dependsOn: [
         ':teamscale-client:install'
 ])
 
+task iGP(dependsOn: [
+        ':impacted-tests-executor:install',
+        ':report-generator:install',
+        ':teamscale-gradle-plugin:install',
+        ':teamscale-client:install'
+])
+
 // Deploys the plugin to the public share
 task deployGradlePlugin(dependsOn: [
         ':agent:uploadShadow',
