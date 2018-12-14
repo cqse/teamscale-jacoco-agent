@@ -1,7 +1,7 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
-import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.LineRange;
+import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.data.ExecutionData;
@@ -114,7 +114,13 @@ public class ClassCoverageLookup {
 			// lineRange is null if the probe is outside of a method
 			if (executedProbes[i])
 				if (lineRange != null) {
-					fileCoverage.addLineRange(lineRange);
+					if (!lineRange.isEmpty()) {
+						fileCoverage.addLineRange(lineRange);
+					} else {
+						logger.debug(
+								sourceFileName + " " + className + " did contain a method with no line information. " +
+										"Does the class contain debug information?");
+					}
 				} else {
 					logger.info(sourceFileName + " " + className + " did contain a covered probe " + i + "(of " +
 							executedProbes.length + ") that could not be " +

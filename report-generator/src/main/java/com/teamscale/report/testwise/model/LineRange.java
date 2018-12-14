@@ -44,6 +44,11 @@ public class LineRange {
 		return end;
 	}
 
+	/** Checks if the line region does contain any lines. */
+	public boolean isEmpty() {
+		return start == UNKNOWN_LINE && end == UNKNOWN_LINE;
+	}
+
 	/**
 	 * Returns the line range as used in the XML report.
 	 * A range is returned as e.g. 2-5 or simply 3 if the start and end are equal.
