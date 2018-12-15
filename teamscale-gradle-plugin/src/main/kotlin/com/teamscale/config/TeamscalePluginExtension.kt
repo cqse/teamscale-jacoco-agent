@@ -14,7 +14,7 @@ import java.io.Serializable
  */
 open class TeamscalePluginExtension(val project: Project) : Serializable {
 
-    val server = ServerConfiguration(null)
+    val server = ServerConfiguration()
 
     /** Configures the Teamscale server. */
     fun server(action: Action<in ServerConfiguration>) {

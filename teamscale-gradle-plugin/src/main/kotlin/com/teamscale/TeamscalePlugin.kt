@@ -144,7 +144,7 @@ open class TeamscalePlugin : Plugin<Project> {
         teamscalePluginExtension: TeamscalePluginExtension,
         testTaskName: String,
         rootProject: Project
-    ): TeamscaleUploadTask? {
+    ): TeamscaleUploadTask {
         val teamscaleUploadTask =
             rootProject.tasks.maybeCreate("${testTaskName}ReportUpload", TeamscaleUploadTask::class.java)
         teamscaleUploadTask.apply {
