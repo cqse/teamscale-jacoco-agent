@@ -15,7 +15,7 @@ buildscript {
 		maven { url 'https://share.cqse.eu/public/maven/' }
 	}
 	dependencies {
-		classpath 'eu.cqse:teamscale-gradle-plugin:0.2.0'
+		classpath 'com.teamscale:teamscale-gradle-plugin:0.2.0'
 	}
 }
 
@@ -23,7 +23,7 @@ apply plugin: 'teamscale'
 
 teamscale {
     server {
-        url = 'https://mycompany.com/teamsale'
+        url = 'https://mycompany.com/teamsale/'
         userName = 'build'
         userAccessToken = '7fa5.....'
         project = 'example-project-id'

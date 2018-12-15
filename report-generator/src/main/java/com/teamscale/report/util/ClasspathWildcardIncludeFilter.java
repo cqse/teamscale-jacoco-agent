@@ -32,10 +32,10 @@ public class ClasspathWildcardIncludeFilter implements Predicate<String> {
 	 * @param locationExcludeFilters Colon separated list of wildcard exclude patterns or null for no excludes.
 	 */
 	public ClasspathWildcardIncludeFilter(String locationIncludeFilters, String locationExcludeFilters) {
-		if (locationIncludeFilters != null) {
+		if (locationIncludeFilters != null && !locationIncludeFilters.isEmpty()) {
 			this.locationIncludeFilters = new WildcardMatcher(locationIncludeFilters);
 		}
-		if (locationExcludeFilters != null) {
+		if (locationExcludeFilters != null && !locationExcludeFilters.isEmpty()) {
 			this.locationExcludeFilters = new WildcardMatcher(locationExcludeFilters);
 		}
 	}
