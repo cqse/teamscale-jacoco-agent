@@ -1,17 +1,22 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+    id 'com.github.johnrengelman.shadow' version '4.0.1'
     id 'java'
     id 'maven'
 }
 
 version pluginVersion
 
+configurations {
+    bundled
+    implementation.extendsFrom(bundled)
+}
+
 dependencies {
     implementation gradleApi()
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.3.11'
 
-    implementation project(':report-generator')
-    implementation project(':teamscale-client')
+    bundled project(':report-generator')
 
     implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '3.2.0.201312181205-r'
 
@@ -20,17 +25,31 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
-jar {
+test {
+    testLogging.exceptionFormat "full"
+}
+
+// Needed to bundle org.conqat.lib.commons into the report-generator
+// as this dependency is not available via mavenCentral
+shadowJar {
+    classifier = null
+    configurations = [project.configurations.bundled]
     manifest {
         attributes 'Implementation-Version': pluginVersion
         attributes 'Specification-Version': appVersion
     }
 }
 
+install {
+    repositories.mavenInstaller {
+        configuration = configurations.shadow
+    }
+}
+
 // At the moment we are stuck with the old maven plugin until support for private key
 // files is added or we add a dedicated user with a password to our server.
 // https://github.com/gradle/gradle/issues/1263
-uploadArchives {
+uploadShadow {
     repositories {
         mavenDeployer {
             configuration = configurations.deployerJars

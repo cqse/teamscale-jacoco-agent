@@ -13,15 +13,12 @@ package org.junit.platform.console.tasks;
 import com.teamscale.client.TestDetails;
 import org.junit.platform.console.Logger;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
-import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherFactory;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -69,19 +66,17 @@ public class TestDetailsCollector {
 	/** Recursively traverses the test plan to collect all test details in a depth-first-search manner. */
 	private static void collectTestDetailsList(TestPlan testPlan, Set<TestIdentifier> roots, AvailableTests result, Logger logger) {
 		for (TestIdentifier testIdentifier : roots) {
-			if (testIdentifier.isTest()) {
-				Optional<TestSource> source = testIdentifier.getSource();
-				if (source.isPresent() && source.get() instanceof MethodSource) {
-					MethodSource ms = (MethodSource) source.get();
-					String sourcePath = ms.getClassName().replace('.', '/');
-
-					String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
-					result.add(testIdentifier.getUniqueId(), new TestDetails(testUniformPath, sourcePath, null));
-				}
+			Set<TestIdentifier> testIdentifierChildren = testPlan.getChildren(testIdentifier);
+			if (!testIdentifierChildren.isEmpty()) {
+				collectTestDetailsList(testPlan, testIdentifierChildren, result, logger);
+				continue;
+			} else if (!testIdentifier.getParentId().isPresent()) {
+				// In case of unused engines
+				continue;
 			}
-
-			collectTestDetailsList(testPlan, testPlan.getChildren(testIdentifier), result, logger);
+			String sourcePath = TestIdentifierUtils.getSourcePath(testIdentifier);
+			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
+			result.add(testIdentifier.getUniqueId(), new TestDetails(testUniformPath, sourcePath, null));
 		}
 	}
-
 }

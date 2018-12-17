@@ -1,8 +1,8 @@
 ext {
-    appVersion = '11.0.0'
-    pluginVersion = '0.2.0'
-    reportGeneratorVersion = '1.2.0'
-    teamscaleClientVersion = '0.2.0'
+    appVersion = '11.0.2'
+    pluginVersion = '0.2.3'
+    reportGeneratorVersion = '1.2.2'
+    teamscaleClientVersion = '0.2.2'
 
     // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
     jacocoVersion = '0.8.1'
@@ -11,7 +11,6 @@ ext {
     // Needed to deploy the artifacts to our public share
     // Your public RSA key needs to be stored on the share to be able to deploy (Ask Timo)
     cqseMavenRepositoryPrivateKey = System.getProperty("user.home") + '/.ssh/id_rsa'
-    println cqseMavenRepositoryPrivateKey
     cqseMavenRepositoryUrl = 'scp://ext1.cqse.eu:2222/var/www/share/exchange/public/maven'
     cqseMavenRepositoryUser = 'www-data'
 }
@@ -56,6 +55,14 @@ task deployGradlePlugin(dependsOn: [
         ':agent:uploadShadow',
         ':impacted-tests-executor:uploadArchives',
         ':report-generator:uploadShadow',
-        ':teamscale-gradle-plugin:uploadArchives',
+        ':teamscale-gradle-plugin:uploadShadow',
+        ':teamscale-client:uploadArchives'
+])
+
+
+task dGP(dependsOn: [
+        ':impacted-tests-executor:uploadArchives',
+        ':report-generator:uploadShadow',
+        ':teamscale-gradle-plugin:uploadShadow',
         ':teamscale-client:uploadArchives'
 ])

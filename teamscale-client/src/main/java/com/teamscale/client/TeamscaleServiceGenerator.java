@@ -8,6 +8,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 /** Helper class for generating a teamscale compatible service. */
 public class TeamscaleServiceGenerator {
@@ -18,6 +19,8 @@ public class TeamscaleServiceGenerator {
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String password) {
 		OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+		httpClient.connectTimeout(30, TimeUnit.SECONDS);
+		httpClient.readTimeout(30, TimeUnit.SECONDS);
 
 		httpClient.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, password));
 		httpClient.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()

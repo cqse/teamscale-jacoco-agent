@@ -34,14 +34,29 @@ public class TestwiseCoverageReportBuilder {
 			report.tests.put(testDetails.uniformPath, container);
 		}
 		for (TestCoverageBuilder coverage : testCoverage) {
-			TestInfoBuilder container = report.tests.get(coverage.getUniformPath());
+			TestInfoBuilder container = resolveUniformPath(report, coverage.getUniformPath());
+			if (container == null) continue;
 			container.setCoverage(coverage);
 		}
 		for (TestExecution testExecution : testExecutions) {
-			TestInfoBuilder container = report.tests.get(testExecution.getUniformPath());
+			TestInfoBuilder container = resolveUniformPath(report, testExecution.getUniformPath());
+			if (container == null) continue;
 			container.setExecution(testExecution);
 		}
 		return report.build();
+	}
+
+	private static TestInfoBuilder resolveUniformPath(TestwiseCoverageReportBuilder report, String uniformPath) {
+		TestInfoBuilder container = report.tests.get(uniformPath);
+		if (container != null) {
+			return container;
+		}
+		String shortenedUniformPath = uniformPath.replaceFirst("(.*\\))\\[.*]", "$1");
+		TestInfoBuilder testInfoBuilder = report.tests.get(shortenedUniformPath);
+		if (testInfoBuilder == null) {
+			System.err.println("No container found for test '" + uniformPath + "'!");
+		}
+		return testInfoBuilder;
 	}
 
 	private TestwiseCoverageReport build() {

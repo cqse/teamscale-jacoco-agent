@@ -12,7 +12,7 @@ configurations {
 }
 
 dependencies {
-	implementation project(':teamscale-client')
+	api project(':teamscale-client')
 
 	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"

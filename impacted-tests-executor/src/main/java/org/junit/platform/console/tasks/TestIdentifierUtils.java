@@ -1,9 +1,11 @@
 package org.junit.platform.console.tasks;
 
 import org.junit.platform.console.Logger;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestIdentifier;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,5 +40,16 @@ public class TestIdentifierUtils {
 			fullClassName = matcher.group(1);
 		}
 		return fullClassName.replace('.', '/');
+	}
+
+	/** Tries to extract the uniform path of the source location where the test method is implemented. */
+	static String getSourcePath(TestIdentifier testIdentifier) {
+		String sourcePath = null;
+		Optional<TestSource> source = testIdentifier.getSource();
+		if (source.isPresent() && source.get() instanceof MethodSource) {
+			MethodSource ms = (MethodSource) source.get();
+			sourcePath = ms.getClassName().replace('.', '/');
+		}
+		return sourcePath;
 	}
 }
