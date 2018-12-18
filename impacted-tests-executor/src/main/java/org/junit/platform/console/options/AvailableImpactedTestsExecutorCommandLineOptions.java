@@ -1,6 +1,5 @@
 package org.junit.platform.console.options;
 
-import com.sun.javafx.util.Utils;
 import com.teamscale.client.CommitDescriptor;
 import okhttp3.HttpUrl;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
@@ -19,7 +18,6 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	/** Holds the command line parser with the standard jUnit options and ours. */
 	private final OptionParser parser;
 
-	/** Teamscale server options */
 	private final OptionSpec<String> url;
 	private final OptionSpec<String> project;
 	private final OptionSpec<String> userName;
@@ -82,10 +80,12 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	public ImpactedTestsExecutorCommandLineOptions toCommandLineOptions(OptionSet detectedOptions) {
 		CommandLineOptions jUnitResult = jUnitOptions.toCommandLineOptions(detectedOptions);
 		jUnitResult.setIncludedClassNamePatterns(
-				jUnitResult.getIncludedClassNamePatterns().stream().map(Utils::stripQuotes)
+				jUnitResult.getIncludedClassNamePatterns().stream()
+						.map(AvailableImpactedTestsExecutorCommandLineOptions::stripQuotes)
 						.collect(toList()));
 		jUnitResult.setExcludedClassNamePatterns(
-				jUnitResult.getExcludedClassNamePatterns().stream().map(Utils::stripQuotes)
+				jUnitResult.getExcludedClassNamePatterns().stream()
+						.map(AvailableImpactedTestsExecutorCommandLineOptions::stripQuotes)
 						.collect(toList()));
 
 		ImpactedTestsExecutorCommandLineOptions result = new ImpactedTestsExecutorCommandLineOptions(jUnitResult);
@@ -106,6 +106,29 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 		result.setAgentUrls(detectedOptions.valuesOf(this.agentUrl).stream().map(HttpUrl::parse).collect(toList()));
 
 		return result;
+	}
+
+	/**
+	 * Helper to remove leading and trailing quotes from a string.
+	 * Works with single or double quotes.
+	 */
+	private static String stripQuotes(String string) {
+		if (string == null) return null;
+		if (string.length() == 0) return string;
+
+		int beginIndex = 0;
+		final char openQuote = string.charAt(beginIndex);
+		if (openQuote == '\"' || openQuote == '\'') beginIndex += 1;
+
+		int endIndex = string.length();
+		final char closeQuote = string.charAt(endIndex - 1);
+		if (closeQuote == '\"' || closeQuote == '\'') endIndex -= 1;
+
+		if ((endIndex - beginIndex) < 0) return string;
+
+		// note that String.substring returns "this" if beginIndex == 0 && endIndex == count
+		// or a new string that shares the character buffer with the original string.
+		return string.substring(beginIndex, endIndex);
 	}
 }
 
