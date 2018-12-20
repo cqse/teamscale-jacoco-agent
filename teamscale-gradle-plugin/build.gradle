@@ -18,7 +18,7 @@ dependencies {
 
     bundled project(':report-generator')
 
-    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '3.2.0.201312181205-r'
+    bundled 'org.eclipse.jgit:org.eclipse.jgit:5.0.2.201807311906-r'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'

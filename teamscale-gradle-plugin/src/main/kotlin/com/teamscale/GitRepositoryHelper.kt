@@ -28,13 +28,12 @@ object GitRepositoryHelper {
     private fun getCommit(repository: Repository, revisionBranchOrTag: String): RevCommit {
         val revWalk = RevWalk(repository)
         try {
-            val head = repository.getRef(revisionBranchOrTag)
+            val head = repository.refDatabase.getRef(revisionBranchOrTag)
             return if (head != null) {
                 revWalk.parseCommit(head.leaf.objectId)
             } else revWalk.parseCommit(ObjectId.fromString(revisionBranchOrTag))
-
         } finally {
-            revWalk.release()
+            revWalk.close()
         }
     }
 }

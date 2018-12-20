@@ -43,6 +43,7 @@ task installGradlePlugin(dependsOn: [
         ':teamscale-client:install'
 ])
 
+// Installs the plugin to your local maven repository without the agent
 task iGP(dependsOn: [
         ':impacted-tests-executor:install',
         ':report-generator:install',
@@ -59,7 +60,7 @@ task deployGradlePlugin(dependsOn: [
         ':teamscale-client:uploadArchives'
 ])
 
-
+// Deploys the plugin to the public share without the agent
 task dGP(dependsOn: [
         ':impacted-tests-executor:uploadArchives',
         ':report-generator:uploadShadow',
