@@ -11,4 +11,7 @@ public class TestForPrioritization {
 	 */
 	public String uniformPath;
 
+	/** The reason the test has been selected. */
+	public String selectionReason;
+
 }

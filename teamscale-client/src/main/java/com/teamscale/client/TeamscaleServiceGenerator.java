@@ -19,8 +19,8 @@ public class TeamscaleServiceGenerator {
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String password) {
 		OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-		httpClient.connectTimeout(30, TimeUnit.SECONDS);
-		httpClient.readTimeout(30, TimeUnit.SECONDS);
+		httpClient.connectTimeout(60, TimeUnit.SECONDS);
+		httpClient.readTimeout(60, TimeUnit.SECONDS);
 
 		httpClient.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, password));
 		httpClient.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()

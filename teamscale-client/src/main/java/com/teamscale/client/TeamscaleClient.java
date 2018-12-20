@@ -34,20 +34,15 @@ public class TeamscaleClient {
 	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
 	 */
 	public Response<List<TestForPrioritization>> getImpactedTests(List<TestDetails> testList, Long baseline, CommitDescriptor endCommit, String partition) throws IOException {
-		Response<List<TestForPrioritization>> impactedTests;
 		if (baseline == null) {
-			impactedTests = service
+			return service
 					.getImpactedTests(projectId, endCommit, partition, testList)
 					.execute();
 		} else {
-			impactedTests = service
+			return service
 					.getImpactedTests(projectId, baseline, endCommit, partition, testList)
 					.execute();
 		}
-		if (!impactedTests.isSuccessful() || impactedTests.body() == null) {
-			return null;
-		}
-		return impactedTests;
 	}
 
 	/** Uploads multiple reports to Teamscale. */

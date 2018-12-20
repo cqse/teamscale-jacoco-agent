@@ -72,17 +72,16 @@ open class ImpactedTestsExecutorTask : JavaExec() {
             jvmArgs(it.getJvmArgs())
         }
 
-        args(getImpactedTestExecutorProgramArguments())
-
-        logger.info("Starting agent with jvm args $jvmArgs")
-        logger.info("Starting impacted tests executor with args $args")
-        logger.info("With workingDir $workingDir")
-
-
         val reportConfig = configuration.getMergedReports()
         val report = reportConfig.testwiseCoverage.getReport(project, testTask)
         reportTask.addTestArtifactsDirs(report, configuration.agent.destination)
         reportTask.classDirs.add(testTask.classpath)
+
+        args(getImpactedTestExecutorProgramArguments(report))
+
+        logger.info("Starting agent with jvm args $jvmArgs")
+        logger.info("Starting impacted tests executor with args $args")
+        logger.info("With workingDir $workingDir")
 
         super.exec()
     }
@@ -96,13 +95,13 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         logger.debug("Starting impacted tests with classpath ${classpath.files}")
     }
 
-    private fun getImpactedTestExecutorProgramArguments(): List<String> {
+    private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {
         val args = mutableListOf(
             "--url", configuration.parent.server.url!!,
             "--project", configuration.parent.server.project!!,
             "--user", configuration.parent.server.userName!!,
             "--access-token", configuration.parent.server.userAccessToken!!,
-            "--partition", configuration.report.testwiseCoverage.getTransformedPartition(project),
+            "--partition", report.partition,
             "--end", endCommit.toString()
         )
 

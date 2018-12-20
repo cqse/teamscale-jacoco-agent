@@ -117,6 +117,9 @@ public class ImpactedTestsExecutor {
 			if (impactedTests == null) {
 				testExecutionSummary = testExecutor.executeAllTests();
 			} else {
+				for (TestForPrioritization impactedTest : impactedTests) {
+					logger.info("" + impactedTest.uniformPath + " " + impactedTest.selectionReason);
+				}
 				List<String> uniqueIds = availableTestDetails.convertToUniqueIds(impactedTests);
 				testExecutionSummary = testExecutor.executeTests(uniqueIds);
 			}
