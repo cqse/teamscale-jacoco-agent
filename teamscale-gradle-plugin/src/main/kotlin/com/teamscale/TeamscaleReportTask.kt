@@ -25,8 +25,7 @@ import java.io.File
 open class TeamscaleReportTask : DefaultTask() {
 
     /**
-     * Test task's name for which this task acts as a
-     * stand-in when executing impacted tests.
+     * Test task's name for which reports are generated.
      */
     lateinit var testTaskName: String
 

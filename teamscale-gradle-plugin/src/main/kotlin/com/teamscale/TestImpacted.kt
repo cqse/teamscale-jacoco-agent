@@ -1,49 +1,56 @@
 package com.teamscale
 
-import com.teamscale.client.CommitDescriptor
 import com.teamscale.config.TeamscaleTaskExtension
 import com.teamscale.report.util.AntPatternUtils
+import groovy.lang.Closure
+import org.gradle.api.Action
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.junit.JUnitOptions
+import org.gradle.api.tasks.testing.testng.TestNGOptions
+import org.gradle.process.internal.ExecActionFactory
 import java.io.File
 import java.util.regex.Pattern
+import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
-open class ImpactedTestsExecutorTask : JavaExec() {
+open class TestImpacted : Test() {
+
+    /** Command line switch to activate running all tests. */
+    @Input
+    @Option(
+        option = "impacted",
+        description = "If set only impacted tests are executed."
+    )
+    var onlyRunImpacted: Boolean = false
 
     /** Command line switch to activate running all tests. */
     @Input
     @Option(
         option = "run-all-tests",
-        description = "When set to true runs all tests, but still collects testwise coverage. By default only impacted tests are executed."
+        description = "When set to true runs all tests, but still collects testwise coverage."
     )
     var runAllTests: Boolean = false
-
-    /**
-     * Reference to the test task for which this task acts as a
-     * stand-in when executing impacted tests.
-     */
-    lateinit var testTask: Test
 
     /**
      * Reference to the configuration that should be used for this task.
      */
     @Input
-    lateinit var configuration: TeamscaleTaskExtension
+    lateinit var taskExtension: TeamscaleTaskExtension
 
     /**
      * The (current) commit at which test details should be uploaded to.
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
-    @Input
-    lateinit var endCommit: CommitDescriptor
+    @get:Input
+    val endCommit by lazy { taskExtension.parent.commit.getCommitDescriptor() }
 
     /** The directory to write the jacoco execution data to. */
     private lateinit var tempDir: File
@@ -53,59 +60,95 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     init {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
-        main = "org.junit.platform.console.ImpactedTestsExecutor"
+        useJUnitPlatform()
+    }
+
+    override fun useJUnit() {
+        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
+    }
+
+    override fun useJUnit(testFrameworkConfigure: Closure<*>?) {
+        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
+    }
+
+    override fun useJUnit(testFrameworkConfigure: Action<in JUnitOptions>) {
+        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
+    }
+
+    override fun useTestNG() {
+        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
+    }
+
+    override fun useTestNG(testFrameworkConfigure: Closure<Any>) {
+        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
+    }
+
+    override fun useTestNG(testFrameworkConfigure: Action<in TestNGOptions>) {
+        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
     }
 
     @TaskAction
-    override fun exec() {
+    override fun executeTests() {
+        if (!onlyRunImpacted) {
+            super.executeTests()
+            return
+        } else {
+            runImpactedTests()
+        }
+    }
+
+    @Inject
+    protected fun getExecActionFactory(): ExecActionFactory {
+        throw UnsupportedOperationException()
+    }
+
+    fun runImpactedTests() {
         prepareClassPath()
 
-        tempDir = configuration.agent.destination
+        tempDir = taskExtension.agent.destination
         if (tempDir.exists()) {
-            logger.debug("Removing old execution data file at ${tempDir.absolutePath}")
+            logger.debug("Removing old execution data file(s) at ${tempDir.absolutePath}")
             tempDir.deleteRecursively()
         }
 
-        workingDir = testTask.workingDir
-
-        configuration.agent.localAgent?.let {
+        taskExtension.agent.localAgent?.let {
             jvmArgs(it.getJvmArgs())
         }
 
-        val reportConfig = configuration.getMergedReports()
-        val report = reportConfig.testwiseCoverage.getReport(project, testTask)
-        reportTask.addTestArtifactsDirs(report, configuration.agent.destination)
-        reportTask.classDirs.add(testTask.classpath)
+        val reportConfig = taskExtension.getMergedReports()
+        val report = reportConfig.testwiseCoverage.getReport(project, this)
+        reportTask.addTestArtifactsDirs(report, taskExtension.agent.destination)
+        reportTask.classDirs.add(classpath)
 
-        args(getImpactedTestExecutorProgramArguments(report))
+        val javaExecHandleBuilder = getExecActionFactory().newJavaExecAction()
+        this.copyTo(javaExecHandleBuilder)
+
+        javaExecHandleBuilder.main = "org.junit.platform.console.ImpactedTestsExecutor"
+        javaExecHandleBuilder.args = getImpactedTestExecutorProgramArguments(report)
 
         logger.info("Starting agent with jvm args $jvmArgs")
-        logger.info("Starting impacted tests executor with args $args")
+        logger.info("Starting impacted tests executor with args $javaExecHandleBuilder.args")
         logger.info("With workingDir $workingDir")
 
-        super.exec()
+        javaExecHandleBuilder.execute()
     }
 
     private fun prepareClassPath() {
-        if (classpath.files.isEmpty()) {
-            classpath = testTask.classpath
-        }
-
         classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
         logger.debug("Starting impacted tests with classpath ${classpath.files}")
     }
 
     private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {
         val args = mutableListOf(
-            "--url", configuration.parent.server.url!!,
-            "--project", configuration.parent.server.project!!,
-            "--user", configuration.parent.server.userName!!,
-            "--access-token", configuration.parent.server.userAccessToken!!,
+            "--url", taskExtension.parent.server.url!!,
+            "--project", taskExtension.parent.server.project!!,
+            "--user", taskExtension.parent.server.userName!!,
+            "--access-token", taskExtension.parent.server.userAccessToken!!,
             "--partition", report.partition,
             "--end", endCommit.toString()
         )
 
-        configuration.agent.getAllAgents().forEach {
+        taskExtension.agent.getAllAgents().forEach {
             args.addAll(listOf("--agent", it.url.toString()))
         }
 
@@ -133,7 +176,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
     }
 
     private fun addFilters(args: MutableList<String>) {
-        val platformOptions = (testTask.testFramework as JUnitPlatformTestFramework).options
+        val platformOptions = (testFramework as JUnitPlatformTestFramework).options
         platformOptions.includeTags.forEach { tag ->
             args.addAll(listOf("-t", tag))
         }
@@ -146,7 +189,6 @@ open class ImpactedTestsExecutorTask : JavaExec() {
         platformOptions.excludeEngines.forEach { engineId ->
             args.addAll(listOf("-E", engineId))
         }
-        val includes = testTask.includes
         // JUnit by default only includes classes ending with Test, but we want to include all classes.
         if (includes.isEmpty()) {
             // .* Needs to be set in quotes as windows expands this to all file names starting with dot otherwise
@@ -161,7 +203,7 @@ open class ImpactedTestsExecutorTask : JavaExec() {
                 )
             )
         }
-        testTask.excludes.forEach { classExcludePattern ->
+        excludes.forEach { classExcludePattern ->
             args.addAll(
                 listOf(
                     "-N", '"' + normalizeAntPattern(

@@ -28,9 +28,6 @@ open class TeamscalePluginExtension(val project: Project) : Serializable {
         action.execute(commit)
     }
 
-    /** Creates Impacted tasks for all tests if enabled. */
-    var testImpactMode: Boolean? = null
-
     val report = Reports()
 
     /** Configures the reports to be uploaded. */
@@ -38,20 +35,7 @@ open class TeamscalePluginExtension(val project: Project) : Serializable {
         action.execute(report)
     }
 
-    /**
-     * @return True if all required fields have been set otherwise false.
-     */
-    fun validate(project: Project, testTaskName: String): Boolean {
-        if (testImpactMode == true) {
-            return commit.validate(project, testTaskName) && report.testwiseCoverage.validate(
-                project,
-                testTaskName
-            )
-        }
-        return true
-    }
-
-    fun <T> applyTo(task: T) where T : Task, T : JavaForkOptions {
+    fun <T> applyTo(task: T): TeamscaleTaskExtension where T : Task, T : JavaForkOptions {
         val jacocoTaskExtension: JacocoTaskExtension? = task.extensions.getByType(JacocoTaskExtension::class.java)
         val extension =
             task.extensions.create(
@@ -64,5 +48,6 @@ open class TeamscalePluginExtension(val project: Project) : Serializable {
         extension.agent.setDestination(task.project.provider {
             project.file("${project.buildDir}/jacoco/${project.name}-${task.name}")
         })
+        return extension
     }
 }

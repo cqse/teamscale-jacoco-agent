@@ -15,7 +15,7 @@ buildscript {
 		maven { url 'https://share.cqse.eu/public/maven/' }
 	}
 	dependencies {
-		classpath 'com.teamscale:teamscale-gradle-plugin:0.2.0'
+		classpath 'com.teamscale:teamscale-gradle-plugin:0.3.0'
 	}
 }
 
@@ -28,7 +28,6 @@ teamscale {
         userAccessToken = '7fa5.....'
         project = 'example-project-id'
     }
-    testImpactMode = true
 
     // The following is optional. By default the plugin looks for a git
     // repository in the project's root directory and takes the branch and
@@ -64,31 +63,33 @@ teamscale {
         // Where to store the JaCoCo exec file and other test artifacts (Optional)
         destination = file("...")
         
-        // Configures the test runner
+        // Configures the test runner to additionally notify a remote agent
         useRemoteAgent()
     }
 }
 ```
 
+Tests must be defined of type `TestImpacted`
 Any of those settings can be overridden in the test task's closure. This comes in handy if you have multiple test tasks.
 
 ```groovy
-task unitTest(type: Test) {
+tasks.register('unitTest', TestImpacted) {
     useJUnitPlatform {
         excludeTags 'integration'
     }
     teamscale.report.partition = 'Unit Tests'
 }
 
-task integrationTest(type: Test) {
+tasks.register('integrationTest', TestImpacted) {
     useJUnitPlatform {
         includeTags 'integration'
     }
     teamscale.report.partition = 'Integration Tests'
 }
 ```
-The Teamscale plugin generates a special task for every test task you define suffixed with `Impacted` e.g. `unitTestImpacted`.
+
+When executing the tests you can add the `--impacted` flag to only execute impacted tests.
 This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
 Afterwards a `TESTWISE_COVERAGE` report is uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
 
-Uploading reports can also be triggered independently of the `Impacted` task with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.
+Uploading reports can also be triggered independently of the test task with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.

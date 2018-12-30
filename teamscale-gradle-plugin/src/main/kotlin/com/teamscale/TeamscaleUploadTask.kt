@@ -1,8 +1,7 @@
 package com.teamscale
 
-import com.teamscale.client.CommitDescriptor
 import com.teamscale.client.TeamscaleClient
-import com.teamscale.config.ServerConfiguration
+import com.teamscale.config.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -11,11 +10,15 @@ import java.net.ConnectException
 /** Handles report uploads to Teamscale. */
 open class TeamscaleUploadTask : DefaultTask() {
 
+    lateinit var extension: TeamscalePluginExtension
+
     /** The Teamscale server configuration. */
-    lateinit var server: ServerConfiguration
+    @get:Input
+    val server by lazy { extension.server }
 
     /** The commit for which the reports should be uploaded. */
-    lateinit var commitDescriptor: CommitDescriptor
+    @get:Input
+    val commitDescriptor by lazy { extension.commit.getCommitDescriptor() }
 
     /** The list of reports to be uploaded. */
     @Input

@@ -8,11 +8,11 @@ import java.io.Serializable
 /**
  * Holds all user configuration for the teamscale plugin.
  */
-open class TeamscaleTaskExtension(val project: Project, val parent: TeamscalePluginExtension, jacocoExtension: JacocoTaskExtension) : Serializable {
-
-    /** Creates Impacted tasks for all tests if enabled. */
-    var testImpactMode: Boolean? = null
-        get() = field ?: parent.testImpactMode
+open class TeamscaleTaskExtension(
+    val project: Project,
+    val parent: TeamscalePluginExtension,
+    jacocoExtension: JacocoTaskExtension
+) : Serializable {
 
     val report = Reports()
 
@@ -38,12 +38,9 @@ open class TeamscaleTaskExtension(val project: Project, val parent: TeamscalePlu
      * @return True if all required fields have been set otherwise false.
      */
     fun validate(project: Project, testTaskName: String): Boolean {
-        if (testImpactMode == true) {
-            return parent.commit.validate(project, testTaskName) && report.testwiseCoverage.validate(
-                project,
-                testTaskName
-            )
-        }
-        return true
+        return parent.commit.validate(project, testTaskName) && report.testwiseCoverage.validate(
+            project,
+            testTaskName
+        )
     }
 }

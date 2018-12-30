@@ -1,13 +1,10 @@
 package com.teamscale
 
 import com.teamscale.config.TeamscalePluginExtension
-import com.teamscale.config.TeamscaleTaskExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.util.GradleVersion
 
@@ -32,9 +29,6 @@ open class TeamscalePlugin : Plugin<Project> {
 
         /** The name of the configuration that holds the teamscale jacoco agent and its dependencies. */
         const val teamscaleJaCoCoAgentConfiguration = "teamscaleJaCoCoAgent"
-
-        /** The suffix that gets appended to the name of the ImpactedTestsExecutorTask. */
-        private const val impactedTestsSuffix = "Impacted"
     }
 
     /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
@@ -61,7 +55,7 @@ open class TeamscalePlugin : Plugin<Project> {
         }
 
         // Add impacted tests executor to a custom configuration that will later be used to
-        // create the classpath for the ImpactedTestsExecutorTask created by this plugin.
+        // create the classpath for the TestImpacted created by this plugin.
         project.configurations.maybeCreate(impactedTestExecutorConfiguration)
             .defaultDependencies { dependencies ->
                 dependencies.add(project.dependencies.create("com.teamscale:impacted-tests-executor:$pluginVersion"))
@@ -75,67 +69,45 @@ open class TeamscalePlugin : Plugin<Project> {
             }
 
         // Add the teamscale extension also to all test tasks
-        project.tasks.withType(Test::class.java) { gradleTestTask ->
-            pluginExtension.applyTo(gradleTestTask)
-
-            // Create the Impacted task when the Test task is registered to allow client-side modifications of the classpath
-            project.tasks.create("${gradleTestTask.name}$impactedTestsSuffix", ImpactedTestsExecutorTask::class.java)
-        }
-
-        project.afterEvaluate {
-            project.tasks.withType(Test::class.java) { gradleTestTask ->
-                if (gradleTestTask.testFramework !is JUnitPlatformTestFramework) {
-                    return@withType
-                }
-                val config = gradleTestTask.extensions.getByType(TeamscaleTaskExtension::class.java)
-                val impactedTestsExecutorTask =
-                    project.tasks.getByName("${gradleTestTask.name}$impactedTestsSuffix") as ImpactedTestsExecutorTask
-                impactedTestsExecutorTask.onlyIf { config.testImpactMode ?: false }
-                if (!config.validate(project, gradleTestTask.name)) {
-                    return@withType
-                }
-                configureTestwiseCoverageCollectingTestWrapperTask(
-                    project,
-                    gradleTestTask,
-                    config,
-                    impactedTestsExecutorTask
-                )
-            }
+        project.tasks.withType(TestImpacted::class.java) { testImpactedTask ->
+            configureTestImpactedTask(
+                project,
+                pluginExtension,
+                testImpactedTask
+            )
         }
     }
 
     /** Configures the given impacted test executor. */
-    private fun configureTestwiseCoverageCollectingTestWrapperTask(
+    private fun configureTestImpactedTask(
         project: Project,
-        gradleTestTask: Test,
-        config: TeamscaleTaskExtension,
-        impactedTestsExecutorTask: ImpactedTestsExecutorTask
+        pluginExtension: TeamscalePluginExtension,
+        testImpacted: TestImpacted
     ) {
-        project.logger.info("Configuring impacted tests executor task for ${project.name}:${gradleTestTask.name}")
+        project.logger.info("Configuring impacted tests executor task for ${project.name}:${testImpacted.name}")
 
-        impactedTestsExecutorTask.apply {
-            testTask = gradleTestTask
-            configuration = config
-            endCommit = config.parent.commit.getCommitDescriptor()
-            // Copy dependencies from gradle test task
-            dependsOn(gradleTestTask.dependsOn)
-            dependsOn.add(project.configurations.getByName(impactedTestExecutorConfiguration))
-            dependsOn.add(project.sourceSets.getByName("test").runtimeClasspath)
+        val extension = pluginExtension.applyTo(testImpacted)
+        if (!extension.validate(project, testImpacted.name)) {
+            return
         }
 
+        testImpacted.apply {
+            taskExtension = extension
+            dependsOn.add(project.configurations.getByName(impactedTestExecutorConfiguration))
+        }
 
         val teamscaleReportTask = project.rootProject.tasks
-            .maybeCreate("${gradleTestTask.name}Report", TeamscaleReportTask::class.java)
-        impactedTestsExecutorTask.finalizedBy(teamscaleReportTask)
+            .maybeCreate("${testImpacted.name}Report", TeamscaleReportTask::class.java)
+        testImpacted.finalizedBy(teamscaleReportTask)
 
-        impactedTestsExecutorTask.reportTask = teamscaleReportTask
+        testImpacted.reportTask = teamscaleReportTask
 
         teamscaleReportTask.apply {
-            testTaskName = gradleTestTask.name
-            configuration = config
+            testTaskName = testImpacted.name
+            configuration = extension
         }
 
-        val teamscaleUploadTask = createTeamscaleUploadTask(config.parent, gradleTestTask.name, project.rootProject)
+        val teamscaleUploadTask = createTeamscaleUploadTask(pluginExtension, testImpacted.name, project.rootProject)
         teamscaleReportTask.finalizedBy(teamscaleUploadTask)
         teamscaleReportTask.uploadTask = teamscaleUploadTask
     }
@@ -148,8 +120,7 @@ open class TeamscalePlugin : Plugin<Project> {
         val teamscaleUploadTask =
             rootProject.tasks.maybeCreate("${testTaskName}ReportUpload", TeamscaleUploadTask::class.java)
         teamscaleUploadTask.apply {
-            server = teamscalePluginExtension.server
-            commitDescriptor = teamscalePluginExtension.commit.getCommitDescriptor()
+            extension = teamscalePluginExtension
         }
         return teamscaleUploadTask
     }
