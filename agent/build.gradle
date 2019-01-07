@@ -6,7 +6,7 @@ plugins {
 	// we don't want to cause conflicts between our dependencies and the target application
 	// since the agent will be loaded with the same class loader as the profiled application
 	// so we use the shadow plugin to relocate our dependencies
-	id 'com.github.johnrengelman.shadow' version '4.0.1'
+	id 'com.github.johnrengelman.shadow' version '4.0.3'
 	id 'maven'
 }
 

@@ -1,29 +1,35 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
 plugins {
-	id 'com.github.johnrengelman.shadow' version '4.0.1'
 	id 'java-library'
 	id 'maven'
+	id 'com.github.johnrengelman.shadow' version '4.0.3'
+}
+
+configurations {
+	testImplementation.extendsFrom(shadow)
 }
 
 version reportGeneratorVersion
 
-configurations {
-	conqat
-	implementation.extendsFrom(conqat)
-}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
-	api project(':teamscale-client')
+	// We need to use compile here instead of implementation/api as shadow can't cope with api yet
+	// See https://github.com/johnrengelman/shadow/issues/424 -> Tagged for 4.0.4
+	shadow project(':teamscale-client')
 
-	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+	compile "org.jacoco:org.jacoco.core:$jacocoVersion"
+	compile "org.jacoco:org.jacoco.report:$jacocoVersion"
+	compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-	implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+	compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
+	compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
 
-	conqat 'org.conqat:org.conqat.lib.commons:0.20160822'
+	compile 'org.conqat:org.conqat.lib.commons:0.20160822'
 
-	implementation 'com.google.code.gson:gson:2.8.5'
+	compile 'com.google.code.gson:gson:2.8.5'
 
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.assertj:assertj-core:3.8.0'
@@ -38,13 +44,20 @@ test {
 // as this dependency is not available via mavenCentral
 shadowJar {
 	classifier = null
-	configurations = [project.configurations.conqat]
+	doFirst {
+		relocate('com.teamscale', 'com.teamscale')
+	}
 }
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+	target = tasks.shadowJar
+}
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 install {
 	repositories.mavenInstaller {
 		configuration = configurations.shadow
-//		pom.whenConfigured { it.dependencies.clear() }
+		configurePom(pom)
 	}
 }
 
@@ -58,7 +71,18 @@ uploadShadow {
 			repository(url: cqseMavenRepositoryUrl) {
 				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
 			}
-//			pom.whenConfigured { it.dependencies.clear() }
+			configurePom(pom)
 		}
+	}
+}
+
+private void configurePom(pom) {
+	pom.withXml {
+		asNode().remove(asNode().get('dependencies'))
+		def dep = asNode().appendNode('dependecies').appendNode('dependency')
+		dep.appendNode('groupId', 'com.teamscale')
+		dep.appendNode('artifactId', 'teamscale-client')
+		dep.appendNode('version', teamscaleClientVersion)
+		dep.appendNode('scope', 'compile')
 	}
 }

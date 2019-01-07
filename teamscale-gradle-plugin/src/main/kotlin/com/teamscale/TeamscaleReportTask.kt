@@ -15,10 +15,7 @@ import com.teamscale.report.util.ILogger
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFiles
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import java.io.File
 
 /** Task which runs the impacted tests. */
@@ -27,56 +24,51 @@ open class TeamscaleReportTask : DefaultTask() {
     /**
      * Test task's name for which reports are generated.
      */
+    @Internal
     lateinit var testTaskName: String
 
     /**
      * Reference to the configuration that should be used for this task.
      */
+    @Internal
     lateinit var configuration: TeamscaleTaskExtension
 
     /* Task inputs */
 
-    private val agentFilter: SerializableFilter
+    val agentFilter: SerializableFilter
         @Input
         get() = configuration.agent.getFilter()
 
-    private val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
+    val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
         @Input
         get() = configuration.report.googleClosureCoverage.getFilter()
 
-    private val closureCoverageDir: Set<File>
+    val closureCoverageDir: Set<File>
         @InputFiles
         get() = configuration.report.googleClosureCoverage.destination ?: emptySet()
 
     /** Report files to included artifacts. */
+    @Internal
     private val reportsToArtifacts = mutableMapOf<Report, MutableList<File>>()
 
+    @get:InputFiles
     val testArtifacts
-        @InputFiles
         get() = reportsToArtifacts.values.flatten()
 
     @InputFiles
     val classDirs = mutableListOf<FileCollection>()
 
     /* Task outputs */
+    @get:OutputFiles
     val reportFiles
-        @OutputFiles
         get() = reportsToArtifacts.keys.map { it.reportFile }
-
 
     init {
         group = "Teamscale"
         description = "Generates a testwise coverage report"
     }
 
-    private val jaCoCoTestwiseReportGenerator: JaCoCoTestwiseReportGenerator by lazy {
-        JaCoCoTestwiseReportGenerator(
-            classDirs.flatMap { it.files },
-            agentFilter.getPredicate(),
-            true,
-            project.logger.wrapInILogger()
-        )
-    }
+    @Internal
     lateinit var uploadTask: TeamscaleUploadTask
 
     /**
@@ -84,6 +76,17 @@ open class TeamscaleReportTask : DefaultTask() {
      */
     @TaskAction
     fun generateTestwiseCoverageReport() {
+        if (reportsToArtifacts.isEmpty()) {
+            logger.info("Skipping coverage report generation (No reports configured)")
+            return
+        }
+        val jaCoCoTestwiseReportGenerator = JaCoCoTestwiseReportGenerator(
+            classDirs.flatMap { it.files },
+            agentFilter.getPredicate(),
+            true,
+            project.logger.wrapInILogger()
+        )
+
         logger.info("Generating coverage reports...")
         for ((reportConfig, artifacts) in reportsToArtifacts.entries) {
             val testDetails =
@@ -94,8 +97,22 @@ open class TeamscaleReportTask : DefaultTask() {
                 artifacts
             )
 
-            val testwiseCoverage = getJaCoCoTestwiseCoverage(artifacts) ?: continue
-            testwiseCoverage.add(getClosureTestwiseCoverage())
+        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, artifacts)
+        if (jacocoExecutionData.isEmpty()) {
+            logger.error("No execution data provided!")
+                continue
+        }
+        logger.info("Generating testwise coverage for $jacocoExecutionData")
+
+            val testwiseCoverage = jaCoCoTestwiseReportGenerator.convert(jacocoExecutionData)
+
+        val jsCoverageData = closureCoverageDir
+            if (!jsCoverageData.isEmpty()) {
+                testwiseCoverage.add( ClosureTestwiseCoverageGenerator(
+            jsCoverageData,
+            closureIncludeFilter.getPredicate()
+                ).readTestCoverage())
+            }
 
             logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
@@ -107,30 +124,6 @@ open class TeamscaleReportTask : DefaultTask() {
                 uploadTask.reports.add(reportConfig)
             }
         }
-    }
-
-    private fun getJaCoCoTestwiseCoverage(
-        artifacts: List<File>
-    ): TestwiseCoverage? {
-        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, artifacts)
-        if (jacocoExecutionData.isEmpty()) {
-            logger.error("No execution data provided!")
-            return null
-        }
-        logger.info("Generating testwise coverage for $jacocoExecutionData")
-
-        return jaCoCoTestwiseReportGenerator.convert(jacocoExecutionData)
-    }
-
-    private fun getClosureTestwiseCoverage(): TestwiseCoverage? {
-        val jsCoverageData = closureCoverageDir
-        if (jsCoverageData.isEmpty()) {
-            return null
-        }
-        return ClosureTestwiseCoverageGenerator(
-            jsCoverageData,
-            closureIncludeFilter.getPredicate()
-        ).readTestCoverage()
     }
 
     fun addTestArtifactsDirs(report: Report, testArtifactDestination: File) {

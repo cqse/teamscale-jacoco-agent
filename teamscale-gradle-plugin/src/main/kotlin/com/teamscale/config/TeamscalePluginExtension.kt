@@ -12,7 +12,7 @@ import java.io.Serializable
 /**
  * Holds all user configuration for the teamscale plugin.
  */
-open class TeamscalePluginExtension(val project: Project) : Serializable {
+open class TeamscalePluginExtension(val project: Project) {
 
     val server = ServerConfiguration()
 

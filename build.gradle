@@ -1,6 +1,6 @@
 ext {
     appVersion = '11.0.2'
-    pluginVersion = '0.3.0'
+    pluginVersion = '0.3.1'
     reportGeneratorVersion = '1.2.2'
     teamscaleClientVersion = '0.2.3'
 

@@ -25,11 +25,6 @@ class Commit : Serializable {
         return CommitDescriptor(branchName, timestamp)
     }
 
-    fun copyWithDefault(toCopy: Commit, default: Commit) {
-        branchName = toCopy.branchName ?: default.branchName
-        timestamp = toCopy.timestamp ?: default.timestamp
-    }
-
     fun validate(project: Project, testTaskName: String): Boolean {
         return try {
             if (branchName == null || timestamp == null) {

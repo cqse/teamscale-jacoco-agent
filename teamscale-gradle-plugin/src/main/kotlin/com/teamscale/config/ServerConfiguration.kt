@@ -1,6 +1,8 @@
 package com.teamscale.config
 
-class ServerConfiguration {
+import java.io.Serializable
+
+class ServerConfiguration : Serializable {
 
     /** The url of the Teamscale server. */
     var url: String? = null
@@ -14,4 +16,7 @@ class ServerConfiguration {
     /** The access token of the user.   */
     var userAccessToken: String? = null
 
+    override fun toString(): String {
+        return "ServerConfiguration(url=$url, project=$project, userName=$userName, userAccessToken=$userAccessToken)"
+    }
 }

@@ -8,9 +8,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
@@ -42,25 +40,49 @@ open class TestImpacted : Test() {
     /**
      * Reference to the configuration that should be used for this task.
      */
-    @Input
-    lateinit var taskExtension: TeamscaleTaskExtension
+    @Internal
+    internal lateinit var taskExtension: TeamscaleTaskExtension
+
+    @get:Input
+    val reportConfiguration
+        get() = taskExtension.report
+
+    @get:Input
+    val agentFilterConfiguration
+        get() = taskExtension.agent.getFilter()
+
+    @get:Input
+    val agentJvmConfiguration
+        get() = taskExtension.agent.getAllAgents().map { it.getJvmArgs() }
+
+    @get:Input
+    val serverConfiguration
+        get() = taskExtension.parent.server
 
     /**
      * The (current) commit at which test details should be uploaded to.
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
-    @get:Input
-    val endCommit by lazy { taskExtension.parent.commit.getCommitDescriptor() }
+    val endCommit
+        @Input
+        get() =  taskExtension.parent.commit.getCommitDescriptor()
 
     /** The directory to write the jacoco execution data to. */
+    @Internal
     private lateinit var tempDir: File
 
+    @Internal
     lateinit var reportTask: TeamscaleReportTask
 
     init {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
         useJUnitPlatform()
+    }
+
+    @Inject
+    protected open fun getExecActionFactory(): ExecActionFactory {
+        throw UnsupportedOperationException()
     }
 
     override fun useJUnit() {
@@ -97,12 +119,7 @@ open class TestImpacted : Test() {
         }
     }
 
-    @Inject
-    protected fun getExecActionFactory(): ExecActionFactory {
-        throw UnsupportedOperationException()
-    }
-
-    fun runImpactedTests() {
+    private fun runImpactedTests() {
         prepareClassPath()
 
         tempDir = taskExtension.agent.destination
@@ -140,10 +157,10 @@ open class TestImpacted : Test() {
 
     private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {
         val args = mutableListOf(
-            "--url", taskExtension.parent.server.url!!,
-            "--project", taskExtension.parent.server.project!!,
-            "--user", taskExtension.parent.server.userName!!,
-            "--access-token", taskExtension.parent.server.userAccessToken!!,
+            "--url", serverConfiguration.url!!,
+            "--project", serverConfiguration.project!!,
+            "--user", serverConfiguration.userName!!,
+            "--access-token", serverConfiguration.userAccessToken!!,
             "--partition", report.partition,
             "--end", endCommit.toString()
         )
