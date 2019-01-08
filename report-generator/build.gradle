@@ -12,9 +12,6 @@ configurations {
 
 version reportGeneratorVersion
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 dependencies {
 	// We need to use compile here instead of implementation/api as shadow can't cope with api yet
 	// See https://github.com/johnrengelman/shadow/issues/424 -> Tagged for 4.0.4

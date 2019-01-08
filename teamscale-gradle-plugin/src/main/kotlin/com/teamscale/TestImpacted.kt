@@ -8,7 +8,10 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
 import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
@@ -65,7 +68,7 @@ open class TestImpacted : Test() {
      */
     val endCommit
         @Input
-        get() =  taskExtension.parent.commit.getCommitDescriptor()
+        get() = taskExtension.parent.commit.getCommitDescriptor()
 
     /** The directory to write the jacoco execution data to. */
     @Internal
@@ -121,6 +124,7 @@ open class TestImpacted : Test() {
 
     private fun runImpactedTests() {
         prepareClassPath()
+        jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
 
         tempDir = taskExtension.agent.destination
         if (tempDir.exists()) {
@@ -139,20 +143,21 @@ open class TestImpacted : Test() {
 
         val javaExecHandleBuilder = getExecActionFactory().newJavaExecAction()
         this.copyTo(javaExecHandleBuilder)
+        javaExecHandleBuilder.classpath = classpath
 
         javaExecHandleBuilder.main = "org.junit.platform.console.ImpactedTestsExecutor"
         javaExecHandleBuilder.args = getImpactedTestExecutorProgramArguments(report)
 
-        logger.info("Starting agent with jvm args $jvmArgs")
-        logger.info("Starting impacted tests executor with args $javaExecHandleBuilder.args")
-        logger.info("With workingDir $workingDir")
+        logger.info("Starting agent with jvm args ${javaExecHandleBuilder.allJvmArgs}")
+        logger.info("Starting impacted tests executor with args ${javaExecHandleBuilder.args}")
+        logger.info("With workingDir ${javaExecHandleBuilder.workingDir}")
+        logger.debug("Starting impacted tests with classpath ${javaExecHandleBuilder.classpath.files}")
 
         javaExecHandleBuilder.execute()
     }
 
     private fun prepareClassPath() {
         classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
-        logger.debug("Starting impacted tests with classpath ${classpath.files}")
     }
 
     private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {

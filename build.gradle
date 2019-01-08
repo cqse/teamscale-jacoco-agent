@@ -1,5 +1,5 @@
 ext {
-    appVersion = '11.0.2'
+    appVersion = '11.0.3'
     pluginVersion = '0.3.1'
     reportGeneratorVersion = '1.2.2'
     teamscaleClientVersion = '0.2.3'
@@ -16,6 +16,16 @@ ext {
 }
 
 subprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
+
     group 'com.teamscale'
     
     configurations {

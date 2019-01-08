@@ -16,4 +16,12 @@ public class PathCoverage {
 		this.path = path;
 		this.files = files;
 	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public List<FileCoverage> getFiles() {
+		return files;
+	}
 }

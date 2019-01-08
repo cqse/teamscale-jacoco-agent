@@ -6,9 +6,6 @@ plugins {
 	id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 gradlePlugin {
 	plugins {
 		teamscale {
