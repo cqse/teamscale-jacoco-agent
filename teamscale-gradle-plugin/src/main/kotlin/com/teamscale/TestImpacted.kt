@@ -123,7 +123,6 @@ open class TestImpacted : Test() {
     }
 
     private fun runImpactedTests() {
-        prepareClassPath()
         jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
 
         tempDir = taskExtension.agent.destination
@@ -143,7 +142,7 @@ open class TestImpacted : Test() {
 
         val javaExecHandleBuilder = getExecActionFactory().newJavaExecAction()
         this.copyTo(javaExecHandleBuilder)
-        javaExecHandleBuilder.classpath = classpath
+        javaExecHandleBuilder.classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
 
         javaExecHandleBuilder.main = "org.junit.platform.console.ImpactedTestsExecutor"
         javaExecHandleBuilder.args = getImpactedTestExecutorProgramArguments(report)
@@ -154,10 +153,6 @@ open class TestImpacted : Test() {
         logger.debug("Starting impacted tests with classpath ${javaExecHandleBuilder.classpath.files}")
 
         javaExecHandleBuilder.execute()
-    }
-
-    private fun prepareClassPath() {
-        classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
     }
 
     private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {
