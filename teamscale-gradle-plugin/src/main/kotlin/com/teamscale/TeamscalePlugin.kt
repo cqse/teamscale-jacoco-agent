@@ -116,6 +116,7 @@ open class TeamscalePlugin : Plugin<Project> {
         teamscaleReportTask.uploadTask = teamscaleUploadTask
     }
 
+    /** Creates and configures the upload task. */
     private fun createTeamscaleUploadTask(
         teamscalePluginExtension: TeamscalePluginExtension,
         testTaskName: String,

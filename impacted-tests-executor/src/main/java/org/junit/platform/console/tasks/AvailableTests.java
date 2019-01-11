@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths
+ * returned by the Teamscale server to unique IDs used in JUnit Platform.
+ */
 public class AvailableTests {
 
 	/**
@@ -20,23 +24,31 @@ public class AvailableTests {
 	/** List of all test details. */
 	private List<TestDetails> testList = new ArrayList<>();
 
+	/** Adds a new {@link TestDetails} object and the according uniqueId. */
 	public void add(String uniqueId, TestDetails details) {
 		uniformPathToUniqueIdMapping.put(details.uniformPath, uniqueId);
 		testList.add(details);
 	}
 
+	/** Returns the size of the test list. */
 	public int size() {
 		return testList.size();
 	}
 
-	public List<TestDetails> getList() {
+	/** Returns the list of available tests. */
+	public List<TestDetails> getTestList() {
 		return testList;
 	}
 
+	/** Returns whether the container holds any tests. */
 	public boolean isEmpty() {
 		return testList.isEmpty();
 	}
 
+	/**
+	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a
+	 * list of unique IDs to be fed into JUnit Platform.
+	 */
 	public List<String> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
 		return impactedTests.stream().map(test -> uniformPathToUniqueIdMapping.get(test.uniformPath))
 				.collect(Collectors.toList());

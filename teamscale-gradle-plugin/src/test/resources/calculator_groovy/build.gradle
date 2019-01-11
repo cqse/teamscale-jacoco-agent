@@ -25,7 +25,7 @@ teamscale {
     server {
         url = 'http://127.0.0.1:8080'
         userName = 'build'
-        userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu'
+        userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
         project = 'test'
     }
     commit {

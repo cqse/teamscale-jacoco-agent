@@ -10,7 +10,10 @@ public enum ETestArtifactFormat {
 	TEST_EXECUTION("Test Execution", "test-execution", "json"),
 
 	/** Binary jacoco test coverage (.exec file). */
-	JACOCO("Jacoco", "", "exec");
+	JACOCO("Jacoco", "", "exec"),
+
+	/** Google closure coverage files with additional uniformPath entries. */
+	CLOSURE("Closure Coverage", "closure-coverage", "json");
 
 	/** A readable name for the report type. */
 	public final String readableName;

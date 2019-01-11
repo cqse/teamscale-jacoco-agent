@@ -137,7 +137,10 @@ open class TestImpacted : Test() {
 
         val reportConfig = taskExtension.getMergedReports()
         val report = reportConfig.testwiseCoverage.getReport(project, this)
-        reportTask.addTestArtifactsDirs(report, taskExtension.agent.destination)
+        reportTask.addTestArtifactsDirs(report, tempDir)
+        reportConfig.googleClosureCoverage.destination?.let {
+            reportTask.addTestArtifactsDirs(report, it)
+        }
         reportTask.classDirs.add(classpath)
 
         val javaExecHandleBuilder = getExecActionFactory().newJavaExecAction()

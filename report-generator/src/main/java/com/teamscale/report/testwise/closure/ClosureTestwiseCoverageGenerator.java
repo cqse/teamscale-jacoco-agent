@@ -2,9 +2,9 @@ package com.teamscale.report.testwise.closure;
 
 import com.google.gson.Gson;
 import com.teamscale.report.testwise.closure.model.ClosureCoverage;
+import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
-import com.teamscale.report.testwise.model.TestwiseCoverage;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -49,6 +49,10 @@ public class ClosureTestwiseCoverageGenerator {
 	public TestwiseCoverage readTestCoverage() {
 		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
 		for (File closureCoverageDirectory : closureCoverageDirectories) {
+			if (closureCoverageDirectory.isFile()) {
+				testwiseCoverage.add(readTestCoverage(closureCoverageDirectory));
+				continue;
+			}
 			List<File> coverageFiles = FileSystemUtils.listFilesRecursively(closureCoverageDirectory,
 					file -> "json".equals(FileSystemUtils.getFileExtension(file)));
 			for (File coverageReportFile : coverageFiles) {

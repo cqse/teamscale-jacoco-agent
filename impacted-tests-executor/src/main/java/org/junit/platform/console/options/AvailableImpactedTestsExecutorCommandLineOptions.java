@@ -111,6 +111,8 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	/**
 	 * Helper to remove leading and trailing quotes from a string.
 	 * Works with single or double quotes.
+	 * Copied from {@link com.sun.javafx.util.Utils#stripQuotes(String)} as
+	 * javafx is not available in all cases on windows.
 	 */
 	private static String stripQuotes(String string) {
 		if (string == null) return null;

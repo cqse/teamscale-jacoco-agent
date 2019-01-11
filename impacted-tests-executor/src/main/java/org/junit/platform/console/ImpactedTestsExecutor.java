@@ -100,7 +100,7 @@ public class ImpactedTestsExecutor {
 
 		// Write out test details to file
 		if (options.getReportsDir().isPresent()) {
-			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails.getList());
+			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails.getTestList());
 		}
 		return availableTestDetails;
 	}
@@ -112,7 +112,7 @@ public class ImpactedTestsExecutor {
 		if (options.isRunAllTests()) {
 			testExecutionSummary = testExecutor.executeAllTests();
 		} else {
-			List<TestForPrioritization> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails.getList(),
+			List<TestForPrioritization> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails.getTestList(),
 					options);
 			if (impactedTests == null) {
 				testExecutionSummary = testExecutor.executeAllTests();

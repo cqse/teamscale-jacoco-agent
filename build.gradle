@@ -1,11 +1,11 @@
 ext {
-    appVersion = '11.0.3'
-    pluginVersion = '0.3.3'
-    reportGeneratorVersion = '1.2.2'
-    teamscaleClientVersion = '0.2.3'
+    appVersion = '11.0.4'
+    pluginVersion = '0.3.4'
+    reportGeneratorVersion = '1.2.3'
+    teamscaleClientVersion = '0.2.4'
 
     // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
-    jacocoVersion = '0.8.1'
+    jacocoVersion = '0.8.2'
     log4jVersion = '2.8.2'
 
     // Needed to deploy the artifacts to our public share

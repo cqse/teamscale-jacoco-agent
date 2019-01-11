@@ -14,6 +14,7 @@ open class TeamscaleTaskExtension(
     jacocoExtension: JacocoTaskExtension
 ) : Serializable {
 
+    /** Settings regarding the reports to generate. */
     val report = Reports()
 
     /** Configures the reports to be uploaded. */
@@ -21,6 +22,7 @@ open class TeamscaleTaskExtension(
         action.execute(report)
     }
 
+    /** Settings regarding the teamscale jacoco agent. */
     val agent = AgentConfiguration(project, jacocoExtension)
 
     /** Configures the jacoco agent options. */
@@ -28,6 +30,10 @@ open class TeamscaleTaskExtension(
         action.execute(agent)
     }
 
+    /**
+     * Merges the report configuration from TeamscalePluginExtension
+     * with TeamscaleTaskExtension.
+     */
     fun getMergedReports(): Reports {
         val reports = Reports()
         reports.copyWithDefault(report, parent.report)

@@ -1,5 +1,6 @@
 package com.teamscale.config
 
+import org.gradle.api.GradleException
 import java.io.Serializable
 
 class ServerConfiguration : Serializable {
@@ -18,5 +19,20 @@ class ServerConfiguration : Serializable {
 
     override fun toString(): String {
         return "ServerConfiguration(url=$url, project=$project, userName=$userName, userAccessToken=$userAccessToken)"
+    }
+
+    fun validate() {
+        if (url.isNullOrBlank()) {
+            throw GradleException("Teamscale server url must not be empty!")
+        }
+        if (project.isNullOrBlank()) {
+            throw GradleException("Teamscale project name must not be empty!")
+        }
+        if (userName.isNullOrBlank()) {
+            throw GradleException("Teamscale user name must not be empty!")
+        }
+        if (userAccessToken.isNullOrBlank()) {
+            throw GradleException("Teamscale user access token must not be empty!")
+        }
     }
 }

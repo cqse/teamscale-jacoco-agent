@@ -3,6 +3,7 @@ package com.teamscale
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
@@ -12,6 +13,7 @@ import java.net.ConnectException
 /** Handles report uploads to Teamscale. */
 open class TeamscaleUploadTask : DefaultTask() {
 
+    /** The global teamscale configuration. */
     @Internal
     lateinit var extension: TeamscalePluginExtension
 
@@ -37,6 +39,12 @@ open class TeamscaleUploadTask : DefaultTask() {
     /** Executes the report upload. */
     @TaskAction
     fun uploadReports() {
+        if(reports.isEmpty()) {
+            logger.info("Skipping upload. No reports to upload.")
+            return
+        }
+
+        server.validate()
         logger.info("Uploading to $server at $commitDescriptor...")
         val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
 
@@ -56,8 +64,7 @@ open class TeamscaleUploadTask : DefaultTask() {
                     format, reportFiles, commitDescriptor, partition, "$message ($partition)"
                 )
             } catch (e: ConnectException) {
-                logger.error("Upload failed (${e.message})")
-                throw e
+                throw GradleException("Upload failed (${e.message})", e)
             }
         }
     }

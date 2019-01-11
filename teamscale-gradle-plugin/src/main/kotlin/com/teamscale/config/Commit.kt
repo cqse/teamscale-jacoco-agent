@@ -21,10 +21,16 @@ class Commit : Serializable {
             field = value?.trim()
         }
 
+    /** Wraps branch and timestamp in a commit descriptor. */
     fun getCommitDescriptor(): CommitDescriptor {
         return CommitDescriptor(branchName, timestamp)
     }
 
+    /**
+     * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
+     * stores them for later use.
+     * Returns true if validation was successful.
+     */
     fun validate(project: Project, testTaskName: String): Boolean {
         return try {
             if (branchName == null || timestamp == null) {
