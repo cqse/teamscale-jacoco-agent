@@ -11,200 +11,79 @@ Teamscale with its Test Impact Analysis augments this data with source code chan
 information and calculates the impacted tests for one or more changes. It's then the
 responsibility of the test framework to execute only those.
 
-## Setup
+## High level view on the API
 
-### Gradle
+### 1. Upload Test Details and query impacted tests
 
-Most of the work can be automated by using the `teamscale` Gradle plugin.
+Impacted tests can be queried via the `Test Impact` REST-API, which returns a list of tests that should be executed to 
+test recent changes. The API can be called as `GET` or `PUT` method. The `GET` method uses only tests that are already 
+known to Teamscale from previous test runs. The `PUT` method allows to send a list of currently available tests to 
+Teamscale and therefore to pick up new tests on the go.
 
-**Requirements:**
- - Gradle 4.6
- - Tests are executed via JUnit Platform
+For both methods a branch and timestamp must be given, which specifies the code version that the tests are about to be 
+executed for.
 
-Add this to the top of your root `build.gradle` file.
-```groovy
-buildscript {
-	repositories {
-    mavenCentral()
-		maven { url 'https://share.cqse.eu/public/maven/' }
-	}
-	dependencies {
-		classpath 'eu.cqse:teamscale-gradle-plugin:1.2'
-	}
-}
-
-apply plugin: 'teamscale'
-
-teamscale {
-    server {
-        url = 'https://mycompany.com/teamsale'
-        userName = 'build'
-        userAccessToken = '7fa5.....'
-        project = 'example-project-id'
-    }
-    testImpactMode = true
-
-    // The following is optional. By default the plugin looks for a git
-    // repository in the project's root directory and takes the branch and
-    // timestamp of the currently checked out commit.
-    commit {
-        branchName = 'master'
-        timestamp = 1521800427000L // Timestamp in milliseconds
-    }
-    
-
-    // The commit message to show for the uploaded reports (optional, Default: 'Gradle Upload')
-    message = 'Gradle Upload'
-
-    // The reports that should be uploaded to Teamscale
-    report {
-        // The partition in Teamscale
-        partition = 'Unit Tests'
-        
-        // Uploads testwise coverage
-        testwiseCoverage()
-        
-        // Uploads jUnit reports
-        jUnit()
-        
-        // Uploads google closure coverage (together with the java coverage) as testwise coverage
-        googleClosureCoverage { js ->
-            // The directory in which the google closure coverage files reside after the test
-            js.destination = files("$rootDir/engine/com.teamscale.test/ui-test-coverage")
-            // Ant patterns for which files to include/exclude in the final report
-            js.excludes = ["**/google-closure-library/**", "**.soy.generated.js", "soyutils_usegoog.js"]
-        }
-    }
-    
-    // For performance reasons the classes to be instrumented and analyzed can be filtered to only include the relevant 
-    // ones. Includes and excludes have to be specified as wildcard pattern with ? and * as placeholders. (Optional)
-    agent {
-        excludes = [
-            '*.generated.*'
-        ]
-        includes = [
-            'com.package.my.*',
-            'org.mine.MyClass'
-        ]
-        // Where to store the JaCoCo exec file (Optional)
-        executionData = file("...")
-        // Allows to dump all loaded classes to a directory and use them to generate the report
-        // Might be needed when doing additional class transformations e.g. by another profiler
-        // (Optional)
-        dumpClasses = true
-        dumpDirectory = file("...")
-    }
-}
-```
-
-Any of those settings can be overridden in the test task's closure. This comes in handy if you have multiple test tasks.
-
-```groovy
-task unitTest(type: Test) {
-    useJUnitPlatform {
-        excludeTags 'integration'
-    }
-    teamscale.report.partition = 'Unit Tests'
-}
-
-task integrationTest(type: Test) {
-    useJUnitPlatform {
-        includeTags 'integration'
-    }
-    teamscale.report.partition = 'Integration Tests'
-}
-```
-The Teamscale plugin generates a special task for every test task you define suffixed with `Impacted` e.g. `unitTestImpacted`.
-This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
-Afterwards `TESTWISE_COVERAGE` and `JUNIT` reports are uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
-
-Uploading reports can also be triggered independently of the `Impacted` task with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.
-
-## Technical details
-
-### 1. Upload Test Details
-
-Since Teamscale does not have knowledge beforehand of which tests are available for execution, the list of available 
-tests has to be uploaded to Teamscale.
-
-```json
-[
-  {
-    "internalId": "com/example/JUnit5Test/myFirstTest",
-    "displayName": "My 1st JUnit 5 test! 😎",
-    "externalId": "[engine:junit-jupiter]/[class:com.example.JUnit5Test]/[method:myFirstTest(org.junit.jupiter.api.TestInfo)]"
-  },
-  {
-    "internalId": "com/example/JUnit4Test/testAdd",
-    "displayName": "testAdd",
-    "externalId": "[engine:junit-vintage]/[runner:com.example.JUnit4Test]/[test:testAdd(com.example.project.JUnit4Test)]"
-  },
-  {
-    "internalId": "com/example/JUnit4Test/systemTest",
-    "displayName": "systemTest",
-    "externalId": "[engine:junit-vintage]/[runner:com.example.JUnit4Test]/[test:systemTest(com.example.project.JUnit4Test)]"
-  }
-]
-```
-
-- `internalId` Is a file system like path, which is used to uniquely identify a test within Teamscale and should be 
-  chosen accordingly. It is furthermore used to make the set of tests hierarchically navigable within Teamscale.
-- `externalId` Is an identifier of the test which is used within the test execution tool.
-- `displayName` *(optional)* Is a human readable name of the test itself used for UI only.
-- `sourcePath` *(optional)* Path to the source of the method if the test is specified in a programming language and is 
-  known to Teamscale. Will be equal to `internalId` in most cases, but e.g. in JUnit `@Test` annotated methods in a base 
-  class will have the sourcePath pointing to the base class, which contains the actual implementation, whereas 
-  `internalId` will contain the class name of the most specific subclass from where it was actually executed.
-- `content` *(optional)* Identifies the content of the test specification. This can be used to indicate that the 
-  specification of a test has changed and therefore should be re-executed. The value can be an arbitrary string value 
-  e.g. a hash of the test specification or a revision number of the test.
-
-The upload is possible via the `Report Upload` REST-API with the `TEST_LIST` format.
-
-### 2. Query impacted tests
-
-You can get the impacted tests from Teamscale via the `Test Impact` REST-API, which returns a list of external test IDs 
-that can be used to select the according tests for execution.
-Since the analysis of the uploaded test details can take a few seconds (depending on the current server load) and 
-Teamscale needs this data to be available in order to perform the Test Impact Analysis this service may return `null` 
-to indicate, that the test details are not yet available. The client should periodically retry this call until it 
-succeeds. If no tests are selected the result is an empty list instead.
-
-### 3. Upload TESTWISE_COVERAGE report (and other artifacts)
+### 2. Upload TESTWISE_COVERAGE report
 
 During the test execution the coverage produced by each test case has to be saved separately.
 After the execution the collected testwise coverage needs to be converted to the following format.
 If possible the covered lines can already be compressed to method level, but this step is optional and only needed in 
 order to reduce the file size of the final report.
 
-```XML
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<report>
-    <test externalId="[engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[method:systemTest()]">
-        <path name="com/example/project">
-            <file name="Calculator.java">
-                <lines nr="13-15,20,24-30"/>
-                ...
-            </file>
-            ...
-        </path>
-        ...
-    </test>
-    <test externalId="[engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[method:testAdd()]">
-        ...
-    </test>
-    ...
-</report>
+```json
+{
+  "tests": [
+    {
+      "uniformPath": "com/example/project/JUnit4Test/systemTest",
+      "sourcePath": "com/example/project/JUnit4Test",
+      "duration": 0.025,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "com/example/project",
+          "files": [
+            {
+              "fileName": "Calculator.java",
+              "coveredLines": "20-24,26,27,29"
+            },
+            {
+              "fileName": "JUnit4Test.java",
+              "coveredLines": "26-28"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "com/example/project/JUnit4Test/notExecutedTest",
+      "sourcePath": "com/example/project/JUnit4Test"
+    },
+    {
+      "uniformPath": "com/example/project/JUnit5Test/failedTest()",
+      "sourcePath": "com/example/project/JUnit5Test",
+      "duration": 0.045,
+      "result": "ERROR",
+      "message": "Some error"
+    },
+    {
+      "uniformPath": "com/example/project/JUnit5Test/skippedTest()",
+      "result": "SKIPPED"
+    }
+  ]
+}
 ```
 
-The report may then be uploaded to Teamscale via the `Report Upload` REST-API by specifying `TESTWISE_COVERAGE` as 
-report format.
+The report can be uploaded to Teamscale via the `Report Upload` REST-API by specifying `TESTWISE_COVERAGE` as report format.
 
 ## Rest API
 
 To authorize the request Teamscale requires you to use Basic Authentication.
 This means that the request should contain an `Authentication` header with the content `Basic ` followed by a Base64 
 encoded version of `userName:userAccessToken`.
+
+The `partition` parameters in the requests refers to a set of tests and there coverage respectively. In most cases this 
+refers to the type of test e.g. "Unit Test" or "UI Test". It's important to note that reports uploaded to the same 
+partition will overwrite existing data in this partition.
 
 ___
 ### Test Impact
@@ -217,7 +96,7 @@ ___
 
 * **URL**
 
-  p/{projectName}/test-impact/{uniformPathPrefix}
+  p/{projectName}/test-impact
 
 * **Method:**
 
@@ -226,34 +105,93 @@ ___
 *  **URL Parameters**
 
    `projectName` Project identifier within Teamscale
+   
+*  **Query Parameters**
 
-   `uniformPathPrefix` *(optional)* Tells the service to only return tests whose uniformPath starts with the given prefix.
+   `baseline=[timestamp]` *(optional)* The baseline timestamp. A long value of the timestamp in milliseconds. 
+       Only changes to the code after the baseline will be considered for execution. If not specified all not yet covered 
+       changes will be considered.
+
+   `end=[branch]:[timestamp]` Identifies the commit that has been used to build the system that we are about to test.
+
+   `partitions=[string]` *(optional)* The partition to get impacted tests for. Multiple partitions could be specified as a comma 
+        separated list (Not recommended). If no partition is given all existing partitions are used.
+        
+   `prioritizationStrategy=[string]` *(optional)* The strategy used to order the impacted tests. Can be one of:
+        `NONE`, `FULLY_RANDOM`, `RANDOM_BUT_IMPACTED_FIRST`, `ADDITIONAL_COVERAGE_PER_TIME` (default)
+        
+   `includeNonImpacted=true|false` *(optional)* Whether non impacted tests should be included in the result. (Default is `false`)
+
+
+  `PUT`
+
+*  **URL Parameters**
+
+   `projectName` Project identifier within Teamscale
+   
+*  **Body**
+
+```json
+[
+  {
+    "uniformPath": "com/example/JUnit5Test/myFirstTest"
+  },
+  {
+    "uniformPath": "com/example/JUnit4Test/testAdd"
+  },
+  {
+    "uniformPath": "com/example/JUnit4Test/systemTest"
+  }
+]
+```
+
+- `uniformPath` Is a file system like path, which is used to uniquely identify a test within Teamscale and should be 
+  chosen accordingly. It is furthermore used to make the set of tests hierarchically navigable within Teamscale.
+- `sourcePath` *(optional)* Path to the source of the method if the test is specified in a programming language and is 
+  known to Teamscale. Will be equal to `uniformPath` in most cases, but e.g. in JUnit `@Test` annotated methods in a base 
+  class will have the sourcePath pointing to the base class, which contains the actual implementation, whereas 
+  `uniformPath` will contain the class name of the most specific subclass from where it was actually executed.
+- `content` *(optional)* Identifies the content of the test specification. This can be used to indicate that the 
+  specification of a test has changed and therefore should be re-executed. The value can be an arbitrary string value 
+  e.g. a hash of the test specification or a revision number of the test.
 
 *  **Query Parameters**
 
-   `baseline=[branch]:[timestamp]` The baseline commit (when appending `p1` as postfix, the commit before the given one is chosen)
+   `baseline=[timestamp]` *(optional)* The baseline timestamp. A long value of the timestamp in milliseconds. 
+       Only changes to the code after the baseline will be considered for execution. If not specified all not yet covered 
+       changes will be considered.
 
-   `end=[branch]:[timestamp]` Identifies the commit which is associated with the upload (e.g. the commit for which coverage has been collected)
+   `end=[branch]:[timestamp]` Identifies the commit that has been used to build the system that we are about to test.
 
-   `partition=[string]` The partition to get impacted tests for.
+   `partitions=[string]` *(optional)* The partition to get impacted tests for. Multiple partitions could be specified as a comma 
+        separated list (Not recommended). If no partition is given all existing partitions are used.
+        
+   `prioritizationStrategy=[string]` *(optional)* The strategy used to order the impacted tests. Can be one of:
+        `NONE`, `FULLY_RANDOM`, `RANDOM_BUT_IMPACTED_FIRST`, `ADDITIONAL_COVERAGE_PER_TIME` (default)
+        
+   `includeNonImpacted=true|false` *(optional)* Whether non impacted tests should be included in the result. (Default is `false`)
 
 * **Success Response:**
 
   * **Code:** 200 <br />
     **Content:**
-    Returns a list of external IDs.
+    Returns a list of tests.
     ```json
     [
-      "[engine:junit-jupiter]/[class:com.example.JUnit5Test]/[method:myFirstTest(org.junit.jupiter.api.TestInfo)]",
-      "[engine:junit-vintage]/[runner:com.example.JUnit4Test]/[test:testAdd(com.example.project.JUnit4Test)]"
+      {
+        "uniformPath": "com/example/JUnit5Test/myFirstTest",
+        "testSelectionReason": "COVERS_CHANGES",
+        "partition": "Unit Tests",
+        "durationInMs": 5
+      },
+      {
+        "uniformPath": "com/example/JUnit4Test/testAdd",
+        "testSelectionReason": "PREVIOUSLY_FAILED_OR_SKIPPED",
+        "partition": "Unit Tests",
+        "durationInMs": 3
+      }
     ]
     ```
-
-    Since the analysis of the uploaded test details can take a few seconds (depending on the current server load) and 
-    Teamscale needs this data to be available in order to perform the test impact analysis this service may return `null` 
-    to indicate, that the test details are not yet available. The client should periodically retry this call until it 
-    succeeds. 
-
 
 * **Error Response:**
 
@@ -280,7 +218,7 @@ ___
 
 *  **Query Params**
 
-   `format=[TESTWISE_COVERAGE, TEST_LIST, JUNIT, JACOCO, GCOV, ...]` The format of the uploaded report
+   `format=[TESTWISE_COVERAGE, JUNIT, JACOCO, GCOV, ...]` The format of the uploaded report
 
    `t=[branch]:[timestamp]` Identifies the commit which is associated with the upload (e.g. the commit for which coverage has been collected)
 
@@ -313,3 +251,72 @@ ___
 
 ___
 
+## Getting a testwise coverage report
+
+For Gradle based builds using JUnit 5 as test framework, there is a plugin that handles most of the complexity to get 
+testwise coverage (see teamscale-gradle-plugin/README.md for more details).
+
+For other JVM-based systems the Teamscale JaCoCo Agent can be used to generate coverage per test case. The generated 
+exec file can be augmented with test execution information to build a full testwise coverage report.
+
+Three artifacts are needed:
+ - a list of all tests as json list. The filename must start with `test-list` and have a `.json` file extension.
+    ```json
+    [
+      {
+        "uniformPath": "com/example/JUnit5Test/myFirstTest"
+      },
+      {
+        "uniformPath": "com/example/JUnit4Test/testAdd"
+      },
+      {
+        "uniformPath": "com/example/JUnit4Test/systemTest"
+      }
+    ]
+    ```
+    
+    - `uniformPath` Is a file system like path, which is used to uniquely identify a test within Teamscale and should be 
+      chosen accordingly. It is furthermore used to make the set of tests hierarchically navigable within Teamscale.
+    - `sourcePath` *(optional)* Path to the source of the method if the test is specified in a programming language and is 
+      known to Teamscale. Will be equal to `uniformPath` in most cases, but e.g. in JUnit `@Test` annotated methods in a base 
+      class will have the sourcePath pointing to the base class, which contains the actual implementation, whereas 
+      `uniformPath` will contain the class name of the most specific subclass from where it was actually executed.
+    - `content` *(optional)* Identifies the content of the test specification. This can be used to indicate that the 
+      specification of a test has changed and therefore should be re-executed. The value can be an arbitrary string value 
+      e.g. a hash of the test specification or a revision number of the test.
+  
+ - a list of test execution results. The filename must start with `test-execution` and have a `.json` file extension.
+    ```json
+     [
+       {
+         "uniformPath": "com/example/JUnit5Test/myFirstTest",
+         "durationMillis": 10,
+         "result": "ERROR",
+         "message": "<stacktrace>"
+       },
+       {
+         "uniformPath": "com/example/JUnit4Test/testAdd",
+         "durationMillis": 15,
+         "result": "PASSED"
+       },
+       {
+         "uniformPath": "com/example/JUnit4Test/systemTest",
+         "result": "IGNORED",
+         "message": "Flickers"
+       }
+     ]
+     ```
+     
+     `result` can be one of:
+     - `PASSED` Test execution was successful. 
+     - `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore).
+     - `SKIPPED` Caused by a failing assumption.
+     - `FAILURE` Caused by a failing assertion.
+     - `ERROR` Caused by an error during test execution (e.g. exception thrown).
+  - one or more coverage files with coverage per test (See agent/README -> Testwise coverage mode). 
+    The files must have an `.exec` file extension.
+  
+The above mentioned information can be converted into a single report with the Teamscale JaCoCo agent's convert tool 
+(with option `--testwise-coverage` enabled).
+See it's help command for detailed argument information.
+The input files can be one or more directories that contain the files with the specified file name conventions.

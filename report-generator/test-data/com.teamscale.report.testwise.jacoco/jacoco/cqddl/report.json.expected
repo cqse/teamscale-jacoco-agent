@@ -1,0 +1,429 @@
+{
+  "tests": [
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.127,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/commons/collections",
+          "files": [
+            {
+              "fileName": "PairList.java",
+              "coveredLines": "59-79,115,120-124,142-157,162-163,171-174,185-186"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "129-138,164-169,176,185-187"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66,71-75,79-82,90-93,112"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.115,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/commons/assertion",
+          "files": [
+            {
+              "fileName": "CCSMAssert.java",
+              "coveredLines": "44-45,131-132,145-146,250-253"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/commons/collections",
+          "files": [
+            {
+              "fileName": "PairList.java",
+              "coveredLines": "59-79,115,120-124,142-157,162-163,171-174,185-186"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "143-160,164-169,185-187"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/function",
+          "files": [
+            {
+              "fileName": "CQDDLCheck.java",
+              "coveredLines": "67-74"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66,71-75,79-82,90-93,98-106,112"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39,46-49"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.122,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/commons/assertion",
+          "files": [
+            {
+              "fileName": "CCSMAssert.java",
+              "coveredLines": "44-45,131-132,145-146,250-253"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/commons/collections",
+          "files": [
+            {
+              "fileName": "PairList.java",
+              "coveredLines": "59-79,115,120-124,142-157,162-163,171-174,185-186"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "116-124,164-169,185-187"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66,90-93"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39,53-58"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testNestedLists(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.117,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/commons/collections",
+          "files": [
+            {
+              "fileName": "PairList.java",
+              "coveredLines": "59-79,115,120-124,142-157,162-163,171-174,185-186"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "99-111,164-169,176,185-187"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testPrimitiveTypes(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.12,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "45-54"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testReferences(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.116,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/commons/collections",
+          "files": [
+            {
+              "fileName": "PairList.java",
+              "coveredLines": "59-79,115,120-124,142-157,162-163,171-174,185-186"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "85-93,164-169,176,185-187"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66,71-75,79-82,90-93"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testSimpleLists(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.117,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/commons/collections",
+          "files": [
+            {
+              "fileName": "PairList.java",
+              "coveredLines": "59-79,91-95,110,115,120-124,142-157,162-163,171-174,185-186,572"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "75-80,164-169,176,185-187"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,955-1004,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "14-547"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66,90-93"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testStrings(org.conqat.lib.cqddl.CQDDLTest)]",
+      "sourcePath": "/path/to/source",
+      "content": "content",
+      "duration": 0.113,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "org/conqat/lib/cqddl",
+          "files": [
+            {
+              "fileName": "CQDDL.java",
+              "coveredLines": "53-78"
+            },
+            {
+              "fileName": "CQDDLTest.java",
+              "coveredLines": "59-70"
+            }
+          ]
+        },
+        {
+          "path": "org/conqat/lib/cqddl/parser",
+          "files": [
+            {
+              "fileName": "CQDDLLexer.java",
+              "coveredLines": "33-938,1008-1018"
+            },
+            {
+              "fileName": "CQDDLParser.java",
+              "coveredLines": "40-41,43-462,507-517"
+            },
+            {
+              "fileName": "CQDDLParserBase.java",
+              "coveredLines": "40-51,55-56,66,112"
+            },
+            {
+              "fileName": "CQDDLParsingParameters.java",
+              "coveredLines": "33-39"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

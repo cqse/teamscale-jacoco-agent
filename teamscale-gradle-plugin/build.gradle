@@ -1,65 +1,69 @@
-buildscript {
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.60'
-    }
+plugins {
+	id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+	id 'java'
+	id 'java-gradle-plugin'
+	id 'maven'
+	id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
-apply plugin: "kotlin"
-apply plugin: "java"
-apply plugin: 'maven'
+gradlePlugin {
+	plugins {
+		teamscale {
+			id = "teamscale"
+			implementationClass = "com.teamscale.TeamscalePlugin"
+		}
+	}
+}
 
-group 'eu.cqse'
 version pluginVersion
 
-repositories {
-    mavenCentral()
-}
-
-sourceSets {
-    main.kotlin.srcDirs += 'src/main/kotlin'
-}
-
-
 configurations {
-    deployerJars
+	testImplementation.extendsFrom(shadow)
 }
 
 dependencies {
-    implementation gradleApi()
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.60'
+	shadow gradleApi()
+	shadow 'org.jetbrains.kotlin:kotlin-stdlib:1.3.11'
 
-    implementation project(path: ':report-generator', configuration: 'shadow')
-    implementation project(':teamscale-client')
+	compile project(':teamscale-client')
+	compile project(':report-generator')
+	compile 'org.eclipse.jgit:org.eclipse.jgit:5.0.2.201807311906-r'
 
-    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '3.2.0.201312181205-r'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
-
-    deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.assertj:assertj-core:3.8.0'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+	testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.2.0'
 }
 
-jar {
-    manifest {
-        attributes 'Implementation-Version': version
-    }
+// Is also added to compile by java-gradle-plugin.
+// We manually add it to shadow and remove it from compile.
+configurations.compile.dependencies.remove dependencies.gradleApi()
+
+test {
+	testLogging.exceptionFormat "full"
+}
+
+// Needed to bundle org.conqat.lib.commons into the report-generator
+// as this dependency is not available via mavenCentral
+shadowJar {
+	classifier = null
+	manifest {
+		attributes 'Implementation-Version': pluginVersion
+		attributes 'Specification-Version': appVersion
+	}
 }
 
 // At the moment we are stuck with the old maven plugin until support for private key
 // files is added or we add a dedicated user with a password to our server.
 // https://github.com/gradle/gradle/issues/1263
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: cqseMavenRepositoryUrl) {
-                authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
-            }
-        }
-    }
+uploadShadow {
+	repositories {
+		mavenDeployer {
+			configuration = configurations.deployerJars
+			repository(url: cqseMavenRepositoryUrl) {
+				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+			}
+		}
+	}
 }

@@ -2,6 +2,10 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 11.0.0
+- [breaking change] Test impact mode no longer uploads reports to teamscale and does no longer generate reports on its own
+- [feature] Added `test-env` option
+
 # 10.2.0
 - [feature] Added option to upload to azure file storage
 

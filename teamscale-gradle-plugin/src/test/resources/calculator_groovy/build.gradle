@@ -1,0 +1,82 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven { url 'https://share.cqse.eu/public/maven/' }
+    }
+}
+
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'teamscale'
+}
+
+import com.teamscale.TestImpacted
+
+ext.junit4Version        = '4.12'
+ext.junitVintageVersion  = '5.2.0'
+ext.junitPlatformVersion = '1.2.0'
+ext.junitJupiterVersion  = '5.2.0'
+ext.log4jVersion         = '2.9.0'
+
+
+teamscale {
+    server {
+        url = 'http://127.0.0.1:8080'
+        userName = 'build'
+        userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
+        project = 'test'
+    }
+    commit {
+        timestamp = 1544512967526L
+        branchName = "master"
+    }
+    report {
+        testwiseCoverage()
+    }
+}
+
+task unitTest(type: TestImpacted) {
+    useJUnitPlatform {
+        excludeTags 'integration'
+    }
+    teamscale.report.partition = 'Unit Tests'
+    testLogging {
+        // events "started", "skipped", "failed"
+        exceptionFormat "short"
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+}
+
+task integrationTest(type: TestImpacted) {
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+    teamscale.report.partition = 'Integration Tests'
+}
+
+repositories {
+	mavenCentral()
+    mavenLocal()
+    maven { url 'https://share.cqse.eu/public/maven/' }
+}
+
+dependencies {
+	// JUnit Jupiter API and TestEngine implementation
+	testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+	testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+
+	// If you also want to support JUnit 3 and JUnit 4 tests
+	testCompile("junit:junit:${junit4Version}")
+	testRuntime("org.junit.vintage:junit-vintage-engine:${junitVintageVersion}")
+}
+
+

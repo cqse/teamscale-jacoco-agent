@@ -1,62 +1,85 @@
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'java-library'
-apply plugin: 'maven'
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
-group 'eu.cqse'
-version reportGeneratorVersion
-
-configurations {
-    deployerJars
+plugins {
+	id 'java-library'
+	id 'maven'
+	id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
+configurations {
+	testImplementation.extendsFrom(shadow)
+}
+
+version reportGeneratorVersion
+
 dependencies {
-    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-    implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+	// We need to use compile here instead of implementation/api as shadow can't cope with api yet
+	// See https://github.com/johnrengelman/shadow/issues/424 -> Tagged for 4.0.4
+	shadow project(':teamscale-client')
 
-    implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-    implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
+	compile "org.jacoco:org.jacoco.core:$jacocoVersion"
+	compile "org.jacoco:org.jacoco.report:$jacocoVersion"
+	compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-    implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
-    implementation 'javax.xml.bind:jaxb-api:2.3.0'
-    implementation 'com.sun.xml.bind:jaxb-impl:2.3.0'
-    implementation 'com.sun.xml.bind:jaxb-core:2.3.0'
+	compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
+	compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
 
-    implementation 'com.google.code.gson:gson:2.8.5'
+	compile 'org.conqat:org.conqat.lib.commons:0.20160822'
 
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.assertj:assertj-core:3.8.0'
-    testImplementation 'org.mockito:mockito-core:2.19.0'
+	compile 'com.google.code.gson:gson:2.8.5'
 
-    deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.assertj:assertj-core:3.8.0'
+	testImplementation 'org.mockito:mockito-core:2.19.0'
 }
 
 test {
-    testLogging.exceptionFormat "full"
+	testLogging.exceptionFormat "full"
 }
 
+// Needed to bundle org.conqat.lib.commons into the report-generator
+// as this dependency is not available via mavenCentral
 shadowJar {
-    classifier = null
+	classifier = null
+	doFirst {
+		relocate('com.teamscale', 'com.teamscale')
+	}
 }
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+	target = tasks.shadowJar
+}
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 install {
-    repositories.mavenInstaller {
-        configuration = configurations.shadow
-        pom.whenConfigured { it.dependencies.clear() }
-    }
+	repositories.mavenInstaller {
+		configuration = configurations.shadow
+		configurePom(pom)
+	}
 }
 
 // At the moment we are stuck with the old maven plugin until support for private key
 // files is added or we add a dedicated user with a password to our server.
 // https://github.com/gradle/gradle/issues/1263
 uploadShadow {
-    repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: cqseMavenRepositoryUrl) {
-                authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
-            }
-            pom.whenConfigured { it.dependencies.clear() }
-        }
-    }
+	repositories {
+		mavenDeployer {
+			configuration = configurations.deployerJars
+			repository(url: cqseMavenRepositoryUrl) {
+				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+			}
+			configurePom(pom)
+		}
+	}
+}
+
+private void configurePom(pom) {
+	pom.withXml {
+		asNode().remove(asNode().get('dependencies'))
+		def dep = asNode().appendNode('dependecies').appendNode('dependency')
+		dep.appendNode('groupId', 'com.teamscale')
+		dep.appendNode('artifactId', 'teamscale-client')
+		dep.appendNode('version', teamscaleClientVersion)
+		dep.appendNode('scope', 'compile')
+	}
 }

@@ -1,43 +1,60 @@
-buildscript {
-    repositories {
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
-    }
-}
-
 ext {
-    appVersion = '10.2.0'
-    pluginVersion = '0.1.24'
-    reportGeneratorVersion = '1.0.7'
-    teamscaleClientVersion = '0.1.5'
+    appVersion = '11.0.4'
+    pluginVersion = '0.3.4'
+    reportGeneratorVersion = '1.2.3'
+    teamscaleClientVersion = '0.2.4'
 
     // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
-    jacocoVersion = '0.8.1'
+    jacocoVersion = '0.8.2'
     log4jVersion = '2.8.2'
 
     // Needed to deploy the artifacts to our public share
     // Your public RSA key needs to be stored on the share to be able to deploy (Ask Timo)
     cqseMavenRepositoryPrivateKey = System.getProperty("user.home") + '/.ssh/id_rsa'
-    println cqseMavenRepositoryPrivateKey
     cqseMavenRepositoryUrl = 'scp://ext1.cqse.eu:2222/var/www/share/exchange/public/maven'
     cqseMavenRepositoryUser = 'www-data'
 }
 
 subprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
+    }
+
+    group 'com.teamscale'
+    
+    configurations {
+        deployerJars
+    }
+
     repositories {
         ivy {
             url 'https://share.cqse.eu/svn/artifacts/ivy'
         }
         jcenter()
     }
+
+    dependencies {
+        deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+    }
 }
 
 // Installs the plugin to your local maven repository
 task installGradlePlugin(dependsOn: [
+        ':agent:install',
+        ':impacted-tests-executor:install',
+        ':report-generator:install',
+        ':teamscale-gradle-plugin:install',
+        ':teamscale-client:install'
+])
+
+// Installs the plugin to your local maven repository without the agent
+task iGP(dependsOn: [
         ':impacted-tests-executor:install',
         ':report-generator:install',
         ':teamscale-gradle-plugin:install',
@@ -46,8 +63,17 @@ task installGradlePlugin(dependsOn: [
 
 // Deploys the plugin to the public share
 task deployGradlePlugin(dependsOn: [
+        ':agent:uploadShadow',
         ':impacted-tests-executor:uploadArchives',
         ':report-generator:uploadShadow',
-        ':teamscale-gradle-plugin:uploadArchives',
+        ':teamscale-gradle-plugin:uploadShadow',
+        ':teamscale-client:uploadArchives'
+])
+
+// Deploys the plugin to the public share without the agent
+task dGP(dependsOn: [
+        ':impacted-tests-executor:uploadArchives',
+        ':report-generator:uploadShadow',
+        ':teamscale-gradle-plugin:uploadShadow',
         ':teamscale-client:uploadArchives'
 ])
