@@ -253,7 +253,8 @@ ___
 
 ## Getting a testwise coverage report
 
-For Gradle based builds using JUnit 5 as test framework, there is a plugin that handles most of the complexity to get testwise coverage (see teamscale-gradle-plugin/README.md for more details).
+For Gradle based builds using JUnit 5 as test framework, there is a plugin that handles most of the complexity to get 
+testwise coverage (see teamscale-gradle-plugin/README.md for more details).
 
 For other JVM-based systems the Teamscale JaCoCo Agent can be used to generate coverage per test case. The generated 
 exec file can be augmented with test execution information to build a full testwise coverage report.
@@ -312,8 +313,10 @@ Three artifacts are needed:
      - `SKIPPED` Caused by a failing assumption.
      - `FAILURE` Caused by a failing assertion.
      - `ERROR` Caused by an error during test execution (e.g. exception thrown).
-  - one or more coverage files. The files must have a `.exec` file extension.
+  - one or more coverage files with coverage per test (See agent/README -> Testwise coverage mode). 
+    The files must have an `.exec` file extension.
   
-The above mentioned information can be converted into a single report with the Teamscale JaCoCo agent's convert tool.
+The above mentioned information can be converted into a single report with the Teamscale JaCoCo agent's convert tool 
+(with option `--testwise-coverage` enabled).
 See it's help command for detailed argument information.
 The input files can be one or more directories that contain the files with the specified file name conventions.
