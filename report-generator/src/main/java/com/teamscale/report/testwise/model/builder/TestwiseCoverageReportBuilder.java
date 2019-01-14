@@ -35,12 +35,16 @@ public class TestwiseCoverageReportBuilder {
 		}
 		for (TestCoverageBuilder coverage : testCoverage) {
 			TestInfoBuilder container = resolveUniformPath(report, coverage.getUniformPath());
-			if (container == null) continue;
+			if (container == null) {
+				continue;
+			}
 			container.setCoverage(coverage);
 		}
 		for (TestExecution testExecution : testExecutions) {
 			TestInfoBuilder container = resolveUniformPath(report, testExecution.getUniformPath());
-			if (container == null) continue;
+			if (container == null) {
+				continue;
+			}
 			container.setExecution(testExecution);
 		}
 		return report.build();
