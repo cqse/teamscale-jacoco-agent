@@ -4,7 +4,6 @@ import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
@@ -25,7 +24,7 @@ open class TeamscaleUploadTask : DefaultTask() {
     /** The commit for which the reports should be uploaded. */
     @get:Input
     val commitDescriptor
-        get() = extension.commit.getCommitDescriptor()
+        get() = extension.commit.resolveCommitDescriptor(project)
 
     /** The list of reports to be uploaded. */
     @Input

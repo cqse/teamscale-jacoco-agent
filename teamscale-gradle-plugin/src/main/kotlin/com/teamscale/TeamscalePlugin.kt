@@ -91,9 +91,6 @@ open class TeamscalePlugin : Plugin<Project> {
         project.logger.info("Configuring impacted tests executor task for ${project.name}:${testImpacted.name}")
 
         val extension = pluginExtension.applyTo(testImpacted)
-        if (!extension.validate(project, testImpacted.name)) {
-            return
-        }
 
         testImpacted.apply {
             taskExtension = extension
