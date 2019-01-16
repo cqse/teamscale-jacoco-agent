@@ -38,7 +38,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 	public void testSampleTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/sample/classes.zip", "jacoco/sample/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/sample/report.json.expected"));
-		Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected);
+		Assertions.assertThat(report).isEqualTo(expected);
 	}
 
 	/** Runs the report generator. */
