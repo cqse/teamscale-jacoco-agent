@@ -27,9 +27,17 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 
 	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
 	@Test
-	public void testTestwiseReportGeneration() throws Exception {
+	public void smokeTestTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/cqddl/report.json.expected"));
+		Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected);
+	}
+
+	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
+	@Test
+	public void testSampleTestwiseReportGeneration() throws Exception {
+		String report = runGenerator("jacoco/sample/classes.zip", "jacoco/sample/coverage.exec");
+		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/sample/report.json.expected"));
 		Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected);
 	}
 
