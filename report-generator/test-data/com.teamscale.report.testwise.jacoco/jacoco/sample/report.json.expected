@@ -12,7 +12,7 @@
           "files": [
             {
               "fileName": "Calculator.java",
-              "coveredLines": "13,20,21,25-28,32,33,35-41"
+              "coveredLines": "13,20-21,26,28,32-34"
             },
             {
               "fileName": "JUnit4Test.java",
@@ -34,7 +34,7 @@
           "files": [
             {
               "fileName": "Calculator.java",
-              "coveredLines": "13,20,21-24,32,33,35-41"
+              "coveredLines": "13,20-21,23-24,32-33,36-38,40-41"
             },
             {
               "fileName": "JUnit4Test.java",

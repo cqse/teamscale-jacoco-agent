@@ -1,10 +1,11 @@
 package com.teamscale.report.testwise.model.builder;
 
 import com.teamscale.report.testwise.model.LineRange;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -14,14 +15,9 @@ public class FileCoverageBuilderTest {
 	/** Tests the compactification algorithm for line ranges. */
 	@Test
 	public void compactifyRanges() {
-		List<LineRange> input = Arrays.asList(
-				new LineRange(1, 5),
-				new LineRange(3, 7),
-				new LineRange(8, 10),
-				new LineRange(12, 14)
-		);
-		List<LineRange> result = FileCoverageBuilder.compactifyRanges(input);
-		assertEquals("[1-10, 12-14]", result.toString());
+		Set<Integer> input = CollectionUtils.asHashSet(1, 3, 4, 6, 7, 10);
+		List<LineRange> result = FileCoverageBuilder.compactifyToRanges(input);
+		assertEquals("[1, 3-4, 6-7, 10]", result.toString());
 	}
 
 	/** Tests the merge of two {@link FileCoverageBuilder} objects. */
@@ -29,7 +25,7 @@ public class FileCoverageBuilderTest {
 	public void mergeDoesMergeRanges() {
 		FileCoverageBuilder fileCoverage = new FileCoverageBuilder("path", "file");
 		fileCoverage.addLine(1);
-		fileCoverage.addLineRange(new LineRange(3, 4));
+		fileCoverage.addLineRange(3, 4);
 		fileCoverage.addLineRange(7, 10);
 
 		FileCoverageBuilder otherFileCoverage = new FileCoverageBuilder("path", "file");
@@ -55,7 +51,7 @@ public class FileCoverageBuilderTest {
 	public void getRangesAsString() {
 		FileCoverageBuilder fileCoverage = new FileCoverageBuilder("path", "file");
 		fileCoverage.addLine(1);
-		fileCoverage.addLineRange(new LineRange(3, 4));
+		fileCoverage.addLineRange(3, 4);
 		fileCoverage.addLineRange(6, 10);
 		assertEquals("1,3-4,6-10", fileCoverage.computeCompactifiedRangesAsString());
 	}

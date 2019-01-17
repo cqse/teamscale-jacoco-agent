@@ -67,7 +67,7 @@ public class JaCoCoTestwiseReportGenerator {
 	}
 
 	/** Collects dumps per session. */
-	private class DumpCollector implements IExecutionDataVisitor, ISessionInfoVisitor {
+	private static class DumpCollector implements IExecutionDataVisitor, ISessionInfoVisitor {
 
 		/** List of dumps. */
 		public final List<Dump> dumps = new ArrayList<>();

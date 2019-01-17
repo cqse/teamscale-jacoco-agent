@@ -9,6 +9,6 @@ object BuildVersion {
 
     /** Extracts the agent's version from the jar's manifest file. */
     val agentVersion: String
-        get() = BuildVersion::class.java.getPackage().specificationVersion ?: "11.0.4"
+        get() = BuildVersion::class.java.getPackage().specificationVersion ?: "11.1.0"
 
 }

@@ -3,35 +3,16 @@ package com.teamscale.report.testwise.model;
 /** Holds a line range with start and end (both inclusive and 1-based). */
 public class LineRange {
 
-	/** Indicates that no specific line has been set yet. */
-	private static final int UNKNOWN_LINE = -1;
-
-	/** The start line (1-based). The initial value is {@link #UNKNOWN_LINE} if not set via the constructor. */
+	/** The start line (1-based). */
 	private int start;
 
-	/** The end line (1-based). The initial value is {@link #UNKNOWN_LINE} if not set via the constructor. */
+	/** The end line (1-based). */
 	private int end;
-
-	/** Constructs a line range with start and end set to {@link #UNKNOWN_LINE}. */
-	public LineRange() {
-		start = UNKNOWN_LINE;
-		end = UNKNOWN_LINE;
-	}
 
 	/** Constructor. */
 	public LineRange(int start, int end) {
 		this.start = start;
 		this.end = end;
-	}
-
-	/** Adjusts either the start or end of the range to include the given line afterwards. */
-	public void adjustToContain(int line) {
-		if (start > line || start == UNKNOWN_LINE) {
-			start = line;
-		}
-		if (end < line || end == UNKNOWN_LINE) {
-			end = line;
-		}
 	}
 
 	/** @see #start */
@@ -44,9 +25,9 @@ public class LineRange {
 		return end;
 	}
 
-	/** Checks if the line region does contain any lines. */
-	public boolean isEmpty() {
-		return start == UNKNOWN_LINE && end == UNKNOWN_LINE;
+	/** @see #end */
+	public void setEnd(int end) {
+		this.end = end;
 	}
 
 	/**

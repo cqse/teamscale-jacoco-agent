@@ -27,7 +27,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 
 	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
 	@Test
-	public void smokeTestTestwiseReportGeneration() throws Exception {
+	public void testSmokeTestTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/cqddl/report.json.expected"));
 		Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected);
@@ -45,7 +45,8 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 	private String runGenerator(String testDataFolder, String execFileName) throws Exception {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
-		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(Collections.singletonList(classFileFolder),
+		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(
+				Collections.singletonList(classFileFolder),
 				includeFilter, true,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
 		return ReportUtils.getReportAsString(generateDummyReportFrom(testwiseCoverage));
