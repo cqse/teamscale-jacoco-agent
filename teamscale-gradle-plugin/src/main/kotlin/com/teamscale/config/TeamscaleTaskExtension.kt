@@ -39,14 +39,4 @@ open class TeamscaleTaskExtension(
         reports.copyWithDefault(report, parent.report)
         return reports
     }
-
-    /**
-     * @return True if all required fields have been set otherwise false.
-     */
-    fun validate(project: Project, testTaskName: String): Boolean {
-        return parent.commit.validate(project, testTaskName) && report.testwiseCoverage.validate(
-            project,
-            testTaskName
-        )
-    }
 }
