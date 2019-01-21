@@ -6,10 +6,6 @@ import org.jacoco.core.internal.analysis.ClassCoverageImpl;
 import org.jacoco.core.internal.analysis.StringPool;
 import org.jacoco.core.internal.analysis.filter.Filters;
 import org.jacoco.core.internal.flow.MethodProbesVisitor;
-import org.objectweb.asm.AnnotationVisitor;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Analyzes a class to reconstruct probe information.
@@ -26,10 +22,8 @@ public class CachingClassAnalyzer extends ClassAnalyzer {
 	 * Creates a new analyzer that builds coverage data for a class.
 	 *
 	 * @param classCoverageLookup cache for the class' probes
-	 * @param coverage
-	 *            coverage node for the analyzed class data
-	 * @param stringPool
-	 *            shared pool to minimize the number of {@link String} instances
+	 * @param coverage            coverage node for the analyzed class data
+	 * @param stringPool          shared pool to minimize the number of {@link String} instances
 	 */
 	public CachingClassAnalyzer(ClassCoverageLookup classCoverageLookup, ClassCoverageImpl coverage, StringPool stringPool) {
 		super(coverage, null, stringPool);

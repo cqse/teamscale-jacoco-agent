@@ -15,11 +15,6 @@ public class LineRange {
 		this.end = end;
 	}
 
-	/** @see #start */
-	public int getStart() {
-		return start;
-	}
-
 	/** @see #end */
 	public int getEnd() {
 		return end;

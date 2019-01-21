@@ -1,6 +1,5 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
-import com.teamscale.report.testwise.model.LineRange;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.string.StringUtils;
@@ -28,8 +27,7 @@ public class ClassCoverageLookup {
 	private String sourceFileName;
 
 	/**
-	 * List of method's line ranges. The index in this list corresponds to the probe ID.
-	 * So the same {@link LineRange}s can appear multiple times in the list if a method contains more than one probe.
+	 * Mapping from probe IDs to sets of covered lines. The index in this list corresponds to the probe ID.
 	 */
 	private final List<Set<Integer>> probes = new ArrayList<>();
 
@@ -117,7 +115,7 @@ public class ClassCoverageLookup {
 								"Does the class contain debug information?");
 				continue;
 			}
-			fileCoverage.addLineRange(coveredLines);
+			fileCoverage.addLines(coveredLines);
 		}
 	}
 

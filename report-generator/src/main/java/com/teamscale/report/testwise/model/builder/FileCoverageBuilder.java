@@ -21,8 +21,8 @@ public class FileCoverageBuilder {
 	/** The name of the file. */
 	private final String fileName;
 
-	/** A list of line ranges that have been covered. */
-	private Set<Integer> coveredLines = new HashSet<>();
+	/** A set of line numbers that have been covered. */
+	private final Set<Integer> coveredLines = new HashSet<>();
 
 	/** Constructor. */
 	public FileCoverageBuilder(String path, String file) {
@@ -50,8 +50,8 @@ public class FileCoverageBuilder {
 		coveredLines.addAll(IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList()));
 	}
 
-	/** Adds a line range as covered. */
-	public void addLineRange(Set<Integer> range) {
+	/** Adds set of lines as covered. */
+	public void addLines(Set<Integer> range) {
 		coveredLines.addAll(range);
 	}
 

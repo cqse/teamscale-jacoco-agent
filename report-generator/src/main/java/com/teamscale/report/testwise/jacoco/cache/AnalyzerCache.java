@@ -3,8 +3,6 @@ package com.teamscale.report.testwise.jacoco.cache;
 import com.teamscale.report.jacoco.FilteringAnalyzer;
 import com.teamscale.report.testwise.jacoco.analysis.CachingClassAnalyzer;
 import com.teamscale.report.util.ILogger;
-import org.jacoco.core.data.ExecutionData;
-import org.jacoco.core.internal.analysis.ClassAnalyzer;
 import org.jacoco.core.internal.analysis.ClassCoverageImpl;
 import org.jacoco.core.internal.analysis.StringPool;
 import org.jacoco.core.internal.data.CRC64;
@@ -62,7 +60,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 		final ClassCoverageImpl dummyClassCoverage = new ClassCoverageImpl(reader.getClassName(),
 				classId, false);
 
-		CachingClassAnalyzer classAnalyzer = new CachingClassAnalyzer(classCoverageLookup, dummyClassCoverage, stringPool);
+		CachingClassAnalyzer classAnalyzer = new CachingClassAnalyzer(classCoverageLookup, dummyClassCoverage,
+				stringPool);
 		final ClassVisitor visitor = new ClassProbesAdapter(classAnalyzer, false);
 		reader.accept(visitor, 0);
 	}
