@@ -42,27 +42,37 @@ The default mechanism to do this is to write two extra attributes into the META-
     Timestamp=123456789000
     Branch=master
 
-In your build, perform these steps when building your application's Jar/War/Ear files:
+In your application's build process, perform these steps when building your application's Jar/War/Ear files:
 
-- find the commit in your VCS that is being built right now (your build tool knows this, check its documentation)
-- get the timestamp and branch that correspond to this commit: see section [Finding Timestamp and Branch for a Commit](#finding_timestamp_and_branch_for_a_commit)
-- store this information in the manifest of at least one of your Jar/War/Ear files: see section [Inserting Timestamp and Branch into Your Jar/War/Ear](#inserting_timestamp_and_branch_into_your_jar)
+- find the commit in your VCS that is being built right now
+  (your build tool knows this, check its documentation for how to do this)
+- get the timestamp and branch that correspond to this commit:
+  see section [Finding Timestamp and Branch for a Commit](#finding_timestamp_and_branch_for_a_commit)
+- store this information in the manifest of at least one of your Jar/War/Ear files:
+  see section [Inserting Timestamp and Branch into Your Jar/War/Ear](#inserting_timestamp_and_branch_into_your_jar)
+
+TODO how to verify
 
 ## Finding Timestamp and Branch for a Commit <a name="finding_timestamp_and_branch_for_a_commit" />
 
 __Which version control system do you use?__
 
 - Git: see section [Finding Timestamp and Branch for a Git Commit](#finding_timestamp_and_branch_for_a_git_commit)
-- SVN: see section [Finding Timestamp and Branch for an SVN Commit](#finding_timestamp_and_branch_for_an_svn_commit)
 - Other: see section [Finding Timestamp and Branch for a Commit from Another VCS](#finding_timestamp_and_branch_for_a_commit_from_another_vcs)
 
 ### Finding Timestamp and Branch for a Git Commit <a name="finding_timestamp_and_branch_for_a_git_commit" />
 
-TODO 
+Use this command to obtain the branch:
 
-### Finding Timestamp and Branch for an SVN Commit <a name="finding_timestamp_and_branch_for_an_svn_commit" />
+```bash
+git rev-parse --abbrev-ref HEAD
+```
 
-TODO 
+Use this command to obtain the timestamp in the correct format:
+
+```bash
+git --no-pager log -n1 --format="%ct000"
+```
 
 ### Finding Timestamp and Branch for a Commit from Another VCS <a name="finding_timestamp_and_branch_for_a_commit_from_another_vcs" />
 
@@ -77,9 +87,100 @@ __Which build tool do you use?__
 - Maven: see section [Inserting Timestamp and Branch into Your Jar/War/Ear with Maven](#inserting_timestamp_and_branch_into_your_jar_with_maven)
 - Other: see section [Inserting Timestamp and Branch into Your Jar/War/Ear with Another Build Tool](#inserting_timestamp_and_branch_into_your_jar_with_another_build_tool)
 
+TODO
 ### Inserting Timestamp and Branch into Your Jar/War/Ear with Gradle <a name="inserting_timestamp_and_branch_into_your_jar_with_gradle" />
+
+The following Gradle snippet reads the branch and timestamp from a Java system property and
+stores them in the Jar's manifest:
+
+```groovy
+jar {
+	manifest {
+		attributes 'Branch': System.getProperty("branch")
+		attributes 'Timestamp': System.getProperty("timestamp")
+	}
+}
+```
+
+Invoke gradle from your build tool like this:
+
+```sh
+./gradlew jar -Dbranch=master -Dtimestamp=123456789000
+```
+
+Timestamp must be a valid Java timestamp, i.e. the number of milliseconds since the Unix epoch.
+
+Alternatively, if you use Git as your VCS, you can use the following Gradle snippet to
+read the branch and timestamp directly from the Git repository:
+
+```groovy
+plugins {
+	id 'org.ajoberstar.grgit' version '2.3.0'
+}
+
+jar {
+	manifest {
+		attributes 'Branch': grgit.branch.current().fullName
+		attributes 'Timestamp': grgit.log {
+			maxCommits = 1
+		}.first().dateTime.toInstant().toEpochMilli()
+	}
+}
+```
+
 ### Inserting Timestamp and Branch into Your Jar/War/Ear with Maven <a name="inserting_timestamp_and_branch_into_your_jar_with_maven" />
+
+To configure the timestamp and branch for the maven build, add the following to your top level `pom.xml`.
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-war-plugin</artifactId> <!-- Works also for the maven-jar-plugin -->
+    ...
+    <configuration>
+         ...
+        <resourceEncoding>UTF-8</resourceEncoding>
+        <archive>
+            <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+            <manifestEntries>
+                <Branch>${branch}</Branch>
+                <Timestamp>${timestamp}</Timestamp>
+            </manifestEntries>
+        </archive>
+    </configuration>
+</plugin>
+```
+
+When executing maven pass in the branch and timestamp to Maven as `-D` Java system properites.
+E.g. for a Git repository:
+
+```sh
+mvn ... -Dbranch=$(git rev-parse --abbrev-ref HEAD) -Dtimestamp=$(git --no-pager log -n1 --format="%ct000")
+```
+
 ### Inserting Timestamp and Branch into Your Jar/War/Ear with Another Build Tool <a name="inserting_timestamp_and_branch_into_your_jar_with_another_build_tool" />
+
+Please check your build tool's documentation on how to add additional manifest attributes
+to your Jar file.
+
+Alternatively, you can use the `jar` tool:
+
+First create a file called `manifest.txt` containing the two new Manifest properties
+with the timestamp and branch obtained from your build system or VCS.
+
+```
+Timestamp: 123456789000
+Branch: master
+```
+
+Then update your jar file:
+
+```
+jar ufm your_jar.jar manifest.txt
+```
 
 ## Instrumenting your Application <a name="instrumenting_your_application" />
 
