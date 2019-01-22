@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 11.1.0
+- [feature] The agent now also supports line coverage in Testwise Coverage mode
+
 # 11.0.4
 - [breaking change] Test impact mode no longer uploads reports to teamscale and does no longer generate reports on its own (see TEST_IMPACT_ANALYSIS_DOC -> How to get testwise coverage)
 - [feature] Added `test-env` option

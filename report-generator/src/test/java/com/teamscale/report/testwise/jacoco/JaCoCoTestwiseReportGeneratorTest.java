@@ -27,17 +27,26 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 
 	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
 	@Test
-	public void testTestwiseReportGeneration() throws Exception {
+	public void testSmokeTestTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/cqddl/report.json.expected"));
 		Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected);
+	}
+
+	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
+	@Test
+	public void testSampleTestwiseReportGeneration() throws Exception {
+		String report = runGenerator("jacoco/sample/classes.zip", "jacoco/sample/coverage.exec");
+		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/sample/report.json.expected"));
+		Assertions.assertThat(report).isEqualTo(expected);
 	}
 
 	/** Runs the report generator. */
 	private String runGenerator(String testDataFolder, String execFileName) throws Exception {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
-		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(Collections.singletonList(classFileFolder),
+		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(
+				Collections.singletonList(classFileFolder),
 				includeFilter, true,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
 		return ReportUtils.getReportAsString(generateDummyReportFrom(testwiseCoverage));

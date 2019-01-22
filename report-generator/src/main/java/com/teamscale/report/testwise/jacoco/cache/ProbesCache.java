@@ -63,7 +63,8 @@ public class ProbesCache {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
 			logger.debug(
-					"Found coverage for a class " + classId + " that was not provided. Either you did not provide " +
+					"Found coverage for a class " + executionData
+							.getName() + " that was not provided. Either you did not provide " +
 							"all relevant class files or you did not adjust the include/exclude filters on the agent to exclude " +
 							"coverage from irrelevant code.");
 			return null;

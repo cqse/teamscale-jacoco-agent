@@ -36,7 +36,8 @@ open class TeamscalePluginExtension(val project: Project) {
     }
 
     fun <T> applyTo(task: T): TeamscaleTaskExtension where T : Task, T : JavaForkOptions {
-        val jacocoTaskExtension: JacocoTaskExtension? = task.extensions.getByType(JacocoTaskExtension::class.java)
+        val jacocoTaskExtension: JacocoTaskExtension = task.extensions.getByType(JacocoTaskExtension::class.java)
+        jacocoTaskExtension.excludes?.add("org.junit.*")
         val extension =
             task.extensions.create(
                 TeamscalePlugin.teamscaleExtensionName,
