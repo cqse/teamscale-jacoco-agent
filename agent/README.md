@@ -1,17 +1,30 @@
 # Teamscale JaCoCo Agent
 
-This program provides a Java agent that can regularly dump line coverage from a running application.
+This program provides a Java agent that can regularly dump coverage from a running application.
 [The JaCoCo coverage tool][jacoco-doc] is used underneath.
+The Teamscale JaCoCo agent can operate in two distinct modes:
 
-This document first explains how to install the agent for your application step-by-step.
-It furthermore includes a troubleshooting guide and a detailed explanation of all available options.
+- line coverage mode: the agent reports which lines of are covered by all of your tests combined
+- testwise coverage mode: the agent interacts with your testing tool to produce one coverage report per test case
+
+This document first explains how to install the agent in line coverage mode for your application step-by-step.
+If you're only interested in testwise coverage mode, please skip ahead to [the Testwise Coverage Mode section](#testwise_coverage_mode).
+
+This document furthermore includes a troubleshooting guide and a detailed explanation of all available options.
+
+If you're a power user and already know how to use Java agents
+and just want an overview over all available agent options, you can skip ahead to
+[the Advanced Options section](#advanced_options).
+
+If you're running into troubles during the installation, please first consult
+[the Troubleshooting section](#troubleshooting).
 
 # Installation
 
 This guide is use-case based. We ask you questions about your application. Please follow the instructions
 behind the answers that apply to your situation.
 
-The goal of this guide is to show you how to profile your application witht the agent in order to obtain
+The goal of this guide is to show you how to profile your application with the agent in order to obtain
 coverage data and then how to upload that data to Teamscale where you can view the results.
 
 The upload to Teamscale will usually be done by the agent itself - though other options exist if this is not possible
@@ -23,11 +36,10 @@ the agent with information from your version control system during your build.
 
 __Step-by-step instructions:__
 
-TODO: links in page?
-
 1. Provide commit information to the agent: see section [Supplying Commit Information](#supplying_commit_information)
 2. Install the agent to profile your application: see section [Instrumenting Your Application](#instrumenting_your_application)
-3. Configure the agent to upload coverage directly to Teamscale: see section _TODO_
+3. Set advanced options: see section [Advanced options](#advanced_options)
+4. Configure the agent to upload coverage directly to Teamscale: see section [Advanced Options](#advanced_options)
 
 ## Supplying Commit Information <a name="supplying_commit_information" />
 
@@ -50,8 +62,7 @@ In your application's build process, perform these steps when building your appl
   see section [Finding Timestamp and Branch for a Commit](#finding_timestamp_and_branch_for_a_commit)
 - store this information in the manifest of at least one of your Jar/War/Ear files:
   see section [Inserting Timestamp and Branch into Your Jar/War/Ear](#inserting_timestamp_and_branch_into_your_jar)
-
-TODO how to verify
+- verify that the Jar file contains the new manifest entries by opening it with your favorite zip program
 
 ## Finding Timestamp and Branch for a Commit <a name="finding_timestamp_and_branch_for_a_commit" />
 
@@ -67,6 +78,11 @@ Use this command to obtain the branch:
 ```bash
 git rev-parse --abbrev-ref HEAD
 ```
+
+_Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
+Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus 
+returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
+instead._
 
 Use this command to obtain the timestamp in the correct format:
 
@@ -87,7 +103,6 @@ __Which build tool do you use?__
 - Maven: see section [Inserting Timestamp and Branch into Your Jar/War/Ear with Maven](#inserting_timestamp_and_branch_into_your_jar_with_maven)
 - Other: see section [Inserting Timestamp and Branch into Your Jar/War/Ear with Another Build Tool](#inserting_timestamp_and_branch_into_your_jar_with_another_build_tool)
 
-TODO
 ### Inserting Timestamp and Branch into Your Jar/War/Ear with Gradle <a name="inserting_timestamp_and_branch_into_your_jar_with_gradle" />
 
 The following Gradle snippet reads the branch and timestamp from a Java system property and
@@ -105,13 +120,13 @@ jar {
 Invoke gradle from your build tool like this:
 
 ```sh
-./gradlew jar -Dbranch=master -Dtimestamp=123456789000
+./gradlew jar -Dbranch=$BRANCH -Dtimestamp=$TIMESTAMP
 ```
 
 Timestamp must be a valid Java timestamp, i.e. the number of milliseconds since the Unix epoch.
 
 Alternatively, if you use Git as your VCS, you can use the following Gradle snippet to
-read the branch and timestamp directly from the Git repository:
+read the branch and timestamp directly from the Git repository in Gradle:
 
 ```groovy
 plugins {
@@ -154,11 +169,10 @@ To configure the timestamp and branch for the maven build, add the following to 
 </plugin>
 ```
 
-When executing maven pass in the branch and timestamp to Maven as `-D` Java system properites.
-E.g. for a Git repository:
+When executing maven pass in the branch and timestamp to Maven as `-D` Java system properties:
 
 ```sh
-mvn ... -Dbranch=$(git rev-parse --abbrev-ref HEAD) -Dtimestamp=$(git --no-pager log -n1 --format="%ct000")
+mvn ... -Dbranch=$BRANCH -Dtimestamp=$TIMESTAMP
 ```
 
 ### Inserting Timestamp and Branch into Your Jar/War/Ear with Another Build Tool <a name="inserting_timestamp_and_branch_into_your_jar_with_another_build_tool" />
@@ -166,7 +180,7 @@ mvn ... -Dbranch=$(git rev-parse --abbrev-ref HEAD) -Dtimestamp=$(git --no-pager
 Please check your build tool's documentation on how to add additional manifest attributes
 to your Jar file.
 
-Alternatively, you can use the `jar` tool:
+Alternatively, you can use the `jar` tool to update the final jar after your build is complete:
 
 First create a file called `manifest.txt` containing the two new Manifest properties
 with the timestamp and branch obtained from your build system or VCS.
@@ -184,26 +198,8 @@ jar ufm your_jar.jar manifest.txt
 
 ## Instrumenting your Application <a name="instrumenting_your_application" />
 
-__What kind of application do you have?__
-
-- Standalone Java application (launched via `java -jar`): see section _Instrumenting a Standalone Java Application_
-- Tomcat web application: see section _Instrumenting a Tomcat Web Application_
-- Websphere web application: see section _Instrumenting a Websphere Web Application_
-- Wildfly web application: see section _Instrumenting a Wildfly Web Application_
-- JBoss web application: see section _Instrumenting a JBoss Web Application_
-- Java Web Start application: see section _Instrumenting a Java Web Start Application_
-
-
------------
-
-## Installing
-
-Unzip this zip file into any folder.
-When used as a Java agent for your Java application, coverage is dumped to the file system, via
-HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
-Coverage is also transferred when the application is shut down.
-
-Configure the agent on your application's JVM:
+Configure the agent on your application's JVM by appending the following command line argument to the
+`java` invocation:
 
     -javaagent:AGENTJAR=OPTIONS
 
@@ -212,9 +208,85 @@ Where
 - `AGENTJAR` is the path to the Jar file of the Teamscale JaCoCo agent (inside the `lib` folder of this zip)
 - `OPTIONS` are one or more comma-separated options for the agent in the format `key1=value1,key2=value2` and so on.
 
-The following options are available:
+In order to obtain test coverage for your application you must at least provide the options
+`out`, `class-dir` and `teamscale-commit-manifest-jar`.
 
-### General options
+We furthermore recommend setting an appropriate `includes` option to ensure that only your code is profiled.
+Otherwise you may see a performance impact when running your application with the profiler.
+
+For more details on these options, please see the [Advanced Options](#advanced_options) section.
+
+__What kind of application do you have?__
+
+- Standalone Java application (launched via `java -jar`): see section [Instrumenting a Standalone Java Application](#instrumenting_a_standalone_java_application)
+- Tomcat web application: see section [Instrumenting a Tomcat Web Application](#instrumenting_a_tomcat_web_application)
+- WebSphere web application: see section [Instrumenting a WebSphere Web Application](#instrumenting_a_websphere_web_application)
+- Wildfly web application: see section [Instrumenting a Wildfly Web Application](#instrumenting_a_wildfly_web_application)
+- JBoss web application: see section [Instrumenting a JBoss Web Application](#instrumenting_a_jboss_web_application)
+- Java Web Start application: see section [Instrumenting a Java Web Start Application](#instrumenting_a_java_web_start_application)
+
+### Instrumenting a Standalone Java Application <a name="instrumenting_a_standalone_java_application" />
+
+Example:
+
+```sh
+java -javaagent:/opt/teamscale-jacoco-agent/lib/teamscale-jacoco-agent.jar=out=/opt/coverage,class-dir=/opt/your_jar.jar,teamscale-commit-manifest-jar=/opt/your_jar.jar -jar /opt/your_jar.jar
+```
+
+Please note that the `-javaagent` argument must come _before_ the `-jar` argument.
+
+### Instrumenting a Tomcat Web Application <a name="instrumenting_a_tomcat_web_application" />
+
+Register the agent in the `CATALINA_OPTS` environment variable inside the `bin/setenv.sh` or `bin/setenv.bat`
+script in the Tomcat installation directory. Create this file if it does not yet exist.
+
+### Instrumenting a WebSphere Web Application <a name="instrumenting_a_websphere_web_application" />
+
+You must add additional JVM parameters to your WebSphere instance. You can either do this
+[via the Administration Console][websphere_admin_console] or by modifying `startServer.bat` or `startServer.sh`.
+
+Add the following options:
+
+    -Xshareclasses:none -javaagent:AGENTJAR=OPTIONS
+
+The `-Xshareclasses` option disables a WebSphere internal class cache that causes problems with the profiler.
+
+Please set the agent's `includes` parameter so that the WebSphere code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+Also consider to use the `config-file` option as WebSphere 17 and probably other versions silently strip any option
+parameters exceeding 500 characters without any error message, which can lead to very subtle bugs when running the
+profiler.
+
+### Instrumenting a Wildfly Web Application <a name="instrumenting_a_wildfly_web_application" />
+
+Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf` or `domain.conf`
+file inside the Wildfly installation directory - depending on which "mode" is used; probably standalone.
+
+Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+### Instrumenting a JBoss Web Application <a name="instrumenting_a_jboss_web_application" />
+
+Register the agent in the `JAVA_OPTS` environment variable in the `run.conf` file inside the JBoss
+installation directory.
+
+Please set the agent's `includes` parameter so that the JBoss code is not being profiled.
+This ensures that the performance of your application does not degrade.
+
+### Instrumenting a Java Web Start Application <a name="instrumenting_a_java_web_start_application" />
+
+Please download the `javaws.zip` file from [the releases page of the agent](#agent-releases) and
+follow the instructions in the contained documentation.
+
+# Advanced Options <a name="advanced_options" />
+
+The following options are always available and can be passed via the `-javaagent` command line argument.
+Below you can find additional options that can be used to either obtain line-based test coverage data
+or testwise coverage. Depending on what you'd like to achieve, different options have to be set.
+
+It is highly recommended that you at least set a proper `includes` option. This ensures that only
+the necessary code is profiled and your application's performance does not suffer.
 
 - `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format)
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
@@ -241,12 +313,14 @@ __Please check the produced log file for errors and warnings before using the ag
 
 The log file is written to the agent's directory in the subdirectory `logs` by default.
 
-#### Path format
+## Path format
 
 All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant 
 patterns with `*`, `**` and `?`.
 
-### Options for normal mode
+## Options for line coverage mode
+
+The following options can be given if you'd like to collect simple line-based test coverage:
 
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format)
@@ -255,10 +329,6 @@ patterns with `*`, `**` and `?`.
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.
-- `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
-  Note that you still need to specify an `out` directory where failed uploads are stored.
-- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
-  You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `logging-config`: path to a [logback][] configuration XML file (other configuration formats are not supported at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format)
@@ -273,6 +343,10 @@ patterns with `*`, `**` and `?`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
+- `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
+  Note that you still need to specify an `out` directory where failed uploads are stored.
+- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
+  You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 
   If **Git** is your VCS, you can get the commit info via
   
@@ -302,7 +376,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   path does not yet exists at the given share, it will be created.
 - `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 
-## Testwise coverage mode
+## Testwise coverage mode <a name="testwise_coverage_mode" />
 
 The testwise coverage mode allows to record coverage per test, which is needed for test impact analysis. This means that
 you can distinguish later, which test did produce which coverage.
@@ -316,7 +390,7 @@ data from the test system. See TEST_IMPACT_ANALYSIS.md for more details.
 
 There are two basic scenarios to distinguish between.
 
-#### 1. The system under test is restarted for every test case
+### 1. The system under test is restarted for every test case
 
 To record coverage in this setting an environment variable must be set to the test's uniform path before starting the 
 system under test. New coverage is always appended to the existing coverage file, so the test system is responsible for 
@@ -324,7 +398,7 @@ cleaning the output directory before starting a new test run.
 
 - `test-env` (required): the name of an environment variable that holds the name of the test's uniform path
 
-#### 2. The system under test is started once
+### 2. The system under test is started once
 
 The test system (the application executing the test specification) can inform the agent of when a test started and 
 finished via a REST API. The corresponding server listens at the specified port.
@@ -337,107 +411,6 @@ The agent's REST API has the following endpoints:
 - `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
 - `[GET] /test` Returns the name of the current test. The result will be empty when the test already finished or was 
   not started yet.
-
-## Additional steps for WebSphere
-
-Register the agent in WebSphere's `startServer.bat` or `startServer.sh`.
-Please also apply this additional JVM parameter:
-
-    -Xshareclasses:none
-
-This option disables a WebSphere internal class cache that causes problems with the profiler.
-
-Please set the agent's `includes` parameter so that the WebSphere code is not being profiled.
-This ensures that the performance of your application does not degrade.
-
-Also consider to use the `config-file` option as WebSphere 17 and probably other versions silently strip any option 
-parameters exceeding 500 characters without any error message, which can lead to very subtle bugs when running the 
-profiler.
-
-## Additional steps for JBoss
-
-Register the agent in the `JAVA_OPTS` environment variable in the `run.conf` file inside the JBoss
-installation directory.
-
-Please set the agent's `includes` parameter so that the JBoss code is not being profiled.
-This ensures that the performance of your application does not degrade.
-
-## Additional steps for Wildfly
-
-Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf` or `domain.conf`
-file inside the Wildfly installation directory - depending on which "mode" is used; probably standalone.
-
-Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
-This ensures that the performance of your application does not degrade.
-
-## Additional steps for Tomcat
-
-Register the agent in the `CATALINA_OPTS` environment variable inside the `bin/setenv.sh` or `bin/setenv.bat`
-script in the Tomcat installation directory. Create this file if it does not yet exist.
-
-Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
-This ensures that the performance of your application does not degrade.
-
-## Additional steps for Java Web Start
-
-Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
-
-## Store Commit in Manifest
-
-As it is very convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
-especially when tests are executed independently from the build. The following assumes that we are using a Git repository.
-
-### Maven
-
-To configure this for the maven build add the following to your top level `pom.xml`.
-
-```xml
-<plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-war-plugin</artifactId> <!-- Works also for the maven-jar-plugin -->
-    ...
-    <configuration>
-         ...
-        <resourceEncoding>UTF-8</resourceEncoding>
-        <archive>
-            <manifest>
-                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-            </manifest>
-            <manifestEntries>
-                <Branch>${branch}</Branch>
-                <Timestamp>${timestamp}</Timestamp>
-            </manifestEntries>
-        </archive>
-    </configuration>
-</plugin>
-```
-
-When executing maven pass in the branch and timestamp to Maven:
-```sh
-mvn ... -Dbranch=$BRANCH_NAME -Dtimestamp=$(git --no-pager log -n1 --format="%ct000")
-```
-
-### Gradle
-
-```groovy
-plugins {
-	id 'org.ajoberstar.grgit' version '2.3.0'
-}
-
-jar {
-	manifest {
-		attributes 'Branch': System.getProperty("branch")
-		attributes 'Timestamp': grgit.log {
-			maxCommits = 1
-		}.first().dateTime.toInstant().toEpochMilli()
-	}
-}
-```
-
-```sh
-./gradlew jar -Dbranch=master
-```
 
 ## `ignore-duplicates`
 
@@ -519,13 +492,20 @@ the raw JaCoCo conversion will not allow.
 
 __The caveats listed in the above `ignore-duplicates` section still apply!__
 
-# Troubleshooting
+# Troubleshooting <a name="troubleshooting" />
 
 ## My application fails to start after registering the agent
 
 Most likely, you provided invalid parameters to the agent. Please check the agent's directory for a log file.
 If that does not exist, please check stdout of your application. If the agent can't write its log file, it
 will report the errors on stdout.
+
+## My application is very slow after registering the agent
+
+You are most likely instrumenting more code than you need (e.g. third-party libraries,
+your application server etc). Please set a restrictive `includes` parameter so only
+your packages are being profiled.
+See [the Advanced Options section](#advanced_options) for how to do this.
 
 ## Produced coverage files are huge
 
@@ -553,7 +533,8 @@ information.
 
 ## How to change the log level
 
-Set an appropriate logback logging configuration XML. See the agent options description above for how to do this.
+Set an appropriate logback logging configuration XML.
+See [the Advanced Options section](#advanced_options) for how to do this.
 
 ## How to see which files/folders are filtered due to the `includes` and `excludes` parameters
 
@@ -565,4 +546,6 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
 [jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
 [logback]: https://logback.qos.ch/manual/index.html
+[websphere_admin_console]: https://stackoverflow.com/a/27372146/1396067
+[agent-releases]: https://github.com/cqse/teamscale-jacoco-agent/releases
 
