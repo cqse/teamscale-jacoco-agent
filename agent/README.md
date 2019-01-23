@@ -7,16 +7,17 @@ The Teamscale JaCoCo agent can operate in two distinct modes:
 - line coverage mode: the agent reports which lines of are covered by all of your tests combined
 - testwise coverage mode: the agent interacts with your testing tool to produce one coverage report per test case
 
-This document first explains how to install the agent in line coverage mode for your application step-by-step.
-If you're only interested in testwise coverage mode, please skip ahead to [the Testwise Coverage Mode section](#testwise_coverage_mode).
+If you're unsure which mode is right for you, please start with line coverage mode.
 
-This document furthermore includes a troubleshooting guide and a detailed explanation of all available options.
+This document first explains how to install the agent in line coverage mode for your application step-by-step.
+If you're only interested in testwise coverage mode, please skip ahead to
+[the Testwise Coverage Mode section](#testwise_coverage_mode).
 
 If you're a power user and already know how to use Java agents
 and just want an overview over all available agent options, you can skip ahead to
 [the Advanced Options section](#advanced_options).
 
-If you're running into troubles during the installation, please first consult
+If you're running into trouble during the installation, please first consult
 [the Troubleshooting section](#troubleshooting).
 
 # Installation
@@ -38,8 +39,9 @@ __Step-by-step instructions:__
 
 1. Provide commit information to the agent: see section [Supplying Commit Information](#supplying_commit_information)
 2. Install the agent to profile your application: see section [Instrumenting Your Application](#instrumenting_your_application)
-3. Set advanced options: see section [Advanced options](#advanced_options)
-4. Configure the agent to upload coverage directly to Teamscale: see section [Advanced Options](#advanced_options)
+3. Verify the generated coverage: see section [Verifying the Coverage File](#verifying_the_coverage_file)
+4. (Optional) Configure the agent to upload coverage directly to Teamscale: see section [Advanced Options](#advanced_options)
+5. (Optional) Set advanced options: see section [Advanced options](#advanced_options)
 
 ## Supplying Commit Information <a name="supplying_commit_information" />
 
@@ -278,6 +280,17 @@ This ensures that the performance of your application does not degrade.
 
 Please download the `javaws.zip` file from [the releases page of the agent](#agent-releases) and
 follow the instructions in the contained documentation.
+
+## Verifying the Coverage File <a name="verifying_the_coverage_file" />
+
+Start your application, wait for it to load, then stop your application again.
+Check the directory configured in the `out` option of the agent. A new XML file should be there
+containing your line coverage. If no XML file was written, please check the agent's error log
+file. It is located in the same folder as the agent itself. Fix any reported errors.
+
+Download the [Teamscale JaCoCo Verifier][verifier] and run it. Select the XML coverage file.
+If the agent reports any errors, please fix them. Otherwise you can upload the coverage file to
+Teamscale via its Projects perspective.
 
 # Advanced Options <a name="advanced_options" />
 
@@ -548,4 +561,5 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [logback]: https://logback.qos.ch/manual/index.html
 [websphere_admin_console]: https://stackoverflow.com/a/27372146/1396067
 [agent-releases]: https://github.com/cqse/teamscale-jacoco-agent/releases
+[verifier]: https://github.com/cqse/teamscale-jacoco-verifier/releases/latest
 
