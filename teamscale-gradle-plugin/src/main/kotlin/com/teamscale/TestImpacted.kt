@@ -160,10 +160,10 @@ open class TestImpacted : Test() {
 
     private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {
         val args = mutableListOf(
-            "--url", serverConfiguration.url!!,
-            "--project", serverConfiguration.project!!,
-            "--user", serverConfiguration.userName!!,
-            "--access-token", serverConfiguration.userAccessToken!!,
+            "--url", serverConfiguration.url ?: throw IllegalArgumentException("Server url is not set!"),
+            "--project", serverConfiguration.project ?: throw IllegalArgumentException("Project id is not set!"),
+            "--user", serverConfiguration.userName ?: throw IllegalArgumentException("Username is not set!"),
+            "--access-token", serverConfiguration.userAccessToken ?: throw IllegalArgumentException("User-Access-Token is not set!"),
             "--partition", report.partition,
             "--end", endCommit.toString()
         )
