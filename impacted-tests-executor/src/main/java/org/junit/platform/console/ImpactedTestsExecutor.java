@@ -80,7 +80,7 @@ public class ImpactedTestsExecutor {
 			options.setRunAllTests(true);
 		}
 
-		return executeTests(options, availableTestDetails);
+		return ConsoleLauncherExecutionResult.forSummary(executeTests(options, availableTestDetails));
 	}
 
 	/** Discovers all tests that match the given filters in #options. */
@@ -106,25 +106,20 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Executes either all tests if set via the command line options or queries Teamscale for the impacted tests and executes those. */
-	private ConsoleLauncherExecutionResult executeTests(ImpactedTestsExecutorCommandLineOptions options, AvailableTests availableTestDetails) throws IOException {
+	private TestExecutionSummary executeTests(ImpactedTestsExecutorCommandLineOptions options, AvailableTests availableTestDetails) throws IOException {
 		TestExecutor testExecutor = new TestExecutor(options, logger);
-		TestExecutionSummary testExecutionSummary;
 		if (options.isRunAllTests()) {
-			testExecutionSummary = testExecutor.executeAllTests();
-		} else {
-			List<TestForPrioritization> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails.getTestList(),
-					options);
-			if (impactedTests == null) {
-				testExecutionSummary = testExecutor.executeAllTests();
-			} else {
-				for (TestForPrioritization impactedTest : impactedTests) {
-					logger.info("" + impactedTest.uniformPath + " " + impactedTest.selectionReason);
-				}
-				List<String> uniqueIds = availableTestDetails.convertToUniqueIds(impactedTests);
-				testExecutionSummary = testExecutor.executeTests(uniqueIds);
-			}
+			return testExecutor.executeAllTests();
 		}
-		return ConsoleLauncherExecutionResult.forSummary(testExecutionSummary);
+
+		List<TestForPrioritization> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails.getTestList(),
+				options);
+		if (impactedTests == null) {
+			return testExecutor.executeAllTests();
+		}
+
+		List<String> uniqueIds = availableTestDetails.convertToUniqueIds(logger, impactedTests);
+		return testExecutor.executeTests(uniqueIds);
 	}
 
 	/** Writes the given test details to a report file. */
@@ -150,6 +145,7 @@ public class ImpactedTestsExecutor {
 			} else {
 				logger.error("Retrieval of impacted tests failed");
 				logger.error(response.code() + " " + response.message());
+				logger.info(response.errorBody().string());
 			}
 		} catch (IOException e) {
 			logger.error("Retrieval of impacted tests failed (" + e.getMessage() + ")");
