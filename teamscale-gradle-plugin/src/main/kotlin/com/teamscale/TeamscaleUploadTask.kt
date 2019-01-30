@@ -24,7 +24,7 @@ open class TeamscaleUploadTask : DefaultTask() {
     /** The commit for which the reports should be uploaded. */
     @get:Input
     val commitDescriptor
-        get() = extension.commit.resolveCommitDescriptor(project)
+        get() = extension.commit.getOrResolveCommitDescriptor(project)
 
     /** The list of reports to be uploaded. */
     @Input

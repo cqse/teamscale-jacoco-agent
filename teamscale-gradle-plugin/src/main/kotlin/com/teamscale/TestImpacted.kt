@@ -68,7 +68,7 @@ open class TestImpacted : Test() {
      */
     val endCommit
         @Input
-        get() = taskExtension.parent.commit.getCommitDescriptor()
+        get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
 
     /** The directory to write the jacoco execution data to. */
     @Internal

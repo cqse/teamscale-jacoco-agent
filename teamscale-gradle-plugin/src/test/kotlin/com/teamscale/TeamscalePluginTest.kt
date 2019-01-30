@@ -50,8 +50,6 @@ class TeamscalePluginTest {
             "unitTest",
             "--impacted",
             "--run-all-tests",
-            "-x",
-            "unitTestReportUpload",
             "--info",
             "--stacktrace"
         )
