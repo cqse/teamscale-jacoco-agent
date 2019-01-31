@@ -1,175 +1,180 @@
-package com.teamscale.jacoco.javaws;
+package com.teamscale.jacoco.javaws
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.net.URI
+import java.net.URISyntaxException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.Collections
+import java.util.Properties
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
+import org.conqat.lib.commons.filesystem.FileSystemUtils
+import org.conqat.lib.commons.string.StringUtils
 
-/** Wraps javaws and adds the profiler via `-J-javaagent`. */
-public class Main {
+/** Wraps javaws and adds the profiler via `-J-javaagent`.  */
+class Main {
 
-	/** Visible for testing. */
-	/* package */ static final String PROPERTY_AGENT_ARGUMENTS = "agentArguments";
-	/** Visible for testing. */
-	/* package */ static final String PROPERTY_JAVAWS = "javaws";
-	/** Visible for testing. */
-	/* package */ static final String PROPERTIES_FILENAME = "javaws.properties";
-	private static final String JAVA_TOOL_OPTIONS_VARIABLE = "JAVA_TOOL_OPTIONS";
+    /** Contains the actual logic to run the wrapper.  */
+    @Throws(InterruptedException::class, ConfigurationException::class, IOException::class)
+    private fun run(args: Array<String>, workingDirectory: Path) {
+        val configFile = workingDirectory.resolve(PROPERTIES_FILENAME).toAbsolutePath()
 
-	/** Entry point. */
-	public static void main(String[] args)
-			throws InterruptedException, ConfigurationException, IOException, URISyntaxException {
-		URI jarFileUri = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-		// jar file is located inside the lib folder. Config files are one level higher
-		Path workingDirectory = Paths.get(jarFileUri).getParent().getParent();
+        val properties: Properties
+        try {
+            properties = readProperties(configFile)
+        } catch (e: IOException) {
+            throw ConfigurationException("Unable to read config file $configFile")
+        }
 
-		if (args.length == 1 && args[0].equalsIgnoreCase("install") || args[0].equalsIgnoreCase("uninstall")) {
-			handleInstallation(args, workingDirectory);
-			return;
-		}
+        val pathToJavaws = readProperty(properties, PROPERTY_JAVAWS, configFile)
+        val additionalAgentArguments = readProperty(properties, PROPERTY_AGENT_ARGUMENTS, configFile)
 
-		new Main().run(args, workingDirectory);
-	}
+        val agentArgument = buildAgentArgument(workingDirectory, additionalAgentArguments)
+        val policyArgument = buildPolicyArgument(workingDirectory)
 
-	private static void handleInstallation(String[] args, Path workingDirectory) {
-		try {
-			WindowsInstallation installation = new WindowsInstallation(workingDirectory);
+        val commandLine = ArrayList(Arrays.asList(*args))
+        commandLine.add(0, pathToJavaws)
+        commandLine.add(1, policyArgument)
 
-			switch (args[0]) {
-			case "install":
-				installation.install();
-				break;
-			case "uninstall":
-				installation.uninstall();
-				break;
-			}
-		} catch (WindowsInstallation.InstallationException e) {
-			System.err.println("ERROR: " + e.getMessage());
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
+        println("Running real javaws command: $commandLine")
+        println("With environment variable $JAVA_TOOL_OPTIONS_VARIABLE=$agentArgument")
 
-	/** Contains the actual logic to run the wrapper. */
-	private void run(String[] args, Path workingDirectory)
-			throws InterruptedException, ConfigurationException, IOException {
-		Path configFile = workingDirectory.resolve(PROPERTIES_FILENAME).toAbsolutePath();
+        val exitCode = Main.runCommand(
+            commandLine,
+            Collections.singletonMap(JAVA_TOOL_OPTIONS_VARIABLE, agentArgument)
+        )
+        System.exit(exitCode)
+    }
 
-		Properties properties;
-		try {
-			properties = readProperties(configFile);
-		} catch (IOException e) {
-			throw new ConfigurationException("Unable to read config file " + configFile);
-		}
+    private fun buildPolicyArgument(workingDirectory: Path): String {
+        val policyFile = workingDirectory.resolve("agent.policy")
+        return "-J-Djava.security.policy=" + normalizePath(policyFile)
+    }
 
-		String pathToJavaws = readProperty(properties, PROPERTY_JAVAWS, configFile);
-		String additionalAgentArguments = readProperty(properties, PROPERTY_AGENT_ARGUMENTS, configFile);
+    /** Thrown if reading the config file fails.  */
+    class ConfigurationException : Exception {
 
-		String agentArgument = buildAgentArgument(workingDirectory, additionalAgentArguments);
-		String policyArgument = buildPolicyArgument(workingDirectory);
+        constructor(message: String, cause: Throwable) : super(message, cause) {}
 
-		List<String> commandLine = new ArrayList<>(Arrays.asList(args));
-		commandLine.add(0, pathToJavaws);
-		commandLine.add(1, policyArgument);
+        constructor(message: String) : super(message) {}
 
-		System.out.println("Running real javaws command: " + commandLine);
-		System.out.println("With environment variable " + JAVA_TOOL_OPTIONS_VARIABLE + "=" + agentArgument);
+        companion object {
 
-		int exitCode = Main.runCommand(commandLine,
-				Collections.singletonMap(JAVA_TOOL_OPTIONS_VARIABLE, agentArgument));
-		System.exit(exitCode);
-	}
+            private val serialVersionUID = 1L
+        }
 
-	private String buildPolicyArgument(Path workingDirectory) {
-		Path policyFile = workingDirectory.resolve("agent.policy");
-		return "-J-Djava.security.policy=" + normalizePath(policyFile);
-	}
+    }
 
-	/**
-	 * Runs the given command line and returns the exit code. Stdout and Stderr are
-	 * redirected to System.out/System.err.
-	 */
-	public static int runCommand(List<String> commandLine, Map<String, String> environmentVariables)
-			throws IOException, InterruptedException {
-		ProcessBuilder builder = new ProcessBuilder(commandLine);
-		builder.environment().putAll(environmentVariables);
-		Process process = builder.inheritIO().start();
-		return process.waitFor();
-	}
+    companion object {
 
-	private static String readProperty(Properties properties, String property, Path configFile)
-			throws ConfigurationException {
-		String value = properties.getProperty(property, null);
-		if (value == null) {
-			throw new ConfigurationException("Missing property `" + property + "` in config file " + configFile);
-		}
-		return value;
-	}
+        /** Visible for testing.  */
+        /* package */ internal val PROPERTY_AGENT_ARGUMENTS = "agentArguments"
+        /** Visible for testing.  */
+        /* package */ internal val PROPERTY_JAVAWS = "javaws"
+        /** Visible for testing.  */
+        /* package */ internal val PROPERTIES_FILENAME = "javaws.properties"
+        private val JAVA_TOOL_OPTIONS_VARIABLE = "JAVA_TOOL_OPTIONS"
 
-	private static String buildAgentArgument(Path workingDirectory, String additionalAgentArguments)
-			throws IOException, ConfigurationException {
-		String agentJarPath = normalizePath(workingDirectory.resolve("agent.jar"));
+        /** Entry point.  */
+        @Throws(
+            InterruptedException::class,
+            ConfigurationException::class,
+            IOException::class,
+            URISyntaxException::class
+        )
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val jarFileUri = Main::class.java.protectionDomain.codeSource.location.toURI()
+            // jar file is located inside the lib folder. Config files are one level higher
+            val workingDirectory = Paths.get(jarFileUri).parent.parent
 
-		Path tempDirectory = Files.createTempDirectory("javaws-classdumpdir");
-		// we explicitly don't delete the temp directory because the javaws process will
-		// exit before the actual application exits and the dir needs to be present or
-		// JaCoCo will just crash
-		// However, the files are created in the system's temp directory so they are
-		// cleared up by the OS later in most cases
-		String tempDirectoryPath = normalizePath(tempDirectory);
+            if (args.size == 1 && args[0].equals("install", ignoreCase = true) || args[0].equals(
+                    "uninstall",
+                    ignoreCase = true
+                )
+            ) {
+                handleInstallation(args, workingDirectory)
+                return
+            }
 
-		if (StringUtils.isEmpty(additionalAgentArguments)) {
-			throw new ConfigurationException("You must provide additional mandatory agent arguments."
-					+ " At least the dump interval and a method for storing the traces must be specified");
-		}
+            Main().run(args, workingDirectory)
+        }
 
-		return "-javaagent:" + agentJarPath + "=class-dir=" + tempDirectoryPath + ",jacoco-classdumpdir="
-				+ tempDirectoryPath + "," + additionalAgentArguments;
-	}
+        private fun handleInstallation(args: Array<String>, workingDirectory: Path) {
+            try {
+                val installation = WindowsInstallation(workingDirectory)
 
-	/**
-	 * We normalize all paths to forward slashes to avoid problems with backward
-	 * slashes and escaping under Windows. Forward slashed paths still work under
-	 * Windows.
-	 */
-	private static String normalizePath(Path path) {
-		return FileSystemUtils.normalizeSeparators(path.toAbsolutePath().toString());
-	}
+                when (args[0]) {
+                    "install" -> installation.install()
+                    "uninstall" -> installation.uninstall()
+                }
+            } catch (e: WindowsInstallation.InstallationException) {
+                System.err.println("ERROR: " + e.message)
+                e.printStackTrace()
+                System.exit(1)
+            }
 
-	private static Properties readProperties(Path configFile) throws IOException, FileNotFoundException {
-		Properties properties = new Properties();
-		try (FileInputStream inputStream = new FileInputStream(configFile.toFile())) {
-			properties.load(inputStream);
-		}
-		return properties;
-	}
+        }
 
-	/** Thrown if reading the config file fails. */
-	public static class ConfigurationException extends Exception {
+        /**
+         * Runs the given command line and returns the exit code. Stdout and Stderr are
+         * redirected to System.out/System.err.
+         */
+        @Throws(IOException::class, InterruptedException::class)
+        fun runCommand(commandLine: List<String>, environmentVariables: Map<String, String>): Int {
+            val builder = ProcessBuilder(commandLine)
+            builder.environment().putAll(environmentVariables)
+            val process = builder.inheritIO().start()
+            return process.waitFor()
+        }
 
-		private static final long serialVersionUID = 1L;
+        @Throws(ConfigurationException::class)
+        private fun readProperty(properties: Properties, property: String, configFile: Path): String {
+            val value = properties.getProperty(property, null)
+                ?: throw ConfigurationException("Missing property `$property` in config file $configFile")
+            return value
+        }
 
-		public ConfigurationException(String message, Throwable cause) {
-			super(message, cause);
-		}
+        @Throws(IOException::class, ConfigurationException::class)
+        private fun buildAgentArgument(workingDirectory: Path, additionalAgentArguments: String): String {
+            val agentJarPath = normalizePath(workingDirectory.resolve("agent.jar"))
 
-		public ConfigurationException(String message) {
-			super(message);
-		}
+            val tempDirectory = Files.createTempDirectory("javaws-classdumpdir")
+            // we explicitly don't delete the temp directory because the javaws process will
+            // exit before the actual application exits and the dir needs to be present or
+            // JaCoCo will just crash
+            // However, the files are created in the system's temp directory so they are
+            // cleared up by the OS later in most cases
+            val tempDirectoryPath = normalizePath(tempDirectory)
 
-	}
+            if (StringUtils.isEmpty(additionalAgentArguments)) {
+                throw ConfigurationException("You must provide additional mandatory agent arguments." + " At least the dump interval and a method for storing the traces must be specified")
+            }
+
+            return ("-javaagent:" + agentJarPath + "=class-dir=" + tempDirectoryPath + ",jacoco-classdumpdir="
+                    + tempDirectoryPath + "," + additionalAgentArguments)
+        }
+
+        /**
+         * We normalize all paths to forward slashes to avoid problems with backward
+         * slashes and escaping under Windows. Forward slashed paths still work under
+         * Windows.
+         */
+        private fun normalizePath(path: Path): String {
+            return FileSystemUtils.normalizeSeparators(path.toAbsolutePath().toString())
+        }
+
+        @Throws(IOException::class, FileNotFoundException::class)
+        private fun readProperties(configFile: Path): Properties {
+            val properties = Properties()
+            FileInputStream(configFile.toFile()).use { inputStream -> properties.load(inputStream) }
+            return properties
+        }
+    }
 
 }
