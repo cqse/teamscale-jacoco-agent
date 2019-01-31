@@ -10,5 +10,5 @@ class ClosureCoverage(
      * Holds for each line in each file a list with true or null
      * to indicate if the line has been executed.
      */
-    val executedLines: List<List<Boolean>>
+    val executedLines: List<List<Boolean?>>
 )

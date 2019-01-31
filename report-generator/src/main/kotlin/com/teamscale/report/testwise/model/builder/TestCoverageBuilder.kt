@@ -22,8 +22,7 @@ class TestCoverageBuilder
 
     /** Returns all [FileCoverageBuilder]s stored for the test.  */
     val files: List<FileCoverageBuilder>
-        get() = pathCoverageList.values
-            .flatMap { path -> path.files }
+        get() = pathCoverageList.values.flatMap { path -> path.files }
 
     /** Returns true if there is no coverage for the test yet.  */
     val isEmpty: Boolean
@@ -31,9 +30,7 @@ class TestCoverageBuilder
 
     /** Adds the [FileCoverageBuilder] to into the map, but filters out file coverage that is null or empty.  */
     fun add(fileCoverage: FileCoverageBuilder?) {
-        if (fileCoverage == null || fileCoverage.isEmpty
-            || fileCoverage.fileName == null || fileCoverage.path == null
-        ) {
+        if (fileCoverage == null || fileCoverage.isEmpty) {
             return
         }
         val pathCoverage = pathCoverageList.computeIfAbsent(fileCoverage.path) { PathCoverageBuilder(it) }

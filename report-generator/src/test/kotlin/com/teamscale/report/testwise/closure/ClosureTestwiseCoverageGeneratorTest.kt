@@ -1,22 +1,16 @@
 package com.teamscale.report.testwise.closure
 
+import com.teamscale.report.ReportUtils.getReportAsString
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGeneratorTest
-import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.util.AntPatternIncludeFilter
-import org.conqat.lib.commons.collections.CollectionUtils
+import org.assertj.core.api.Assertions.assertThat
 import org.conqat.lib.commons.filesystem.FileSystemUtils
 import org.conqat.lib.commons.test.CCSMTestCaseBase
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-
-import java.io.File
 import java.io.IOException
-import java.util.Arrays
-import java.util.Collections
-
-import com.teamscale.report.ReportUtils.getReportAsString
-import org.assertj.core.api.Assertions.assertThat
+import java.util.*
 
 /** Tests for [ClosureTestwiseCoverageGenerator].  */
 @RunWith(JUnit4::class)
@@ -35,13 +29,13 @@ class ClosureTestwiseCoverageGeneratorTest : CCSMTestCaseBase() {
     private fun runGenerator(closureCoverageFolder: String): String {
         val coverageFolder = useTestFile(closureCoverageFolder)
         val includeFilter = AntPatternIncludeFilter(
-            CollectionUtils.emptyList<Any>(),
+            emptyList(),
             Arrays.asList("**/google-closure-library/**", "**.soy.generated.js", "soyutils_usegoog.js")
         )
         val testwiseCoverage = ClosureTestwiseCoverageGenerator(
             listOf(coverageFolder), includeFilter
         )
             .readTestCoverage()
-        return INSTANCE.getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage))
+        return getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage))
     }
 }

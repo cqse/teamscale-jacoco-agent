@@ -21,7 +21,7 @@ import java.util.function.Predicate
 /* package */ open class FilteringAnalyzer
 /** Constructor.  */
     (
-    executionData: ExecutionDataStore, coverageVisitor: ICoverageVisitor,
+    executionData: ExecutionDataStore?, coverageVisitor: ICoverageVisitor?,
     /** The filter for the analyzed class files.  */
     private val locationIncludeFilter: Predicate<String>,
     /** The logger.  */

@@ -1,23 +1,20 @@
 package com.teamscale.jacoco.agent
 
-import com.teamscale.client.TeamscaleServer
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
 import java.util.function.Predicate
 
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
-
 /** Tests the [AgentOptions].  */
 class AgentOptionsTest {
 
-    @Rule
+    @get:Rule
     var testFolder = TemporaryFolder()
 
     private val agentOptionsParserWithDummyLogger: AgentOptionsParser
@@ -132,7 +129,7 @@ class AgentOptionsTest {
     private fun includeFilter(filterString: String): Predicate<String> {
         val agentOptions = agentOptionsParserWithDummyLogger
             .parse("out=.,class-dir=.,includes=$filterString")
-        return { string -> agentOptions.locationIncludeFilter.test(string) }
+        return Predicate { string -> agentOptions.locationIncludeFilter.test(string) }
     }
 
     /** Returns the include filter predicate for the given filter expression.  */
@@ -140,7 +137,7 @@ class AgentOptionsTest {
     private fun excludeFilter(filterString: String): Predicate<String> {
         val agentOptions = agentOptionsParserWithDummyLogger
             .parse("out=.,class-dir=.,excludes=$filterString")
-        return { string -> agentOptions.locationIncludeFilter.test(string) }
+        return Predicate { string -> agentOptions.locationIncludeFilter.test(string) }
     }
 
     /** Tests path resolution with absolute path.  */

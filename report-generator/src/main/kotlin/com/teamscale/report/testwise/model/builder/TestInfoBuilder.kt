@@ -51,7 +51,7 @@ class TestInfoBuilder
             TestInfo(
                 uniformPath, details!!.sourcePath, details!!.content,
                 execution!!.durationSeconds,
-                execution!!.result, execution!!.message!!
+                execution!!.result, execution!!.message
             )
         } else {
             TestInfo(uniformPath, details!!.sourcePath, details!!.content, null, null, null)

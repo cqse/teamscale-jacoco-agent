@@ -24,7 +24,7 @@ open class TeamscaleUploadTask : DefaultTask() {
     /** The commit for which the reports should be uploaded. */
     @get:Input
     val commitDescriptor
-        get() = extension.commit.resolveCommitDescriptor(project)
+        get() = extension.commit.getOrResolveCommitDescriptor(project)
 
     /** The list of reports to be uploaded. */
     @Input
@@ -45,7 +45,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
         server.validate()
         logger.info("Uploading to $server at $commitDescriptor...")
-        val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
+        val client = TeamscaleClient(server.url!!, server.userName!!, server.userAccessToken!!, server.project!!)
 
         // We want to upload e.g. all JUnit test reports that go to the same partition
         // as one commit so we group them before uploading them

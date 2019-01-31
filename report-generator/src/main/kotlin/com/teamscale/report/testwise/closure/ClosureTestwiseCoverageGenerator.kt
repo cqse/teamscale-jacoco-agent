@@ -5,15 +5,12 @@ import com.teamscale.report.testwise.closure.model.ClosureCoverage
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
-import org.conqat.lib.commons.collections.Pair
-import org.conqat.lib.commons.collections.PairList
 import org.conqat.lib.commons.filesystem.FileSystemUtils
 import org.conqat.lib.commons.string.StringUtils
-
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileReader
-import java.util.Optional
+import java.util.*
 import java.util.function.Predicate
 
 /**
@@ -78,18 +75,17 @@ class ClosureTestwiseCoverageGenerator
             return null
         }
         val testCoverage = TestCoverageBuilder(coverage.uniformPath)
-        val executedLines = PairList.zip(coverage.fileNames, coverage.executedLines)
-        for (fileNameAndExecutedLines in executedLines) {
-            if (!locationIncludeFilter.test(fileNameAndExecutedLines.first)) {
+        val executedLines = coverage.fileNames.zip(coverage.executedLines)
+        for ((fileName, coveredLines) in executedLines) {
+            if (!locationIncludeFilter.test(fileName)) {
                 continue
             }
 
-            val coveredFile = File(fileNameAndExecutedLines.first)
-            val coveredLines = fileNameAndExecutedLines.second
+            val coveredFile = File(fileName)
             val path = Optional.ofNullable(coveredFile.parent).orElse("")
             val fileCoverage = FileCoverageBuilder(path, coveredFile.name)
             for (i in coveredLines.indices) {
-                if (coveredLines[i] != null && coveredLines[i]) {
+                if (coveredLines[i] == true) {
                     fileCoverage.addLine(i + 1)
                 }
             }

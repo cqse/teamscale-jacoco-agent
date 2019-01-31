@@ -6,21 +6,16 @@ import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
-import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
 import com.teamscale.report.util.AntPatternIncludeFilter
 import com.teamscale.report.util.ILogger
 import org.assertj.core.api.Assertions
+import org.conqat.lib.commons.collections.CollectionUtils.emptyList
 import org.conqat.lib.commons.filesystem.FileSystemUtils
 import org.conqat.lib.commons.test.CCSMTestCaseBase
 import org.junit.Test
-
-import java.io.File
-import java.util.ArrayList
-import java.util.Collections
-
-import org.conqat.lib.commons.collections.CollectionUtils.emptyList
 import org.mockito.Mockito.mock
+import java.util.*
 
 /** Tests for the [JaCoCoTestwiseReportGenerator] class.  */
 class JaCoCoTestwiseReportGeneratorTest : CCSMTestCaseBase() {
@@ -31,7 +26,7 @@ class JaCoCoTestwiseReportGeneratorTest : CCSMTestCaseBase() {
     fun testSmokeTestTestwiseReportGeneration() {
         val report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec")
         val expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/cqddl/report.json.expected"))
-        Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected)
+        Assertions.assertThat(report).isEqualTo(expected)
     }
 
     /** Tests that the [JaCoCoTestwiseReportGenerator] produces the expected output.  */
@@ -47,7 +42,7 @@ class JaCoCoTestwiseReportGeneratorTest : CCSMTestCaseBase() {
     @Throws(Exception::class)
     private fun runGenerator(testDataFolder: String, execFileName: String): String {
         val classFileFolder = useTestFile(testDataFolder)
-        val includeFilter = AntPatternIncludeFilter(emptyList<Any>(), emptyList<Any>())
+        val includeFilter = AntPatternIncludeFilter(emptyList(), emptyList())
         val testwiseCoverage = JaCoCoTestwiseReportGenerator(
             listOf(classFileFolder),
             includeFilter, true,

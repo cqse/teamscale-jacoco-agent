@@ -20,6 +20,14 @@ dependencies {
 	testRuntime 'org.junit.vintage:junit-vintage-engine:4.12.3'
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+tasks.withType(JavaCompile) {
+	sourceCompatibility = "1.8"
+	targetCompatibility = "1.8"
+}
+
 // At the moment we are stuck with the old maven plugin until support for private key
 // files is added or we add a dedicated user with a password to our server.
 // https://github.com/gradle/gradle/issues/1263

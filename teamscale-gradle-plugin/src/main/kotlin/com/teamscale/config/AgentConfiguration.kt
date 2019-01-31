@@ -111,7 +111,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
 class SerializableFilter(private val includes: List<String>?, private val excludes: List<String>?) : Serializable {
 
     /** Returns a filter predicate that respects the configured include and exclude patterns. */
-    fun getPredicate(): Predicate<String>? {
+    fun getPredicate(): Predicate<String> {
         return ClasspathWildcardIncludeFilter(
             includes?.joinToString(":") { "*$it".replace('/', '.') },
             excludes?.joinToString(":") { "*$it".replace('/', '.') }

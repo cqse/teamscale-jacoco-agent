@@ -52,7 +52,7 @@ abstract class UploadStoreBase<T>
     protected abstract fun uploadCoverageZip(zipFileBytes: ByteArray): Response<ResponseBody>
 
     override fun store(xml: String) {
-        Benchmark("Uploading report via HTTP").use { benchmark ->
+        Benchmark("Uploading report via HTTP").use {
             if (!tryUpload(xml)) {
                 logger.warn("Storing failed upload in {}", failureStore.outputDirectory)
                 failureStore.store(xml)

@@ -122,9 +122,9 @@ open class TeamscaleReportTask : DefaultTask() {
 
         val testwiseCoverage = buildTestwiseCoverage(artifacts, jaCoCoTestwiseReportGenerator) ?: return
 
-        logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
+        logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.getTests().size} Coverage/${testExecutions.size} Results")
 
-        val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
+        val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.getTests(), testExecutions)
         logger.info("Writing report to ${reportConfig.reportFile}")
         ReportUtils.writeReportToFile(reportConfig.reportFile, report)
 

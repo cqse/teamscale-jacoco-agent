@@ -3,19 +3,14 @@ package com.teamscale.report.jacoco
 import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.util.AntPatternIncludeFilter
 import com.teamscale.report.util.ILogger
-import org.conqat.lib.commons.collections.CollectionUtils
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.conqat.lib.commons.test.CCSMTestCaseBase
 import org.jacoco.core.data.ExecutionData
 import org.jacoco.core.data.ExecutionDataStore
 import org.jacoco.core.data.SessionInfo
 import org.junit.Test
-
-import java.io.File
-import java.io.IOException
-import java.util.Collections
-
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.mockito.Mockito.mock
+import java.io.IOException
 
 /** Tests report generation with and without duplicate classes.  */
 class JaCoCoXmlReportGeneratorTest : CCSMTestCaseBase() {
@@ -68,8 +63,8 @@ class JaCoCoXmlReportGeneratorTest : CCSMTestCaseBase() {
     private fun runGenerator(testDataFolder: String, shouldIgnoreDuplicates: Boolean) {
         val classFileFolder = useTestFile(testDataFolder)
         val includeFilter = AntPatternIncludeFilter(
-            CollectionUtils.emptyList<Any>(),
-            CollectionUtils.emptyList<Any>()
+            emptyList(),
+            emptyList()
         )
         JaCoCoXmlReportGenerator(
             listOf(classFileFolder), includeFilter, shouldIgnoreDuplicates,

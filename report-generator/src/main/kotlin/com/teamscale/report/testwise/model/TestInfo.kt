@@ -25,9 +25,8 @@ class TestInfo(
      * Optional message given for test failures (normally contains a stack trace).
      * May be `null`.
      */
-    val message: String?
-) {
+    val message: String?,
 
     /** All paths that the test did cover.  */
     val paths: MutableList<PathCoverage> = ArrayList()
-}
+)

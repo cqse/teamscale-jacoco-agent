@@ -8,7 +8,6 @@ package com.teamscale.jacoco.agent
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.report.util.ILogger
 import okhttp3.HttpUrl
-import org.conqat.lib.commons.collections.Pair
 import org.conqat.lib.commons.filesystem.AntPatternUtils
 import org.conqat.lib.commons.filesystem.FileSystemUtils
 import org.conqat.lib.commons.string.StringUtils
@@ -356,12 +355,10 @@ class AgentOptionsParser(
 
     }
 
-    /** Parses the value as a ant pattern to a file or directory.  */
+    /** Parses the value as a ant pattern to a file or directory. */
     @Throws(AgentOptionParseException::class)
     private fun parseFileFromPattern(workingDirectory: File, optionName: String, value: String): Path {
-        val baseDirAndPattern = splitIntoBaseDirAndPattern(value)
-        val baseDir = baseDirAndPattern.first
-        val pattern = baseDirAndPattern.second
+        val (baseDir, pattern) = splitIntoBaseDirAndPattern(value)
 
         val workingDir = workingDirectory.absoluteFile
         val basePath = workingDir.resolve(baseDir).normalize().absoluteFile
@@ -369,7 +366,7 @@ class AgentOptionsParser(
         val pathMatcher = AntPatternUtils.convertPattern(pattern, false)
         val filter = { path: File ->
             pathMatcher
-                .matcher(FileSystemUtils.normalizeSeparators(basePath.relativeTo(path).toString())).matches()
+                .matcher(FileSystemUtils.normalizeSeparators(path.relativeTo(basePath).toString())).matches()
         }
 
         val matchingPaths: List<File>
@@ -393,7 +390,7 @@ class AgentOptionsParser(
                     .toString() + " for option " + optionName + "! " +
                         "The first one is used, but consider to adjust the " +
                         "pattern to match only one file. Candidates are: " + matchingPaths
-                    .map { basePath.relativeTo(it) }.joinToString(", ") { it.toString() }
+                    .map { it.relativeTo(basePath) }.joinToString(", ") { it.toString() }
             )
         }
         val path = matchingPaths[0].normalize()
