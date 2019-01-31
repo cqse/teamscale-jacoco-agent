@@ -209,32 +209,32 @@ public class AgentOptionsParser {
 	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case "teamscale-server-url":
-				options.teamscaleServer.url = parseUrl(value);
-				if (options.teamscaleServer.url == null) {
+				options.teamscaleServer.setUrl(parseUrl(value));
+				if (options.teamscaleServer.getUrl() == null) {
 					throw new AgentOptionParseException(
 							"Invalid URL " + value + " given for option 'teamscale-server-url'!");
 				}
 				return true;
 			case "teamscale-project":
-				options.teamscaleServer.project = value;
+				options.teamscaleServer.setProject(value);
 				return true;
 			case "teamscale-user":
-				options.teamscaleServer.userName = value;
+				options.teamscaleServer.setUserName(value);
 				return true;
 			case "teamscale-access-token":
-				options.teamscaleServer.userAccessToken = value;
+				options.teamscaleServer.setUserAccessToken(value);
 				return true;
 			case "teamscale-partition":
-				options.teamscaleServer.partition = value;
+				options.teamscaleServer.setPartition(value);
 				return true;
 			case "teamscale-commit":
-				options.teamscaleServer.commit = parseCommit(value);
+				options.teamscaleServer.setCommit(parseCommit(value));
 				return true;
 			case "teamscale-commit-manifest-jar":
-				options.teamscaleServer.commit = getCommitFromManifest(parseFile(key, value));
+				options.teamscaleServer.setCommit(getCommitFromManifest(parseFile(key, value)));
 				return true;
 			case "teamscale-message":
-				options.teamscaleServer.message = value;
+				options.teamscaleServer.setMessage(value);
 				return true;
 			default:
 				return false;

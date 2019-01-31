@@ -101,7 +101,7 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 		if (detectedOptions.has(this.baseline)) {
 			result.setBaseline(Long.parseLong(detectedOptions.valueOf(this.baseline)));
 		}
-		result.setEndCommit(CommitDescriptor.parse(detectedOptions.valueOf(this.end)));
+		result.setEndCommit(CommitDescriptor.Companion.parse(detectedOptions.valueOf(this.end)));
 
 		result.setAgentUrls(detectedOptions.valuesOf(this.agentUrl).stream().map(HttpUrl::parse).collect(toList()));
 

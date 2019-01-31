@@ -73,13 +73,13 @@ public class AgentOptionsTest {
 				"teamscale-message=\"This is my message\"");
 
 		TeamscaleServer teamscaleServer = agentOptions.getTeamscaleServerOptions();
-		assertThat(teamscaleServer.url.toString()).isEqualTo("http://127.0.0.1/");
-		assertThat(teamscaleServer.project).isEqualTo("test");
-		assertThat(teamscaleServer.userName).isEqualTo("build");
-		assertThat(teamscaleServer.userAccessToken).isEqualTo("token");
-		assertThat(teamscaleServer.partition).isEqualTo("Unit Tests");
-		assertThat(teamscaleServer.commit.toString()).isEqualTo("default:HEAD");
-		assertThat(teamscaleServer.message).isEqualTo("This is my message");
+		assertThat(teamscaleServer.getUrl().toString()).isEqualTo("http://127.0.0.1/");
+		assertThat(teamscaleServer.getProject()).isEqualTo("test");
+		assertThat(teamscaleServer.getUserName()).isEqualTo("build");
+		assertThat(teamscaleServer.getUserAccessToken()).isEqualTo("token");
+		assertThat(teamscaleServer.getPartition()).isEqualTo("Unit Tests");
+		assertThat(teamscaleServer.getCommit().toString()).isEqualTo("default:HEAD");
+		assertThat(teamscaleServer.getMessage()).isEqualTo("This is my message");
 	}
 
 	/** Tests the options for the Test Impact mode. */

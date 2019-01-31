@@ -1,14 +1,10 @@
-package com.teamscale.client;
+package com.teamscale.client
 
-/** Enum of report formats. */
-public enum EReportFormat {
-	JACOCO("JaCoCo Coverage"),
-	TESTWISE_COVERAGE("Testwise Coverage");
-
-	/** A readable name for the report type. */
-	public final String readableName;
-
-	EReportFormat(String readableName) {
-		this.readableName = readableName;
-	}
+/** Enum of report formats.  */
+enum class EReportFormat private constructor(
+    /** A readable name for the report type.  */
+    val readableName: String
+) {
+    JACOCO("JaCoCo Coverage"),
+    TESTWISE_COVERAGE("Testwise Coverage")
 }

@@ -1,17 +1,17 @@
-package com.teamscale.client;
+package com.teamscale.client
 
 /**
- * {@link TestDetails} with information about their partition. <br/>
+ * [TestDetails] with information about their partition. <br></br>
  * Note that two instances are considered equal if the test details are equal.
  */
-public class TestForPrioritization {
+class TestForPrioritization {
 
-	/**
-	 * The uniform path the test.
-	 */
-	public String uniformPath;
+    /**
+     * The uniform path the test.
+     */
+    var uniformPath: String? = null
 
-	/** The reason the test has been selected. */
-	public String selectionReason;
+    /** The reason the test has been selected.  */
+    var selectionReason: String? = null
 
 }

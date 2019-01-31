@@ -29,9 +29,9 @@ public class TestwiseCoverageReportBuilder {
 	) {
 		TestwiseCoverageReportBuilder report = new TestwiseCoverageReportBuilder();
 		for (TestDetails testDetails : testDetailsList) {
-			TestInfoBuilder container = new TestInfoBuilder(testDetails.uniformPath);
+			TestInfoBuilder container = new TestInfoBuilder(testDetails.getUniformPath());
 			container.setDetails(testDetails);
-			report.tests.put(testDetails.uniformPath, container);
+			report.tests.put(testDetails.getUniformPath(), container);
 		}
 		for (TestCoverageBuilder coverage : testCoverage) {
 			TestInfoBuilder container = resolveUniformPath(report, coverage.getUniformPath());

@@ -34,11 +34,11 @@ public class TeamscaleUploadStore implements IXmlStore {
 		this.failureStore = failureStore;
 		this.teamscaleServer = teamscaleServer;
 
-		api = TeamscaleServiceGenerator.createService(
+		api = TeamscaleServiceGenerator.INSTANCE.createService(
 				ITeamscaleService.class,
-				teamscaleServer.url,
-				teamscaleServer.userName,
-				teamscaleServer.userAccessToken
+				teamscaleServer.getUrl(),
+				teamscaleServer.getUserName(),
+				teamscaleServer.getUserAccessToken()
 		);
 	}
 
@@ -58,11 +58,11 @@ public class TeamscaleUploadStore implements IXmlStore {
 
 		try {
 			api.uploadReport(
-					teamscaleServer.project,
-					teamscaleServer.commit,
-					teamscaleServer.partition,
+					teamscaleServer.getProject(),
+					teamscaleServer.getCommit(),
+					teamscaleServer.getPartition(),
 					EReportFormat.JACOCO,
-					teamscaleServer.message,
+					teamscaleServer.getMessage(),
 					RequestBody.create(MultipartBody.FORM, xml)
 			);
 			return true;

@@ -53,11 +53,11 @@ public class TestInfoBuilder {
 	public TestInfo build() {
 		TestInfo testInfo;
 		if (execution != null) {
-			testInfo = new TestInfo(uniformPath, details.sourcePath, details.content,
+			testInfo = new TestInfo(uniformPath, details.getSourcePath(), details.getContent(),
 					execution.getDurationSeconds(),
 					execution.getResult(), execution.getMessage());
 		} else {
-			testInfo = new TestInfo(uniformPath, details.sourcePath, details.content, null, null, null);
+			testInfo = new TestInfo(uniformPath, details.getSourcePath(), details.getContent(), null, null, null);
 		}
 		if (coverage != null) {
 			testInfo.paths.addAll(coverage.getPaths());

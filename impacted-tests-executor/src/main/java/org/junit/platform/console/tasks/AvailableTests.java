@@ -26,7 +26,7 @@ public class AvailableTests {
 
 	/** Adds a new {@link TestDetails} object and the according uniqueId. */
 	public void add(String uniqueId, TestDetails details) {
-		uniformPathToUniqueIdMapping.put(details.uniformPath, uniqueId);
+		uniformPathToUniqueIdMapping.put(details.getUniformPath(), uniqueId);
 		testList.add(details);
 	}
 
@@ -50,7 +50,7 @@ public class AvailableTests {
 	 * list of unique IDs to be fed into JUnit Platform.
 	 */
 	public List<String> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
-		return impactedTests.stream().map(test -> uniformPathToUniqueIdMapping.get(test.uniformPath))
+		return impactedTests.stream().map(test -> uniformPathToUniqueIdMapping.get(test.getUniformPath()))
 				.collect(Collectors.toList());
 	}
 }
