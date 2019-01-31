@@ -23,9 +23,9 @@ public class ConverterTest extends CCSMTestCaseBase {
 		File outputFile = createTmpFile("coverage.xml", "");
 
 		ConvertCommand arguments = new ConvertCommand();
-		arguments.inputFiles = Collections.singletonList(execFile.getAbsolutePath());
-		arguments.outputFile = outputFile.getAbsolutePath();
-		arguments.classDirectoriesOrZips = Collections.singletonList(classFile.getAbsolutePath());
+		arguments.setInputFiles(Collections.singletonList(execFile.getAbsolutePath()));
+		arguments.setOutputFile(outputFile.getAbsolutePath());
+		arguments.setClassDirectoriesOrZips(Collections.singletonList(classFile.getAbsolutePath()));
 
 		new Converter(arguments).runJaCoCoReportGeneration();
 

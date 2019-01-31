@@ -1,27 +1,26 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent
 
 /**
  * Thrown if option parsing fails.
  */
-public class AgentOptionParseException extends Exception {
+class AgentOptionParseException : Exception {
 
-	/**
-	 * Serialization ID.
-	 */
-	private static final long serialVersionUID = 1L;
+    /**
+     * Constructor.
+     */
+    constructor(message: String) : super(message) {}
 
-	/**
-	 * Constructor.
-	 */
-	public AgentOptionParseException(String message) {
-		super(message);
-	}
+    /**
+     * Constructor.
+     */
+    constructor(message: String, cause: Throwable) : super(message, cause) {}
 
-	/**
-	 * Constructor.
-	 */
-	public AgentOptionParseException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    companion object {
+
+        /**
+         * Serialization ID.
+         */
+        private val serialVersionUID = 1L
+    }
 
 }

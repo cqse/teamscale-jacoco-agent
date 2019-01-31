@@ -1,36 +1,33 @@
-package com.teamscale.jacoco.agent.store;
+package com.teamscale.jacoco.agent.store
 
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import okhttp3.ResponseBody
+import retrofit2.Response
 
-import java.io.IOException;
+import java.io.IOException
 
 /**
  * Exception thrown from an upload store. Either during the upload or in the validation process.
  */
-public class UploadStoreException extends Exception {
+class UploadStoreException : Exception {
 
-	/** Constructor */
-	public UploadStoreException(String message, Exception e) {
-		super(message, e);
-	}
+    /** Constructor  */
+    constructor(message: String, e: Exception) : super(message, e) {}
 
-	/** Constructor */
-	public UploadStoreException(String message) {
-		super(message);
-	}
+    /** Constructor  */
+    constructor(message: String) : super(message) {}
 
-	/** Constructor */
-	public UploadStoreException(String message, Response<ResponseBody> response) {
-		super(createResponseMessage(message, response));
-	}
+    /** Constructor  */
+    constructor(message: String, response: Response<ResponseBody>) : super(createResponseMessage(message, response)) {}
 
-	private static String createResponseMessage(String message, Response<ResponseBody> response) {
-		try {
-			String errorBodyMessage = response.errorBody().string();
-			return String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage);
-		} catch (IOException | NullPointerException e) {
-			return message;
-		}
-	}
+    private fun createResponseMessage(message: String, response: Response<ResponseBody>): String {
+        try {
+            val errorBodyMessage = response.errorBody()!!.string()
+            return String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage)
+        } catch (e: IOException) {
+            return message
+        } catch (e: NullPointerException) {
+            return message
+        }
+
+    }
 }

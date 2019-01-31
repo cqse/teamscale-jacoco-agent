@@ -98,9 +98,9 @@ public class AgentOptionsTest {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
 				"azure-url=https://mrteamscaleshdev.file.core.windows.net/tstestshare/," +
 				"azure-key=Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
-		assertThat(agentOptions.azureFileStorageConfig.url.toString())
+		assertThat(agentOptions.getAzureFileStorageConfig().url.toString())
 				.isEqualTo("https://mrteamscaleshdev.file.core.windows.net/tstestshare/");
-		assertThat(agentOptions.azureFileStorageConfig.accessKey).isEqualTo(
+		assertThat(agentOptions.getAzureFileStorageConfig().accessKey).isEqualTo(
 				"Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
 	}
 

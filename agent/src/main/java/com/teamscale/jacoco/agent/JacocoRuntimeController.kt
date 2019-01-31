@@ -3,121 +3,123 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent
 
-import com.teamscale.report.jacoco.dump.Dump;
-import org.jacoco.agent.rt.IAgent;
-import org.jacoco.agent.rt.RT;
-import org.jacoco.core.data.ExecutionDataReader;
-import org.jacoco.core.data.ExecutionDataStore;
-import org.jacoco.core.data.ISessionInfoVisitor;
-import org.jacoco.core.data.SessionInfo;
+import com.teamscale.report.jacoco.dump.Dump
+import org.jacoco.agent.rt.IAgent
+import org.jacoco.agent.rt.RT
+import org.jacoco.core.data.ExecutionDataReader
+import org.jacoco.core.data.ExecutionDataStore
+import org.jacoco.core.data.ISessionInfoVisitor
+import org.jacoco.core.data.SessionInfo
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.ByteArrayInputStream
+import java.io.IOException
 
 /**
- * Wrapper around JaCoCo's {@link RT} runtime interface.
- * <p>
+ * Wrapper around JaCoCo's [RT] runtime interface.
+ *
+ *
  * Can be used if the calling code is run in the same JVM as the agent is
  * attached to.
  */
-public class JacocoRuntimeController {
+class JacocoRuntimeController
+/** Constructor.  */
+    (
+    /** JaCoCo's [RT] agent instance  */
+    private val agent: IAgent
+) {
 
-	/** Indicates a failed dump. */
-	public static class DumpException extends Exception {
+    /** Returns the current sessionId.  */
+    /**
+     * Sets the current sessionId of the agent that can be used to identify
+     * which coverage is recorded from now on.
+     */
+    var sessionId: String
+        get() = agent.sessionId
+        set(sessionId) {
+            agent.sessionId = sessionId
+        }
 
-		/** Serialization ID. */
-		private static final long serialVersionUID = 1L;
+    /** Indicates a failed dump.  */
+    class DumpException
+    /** Constructor.  */
+        (message: String, cause: Throwable) : Exception(message, cause) {
+        companion object {
 
-		/** Constructor. */
-		public DumpException(String message, Throwable cause) {
-			super(message, cause);
-		}
+            /** Serialization ID.  */
+            private val serialVersionUID = 1L
+        }
 
-	}
+    }
 
-	/** JaCoCo's {@link RT} agent instance */
-	private final IAgent agent;
+    /**
+     * Dumps execution data and resets it.
+     *
+     * @throws DumpException if dumping fails. This should never happen in real life. Dumping
+     * should simply be retried later if this ever happens.
+     */
+    @Throws(JacocoRuntimeController.DumpException::class)
+    fun dumpAndReset(): Dump {
+        val binaryData = agent.getExecutionData(true)
 
-	/** Constructor. */
-	public JacocoRuntimeController(IAgent agent) {
-		this.agent = agent;
-	}
+        try {
+            ByteArrayInputStream(binaryData).use { inputStream ->
+                val reader = ExecutionDataReader(inputStream)
 
-	/**
-	 * Dumps execution data and resets it.
-	 *
-	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping
-	 *                       should simply be retried later if this ever happens.
-	 */
-	public Dump dumpAndReset() throws DumpException {
-		byte[] binaryData = agent.getExecutionData(true);
+                val store = ExecutionDataStore()
+                reader.setExecutionDataVisitor(IExecutionDataVisitor { store.put(it) })
 
-		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binaryData)) {
-			ExecutionDataReader reader = new ExecutionDataReader(inputStream);
+                val sessionInfoVisitor = SessionInfoVisitor()
+                reader.setSessionInfoVisitor(sessionInfoVisitor)
 
-			ExecutionDataStore store = new ExecutionDataStore();
-			reader.setExecutionDataVisitor(store::put);
+                reader.read()
+                return Dump(sessionInfoVisitor.sessionInfo, store)
+            }
+        } catch (e: IOException) {
+            throw DumpException("should never happen for the ByteArrayInputStream", e)
+        }
 
-			SessionInfoVisitor sessionInfoVisitor = new SessionInfoVisitor();
-			reader.setSessionInfoVisitor(sessionInfoVisitor);
+    }
 
-			reader.read();
-			return new Dump(sessionInfoVisitor.sessionInfo, store);
-		} catch (IOException e) {
-			throw new DumpException("should never happen for the ByteArrayInputStream", e);
-		}
-	}
+    /**
+     * Dumps execution data to a file and resets it.
+     *
+     * @throws DumpException if dumping fails. This should never happen in real life. Dumping
+     * should simply be retried later if this ever happens.
+     */
+    @Throws(JacocoRuntimeController.DumpException::class)
+    fun dump() {
+        try {
+            agent.dump(true)
+        } catch (e: IOException) {
+            throw DumpException(e.message, e)
+        }
 
-	/**
-	 * Dumps execution data to a file and resets it.
-	 *
-	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping
-	 *                       should simply be retried later if this ever happens.
-	 */
-	public void dump() throws DumpException {
-		try {
-			agent.dump(true);
-		} catch (IOException e) {
-			throw new DumpException(e.getMessage(), e);
-		}
-	}
+    }
 
-	/** Resets already collected coverage. */
-	public void reset() {
-		agent.reset();
-	}
+    /** Resets already collected coverage.  */
+    fun reset() {
+        agent.reset()
+    }
 
-	/** Returns the current sessionId. */
-	public String getSessionId() {
-		return agent.getSessionId();
-	}
+    /**
+     * Receives and stores a [SessionInfo]. Has a fallback dummy session in
+     * case nothing is received.
+     */
+    private class SessionInfoVisitor : ISessionInfoVisitor {
 
-	/**
-	 * Sets the current sessionId of the agent that can be used to identify
-	 * which coverage is recorded from now on.
-	 */
-	public void setSessionId(String sessionId) {
-		agent.setSessionId(sessionId);
-	}
+        /** The received session info or a dummy.  */
+        var sessionInfo = SessionInfo(
+            "dummysession", System.currentTimeMillis(),
+            System.currentTimeMillis()
+        )
 
-	/**
-	 * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in
-	 * case nothing is received.
-	 */
-	private static class SessionInfoVisitor implements ISessionInfoVisitor {
+        /** {@inheritDoc}  */
+        override fun visitSessionInfo(info: SessionInfo) {
+            this.sessionInfo = info
+        }
 
-		/** The received session info or a dummy. */
-		public SessionInfo sessionInfo = new SessionInfo("dummysession", System.currentTimeMillis(),
-				System.currentTimeMillis());
-
-		/** {@inheritDoc} */
-		@Override
-		public void visitSessionInfo(SessionInfo info) {
-			this.sessionInfo = info;
-		}
-
-	}
+    }
 
 }

@@ -1,34 +1,34 @@
-package com.teamscale.jacoco.util;
+package com.teamscale.jacoco.util
 
-import org.slf4j.Logger;
+import org.slf4j.Logger
 
 /**
  * Measures how long a certain piece of code takes and logs it to the debug log.
- * <p>
+ *
+ *
  * Use this in a try-with-resources. Time measurement starts when the resource
  * is created and ends when it is closed.
  */
-public class Benchmark implements AutoCloseable {
+class Benchmark
+/** Constructor.  */
+    (
+    /** The description to use in the log message.  */
+    private val description: String
+) : AutoCloseable {
 
-	/** The logger. */
-	private final Logger logger = LoggingUtils.getLogger(this);
+    /** The logger.  */
+    private val logger = LoggingUtils.getLogger(this)
 
-	/** The time when the resource was created. */
-	private final long startTime;
+    /** The time when the resource was created.  */
+    private val startTime: Long
 
-	/** The description to use in the log message. */
-	private String description;
+    init {
+        startTime = System.nanoTime()
+    }
 
-	/** Constructor. */
-	public Benchmark(String description) {
-		this.description = description;
-		startTime = System.nanoTime();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void close() {
-		long endTime = System.nanoTime();
-		logger.debug("{} took {}s", description, (endTime - startTime) / 1_000_000_000L);
-	}
+    /** {@inheritDoc}  */
+    override fun close() {
+        val endTime = System.nanoTime()
+        logger.debug("{} took {}s", description, (endTime - startTime) / 1_000_000_000L)
+    }
 }

@@ -3,69 +3,70 @@
 | Copyright (c) 2009-2017 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent.commandline;
+package com.teamscale.jacoco.agent.commandline
 
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.string.StringUtils;
+import org.conqat.lib.commons.assertion.CCSMAssert
+import org.conqat.lib.commons.string.StringUtils
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayList
 
 /**
  * Helper class to allow for multiple validations to occur.
  */
-public class Validator {
+class Validator {
 
-	/** The found validation problems in the form of error messages for the user. */
-	private final List<String> messages = new ArrayList<>();
+    /** The found validation problems in the form of error messages for the user.  */
+    private val messages = ArrayList<String>()
 
-	/** Runs the given validation routine. */
-	public void ensure(ExceptionBasedValidation validation) {
-		try {
-			validation.validate();
-		} catch (Exception | AssertionError e) {
-			messages.add(e.getMessage());
-		}
-	}
+    /** Returns `true` if the validation succeeded.  */
+    val isValid: Boolean
+        get() = messages.isEmpty()
 
-	/**
-	 * Interface for a validation routine that throws an exception when it fails.
-	 */
-	@FunctionalInterface
-	public static interface ExceptionBasedValidation {
+    /** Returns an error message with all validation problems that were found.  */
+    val errorMessage: String
+        get() = "- " + StringUtils.concat(messages, StringUtils.CR + "- ")
 
-		/**
-		 * Throws an {@link Exception} or {@link AssertionError} if the validation
-		 * fails.
-		 */
-		public void validate() throws Exception, AssertionError;
+    /** Runs the given validation routine.  */
+    fun ensure(validation: ExceptionBasedValidation) {
+        try {
+            validation.validate()
+        } catch (e: Exception) {
+            messages.add(e.message)
+        } catch (e: AssertionError) {
+            messages.add(e.message)
+        }
 
-	}
+    }
 
-	/**
-	 * Checks that the given condition is <code>true</code> or adds the given error
-	 * message.
-	 */
-	public void isTrue(boolean condition, String message) {
-		ensure(() -> CCSMAssert.isTrue(condition, message));
-	}
+    /**
+     * Interface for a validation routine that throws an exception when it fails.
+     */
+    @FunctionalInterface
+    interface ExceptionBasedValidation {
 
-	/**
-	 * Checks that the given condition is <code>false</code> or adds the given error
-	 * message.
-	 */
-	public void isFalse(boolean condition, String message) {
-		ensure(() -> CCSMAssert.isFalse(condition, message));
-	}
+        /**
+         * Throws an [Exception] or [AssertionError] if the validation
+         * fails.
+         */
+        @Throws(Exception::class, AssertionError::class)
+        fun validate()
 
-	/** Returns <code>true</code> if the validation succeeded. */
-	public boolean isValid() {
-		return messages.isEmpty();
-	}
+    }
 
-	/** Returns an error message with all validation problems that were found. */
-	public String getErrorMessage() {
-		return "- " + StringUtils.concat(messages, StringUtils.CR + "- ");
-	}
+    /**
+     * Checks that the given condition is `true` or adds the given error
+     * message.
+     */
+    fun isTrue(condition: Boolean, message: String) {
+        ensure({ CCSMAssert.isTrue(condition, message) })
+    }
+
+    /**
+     * Checks that the given condition is `false` or adds the given error
+     * message.
+     */
+    fun isFalse(condition: Boolean, message: String) {
+        ensure({ CCSMAssert.isFalse(condition, message) })
+    }
 
 }

@@ -3,120 +3,114 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.util;
+package com.teamscale.jacoco.util
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.util.StatusPrinter;
-import com.teamscale.jacoco.agent.Agent;
-import com.teamscale.report.util.ILogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.joran.JoranConfigurator
+import ch.qos.logback.core.joran.spi.JoranException
+import ch.qos.logback.core.util.StatusPrinter
+import com.teamscale.jacoco.agent.Agent
+import com.teamscale.report.util.ILogger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.nio.file.Path
 
 /**
  * Helps initialize the logging framework properly.
  */
-public class LoggingUtils {
+object LoggingUtils {
 
-	/** Returns a logger for the given object's class. */
-	public static Logger getLogger(Object object) {
-		return LoggerFactory.getLogger(object.getClass());
-	}
+    private val loggerContext: LoggerContext
+        get() = LoggerFactory.getILoggerFactory() as LoggerContext
 
-	/** Returns a logger for the given class. */
-	public static Logger getLogger(Class<?> object) {
-		return LoggerFactory.getLogger(object);
-	}
+    /** Returns a logger for the given object's class.  */
+    fun getLogger(`object`: Any): Logger {
+        return LoggerFactory.getLogger(`object`.javaClass)
+    }
 
-	/** Class to use with try-with-resources to close the logging framework's resources. */
-	public static class LoggingResources implements AutoCloseable {
+    /** Returns a logger for the given class.  */
+    fun getLogger(`object`: Class<*>): Logger {
+        return LoggerFactory.getLogger(`object`)
+    }
 
-		@Override
-		public void close() {
-			getLoggerContext().stop();
-		}
-	}
+    /** Class to use with try-with-resources to close the logging framework's resources.  */
+    class LoggingResources : AutoCloseable {
 
-	/** Initializes the logging to the default configured in the Jar. */
-	public static LoggingResources initializeDefaultLogging() {
-		InputStream stream = Agent.class.getResourceAsStream("logback-default.xml");
-		reconfigureLoggerContext(stream);
-		return new LoggingResources();
-	}
+        override fun close() {
+            loggerContext.stop()
+        }
+    }
 
-	private static LoggerContext getLoggerContext() {
-		return (LoggerContext) LoggerFactory.getILoggerFactory();
-	}
+    /** Initializes the logging to the default configured in the Jar.  */
+    fun initializeDefaultLogging(): LoggingResources {
+        val stream = Agent::class.java.getResourceAsStream("logback-default.xml")
+        reconfigureLoggerContext(stream)
+        return LoggingResources()
+    }
 
-	/**
-	 * Reconfigures the logger context to use the configuration XML from the given input stream.
-	 * C.f. https://logback.qos.ch/manual/configuration.html
-	 */
-	private static void reconfigureLoggerContext(InputStream stream) {
-		LoggerContext loggerContext = getLoggerContext();
-		try {
-			JoranConfigurator configurator = new JoranConfigurator();
-			configurator.setContext(loggerContext);
-			loggerContext.reset();
-			configurator.doConfigure(stream);
-		} catch (JoranException je) {
-			// StatusPrinter will handle this
-		}
-		StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
-	}
+    /**
+     * Reconfigures the logger context to use the configuration XML from the given input stream.
+     * C.f. https://logback.qos.ch/manual/configuration.html
+     */
+    private fun reconfigureLoggerContext(stream: InputStream) {
+        val loggerContext = loggerContext
+        try {
+            val configurator = JoranConfigurator()
+            configurator.context = loggerContext
+            loggerContext.reset()
+            configurator.doConfigure(stream)
+        } catch (je: JoranException) {
+            // StatusPrinter will handle this
+        }
 
-	/**
-	 * Initializes the logging from the given file. If that is <code>null</code>,
-	 * uses {@link #initializeDefaultLogging()} instead.
-	 */
-	public static LoggingResources initializeLogging(Path loggingConfigFile) throws IOException {
-		if (loggingConfigFile == null) {
-			return initializeDefaultLogging();
-		}
+        StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext)
+    }
 
-		reconfigureLoggerContext(new FileInputStream(loggingConfigFile.toFile()));
-		return new LoggingResources();
-	}
+    /**
+     * Initializes the logging from the given file. If that is `null`,
+     * uses [.initializeDefaultLogging] instead.
+     */
+    @Throws(IOException::class)
+    fun initializeLogging(loggingConfigFile: Path?): LoggingResources {
+        if (loggingConfigFile == null) {
+            return initializeDefaultLogging()
+        }
 
-	/** Wraps the given slf4j logger into an {@link ILogger}. */
-	public static ILogger wrap(Logger logger) {
-		return new ILogger() {
-			@Override
-			public void debug(String message) {
-				logger.debug(message);
-			}
+        reconfigureLoggerContext(FileInputStream(loggingConfigFile.toFile()))
+        return LoggingResources()
+    }
 
-			@Override
-			public void info(String message) {
-				logger.info(message);
-			}
+    /** Wraps the given slf4j logger into an [ILogger].  */
+    fun wrap(logger: Logger): ILogger {
+        return object : ILogger {
+            override fun debug(message: String) {
+                logger.debug(message)
+            }
 
-			@Override
-			public void warn(String message) {
-				logger.warn(message);
-			}
+            override fun info(message: String) {
+                logger.info(message)
+            }
 
-			@Override
-			public void warn(String message, Throwable throwable) {
-				logger.warn(message, throwable);
-			}
+            override fun warn(message: String) {
+                logger.warn(message)
+            }
 
-			@Override
-			public void error(Throwable throwable) {
-				logger.error(throwable.getMessage(), throwable);
-			}
+            override fun warn(message: String, throwable: Throwable) {
+                logger.warn(message, throwable)
+            }
 
-			@Override
-			public void error(String message, Throwable throwable) {
-				logger.error(message, throwable);
-			}
-		};
-	}
+            override fun error(throwable: Throwable) {
+                logger.error(throwable.message, throwable)
+            }
+
+            override fun error(message: String, throwable: Throwable) {
+                logger.error(message, throwable)
+            }
+        }
+    }
 
 }

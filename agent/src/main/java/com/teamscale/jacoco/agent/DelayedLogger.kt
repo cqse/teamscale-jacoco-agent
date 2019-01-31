@@ -1,61 +1,54 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent
 
-import com.teamscale.report.util.ILogger;
-import org.slf4j.Logger;
+import com.teamscale.report.util.ILogger
+import org.slf4j.Logger
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayList
 
 /**
  * A logger that buffers logs in memory and writes them to the actual logger at a later point.
  * This is needed when stuff needs to be logged before the actual logging framework is initialized.
  */
-public class DelayedLogger implements ILogger {
+class DelayedLogger : ILogger {
 
-	/** List of log actions that will be executed once the logger is initialized. */
-	private final List<ILoggerAction> logActions = new ArrayList<>();
+    /** List of log actions that will be executed once the logger is initialized.  */
+    private val logActions = ArrayList<ILoggerAction>()
 
-	@Override
-	public void debug(String message) {
-		logActions.add(logger -> logger.debug(message));
-	}
+    override fun debug(message: String) {
+        logActions.add({ logger -> logger.debug(message) })
+    }
 
-	@Override
-	public void info(String message) {
-		logActions.add(logger -> logger.info(message));
-	}
+    override fun info(message: String) {
+        logActions.add({ logger -> logger.info(message) })
+    }
 
-	@Override
-	public void warn(String message) {
-		logActions.add(logger -> logger.warn(message));
-	}
+    override fun warn(message: String) {
+        logActions.add({ logger -> logger.warn(message) })
+    }
 
-	@Override
-	public void warn(String message, Throwable throwable) {
-		logActions.add(logger -> logger.warn(message, throwable));
-	}
+    override fun warn(message: String, throwable: Throwable) {
+        logActions.add({ logger -> logger.warn(message, throwable) })
+    }
 
-	@Override
-	public void error(Throwable throwable) {
-		logActions.add(logger -> logger.error(throwable.getMessage(), throwable));
-	}
+    override fun error(throwable: Throwable) {
+        logActions.add({ logger -> logger.error(throwable.message, throwable) })
+    }
 
-	@Override
-	public void error(String message, Throwable throwable) {
-		logActions.add(logger -> logger.error(message, throwable));
-	}
+    override fun error(message: String, throwable: Throwable) {
+        logActions.add({ logger -> logger.error(message, throwable) })
+    }
 
-	/** Writes the logs to the given slf4j logger. */
-	public void logTo(Logger logger) {
-		logActions.forEach(action -> action.log(logger));
-	}
+    /** Writes the logs to the given slf4j logger.  */
+    fun logTo(logger: Logger) {
+        logActions.forEach { action -> action.log(logger) }
+    }
 
-	/** An action to be executed on a logger. */
-	private interface ILoggerAction {
+    /** An action to be executed on a logger.  */
+    private interface ILoggerAction {
 
-		/** Executes the action on the given logger. */
-		void log(Logger logger);
+        /** Executes the action on the given logger.  */
+        fun log(logger: Logger)
 
-	}
+    }
 }
 

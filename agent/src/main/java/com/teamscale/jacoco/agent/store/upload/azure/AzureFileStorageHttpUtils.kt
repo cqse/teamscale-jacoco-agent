@@ -1,131 +1,148 @@
-package com.teamscale.jacoco.agent.store.upload.azure;
+package com.teamscale.jacoco.agent.store.upload.azure
 
-import com.teamscale.jacoco.agent.store.UploadStoreException;
-import org.conqat.lib.commons.assertion.CCSMAssert;
+import com.teamscale.jacoco.agent.store.UploadStoreException
+import org.conqat.lib.commons.assertion.CCSMAssert
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import java.io.UnsupportedEncodingException
+import java.security.InvalidKeyException
+import java.security.NoSuchAlgorithmException
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.Base64
+import java.util.HashMap
+import java.util.Objects
+import java.util.stream.Collectors
 
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_ENCODING;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LANGUAGE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LENGTH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_MD_5;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_TYPE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.DATE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_MATCH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_MODIFIED_SINCE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_NONE_MATCH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_UNMODIFIED_SINCE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.RANGE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION;
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_ENCODING
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LANGUAGE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LENGTH
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_MD_5
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_TYPE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.DATE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_MATCH
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_MODIFIED_SINCE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_NONE_MATCH
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_UNMODIFIED_SINCE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.RANGE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE
+import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION
 
-/** Utils class for communicating with an azure file storage. */
-/* package */ class AzureFileStorageHttpUtils {
+/** Utils class for communicating with an azure file storage.  */
+/* package */ internal object AzureFileStorageHttpUtils {
 
-	/** Version of the azure file storage. Must be in every request */
-	private static final String VERSION = "2018-03-28";
+    /** Version of the azure file storage. Must be in every request  */
+    private val VERSION = "2018-03-28"
 
-	/** Formatting pattern for every date in a request */
-	private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("E, dd MMM y HH:mm:ss z").withZone(
-			ZoneId.of("GMT"));
+    /** Formatting pattern for every date in a request  */
+    private val FORMAT = DateTimeFormatter.ofPattern("E, dd MMM y HH:mm:ss z").withZone(
+        ZoneId.of("GMT")
+    )
+
+    /** Returns the list of headers which must be present at every request  */
+    /* package */  val baseHeaders: Map<String, String>
+        get() {
+            val headers = HashMap<String, String>()
+            headers[X_MS_VERSION] = AzureFileStorageHttpUtils.VERSION
+            headers[X_MS_DATE] = FORMAT.format(LocalDateTime.now())
+            return headers
+        }
 
 
-	/** Creates the string that must be signed as the authorization for the request. */
-	private static String createSignString(EHttpMethod httpMethod, Map<String, String> headers, String account,
-										   String path, Map<String, String> queryParameters) {
-		CCSMAssert.isTrue(headers.keySet().containsAll(Arrays.asList(X_MS_DATE, X_MS_VERSION)),
-				"Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set");
+    /** Creates the string that must be signed as the authorization for the request.  */
+    private fun createSignString(
+        httpMethod: EHttpMethod, headers: Map<String, String>, account: String,
+        path: String, queryParameters: Map<String, String>
+    ): String {
+        CCSMAssert.isTrue(
+            headers.keys.containsAll(Arrays.asList(X_MS_DATE, X_MS_VERSION)),
+            "Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set"
+        )
 
-		Map<String, String> xmsHeader = headers.entrySet().stream().filter(x -> x.getKey().startsWith("x-ms"))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        val xmsHeader = headers.entries.stream().filter { x -> x.key.startsWith("x-ms") }
+            .collect<Map<String, String>, Any>(
+                Collectors.toMap<Entry<String, String>, String, String>(
+                    Function<Entry<String, String>, String> { it.key },
+                    Function<Entry<String, String>, String> { it.value })
+            )
 
-		return String.join("\n", httpMethod.toString(),
-				getStringOrEmpty(headers, CONTENT_ENCODING),
-				getStringOrEmpty(headers, CONTENT_LANGUAGE),
-				getStringOrEmpty(headers, CONTENT_LENGTH),
-				getStringOrEmpty(headers, CONTENT_MD_5),
-				getStringOrEmpty(headers, CONTENT_TYPE),
-				getStringOrEmpty(headers, DATE),
-				getStringOrEmpty(headers, IF_MODIFIED_SINCE),
-				getStringOrEmpty(headers, IF_MATCH),
-				getStringOrEmpty(headers, IF_NONE_MATCH),
-				getStringOrEmpty(headers, IF_UNMODIFIED_SINCE),
-				getStringOrEmpty(headers, RANGE),
-				createCanonicalizedString(xmsHeader),
-				createCanonicalizedResources(account, path, queryParameters));
-	}
+        return arrayOf(
+            httpMethod.toString(),
+            getStringOrEmpty(headers, CONTENT_ENCODING),
+            getStringOrEmpty(headers, CONTENT_LANGUAGE),
+            getStringOrEmpty(headers, CONTENT_LENGTH),
+            getStringOrEmpty(headers, CONTENT_MD_5),
+            getStringOrEmpty(headers, CONTENT_TYPE),
+            getStringOrEmpty(headers, DATE),
+            getStringOrEmpty(headers, IF_MODIFIED_SINCE),
+            getStringOrEmpty(headers, IF_MATCH),
+            getStringOrEmpty(headers, IF_NONE_MATCH),
+            getStringOrEmpty(headers, IF_UNMODIFIED_SINCE),
+            getStringOrEmpty(headers, RANGE),
+            createCanonicalizedString(xmsHeader),
+            createCanonicalizedResources(account, path, queryParameters)
+        ).joinToString("\n")
+    }
 
-	/** Returns the value from the map for the given key or an empty string if the key does not exist. */
-	private static String getStringOrEmpty(Map<String, String> map, String key) {
-		return Objects.toString(map.get(key), "");
-	}
+    /** Returns the value from the map for the given key or an empty string if the key does not exist.  */
+    private fun getStringOrEmpty(map: Map<String, String>, key: String): String {
+        return Objects.toString(map[key], "")
+    }
 
-	/** Creates the string for the canonicalized resources. */
-	private static String createCanonicalizedResources(String account, String path, Map<String, String> options) {
-		String canonicalizedResources = String.format("/%s%s", account, path);
+    /** Creates the string for the canonicalized resources.  */
+    private fun createCanonicalizedResources(account: String, path: String, options: Map<String, String>): String {
+        var canonicalizedResources = String.format("/%s%s", account, path)
 
-		if (options.size() > 0) {
-			canonicalizedResources += "\n" + createCanonicalizedString(options);
-		}
+        if (options.size > 0) {
+            canonicalizedResources += "\n" + createCanonicalizedString(options)
+        }
 
-		return canonicalizedResources;
-	}
+        return canonicalizedResources
+    }
 
-	/** Creates a string with a map where each key-value pair is in a newline separated by a colon. */
-	private static String createCanonicalizedString(Map<String, String> options) {
-		List<String> sortedKeys = new ArrayList<>(options.keySet());
-		sortedKeys.sort(String::compareTo);
+    /** Creates a string with a map where each key-value pair is in a newline separated by a colon.  */
+    private fun createCanonicalizedString(options: Map<String, String>): String {
+        val sortedKeys = ArrayList(options.keys)
+        sortedKeys.sort(Comparator { obj, anotherString -> obj.compareTo(anotherString) })
 
-		List<String> values = sortedKeys.stream()
-				.map(key -> String.format("%s:%s", key, options.get(key))).collect(Collectors.toList());
-		return String.join("\n", values);
-	}
+        val values = sortedKeys.stream()
+            .map { key -> String.format("%s:%s", key, options[key]) }.collect<List<String>, Any>(Collectors.toList())
+        return values.joinToString("\n")
+    }
 
-	/** Creates the string which is needed for the authorization of an azure file storage request. */
-	/* package */ static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
-										 Map<String, String> headers, Map<String, String> queryParameters)
-			throws UploadStoreException {
-		String stringToSign = createSignString(method, headers, account, path, queryParameters);
+    /** Creates the string which is needed for the authorization of an azure file storage request.  */
+    /* package */ @Throws(UploadStoreException::class)
+    fun getAuthorizationString(
+        method: EHttpMethod, account: String, key: String, path: String,
+        headers: Map<String, String>, queryParameters: Map<String, String>
+    ): String {
+        val stringToSign = createSignString(method, headers, account, path, queryParameters)
 
-		try {
-			Mac mac = Mac.getInstance("HmacSHA256");
-			mac.init(new SecretKeySpec(Base64.getDecoder().decode(key), "HmacSHA256"));
-			String authKey = new String(Base64.getEncoder().encode(mac.doFinal(stringToSign.getBytes("UTF-8"))));
-			return "SharedKey " + account + ":" + authKey;
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-			throw new UploadStoreException("Something is really wrong...", e);
-		} catch (InvalidKeyException | IllegalArgumentException e) {
-			throw new UploadStoreException(String.format("The given access key is malformed: %s", key), e);
-		}
-	}
+        try {
+            val mac = Mac.getInstance("HmacSHA256")
+            mac.init(SecretKeySpec(Base64.getDecoder().decode(key), "HmacSHA256"))
+            val authKey = String(Base64.getEncoder().encode(mac.doFinal(stringToSign.toByteArray(charset("UTF-8")))))
+            return "SharedKey $account:$authKey"
+        } catch (e: NoSuchAlgorithmException) {
+            throw UploadStoreException("Something is really wrong...", e)
+        } catch (e: UnsupportedEncodingException) {
+            throw UploadStoreException("Something is really wrong...", e)
+        } catch (e: InvalidKeyException) {
+            throw UploadStoreException(String.format("The given access key is malformed: %s", key), e)
+        } catch (e: IllegalArgumentException) {
+            throw UploadStoreException(String.format("The given access key is malformed: %s", key), e)
+        }
 
-	/** Returns the list of headers which must be present at every request */
-	/* package */ static Map<String, String> getBaseHeaders() {
-		Map<String, String> headers = new HashMap<>();
-		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
-		headers.put(X_MS_DATE, FORMAT.format(LocalDateTime.now()));
-		return headers;
-	}
+    }
 
-	/** Simple enum for all available HTTP methods. */
-	public enum EHttpMethod {
-		PUT,
-		HEAD
-	}
+    /** Simple enum for all available HTTP methods.  */
+    enum class EHttpMethod {
+        PUT,
+        HEAD
+    }
 }
 

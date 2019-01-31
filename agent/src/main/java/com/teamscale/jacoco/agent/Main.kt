@@ -1,91 +1,97 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.JCommander.Builder;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
-import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.convert.ConvertCommand;
-import com.teamscale.jacoco.util.LoggingUtils;
-import org.conqat.lib.commons.string.StringUtils;
-import org.jacoco.core.JaCoCo;
-import org.slf4j.Logger;
+import com.beust.jcommander.JCommander
+import com.beust.jcommander.JCommander.Builder
+import com.beust.jcommander.Parameter
+import com.beust.jcommander.ParameterException
+import com.teamscale.jacoco.agent.commandline.Validator
+import com.teamscale.jacoco.agent.convert.ConvertCommand
+import com.teamscale.jacoco.util.LoggingUtils
+import org.conqat.lib.commons.string.StringUtils
+import org.jacoco.core.JaCoCo
+import org.slf4j.Logger
 
-import java.util.ResourceBundle;
+import java.util.ResourceBundle
 
-/** Provides a command line interface for interacting with JaCoCo. */
-public class Main {
+/** Provides a command line interface for interacting with JaCoCo.  */
+class Main {
 
-	/** Version of this program. */
-	private static final String VERSION;
+    /** The logger.  */
+    private val logger = LoggingUtils.getLogger(this)
 
-	static {
-		ResourceBundle bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app");
-		VERSION = bundle.getString("version");
-	}
+    /** The default arguments that will always be parsed.  */
+    private val defaultArguments = DefaultArguments()
 
-	/** The logger. */
-	private final Logger logger = LoggingUtils.getLogger(this);
+    /** The arguments for the one-time conversion process.  */
+    private val command = ConvertCommand()
 
-	/** The default arguments that will always be parsed. */
-	private final DefaultArguments defaultArguments = new DefaultArguments();
+    /**
+     * Parses the given command line arguments. Exits the program or throws an
+     * exception if the arguments are not valid. Then runs the specified command.
+     */
+    @Throws(Exception::class)
+    private fun parseCommandLineAndRun(args: Array<String>) {
+        val builder = createJCommanderBuilder()
+        val jCommander = builder.build()
 
-	/** The arguments for the one-time conversion process. */
-	private final ConvertCommand command = new ConvertCommand();
+        try {
+            jCommander.parse(*args)
+        } catch (e: ParameterException) {
+            handleInvalidCommandLine(jCommander, e.message)
+        }
 
-	/** Entry point. */
-	public static void main(String[] args) throws Exception {
-		new Main().parseCommandLineAndRun(args);
-	}
+        if (defaultArguments.help) {
+            println("CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION)
+            jCommander.usage()
+            return
+        }
 
-	/**
-	 * Parses the given command line arguments. Exits the program or throws an
-	 * exception if the arguments are not valid. Then runs the specified command.
-	 */
-	private void parseCommandLineAndRun(String[] args) throws Exception {
-		Builder builder = createJCommanderBuilder();
-		JCommander jCommander = builder.build();
+        val validator = command.validate()
+        if (!validator.isValid) {
+            handleInvalidCommandLine(jCommander, StringUtils.CR + validator.errorMessage)
+        }
 
-		try {
-			jCommander.parse(args);
-		} catch (ParameterException e) {
-			handleInvalidCommandLine(jCommander, e.getMessage());
-		}
+        logger.info("Starting CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION)
+        command.run()
+    }
 
-		if (defaultArguments.help) {
-			System.out.println("CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
-			jCommander.usage();
-			return;
-		}
+    /** Creates a builder for a [JCommander] object.  */
+    private fun createJCommanderBuilder(): Builder {
+        return JCommander.newBuilder().programName(Main::class.java.name).addObject(defaultArguments).addObject(command)
+    }
 
-		Validator validator = command.validate();
-		if (!validator.isValid()) {
-			handleInvalidCommandLine(jCommander, StringUtils.CR + validator.getErrorMessage());
-		}
+    /** Default arguments that may always be provided.  */
+    private class DefaultArguments {
 
-		logger.info("Starting CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
-		command.run();
-	}
+        /** Shows the help message.  */
+        @Parameter(names = arrayOf("--help"), help = true, description = "Shows all available command line arguments.")
+        private val help: Boolean = false
 
-	/** Creates a builder for a {@link JCommander} object. */
-	private Builder createJCommanderBuilder() {
-		return JCommander.newBuilder().programName(Main.class.getName()).addObject(defaultArguments).addObject(command);
-	}
+    }
 
-	/** Shows an informative error and help message. Then exits the program. */
-	private static void handleInvalidCommandLine(JCommander jCommander, String message) {
-		System.err.println("Invalid command line: " + message + StringUtils.CR);
-		jCommander.usage();
-		System.exit(1);
-	}
+    companion object {
 
-	/** Default arguments that may always be provided. */
-	private static class DefaultArguments {
+        /** Version of this program.  */
+        private val VERSION: String
 
-		/** Shows the help message. */
-		@Parameter(names = "--help", help = true, description = "Shows all available command line arguments.")
-		private boolean help;
+        init {
+            val bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app")
+            VERSION = bundle.getString("version")
+        }
 
-	}
+        /** Entry point.  */
+        @Throws(Exception::class)
+        @JvmStatic
+        fun main(args: Array<String>) {
+            Main().parseCommandLineAndRun(args)
+        }
+
+        /** Shows an informative error and help message. Then exits the program.  */
+        private fun handleInvalidCommandLine(jCommander: JCommander, message: String) {
+            System.err.println("Invalid command line: " + message + StringUtils.CR)
+            jCommander.usage()
+            System.exit(1)
+        }
+    }
 
 }

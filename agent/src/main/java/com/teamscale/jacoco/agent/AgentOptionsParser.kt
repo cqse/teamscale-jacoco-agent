@@ -3,445 +3,505 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent
 
-import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.report.util.ILogger;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.collections.CollectionUtils;
-import org.conqat.lib.commons.collections.Pair;
-import org.conqat.lib.commons.filesystem.AntPatternUtils;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
+import com.teamscale.jacoco.agent.commandline.Validator
+import com.teamscale.client.CommitDescriptor
+import com.teamscale.report.util.ILogger
+import okhttp3.HttpUrl
+import org.conqat.lib.commons.collections.CollectionUtils
+import org.conqat.lib.commons.collections.Pair
+import org.conqat.lib.commons.filesystem.AntPatternUtils
+import org.conqat.lib.commons.filesystem.FileSystemUtils
+import org.conqat.lib.commons.string.StringUtils
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
-import java.util.regex.Pattern;
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.InvalidPathException
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.Arrays
+import java.util.function.Predicate
+import java.util.jar.JarInputStream
+import java.util.jar.Manifest
+import java.util.regex.Pattern
 
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors.joining
+import java.util.stream.Collectors.toList
 
 /**
  * Parses agent command line options.
  */
-public class AgentOptionsParser {
+class AgentOptionsParser(
+    /** Logger.  */
+    private val logger: ILogger
+) {
 
-	/** Character which starts a comment in the config file. */
-	private static final String COMMENT_PREFIX = "#";
+    /**
+     * Parses the given command-line options.
+     */
+    /* package */ @Throws(AgentOptionParseException::class)
+    internal fun parse(optionsString: String): AgentOptions {
+        if (StringUtils.isEmpty(optionsString)) {
+            throw AgentOptionParseException(
+                "No agent options given. You must at least provide an output directory (out)" + " and a classes directory (class-dir)"
+            )
+        }
 
-	/** Stand-in for the question mark operator. */
-	private static final String QUESTION_REPLACEMENT = "!@";
+        val options = AgentOptions()
+        options.setOriginalOptionsString(optionsString)
 
-	/** Stand-in for the asterisk operator. */
-	private static final String ASTERISK_REPLACEMENT = "#@";
+        val optionParts = optionsString.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        for (optionPart in optionParts) {
+            handleOption(options, optionPart)
+        }
 
-	/** Logger. */
-	private final ILogger logger;
+        val validator = options.getValidator()
+        if (!validator.isValid()) {
+            throw AgentOptionParseException("Invalid options given: " + validator.getErrorMessage())
+        }
+        return options
+    }
 
-	public AgentOptionsParser(ILogger logger) {
-		this.logger = logger;
-	}
+    /**
+     * Parses and stores the given option in the format `key=value`.
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun handleOption(options: AgentOptions, optionPart: String) {
+        val keyAndValue = optionPart.split("=".toRegex(), 2).toTypedArray()
+        if (keyAndValue.size < 2) {
+            throw AgentOptionParseException("Got an option without any value: $optionPart")
+        }
 
-	/**
-	 * Parses the given command-line options.
-	 */
-	public static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
-		return new AgentOptionsParser(logger).parse(optionsString);
-	}
+        val key = keyAndValue[0].toLowerCase()
+        var value = keyAndValue[1]
 
-	/**
-	 * Parses the given command-line options.
-	 */
-	/* package */ AgentOptions parse(String optionsString) throws AgentOptionParseException {
-		if (StringUtils.isEmpty(optionsString)) {
-			throw new AgentOptionParseException(
-					"No agent options given. You must at least provide an output directory (out)"
-							+ " and a classes directory (class-dir)");
-		}
+        // Remove quotes, which may be used to pass arguments with spaces via the command line
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length - 1)
+        }
 
-		AgentOptions options = new AgentOptions();
-		options.originalOptionsString = optionsString;
+        if (key.startsWith("jacoco-")) {
+            options.getAdditionalJacocoOptions().add(key.substring(7), value)
+            return
+        } else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
+            return
+        } else if (handleHttpServerOptions(options, key, value)) {
+            return
+        } else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
+            return
+        } else if (handleAgentOptions(options, key, value)) {
+            return
+        }
+        throw AgentOptionParseException("Unknown option: $key")
+    }
 
-		String[] optionParts = optionsString.split(",");
-		for (String optionPart : optionParts) {
-			handleOption(options, optionPart);
-		}
+    /**
+     * Handles all command line options for the agent without special prefix.
+     *
+     * @return true if it has successfully process the given option.
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun handleAgentOptions(options: AgentOptions, key: String, value: String): Boolean {
+        when (key) {
+            "config-file" -> {
+                readConfigFromFile(options, parseFile(key, value))
+                return true
+            }
+            "logging-config" -> {
+                options.loggingConfig = parsePath(key, value)
+                return true
+            }
+            "interval" -> {
+                try {
+                    options.setDumpIntervalInMinutes(Integer.parseInt(value))
+                } catch (e: NumberFormatException) {
+                    throw AgentOptionParseException("Non-numeric value given for option 'interval'")
+                }
 
-		Validator validator = options.getValidator();
-		if (!validator.isValid()) {
-			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
-		}
-		return options;
-	}
+                return true
+            }
+            "out" -> {
+                options.setOutputDirectory(parsePath(key, value))
+                return true
+            }
+            "upload-url" -> {
+                options.setUploadUrl(parseUrl(value))
+                if (options.getUploadUrl() == null) {
+                    throw AgentOptionParseException("Invalid URL given for option 'upload-url'")
+                }
+                return true
+            }
+            "upload-metadata" -> {
+                try {
+                    options.setAdditionalMetaDataFiles(
+                        CollectionUtils.map<T, R>(
+                            splitMultiOptionValue(value),
+                            Function<T, R> { get() })
+                    )
+                } catch (e: InvalidPathException) {
+                    throw AgentOptionParseException("Invalid path given for option 'upload-metadata'", e)
+                }
 
-	/**
-	 * Parses and stores the given option in the format <code>key=value</code>.
-	 */
-	private void handleOption(AgentOptions options, String optionPart) throws AgentOptionParseException {
-		String[] keyAndValue = optionPart.split("=", 2);
-		if (keyAndValue.length < 2) {
-			throw new AgentOptionParseException("Got an option without any value: " + optionPart);
-		}
+                return true
+            }
+            "ignore-duplicates" -> {
+                options.setShouldIgnoreDuplicateClassFiles(java.lang.Boolean.parseBoolean(value))
+                return true
+            }
+            "includes" -> {
+                options.setJacocoIncludes(value.replace(";".toRegex(), ":"))
+                return true
+            }
+            "excludes" -> {
+                options.setJacocoExcludes(value.replace(";".toRegex(), ":"))
+                return true
+            }
+            "class-dir" -> {
+                options.setClassDirectoriesOrZips(CollectionUtils
+                    .mapWithException<T, R, E>(splitMultiOptionValue(value)) { singleValue ->
+                        parseFile(
+                            key,
+                            singleValue
+                        )
+                    })
+                return true
+            }
+            else -> return false
+        }
+    }
 
-		String key = keyAndValue[0].toLowerCase();
-		String value = keyAndValue[1];
+    /**
+     * Reads configuration parameters from the given file.
+     * The expected format is basically the same as for the command line, but line breaks are also considered as
+     * separators.
+     * e.g.
+     * class-dir=out
+     * # Some comment
+     * includes=test.*
+     * excludes=third.party.*
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun readConfigFromFile(options: AgentOptions, configFile: File) {
+        try {
+            val configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile)
+            for (optionKeyValue in configFileKeyValues) {
+                val trimmedOption = optionKeyValue.trim { it <= ' ' }
+                if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
+                    continue
+                }
+                handleOption(options, optionKeyValue)
+            }
+        } catch (e: FileNotFoundException) {
+            throw AgentOptionParseException(
+                "File " + configFile.absolutePath + " given for option 'config-file' not found!", e
+            )
+        } catch (e: IOException) {
+            throw AgentOptionParseException(
+                "An error occurred while reading the config file " + configFile.absolutePath + "!", e
+            )
+        }
 
-		// Remove quotes, which may be used to pass arguments with spaces via the command line
-		if (value.startsWith("\"") && value.endsWith("\"")) {
-			value = value.substring(1, value.length() - 1);
-		}
+    }
 
-		if (key.startsWith("jacoco-")) {
-			options.additionalJacocoOptions.add(key.substring(7), value);
-			return;
-		} else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
-			return;
-		} else if (handleHttpServerOptions(options, key, value)) {
-			return;
-		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
-			return;
-		} else if (handleAgentOptions(options, key, value)) {
-			return;
-		}
-		throw new AgentOptionParseException("Unknown option: " + key);
-	}
+    /**
+     * Handles all command line options prefixed with "teamscale-".
+     *
+     * @return true if it has successfully process the given option.
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun handleTeamscaleOptions(options: AgentOptions, key: String, value: String): Boolean {
+        when (key) {
+            "teamscale-server-url" -> {
+                options.teamscaleServerOptions.url = parseUrl(value)
+                if (options.teamscaleServerOptions.url == null) {
+                    throw AgentOptionParseException(
+                        "Invalid URL $value given for option 'teamscale-server-url'!"
+                    )
+                }
+                return true
+            }
+            "teamscale-project" -> {
+                options.teamscaleServerOptions.project = value
+                return true
+            }
+            "teamscale-user" -> {
+                options.teamscaleServerOptions.userName = value
+                return true
+            }
+            "teamscale-access-token" -> {
+                options.teamscaleServerOptions.userAccessToken = value
+                return true
+            }
+            "teamscale-partition" -> {
+                options.teamscaleServerOptions.partition = value
+                return true
+            }
+            "teamscale-commit" -> {
+                options.teamscaleServerOptions.commit = parseCommit(value)
+                return true
+            }
+            "teamscale-commit-manifest-jar" -> {
+                options.teamscaleServerOptions.commit = getCommitFromManifest(parseFile(key, value))
+                return true
+            }
+            "teamscale-message" -> {
+                options.teamscaleServerOptions.message = value
+                return true
+            }
+            else -> return false
+        }
+    }
 
-	/**
-	 * Handles all command line options for the agent without special prefix.
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
-		switch (key) {
-			case "config-file":
-				readConfigFromFile(options, parseFile(key, value));
-				return true;
-			case "logging-config":
-				options.loggingConfig = parsePath(key, value);
-				return true;
-			case "interval":
-				try {
-					options.dumpIntervalInMinutes = Integer.parseInt(value);
-				} catch (NumberFormatException e) {
-					throw new AgentOptionParseException("Non-numeric value given for option 'interval'");
-				}
-				return true;
-			case "out":
-				options.outputDirectory = parsePath(key, value);
-				return true;
-			case "upload-url":
-				options.uploadUrl = parseUrl(value);
-				if (options.uploadUrl == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-url'");
-				}
-				return true;
-			case "upload-metadata":
-				try {
-					options.additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
-				} catch (InvalidPathException e) {
-					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
-				}
-				return true;
-			case "ignore-duplicates":
-				options.shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
-				return true;
-			case "includes":
-				options.jacocoIncludes = value.replaceAll(";", ":");
-				return true;
-			case "excludes":
-				options.jacocoExcludes = value.replaceAll(";", ":");
-				return true;
-			case "class-dir":
-				options.classDirectoriesOrZips = CollectionUtils
-						.mapWithException(splitMultiOptionValue(value), singleValue -> parseFile(key, singleValue));
-				return true;
-			default:
-				return false;
-		}
-	}
+    /**
+     * Handles all command-line options prefixed with 'azure-'
+     *
+     * @return true if it has successfully process the given option.
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun handleAzureFileStorageOptions(options: AgentOptions, key: String, value: String): Boolean {
+        when (key) {
+            "azure-url" -> {
+                options.getAzureFileStorageConfig().url = parseUrl(value)
+                if (options.getAzureFileStorageConfig().url == null) {
+                    throw AgentOptionParseException("Invalid URL given for option 'upload-azure-url'")
+                }
+                return true
+            }
+            "azure-key" -> {
+                options.getAzureFileStorageConfig().accessKey = value
+                return true
+            }
+            else -> return false
+        }
+    }
 
-	/**
-	 * Reads configuration parameters from the given file.
-	 * The expected format is basically the same as for the command line, but line breaks are also considered as
-	 * separators.
-	 * e.g.
-	 * class-dir=out
-	 * # Some comment
-	 * includes=test.*
-	 * excludes=third.party.*
-	 */
-	private void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
-		try {
-			List<String> configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile);
-			for (String optionKeyValue : configFileKeyValues) {
-				String trimmedOption = optionKeyValue.trim();
-				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
-					continue;
-				}
-				handleOption(options, optionKeyValue);
-			}
-		} catch (FileNotFoundException e) {
-			throw new AgentOptionParseException(
-					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found!", e);
-		} catch (IOException e) {
-			throw new AgentOptionParseException(
-					"An error occurred while reading the config file " + configFile.getAbsolutePath() + "!", e);
-		}
-	}
+    /**
+     * Reads `Branch` and `Timestamp` entries from the given jar/war file and
+     * builds a commit descriptor out of it.
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun getCommitFromManifest(jarFile: File): CommitDescriptor {
+        try {
+            JarInputStream(FileInputStream(jarFile)).use { jarStream ->
+                val manifest = jarStream.manifest
+                val branch = manifest.mainAttributes.getValue("Branch")
+                val timestamp = manifest.mainAttributes.getValue("Timestamp")
+                if (StringUtils.isEmpty(branch)) {
+                    throw AgentOptionParseException("No entry 'Branch' in MANIFEST!")
+                } else if (StringUtils.isEmpty(timestamp)) {
+                    throw AgentOptionParseException("No entry 'Timestamp' in MANIFEST!")
+                }
+                logger.debug("Found commit $branch:$timestamp in file $jarFile")
+                return CommitDescriptor(branch, timestamp)
+            }
+        } catch (e: IOException) {
+            throw AgentOptionParseException("Reading jar " + jarFile.absolutePath + " failed!", e)
+        }
 
-	/**
-	 * Handles all command line options prefixed with "teamscale-".
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
-		switch (key) {
-			case "teamscale-server-url":
-				options.teamscaleServer.setUrl(parseUrl(value));
-				if (options.teamscaleServer.getUrl() == null) {
-					throw new AgentOptionParseException(
-							"Invalid URL " + value + " given for option 'teamscale-server-url'!");
-				}
-				return true;
-			case "teamscale-project":
-				options.teamscaleServer.setProject(value);
-				return true;
-			case "teamscale-user":
-				options.teamscaleServer.setUserName(value);
-				return true;
-			case "teamscale-access-token":
-				options.teamscaleServer.setUserAccessToken(value);
-				return true;
-			case "teamscale-partition":
-				options.teamscaleServer.setPartition(value);
-				return true;
-			case "teamscale-commit":
-				options.teamscaleServer.setCommit(parseCommit(value));
-				return true;
-			case "teamscale-commit-manifest-jar":
-				options.teamscaleServer.setCommit(getCommitFromManifest(parseFile(key, value)));
-				return true;
-			case "teamscale-message":
-				options.teamscaleServer.setMessage(value);
-				return true;
-			default:
-				return false;
-		}
-	}
+    }
 
-	/**
-	 * Handles all command-line options prefixed with 'azure-'
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleAzureFileStorageOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException {
-		switch (key) {
-			case "azure-url":
-				options.azureFileStorageConfig.url = parseUrl(value);
-				if (options.azureFileStorageConfig.url == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
-				}
-				return true;
-			case "azure-key":
-				options.azureFileStorageConfig.accessKey = value;
-				return true;
-			default:
-				return false;
-		}
-	}
+    /**
+     * Handles all command line options prefixed with "http-server-".
+     *
+     * @return true if it has successfully process the given option.
+     */
+    @Throws(AgentOptionParseException::class)
+    private fun handleHttpServerOptions(options: AgentOptions, key: String, value: String): Boolean {
+        when (key) {
+            "test-env" -> {
+                options.setTestEnvironmentVariableName(value)
+                return true
+            }
+            "http-server-port" -> {
+                try {
+                    options.setHttpServerPort(Integer.parseInt(value))
+                } catch (e: NumberFormatException) {
+                    throw AgentOptionParseException(
+                        "Invalid port number $value given for option 'http-server-port'!"
+                    )
+                }
 
-	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar/war file and
-	 * builds a commit descriptor out of it.
-	 */
-	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
-		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
-			Manifest manifest = jarStream.getManifest();
-			String branch = manifest.getMainAttributes().getValue("Branch");
-			String timestamp = manifest.getMainAttributes().getValue("Timestamp");
-			if (StringUtils.isEmpty(branch)) {
-				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
-			} else if (StringUtils.isEmpty(timestamp)) {
-				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
-			}
-			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
-			return new CommitDescriptor(branch, timestamp);
-		} catch (IOException e) {
-			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
-		}
-	}
+                return true
+            }
+            else -> return false
+        }
+    }
 
-	/**
-	 * Handles all command line options prefixed with "http-server-".
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleHttpServerOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
-		switch (key) {
-			case "test-env":
-				options.testEnvironmentVariable = value;
-				return true;
-			case "http-server-port":
-				try {
-					options.httpServerPort = Integer.parseInt(value);
-				} catch (NumberFormatException e) {
-					throw new AgentOptionParseException(
-							"Invalid port number " + value + " given for option 'http-server-port'!");
-				}
-				return true;
-			default:
-				return false;
-		}
-	}
+    /**
+     * Parses the given value as a [File].
+     */
+    /* package */ @Throws(AgentOptionParseException::class)
+    internal fun parseFile(optionName: String, value: String): File {
+        return parsePath(optionName, File("."), value).toFile()
+    }
 
-	/**
-	 * Parses the given value as a {@link File}.
-	 */
-	/* package */ File parseFile(String optionName, String value) throws AgentOptionParseException {
-		return parsePath(optionName, new File("."), value).toFile();
-	}
+    /**
+     * Parses the given value as a [Path].
+     */
+    /* package */ @Throws(AgentOptionParseException::class)
+    internal fun parsePath(optionName: String, value: String): Path {
+        return parsePath(optionName, File("."), value)
+    }
 
-	/**
-	 * Parses the given value as a {@link Path}.
-	 */
-	/* package */ Path parsePath(String optionName, String value) throws AgentOptionParseException {
-		return parsePath(optionName, new File("."), value);
-	}
+    /**
+     * Parses the given value as a [File].
+     */
+    /* package */ @Throws(AgentOptionParseException::class)
+    internal fun parseFile(optionName: String, workingDirectory: File, value: String): File {
+        return parsePath(optionName, workingDirectory, value).toFile()
+    }
 
-	/**
-	 * Parses the given value as a {@link File}.
-	 */
-	/* package */ File parseFile(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
-		return parsePath(optionName, workingDirectory, value).toFile();
-	}
+    /**
+     * Parses the given value as a [Path].
+     */
+    /* package */ @Throws(AgentOptionParseException::class)
+    internal fun parsePath(optionName: String, workingDirectory: File, value: String): Path {
+        if (isPathWithPattern(value)) {
+            return parseFileFromPattern(workingDirectory, optionName, value)
+        }
+        try {
+            return workingDirectory.toPath().resolve(Paths.get(value))
+        } catch (e: InvalidPathException) {
+            throw AgentOptionParseException("Invalid path given for option $optionName: $value", e)
+        }
 
-	/**
-	 * Parses the given value as a {@link Path}.
-	 */
-	/* package */ Path parsePath(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
-		if (isPathWithPattern(value)) {
-			return parseFileFromPattern(workingDirectory, optionName, value);
-		}
-		try {
-			return workingDirectory.toPath().resolve(Paths.get(value));
-		} catch (InvalidPathException e) {
-			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + value, e);
-		}
-	}
+    }
 
-	/** Parses the value as a ant pattern to a file or directory. */
-	private Path parseFileFromPattern(File workingDirectory, String optionName, String value) throws AgentOptionParseException {
-		Pair<String, String> baseDirAndPattern = splitIntoBaseDirAndPattern(value);
-		String baseDir = baseDirAndPattern.getFirst();
-		String pattern = baseDirAndPattern.getSecond();
+    /** Parses the value as a ant pattern to a file or directory.  */
+    @Throws(AgentOptionParseException::class)
+    private fun parseFileFromPattern(workingDirectory: File, optionName: String, value: String): Path {
+        val baseDirAndPattern = splitIntoBaseDirAndPattern(value)
+        val baseDir = baseDirAndPattern.first
+        val pattern = baseDirAndPattern.second
 
-		File workingDir = workingDirectory.getAbsoluteFile();
-		Path basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath();
+        val workingDir = workingDirectory.absoluteFile
+        val basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath()
 
-		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
-		Predicate<Path> filter = path -> pathMatcher
-				.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
+        val pathMatcher = AntPatternUtils.convertPattern(pattern, false)
+        val filter = { path ->
+            pathMatcher
+                .matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches()
+        }
 
-		List<Path> matchingPaths;
-		try {
-			matchingPaths = Files.walk(basePath).filter(filter).sorted().collect(toList());
-		} catch (IOException e) {
-			throw new AgentOptionParseException(
-					"Could not recursively list files in directory " + basePath + " in order to resolve pattern " + pattern + " given for option " + optionName,
-					e);
-		}
+        val matchingPaths: List<Path>
+        try {
+            matchingPaths = Files.walk(basePath).filter(filter).sorted().collect<List<Path>, Any>(toList())
+        } catch (e: IOException) {
+            throw AgentOptionParseException(
+                "Could not recursively list files in directory $basePath in order to resolve pattern $pattern given for option $optionName",
+                e
+            )
+        }
 
-		if (matchingPaths.isEmpty()) {
-			throw new AgentOptionParseException(
-					"Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
-							" did not match any files in " + basePath.toAbsolutePath() + "!");
-		} else if (matchingPaths.size() > 1) {
-			logger.warn(
-					"Multiple files match the pattern " + pattern + " in " + basePath
-							.toString() + " for option " + optionName + "! " +
-							"The first one is used, but consider to adjust the " +
-							"pattern to match only one file. Candidates are: " + matchingPaths.stream()
-							.map(basePath::relativize).map(Path::toString).collect(joining(", ")));
-		}
-		Path path = matchingPaths.get(0).normalize();
-		logger.info("Using file " + path + " for option " + optionName);
+        if (matchingPaths.isEmpty()) {
+            throw AgentOptionParseException(
+                "Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
+                        " did not match any files in " + basePath.toAbsolutePath() + "!"
+            )
+        } else if (matchingPaths.size > 1) {
+            logger.warn(
+                "Multiple files match the pattern $pattern in " + basePath
+                    .toString() + " for option " + optionName + "! " +
+                        "The first one is used, but consider to adjust the " +
+                        "pattern to match only one file. Candidates are: " + matchingPaths.stream()
+                    .map<Path>(Function<Path, Path> { basePath.relativize(it) }).map<String>(Function<Path, String> { it.toString() }).collect<String, *>(
+                        joining(", ")
+                    )
+            )
+        }
+        val path = matchingPaths[0].normalize()
+        logger.info("Using file $path for option $optionName")
 
-		return path;
-	}
+        return path
+    }
 
-	/**
-	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
-	 * placeholders, and a pattern suffix.
-	 * We need to replace the pattern characters with stand-ins, because ? and * are not allowed as path characters on windows.
-	 */
-	private Pair<String, String> splitIntoBaseDirAndPattern(String value) {
-		String pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT);
-		Path pathWithPattern = Paths.get(pathWithArtificialPattern);
-		Path baseDir = pathWithPattern;
-		while (isPathWithArtificialPattern(baseDir.toString())) {
-			baseDir = baseDir.getParent();
-			if (baseDir == null) {
-				return new Pair<>("", value);
-			}
-		}
-		String pattern = baseDir.relativize(pathWithPattern).toString().replace(QUESTION_REPLACEMENT, "?")
-				.replace(ASTERISK_REPLACEMENT, "*");
-		return new Pair<>(baseDir.toString(), pattern);
-	}
+    /**
+     * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
+     * placeholders, and a pattern suffix.
+     * We need to replace the pattern characters with stand-ins, because ? and * are not allowed as path characters on windows.
+     */
+    private fun splitIntoBaseDirAndPattern(value: String): Pair<String, String> {
+        val pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT)
+        val pathWithPattern = Paths.get(pathWithArtificialPattern)
+        var baseDir: Path? = pathWithPattern
+        while (isPathWithArtificialPattern(baseDir!!.toString())) {
+            baseDir = baseDir.parent
+            if (baseDir == null) {
+                return Pair("", value)
+            }
+        }
+        val pattern = baseDir.relativize(pathWithPattern).toString().replace(QUESTION_REPLACEMENT, "?")
+            .replace(ASTERISK_REPLACEMENT, "*")
+        return Pair(baseDir.toString(), pattern)
+    }
 
-	/** Returns whether the given path contains ant pattern characters (?,*). */
-	private static boolean isPathWithPattern(String path) {
-		return path.contains("?") || path.contains("*");
-	}
+    companion object {
 
-	/** Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link #ASTERISK_REPLACEMENT}). */
-	private static boolean isPathWithArtificialPattern(String path) {
-		return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT);
-	}
+        /** Character which starts a comment in the config file.  */
+        private val COMMENT_PREFIX = "#"
 
-	/**
-	 * Parses the given value as a URL or returns <code>null</code> if that fails.
-	 */
-	private static HttpUrl parseUrl(String value) {
-		// default to HTTP if no scheme is given
-		if (!value.startsWith("http://") && !value.startsWith("https://")) {
-			value = "http://" + value;
-		}
+        /** Stand-in for the question mark operator.  */
+        private val QUESTION_REPLACEMENT = "!@"
 
-		return HttpUrl.parse(value);
-	}
+        /** Stand-in for the asterisk operator.  */
+        private val ASTERISK_REPLACEMENT = "#@"
+
+        /**
+         * Parses the given command-line options.
+         */
+        @Throws(AgentOptionParseException::class)
+        fun parse(optionsString: String, logger: ILogger): AgentOptions {
+            return AgentOptionsParser(logger).parse(optionsString)
+        }
+
+        /** Returns whether the given path contains ant pattern characters (?,*).  */
+        private fun isPathWithPattern(path: String): Boolean {
+            return path.contains("?") || path.contains("*")
+        }
+
+        /** Returns whether the given path contains artificial pattern characters ([.QUESTION_REPLACEMENT], [.ASTERISK_REPLACEMENT]).  */
+        private fun isPathWithArtificialPattern(path: String): Boolean {
+            return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT)
+        }
+
+        /**
+         * Parses the given value as a URL or returns `null` if that fails.
+         */
+        private fun parseUrl(value: String): HttpUrl? {
+            var value = value
+            // default to HTTP if no scheme is given
+            if (!value.startsWith("http://") && !value.startsWith("https://")) {
+                value = "http://$value"
+            }
+
+            return HttpUrl.parse(value)
+        }
 
 
-	/**
-	 * Parses the the string representation of a commit to a  {@link CommitDescriptor} object.
-	 * <p>
-	 * The expected format is "branch:timestamp".
-	 */
-	private static CommitDescriptor parseCommit(String commit) throws AgentOptionParseException {
-		String[] split = commit.split(":");
-		if (split.length != 2) {
-			throw new AgentOptionParseException("Invalid commit given " + commit);
-		}
-		return new CommitDescriptor(split[0], split[1]);
-	}
+        /**
+         * Parses the the string representation of a commit to a  [CommitDescriptor] object.
+         *
+         *
+         * The expected format is "branch:timestamp".
+         */
+        @Throws(AgentOptionParseException::class)
+        private fun parseCommit(commit: String): CommitDescriptor {
+            val split = commit.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            if (split.size != 2) {
+                throw AgentOptionParseException("Invalid commit given $commit")
+            }
+            return CommitDescriptor(split[0], split[1])
+        }
 
-	/**
-	 * Splits the given value at semicolons.
-	 */
-	private static List<String> splitMultiOptionValue(String value) {
-		return Arrays.asList(value.split(";"));
-	}
+        /**
+         * Splits the given value at semicolons.
+         */
+        private fun splitMultiOptionValue(value: String): List<String> {
+            return Arrays.asList(*value.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        }
+    }
 }

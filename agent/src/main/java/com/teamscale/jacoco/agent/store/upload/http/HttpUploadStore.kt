@@ -1,39 +1,35 @@
-package com.teamscale.jacoco.agent.store.upload.http;
+package com.teamscale.jacoco.agent.store.upload.http
 
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
-import okhttp3.HttpUrl;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-import retrofit2.Retrofit;
+import com.teamscale.jacoco.agent.store.file.TimestampedFileStore
+import com.teamscale.jacoco.agent.store.upload.UploadStoreBase
+import okhttp3.HttpUrl
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.Retrofit
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.IOException
+import java.nio.file.Path
 
 /**
  * Uploads XMLs and metadata via HTTP multi-part form data requests.
  */
-public class HttpUploadStore extends UploadStoreBase<IHttpUploadApi> {
-	/** Constructor. */
-	public HttpUploadStore(TimestampedFileStore failureStore, HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
-		super(failureStore, uploadUrl, additionalMetaDataFiles);
-	}
+class HttpUploadStore
+/** Constructor.  */
+    (failureStore: TimestampedFileStore, uploadUrl: HttpUrl, additionalMetaDataFiles: List<Path>) :
+    UploadStoreBase<IHttpUploadApi>(failureStore, uploadUrl, additionalMetaDataFiles) {
 
-	@Override
-	protected IHttpUploadApi getApi(Retrofit retrofit) {
-		return retrofit.create(IHttpUploadApi.class);
-	}
+    override fun getApi(retrofit: Retrofit): IHttpUploadApi {
+        return retrofit.create(IHttpUploadApi::class.java)
+    }
 
-	@Override
-	protected Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException {
-		return api.uploadCoverageZip(zipFileBytes);
-	}
+    @Throws(IOException::class)
+    override fun uploadCoverageZip(zipFileBytes: ByteArray): Response<ResponseBody> {
+        return api.uploadCoverageZip(zipFileBytes)
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public String describe() {
-		return "Uploading to " + uploadUrl + " (fallback in case of network errors to: " + failureStore.describe()
-				+ ")";
-	}
+    /** {@inheritDoc}  */
+    override fun describe(): String {
+        return ("Uploading to " + uploadUrl + " (fallback in case of network errors to: " + failureStore.describe()
+                + ")")
+    }
 }

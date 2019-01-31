@@ -1,12 +1,12 @@
-package com.teamscale.jacoco.agent.store;
+package com.teamscale.jacoco.agent.store
 
-/** Stores XML data permanently. */
-public interface IXmlStore {
+/** Stores XML data permanently.  */
+interface IXmlStore {
 
-	/** Stores the given XML permanently. */
-	void store(String xml);
+    /** Stores the given XML permanently.  */
+    fun store(xml: String)
 
-	/** Human-readable description of the store. */
-	String describe();
+    /** Human-readable description of the store.  */
+    fun describe(): String
 
 }
