@@ -2,10 +2,8 @@ package com.teamscale.report.testwise.jacoco.cache
 
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
 import com.teamscale.report.util.ILogger
-import org.conqat.lib.commons.string.StringUtils
 import org.jacoco.core.data.ExecutionData
-
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Holds information about a class' probes and to which line ranges they refer.
@@ -87,7 +85,7 @@ internal constructor(
             return null
         }
 
-        val packageName = StringUtils.removeLastPart(className, '/')
+        val packageName = className.substringBeforeLast('/')
         val fileCoverage = FileCoverageBuilder(packageName, sourceFileName!!)
         fillFileCoverage(fileCoverage, executedProbes, logger)
 

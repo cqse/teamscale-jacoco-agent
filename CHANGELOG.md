@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 11.2.0
+- [feature] The agent is now compatible with Java 7 (Not in testwise coverage mode)
+
 # 11.1.0
 - [feature] The agent now also supports line coverage in Testwise Coverage mode
 

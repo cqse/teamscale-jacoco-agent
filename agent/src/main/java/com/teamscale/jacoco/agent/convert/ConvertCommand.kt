@@ -10,9 +10,7 @@ import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.teamscale.jacoco.agent.commandline.ICommand
 import com.teamscale.jacoco.agent.commandline.Validator
-import org.conqat.lib.commons.assertion.CCSMAssert
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
+import com.teamscale.report.util.FileSystemUtils
 import java.io.File
 import java.util.*
 
@@ -155,12 +153,12 @@ class ConvertCommand : ICommand {
             )
         }
 
-        validator.ensure({
-            CCSMAssert.isFalse(StringUtils.isEmpty(outputFile), "You must specify an output file")
+        validator.ensure {
+            require(outputFile.isNotBlank()) {"You must specify an output file"}
             val outputDir = getOutputFile().absoluteFile.parentFile
             FileSystemUtils.ensureDirectoryExists(outputDir)
-            CCSMAssert.isTrue(outputDir.canWrite(), "Path '$outputDir' is not writable")
-        })
+            require(outputDir.canWrite()){ "Path '$outputDir' is not writable"}
+        }
 
         return validator
     }

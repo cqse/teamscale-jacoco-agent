@@ -1,16 +1,13 @@
 package com.teamscale.report.util
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
 import org.jacoco.core.runtime.WildcardMatcher
 import org.jacoco.report.JavaNames
-
 import java.util.function.Predicate
 
 /***
  * Tests given class file paths against call name patterns.
  * E.g. "/some/file/path/test.jar@my/package/Test.class" matches "my/package/ *" or "my/package/Test"
-*/
+ */
 class ClasspathWildcardIncludeFilter
 /**
  * Constructor.
@@ -58,12 +55,12 @@ class ClasspathWildcardIncludeFilter
         /* package */ internal fun getClassName(path: String): String {
             val parts = FileSystemUtils.normalizeSeparators(path).split("@".toRegex()).dropLastWhile { it.isEmpty() }
                 .toTypedArray()
-            if (parts.size == 0) {
+            if (parts.isEmpty()) {
                 return ""
             }
 
             val pathInsideJar = parts[parts.size - 1]
-            val pathWithoutExtension = StringUtils.removeLastPart(pathInsideJar, '.')
+            val pathWithoutExtension = pathInsideJar.substringBeforeLast('.')
             return JavaNames().getQualifiedClassName(pathWithoutExtension)
         }
     }

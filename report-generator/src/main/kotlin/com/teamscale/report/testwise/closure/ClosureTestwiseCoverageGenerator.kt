@@ -5,8 +5,6 @@ import com.teamscale.report.testwise.closure.model.ClosureCoverage
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileReader
@@ -43,9 +41,7 @@ class ClosureTestwiseCoverageGenerator
                 testwiseCoverage.add(readTestCoverage(closureCoverageDirectory))
                 continue
             }
-            val coverageFiles = FileSystemUtils.listFilesRecursively(
-                closureCoverageDirectory
-            ) { file -> "json" == FileSystemUtils.getFileExtension(file) }
+            val coverageFiles = closureCoverageDirectory.walk().filter { file -> "json" == file.extension }
             for (coverageReportFile in coverageFiles) {
                 testwiseCoverage.add(readTestCoverage(coverageReportFile))
             }
@@ -71,7 +67,7 @@ class ClosureTestwiseCoverageGenerator
 
     /** Converts the given [ClosureCoverage] to [TestCoverageBuilder].  */
     private fun convertToTestCoverage(coverage: ClosureCoverage): TestCoverageBuilder? {
-        if (StringUtils.isEmpty(coverage.uniformPath)) {
+        if (coverage.uniformPath.isNullOrBlank()) {
             return null
         }
         val testCoverage = TestCoverageBuilder(coverage.uniformPath)

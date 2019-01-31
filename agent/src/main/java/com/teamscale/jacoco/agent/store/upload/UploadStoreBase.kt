@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.store.upload
 
-import com.teamscale.client.EReportFormat
 import com.teamscale.jacoco.agent.store.IXmlStore
 import com.teamscale.jacoco.agent.store.UploadStoreException
 import com.teamscale.jacoco.agent.store.file.TimestampedFileStore
@@ -8,11 +7,8 @@ import com.teamscale.jacoco.util.Benchmark
 import com.teamscale.jacoco.util.LoggingUtils
 import okhttp3.HttpUrl
 import okhttp3.ResponseBody
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.slf4j.Logger
 import retrofit2.Response
 import retrofit2.Retrofit
-
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -133,7 +129,7 @@ abstract class UploadStoreBase<T>
 
         for (additionalFile in additionalMetaDataFiles) {
             zipOutputStream.putNextEntry(ZipEntry(additionalFile.fileName.toString()))
-            zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()))
+            zipOutputStream.write(additionalFile.toFile().readBytes())
         }
     }
 }

@@ -3,8 +3,6 @@ package com.teamscale.jacoco.javaws
 import org.apache.commons.exec.CommandLine
 import org.apache.commons.exec.DefaultExecutor
 import org.apache.commons.exec.PumpStreamHandler
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -45,7 +43,7 @@ constructor(workingDirectory: Path) {
     @Throws(InstallationException::class)
     private fun validate() {
         try {
-            FileSystemUtils.mkdirs(backupPaths.backupDirectory.toFile())
+            backupPaths.backupDirectory.toFile().mkdirs()
         } catch (e: IOException) {
             throw InstallationException("Cannot create backup directory at " + backupPaths.backupDirectory, e)
         }
@@ -73,7 +71,7 @@ constructor(workingDirectory: Path) {
         }
 
         try {
-            FileSystemUtils.mkdirs(wrapperPaths.defaultOutputDirectory.toFile())
+            wrapperPaths.defaultOutputDirectory.toFile().mkdirs()
         } catch (e: IOException) {
             System.err.println(
                 "Unable to create default output directory " + wrapperPaths.defaultOutputDirectory
@@ -92,7 +90,7 @@ constructor(workingDirectory: Path) {
         }
 
         try {
-            FileSystemUtils.writeFileUTF8(backupPaths.ftypeMapping.toFile(), readCurrentJnlpFtype())
+            backupPaths.ftypeMapping.toFile().writeText(readCurrentJnlpFtype())
         } catch (e: IOException) {
             throw InstallationException(
                 "Failed to backup current file type mapping for JNLP files to " + backupPaths.ftypeMapping, e
@@ -138,7 +136,7 @@ constructor(workingDirectory: Path) {
             FileOutputStream(wrapperPaths.configProperties.toFile()).use { outputStream ->
                 properties.store(
                     outputStream,
-                    StringUtils.EMPTY_STRING
+                    ""
                 )
             }
         } catch (e: IOException) {
@@ -164,7 +162,7 @@ constructor(workingDirectory: Path) {
 
         val oldFtypeMapping: String
         try {
-            oldFtypeMapping = FileSystemUtils.readFileUTF8(backupPaths.ftypeMapping.toFile())
+            oldFtypeMapping = backupPaths.ftypeMapping.toFile().readText()
         } catch (e: IOException) {
             throw InstallationException(
                 "Failed to read the backup of the file type mapping for JNLP files from " + backupPaths.ftypeMapping,

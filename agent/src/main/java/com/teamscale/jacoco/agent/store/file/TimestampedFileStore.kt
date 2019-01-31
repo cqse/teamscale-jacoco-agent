@@ -1,12 +1,8 @@
 package com.teamscale.jacoco.agent.store.file
 
-import com.teamscale.client.EReportFormat
 import com.teamscale.jacoco.agent.store.IXmlStore
 import com.teamscale.jacoco.util.Benchmark
 import com.teamscale.jacoco.util.LoggingUtils
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.slf4j.Logger
-
 import java.io.IOException
 import java.nio.file.Path
 
@@ -33,7 +29,7 @@ class TimestampedFileStore
             val currentTime = System.currentTimeMillis()
             val outputPath = outputDirectory.resolve("jacoco-$currentTime.xml")
             try {
-                FileSystemUtils.writeFile(outputPath.toFile(), xml)
+                outputPath.toFile().writeText(xml)
             } catch (e: IOException) {
                 logger.error("Failed to write XML to {}", outputPath, e)
             }

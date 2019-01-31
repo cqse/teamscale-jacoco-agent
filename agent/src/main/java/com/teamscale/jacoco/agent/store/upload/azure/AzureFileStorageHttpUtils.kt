@@ -14,7 +14,6 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_UNMODIFI
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.RANGE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION
-import org.conqat.lib.commons.assertion.CCSMAssert
 import java.io.UnsupportedEncodingException
 import java.security.InvalidKeyException
 import java.security.NoSuchAlgorithmException
@@ -26,15 +25,9 @@ import java.util.Arrays
 import java.util.Base64
 import java.util.HashMap
 import java.util.Objects
-import java.util.stream.Collectors
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.Any
 import kotlin.Comparator
-import kotlin.IllegalArgumentException
-import kotlin.Pair
-import kotlin.String
-import kotlin.arrayOf
 
 /** Utils class for communicating with an azure file storage.  */
 /* package */ internal object AzureFileStorageHttpUtils {
@@ -62,10 +55,14 @@ import kotlin.arrayOf
         httpMethod: EHttpMethod, headers: Map<String, String>, account: String,
         path: String, queryParameters: Map<String, String>
     ): String {
-        CCSMAssert.isTrue(
-            headers.keys.containsAll(Arrays.asList(X_MS_DATE, X_MS_VERSION)),
-            "Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set"
-        )
+        require(
+            headers.keys.containsAll(
+                Arrays.asList(
+                    X_MS_DATE,
+                    X_MS_VERSION
+                )
+            )
+        ) { "Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set" }
 
         val xmsHeader = headers.entries.filter { x -> x.key.startsWith("x-ms") }.map { Pair(it.key, it.value) }.toMap()
 

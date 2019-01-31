@@ -16,22 +16,14 @@ import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.report.util.FileSystemUtils
 import okhttp3.HttpUrl
-import org.conqat.lib.commons.assertion.CCSMAssert
-import org.conqat.lib.commons.collections.PairList
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.Date
-import java.util.Locale
+import java.util.*
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * Parses agent command line options.
@@ -113,7 +105,7 @@ class AgentOptions {
     /**
      * Additional user-provided options to pass to JaCoCo.
      */
-    /* package */ internal var additionalJacocoOptions = PairList<String, String>()
+    /* package */ internal var additionalJacocoOptions = mutableListOf<Pair<String, String>>()
 
     /**
      * The teamscale server to which coverage should be uploaded.
@@ -166,28 +158,21 @@ class AgentOptions {
             }
 
             validator.ensure {
-                CCSMAssert.isNotNull(outputDirectory!!, "You must specify an output directory")
+                requireNotNull(outputDirectory) { "You must specify an output directory" }
                 FileSystemUtils.ensureDirectoryExists(outputDirectory!!.toFile())
             }
 
             if (loggingConfig != null) {
                 validator.ensure {
-                    CCSMAssert.isTrue(
-                        Files.exists(loggingConfig),
-                        "The path provided for the logging configuration does not exist: " + loggingConfig!!
-                    )
-                    CCSMAssert.isTrue(
-                        Files.isRegularFile(loggingConfig),
-                        "The path provided for the logging configuration is not a file: " + loggingConfig!!
-                    )
-                    CCSMAssert.isTrue(
-                        Files.isReadable(loggingConfig!!),
-                        "The file provided for the logging configuration is not readable: " + loggingConfig!!
-                    )
-                    CCSMAssert.isTrue(
-                        FileSystemUtils.getFileExtension(loggingConfig!!.toFile()).equals("xml", ignoreCase = true),
-                        "The logging configuration file must have the file extension .xml and be a valid XML file"
-                    )
+                    require(Files.exists(loggingConfig)) { "The path provided for the logging configuration does not exist: $loggingConfig" }
+                    require(Files.isRegularFile(loggingConfig)) { "The path provided for the logging configuration is not a file: $loggingConfig" }
+                    require(Files.isReadable(loggingConfig!!)) { "The file provided for the logging configuration is not readable: $loggingConfig" }
+                    require(
+                        loggingConfig!!.toFile().extension.equals(
+                            "xml",
+                            ignoreCase = true
+                        )
+                    ) { "The logging configuration file must have the file extension .xml and be a valid XML file" }
                 }
             }
 
@@ -260,7 +245,9 @@ class AgentOptions {
             builder.append(",excludes=").append(jacocoExcludes)
         }
 
-        additionalJacocoOptions.forEach { key, value -> builder.append(",").append(key).append("=").append(value) }
+        for ((key, value) in additionalJacocoOptions) {
+            builder.append(",").append(key).append("=").append(value)
+        }
 
         return builder.toString()
     }

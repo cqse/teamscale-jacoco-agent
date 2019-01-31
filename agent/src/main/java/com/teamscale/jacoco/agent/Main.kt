@@ -4,14 +4,12 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.JCommander.Builder
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
-import com.teamscale.jacoco.agent.commandline.Validator
 import com.teamscale.jacoco.agent.convert.ConvertCommand
 import com.teamscale.jacoco.util.LoggingUtils
-import org.conqat.lib.commons.string.StringUtils
 import org.jacoco.core.JaCoCo
-import org.slf4j.Logger
+import java.util.*
 
-import java.util.ResourceBundle
+val CR: String = System.getProperty("line.separator")
 
 /** Provides a command line interface for interacting with JaCoCo.  */
 class Main {
@@ -48,7 +46,7 @@ class Main {
 
         val validator = command.validate()
         if (!validator.isValid) {
-            handleInvalidCommandLine(jCommander, StringUtils.CR + validator.errorMessage)
+            handleInvalidCommandLine(jCommander, CR + validator.errorMessage)
         }
 
         logger.info("Starting CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION)
@@ -64,7 +62,7 @@ class Main {
     private class DefaultArguments {
 
         /** Shows the help message.  */
-        @Parameter(names = arrayOf("--help"), help = true, description = "Shows all available command line arguments.")
+        @Parameter(names = ["--help"], help = true, description = "Shows all available command line arguments.")
         val help: Boolean = false
 
     }
@@ -88,7 +86,7 @@ class Main {
 
         /** Shows an informative error and help message. Then exits the program.  */
         private fun handleInvalidCommandLine(jCommander: JCommander, message: String?) {
-            System.err.println("Invalid command line: " + message + StringUtils.CR)
+            System.err.println("Invalid command line: $message$CR")
             jCommander.usage()
             System.exit(1)
         }

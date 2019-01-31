@@ -2,7 +2,6 @@ package com.teamscale.report
 
 import com.google.gson.GsonBuilder
 import com.teamscale.report.testwise.ETestArtifactFormat
-import org.conqat.lib.commons.filesystem.FileSystemUtils
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -54,12 +53,12 @@ object ReportUtils {
     /** Recursively lists all files of the given artifact type.  */
     fun listFiles(format: ETestArtifactFormat, directoriesOrFiles: List<File>): List<File> {
         return directoriesOrFiles.flatMap { directory ->
-            FileSystemUtils.listFilesRecursively(
-                directory
-            ) { pathname ->
-                pathname.isFile && pathname.name.startsWith(format.filePrefix) && FileSystemUtils
-                    .getFileExtension(pathname).equals(format.extension, ignoreCase = true)
-            }
+            directory.walk().filter { pathname ->
+                pathname.isFile && pathname.name.startsWith(format.filePrefix) && pathname.extension.equals(
+                    format.extension,
+                    ignoreCase = true
+                )
+            }.toList()
         }
     }
 }

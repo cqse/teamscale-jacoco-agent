@@ -2,20 +2,15 @@ package com.teamscale.report.jacoco
 
 import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.util.ILogger
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.jacoco.core.analysis.Analyzer
 import org.jacoco.core.analysis.CoverageBuilder
 import org.jacoco.core.analysis.IBundleCoverage
 import org.jacoco.core.data.ExecutionDataStore
 import org.jacoco.core.data.SessionInfo
-import org.jacoco.report.IReportVisitor
 import org.jacoco.report.xml.XMLFormatter
-
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
-import java.util.Collections
 import java.util.function.Predicate
 
 /** Creates an XML report from binary execution data.  */
@@ -39,7 +34,7 @@ class JaCoCoXmlReportGenerator
     fun convert(dump: Dump): String {
         val output = ByteArrayOutputStream()
         convertToReport(output, dump)
-        return output.toString(FileSystemUtils.UTF8_ENCODING)
+        return output.toString("UTF-8")
     }
 
     /** Creates the report.  */

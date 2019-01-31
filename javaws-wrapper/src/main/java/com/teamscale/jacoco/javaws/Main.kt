@@ -1,20 +1,14 @@
 package com.teamscale.jacoco.javaws
 
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.Collections
-import java.util.Properties
-
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
+import java.util.*
 
 /** Wraps javaws and adds the profiler via `-J-javaagent`.  */
 class Main {
@@ -141,7 +135,7 @@ class Main {
         }
 
         @Throws(IOException::class, ConfigurationException::class)
-        private fun buildAgentArgument(workingDirectory: Path, additionalAgentArguments: String): String {
+        private fun buildAgentArgument(workingDirectory: Path, additionalAgentArguments: String?): String {
             val agentJarPath = normalizePath(workingDirectory.resolve("agent.jar"))
 
             val tempDirectory = Files.createTempDirectory("javaws-classdumpdir")
@@ -152,7 +146,7 @@ class Main {
             // cleared up by the OS later in most cases
             val tempDirectoryPath = normalizePath(tempDirectory)
 
-            if (StringUtils.isEmpty(additionalAgentArguments)) {
+            if (additionalAgentArguments.isNullOrBlank()) {
                 throw ConfigurationException("You must provide additional mandatory agent arguments." + " At least the dump interval and a method for storing the traces must be specified")
             }
 
@@ -166,7 +160,7 @@ class Main {
          * Windows.
          */
         private fun normalizePath(path: Path): String {
-            return FileSystemUtils.normalizeSeparators(path.toAbsolutePath().toString())
+            return path.toAbsolutePath().toString().replace(File.separatorChar, '/')
         }
 
         @Throws(IOException::class, FileNotFoundException::class)

@@ -1,10 +1,7 @@
 package com.teamscale.report.testwise.model.builder
 
-import com.teamscale.report.testwise.model.LineRange
-import org.conqat.lib.commons.collections.CollectionUtils
-import org.junit.Test
-
 import org.junit.Assert.assertEquals
+import org.junit.Test
 
 /** Tests the [FileCoverageBuilder] class.  */
 class FileCoverageBuilderTest {
@@ -12,7 +9,7 @@ class FileCoverageBuilderTest {
     /** Tests the compactification algorithm for line ranges.  */
     @Test
     fun compactifyRanges() {
-        val input = CollectionUtils.asHashSet(1, 3, 4, 6, 7, 10)
+        val input = setOf(1, 3, 4, 6, 7, 10)
         val result = FileCoverageBuilder.compactifyToRanges(input)
         assertEquals("[1, 3-4, 6-7, 10]", result.toString())
     }
@@ -33,7 +30,7 @@ class FileCoverageBuilderTest {
     }
 
     /** Tests that two [FileCoverageBuilder] objects from different files throws an exception.  */
-    @Test(expected = AssertionError::class)
+    @Test(expected = IllegalArgumentException::class)
     fun mergeDoesNotAllowMergeOfTwoDifferentFiles() {
         val fileCoverage = FileCoverageBuilder("path", "file")
         fileCoverage.addLine(1)

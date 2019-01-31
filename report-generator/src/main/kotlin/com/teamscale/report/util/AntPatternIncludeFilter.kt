@@ -5,12 +5,6 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.report.util
 
-import org.conqat.lib.commons.collections.CollectionUtils
-import org.conqat.lib.commons.filesystem.AntPatternUtils
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-
-import java.util.Arrays
-import java.util.Collections
 import java.util.function.Predicate
 import java.util.regex.Pattern
 
@@ -28,12 +22,10 @@ class AntPatternIncludeFilter
     private val locationExcludeFilters: List<Pattern>
 
     init {
-        this.locationIncludeFilters = CollectionUtils.map(
-            locationIncludeFilters
-        ) { filter -> AntPatternUtils.convertPattern(filter, false) }
-        this.locationExcludeFilters = CollectionUtils.map(
-            locationExcludeFilters
-        ) { filter -> AntPatternUtils.convertPattern(filter, false) }
+        this.locationIncludeFilters =
+                locationIncludeFilters.map { filter -> AntPatternUtils.convertPattern(filter, false) }
+        this.locationExcludeFilters =
+                locationExcludeFilters.map { filter -> AntPatternUtils.convertPattern(filter, false) }
     }
 
     /** {@inheritDoc}  */

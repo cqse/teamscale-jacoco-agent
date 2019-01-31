@@ -6,11 +6,10 @@
 package com.teamscale.jacoco.agent
 
 import com.teamscale.client.CommitDescriptor
+import com.teamscale.report.util.AntPatternUtils
+import com.teamscale.report.util.FileSystemUtils
 import com.teamscale.report.util.ILogger
 import okhttp3.HttpUrl
-import org.conqat.lib.commons.filesystem.AntPatternUtils
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -33,8 +32,8 @@ class AgentOptionsParser(
      * Parses the given command-line options.
      */
     /* package */ @Throws(AgentOptionParseException::class)
-    internal fun parse(optionsString: String): AgentOptions {
-        if (StringUtils.isEmpty(optionsString)) {
+    internal fun parse(optionsString: String?): AgentOptions {
+        if (optionsString.isNullOrBlank()) {
             throw AgentOptionParseException(
                 "No agent options given. You must at least provide an output directory (out)" + " and a classes directory (class-dir)"
             )
@@ -74,7 +73,7 @@ class AgentOptionsParser(
         }
 
         if (key.startsWith("jacoco-")) {
-            options.additionalJacocoOptions.add(key.substring(7), value)
+            options.additionalJacocoOptions.add(Pair(key.substring(7), value))
             return
         } else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
             return
@@ -171,7 +170,7 @@ class AgentOptionsParser(
     @Throws(AgentOptionParseException::class)
     private fun readConfigFromFile(options: AgentOptions, configFile: File) {
         try {
-            val configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile)
+            val configFileKeyValues = configFile.readLines()
             for (optionKeyValue in configFileKeyValues) {
                 val trimmedOption = optionKeyValue.trim { it <= ' ' }
                 if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
@@ -274,9 +273,9 @@ class AgentOptionsParser(
                 val manifest = jarStream.manifest
                 val branch = manifest.mainAttributes.getValue("Branch")
                 val timestamp = manifest.mainAttributes.getValue("Timestamp")
-                if (StringUtils.isEmpty(branch)) {
+                if (branch.isNullOrBlank()) {
                     throw AgentOptionParseException("No entry 'Branch' in MANIFEST!")
-                } else if (StringUtils.isEmpty(timestamp)) {
+                } else if (timestamp.isNullOrBlank()) {
                     throw AgentOptionParseException("No entry 'Timestamp' in MANIFEST!")
                 }
                 logger.debug("Found commit $branch:$timestamp in file $jarFile")

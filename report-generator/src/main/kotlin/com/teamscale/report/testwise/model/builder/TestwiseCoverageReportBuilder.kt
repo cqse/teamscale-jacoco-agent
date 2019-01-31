@@ -2,11 +2,8 @@ package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.client.TestDetails
 import com.teamscale.report.testwise.model.TestExecution
-import com.teamscale.report.testwise.model.TestInfo
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
-import org.conqat.lib.commons.collections.CollectionUtils
-import java.util.Comparator
-import java.util.HashMap
+import java.util.*
 
 /** Container for coverage produced by multiple tests.  */
 class TestwiseCoverageReportBuilder {

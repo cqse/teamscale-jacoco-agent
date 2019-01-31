@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.convert
 import com.teamscale.client.TestDetails
 import com.teamscale.jacoco.util.Benchmark
 import com.teamscale.jacoco.util.LoggingUtils
+import com.teamscale.jacoco.util.LoggingUtils.wrap
 import com.teamscale.report.ReportUtils
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator
 import com.teamscale.report.jacoco.dump.Dump
@@ -10,21 +11,10 @@ import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException
 import com.teamscale.report.testwise.model.TestExecution
-import com.teamscale.report.testwise.model.TestwiseCoverage
-import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
 import com.teamscale.report.util.AntPatternIncludeFilter
-import com.teamscale.report.util.ILogger
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.jacoco.core.data.ExecutionDataStore
-import org.jacoco.core.data.SessionInfo
 import org.jacoco.core.tools.ExecFileLoader
-import org.slf4j.Logger
-
-import java.io.File
 import java.io.IOException
-
-import com.teamscale.jacoco.util.LoggingUtils.wrap
 
 /** Converts one .exec binary coverage file to XML.  */
 class Converter
@@ -59,7 +49,7 @@ class Converter
 
         Benchmark("Generating the XML report").use {
             val xml = generator.convert(Dump(sessionInfo, executionDataStore))
-            FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml)
+            arguments.getOutputFile().writeText(xml)
         }
     }
 

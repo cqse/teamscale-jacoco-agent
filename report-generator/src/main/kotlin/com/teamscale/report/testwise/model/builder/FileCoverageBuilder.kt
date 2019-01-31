@@ -2,13 +2,7 @@ package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.report.testwise.model.FileCoverage
 import com.teamscale.report.testwise.model.LineRange
-import org.conqat.lib.commons.assertion.CCSMAssert
-
-import java.util.ArrayList
-import java.util.Comparator
-import java.util.HashSet
-import java.util.stream.Collectors
-import java.util.stream.IntStream
+import java.util.*
 
 /** Holds coverage of a single file.  */
 class FileCoverageBuilder
@@ -48,10 +42,7 @@ class FileCoverageBuilder
 
     /** Merges the list of ranges into the current list.  */
     fun merge(other: FileCoverageBuilder) {
-        CCSMAssert.isTrue(
-            other.fileName == fileName && other.path == path,
-            "Cannot merge coverage of two different files! This is a bug!"
-        )
+        require(other.fileName == fileName && other.path == path) { "Cannot merge coverage of two different files! This is a bug!" }
         coveredLines.addAll(other.coveredLines)
     }
 

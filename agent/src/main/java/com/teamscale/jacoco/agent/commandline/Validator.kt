@@ -5,10 +5,8 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.commandline
 
-import org.conqat.lib.commons.assertion.CCSMAssert
-import org.conqat.lib.commons.string.StringUtils
-
-import java.util.ArrayList
+import com.teamscale.jacoco.agent.CR
+import java.util.*
 
 /**
  * Helper class to allow for multiple validations to occur.
@@ -24,7 +22,7 @@ class Validator {
 
     /** Returns an error message with all validation problems that were found.  */
     val errorMessage: String
-        get() = "- " + StringUtils.concat(messages, StringUtils.CR + "- ")
+        get() = "- " + messages.joinToString("$CR- ")
 
     /** Runs the given validation routine.  */
     fun ensure(validation: () -> Unit) {
@@ -32,7 +30,7 @@ class Validator {
             validation.invoke()
         } catch (e: Exception) {
             messages.add(e.message)
-        } catch (e: AssertionError) {
+        } catch (e: IllegalArgumentException) {
             messages.add(e.message)
         }
     }
@@ -42,7 +40,7 @@ class Validator {
      * message.
      */
     fun isTrue(condition: Boolean, message: String) {
-        ensure { CCSMAssert.isTrue(condition, message) }
+        ensure { require(condition) { message } }
     }
 
     /**
@@ -50,7 +48,7 @@ class Validator {
      * message.
      */
     fun isFalse(condition: Boolean, message: String) {
-        ensure { CCSMAssert.isFalse(condition, message) }
+        ensure { require(!condition) { message } }
     }
 
 }
