@@ -3,12 +3,9 @@ package com.teamscale.client
 import okhttp3.HttpUrl
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.ResponseBody
 import retrofit2.Response
-
 import java.io.File
 import java.io.IOException
-import java.util.stream.Collectors
 
 /** Helper class to interact with Teamscale.  */
 class TeamscaleClient
@@ -59,10 +56,10 @@ class TeamscaleClient
         partition: String,
         message: String
     ) {
-        val partList = reports.stream().map<Part> { file ->
+        val partList = reports.map { file ->
             val requestBody = RequestBody.create(MultipartBody.FORM, file)
             MultipartBody.Part.createFormData("report", file.name, requestBody)
-        }.collect<List<MultipartBody.Part>, Any>(Collectors.toList<Part>())
+        }
 
         val response = service
             .uploadExternalReports(

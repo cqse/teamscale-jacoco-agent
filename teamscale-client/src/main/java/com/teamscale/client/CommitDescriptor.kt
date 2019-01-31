@@ -4,7 +4,7 @@ import java.io.Serializable
 import java.util.Objects
 
 /** Holds the branch and timestamp of a commit.  */
-class CommitDescriptor
+data class CommitDescriptor
 /** Constructor.  */
     (
     /** Branch name of the commit.  */
@@ -22,17 +22,6 @@ class CommitDescriptor
     /** Returns a string representation of the commit in a Teamscale REST API compatible format.  */
     override fun toString(): String {
         return "$branchName:$timestamp"
-    }
-
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val that = o as CommitDescriptor?
-        return branchName == that!!.branchName && timestamp == that.timestamp
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(branchName, timestamp)
     }
 
     companion object {

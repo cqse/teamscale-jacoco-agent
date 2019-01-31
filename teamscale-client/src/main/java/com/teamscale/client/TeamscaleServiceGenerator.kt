@@ -3,11 +3,9 @@ package com.teamscale.client
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
-import java.util.Base64
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 /** Helper class for generating a teamscale compatible service.  */
@@ -46,7 +44,7 @@ object TeamscaleServiceGenerator {
         val credentials = "$username:$password"
         val basic = "Basic " + Base64.getEncoder().encodeToString(credentials.toByteArray())
 
-        return { chain ->
+        return Interceptor { chain ->
             val original = chain.request()
             val request = original.newBuilder()
                 .header("Authorization", basic).build()
