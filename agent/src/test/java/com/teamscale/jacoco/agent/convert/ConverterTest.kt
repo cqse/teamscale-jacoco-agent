@@ -1,37 +1,38 @@
-package com.teamscale.jacoco.agent.convert;
+package com.teamscale.jacoco.agent.convert
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.test.CCSMTestCaseBase;
-import org.junit.Test;
+import org.conqat.lib.commons.filesystem.FileSystemUtils
+import org.conqat.lib.commons.test.CCSMTestCaseBase
+import org.junit.Test
 
-import java.io.File;
-import java.util.Collections;
+import java.io.File
+import java.util.Collections
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.api.Assertions.assertThat
 
-/** Basic smoke test for the converter. */
-public class ConverterTest extends CCSMTestCaseBase {
+/** Basic smoke test for the converter.  */
+class ConverterTest : CCSMTestCaseBase() {
 
-	/**
-	 * Ensures that running the converter on valid input does not yield any errors
-	 * and produces a coverage XML report.
-	 */
-	@Test
-	public void testSmokeTest() throws Exception {
-		File execFile = useTestFile("coverage.exec");
-		File classFile = useTestFile("TestClass.class");
-		File outputFile = createTmpFile("coverage.xml", "");
+    /**
+     * Ensures that running the converter on valid input does not yield any errors
+     * and produces a coverage XML report.
+     */
+    @Test
+    @Throws(Exception::class)
+    fun testSmokeTest() {
+        val execFile = useTestFile("coverage.exec")
+        val classFile = useTestFile("TestClass.class")
+        val outputFile = createTmpFile("coverage.xml", "")
 
-		ConvertCommand arguments = new ConvertCommand();
-		arguments.setInputFiles(Collections.singletonList(execFile.getAbsolutePath()));
-		arguments.setOutputFile(outputFile.getAbsolutePath());
-		arguments.setClassDirectoriesOrZips(Collections.singletonList(classFile.getAbsolutePath()));
+        val arguments = ConvertCommand()
+        arguments.inputFiles = listOf(execFile.absolutePath)
+        arguments.outputFile = outputFile.absolutePath
+        arguments.setClassDirectoriesOrZips(listOf(classFile.absolutePath))
 
-		new Converter(arguments).runJaCoCoReportGeneration();
+        Converter(arguments).runJaCoCoReportGeneration()
 
-		String xml = FileSystemUtils.readFileUTF8(outputFile);
-		System.err.println(xml);
-		assertThat(xml).isNotEmpty().contains("<class").contains("<counter").contains("TestClass");
-	}
+        val xml = FileSystemUtils.readFileUTF8(outputFile)
+        System.err.println(xml)
+        assertThat(xml).isNotEmpty().contains("<class").contains("<counter").contains("TestClass")
+    }
 
 }
