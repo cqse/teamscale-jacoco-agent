@@ -1,5 +1,10 @@
 package com.teamscale.jacoco.javaws
 
+import org.apache.commons.exec.CommandLine
+import org.apache.commons.exec.DefaultExecutor
+import org.apache.commons.exec.PumpStreamHandler
+import org.conqat.lib.commons.filesystem.FileSystemUtils
+import org.conqat.lib.commons.string.StringUtils
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -7,13 +12,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.util.Properties
-
-import org.apache.commons.exec.CommandLine
-import org.apache.commons.exec.DefaultExecutor
-import org.apache.commons.exec.PumpStreamHandler
-import org.conqat.lib.commons.filesystem.FileSystemUtils
-import org.conqat.lib.commons.string.StringUtils
+import java.util.*
 
 /**
  * Installs/uninstalls the wrapper under Windows.
@@ -225,9 +224,9 @@ constructor(workingDirectory: Path) {
         }
     }
 
-    private inner class BackupPaths(private val backupDirectory: Path) {
-        private val securityPolicy: Path
-        private val ftypeMapping: Path
+    private inner class BackupPaths(internal val backupDirectory: Path) {
+        internal val securityPolicy: Path
+        internal val ftypeMapping: Path
 
         init {
             this.securityPolicy = backupDirectory.resolve(SECURITY_POLICY_FILE)
@@ -238,10 +237,10 @@ constructor(workingDirectory: Path) {
 
     private inner class WrapperPaths(wrapperDirectory: Path) {
 
-        private val securityPolicy: Path
-        private val wrapperExecutable: Path
-        private val configProperties: Path
-        private val defaultOutputDirectory: Path
+        internal val securityPolicy: Path
+        internal val wrapperExecutable: Path
+        internal val configProperties: Path
+        internal val defaultOutputDirectory: Path
 
         init {
             securityPolicy = wrapperDirectory.resolve("agent.policy")
