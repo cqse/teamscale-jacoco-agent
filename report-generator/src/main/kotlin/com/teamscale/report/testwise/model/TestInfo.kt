@@ -11,7 +11,7 @@ class TestInfo(
      * class will have the sourcePath pointing to the Base class which contains the actual implementation whereas
      * uniformPath will contain the the class name of the most specific subclass, from where it was actually executed.
      */
-    val sourcePath: String,
+    val sourcePath: String?,
     /**
      * Some kind of content to tell whether the test specification has changed. Can be revision number or
      * hash over the specification or similar.

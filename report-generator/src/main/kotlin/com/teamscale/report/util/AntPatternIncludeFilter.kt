@@ -5,7 +5,6 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.report.util
 
-import java.util.function.Predicate
 import java.util.regex.Pattern
 
 /**
@@ -23,9 +22,9 @@ class AntPatternIncludeFilter
 
     init {
         this.locationIncludeFilters =
-                locationIncludeFilters.map { filter -> AntPatternUtils.convertPattern(filter, false) }
+            locationIncludeFilters.map { filter -> AntPatternUtils.convertPattern(filter, false) }
         this.locationExcludeFilters =
-                locationExcludeFilters.map { filter -> AntPatternUtils.convertPattern(filter, false) }
+            locationExcludeFilters.map { filter -> AntPatternUtils.convertPattern(filter, false) }
     }
 
     /** {@inheritDoc}  */

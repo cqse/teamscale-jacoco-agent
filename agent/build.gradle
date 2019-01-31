@@ -15,31 +15,31 @@ version appVersion
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 ext {
-    outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
+	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
 
 dependencies {
-    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-    implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
+	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
 	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
 	implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
-    implementation 'com.beust:jcommander:1.71'
+	implementation 'com.beust:jcommander:1.71'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.sparkjava:spark-core:2.7.2'
+	implementation 'com.sparkjava:spark-core:2.7.2'
 
 	implementation 'com.google.code.gson:gson:2.8.5'
 
-    implementation project(':teamscale-client')
-    implementation project(':report-generator')
+	implementation project(':teamscale-client')
+	implementation project(':report-generator')
 
 	testImplementation 'org.conqat:org.conqat.lib.commons:0.20160822'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.assertj:assertj-core:3.8.0'
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
 test {
@@ -82,13 +82,13 @@ task relocateShadowJar(type: ConfigureShadowRelocation) {
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 startShadowScripts {
-    applicationName = 'convert'
+	applicationName = 'convert'
 }
 
 distributions {
 	shadow {
-		baseName = 'teamscale-jacoco-agent'
 		contents {
+			into '/teamscale-jacoco-agent'
 			from(readmeToPdf) {
 				into 'documentation'
 				rename 'README.pdf', 'userguide.pdf'
@@ -103,12 +103,20 @@ distributions {
 	}
 }
 
+shadowDistZip {
+	archiveName = "teamscale-jacoco-agent.zip"
+}
+
+shadowDistTar {
+	archiveName = "teamscale-jacoco-agent.tar"
+}
+
 processResources {
-    filesMatching('**/app.properties') {
-        filter {
-            it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
-        }
-    }
+	filesMatching('**/app.properties') {
+		filter {
+			it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
+		}
+	}
 }
 
 install {

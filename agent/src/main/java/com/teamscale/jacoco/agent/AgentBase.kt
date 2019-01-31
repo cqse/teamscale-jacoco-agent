@@ -2,8 +2,6 @@ package com.teamscale.jacoco.agent
 
 import com.teamscale.jacoco.util.LoggingUtils
 import org.jacoco.agent.rt.RT
-import org.slf4j.Logger
-
 import java.lang.instrument.Instrumentation
 
 /**
@@ -57,6 +55,7 @@ constructor(options: AgentOptions) {
 
         /** Called by the actual premain method once the agent is isolated from the rest of the application.  */
         @Throws(Exception::class)
+        @JvmStatic
         fun premain(options: String, instrumentation: Instrumentation) {
             val agentOptions: AgentOptions
             val delayedLogger = DelayedLogger()
@@ -64,7 +63,7 @@ constructor(options: AgentOptions) {
                 agentOptions = AgentOptionsParser.parse(options, delayedLogger)
             } catch (e: AgentOptionParseException) {
                 LoggingUtils.initializeDefaultLogging().use {
-                    val logger = LoggingUtils.getLogger(PreMain::class.java)
+                    val logger = LoggingUtils.getLogger(AgentBase::class.java)
                     delayedLogger.logTo(logger)
                     logger.error("Failed to parse agent options: " + e.message, e)
                     System.err.println("Failed to parse agent options: " + e.message)

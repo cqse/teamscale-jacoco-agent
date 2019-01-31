@@ -6,13 +6,13 @@
 package com.teamscale.report.jacoco
 
 import com.teamscale.report.util.ILogger
+import com.teamscale.report.util.Predicate
 import org.jacoco.core.analysis.Analyzer
 import org.jacoco.core.analysis.ICoverageVisitor
 import org.jacoco.core.data.ExecutionDataStore
 
 import java.io.IOException
 import java.io.InputStream
-import java.util.function.Predicate
 
 /**
  * [Analyzer] that filters the analyzed class files based on a

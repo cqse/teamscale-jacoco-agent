@@ -3,6 +3,7 @@ package com.teamscale.config
 import com.teamscale.ArgumentAppender
 import com.teamscale.TeamscalePlugin
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.report.util.Predicate
 import okhttp3.HttpUrl
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
@@ -10,7 +11,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.File
 import java.io.Serializable
-import java.util.function.Predicate
 
 
 /**

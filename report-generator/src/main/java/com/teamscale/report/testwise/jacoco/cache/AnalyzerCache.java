@@ -3,6 +3,7 @@ package com.teamscale.report.testwise.jacoco.cache;
 import com.teamscale.report.jacoco.FilteringAnalyzer;
 import com.teamscale.report.testwise.jacoco.analysis.CachingClassAnalyzer;
 import com.teamscale.report.util.ILogger;
+import com.teamscale.report.util.Predicate;
 import org.jacoco.core.internal.analysis.ClassCoverageImpl;
 import org.jacoco.core.internal.analysis.StringPool;
 import org.jacoco.core.internal.data.CRC64;
@@ -11,7 +12,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 
 import java.io.IOException;
-import java.util.function.Predicate;
 
 /**
  * An {@link AnalyzerCache} instance processes a set of Java class/jar/war/... files and

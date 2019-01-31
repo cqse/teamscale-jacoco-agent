@@ -28,7 +28,7 @@ class Main {
      * exception if the arguments are not valid. Then runs the specified command.
      */
     @Throws(Exception::class)
-    private fun parseCommandLineAndRun(args: Array<String>) {
+    internal fun parseCommandLineAndRun(args: Array<String>) {
         val builder = createJCommanderBuilder()
         val jCommander = builder.build()
 
@@ -63,19 +63,16 @@ class Main {
 
         /** Shows the help message.  */
         @Parameter(names = ["--help"], help = true, description = "Shows all available command line arguments.")
-        val help: Boolean = false
+        var help: Boolean = false
 
     }
 
     companion object {
 
         /** Version of this program.  */
-        private val VERSION: String
+        private val bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app")!!
 
-        init {
-            val bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app")
-            VERSION = bundle.getString("version")
-        }
+        private val VERSION = bundle.getString("version")
 
         /** Entry point.  */
         @Throws(Exception::class)
@@ -91,5 +88,4 @@ class Main {
             System.exit(1)
         }
     }
-
 }

@@ -1,8 +1,8 @@
+@file:JvmName(name = "PreMain")
+
 package com.teamscale.jacoco.agent
 
 import java.lang.instrument.Instrumentation
-import java.lang.reflect.Method
-import java.net.URL
 import java.net.URLClassLoader
 
 /** Container class for the premain entry point for the agent.  */
@@ -20,6 +20,7 @@ object PreMain {
      * resetting the context classloader.
      */
     @Throws(Exception::class)
+    @JvmStatic
     fun premain(options: String?, instrumentation: Instrumentation) {
         val contextClassLoader = Thread.currentThread().contextClassLoader
 

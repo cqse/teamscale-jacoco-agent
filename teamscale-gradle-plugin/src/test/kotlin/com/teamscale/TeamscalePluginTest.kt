@@ -53,7 +53,8 @@ class TeamscalePluginTest {
             "-x",
             "unitTestReportUpload",
             "--info",
-            "--stacktrace"
+            "--stacktrace",
+            "--refresh-dependencies"
         )
         assertThat(build.output).contains("BUILD SUCCESSFUL", "4 tests successful", "6 tests skipped")
         val testwiseCoverageReportFile =

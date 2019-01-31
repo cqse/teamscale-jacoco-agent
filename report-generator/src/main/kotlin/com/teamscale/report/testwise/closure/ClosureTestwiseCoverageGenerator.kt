@@ -5,11 +5,11 @@ import com.teamscale.report.testwise.closure.model.ClosureCoverage
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
+import com.teamscale.report.util.Predicate
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileReader
 import java.util.*
-import java.util.function.Predicate
 
 /**
  * Creates [TestwiseCoverage] from Google closure coverage files. The given [ClosureCoverage] files must be

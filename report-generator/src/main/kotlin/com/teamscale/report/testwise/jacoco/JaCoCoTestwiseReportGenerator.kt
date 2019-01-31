@@ -4,18 +4,12 @@ import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.util.ILogger
-import org.jacoco.core.data.ExecutionData
-import org.jacoco.core.data.ExecutionDataReader
-import org.jacoco.core.data.ExecutionDataStore
-import org.jacoco.core.data.IExecutionDataVisitor
-import org.jacoco.core.data.ISessionInfoVisitor
-import org.jacoco.core.data.SessionInfo
-
+import com.teamscale.report.util.Predicate
+import org.jacoco.core.data.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import java.util.ArrayList
-import java.util.function.Predicate
+import java.util.*
 
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.

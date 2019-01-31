@@ -17,13 +17,13 @@ import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.FileSystemUtils
+import com.teamscale.report.util.Predicate
 import okhttp3.HttpUrl
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.function.Predicate
 
 /**
  * Parses agent command line options.
@@ -84,7 +84,7 @@ class AgentOptions {
     /**
      * @see .dumpIntervalInMinutes
      */
-    var dumpIntervalInMinutes = 60
+    var dumpIntervalInMinutes = 60L
         internal set
 
     /**

@@ -2,6 +2,7 @@ package com.teamscale.report.jacoco
 
 import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.util.ILogger
+import com.teamscale.report.util.Predicate
 import org.jacoco.core.analysis.CoverageBuilder
 import org.jacoco.core.analysis.IBundleCoverage
 import org.jacoco.core.data.ExecutionDataStore
@@ -11,7 +12,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
-import java.util.function.Predicate
 
 /** Creates an XML report from binary execution data.  */
 class JaCoCoXmlReportGenerator

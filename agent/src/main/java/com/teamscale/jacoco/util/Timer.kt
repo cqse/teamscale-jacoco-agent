@@ -5,7 +5,6 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.util
 
-import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
@@ -24,7 +23,7 @@ class Timer
     /** The job to execute periodically.  */
     private val runnable: Runnable,
     /** Duration between two job executions.  */
-    private val duration: Duration
+    private val durationInMinutes: Long
 ) {
 
     /** Runs the job on a background daemon thread.  */
@@ -44,7 +43,7 @@ class Timer
             return
         }
 
-        job = executor.scheduleAtFixedRate(runnable, duration.toMinutes(), duration.toMinutes(), TimeUnit.MINUTES)
+        job = executor.scheduleAtFixedRate(runnable, durationInMinutes, durationInMinutes, TimeUnit.MINUTES)
     }
 
     /** Stops the regular job, possibly aborting it.  */

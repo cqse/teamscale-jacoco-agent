@@ -105,7 +105,7 @@ class AgentOptionsParser(
             }
             "interval" -> {
                 try {
-                    options.dumpIntervalInMinutes = Integer.parseInt(value)
+                    options.dumpIntervalInMinutes = java.lang.Long.parseLong(value)
                 } catch (e: NumberFormatException) {
                     throw AgentOptionParseException("Non-numeric value given for option 'interval'")
                 }

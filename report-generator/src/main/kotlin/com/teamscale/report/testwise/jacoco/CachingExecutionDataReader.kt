@@ -7,10 +7,10 @@ import com.teamscale.report.testwise.jacoco.cache.ProbesCache
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
 import com.teamscale.report.util.ILogger
+import com.teamscale.report.util.Predicate
 import org.jacoco.core.data.ExecutionDataStore
 import java.io.File
 import java.io.IOException
-import java.util.function.Predicate
 
 /**
  * Helper class for analyzing class files, reading execution data and converting them to coverage data.

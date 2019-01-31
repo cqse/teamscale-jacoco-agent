@@ -2,7 +2,6 @@ package com.teamscale.report.util
 
 import org.jacoco.core.runtime.WildcardMatcher
 import org.jacoco.report.JavaNames
-import java.util.function.Predicate
 
 /***
  * Tests given class file paths against call name patterns.

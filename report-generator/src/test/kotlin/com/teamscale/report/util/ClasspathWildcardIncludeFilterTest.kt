@@ -1,8 +1,7 @@
 package com.teamscale.report.util
 
-import org.junit.Test
-
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 
 class ClasspathWildcardIncludeFilterTest {
 
@@ -28,13 +27,13 @@ class ClasspathWildcardIncludeFilterTest {
             ClasspathWildcardIncludeFilter(
                 null,
                 "org.junit.*"
-            )
-        ).rejects("/junit-jupiter-engine-5.1.0.jar@org/junit/jupiter/engine/Constants.class")
+            ).test("/junit-jupiter-engine-5.1.0.jar@org/junit/jupiter/engine/Constants.class")
+        ).isFalse()
         assertThat(
             ClasspathWildcardIncludeFilter(
                 null,
                 "org.junit.*"
-            )
-        ).rejects("org/junit/platform/commons/util/ModuleUtils\$ModuleReferenceScanner.class")
+            ).test("org/junit/platform/commons/util/ModuleUtils\$ModuleReferenceScanner.class")
+        ).isFalse()
     }
 }

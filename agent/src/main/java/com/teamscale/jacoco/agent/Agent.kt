@@ -49,7 +49,7 @@ internal constructor(options: AgentOptions) : AgentBase(options) {
         if (options.shouldDumpInIntervals()) {
             timer = Timer(
                 Runnable { this.dumpReport() },
-                Duration.ofMinutes(options.dumpIntervalInMinutes.toLong())
+                options.dumpIntervalInMinutes
             )
             timer!!.start()
             logger.info("Dumping every {} minutes.", options.dumpIntervalInMinutes)
