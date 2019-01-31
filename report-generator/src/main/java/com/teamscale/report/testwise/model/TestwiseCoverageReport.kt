@@ -6,6 +6,6 @@ import java.util.ArrayList
 class TestwiseCoverageReport {
 
     /** The tests contained in the report.  */
-    val tests: List<TestInfo> = ArrayList()
+    val tests: MutableList<TestInfo> = ArrayList()
 
 }

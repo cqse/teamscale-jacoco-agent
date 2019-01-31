@@ -29,5 +29,5 @@ class TestInfo(
 ) {
 
     /** All paths that the test did cover.  */
-    val paths: List<PathCoverage> = ArrayList()
+    val paths: MutableList<PathCoverage> = ArrayList()
 }

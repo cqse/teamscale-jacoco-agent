@@ -38,7 +38,7 @@ class FileCoverageBuilder
 
     /** Adds a line range as covered.  */
     fun addLineRange(start: Int, end: Int) {
-        coveredLines.addAll(IntStream.rangeClosed(start, end).boxed().collect<List<Int>, Any>(Collectors.toList()))
+        coveredLines.addAll(start..end)
     }
 
     /** Adds set of lines as covered.  */
@@ -62,8 +62,7 @@ class FileCoverageBuilder
      */
     fun computeCompactifiedRangesAsString(): String {
         val coveredRanges = compactifyToRanges(coveredLines)
-        return coveredRanges.stream().map<String>(Function<LineRange, String> { it.toReportString() })
-            .collect<String, *>(Collectors.joining(","))
+        return coveredRanges.joinToString(",") { it.toReportString() }
     }
 
     /** Builds the [FileCoverage] object, which is serialized into the report.  */
@@ -83,7 +82,7 @@ class FileCoverageBuilder
             }
 
             val linesList = ArrayList(lines)
-            linesList.sort(Comparator { obj, anotherInteger -> obj.compareTo(anotherInteger) })
+            linesList.sortWith(Comparator { obj, anotherInteger -> obj.compareTo(anotherInteger) })
 
             val firstLine = linesList[0]
             var currentRange = LineRange(firstLine!!, firstLine)

@@ -16,17 +16,9 @@ class TestwiseCoverageReportBuilder {
 
     private fun build(): TestwiseCoverageReport {
         val report = TestwiseCoverageReport()
-        val testInfoBuilders = CollectionUtils
-            .sort(
-                tests.values,
-                Comparator.comparing<TestInfoBuilder, String>(Function<TestInfoBuilder, String> { it.getUniformPath() })
-            )
+        val testInfoBuilders = tests.values.sortedBy { it.uniformPath }
         for (testInfoBuilder in testInfoBuilders) {
             val testInfo = testInfoBuilder.build()
-            if (testInfo == null) {
-                System.err.println("No coverage for test '" + testInfoBuilder.uniformPath + "'")
-                continue
-            }
             report.tests.add(testInfo)
         }
         return report

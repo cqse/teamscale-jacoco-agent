@@ -22,16 +22,13 @@ class TestCoverageBuilder
 
     /** Returns a collection of [PathCoverageBuilder]s associated with the test.  */
     val paths: List<PathCoverage>
-        get() = pathCoverageList.values.stream().sorted(Comparator.comparing<PathCoverageBuilder, String>(Function<PathCoverageBuilder, String> { it.getPath() }))
-            .map<PathCoverage>(Function<PathCoverageBuilder, PathCoverage> { it.build() }).collect<List<PathCoverage>, Any>(
-                toList()
-            )
+        get() = pathCoverageList.values.sortedBy { it.path }
+            .map { it.build() }
 
     /** Returns all [FileCoverageBuilder]s stored for the test.  */
     val files: List<FileCoverageBuilder>
-        get() = pathCoverageList.values.stream()
-            .flatMap { path -> path.files.stream() }
-            .collect<List<FileCoverageBuilder>, Any>(toList())
+        get() = pathCoverageList.values
+            .flatMap { path -> path.files }
 
     /** Returns true if there is no coverage for the test yet.  */
     val isEmpty: Boolean
@@ -45,7 +42,7 @@ class TestCoverageBuilder
             return
         }
         val pathCoverage = (pathCoverageList as java.util.Map<String, PathCoverageBuilder>)
-            .computeIfAbsent(fileCoverage.path, Function<String, PathCoverageBuilder> { PathCoverageBuilder(it) })
+            .computeIfAbsent(fileCoverage.path,  { PathCoverageBuilder(it) })
         pathCoverage.add(fileCoverage)
     }
 

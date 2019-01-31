@@ -74,7 +74,7 @@ class ProbesCache
         }
         return if (!executionData.hasHits()) {
             null
-        } else classCoverageLookups[classId].getFileCoverage(executionData, logger)
+        } else classCoverageLookups[classId]?.getFileCoverage(executionData, logger)
 
     }
 }

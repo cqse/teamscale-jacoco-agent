@@ -1,11 +1,7 @@
 package com.teamscale.report.testwise.model.builder
 
-import com.teamscale.report.testwise.model.FileCoverage
 import com.teamscale.report.testwise.model.PathCoverage
-import java.util.Comparator
-import java.util.HashMap
-
-import java.util.stream.Collectors.toList
+import java.util.*
 
 /** Container for [FileCoverageBuilder]s of the same path.  */
 class PathCoverageBuilder
@@ -31,7 +27,7 @@ class PathCoverageBuilder
     fun add(fileCoverage: FileCoverageBuilder) {
         if (fileCoverageList.containsKey(fileCoverage.fileName)) {
             val existingFile = fileCoverageList[fileCoverage.fileName]
-            existingFile.merge(fileCoverage)
+            existingFile!!.merge(fileCoverage)
         } else {
             fileCoverageList[fileCoverage.fileName] = fileCoverage
         }
@@ -39,10 +35,9 @@ class PathCoverageBuilder
 
     /** Builds a [PathCoverage] object.  */
     fun build(): PathCoverage {
-        val files = fileCoverageList.values.stream()
-            .sorted(Comparator.comparing<FileCoverageBuilder, String>(Function<FileCoverageBuilder, String> { it.getFileName() }))
-            .map<FileCoverage>(Function<FileCoverageBuilder, FileCoverage> { it.build() })
-            .collect<List<FileCoverage>, Any>(toList())
+        val files = fileCoverageList.values
+            .sortedBy { it.fileName }
+            .map { it.build() }
         return PathCoverage(path, files)
     }
 }

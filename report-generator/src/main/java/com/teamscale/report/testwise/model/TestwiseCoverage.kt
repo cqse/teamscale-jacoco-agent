@@ -19,7 +19,7 @@ class TestwiseCoverage {
         }
         if (tests.containsKey(coverage.uniformPath)) {
             val testCoverage = tests[coverage.uniformPath]
-            testCoverage.addAll(coverage.files)
+            testCoverage!!.addAll(coverage.files)
         } else {
             tests[coverage.uniformPath] = coverage
         }

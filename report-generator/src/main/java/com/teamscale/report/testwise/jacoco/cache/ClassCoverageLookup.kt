@@ -34,7 +34,7 @@ internal constructor(
     /**
      * Mapping from probe IDs to sets of covered lines. The index in this list corresponds to the probe ID.
      */
-    private val probes = ArrayList<Set<Int>>()
+    private val probes = ArrayList<Set<Int>?>()
 
     /** Sets the file name of the currently analyzed class (without path).  */
     fun setSourceFileName(sourceFileName: String) {
@@ -88,7 +88,7 @@ internal constructor(
         }
 
         val packageName = StringUtils.removeLastPart(className, '/')
-        val fileCoverage = FileCoverageBuilder(packageName, sourceFileName)
+        val fileCoverage = FileCoverageBuilder(packageName, sourceFileName!!)
         fillFileCoverage(fileCoverage, executedProbes, logger)
 
         return fileCoverage

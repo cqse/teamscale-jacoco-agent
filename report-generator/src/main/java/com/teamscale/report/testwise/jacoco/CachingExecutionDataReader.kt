@@ -1,19 +1,16 @@
 package com.teamscale.report.testwise.jacoco
 
+import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.testwise.jacoco.cache.AnalyzerCache
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException
 import com.teamscale.report.testwise.jacoco.cache.ProbesCache
-import com.teamscale.report.jacoco.dump.Dump
-import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
 import com.teamscale.report.testwise.model.TestwiseCoverage
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
 import com.teamscale.report.util.ILogger
-import org.jacoco.core.data.ExecutionData
 import org.jacoco.core.data.ExecutionDataStore
-
 import java.io.File
 import java.io.IOException
 import java.util.function.Predicate
-import java.util.stream.Collectors
 
 /**
  * Helper class for analyzing class files, reading execution data and converting them to coverage data.
@@ -57,8 +54,7 @@ internal class CachingExecutionDataReader
             }
         }
         if (probesCache!!.isEmpty) {
-            val directoryList = classesDirectories.stream().map<String>(Function<File, String> { it.getPath() })
-                .collect<String, *>(Collectors.joining(","))
+            val directoryList = classesDirectories.joinToString(",") { it.path }
             throw CoverageGenerationException("No class files found in the given directories! $directoryList")
         }
     }
