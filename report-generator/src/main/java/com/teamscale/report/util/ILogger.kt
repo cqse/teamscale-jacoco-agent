@@ -1,27 +1,28 @@
-package com.teamscale.report.util;
+package com.teamscale.report.util
 
 /**
  * Minimal logging interface.
- * <p>
+ *
+ *
  * We use this to work around some strange problems when using log4j from the Teamscale Gradle plugin.
  */
-public interface ILogger {
+interface ILogger {
 
-	/** Logs at debug level. */
-	void debug(String message);
+    /** Logs at debug level.  */
+    fun debug(message: String)
 
-	/** Logs at info level. */
-	void info(String message);
+    /** Logs at info level.  */
+    fun info(message: String)
 
-	/** Logs at warning level. */
-	void warn(String message);
+    /** Logs at warning level.  */
+    fun warn(message: String)
 
-	/** Logs at warning level. */
-	void warn(String message, Throwable throwable);
+    /** Logs at warning level.  */
+    fun warn(message: String, throwable: Throwable)
 
-	/** Logs at error level. */
-	void error(Throwable throwable);
+    /** Logs at error level.  */
+    fun error(throwable: Throwable)
 
-	/** Logs at error level. */
-	void error(String message, Throwable throwable);
+    /** Logs at error level.  */
+    fun error(message: String, throwable: Throwable)
 }

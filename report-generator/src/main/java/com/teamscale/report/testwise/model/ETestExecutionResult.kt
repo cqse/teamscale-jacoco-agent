@@ -15,23 +15,23 @@
 | limitations under the License.                                           |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.report.testwise.model;
+package com.teamscale.report.testwise.model
 
-/** The result of a test execution. */
-public enum ETestExecutionResult {
+/** The result of a test execution.  */
+enum class ETestExecutionResult {
 
-	/** Test execution was successful. */
-	PASSED,
+    /** Test execution was successful.  */
+    PASSED,
 
-	/** The test is currently marked as "do not execute" (e.g. JUnit @Ignore). */
-	IGNORED,
+    /** The test is currently marked as "do not execute" (e.g. JUnit @Ignore).  */
+    IGNORED,
 
-	/** Caused by a failing assumption. */
-	SKIPPED,
+    /** Caused by a failing assumption.  */
+    SKIPPED,
 
-	/** Caused by a failing assertion. */
-	FAILURE,
+    /** Caused by a failing assertion.  */
+    FAILURE,
 
-	/** Caused by an error during test execution (e.g. exception thrown). */
-	ERROR
+    /** Caused by an error during test execution (e.g. exception thrown).  */
+    ERROR
 }

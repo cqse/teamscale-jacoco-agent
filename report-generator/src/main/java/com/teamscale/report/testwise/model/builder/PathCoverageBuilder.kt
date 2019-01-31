@@ -1,58 +1,48 @@
-package com.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder
 
-import com.teamscale.report.testwise.model.FileCoverage;
-import com.teamscale.report.testwise.model.PathCoverage;
+import com.teamscale.report.testwise.model.FileCoverage
+import com.teamscale.report.testwise.model.PathCoverage
+import java.util.Comparator
+import java.util.HashMap
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors.toList
 
-import static java.util.stream.Collectors.toList;
+/** Container for [FileCoverageBuilder]s of the same path.  */
+class PathCoverageBuilder
+/** Constructor.  */
+    (
+    /** File system path.  */
+    /** @see .path
+     */
+    val path: String
+) {
 
-/** Container for {@link FileCoverageBuilder}s of the same path. */
-public class PathCoverageBuilder {
+    /** Mapping from file names to [FileCoverageBuilder].  */
+    private val fileCoverageList = HashMap<String, FileCoverageBuilder>()
 
-	/** File system path. */
-	private final String path;
+    /** Returns a collection of [FileCoverageBuilder]s associated with this path.  */
+    val files: Collection<FileCoverageBuilder>
+        get() = fileCoverageList.values
 
-	/** Mapping from file names to {@link FileCoverageBuilder}. */
-	private final Map<String, FileCoverageBuilder> fileCoverageList = new HashMap<>();
+    /**
+     * Adds the given [FileCoverageBuilder] to the container.
+     * If coverage for the same file already exists it gets merged.
+     */
+    fun add(fileCoverage: FileCoverageBuilder) {
+        if (fileCoverageList.containsKey(fileCoverage.fileName)) {
+            val existingFile = fileCoverageList[fileCoverage.fileName]
+            existingFile.merge(fileCoverage)
+        } else {
+            fileCoverageList[fileCoverage.fileName] = fileCoverage
+        }
+    }
 
-	/** Constructor. */
-	public PathCoverageBuilder(String path) {
-		this.path = path;
-	}
-
-	/** @see #path */
-	public String getPath() {
-		return path;
-	}
-
-	/**
-	 * Adds the given {@link FileCoverageBuilder} to the container.
-	 * If coverage for the same file already exists it gets merged.
-	 */
-	public void add(FileCoverageBuilder fileCoverage) {
-		if (fileCoverageList.containsKey(fileCoverage.getFileName())) {
-			FileCoverageBuilder existingFile = fileCoverageList.get(fileCoverage.getFileName());
-			existingFile.merge(fileCoverage);
-		} else {
-			fileCoverageList.put(fileCoverage.getFileName(), fileCoverage);
-		}
-	}
-
-	/** Returns a collection of {@link FileCoverageBuilder}s associated with this path. */
-	public Collection<FileCoverageBuilder> getFiles() {
-		return fileCoverageList.values();
-	}
-
-	/** Builds a {@link PathCoverage} object. */
-	public PathCoverage build() {
-		List<FileCoverage> files = fileCoverageList.values().stream()
-				.sorted(Comparator.comparing(FileCoverageBuilder::getFileName))
-				.map(FileCoverageBuilder::build).collect(toList());
-		return new PathCoverage(path, files);
-	}
+    /** Builds a [PathCoverage] object.  */
+    fun build(): PathCoverage {
+        val files = fileCoverageList.values.stream()
+            .sorted(Comparator.comparing<FileCoverageBuilder, String>(Function<FileCoverageBuilder, String> { it.getFileName() }))
+            .map<FileCoverage>(Function<FileCoverageBuilder, FileCoverage> { it.build() })
+            .collect<List<FileCoverage>, Any>(toList())
+        return PathCoverage(path, files)
+    }
 }

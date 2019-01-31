@@ -38,6 +38,6 @@ public class ClosureTestwiseCoverageGeneratorTest extends CCSMTestCaseBase {
 		TestwiseCoverage testwiseCoverage = new ClosureTestwiseCoverageGenerator(
 				Collections.singletonList(coverageFolder), includeFilter)
 				.readTestCoverage();
-		return getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
+		return INSTANCE.getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
 	}
 }

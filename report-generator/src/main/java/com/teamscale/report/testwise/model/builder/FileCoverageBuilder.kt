@@ -1,114 +1,106 @@
-package com.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder
 
-import com.teamscale.report.testwise.model.FileCoverage;
-import com.teamscale.report.testwise.model.LineRange;
-import org.conqat.lib.commons.assertion.CCSMAssert;
+import com.teamscale.report.testwise.model.FileCoverage
+import com.teamscale.report.testwise.model.LineRange
+import org.conqat.lib.commons.assertion.CCSMAssert
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.ArrayList
+import java.util.Comparator
+import java.util.HashSet
+import java.util.stream.Collectors
+import java.util.stream.IntStream
 
-/** Holds coverage of a single file. */
-public class FileCoverageBuilder {
+/** Holds coverage of a single file.  */
+class FileCoverageBuilder
+/** Constructor.  */
+    (
+    /** The file system path of the file not including the file itself.  */
+    /** @see .path
+     */
+    val path: String,
+    /** The name of the file.  */
+    /** @see .fileName
+     */
+    val fileName: String
+) {
 
-	/** The file system path of the file not including the file itself. */
-	private final String path;
+    /** A set of line numbers that have been covered.  */
+    private val coveredLines = HashSet<Int>()
 
-	/** The name of the file. */
-	private final String fileName;
+    /** Returns true if there is no coverage for the file yet.  */
+    val isEmpty: Boolean
+        get() = coveredLines.isEmpty()
 
-	/** A set of line numbers that have been covered. */
-	private final Set<Integer> coveredLines = new HashSet<>();
+    /** Adds a line as covered.  */
+    fun addLine(line: Int) {
+        coveredLines.add(line)
+    }
 
-	/** Constructor. */
-	public FileCoverageBuilder(String path, String file) {
-		this.path = path;
-		this.fileName = file;
-	}
+    /** Adds a line range as covered.  */
+    fun addLineRange(start: Int, end: Int) {
+        coveredLines.addAll(IntStream.rangeClosed(start, end).boxed().collect<List<Int>, Any>(Collectors.toList()))
+    }
 
-	/** @see #fileName */
-	public String getFileName() {
-		return fileName;
-	}
+    /** Adds set of lines as covered.  */
+    fun addLines(range: Set<Int>) {
+        coveredLines.addAll(range)
+    }
 
-	/** @see #path */
-	public String getPath() {
-		return path;
-	}
+    /** Merges the list of ranges into the current list.  */
+    fun merge(other: FileCoverageBuilder) {
+        CCSMAssert.isTrue(
+            other.fileName == fileName && other.path == path,
+            "Cannot merge coverage of two different files! This is a bug!"
+        )
+        coveredLines.addAll(other.coveredLines)
+    }
 
-	/** Adds a line as covered. */
-	public void addLine(int line) {
-		coveredLines.add(line);
-	}
+    /**
+     * Returns a compact string representation of the covered lines.
+     * Continuous line ranges are merged to ranges and sorted.
+     * Individual ranges are separated by commas. E.g. 1-5,7,9-11.
+     */
+    fun computeCompactifiedRangesAsString(): String {
+        val coveredRanges = compactifyToRanges(coveredLines)
+        return coveredRanges.stream().map<String>(Function<LineRange, String> { it.toReportString() })
+            .collect<String, *>(Collectors.joining(","))
+    }
 
-	/** Adds a line range as covered. */
-	public void addLineRange(int start, int end) {
-		coveredLines.addAll(IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList()));
-	}
+    /** Builds the [FileCoverage] object, which is serialized into the report.  */
+    fun build(): FileCoverage {
+        return FileCoverage(fileName, computeCompactifiedRangesAsString())
+    }
 
-	/** Adds set of lines as covered. */
-	public void addLines(Set<Integer> range) {
-		coveredLines.addAll(range);
-	}
+    companion object {
 
-	/** Merges the list of ranges into the current list. */
-	public void merge(FileCoverageBuilder other) {
-		CCSMAssert.isTrue(other.fileName.equals(fileName) && other.path.equals(path),
-				"Cannot merge coverage of two different files! This is a bug!");
-		coveredLines.addAll(other.coveredLines);
-	}
+        /**
+         * Merges all overlapping and neighboring [LineRange]s.
+         * E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes [[1-10],[12-14]]
+         */
+        fun compactifyToRanges(lines: Set<Int>): List<LineRange> {
+            if (lines.isEmpty()) {
+                return ArrayList()
+            }
 
-	/**
-	 * Merges all overlapping and neighboring {@link LineRange}s.
-	 * E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes [[1-10],[12-14]]
-	 */
-	public static List<LineRange> compactifyToRanges(Set<Integer> lines) {
-		if(lines.isEmpty()) {
-			return new ArrayList<>();
-		}
+            val linesList = ArrayList(lines)
+            linesList.sort(Comparator { obj, anotherInteger -> obj.compareTo(anotherInteger) })
 
-		List<Integer> linesList = new ArrayList<>(lines);
-		linesList.sort(Integer::compareTo);
+            val firstLine = linesList[0]
+            var currentRange = LineRange(firstLine!!, firstLine)
 
-		Integer firstLine = linesList.get(0);
-		LineRange currentRange = new LineRange(firstLine, firstLine);
+            val compactifiedRanges = ArrayList<LineRange>()
+            compactifiedRanges.add(currentRange)
 
-		List<LineRange> compactifiedRanges = new ArrayList<>();
-		compactifiedRanges.add(currentRange);
+            for (currentLine in linesList) {
+                if (currentRange.end == currentLine || currentRange.end == currentLine!! - 1) {
+                    currentRange.end = currentLine
+                } else {
+                    currentRange = LineRange(currentLine, currentLine)
+                    compactifiedRanges.add(currentRange)
+                }
+            }
 
-		for (Integer currentLine : linesList) {
-			if(currentRange.getEnd() == currentLine || currentRange.getEnd() == currentLine - 1) {
-				currentRange.setEnd(currentLine);
-			} else {
-				currentRange = new LineRange(currentLine, currentLine);
-				compactifiedRanges.add(currentRange);
-			}
-		}
-
-		return compactifiedRanges;
-	}
-
-	/**
-	 * Returns a compact string representation of the covered lines.
-	 * Continuous line ranges are merged to ranges and sorted.
-	 * Individual ranges are separated by commas. E.g. 1-5,7,9-11.
-	 */
-	public String computeCompactifiedRangesAsString() {
-		List<LineRange> coveredRanges = compactifyToRanges(coveredLines);
-		return coveredRanges.stream().map(LineRange::toReportString).collect(Collectors.joining(","));
-	}
-
-	/** Returns true if there is no coverage for the file yet. */
-	public boolean isEmpty() {
-		return coveredLines.isEmpty();
-	}
-
-	/** Builds the {@link FileCoverage} object, which is serialized into the report. */
-	public FileCoverage build() {
-		return new FileCoverage(fileName, computeCompactifiedRangesAsString());
-	}
+            return compactifiedRanges
+        }
+    }
 }

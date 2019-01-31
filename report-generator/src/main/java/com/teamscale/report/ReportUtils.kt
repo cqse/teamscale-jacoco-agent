@@ -1,67 +1,70 @@
-package com.teamscale.report;
+package com.teamscale.report
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.teamscale.report.testwise.ETestArtifactFormat;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.teamscale.report.testwise.ETestArtifactFormat
+import org.conqat.lib.commons.filesystem.FileSystemUtils
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.io.IOException
+import java.util.ArrayList
+import java.util.Arrays
 
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors.toList
 
-/** Utilities for generating reports. */
-public class ReportUtils {
+/** Utilities for generating reports.  */
+object ReportUtils {
 
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private val GSON = GsonBuilder().setPrettyPrinting().create()
 
-	/** Converts to given testwise coverage report to a json report and writes it to the given file. */
-	public static <T> void writeReportToFile(File reportFile, T report) throws IOException {
-		File directory = reportFile.getParentFile();
-		if (!directory.isDirectory() && !directory.mkdirs()) {
-			throw new IOException("Failed to create directory " + directory.getAbsolutePath());
-		}
-		try (FileWriter writer = new FileWriter(reportFile)) {
-			GSON.toJson(report, writer);
-		}
-	}
+    /** Converts to given testwise coverage report to a json report and writes it to the given file.  */
+    @Throws(IOException::class)
+    fun <T> writeReportToFile(reportFile: File, report: T) {
+        val directory = reportFile.parentFile
+        if (!directory.isDirectory && !directory.mkdirs()) {
+            throw IOException("Failed to create directory " + directory.absolutePath)
+        }
+        FileWriter(reportFile).use { writer -> GSON.toJson(report, writer) }
+    }
 
-	/** Converts to given report to a json string. */
-	public static <T> String getReportAsString(T report) {
-		return GSON.toJson(report);
-	}
+    /** Converts to given report to a json string.  */
+    fun <T> getReportAsString(report: T): String {
+        return GSON.toJson(report)
+    }
 
-	/** Recursively lists all files in the given directory that match the specified extension. */
-	public static <T> List<T> readObjects(ETestArtifactFormat format, Class<T[]> clazz, File... directoriesOrFiles) throws IOException {
-		return readObjects(format, clazz, Arrays.asList(directoriesOrFiles));
-	}
+    /** Recursively lists all files in the given directory that match the specified extension.  */
+    @Throws(IOException::class)
+    fun <T> readObjects(format: ETestArtifactFormat, clazz: Class<Array<T>>, vararg directoriesOrFiles: File): List<T> {
+        return readObjects(format, clazz, Arrays.asList(*directoriesOrFiles))
+    }
 
-	/** Recursively lists all files in the given directory that match the specified extension. */
-	public static <T> List<T> readObjects(ETestArtifactFormat format, Class<T[]> clazz, List<File> directoriesOrFiles) throws IOException {
-		List<File> files = listFiles(format, directoriesOrFiles);
-		ArrayList<T> result = new ArrayList<>();
-		for (File file : files) {
-			try (FileReader reader = new FileReader(file)) {
-				result.addAll(Arrays.asList(GSON.fromJson(reader, clazz)));
-			}
-		}
-		return result;
-	}
+    /** Recursively lists all files in the given directory that match the specified extension.  */
+    @Throws(IOException::class)
+    fun <T> readObjects(format: ETestArtifactFormat, clazz: Class<Array<T>>, directoriesOrFiles: List<File>): List<T> {
+        val files = listFiles(format, directoriesOrFiles)
+        val result = ArrayList<T>()
+        for (file in files) {
+            FileReader(file).use { reader -> result.addAll(Arrays.asList(*GSON.fromJson(reader, clazz))) }
+        }
+        return result
+    }
 
-	/** Recursively lists all files of the given artifact type. */
-	public static List<File> listFiles(ETestArtifactFormat format, File... directoriesOrFiles) {
-		return listFiles(format, Arrays.asList(directoriesOrFiles));
-	}
+    /** Recursively lists all files of the given artifact type.  */
+    fun listFiles(format: ETestArtifactFormat, vararg directoriesOrFiles: File): List<File> {
+        return listFiles(format, Arrays.asList(*directoriesOrFiles))
+    }
 
-	/** Recursively lists all files of the given artifact type. */
-	public static List<File> listFiles(ETestArtifactFormat format, List<File> directoriesOrFiles) {
-		return directoriesOrFiles.stream().flatMap(directory -> FileSystemUtils.listFilesRecursively(directory,
-				pathname -> pathname.isFile() && pathname.getName().startsWith(format.filePrefix) && FileSystemUtils
-						.getFileExtension(pathname).equalsIgnoreCase(format.extension)).stream()).collect(toList());
-	}
+    /** Recursively lists all files of the given artifact type.  */
+    fun listFiles(format: ETestArtifactFormat, directoriesOrFiles: List<File>): List<File> {
+        return directoriesOrFiles.stream().flatMap { directory ->
+            FileSystemUtils.listFilesRecursively(
+                directory
+            ) { pathname ->
+                pathname.isFile && pathname.name.startsWith(format.filePrefix) && FileSystemUtils
+                    .getFileExtension(pathname).equals(format.extension, ignoreCase = true)
+            }.stream()
+        }.collect<List<File>, Any>(toList())
+    }
 }

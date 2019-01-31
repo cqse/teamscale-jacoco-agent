@@ -1,12 +1,11 @@
-package com.teamscale.report.testwise.model;
+package com.teamscale.report.testwise.model
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayList
 
-/** Container for coverage produced by multiple tests. */
-public class TestwiseCoverageReport {
+/** Container for coverage produced by multiple tests.  */
+class TestwiseCoverageReport {
 
-	/** The tests contained in the report. */
-	public final List<TestInfo> tests = new ArrayList<>();
+    /** The tests contained in the report.  */
+    val tests: List<TestInfo> = ArrayList()
 
 }

@@ -1,39 +1,33 @@
-package com.teamscale.jacoco.agent.convert;
+package com.teamscale.jacoco.agent.convert
 
-import com.teamscale.report.util.ILogger;
+import com.teamscale.report.util.ILogger
 
-/** Logger that prints all output to the console. */
-class CommandLineLogger implements ILogger {
+/** Logger that prints all output to the console.  */
+internal class CommandLineLogger : ILogger {
 
-	@Override
-	public void debug(String message) {
-		System.out.println(message);
-	}
+    override fun debug(message: String) {
+        println(message)
+    }
 
-	@Override
-	public void info(String message) {
-		System.out.println(message);
-	}
+    override fun info(message: String) {
+        println(message)
+    }
 
-	@Override
-	public void warn(String message) {
-		System.err.println(message);
-	}
+    override fun warn(message: String) {
+        System.err.println(message)
+    }
 
-	@Override
-	public void warn(String message, Throwable throwable) {
-		System.err.println(message);
-		throwable.printStackTrace();
-	}
+    override fun warn(message: String, throwable: Throwable) {
+        System.err.println(message)
+        throwable.printStackTrace()
+    }
 
-	@Override
-	public void error(Throwable throwable) {
-		throwable.printStackTrace();
-	}
+    override fun error(throwable: Throwable) {
+        throwable.printStackTrace()
+    }
 
-	@Override
-	public void error(String message, Throwable throwable) {
-		System.err.println(message);
-		throwable.printStackTrace();
-	}
+    override fun error(message: String, throwable: Throwable) {
+        System.err.println(message)
+        throwable.printStackTrace()
+    }
 }

@@ -40,7 +40,7 @@ public class Converter {
 
 	/** Converts one .exec binary coverage file to XML. */
 	public void runJaCoCoReportGeneration() throws IOException {
-		List<File> jacocoExecutionDataList = ReportUtils
+		List<File> jacocoExecutionDataList = ReportUtils.INSTANCE
 				.listFiles(ETestArtifactFormat.JACOCO, arguments.getInputFiles());
 
 		ExecFileLoader loader = new ExecFileLoader();
@@ -65,12 +65,12 @@ public class Converter {
 
 	/** Converts one .exec binary coverage file, test details and test execution files to JSON testwise coverage. */
 	public void runTestwiseCoverageReportGeneration() throws IOException, CoverageGenerationException {
-		List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST,
+		List<TestDetails> testDetails = ReportUtils.INSTANCE.readObjects(ETestArtifactFormat.TEST_LIST,
 				TestDetails[].class, arguments.getInputFiles());
-		List<TestExecution> testExecutions = ReportUtils.readObjects(ETestArtifactFormat.TEST_EXECUTION,
+		List<TestExecution> testExecutions = ReportUtils.INSTANCE.readObjects(ETestArtifactFormat.TEST_EXECUTION,
 				TestExecution[].class, arguments.getInputFiles());
 
-		List<File> jacocoExecutionDataList = ReportUtils
+		List<File> jacocoExecutionDataList = ReportUtils.INSTANCE
 				.listFiles(ETestArtifactFormat.JACOCO, arguments.getInputFiles());
 		ILogger logger = new CommandLineLogger();
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(arguments.locationIncludeFilters,
@@ -88,9 +88,9 @@ public class Converter {
 					"Merging report with " + testDetails.size() + " Details/" + coverage.getTests()
 							.size() + " Coverage/" + testExecutions.size() + " Results");
 
-			TestwiseCoverageReport report = TestwiseCoverageReportBuilder
+			TestwiseCoverageReport report = TestwiseCoverageReportBuilder.Companion
 					.createFrom(testDetails, coverage.getTests(), testExecutions);
-			ReportUtils.writeReportToFile(arguments.getOutputFile(), report);
+			ReportUtils.INSTANCE.writeReportToFile(arguments.getOutputFile(), report);
 		}
 	}
 }

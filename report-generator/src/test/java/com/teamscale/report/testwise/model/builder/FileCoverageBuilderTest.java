@@ -16,7 +16,7 @@ public class FileCoverageBuilderTest {
 	@Test
 	public void compactifyRanges() {
 		Set<Integer> input = CollectionUtils.asHashSet(1, 3, 4, 6, 7, 10);
-		List<LineRange> result = FileCoverageBuilder.compactifyToRanges(input);
+		List<LineRange> result = FileCoverageBuilder.Companion.compactifyToRanges(input);
 		assertEquals("[1, 3-4, 6-7, 10]", result.toString());
 	}
 

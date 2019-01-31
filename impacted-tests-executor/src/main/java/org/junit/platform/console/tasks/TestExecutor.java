@@ -91,7 +91,7 @@ public class TestExecutor {
 
 	/** Writes the given test executions to a report file. */
 	private void writeTestExecutionReport(File reportDir, List<TestExecution> testExecutions) throws IOException {
-		ReportUtils.writeReportToFile(new File(reportDir, "test-execution.json"), testExecutions);
+		ReportUtils.INSTANCE.writeReportToFile(new File(reportDir, "test-execution.json"), testExecutions);
 	}
 
 	/** Creates a discovery request from the given list of unique test IDs. */

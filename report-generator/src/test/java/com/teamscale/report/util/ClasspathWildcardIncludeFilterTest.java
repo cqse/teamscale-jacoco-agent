@@ -10,11 +10,11 @@ public class ClasspathWildcardIncludeFilterTest {
 	/** Tests path to class name conversion. */
 	@Test
 	public void testPathToClassNameConversion() {
-		assertThat(getClassName("file.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
-		assertThat(getClassName("file.jar@com/foo/Bar$Goo.class")).isEqualTo("com.foo.Bar.Goo");
-		assertThat(getClassName("file1.jar@goo/file2.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
-		assertThat(getClassName("com/foo/Bar.class")).isEqualTo("com.foo.Bar");
-		assertThat(getClassName(
+		assertThat(Companion.getClassName("file.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
+		assertThat(Companion.getClassName("file.jar@com/foo/Bar$Goo.class")).isEqualTo("com.foo.Bar.Goo");
+		assertThat(Companion.getClassName("file1.jar@goo/file2.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
+		assertThat(Companion.getClassName("com/foo/Bar.class")).isEqualTo("com.foo.Bar");
+		assertThat(Companion.getClassName(
 				"C:\\client-daily\\client\\plugins\\com.customer.something.client_1.2.3.4.1234566778.jar@com/customer/something/SomeClass.class"))
 				.isEqualTo("com.customer.something.SomeClass");
 	}

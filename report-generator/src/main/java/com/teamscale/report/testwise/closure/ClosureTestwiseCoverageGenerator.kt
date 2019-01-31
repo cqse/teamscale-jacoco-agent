@@ -1,105 +1,100 @@
-package com.teamscale.report.testwise.closure;
+package com.teamscale.report.testwise.closure
 
-import com.google.gson.Gson;
-import com.teamscale.report.testwise.closure.model.ClosureCoverage;
-import com.teamscale.report.testwise.model.TestwiseCoverage;
-import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
-import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
-import org.conqat.lib.commons.collections.Pair;
-import org.conqat.lib.commons.collections.PairList;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
+import com.google.gson.Gson
+import com.teamscale.report.testwise.closure.model.ClosureCoverage
+import com.teamscale.report.testwise.model.TestwiseCoverage
+import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
+import org.conqat.lib.commons.collections.Pair
+import org.conqat.lib.commons.collections.PairList
+import org.conqat.lib.commons.filesystem.FileSystemUtils
+import org.conqat.lib.commons.string.StringUtils
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileReader
+import java.util.Optional
+import java.util.function.Predicate
 
 /**
- * Creates {@link TestwiseCoverage} from Google closure coverage files. The given {@link ClosureCoverage} files must be
- * augmented with the {@link ClosureCoverage#uniformPath} field, which is not part of the Google closure coverage
+ * Creates [TestwiseCoverage] from Google closure coverage files. The given [ClosureCoverage] files must be
+ * augmented with the [ClosureCoverage.uniformPath] field, which is not part of the Google closure coverage
  * specification.
  */
-public class ClosureTestwiseCoverageGenerator {
+class ClosureTestwiseCoverageGenerator
+/**
+ * Create a new generator with a collection of report files.
+ *
+ * @param closureCoverageDirectories Root directory that contains the Google closure coverage reports.
+ * @param locationIncludeFilter      Filter for js files
+ */
+    (
+    /** Directories and zip files that contain closure coverage files.  */
+    private val closureCoverageDirectories: Collection<File>,
+    /** Include filter to apply to all js files contained in the original Closure coverage report.  */
+    private val locationIncludeFilter: Predicate<String>
+) {
 
-	/** Directories and zip files that contain closure coverage files. */
-	private Collection<File> closureCoverageDirectories;
+    /**
+     * Converts all JSON files in [.closureCoverageDirectories] to [TestCoverageBuilder]
+     * and takes care of merging coverage distributed over multiple files.
+     */
+    fun readTestCoverage(): TestwiseCoverage {
+        val testwiseCoverage = TestwiseCoverage()
+        for (closureCoverageDirectory in closureCoverageDirectories) {
+            if (closureCoverageDirectory.isFile) {
+                testwiseCoverage.add(readTestCoverage(closureCoverageDirectory))
+                continue
+            }
+            val coverageFiles = FileSystemUtils.listFilesRecursively(
+                closureCoverageDirectory
+            ) { file -> "json" == FileSystemUtils.getFileExtension(file) }
+            for (coverageReportFile in coverageFiles) {
+                testwiseCoverage.add(readTestCoverage(coverageReportFile))
+            }
+        }
+        return testwiseCoverage
+    }
 
-	/** Include filter to apply to all js files contained in the original Closure coverage report. */
-	private Predicate<String> locationIncludeFilter;
+    /**
+     * Reads the given JSON file and converts its content to [TestCoverageBuilder].
+     * If this fails for some reason the method returns null.
+     */
+    private fun readTestCoverage(file: File): TestCoverageBuilder? {
+        try {
+            val fileReader = FileReader(file)
+            val coverage = Gson().fromJson(fileReader, ClosureCoverage::class.java)
+            return convertToTestCoverage(coverage)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
 
-	/**
-	 * Create a new generator with a collection of report files.
-	 *
-	 * @param closureCoverageDirectories Root directory that contains the Google closure coverage reports.
-	 * @param locationIncludeFilter      Filter for js files
-	 */
-	public ClosureTestwiseCoverageGenerator(Collection<File> closureCoverageDirectories, Predicate<String> locationIncludeFilter) {
-		this.closureCoverageDirectories = closureCoverageDirectories;
-		this.locationIncludeFilter = locationIncludeFilter;
-	}
+        return null
+    }
 
-	/**
-	 * Converts all JSON files in {@link #closureCoverageDirectories} to {@link TestCoverageBuilder}
-	 * and takes care of merging coverage distributed over multiple files.
-	 */
-	public TestwiseCoverage readTestCoverage() {
-		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
-		for (File closureCoverageDirectory : closureCoverageDirectories) {
-			if (closureCoverageDirectory.isFile()) {
-				testwiseCoverage.add(readTestCoverage(closureCoverageDirectory));
-				continue;
-			}
-			List<File> coverageFiles = FileSystemUtils.listFilesRecursively(closureCoverageDirectory,
-					file -> "json".equals(FileSystemUtils.getFileExtension(file)));
-			for (File coverageReportFile : coverageFiles) {
-				testwiseCoverage.add(readTestCoverage(coverageReportFile));
-			}
-		}
-		return testwiseCoverage;
-	}
+    /** Converts the given [ClosureCoverage] to [TestCoverageBuilder].  */
+    private fun convertToTestCoverage(coverage: ClosureCoverage): TestCoverageBuilder? {
+        if (StringUtils.isEmpty(coverage.uniformPath)) {
+            return null
+        }
+        val testCoverage = TestCoverageBuilder(coverage.uniformPath)
+        val executedLines = PairList.zip(coverage.fileNames, coverage.executedLines)
+        for (fileNameAndExecutedLines in executedLines) {
+            if (!locationIncludeFilter.test(fileNameAndExecutedLines.first)) {
+                continue
+            }
 
-	/**
-	 * Reads the given JSON file and converts its content to {@link TestCoverageBuilder}.
-	 * If this fails for some reason the method returns null.
-	 */
-	private TestCoverageBuilder readTestCoverage(File file) {
-		try {
-			FileReader fileReader = new FileReader(file);
-			ClosureCoverage coverage = new Gson().fromJson(fileReader, ClosureCoverage.class);
-			return convertToTestCoverage(coverage);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/** Converts the given {@link ClosureCoverage} to {@link TestCoverageBuilder}. */
-	private TestCoverageBuilder convertToTestCoverage(ClosureCoverage coverage) {
-		if (StringUtils.isEmpty(coverage.uniformPath)) {
-			return null;
-		}
-		TestCoverageBuilder testCoverage = new TestCoverageBuilder(coverage.uniformPath);
-		PairList<String, List<Boolean>> executedLines = PairList.zip(coverage.fileNames, coverage.executedLines);
-		for (Pair<String, List<Boolean>> fileNameAndExecutedLines : executedLines) {
-			if (!locationIncludeFilter.test(fileNameAndExecutedLines.getFirst())) {
-				continue;
-			}
-
-			File coveredFile = new File(fileNameAndExecutedLines.getFirst());
-			List<Boolean> coveredLines = fileNameAndExecutedLines.getSecond();
-			String path = Optional.ofNullable(coveredFile.getParent()).orElse("");
-			FileCoverageBuilder fileCoverage = new FileCoverageBuilder(path, coveredFile.getName());
-			for (int i = 0; i < coveredLines.size(); i++) {
-				if (coveredLines.get(i) != null && coveredLines.get(i)) {
-					fileCoverage.addLine(i + 1);
-				}
-			}
-			testCoverage.add(fileCoverage);
-		}
-		return testCoverage;
-	}
+            val coveredFile = File(fileNameAndExecutedLines.first)
+            val coveredLines = fileNameAndExecutedLines.second
+            val path = Optional.ofNullable(coveredFile.parent).orElse("")
+            val fileCoverage = FileCoverageBuilder(path, coveredFile.name)
+            for (i in coveredLines.indices) {
+                if (coveredLines[i] != null && coveredLines[i]) {
+                    fileCoverage.addLine(i + 1)
+                }
+            }
+            testCoverage.add(fileCoverage)
+        }
+        return testCoverage
+    }
 }

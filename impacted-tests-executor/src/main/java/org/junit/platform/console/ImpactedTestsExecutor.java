@@ -129,7 +129,7 @@ public class ImpactedTestsExecutor {
 
 	/** Writes the given test details to a report file. */
 	private void writeTestDetailsReport(File reportDir, List<TestDetails> testDetails) throws IOException {
-		ReportUtils.writeReportToFile(new File(reportDir, "test-list.json"), testDetails);
+		ReportUtils.INSTANCE.writeReportToFile(new File(reportDir, "test-list.json"), testDetails);
 	}
 
 	/** Queries Teamscale for impacted tests. */

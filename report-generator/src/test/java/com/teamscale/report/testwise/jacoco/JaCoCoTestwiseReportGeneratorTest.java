@@ -49,7 +49,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 				Collections.singletonList(classFileFolder),
 				includeFilter, true,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
-		return ReportUtils.getReportAsString(generateDummyReportFrom(testwiseCoverage));
+		return ReportUtils.INSTANCE.getReportAsString(generateDummyReportFrom(testwiseCoverage));
 	}
 
 	/** Generates a dummy coverage report object that wraps the given {@link TestwiseCoverage}. */
@@ -63,6 +63,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 			testExecutions.add(new TestExecution(test.getUniformPath(), test.getUniformPath().length(),
 					ETestExecutionResult.PASSED));
 		}
-		return TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.getTests(), testExecutions);
+		return TestwiseCoverageReportBuilder.Companion
+				.createFrom(testDetails, testwiseCoverage.getTests(), testExecutions);
 	}
 }

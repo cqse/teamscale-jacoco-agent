@@ -1,67 +1,59 @@
-package com.teamscale.report.testwise.model.builder;
+package com.teamscale.report.testwise.model.builder
 
-import com.teamscale.report.testwise.model.PathCoverage;
+import com.teamscale.report.testwise.model.PathCoverage
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Comparator
+import java.util.HashMap
 
-import static java.util.stream.Collectors.toList;
+import java.util.stream.Collectors.toList
 
-/** Generic holder of test coverage of a single test based on line-ranges. */
-public class TestCoverageBuilder {
+/** Generic holder of test coverage of a single test based on line-ranges.  */
+class TestCoverageBuilder
+/** Constructor.  */
+    (
+    /** The uniformPath of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information).  */
+    /** @see .uniformPath
+     */
+    val uniformPath: String
+) {
 
-	/** The uniformPath of the test (see TEST_IMPACT_ANALYSIS_DOC.md for more information). */
-	private final String uniformPath;
+    /** Mapping from path names to all files on this path.  */
+    private val pathCoverageList = HashMap<String, PathCoverageBuilder>()
 
-	/** Mapping from path names to all files on this path. */
-	private final Map<String, PathCoverageBuilder> pathCoverageList = new HashMap<>();
+    /** Returns a collection of [PathCoverageBuilder]s associated with the test.  */
+    val paths: List<PathCoverage>
+        get() = pathCoverageList.values.stream().sorted(Comparator.comparing<PathCoverageBuilder, String>(Function<PathCoverageBuilder, String> { it.getPath() }))
+            .map<PathCoverage>(Function<PathCoverageBuilder, PathCoverage> { it.build() }).collect<List<PathCoverage>, Any>(
+                toList()
+            )
 
-	/** Constructor. */
-	public TestCoverageBuilder(String uniformPath) {
-		this.uniformPath = uniformPath;
-	}
+    /** Returns all [FileCoverageBuilder]s stored for the test.  */
+    val files: List<FileCoverageBuilder>
+        get() = pathCoverageList.values.stream()
+            .flatMap { path -> path.files.stream() }
+            .collect<List<FileCoverageBuilder>, Any>(toList())
 
-	/** @see #uniformPath */
-	public String getUniformPath() {
-		return uniformPath;
-	}
+    /** Returns true if there is no coverage for the test yet.  */
+    val isEmpty: Boolean
+        get() = pathCoverageList.isEmpty()
 
-	/** Returns a collection of {@link PathCoverageBuilder}s associated with the test. */
-	public List<PathCoverage> getPaths() {
-		return pathCoverageList.values().stream().sorted(Comparator.comparing(PathCoverageBuilder::getPath))
-				.map(PathCoverageBuilder::build).collect(toList());
-	}
+    /** Adds the [FileCoverageBuilder] to into the map, but filters out file coverage that is null or empty.  */
+    fun add(fileCoverage: FileCoverageBuilder?) {
+        if (fileCoverage == null || fileCoverage.isEmpty
+            || fileCoverage.fileName == null || fileCoverage.path == null
+        ) {
+            return
+        }
+        val pathCoverage = (pathCoverageList as java.util.Map<String, PathCoverageBuilder>)
+            .computeIfAbsent(fileCoverage.path, Function<String, PathCoverageBuilder> { PathCoverageBuilder(it) })
+        pathCoverage.add(fileCoverage)
+    }
 
-	/** Adds the {@link FileCoverageBuilder} to into the map, but filters out file coverage that is null or empty. */
-	public void add(FileCoverageBuilder fileCoverage) {
-		if (fileCoverage == null || fileCoverage.isEmpty()
-				|| fileCoverage.getFileName() == null || fileCoverage.getPath() == null) {
-			return;
-		}
-		PathCoverageBuilder pathCoverage = pathCoverageList
-				.computeIfAbsent(fileCoverage.getPath(), PathCoverageBuilder::new);
-		pathCoverage.add(fileCoverage);
-	}
-
-	/** Adds the {@link FileCoverageBuilder}s into the map, but filters out empty ones. */
-	public void addAll(List<FileCoverageBuilder> fileCoverageList) {
-		for (FileCoverageBuilder fileCoverage : fileCoverageList) {
-			add(fileCoverage);
-		}
-	}
-
-	/** Returns all {@link FileCoverageBuilder}s stored for the test. */
-	public List<FileCoverageBuilder> getFiles() {
-		return pathCoverageList.values().stream()
-				.flatMap(path -> path.getFiles().stream())
-				.collect(toList());
-	}
-
-	/** Returns true if there is no coverage for the test yet. */
-	public boolean isEmpty() {
-		return pathCoverageList.isEmpty();
-	}
+    /** Adds the [FileCoverageBuilder]s into the map, but filters out empty ones.  */
+    fun addAll(fileCoverageList: List<FileCoverageBuilder>) {
+        for (fileCoverage in fileCoverageList) {
+            add(fileCoverage)
+        }
+    }
 
 }

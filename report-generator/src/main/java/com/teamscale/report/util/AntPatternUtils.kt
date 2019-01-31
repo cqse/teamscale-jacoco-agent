@@ -1,15 +1,16 @@
-package com.teamscale.report.util;
+package com.teamscale.report.util
 
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 /**
  * Wrapper around ConQAT ANT pattern utils to make it accessible from the other modules.
  */
-public class AntPatternUtils {
+object AntPatternUtils {
 
-	/** Converts an ANT pattern to a regex pattern. */
-	public static Pattern convertPattern(String antPattern, boolean caseSensitive) throws PatternSyntaxException {
-		return org.conqat.lib.commons.filesystem.AntPatternUtils.convertPattern(antPattern, caseSensitive);
-	}
+    /** Converts an ANT pattern to a regex pattern.  */
+    @Throws(PatternSyntaxException::class)
+    fun convertPattern(antPattern: String, caseSensitive: Boolean): Pattern {
+        return org.conqat.lib.commons.filesystem.AntPatternUtils.convertPattern(antPattern, caseSensitive)
+    }
 }
