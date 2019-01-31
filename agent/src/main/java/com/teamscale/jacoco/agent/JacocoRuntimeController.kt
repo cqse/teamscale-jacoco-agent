@@ -10,6 +10,7 @@ import org.jacoco.agent.rt.IAgent
 import org.jacoco.agent.rt.RT
 import org.jacoco.core.data.ExecutionDataReader
 import org.jacoco.core.data.ExecutionDataStore
+import org.jacoco.core.data.IExecutionDataVisitor
 import org.jacoco.core.data.ISessionInfoVisitor
 import org.jacoco.core.data.SessionInfo
 
@@ -44,11 +45,11 @@ class JacocoRuntimeController
     /** Indicates a failed dump.  */
     class DumpException
     /** Constructor.  */
-        (message: String, cause: Throwable) : Exception(message, cause) {
+        (message: String?, cause: Throwable) : Exception(message, cause) {
         companion object {
 
             /** Serialization ID.  */
-            private val serialVersionUID = 1L
+            private const val serialVersionUID = 1L
         }
 
     }
@@ -68,7 +69,7 @@ class JacocoRuntimeController
                 val reader = ExecutionDataReader(inputStream)
 
                 val store = ExecutionDataStore()
-                reader.setExecutionDataVisitor(IExecutionDataVisitor { store.put(it) })
+                reader.setExecutionDataVisitor { store.put(it) }
 
                 val sessionInfoVisitor = SessionInfoVisitor()
                 reader.setSessionInfoVisitor(sessionInfoVisitor)

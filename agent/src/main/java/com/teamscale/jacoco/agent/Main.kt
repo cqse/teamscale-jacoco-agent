@@ -65,7 +65,7 @@ class Main {
 
         /** Shows the help message.  */
         @Parameter(names = arrayOf("--help"), help = true, description = "Shows all available command line arguments.")
-        private val help: Boolean = false
+        val help: Boolean = false
 
     }
 
@@ -87,7 +87,7 @@ class Main {
         }
 
         /** Shows an informative error and help message. Then exits the program.  */
-        private fun handleInvalidCommandLine(jCommander: JCommander, message: String) {
+        private fun handleInvalidCommandLine(jCommander: JCommander, message: String?) {
             System.err.println("Invalid command line: " + message + StringUtils.CR)
             jCommander.usage()
             System.exit(1)

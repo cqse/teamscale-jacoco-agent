@@ -38,14 +38,14 @@ constructor(
         logger.info("Listening for test events on port {}.", options.httpServerPort)
         port(options.httpServerPort!!)
 
-        get("/test") { request, response -> controller.sessionId }
+        get("/test") { _, _ -> controller.sessionId }
 
-        post("/test/start/$TEST_ID_PARAMETER") { request, response ->
+        post("/test/start/$TEST_ID_PARAMETER") { request, _ ->
             handleTestStart(request)
             "success"
         }
 
-        post("/test/end/$TEST_ID_PARAMETER") { request, response ->
+        post("/test/end/$TEST_ID_PARAMETER") { request, _ ->
             handleTestEnd(request)
             "success"
         }

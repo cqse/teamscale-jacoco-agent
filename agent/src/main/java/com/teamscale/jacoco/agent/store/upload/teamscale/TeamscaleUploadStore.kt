@@ -41,7 +41,7 @@ class TeamscaleUploadStore
     }
 
     override fun store(xml: String) {
-        Benchmark("Uploading report to Teamscale").use { benchmark ->
+        Benchmark("Uploading report to Teamscale").use {
             if (!tryUploading(xml)) {
                 logger.warn("Storing failed upload in {}", failureStore.outputDirectory)
                 failureStore.store(xml)

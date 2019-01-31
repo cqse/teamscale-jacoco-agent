@@ -2,8 +2,7 @@ package com.teamscale.jacoco.agent
 
 import com.teamscale.report.util.ILogger
 import org.slf4j.Logger
-
-import java.util.ArrayList
+import java.util.*
 
 /**
  * A logger that buffers logs in memory and writes them to the actual logger at a later point.
@@ -12,43 +11,35 @@ import java.util.ArrayList
 class DelayedLogger : ILogger {
 
     /** List of log actions that will be executed once the logger is initialized.  */
-    private val logActions = ArrayList<ILoggerAction>()
+    private val logActions = ArrayList<(Logger) -> Unit>()
 
     override fun debug(message: String) {
-        logActions.add({ logger -> logger.debug(message) })
+        logActions.add { logger -> logger.debug(message) }
     }
 
     override fun info(message: String) {
-        logActions.add({ logger -> logger.info(message) })
+        logActions.add { logger -> logger.info(message) }
     }
 
     override fun warn(message: String) {
-        logActions.add({ logger -> logger.warn(message) })
+        logActions.add { logger -> logger.warn(message) }
     }
 
     override fun warn(message: String, throwable: Throwable) {
-        logActions.add({ logger -> logger.warn(message, throwable) })
+        logActions.add { logger -> logger.warn(message, throwable) }
     }
 
     override fun error(throwable: Throwable) {
-        logActions.add({ logger -> logger.error(throwable.message, throwable) })
+        logActions.add { logger -> logger.error(throwable.message, throwable) }
     }
 
     override fun error(message: String, throwable: Throwable) {
-        logActions.add({ logger -> logger.error(message, throwable) })
+        logActions.add { logger -> logger.error(message, throwable) }
     }
 
     /** Writes the logs to the given slf4j logger.  */
     fun logTo(logger: Logger) {
-        logActions.forEach { action -> action.log(logger) }
-    }
-
-    /** An action to be executed on a logger.  */
-    private interface ILoggerAction {
-
-        /** Executes the action on the given logger.  */
-        fun log(logger: Logger)
-
+        logActions.forEach { action -> action.invoke(logger) }
     }
 }
 

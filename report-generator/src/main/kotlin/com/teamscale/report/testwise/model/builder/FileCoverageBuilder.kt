@@ -17,11 +17,11 @@ class FileCoverageBuilder
     /** The file system path of the file not including the file itself.  */
     /** @see .path
      */
-    val path: String,
+    val path: String?,
     /** The name of the file.  */
     /** @see .fileName
      */
-    val fileName: String
+    val fileName: String?
 ) {
 
     /** A set of line numbers that have been covered.  */

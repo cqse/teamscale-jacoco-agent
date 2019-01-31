@@ -29,7 +29,7 @@ class TimestampedFileStore
 
     /** {@inheritDoc}  */
     override fun store(xml: String) {
-        Benchmark("Writing the JaCoCo report to a file").use { benchmark ->
+        Benchmark("Writing the JaCoCo report to a file").use {
             val currentTime = System.currentTimeMillis()
             val outputPath = outputDirectory.resolve("jacoco-$currentTime.xml")
             try {

@@ -33,7 +33,7 @@ class AzureFileStorageUploadStore
 constructor(
     failureStore: TimestampedFileStore, config: AzureFileStorageConfig,
     additionalMetaDataFiles: List<Path>
-) : UploadStoreBase<IAzureUploadApi>(failureStore, config.url, additionalMetaDataFiles) {
+) : UploadStoreBase<IAzureUploadApi>(failureStore, config.url!!, additionalMetaDataFiles) {
 
     /** The access key for the azure file storage  */
     private val accessKey: String?

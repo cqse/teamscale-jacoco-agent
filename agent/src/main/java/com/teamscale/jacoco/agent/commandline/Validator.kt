@@ -16,7 +16,7 @@ import java.util.ArrayList
 class Validator {
 
     /** The found validation problems in the form of error messages for the user.  */
-    private val messages = ArrayList<String>()
+    private val messages = ArrayList<String?>()
 
     /** Returns `true` if the validation succeeded.  */
     val isValid: Boolean
@@ -27,30 +27,14 @@ class Validator {
         get() = "- " + StringUtils.concat(messages, StringUtils.CR + "- ")
 
     /** Runs the given validation routine.  */
-    fun ensure(validation: ExceptionBasedValidation) {
+    fun ensure(validation: () -> Unit) {
         try {
-            validation.validate()
+            validation.invoke()
         } catch (e: Exception) {
             messages.add(e.message)
         } catch (e: AssertionError) {
             messages.add(e.message)
         }
-
-    }
-
-    /**
-     * Interface for a validation routine that throws an exception when it fails.
-     */
-    @FunctionalInterface
-    interface ExceptionBasedValidation {
-
-        /**
-         * Throws an [Exception] or [AssertionError] if the validation
-         * fails.
-         */
-        @Throws(Exception::class, AssertionError::class)
-        fun validate()
-
     }
 
     /**
@@ -58,7 +42,7 @@ class Validator {
      * message.
      */
     fun isTrue(condition: Boolean, message: String) {
-        ensure({ CCSMAssert.isTrue(condition, message) })
+        ensure { CCSMAssert.isTrue(condition, message) }
     }
 
     /**
@@ -66,7 +50,7 @@ class Validator {
      * message.
      */
     fun isFalse(condition: Boolean, message: String) {
-        ensure({ CCSMAssert.isFalse(condition, message) })
+        ensure { CCSMAssert.isFalse(condition, message) }
     }
 
 }

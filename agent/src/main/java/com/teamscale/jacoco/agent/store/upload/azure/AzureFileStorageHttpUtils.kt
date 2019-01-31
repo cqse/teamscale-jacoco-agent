@@ -1,23 +1,6 @@
 package com.teamscale.jacoco.agent.store.upload.azure
 
 import com.teamscale.jacoco.agent.store.UploadStoreException
-import org.conqat.lib.commons.assertion.CCSMAssert
-
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
-import java.io.UnsupportedEncodingException
-import java.security.InvalidKeyException
-import java.security.NoSuchAlgorithmException
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.Base64
-import java.util.HashMap
-import java.util.Objects
-import java.util.stream.Collectors
-
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_ENCODING
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LANGUAGE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LENGTH
@@ -31,6 +14,27 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_UNMODIFI
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.RANGE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION
+import org.conqat.lib.commons.assertion.CCSMAssert
+import java.io.UnsupportedEncodingException
+import java.security.InvalidKeyException
+import java.security.NoSuchAlgorithmException
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.Base64
+import java.util.HashMap
+import java.util.Objects
+import java.util.stream.Collectors
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import kotlin.Any
+import kotlin.Comparator
+import kotlin.IllegalArgumentException
+import kotlin.Pair
+import kotlin.String
+import kotlin.arrayOf
 
 /** Utils class for communicating with an azure file storage.  */
 /* package */ internal object AzureFileStorageHttpUtils {
@@ -44,7 +48,7 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSIO
     )
 
     /** Returns the list of headers which must be present at every request  */
-    /* package */  val baseHeaders: Map<String, String>
+    /* package */  val baseHeaders: MutableMap<String, String>
         get() {
             val headers = HashMap<String, String>()
             headers[X_MS_VERSION] = AzureFileStorageHttpUtils.VERSION
@@ -63,12 +67,7 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSIO
             "Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set"
         )
 
-        val xmsHeader = headers.entries.stream().filter { x -> x.key.startsWith("x-ms") }
-            .collect<Map<String, String>, Any>(
-                Collectors.toMap<Entry<String, String>, String, String>(
-                    Function<Entry<String, String>, String> { it.key },
-                    Function<Entry<String, String>, String> { it.value })
-            )
+        val xmsHeader = headers.entries.filter { x -> x.key.startsWith("x-ms") }.map { Pair(it.key, it.value) }.toMap()
 
         return arrayOf(
             httpMethod.toString(),
@@ -107,10 +106,10 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSIO
     /** Creates a string with a map where each key-value pair is in a newline separated by a colon.  */
     private fun createCanonicalizedString(options: Map<String, String>): String {
         val sortedKeys = ArrayList(options.keys)
-        sortedKeys.sort(Comparator { obj, anotherString -> obj.compareTo(anotherString) })
+        sortedKeys.sortWith(Comparator { obj, anotherString -> obj.compareTo(anotherString) })
 
-        val values = sortedKeys.stream()
-            .map { key -> String.format("%s:%s", key, options[key]) }.collect<List<String>, Any>(Collectors.toList())
+        val values = sortedKeys
+            .map { key -> String.format("%s:%s", key, options[key]) }
         return values.joinToString("\n")
     }
 

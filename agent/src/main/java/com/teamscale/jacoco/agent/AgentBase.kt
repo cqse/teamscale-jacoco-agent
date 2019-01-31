@@ -63,7 +63,7 @@ constructor(options: AgentOptions) {
             try {
                 agentOptions = AgentOptionsParser.parse(options, delayedLogger)
             } catch (e: AgentOptionParseException) {
-                LoggingUtils.initializeDefaultLogging().use { ignored ->
+                LoggingUtils.initializeDefaultLogging().use {
                     val logger = LoggingUtils.getLogger(PreMain::class.java)
                     delayedLogger.logTo(logger)
                     logger.error("Failed to parse agent options: " + e.message, e)

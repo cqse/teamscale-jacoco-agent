@@ -2,11 +2,6 @@ package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.report.testwise.model.PathCoverage
 
-import java.util.Comparator
-import java.util.HashMap
-
-import java.util.stream.Collectors.toList
-
 /** Generic holder of test coverage of a single test based on line-ranges.  */
 class TestCoverageBuilder
 /** Constructor.  */
@@ -18,7 +13,7 @@ class TestCoverageBuilder
 ) {
 
     /** Mapping from path names to all files on this path.  */
-    private val pathCoverageList = HashMap<String, PathCoverageBuilder>()
+    private val pathCoverageList = mutableMapOf<String, PathCoverageBuilder>()
 
     /** Returns a collection of [PathCoverageBuilder]s associated with the test.  */
     val paths: List<PathCoverage>
@@ -41,8 +36,7 @@ class TestCoverageBuilder
         ) {
             return
         }
-        val pathCoverage = (pathCoverageList as java.util.Map<String, PathCoverageBuilder>)
-            .computeIfAbsent(fileCoverage.path,  { PathCoverageBuilder(it) })
+        val pathCoverage = pathCoverageList.computeIfAbsent(fileCoverage.path) { PathCoverageBuilder(it) }
         pathCoverage.add(fileCoverage)
     }
 

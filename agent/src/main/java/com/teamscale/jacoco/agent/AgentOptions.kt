@@ -216,7 +216,7 @@ class AgentOptions {
                 .asList(
                     azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServerOptions.hasAllRequiredFieldsSet(),
                     uploadUrl != null
-                ).stream().filter { x -> x }.collect<List<Boolean>, Any>(Collectors.toList())
+                ).filter { x -> x }
 
             validator.isTrue(
                 configuredStores.size <= 1,
@@ -283,9 +283,9 @@ class AgentOptions {
      */
     @Throws(UploadStoreException::class)
     fun createStore(): IXmlStore {
-        val fileStore = TimestampedFileStore(outputDirectory)
+        val fileStore = TimestampedFileStore(outputDirectory!!)
         if (uploadUrl != null) {
-            return HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles)
+            return HttpUploadStore(fileStore, uploadUrl!!, additionalMetaDataFiles)
         }
         if (teamscaleServerOptions.hasAllRequiredFieldsSet()) {
             return TeamscaleUploadStore(fileStore, teamscaleServerOptions)

@@ -13,6 +13,7 @@ import com.teamscale.jacoco.agent.Agent
 import com.teamscale.report.util.ILogger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.Closeable
 
 import java.io.FileInputStream
 import java.io.IOException
@@ -38,7 +39,7 @@ object LoggingUtils {
     }
 
     /** Class to use with try-with-resources to close the logging framework's resources.  */
-    class LoggingResources : AutoCloseable {
+    class LoggingResources : Closeable {
 
         override fun close() {
             loggerContext.stop()

@@ -3,7 +3,7 @@ package com.teamscale.jacoco.agent.convert
 import com.teamscale.report.util.ILogger
 
 /** Logger that prints all output to the console.  */
-internal class CommandLineLogger : ILogger {
+class CommandLineLogger : ILogger {
 
     override fun debug(message: String) {
         println(message)

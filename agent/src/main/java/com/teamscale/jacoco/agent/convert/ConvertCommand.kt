@@ -11,13 +11,10 @@ import com.beust.jcommander.Parameters
 import com.teamscale.jacoco.agent.commandline.ICommand
 import com.teamscale.jacoco.agent.commandline.Validator
 import org.conqat.lib.commons.assertion.CCSMAssert
-import org.conqat.lib.commons.collections.CollectionUtils
 import org.conqat.lib.commons.filesystem.FileSystemUtils
 import org.conqat.lib.commons.string.StringUtils
-
 import java.io.File
-import java.util.ArrayList
-import java.util.stream.Collectors
+import java.util.*
 
 /**
  * Encapsulates all command line options for the convert command for parsing
@@ -105,7 +102,7 @@ class ConvertCommand : ICommand {
     /** @see .classDirectoriesOrZips
      */
     fun getClassDirectoriesOrZips(): List<File> {
-        return CollectionUtils.map(classDirectoriesOrZips, Function<String, File> { File(it) })
+        return classDirectoriesOrZips.map { File(it) }
     }
 
     /** @see .classDirectoriesOrZips
@@ -117,8 +114,7 @@ class ConvertCommand : ICommand {
     /** @see .inputFiles
      */
     fun getInputFiles(): List<File> {
-        return inputFiles.stream().map<File>(Function<String, File> { File(it) })
-            .collect<List<File>, Any>(Collectors.toList())
+        return inputFiles.map { File(it) }
     }
 
     /** @see .outputFile

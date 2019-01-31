@@ -16,16 +16,16 @@ class TestInfo(
      * Some kind of content to tell whether the test specification has changed. Can be revision number or
      * hash over the specification or similar.
      */
-    val content: String,
+    val content: String?,
     /** Duration of the execution in seconds.  */
     val duration: Double?,
     /** The actual execution result state.  */
-    val result: ETestExecutionResult,
+    val result: ETestExecutionResult?,
     /**
      * Optional message given for test failures (normally contains a stack trace).
      * May be `null`.
      */
-    val message: String
+    val message: String?
 ) {
 
     /** All paths that the test did cover.  */

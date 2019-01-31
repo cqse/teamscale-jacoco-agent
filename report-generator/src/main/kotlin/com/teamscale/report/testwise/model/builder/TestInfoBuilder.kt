@@ -47,15 +47,14 @@ class TestInfoBuilder
 
     /** Builds a [TestInfo] object of the data in this container.  */
     fun build(): TestInfo {
-        val testInfo: TestInfo
-        if (execution != null) {
-            testInfo = TestInfo(
+        val testInfo = if (execution != null) {
+            TestInfo(
                 uniformPath, details!!.sourcePath, details!!.content,
                 execution!!.durationSeconds,
                 execution!!.result, execution!!.message!!
             )
         } else {
-            testInfo = TestInfo(uniformPath, details!!.sourcePath, details!!.content, null, null!!, null!!)
+            TestInfo(uniformPath, details!!.sourcePath, details!!.content, null, null, null)
         }
         if (coverage != null) {
             testInfo.paths.addAll(coverage!!.paths)

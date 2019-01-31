@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.util
 
 import org.slf4j.Logger
+import java.io.Closeable
 
 /**
  * Measures how long a certain piece of code takes and logs it to the debug log.
@@ -14,7 +15,7 @@ class Benchmark
     (
     /** The description to use in the log message.  */
     private val description: String
-) : AutoCloseable {
+) : Closeable {
 
     /** The logger.  */
     private val logger = LoggingUtils.getLogger(this)

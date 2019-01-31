@@ -11,23 +11,24 @@ import java.io.IOException
 class UploadStoreException : Exception {
 
     /** Constructor  */
-    constructor(message: String, e: Exception) : super(message, e) {}
+    constructor(message: String, e: Exception) : super(message, e)
 
     /** Constructor  */
-    constructor(message: String) : super(message) {}
+    constructor(message: String) : super(message)
 
     /** Constructor  */
-    constructor(message: String, response: Response<ResponseBody>) : super(createResponseMessage(message, response)) {}
+    constructor(message: String, response: Response<ResponseBody>) : super(createResponseMessage(message, response))
 
-    private fun createResponseMessage(message: String, response: Response<ResponseBody>): String {
-        try {
-            val errorBodyMessage = response.errorBody()!!.string()
-            return String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage)
-        } catch (e: IOException) {
-            return message
-        } catch (e: NullPointerException) {
-            return message
+    companion object {
+        private fun createResponseMessage(message: String, response: Response<ResponseBody>): String {
+            return try {
+                val errorBodyMessage = response.errorBody()!!.string()
+                String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage)
+            } catch (e: IOException) {
+                message
+            } catch (e: NullPointerException) {
+                message
+            }
         }
-
     }
 }

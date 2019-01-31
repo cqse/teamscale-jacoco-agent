@@ -5,32 +5,22 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent
 
-import com.teamscale.jacoco.agent.commandline.Validator
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.report.util.ILogger
 import okhttp3.HttpUrl
-import org.conqat.lib.commons.collections.CollectionUtils
 import org.conqat.lib.commons.collections.Pair
 import org.conqat.lib.commons.filesystem.AntPatternUtils
 import org.conqat.lib.commons.filesystem.FileSystemUtils
 import org.conqat.lib.commons.string.StringUtils
-
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Arrays
-import java.util.function.Predicate
+import java.util.*
 import java.util.jar.JarInputStream
-import java.util.jar.Manifest
-import java.util.regex.Pattern
-
-import java.util.stream.Collectors.joining
-import java.util.stream.Collectors.toList
 
 /**
  * Parses agent command line options.
@@ -52,16 +42,16 @@ class AgentOptionsParser(
         }
 
         val options = AgentOptions()
-        options.setOriginalOptionsString(optionsString)
+        options.originalOptionsString = optionsString
 
         val optionParts = optionsString.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         for (optionPart in optionParts) {
             handleOption(options, optionPart)
         }
 
-        val validator = options.getValidator()
-        if (!validator.isValid()) {
-            throw AgentOptionParseException("Invalid options given: " + validator.getErrorMessage())
+        val validator = options.validator
+        if (!validator.isValid) {
+            throw AgentOptionParseException("Invalid options given: " + validator.errorMessage)
         }
         return options
     }
@@ -85,7 +75,7 @@ class AgentOptionsParser(
         }
 
         if (key.startsWith("jacoco-")) {
-            options.getAdditionalJacocoOptions().add(key.substring(7), value)
+            options.additionalJacocoOptions.add(key.substring(7), value)
             return
         } else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
             return
@@ -117,7 +107,7 @@ class AgentOptionsParser(
             }
             "interval" -> {
                 try {
-                    options.setDumpIntervalInMinutes(Integer.parseInt(value))
+                    options.dumpIntervalInMinutes = Integer.parseInt(value)
                 } catch (e: NumberFormatException) {
                     throw AgentOptionParseException("Non-numeric value given for option 'interval'")
                 }
@@ -125,23 +115,19 @@ class AgentOptionsParser(
                 return true
             }
             "out" -> {
-                options.setOutputDirectory(parsePath(key, value))
+                options.outputDirectory = parsePath(key, value)
                 return true
             }
             "upload-url" -> {
-                options.setUploadUrl(parseUrl(value))
-                if (options.getUploadUrl() == null) {
+                options.uploadUrl = (parseUrl(value))
+                if (options.uploadUrl == null) {
                     throw AgentOptionParseException("Invalid URL given for option 'upload-url'")
                 }
                 return true
             }
             "upload-metadata" -> {
                 try {
-                    options.setAdditionalMetaDataFiles(
-                        CollectionUtils.map<T, R>(
-                            splitMultiOptionValue(value),
-                            Function<T, R> { get() })
-                    )
+                    options.additionalMetaDataFiles = splitMultiOptionValue(value).map { Paths.get(it) }
                 } catch (e: InvalidPathException) {
                     throw AgentOptionParseException("Invalid path given for option 'upload-metadata'", e)
                 }
@@ -149,25 +135,24 @@ class AgentOptionsParser(
                 return true
             }
             "ignore-duplicates" -> {
-                options.setShouldIgnoreDuplicateClassFiles(java.lang.Boolean.parseBoolean(value))
+                options.shouldIgnoreDuplicateClassFiles = java.lang.Boolean.parseBoolean(value)
                 return true
             }
             "includes" -> {
-                options.setJacocoIncludes(value.replace(";".toRegex(), ":"))
+                options.jacocoIncludes = value.replace(";".toRegex(), ":")
                 return true
             }
             "excludes" -> {
-                options.setJacocoExcludes(value.replace(";".toRegex(), ":"))
+                options.jacocoExcludes = value.replace(";".toRegex(), ":")
                 return true
             }
             "class-dir" -> {
-                options.setClassDirectoriesOrZips(CollectionUtils
-                    .mapWithException<T, R, E>(splitMultiOptionValue(value)) { singleValue ->
-                        parseFile(
-                            key,
-                            singleValue
-                        )
-                    })
+                options.classDirectoriesOrZips = splitMultiOptionValue(value).map { singleValue ->
+                    parseFile(
+                        key,
+                        singleValue
+                    )
+                }
                 return true
             }
             else -> return false
@@ -265,14 +250,14 @@ class AgentOptionsParser(
     private fun handleAzureFileStorageOptions(options: AgentOptions, key: String, value: String): Boolean {
         when (key) {
             "azure-url" -> {
-                options.getAzureFileStorageConfig().url = parseUrl(value)
-                if (options.getAzureFileStorageConfig().url == null) {
+                options.azureFileStorageConfig.url = parseUrl(value)
+                if (options.azureFileStorageConfig.url == null) {
                     throw AgentOptionParseException("Invalid URL given for option 'upload-azure-url'")
                 }
                 return true
             }
             "azure-key" -> {
-                options.getAzureFileStorageConfig().accessKey = value
+                options.azureFileStorageConfig.accessKey = value
                 return true
             }
             else -> return false
@@ -313,12 +298,12 @@ class AgentOptionsParser(
     private fun handleHttpServerOptions(options: AgentOptions, key: String, value: String): Boolean {
         when (key) {
             "test-env" -> {
-                options.setTestEnvironmentVariableName(value)
+                options.testEnvironmentVariableName = value
                 return true
             }
             "http-server-port" -> {
                 try {
-                    options.setHttpServerPort(Integer.parseInt(value))
+                    options.httpServerPort = Integer.parseInt(value)
                 } catch (e: NumberFormatException) {
                     throw AgentOptionParseException(
                         "Invalid port number $value given for option 'http-server-port'!"
@@ -379,17 +364,17 @@ class AgentOptionsParser(
         val pattern = baseDirAndPattern.second
 
         val workingDir = workingDirectory.absoluteFile
-        val basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath()
+        val basePath = workingDir.resolve(baseDir).normalize().absoluteFile
 
         val pathMatcher = AntPatternUtils.convertPattern(pattern, false)
-        val filter = { path ->
+        val filter = { path: File ->
             pathMatcher
-                .matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches()
+                .matcher(FileSystemUtils.normalizeSeparators(basePath.relativeTo(path).toString())).matches()
         }
 
-        val matchingPaths: List<Path>
+        val matchingPaths: List<File>
         try {
-            matchingPaths = Files.walk(basePath).filter(filter).sorted().collect<List<Path>, Any>(toList())
+            matchingPaths = basePath.walk().filter(filter).toList().sorted()
         } catch (e: IOException) {
             throw AgentOptionParseException(
                 "Could not recursively list files in directory $basePath in order to resolve pattern $pattern given for option $optionName",
@@ -400,23 +385,21 @@ class AgentOptionsParser(
         if (matchingPaths.isEmpty()) {
             throw AgentOptionParseException(
                 "Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
-                        " did not match any files in " + basePath.toAbsolutePath() + "!"
+                        " did not match any files in " + basePath.absolutePath + "!"
             )
         } else if (matchingPaths.size > 1) {
             logger.warn(
                 "Multiple files match the pattern $pattern in " + basePath
                     .toString() + " for option " + optionName + "! " +
                         "The first one is used, but consider to adjust the " +
-                        "pattern to match only one file. Candidates are: " + matchingPaths.stream()
-                    .map<Path>(Function<Path, Path> { basePath.relativize(it) }).map<String>(Function<Path, String> { it.toString() }).collect<String, *>(
-                        joining(", ")
-                    )
+                        "pattern to match only one file. Candidates are: " + matchingPaths
+                    .map { basePath.relativeTo(it) }.joinToString(", ") { it.toString() }
             )
         }
         val path = matchingPaths[0].normalize()
         logger.info("Using file $path for option $optionName")
 
-        return path
+        return Paths.get(path.toURI())
     }
 
     /**
@@ -472,13 +455,13 @@ class AgentOptionsParser(
          * Parses the given value as a URL or returns `null` if that fails.
          */
         private fun parseUrl(value: String): HttpUrl? {
-            var value = value
+            var fixedValue = value
             // default to HTTP if no scheme is given
-            if (!value.startsWith("http://") && !value.startsWith("https://")) {
-                value = "http://$value"
+            if (!fixedValue.startsWith("http://") && !fixedValue.startsWith("https://")) {
+                fixedValue = "http://$fixedValue"
             }
 
-            return HttpUrl.parse(value)
+            return HttpUrl.parse(fixedValue)
         }
 
 

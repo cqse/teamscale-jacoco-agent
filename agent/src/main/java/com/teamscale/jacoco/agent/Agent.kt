@@ -88,9 +88,9 @@ internal constructor(options: AgentOptions) : AgentBase(options) {
             return
         }
 
-        var xml: String
+        var xml = ""
         try {
-            Benchmark("Generating the XML report").use { benchmark -> xml = generator.convert(dump) }
+            Benchmark("Generating the XML report").use { xml = generator.convert(dump) }
         } catch (e: IOException) {
             logger.error("Converting binary dump to XML failed", e)
             return

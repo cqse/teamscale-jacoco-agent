@@ -57,7 +57,7 @@ class Converter
             locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger)
         )
 
-        Benchmark("Generating the XML report").use { benchmark ->
+        Benchmark("Generating the XML report").use {
             val xml = generator.convert(Dump(sessionInfo, executionDataStore))
             FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml)
         }
@@ -89,7 +89,7 @@ class Converter
             logger
         )
 
-        Benchmark("Generating the testwise coverage report").use { benchmark ->
+        Benchmark("Generating the testwise coverage report").use {
             val coverage = generator.convert(jacocoExecutionDataList)
             logger.info(
                 "Merging report with " + testDetails.size + " Details/" + coverage.getTests()
