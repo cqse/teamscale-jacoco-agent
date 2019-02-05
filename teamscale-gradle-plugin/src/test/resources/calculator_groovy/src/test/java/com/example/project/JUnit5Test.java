@@ -11,9 +11,12 @@
 package com.example.project;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class JUnit5Test {
 
@@ -38,5 +41,11 @@ class JUnit5Test {
 	@Tag("integration")
 	public void testMain() {
 		Main.main(new String[0]);
+	}
+	
+	@ParameterizedTest
+	@ValueSource(strings = { "Hello", "JUnit" })
+	void withValueSource(String word) {
+		assertNotNull(word);
 	}
 }

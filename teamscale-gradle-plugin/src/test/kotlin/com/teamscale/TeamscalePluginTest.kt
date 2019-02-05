@@ -40,7 +40,7 @@ class TeamscalePluginTest {
     fun `unit tests can be executed normally`() {
         assertThat(
             build("clean", "unitTest").output
-        ).contains("SUCCESS (10 tests, 4 successes, 0 failures, 6 skipped)")
+        ).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
     }
 
     @Test
@@ -50,12 +50,10 @@ class TeamscalePluginTest {
             "unitTest",
             "--impacted",
             "--run-all-tests",
-            "-x",
-            "unitTestReportUpload",
             "--info",
             "--stacktrace"
         )
-        assertThat(build.output).contains("BUILD SUCCESSFUL", "4 tests successful", "6 tests skipped")
+        assertThat(build.output).contains("BUILD SUCCESSFUL", "13 tests successful", "6 tests skipped")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
         assertThat(testwiseCoverageReportFile).exists()
@@ -65,12 +63,18 @@ class TeamscalePluginTest {
         assertThat(testwiseCoverageReport)
             .containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
             .containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
+            .containsExecutionResult(
+                "com/example/project/JUnit5Test/withValueSource(String)",
+                ETestExecutionResult.PASSED
+            )
+            .containsExecutionResult("FibonacciTest/test[4]", ETestExecutionResult.PASSED)
             .containsCoverage(
                 "com/example/project/JUnit4Test/systemTest",
                 "com/example/project/Calculator.java",
                 "13,16,20-22"
             )
-            .hasSize(10)
+            // 18 Tests because JUnit 5 parameterized tests are grouped
+            .hasSize(18)
     }
 
     /**

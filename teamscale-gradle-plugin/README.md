@@ -90,6 +90,6 @@ tasks.register('integrationTest', TestImpacted) {
 
 When executing the tests you can add the `--impacted` flag to only execute impacted tests.
 This task automatically uploads the available tests to Teamscale and runs only the impacted tests for the last commit.
-Afterwards a `TESTWISE_COVERAGE` report is uploaded to Teamscale. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
+Afterwards a `TESTWISE_COVERAGE` report is generated. Setting the `--run-all-tests` allows to run all tests and still generate a `TESTWISE_COVERAGE` report for all tests.
 
-Uploading reports can also be triggered independently of the test task with the Gradle task `unitTestReportUpload`. By starting Gradle with `-x unitTestReportUpload` you can also disable the automatic upload.
+Uploading reports can be triggered with the Gradle task `teamscaleReportUpload`.

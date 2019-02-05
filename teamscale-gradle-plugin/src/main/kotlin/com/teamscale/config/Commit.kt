@@ -31,7 +31,7 @@ class Commit : Serializable {
      * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
      * stores them for later use.
      */
-    fun resolveCommitDescriptor(project: Project): CommitDescriptor {
+    fun getOrResolveCommitDescriptor(project: Project): CommitDescriptor {
         try {
             if (branchName == null || timestamp == null) {
                 val commit = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
