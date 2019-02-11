@@ -43,31 +43,46 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 		get("/test", (request, response) -> controller.getSessionId());
 
-		post("/test/start/" + TEST_ID_PARAMETER, (request, response) -> {
-			handleTestStart(request);
-			return "success";
-		});
-
-		post("/test/end/" + TEST_ID_PARAMETER, (request, response) -> {
-			handleTestEnd(request);
-			return "success";
-		});
+		post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
+		post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
 	}
 
 	/** Handles the start of a new test case by setting the session ID. */
-	private void handleTestStart(Request request) {
-		logger.debug("Start test " + request.params(TEST_ID_PARAMETER));
+	private String handleTestStart(Request request, Response response) {
+		String testId = request.params(TEST_ID_PARAMETER);
+		if (testId == null || testId.isEmpty()) {
+			logger.error("End test name missing in " + request.url() + "!");
+
+			response.status(400);
+			response.body();
+			return "Test name is missing!";
+		}
+
+		logger.debug("Start test " + testId);
 
 		// Dump and reset coverage so that we only record coverage that belongs to this particular test case.
 		controller.reset();
-		String testId = request.params(TestwiseCoverageAgent.TEST_ID_PARAMETER);
 		controller.setSessionId(testId);
+
+		response.status(204);
+		return "";
 	}
 
 	/** Handles the end of a test case by resetting the session ID. */
-	private void handleTestEnd(Request request) throws DumpException {
-		logger.debug("End test " + request.params(TEST_ID_PARAMETER));
+	private String handleTestEnd(Request request, Response response) throws DumpException {
+		String testId = request.params(TEST_ID_PARAMETER);
+		if (testId == null || testId.isEmpty()) {
+			logger.error("End test name missing in " + request.url() + "!");
+
+			response.status(400);
+			return "Test name is missing!";
+		}
+
+		logger.debug("End test " + testId);
 		controller.dump();
+
+		response.status(204);
+		return "";
 	}
 
 	@Override

@@ -62,7 +62,7 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	public TestwiseCoverage buildCoverage(List<Dump> dumps) {
+	public TestwiseCoverage buildCoverage(List<Dump> dumps, Predicate<String> locationIncludeFilter) {
 		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
 		for (Dump dump : dumps) {
 			String testId = dump.info.getId();
@@ -73,7 +73,7 @@ class CachingExecutionDataReader {
 				continue;
 			}
 			try {
-				TestCoverageBuilder testCoverage = buildCoverage(testId, dump.store);
+				TestCoverageBuilder testCoverage = buildCoverage(testId, dump.store, locationIncludeFilter);
 				testwiseCoverage.add(testCoverage);
 			} catch (CoverageGenerationException e) {
 				logger.error("Failed to generate coverage for test " + testId + "! Skipping to the next test.", e);
@@ -85,10 +85,10 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	private TestCoverageBuilder buildCoverage(String testId, ExecutionDataStore executionDataStore) throws CoverageGenerationException {
+	private TestCoverageBuilder buildCoverage(String testId, ExecutionDataStore executionDataStore, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
 		TestCoverageBuilder testCoverage = new TestCoverageBuilder(testId);
 		for (ExecutionData executionData : executionDataStore.getContents()) {
-			testCoverage.add(probesCache.getCoverage(executionData));
+			testCoverage.add(probesCache.getCoverage(executionData, locationIncludeFilter));
 		}
 		return testCoverage;
 	}

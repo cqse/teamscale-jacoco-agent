@@ -2,6 +2,10 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 11.2.0
+- [breaking change] The convert tool now uses wildcard patterns for the class matching (was ant pattern before)
+- [breaking change] The agent returns the correct 204 and 400 status codes in Testwise Coverage mode
+
 # 11.1.0
 - [feature] The agent now also supports line coverage in Testwise Coverage mode
 

@@ -37,6 +37,9 @@ The following options are available:
   For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+- `logging-config`: path to a [logback][] configuration XML file (other configuration formats are not supported at the moment).
+  Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
+  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format)
   
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -66,9 +69,6 @@ patterns with `*`, `**` and `?`.
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
-- `logging-config`: path to a [logback][] configuration XML file (other configuration formats are not supported at the moment).
-  Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
-  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format)
 - `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
@@ -144,6 +144,8 @@ The agent's REST API has the following endpoints:
 - `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
 - `[GET] /test` Returns the name of the current test. The result will be empty when the test already finished or was 
   not started yet.
+  
+The uniformPath parameter must be url encoded if it may contain special characters (including /).
 
 ## Additional steps for WebSphere
 

@@ -37,7 +37,7 @@ public class ConvertCommand implements ICommand {
 	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
 	 */
 	@Parameter(names = {"--filter", "-f"}, description = ""
-			+ "Ant-style include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
+			+ "Wildcard include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
 			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
@@ -48,7 +48,7 @@ public class ConvertCommand implements ICommand {
 	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
 	 */
 	@Parameter(names = {"--exclude", "-e"}, description = ""
-			+ "Ant-style exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
+			+ "Wildcard exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
 			+ " lead to broken coverage files! Turn on debug logging to see which locations are being filtered."
