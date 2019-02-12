@@ -19,3 +19,6 @@
 !copyrights
 !misc.xml
 !sqldialects.xml
+
+# Inspection settings
+!inspectionProfiles/
