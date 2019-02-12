@@ -2,12 +2,14 @@ package org.junit.platform.console.tasks;
 
 import com.teamscale.client.TestDetails;
 import com.teamscale.client.TestForPrioritization;
+import com.teamscale.report.util.StringUtilsKt;
+import org.junit.platform.console.Logger;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths
@@ -49,8 +51,25 @@ public class AvailableTests {
 	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a
 	 * list of unique IDs to be fed into JUnit Platform.
 	 */
-	public List<String> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
-		return impactedTests.stream().map(test -> uniformPathToUniqueIdMapping.get(test.getUniformPath()))
-				.collect(Collectors.toList());
+	public List<String> convertToUniqueIds(Logger logger, List<TestForPrioritization> impactedTests) {
+		List<String> list = new ArrayList<>();
+		for (TestForPrioritization impactedTest : impactedTests) {
+			logger.info("" + impactedTest.getUniformPath() + " " + impactedTest.getSelectionReason());
+
+			String testUniqueIds = uniformPathToUniqueIdMapping.get(impactedTest.getUniformPath());
+			if (testUniqueIds == null) {
+				logger.error("Retrieved invalid test '" + impactedTest.getUniformPath() + "' from Teamscale server!");
+				logger.error("The following seem related:");
+				uniformPathToUniqueIdMapping.keySet().stream().sorted(Comparator
+						.comparing(testPath -> StringUtilsKt.editDistance(impactedTest.getUniformPath(), testPath)))
+						.limit(5)
+						.forEach(testAlternative -> logger.error(" - " + testAlternative));
+
+				logger.error("Falling back to execute all...");
+				return new ArrayList<>(uniformPathToUniqueIdMapping.values());
+			}
+			list.add(testUniqueIds);
+		}
+		return list;
 	}
 }

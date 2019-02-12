@@ -5,7 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.commandline
 
-import com.teamscale.jacoco.util.CR
+import com.teamscale.report.util.CR
 import java.util.*
 
 /**

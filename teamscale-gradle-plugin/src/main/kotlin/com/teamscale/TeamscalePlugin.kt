@@ -5,11 +5,8 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSet
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.util.GradleVersion
-import org.jacoco.core.JaCoCo
 
 
 /**
@@ -41,6 +38,9 @@ open class TeamscalePlugin : Plugin<Project> {
     /** The version of the teamscale jacoco agent.  */
     private var agentVersion = BuildVersion.agentVersion
 
+    /** Reference to the teamscale upload task */
+    private lateinit var teamscaleUploadTask: TeamscaleUploadTask
+
     /** Applies the teamscale plugin against the given project.  */
     override fun apply(project: Project) {
         project.logger.info("Applying teamscale plugin $pluginVersion to ${project.name}")
@@ -71,6 +71,12 @@ open class TeamscalePlugin : Plugin<Project> {
             .defaultDependencies { dependencies ->
                 dependencies.add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$agentVersion"))
             }
+
+        teamscaleUploadTask =
+                project.rootProject.tasks.maybeCreate("teamscaleReportUpload", TeamscaleUploadTask::class.java)
+        teamscaleUploadTask.apply {
+            extension = pluginExtension
+        }
 
         // Add the teamscale extension also to all test tasks
         project.tasks.withType(TestImpacted::class.java) { testImpactedTask ->
@@ -108,22 +114,7 @@ open class TeamscalePlugin : Plugin<Project> {
             configuration = extension
         }
 
-        val teamscaleUploadTask = createTeamscaleUploadTask(pluginExtension, testImpacted.name, project.rootProject)
-        teamscaleReportTask.finalizedBy(teamscaleUploadTask)
         teamscaleReportTask.uploadTask = teamscaleUploadTask
     }
 
-    /** Creates and configures the upload task. */
-    private fun createTeamscaleUploadTask(
-        teamscalePluginExtension: TeamscalePluginExtension,
-        testTaskName: String,
-        rootProject: Project
-    ): TeamscaleUploadTask {
-        val teamscaleUploadTask =
-            rootProject.tasks.maybeCreate("${testTaskName}ReportUpload", TeamscaleUploadTask::class.java)
-        teamscaleUploadTask.apply {
-            extension = teamscalePluginExtension
-        }
-        return teamscaleUploadTask
-    }
 }

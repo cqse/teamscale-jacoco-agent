@@ -180,7 +180,7 @@ file inside the Wildfly installation directory - depending on which "mode" is us
 Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
 This ensures that the performance of your application does not degrade.
 
-## Additional steps for Tomcat
+## Additional steps for Tomcat/TomEE
 
 Register the agent in the `CATALINA_OPTS` environment variable inside the `bin/setenv.sh` or `bin/setenv.bat`
 script in the Tomcat installation directory. Create this file if it does not yet exist.

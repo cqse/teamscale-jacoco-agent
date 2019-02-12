@@ -57,7 +57,7 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 
 	@Override
 	public void executionStarted(TestIdentifier testIdentifier) {
-		if (testIdentifier.isTest()) {
+		if (isRelevantTestInstance(testIdentifier)) {
 			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
 			try {
 				for (ITestwiseCoverageAgentApi apiService : apiServices) {
@@ -72,7 +72,7 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 
 	@Override
 	public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
-		if (testIdentifier.isTest()) {
+		if (isRelevantTestInstance(testIdentifier)) {
 			String testUniformPath = TestIdentifierUtils.getTestUniformPath(testIdentifier, logger);
 			try {
 				for (ITestwiseCoverageAgentApi apiService : apiServices) {
@@ -83,6 +83,7 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 			}
 			long executionEndTime = System.currentTimeMillis();
 			long duration = executionEndTime - executionStartTime;
+
 			String message = getStacktrace(testExecutionResult.getThrowable());
 			switch (testExecutionResult.getStatus()) {
 				case SUCCESSFUL:
@@ -95,6 +96,9 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 				case FAILED:
 					testExecutions
 							.add(new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE, message));
+					break;
+				default:
+					logger.error("New unknown execution result: " + testExecutionResult.getStatus());
 					break;
 			}
 		}
@@ -123,12 +127,26 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 
 	/** Returns a flattened list of all test leafs in the given test identifier. */
 	private List<TestIdentifier> collectTestIdentifiers(TestIdentifier testIdentifier) {
-		if (testIdentifier.isTest()) {
+		if (isRelevantTestInstance(testIdentifier)) {
 			return Collections.singletonList(testIdentifier);
 		}
 		return testPlan.getChildren(testIdentifier).stream()
 				.flatMap(nestedTestIdentifier -> collectTestIdentifiers(nestedTestIdentifier).stream())
 				.collect(toList());
+	}
+
+	private boolean isRelevantTestInstance(TestIdentifier testIdentifier) {
+		boolean isParameterizedTestContainer = testIdentifier.isContainer() && containsParameterizedTestContainer(
+				testIdentifier);
+		boolean isNonParameterizedTest = testIdentifier.isTest() && !containsParameterizedTestContainer(testIdentifier);
+		return isNonParameterizedTest || isParameterizedTestContainer;
+	}
+
+	/**
+	 * Looks like this: [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]
+	 */
+	private boolean containsParameterizedTestContainer(TestIdentifier testIdentifier) {
+		return testIdentifier.getUniqueId().matches(".*/\\[test\\-template:[^\\]]*\\].*");
 	}
 
 	/** @see #testExecutions */

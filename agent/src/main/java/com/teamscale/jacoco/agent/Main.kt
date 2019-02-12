@@ -5,7 +5,7 @@ import com.beust.jcommander.JCommander.Builder
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import com.teamscale.jacoco.agent.convert.ConvertCommand
-import com.teamscale.jacoco.util.CR
+import com.teamscale.report.util.CR
 import com.teamscale.jacoco.util.LoggingUtils
 import org.jacoco.core.JaCoCo
 import java.util.*
