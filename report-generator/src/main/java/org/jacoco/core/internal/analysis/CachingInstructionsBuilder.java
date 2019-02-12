@@ -28,7 +28,7 @@ import java.util.Set;
  * <p>
  * Changes that have been applied to the original class are marked with ADDED and REMOVED comments to make it as easy
  * as possible to adjust the implementation to new versions of JaCoCo.
- *
+ * <p>
  * When updating JaCoCo make a diff of the previous {@link org.jacoco.core.internal.analysis.InstructionsBuilder}
  * implementation and the new implementation and update this class accordingly.
  */
@@ -153,8 +153,11 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	 * @param branch  unique branch number for the last instruction
 	 */
 	void addProbe(final int probeId, final int branch) {
-//		REMOVED check of probes array and instead add the probes unconditionally
-//		final boolean executed = probes != null && probes[probeId];
+		// REMOVED check of probes array and instead add the probes unconditionally
+		// final boolean executed = probes != null && probes[probeId];
+		// currentInsn.addBranch(executed, branch);
+
+		// ADDED
 		currentInsn.addBranch(true, branch);
 		coveredProbes.add(new CoveredProbe(probeId, currentInsn, branch));
 	}
@@ -162,9 +165,6 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	/**
 	 * Returns the status for all instructions of this method. This method must
 	 * be called exactly once after the instructions have been added.
-	 *
-	 * @return map of ASM instruction nodes to corresponding {@link Instruction}
-	 * instances
 	 */
 	public void fillCache() {
 		// Wire jumps:
@@ -175,28 +175,31 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 		// ADDED
 		// Traces back all instructions that are executed before reaching a probe
 		// and stores the mapping from probe to lines in #classCoverageLookup
-		for (final CoveredProbe p : coveredProbes) {
-			Instruction instruction = p.instruction;
+		// We need this because JaCoCo does not insert a probe after every line.
+		for (CoveredProbe coveredProbe : coveredProbes) {
+			Instruction instruction = coveredProbe.instruction;
 			Set<Integer> coveredLines = new HashSet<>();
 			while (instruction != null) {
 				coveredLines.add(instruction.getLine());
 				instruction = getPredecessor(instruction);
 			}
-			classCoverageLookup.addProbe(p.probeId, coveredLines);
+			classCoverageLookup.addProbe(coveredProbe.probeId, coveredLines);
 		}
 	}
 
 	/**
 	 * ADDED
-	 * Helper to get the private field predecessor from an instruction.
+	 * Helper to get the private field predecessor from an instruction. The predecessor of an instruction
+	 * is the preceding node according to the control flow graph of the method.
 	 */
 	private Instruction getPredecessor(Instruction instruction) {
 		try {
-			Field f = instruction.getClass().getDeclaredField("predecessor");
-			f.setAccessible(true);
-			instruction = (Instruction) f.get(instruction);
+			Field predecessorField = instruction.getClass().getDeclaredField("predecessor");
+			predecessorField.setAccessible(true);
+			instruction = (Instruction) predecessorField.get(instruction);
 		} catch (NoSuchFieldException | IllegalAccessException e) {
-			e.printStackTrace();
+			// This means we have a serious coding mistake here there is no way to recover from this anyway
+			throw new RuntimeException("Instruction has no field named predecessor! This is a programming error!", e);
 		}
 		return instruction;
 	}
