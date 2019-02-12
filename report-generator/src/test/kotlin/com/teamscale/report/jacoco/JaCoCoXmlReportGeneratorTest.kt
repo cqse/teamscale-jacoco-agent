@@ -62,10 +62,7 @@ class JaCoCoXmlReportGeneratorTest : CCSMTestCaseBase() {
     @Throws(IOException::class)
     private fun runGenerator(testDataFolder: String, shouldIgnoreDuplicates: Boolean) {
         val classFileFolder = useTestFile(testDataFolder)
-        val includeFilter = AntPatternIncludeFilter(
-            emptyList(),
-            emptyList()
-        )
+        val includeFilter = AntPatternIncludeFilter(emptyList(), emptyList())
         JaCoCoXmlReportGenerator(
             listOf(classFileFolder), includeFilter, shouldIgnoreDuplicates,
             mock(ILogger::class.java)

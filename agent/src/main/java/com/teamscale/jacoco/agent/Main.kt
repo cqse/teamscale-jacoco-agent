@@ -27,7 +27,7 @@ class Main {
      * exception if the arguments are not valid. Then runs the specified command.
      */
     @Throws(Exception::class)
-    internal fun parseCommandLineAndRun(args: Array<String>) {
+    private fun parseCommandLineAndRun(args: Array<String>) {
         val builder = createJCommanderBuilder()
         val jCommander = builder.build()
 
