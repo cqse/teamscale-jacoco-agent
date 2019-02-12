@@ -11,15 +11,14 @@ buildscript {
 	}
 }
 
-
 ext {
 	appVersion = '11.2.0' // Also update version in BuildVersion.kt
 	pluginVersion = '0.3.6' // Also update version in BuildVersion.kt
 	reportGeneratorVersion = '1.2.4'
 	teamscaleClientVersion = '0.2.5'
 
-    // When upgrading JaCoCo to a newer version make sure to 
-    // check the comment in the AnalyzerCache.java and CachingMethodAnalyzer.java.
+	// When upgrading JaCoCo to a newer version make sure to 
+	// check the comment in the AnalyzerCache.java and CachingMethodAnalyzer.java.
 	jacocoVersion = '0.8.2'
 	log4jVersion = '2.8.2'
 
@@ -42,14 +41,16 @@ subprojects {
 	targetCompatibility = 1.7
 
 	tasks.withType(JavaCompile) {
-		sourceCompatibility = "1.7"
-		targetCompatibility = "1.7"
+		sourceCompatibility = '1.7'
+		targetCompatibility = '1.7'
 	}
 
 	group 'com.teamscale'
 
 	tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 		kotlinOptions {
+			// We can only specify 1.6 or 1.8 here
+			// We specify 1.6 as out target 1.7 is technically equal to 1.6
 			jvmTarget = '1.6'
 		}
 	}

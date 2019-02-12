@@ -3,9 +3,7 @@ package com.teamscale.report.testwise.jacoco.cache
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
 import com.teamscale.report.util.ILogger
 import org.jacoco.core.data.ExecutionData
-
-import java.util.HashMap
-import java.util.HashSet
+import java.util.*
 
 /**
  * Holds [ClassCoverageLookup]s for all analyzed classes.
@@ -72,9 +70,9 @@ class ProbesCache
             )
             return null
         }
-        return if (!executionData.hasHits()) {
-            null
-        } else classCoverageLookups[classId]?.getFileCoverage(executionData, logger)
-
+        return when {
+            !executionData.hasHits() -> null
+            else -> classCoverageLookups[classId]?.getFileCoverage(executionData, logger)
+        }
     }
 }

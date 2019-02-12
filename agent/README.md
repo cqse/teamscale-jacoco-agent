@@ -3,6 +3,9 @@
 This program provides a Java agent that can regularly dump coverage from a running application.
 The JaCoCo coverage tool is used underneath.
 
+## Requirements:
+- Java 7 or higher
+
 ## Installing
 
 Unzip this zip file into any folder.
@@ -136,8 +139,8 @@ cleaning the output directory before starting a new test run.
 The test system (the application executing the test specification) can inform the agent of when a test started and 
 finished via a REST API. The corresponding server listens at the specified port.
 
-- `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
-  (Recommended port is 8000)
+- `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events. 
+  (Recommended port is 8000) Note: This options requires for Java 8 or higher.
   
 The agent's REST API has the following endpoints:
 - `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.

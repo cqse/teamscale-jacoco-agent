@@ -32,7 +32,7 @@ class AgentOptionsParser(
      * Parses the given command-line options.
      */
     /* package */ @Throws(AgentOptionParseException::class)
-    internal fun parse(optionsString: String?): AgentOptions {
+    internal fun parse(optionsString: String): AgentOptions {
         if (optionsString.isNullOrBlank()) {
             throw AgentOptionParseException(
                 "No agent options given. You must at least provide an output directory (out)" + " and a classes directory (class-dir)"
@@ -104,11 +104,8 @@ class AgentOptionsParser(
                 return true
             }
             "interval" -> {
-                try {
-                    options.dumpIntervalInMinutes = java.lang.Long.parseLong(value)
-                } catch (e: NumberFormatException) {
-                    throw AgentOptionParseException("Non-numeric value given for option 'interval'")
-                }
+                options.dumpIntervalInMinutes = value.toLongOrNull()
+                    ?: throw AgentOptionParseException("Non-numeric value given for option 'interval'")
 
                 return true
             }
@@ -145,12 +142,8 @@ class AgentOptionsParser(
                 return true
             }
             "class-dir" -> {
-                options.classDirectoriesOrZips = splitMultiOptionValue(value).map { singleValue ->
-                    parseFile(
-                        key,
-                        singleValue
-                    )
-                }
+                options.classDirectoriesOrZips =
+                    splitMultiOptionValue(value).map { singleValue -> parseFile(key, singleValue) }
                 return true
             }
             else -> return false
@@ -421,13 +414,13 @@ class AgentOptionsParser(
     companion object {
 
         /** Character which starts a comment in the config file.  */
-        private val COMMENT_PREFIX = "#"
+        private const val COMMENT_PREFIX = "#"
 
         /** Stand-in for the question mark operator.  */
-        private val QUESTION_REPLACEMENT = "!@"
+        private const val QUESTION_REPLACEMENT = "!@"
 
         /** Stand-in for the asterisk operator.  */
-        private val ASTERISK_REPLACEMENT = "#@"
+        private const val ASTERISK_REPLACEMENT = "#@"
 
         /**
          * Parses the given command-line options.

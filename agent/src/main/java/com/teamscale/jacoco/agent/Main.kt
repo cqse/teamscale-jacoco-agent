@@ -5,11 +5,10 @@ import com.beust.jcommander.JCommander.Builder
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import com.teamscale.jacoco.agent.convert.ConvertCommand
+import com.teamscale.jacoco.util.CR
 import com.teamscale.jacoco.util.LoggingUtils
 import org.jacoco.core.JaCoCo
 import java.util.*
-
-val CR: String = System.getProperty("line.separator")
 
 /** Provides a command line interface for interacting with JaCoCo.  */
 class Main {
@@ -35,7 +34,7 @@ class Main {
         try {
             jCommander.parse(*args)
         } catch (e: ParameterException) {
-            handleInvalidCommandLine(jCommander, e.message)
+            handleInvalidCommandLine(jCommander, "${e.message}")
         }
 
         if (defaultArguments.help) {
@@ -69,10 +68,8 @@ class Main {
 
     companion object {
 
-        /** Version of this program.  */
-        private val bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app")!!
-
-        private val VERSION = bundle.getString("version")
+        /** Version of this program. */
+        private val VERSION = ResourceBundle.getBundle("com.teamscale.jacoco.agent").getString("version")
 
         /** Entry point.  */
         @Throws(Exception::class)
@@ -82,7 +79,7 @@ class Main {
         }
 
         /** Shows an informative error and help message. Then exits the program.  */
-        private fun handleInvalidCommandLine(jCommander: JCommander, message: String?) {
+        private fun handleInvalidCommandLine(jCommander: JCommander, message: String) {
             System.err.println("Invalid command line: $message$CR")
             jCommander.usage()
             System.exit(1)

@@ -13,6 +13,12 @@ import java.nio.file.StandardCopyOption
 import java.util.*
 
 /**
+ * Creates the directory and its parent directories if they do not exist yet.
+ * @return true if the directory was successfully created or already existed.
+ */
+private fun Path.ensureDirectoryExists(): Boolean = this.toFile().mkdirs() || this.toFile().isDirectory
+
+/**
  * Installs/uninstalls the wrapper under Windows.
  *
  * We must set the file type association for JNLP files so it points to our
@@ -29,7 +35,7 @@ constructor(workingDirectory: Path) {
     private val backupPaths: BackupPaths
 
     /** Checks whether the wrapper is currently installed.  */
-    val isInstalled: Boolean
+    private val isInstalled: Boolean
         get() = Files.exists(backupPaths.ftypeMapping)
 
     init {
@@ -42,10 +48,8 @@ constructor(workingDirectory: Path) {
 
     @Throws(InstallationException::class)
     private fun validate() {
-        try {
-            backupPaths.backupDirectory.toFile().mkdirs()
-        } catch (e: IOException) {
-            throw InstallationException("Cannot create backup directory at " + backupPaths.backupDirectory, e)
+        if (!backupPaths.backupDirectory.ensureDirectoryExists()) {
+            throw InstallationException("Cannot create backup directory at " + backupPaths.backupDirectory)
         }
 
         if (!Files.exists(systemSecurityPolicy)) {
@@ -70,14 +74,11 @@ constructor(workingDirectory: Path) {
             throw InstallationException("Wrapper is already installed")
         }
 
-        try {
-            wrapperPaths.defaultOutputDirectory.toFile().mkdirs()
-        } catch (e: IOException) {
+        if (!wrapperPaths.defaultOutputDirectory.ensureDirectoryExists()) {
             System.err.println(
                 "Unable to create default output directory " + wrapperPaths.defaultOutputDirectory
                         + ". Please create it yourself"
             )
-            e.printStackTrace(System.err)
         }
 
         try {
@@ -134,10 +135,7 @@ constructor(workingDirectory: Path) {
 
         try {
             FileOutputStream(wrapperPaths.configProperties.toFile()).use { outputStream ->
-                properties.store(
-                    outputStream,
-                    ""
-                )
+                properties.store(outputStream, "")
             }
         } catch (e: IOException) {
             System.err.print(
@@ -223,41 +221,26 @@ constructor(workingDirectory: Path) {
     }
 
     private inner class BackupPaths(internal val backupDirectory: Path) {
-        internal val securityPolicy: Path
-        internal val ftypeMapping: Path
-
-        init {
-            this.securityPolicy = backupDirectory.resolve(SECURITY_POLICY_FILE)
-            this.ftypeMapping = backupDirectory.resolve(FTYPE_MAPPING_BACKUP_FILE)
-        }
-
+        internal val securityPolicy: Path = backupDirectory.resolve(SECURITY_POLICY_FILE)
+        internal val ftypeMapping: Path = backupDirectory.resolve(FTYPE_MAPPING_BACKUP_FILE)
     }
 
     private inner class WrapperPaths(wrapperDirectory: Path) {
-
-        internal val securityPolicy: Path
-        internal val wrapperExecutable: Path
-        internal val configProperties: Path
-        internal val defaultOutputDirectory: Path
-
-        init {
-            securityPolicy = wrapperDirectory.resolve("agent.policy")
-            wrapperExecutable = wrapperDirectory.resolve("bin/javaws")
-            configProperties = wrapperDirectory.resolve("javaws.properties")
-            defaultOutputDirectory = wrapperDirectory.resolve("coverage")
-        }
-
+        internal val securityPolicy: Path = wrapperDirectory.resolve("agent.policy")
+        internal val wrapperExecutable: Path = wrapperDirectory.resolve("bin/javaws")
+        internal val configProperties: Path = wrapperDirectory.resolve("javaws.properties")
+        internal val defaultOutputDirectory: Path = wrapperDirectory.resolve("coverage")
     }
 
     /** Thrown if the installation/uninstallation fails.  */
     class InstallationException : Exception {
 
-        constructor(message: String, cause: Throwable) : super(message, cause) {}
+        constructor(message: String, cause: Throwable) : super(message, cause)
 
-        constructor(message: String) : super(message) {}
+        constructor(message: String) : super(message)
 
         companion object {
-
+            @JvmStatic
             private val serialVersionUID = 1L
         }
 

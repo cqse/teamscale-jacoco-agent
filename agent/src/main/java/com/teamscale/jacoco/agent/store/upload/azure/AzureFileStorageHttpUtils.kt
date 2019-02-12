@@ -21,7 +21,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.ArrayList
-import java.util.Arrays
 import java.util.Base64
 import java.util.HashMap
 import java.util.Objects
@@ -57,14 +56,15 @@ import kotlin.Comparator
     ): String {
         require(
             headers.keys.containsAll(
-                Arrays.asList(
+                listOf(
                     X_MS_DATE,
                     X_MS_VERSION
                 )
             )
         ) { "Headers for the azure request cannot be empty! At least 'x-ms-version' and 'x-ms-date' must be set" }
 
-        val xmsHeader = headers.entries.filter { x -> x.key.startsWith("x-ms") }.map { Pair(it.key, it.value) }.toMap()
+        val xmsHeader =
+            headers.entries.filter { entry -> entry.key.startsWith("x-ms") }.map { Pair(it.key, it.value) }.toMap()
 
         return arrayOf(
             httpMethod.toString(),
@@ -93,7 +93,7 @@ import kotlin.Comparator
     private fun createCanonicalizedResources(account: String, path: String, options: Map<String, String>): String {
         var canonicalizedResources = String.format("/%s%s", account, path)
 
-        if (options.size > 0) {
+        if (options.isNotEmpty()) {
             canonicalizedResources += "\n" + createCanonicalizedString(options)
         }
 
@@ -105,8 +105,7 @@ import kotlin.Comparator
         val sortedKeys = ArrayList(options.keys)
         sortedKeys.sortWith(Comparator { obj, anotherString -> obj.compareTo(anotherString) })
 
-        val values = sortedKeys
-            .map { key -> String.format("%s:%s", key, options[key]) }
+        val values = sortedKeys.map { key -> String.format("%s:%s", key, options[key]) }
         return values.joinToString("\n")
     }
 

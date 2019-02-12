@@ -39,7 +39,7 @@ class DelayedLogger : ILogger {
 
     /** Writes the logs to the given slf4j logger.  */
     fun logTo(logger: Logger) {
-        logActions.forEach { action -> action.invoke(logger) }
+        logActions.forEach { action -> action(logger) }
     }
 }
 

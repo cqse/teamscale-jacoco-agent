@@ -20,14 +20,12 @@ class UploadStoreException : Exception {
     constructor(message: String, response: Response<ResponseBody>) : super(createResponseMessage(message, response))
 
     companion object {
-        private fun createResponseMessage(message: String, response: Response<ResponseBody>): String {
+        private fun createResponseMessage(message: String, response: Response<ResponseBody>): Exception {
             return try {
-                val errorBodyMessage = response.errorBody()!!.string()
-                String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage)
+                val errorBodyMessage = response.errorBody()?.string()
+                IOException(String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage))
             } catch (e: IOException) {
-                message
-            } catch (e: NullPointerException) {
-                message
+                return IOException(message, e)
             }
         }
     }

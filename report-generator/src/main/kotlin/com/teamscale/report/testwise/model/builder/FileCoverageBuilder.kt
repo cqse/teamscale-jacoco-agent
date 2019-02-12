@@ -69,20 +69,19 @@ class FileCoverageBuilder
          */
         fun compactifyToRanges(lines: Set<Int>): List<LineRange> {
             if (lines.isEmpty()) {
-                return ArrayList()
+                return emptyList()
             }
 
-            val linesList = ArrayList(lines)
-            linesList.sortWith(Comparator { obj, anotherInteger -> obj.compareTo(anotherInteger) })
+            val linesList = lines.sorted()
 
             val firstLine = linesList[0]
-            var currentRange = LineRange(firstLine!!, firstLine)
+            var currentRange = LineRange(firstLine, firstLine)
 
             val compactifiedRanges = ArrayList<LineRange>()
             compactifiedRanges.add(currentRange)
 
             for (currentLine in linesList) {
-                if (currentRange.end == currentLine || currentRange.end == currentLine!! - 1) {
+                if (currentRange.end == currentLine || currentRange.end == currentLine - 1) {
                     currentRange.end = currentLine
                 } else {
                     currentRange = LineRange(currentLine, currentLine)

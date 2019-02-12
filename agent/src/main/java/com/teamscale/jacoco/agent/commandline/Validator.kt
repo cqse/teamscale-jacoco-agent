@@ -5,7 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.commandline
 
-import com.teamscale.jacoco.agent.CR
+import com.teamscale.jacoco.util.CR
 import java.util.*
 
 /**
@@ -14,7 +14,7 @@ import java.util.*
 class Validator {
 
     /** The found validation problems in the form of error messages for the user.  */
-    private val messages = ArrayList<String?>()
+    private val messages = ArrayList<String>()
 
     /** Returns `true` if the validation succeeded.  */
     val isValid: Boolean
@@ -27,11 +27,11 @@ class Validator {
     /** Runs the given validation routine.  */
     fun ensure(validation: () -> Unit) {
         try {
-            validation.invoke()
+            validation()
         } catch (e: Exception) {
-            messages.add(e.message)
+            messages.add("${e.message}")
         } catch (e: IllegalArgumentException) {
-            messages.add(e.message)
+            messages.add("${e.message}")
         }
     }
 

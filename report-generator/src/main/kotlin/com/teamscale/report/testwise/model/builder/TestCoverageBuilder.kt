@@ -15,10 +15,9 @@ class TestCoverageBuilder
     /** Mapping from path names to all files on this path.  */
     private val pathCoverageList = mutableMapOf<String, PathCoverageBuilder>()
 
-    /** Returns a collection of [PathCoverageBuilder]s associated with the test.  */
+    /** Returns a collection of [PathCoverage]s associated with the test.  */
     val paths: List<PathCoverage>
-        get() = pathCoverageList.values.sortedBy { it.path }
-            .map { it.build() }
+        get() = pathCoverageList.values.sortedBy { it.path }.map { it.build() }
 
     /** Returns all [FileCoverageBuilder]s stored for the test.  */
     val files: List<FileCoverageBuilder>

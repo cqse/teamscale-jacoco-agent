@@ -6,7 +6,7 @@ import java.io.IOException
 object FileSystemUtils {
 
     /** Unix file path separator  */
-    val UNIX_SEPARATOR = '/'
+    private const val UNIX_SEPARATOR = '/'
 
     /**
      * Replace platform dependent separator char with forward slashes to create
