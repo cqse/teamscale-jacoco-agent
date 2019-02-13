@@ -1,17 +1,15 @@
-package com.teamscale.report.testwise.jacoco.analysis;
+package org.jacoco.core.internal.analysis;
 
 import com.teamscale.report.testwise.jacoco.cache.ClassCoverageLookup;
-import org.jacoco.core.internal.analysis.ClassAnalyzer;
-import org.jacoco.core.internal.analysis.ClassCoverageImpl;
-import org.jacoco.core.internal.analysis.StringPool;
-import org.jacoco.core.internal.analysis.filter.Filters;
 import org.jacoco.core.internal.flow.MethodProbesVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.tree.MethodNode;
 
 /**
  * Analyzes a class to reconstruct probe information.
  * <p>
  * A probe lookup holds for a single class which probe belongs to which lines. The actual filling of the
- * {@link ClassCoverageLookup} happens in {@link CachingMethodAnalyzer}.
+ * {@link ClassCoverageLookup} happens in {@link CachingInstructionsBuilder}.
  */
 public class CachingClassAnalyzer extends ClassAnalyzer {
 
@@ -39,7 +37,17 @@ public class CachingClassAnalyzer extends ClassAnalyzer {
 	@Override
 	public MethodProbesVisitor visitMethod(final int access, final String name,
 										   final String desc, final String signature, final String[] exceptions) {
-		return new CachingMethodAnalyzer(classCoverageLookup, Filters.ALL, this);
+		final CachingInstructionsBuilder builder = new CachingInstructionsBuilder(classCoverageLookup);
+
+		return new MethodAnalyzer(builder) {
+
+			@Override
+			public void accept(final MethodNode methodNode,
+							   final MethodVisitor methodVisitor) {
+				super.accept(methodNode, methodVisitor);
+				builder.fillCache();
+			}
+		};
 	}
 
 	@Override

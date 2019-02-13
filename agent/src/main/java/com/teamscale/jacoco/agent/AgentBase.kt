@@ -76,7 +76,7 @@ constructor(options: AgentOptions) {
             val logger = LoggingUtils.getLogger(Agent::class.java)
             delayedLogger.logTo(logger)
             logger.info("Starting JaCoCo's agent")
-            org.jacoco.agent.rt.internal_28bab1d.PreMain.premain(
+            org.jacoco.agent.rt.internal_1f1cc91.PreMain.premain(
                 agentOptions.createJacocoAgentOptions(),
                 instrumentation
             )

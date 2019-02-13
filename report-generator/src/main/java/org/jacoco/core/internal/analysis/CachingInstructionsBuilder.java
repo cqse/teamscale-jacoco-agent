@@ -1,0 +1,239 @@
+package org.jacoco.core.internal.analysis;
+
+import com.teamscale.report.testwise.jacoco.cache.ClassCoverageLookup;
+import org.jacoco.core.analysis.ISourceNode;
+import org.jacoco.core.internal.flow.LabelInfo;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.tree.AbstractInsnNode;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Stateful builder for the {@link Instruction}s of a method. All instructions
+ * of a method must be added in their original sequence along with additional
+ * information like line numbers. Afterwards the instructions can be obtained
+ * with the <code>getInstructions()</code> method.
+ * <p>
+ * It's core is a copy of {@link org.jacoco.core.internal.analysis.InstructionsBuilder} that has been
+ * extended with caching functionality to speed up report generation.
+ * <p>
+ * This class contains callbacks for stepping through a method at bytecode level which has been
+ * decorated with probes by JaCoCo in a depth-first-search like way.
+ * <p>
+ * Changes that have been applied to the original class are marked with ADDED and REMOVED comments to make it as easy
+ * as possible to adjust the implementation to new versions of JaCoCo.
+ * <p>
+ * When updating JaCoCo make a diff of the previous {@link org.jacoco.core.internal.analysis.InstructionsBuilder}
+ * implementation and the new implementation and update this class accordingly.
+ */
+public class CachingInstructionsBuilder extends InstructionsBuilder {
+
+	/** Probe array of the class the analyzed method belongs to. */
+	// REMOVED private final boolean[] probes;
+
+	// ADDED field to hold a reference to our coverage lookup
+	private final ClassCoverageLookup classCoverageLookup;
+	private final List<CoveredProbe> coveredProbes = new ArrayList<>();
+
+	/** The line which belong to subsequently added instructions. */
+	private int currentLine;
+
+	/** The last instruction which has been added. */
+	private Instruction currentInsn;
+
+	/**
+	 * All instructions of a method mapped from the ASM node to the
+	 * corresponding {@link Instruction} instance.
+	 */
+	private final Map<AbstractInsnNode, Instruction> instructions;
+
+	/**
+	 * The labels which mark the subsequent instructions.
+	 * <p>
+	 * Due to ASM issue #315745 there can be more than one label per instruction
+	 */
+	private final List<Label> currentLabel;
+
+	/**
+	 * List of all jumps within the control flow. We need to store jumps
+	 * temporarily as the target {@link Instruction} may not been known yet.
+	 */
+	private final List<Jump> jumps;
+
+
+	/**
+	 * Creates a new builder instance which can be used to analyze a single
+	 * method.
+	 * <p>
+	 * ADDED ClassCoverageLookup classCoverageLookup parameter
+	 * REMOVED final boolean[] probes
+	 *
+	 * @param classCoverageLookup cache of the class' probes
+	 */
+	public CachingInstructionsBuilder(ClassCoverageLookup classCoverageLookup) {
+		super(null);
+		this.classCoverageLookup = classCoverageLookup;
+		this.currentLine = ISourceNode.UNKNOWN_LINE;
+		this.currentInsn = null;
+		this.instructions = new HashMap<>();
+		this.currentLabel = new ArrayList<>(2);
+		this.jumps = new ArrayList<>();
+	}
+
+	/**
+	 * Sets the current source line. All subsequently added instructions will be
+	 * assigned to this line. If no line is set (e.g. for classes compiled
+	 * without debug information) {@link ISourceNode#UNKNOWN_LINE} is assigned
+	 * to the instructions.
+	 */
+	void setCurrentLine(final int line) {
+		currentLine = line;
+	}
+
+	/**
+	 * Adds a label which applies to the subsequently added instruction. Due to
+	 * ASM internals multiple {@link Label}s can be added to an instruction.
+	 */
+	void addLabel(final Label label) {
+		currentLabel.add(label);
+		if (!LabelInfo.isSuccessor(label)) {
+			noSuccessor();
+		}
+	}
+
+	/**
+	 * Adds a new instruction. Instructions are by default linked with the
+	 * previous instruction unless specified otherwise.
+	 */
+	void addInstruction(final AbstractInsnNode node) {
+		final Instruction insn = new Instruction(currentLine);
+		final int labelCount = currentLabel.size();
+		if (labelCount > 0) {
+			for (int i = labelCount; --i >= 0; ) {
+				LabelInfo.setInstruction(currentLabel.get(i), insn);
+			}
+			currentLabel.clear();
+		}
+		if (currentInsn != null) {
+			currentInsn.addBranch(insn, 0);
+		}
+		currentInsn = insn;
+		instructions.put(node, insn);
+	}
+
+	/**
+	 * Declares that the next instruction will not be a successor of the current
+	 * instruction. This is the case with an unconditional jump or technically
+	 * when a probe was inserted before.
+	 */
+	void noSuccessor() {
+		currentInsn = null;
+	}
+
+	/**
+	 * Adds a jump from the last added instruction.
+	 *
+	 * @param target jump target
+	 * @param branch unique branch number
+	 */
+	void addJump(final Label target, final int branch) {
+		jumps.add(new Jump(currentInsn, target, branch));
+	}
+
+	/**
+	 * Adds a new probe for the last instruction.
+	 *
+	 * @param probeId index in the probe array
+	 * @param branch  unique branch number for the last instruction
+	 */
+	void addProbe(final int probeId, final int branch) {
+		// REMOVED check of probes array and instead add the probes unconditionally
+		// final boolean executed = probes != null && probes[probeId];
+		// currentInsn.addBranch(executed, branch);
+
+		// ADDED
+		currentInsn.addBranch(true, branch);
+		coveredProbes.add(new CoveredProbe(probeId, currentInsn, branch));
+	}
+
+	/**
+	 * Returns the status for all instructions of this method. This method must
+	 * be called exactly once after the instructions have been added.
+	 */
+	public void fillCache() {
+		// Wire jumps:
+		for (final Jump j : jumps) {
+			j.wire();
+		}
+
+		// ADDED
+		// Traces back all instructions that are executed before reaching a probe
+		// and stores the mapping from probe to lines in #classCoverageLookup
+		// We need this because JaCoCo does not insert a probe after every line.
+		for (CoveredProbe coveredProbe : coveredProbes) {
+			Instruction instruction = coveredProbe.instruction;
+			Set<Integer> coveredLines = new HashSet<>();
+			while (instruction != null) {
+				coveredLines.add(instruction.getLine());
+				instruction = getPredecessor(instruction);
+			}
+			classCoverageLookup.addProbe(coveredProbe.probeId, coveredLines);
+		}
+	}
+
+	/**
+	 * ADDED
+	 * Helper to get the private field predecessor from an instruction. The predecessor of an instruction
+	 * is the preceding node according to the control flow graph of the method.
+	 */
+	private Instruction getPredecessor(Instruction instruction) {
+		try {
+			Field predecessorField = instruction.getClass().getDeclaredField("predecessor");
+			predecessorField.setAccessible(true);
+			instruction = (Instruction) predecessorField.get(instruction);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			// This means we have a serious coding mistake here there is no way to recover from this anyway
+			throw new RuntimeException("Instruction has no field named predecessor! This is a programming error!", e);
+		}
+		return instruction;
+	}
+
+	// ADDED
+	private static class CoveredProbe {
+
+		final int probeId;
+		final Instruction instruction;
+		final int branch;
+
+		private CoveredProbe(int probeId, final Instruction instruction, final int branch) {
+			this.probeId = probeId;
+			this.instruction = instruction;
+			this.branch = branch;
+		}
+	}
+
+	private static class Jump {
+
+		private final Instruction source;
+		private final Label target;
+		private final int branch;
+
+		Jump(final Instruction source, final Label target, final int branch) {
+			this.source = source;
+			this.target = target;
+			this.branch = branch;
+		}
+
+		void wire() {
+			source.addBranch(LabelInfo.getInstruction(target), branch);
+		}
+
+	}
+
+}
