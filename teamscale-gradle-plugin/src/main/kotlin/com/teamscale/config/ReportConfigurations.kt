@@ -115,7 +115,7 @@ class GoogleClosureConfiguration : Serializable {
         destination = files.files
     }
 
-    /** Returns a predicate with the include/exclude patterns. */
+    /** Returns a predicate with the ant include/exclude patterns. */
     fun getFilter() = FileNameFilter(
         includes ?: emptyList(),
         excludes ?: emptyList()

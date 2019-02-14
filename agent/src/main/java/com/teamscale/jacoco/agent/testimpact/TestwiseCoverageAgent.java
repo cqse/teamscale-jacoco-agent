@@ -51,10 +51,9 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String handleTestStart(Request request, Response response) {
 		String testId = request.params(TEST_ID_PARAMETER);
 		if (testId == null || testId.isEmpty()) {
-			logger.error("End test name missing in " + request.url() + "!");
+			logger.error("Test name missing in " + request.url() + "!");
 
 			response.status(400);
-			response.body();
 			return "Test name is missing!";
 		}
 
@@ -72,7 +71,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String handleTestEnd(Request request, Response response) throws DumpException {
 		String testId = request.params(TEST_ID_PARAMETER);
 		if (testId == null || testId.isEmpty()) {
-			logger.error("End test name missing in " + request.url() + "!");
+			logger.error("Test name missing in " + request.url() + "!");
 
 			response.status(400);
 			return "Test name is missing!";

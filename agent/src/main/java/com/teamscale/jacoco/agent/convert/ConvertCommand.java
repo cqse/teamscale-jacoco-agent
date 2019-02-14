@@ -34,7 +34,7 @@ public class ConvertCommand implements ICommand {
 	/* package */ List<String> classDirectoriesOrZips = new ArrayList<>();
 
 	/**
-	 * Ant-style include patterns to apply during JaCoCo's traversal of class files.
+	 * Wildcard include patterns to apply during JaCoCo's traversal of class files.
 	 */
 	@Parameter(names = {"--filter", "-f"}, description = ""
 			+ "Wildcard include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
@@ -45,7 +45,7 @@ public class ConvertCommand implements ICommand {
 	/* package */ List<String> locationIncludeFilters = new ArrayList<>();
 
 	/**
-	 * Ant-style exclude patterns to apply during JaCoCo's traversal of class files.
+	 * Wildcard exclude patterns to apply during JaCoCo's traversal of class files.
 	 */
 	@Parameter(names = {"--exclude", "-e"}, description = ""
 			+ "Wildcard exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
