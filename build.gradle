@@ -17,8 +17,9 @@ ext {
 	teamscaleClientVersion = '0.2.4'
 
     // When upgrading JaCoCo to a newer version make sure to 
-    // check the comment in the AnalyzerCache.java and CachingMethodAnalyzer.java.
-	jacocoVersion = '0.8.2'
+    // check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
+	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.kt.
+	jacocoVersion = '0.8.3'
 	log4jVersion = '2.8.2'
 
 	// Needed to deploy the artifacts to our public share

@@ -1,12 +1,13 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
 import com.teamscale.report.jacoco.FilteringAnalyzer;
-import com.teamscale.report.testwise.jacoco.analysis.CachingClassAnalyzer;
 import com.teamscale.report.util.ILogger;
+import org.jacoco.core.internal.analysis.CachingClassAnalyzer;
 import org.jacoco.core.internal.analysis.ClassCoverageImpl;
 import org.jacoco.core.internal.analysis.StringPool;
 import org.jacoco.core.internal.data.CRC64;
 import org.jacoco.core.internal.flow.ClassProbesAdapter;
+import org.jacoco.core.internal.instr.InstrSupport;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 
@@ -52,7 +53,7 @@ public class AnalyzerCache extends FilteringAnalyzer {
 		if (probesCache.containsClassId(classId)) {
 			return;
 		}
-		final ClassReader reader = new ClassReader(source);
+		final ClassReader reader = InstrSupport.classReaderFor(source);
 		ClassCoverageLookup classCoverageLookup = probesCache.createClass(classId, reader.getClassName());
 
 		// Dummy class coverage object that allows us to subclass ClassAnalyzer with CachingClassAnalyzer and reuse its

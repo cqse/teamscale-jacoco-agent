@@ -103,6 +103,10 @@ distributions {
 	}
 }
 
+tasks.named('shadowDistZip').configure {
+	archiveName = 'teamscale-jacoco-agent.zip'
+}
+
 processResources {
     filesMatching('**/app.properties') {
         filter {
