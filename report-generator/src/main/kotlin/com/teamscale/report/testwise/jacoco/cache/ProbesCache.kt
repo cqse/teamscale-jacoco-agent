@@ -71,8 +71,8 @@ class ProbesCache
             return null
         }
         return when {
-            !executionData.hasHits() -> null
-            else -> classCoverageLookups[classId]?.getFileCoverage(executionData, logger)
+            executionData.hasHits() -> classCoverageLookups[classId]?.getFileCoverage(executionData, logger)
+            else -> null
         }
     }
 }

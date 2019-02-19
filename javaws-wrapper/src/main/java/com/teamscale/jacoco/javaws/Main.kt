@@ -51,28 +51,17 @@ class Main {
     }
 
     /** Thrown if reading the config file fails.  */
-    class ConfigurationException : Exception {
-
-        constructor(message: String, cause: Throwable) : super(message, cause) {}
-
-        constructor(message: String) : super(message) {}
-
-        companion object {
-
-            private val serialVersionUID = 1L
-        }
-
-    }
+    class ConfigurationException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
     companion object {
 
         /** Visible for testing.  */
-        /* package */ internal val PROPERTY_AGENT_ARGUMENTS = "agentArguments"
+        /* package */ internal const val PROPERTY_AGENT_ARGUMENTS = "agentArguments"
         /** Visible for testing.  */
-        /* package */ internal val PROPERTY_JAVAWS = "javaws"
+        /* package */ internal const val PROPERTY_JAVAWS = "javaws"
         /** Visible for testing.  */
-        /* package */ internal val PROPERTIES_FILENAME = "javaws.properties"
-        private val JAVA_TOOL_OPTIONS_VARIABLE = "JAVA_TOOL_OPTIONS"
+        /* package */ internal const val PROPERTIES_FILENAME = "javaws.properties"
+        private const val JAVA_TOOL_OPTIONS_VARIABLE = "JAVA_TOOL_OPTIONS"
 
         /** Entry point.  */
         @Throws(

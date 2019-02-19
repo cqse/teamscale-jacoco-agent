@@ -4,18 +4,6 @@ import com.teamscale.client.EReportFormat
 import com.teamscale.jacoco.agent.store.UploadStoreException
 import com.teamscale.jacoco.agent.store.file.TimestampedFileStore
 import com.teamscale.jacoco.agent.store.upload.UploadStoreBase
-import okhttp3.MediaType
-import okhttp3.RequestBody
-import okhttp3.ResponseBody
-import retrofit2.Response
-import retrofit2.Retrofit
-
-import java.io.IOException
-import java.nio.file.Path
-import java.util.HashMap
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.HEAD
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.PUT
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.AUTHORIZATION
@@ -25,6 +13,15 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_CONTEN
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_RANGE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_TYPE
 import com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_WRITE
+import okhttp3.MediaType
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.Retrofit
+import java.io.IOException
+import java.nio.file.Path
+import java.util.*
+import java.util.regex.Pattern
 
 /** Uploads the coverage archive to a provided azure file storage.  */
 class AzureFileStorageUploadStore
@@ -36,13 +33,12 @@ constructor(
 ) : UploadStoreBase<IAzureUploadApi>(failureStore, config.url!!, additionalMetaDataFiles) {
 
     /** The access key for the azure file storage  */
-    private val accessKey: String?
+    private val accessKey: String? = config.accessKey
 
     /** The account for the azure file storage  */
     private val account: String
 
     init {
-        this.accessKey = config.accessKey
         this.account = getAccount()
 
         validateUploadUrl()
@@ -117,12 +113,12 @@ constructor(
      */
     @Throws(IOException::class, UploadStoreException::class)
     private fun checkAndCreatePath(pathParts: List<String>) {
-        for (i in 2..pathParts.size - 1) {
+        for (i in 2 until pathParts.size) {
             val directoryPath = String.format("/%s/", pathParts.subList(0, i).joinToString("/"))
             if (!checkDirectory(directoryPath).isSuccessful) {
                 val mkdirResponse = createDirectory(directoryPath)
                 if (!mkdirResponse.isSuccessful) {
-                    throw UploadStoreException(
+                    throw UploadStoreException.createForResponseBody(
                         String.format("Creation of path '/%s' was unsuccessful", directoryPath), mkdirResponse
                     )
                 }

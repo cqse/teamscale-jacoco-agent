@@ -20,13 +20,9 @@ import java.security.NoSuchAlgorithmException
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.ArrayList
-import java.util.Base64
-import java.util.HashMap
-import java.util.Objects
+import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.Comparator
 
 /** Utils class for communicating with an azure file storage.  */
 /* package */ internal object AzureFileStorageHttpUtils {
@@ -102,11 +98,8 @@ import kotlin.Comparator
 
     /** Creates a string with a map where each key-value pair is in a newline separated by a colon.  */
     private fun createCanonicalizedString(options: Map<String, String>): String {
-        val sortedKeys = ArrayList(options.keys)
-        sortedKeys.sortWith(Comparator { obj, anotherString -> obj.compareTo(anotherString) })
-
-        val values = sortedKeys.map { key -> String.format("%s:%s", key, options[key]) }
-        return values.joinToString("\n")
+        return options.entries.sortedBy { it.key }
+            .joinToString("\n") { (key, value) -> String.format("%s:%s", key, value) }
     }
 
     /** Creates the string which is needed for the authorization of an azure file storage request.  */

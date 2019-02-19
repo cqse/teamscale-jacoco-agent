@@ -45,6 +45,8 @@ public class CachingClassAnalyzer extends ClassAnalyzer {
 			public void accept(final MethodNode methodNode,
 							   final MethodVisitor methodVisitor) {
 				super.accept(methodNode, methodVisitor);
+				// CHANGE The regular ClassAnalyzer gets the coverage here, we instead
+				// fill the cache with the obtained information
 				builder.fillCache();
 			}
 		};

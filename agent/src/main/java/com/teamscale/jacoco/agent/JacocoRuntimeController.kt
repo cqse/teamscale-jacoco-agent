@@ -10,10 +10,8 @@ import org.jacoco.agent.rt.IAgent
 import org.jacoco.agent.rt.RT
 import org.jacoco.core.data.ExecutionDataReader
 import org.jacoco.core.data.ExecutionDataStore
-import org.jacoco.core.data.IExecutionDataVisitor
 import org.jacoco.core.data.ISessionInfoVisitor
 import org.jacoco.core.data.SessionInfo
-
 import java.io.ByteArrayInputStream
 import java.io.IOException
 
@@ -43,16 +41,7 @@ class JacocoRuntimeController
         }
 
     /** Indicates a failed dump.  */
-    class DumpException
-    /** Constructor.  */
-        (message: String?, cause: Throwable) : Exception(message, cause) {
-        companion object {
-
-            /** Serialization ID.  */
-            private const val serialVersionUID = 1L
-        }
-
-    }
+    class DumpException(message: String?, cause: Throwable) : Exception(message, cause)
 
     /**
      * Dumps execution data and resets it.

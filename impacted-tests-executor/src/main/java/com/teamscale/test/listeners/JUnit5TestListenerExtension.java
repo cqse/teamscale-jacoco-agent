@@ -98,7 +98,8 @@ public class JUnit5TestListenerExtension implements TestExecutionListener {
 							.add(new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE, message));
 					break;
 				default:
-					logger.error("New unknown execution result: " + testExecutionResult.getStatus());
+					logger.error("New unknown execution result: " + testExecutionResult
+							.getStatus() + "! This is a bug! Please report back to CQSE.");
 					break;
 			}
 		}

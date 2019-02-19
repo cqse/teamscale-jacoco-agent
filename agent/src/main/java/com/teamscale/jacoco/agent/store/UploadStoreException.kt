@@ -8,24 +8,15 @@ import java.io.IOException
 /**
  * Exception thrown from an upload store. Either during the upload or in the validation process.
  */
-class UploadStoreException : Exception {
-
-    /** Constructor  */
-    constructor(message: String, e: Exception) : super(message, e)
-
-    /** Constructor  */
-    constructor(message: String) : super(message)
-
-    /** Constructor  */
-    constructor(message: String, response: Response<ResponseBody>) : super(createResponseMessage(message, response))
+class UploadStoreException(message: String, e: Throwable? = null) : Exception(message, e) {
 
     companion object {
-        private fun createResponseMessage(message: String, response: Response<ResponseBody>): Exception {
+        fun createForResponseBody(message: String, response: Response<ResponseBody>): Exception {
             return try {
                 val errorBodyMessage = response.errorBody()?.string()
-                IOException(String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage))
+                UploadStoreException(String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage))
             } catch (e: IOException) {
-                return IOException(message, e)
+                UploadStoreException(message, e)
             }
         }
     }

@@ -233,24 +233,13 @@ constructor(workingDirectory: Path) {
     }
 
     /** Thrown if the installation/uninstallation fails.  */
-    class InstallationException : Exception {
-
-        constructor(message: String, cause: Throwable) : super(message, cause)
-
-        constructor(message: String) : super(message)
-
-        companion object {
-            @JvmStatic
-            private val serialVersionUID = 1L
-        }
-
-    }
+    class InstallationException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
     companion object {
 
-        private val JNLP_FTYPE = "JNLPFile"
-        private val SECURITY_POLICY_FILE = "javaws.policy"
-        private val FTYPE_MAPPING_BACKUP_FILE = "ftype.bak"
+        private const val JNLP_FTYPE = "JNLPFile"
+        private const val SECURITY_POLICY_FILE = "javaws.policy"
+        private const val FTYPE_MAPPING_BACKUP_FILE = "ftype.bak"
 
         /** Runs the ftype shell builtin to change file associations.  */
         @Throws(IOException::class, InterruptedException::class)
