@@ -103,11 +103,11 @@ distributions {
 	}
 }
 
-shadowDistZip {
-	archiveName = "teamscale-jacoco-agent.zip"
+tasks.named('shadowDistZip').configure {
+	archiveName = 'teamscale-jacoco-agent.zip'
 }
 
-shadowDistTar {
+tasks.named('shadowDistTar').configure {
 	archiveName = "teamscale-jacoco-agent.tar"
 }
 
