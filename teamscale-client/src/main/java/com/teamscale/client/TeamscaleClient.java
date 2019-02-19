@@ -33,7 +33,7 @@ public class TeamscaleClient {
 	 *
 	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
 	 */
-	public Response<List<TestForPrioritization>> getImpactedTests(List<TestDetails> testList, Long baseline, CommitDescriptor endCommit, String partition) throws IOException {
+	public Response<List<TestClusterForPrioritization>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline, CommitDescriptor endCommit, String partition) throws IOException {
 		if (baseline == null) {
 			return service
 					.getImpactedTests(projectId, endCommit, partition, testList)

@@ -61,8 +61,8 @@ open class TeamscaleReportTask : DefaultTask() {
         get() = reportsToArtifacts.values.flatten()
 
     /** The report files that will be produced by the task. */
+    @get:OutputFiles
     val reportFiles
-        @OutputFiles
         get() = reportsToArtifacts.keys.map { it.reportFile }
 
     init {

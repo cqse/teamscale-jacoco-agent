@@ -50,11 +50,13 @@ class TeamscalePluginTest {
             "unitTest",
             "--impacted",
             "--run-all-tests",
-            "--info",
+            // Uncomment to remote debug the test engine.
+            "--debug-jvm",
+            "--debug",
             "--stacktrace"
         )
-        assertThat(build.output).contains("BUILD SUCCESSFUL", "13 tests successful", "6 tests skipped")
-            .doesNotContain("you did not provide all relevant class files")
+        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+            //.doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
         assertThat(testwiseCoverageReportFile).exists()
@@ -92,7 +94,8 @@ class TeamscalePluginTest {
             .withPluginClasspath()
             .withArguments(*arguments)
             .withGradleVersion("4.6")
-//            .withDebug(true)
+            // Uncomment to debug the Gradle plugin
+            // .withDebug(true)
             .build()
 }
 

@@ -27,6 +27,13 @@ open class TeamscalePluginExtension(val project: Project) {
         action.execute(commit)
     }
 
+    var baseline: Long? = null
+
+    /** Configures the baseline. */
+    fun baseline(action: Action<in Long?>) {
+        action.execute(baseline)
+    }
+
     val report = Reports()
 
     /** Configures the reports to be uploaded. */

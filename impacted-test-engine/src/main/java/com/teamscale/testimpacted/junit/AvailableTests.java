@@ -1,9 +1,12 @@
-package org.junit.platform.console.tasks;
+package com.teamscale.testimpacted.junit;
 
+import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.TestDetails;
 import com.teamscale.client.TestForPrioritization;
 import org.conqat.lib.commons.string.StringUtils;
-import org.junit.platform.console.Logger;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
+import org.junit.platform.engine.UniqueId;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,17 +20,19 @@ import java.util.Map;
  */
 public class AvailableTests {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestEngine.class);
+
 	/**
 	 * A mapping from the tests uniform path (Teamscale internal representation) to
 	 * unique id (JUnit internal representation).
 	 */
-	private Map<String, String> uniformPathToUniqueIdMapping = new HashMap<>();
+	private Map<String, UniqueId> uniformPathToUniqueIdMapping = new HashMap<>();
 
 	/** List of all test details. */
-	private List<TestDetails> testList = new ArrayList<>();
+	private List<ClusteredTestDetails> testList = new ArrayList<>();
 
 	/** Adds a new {@link TestDetails} object and the according uniqueId. */
-	public void add(String uniqueId, TestDetails details) {
+	public void add(UniqueId uniqueId, ClusteredTestDetails details) {
 		uniformPathToUniqueIdMapping.put(details.uniformPath, uniqueId);
 		testList.add(details);
 	}
@@ -38,7 +43,7 @@ public class AvailableTests {
 	}
 
 	/** Returns the list of available tests. */
-	public List<TestDetails> getTestList() {
+	public List<ClusteredTestDetails> getTestList() {
 		return testList;
 	}
 
@@ -51,23 +56,23 @@ public class AvailableTests {
 	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a
 	 * list of unique IDs to be fed into JUnit Platform.
 	 */
-	public List<String> convertToUniqueIds(Logger logger, List<TestForPrioritization> impactedTests) {
-		List<String> list = new ArrayList<>();
+	public List<UniqueId> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
+		List<UniqueId> list = new ArrayList<>();
 		for (TestForPrioritization impactedTest : impactedTests) {
-			logger.info("" + impactedTest.uniformPath + " " + impactedTest.selectionReason);
+			LOGGER.info(() -> impactedTest.uniformPath + " " + impactedTest.selectionReason);
 
-			String testUniqueIds = uniformPathToUniqueIdMapping.get(impactedTest.uniformPath);
-			if (testUniqueIds == null) {
-				logger.error("Retrieved invalid test '" + impactedTest.uniformPath + "' from Teamscale server!");
-				logger.error("The following seem related:");
+			UniqueId testUniqueId = uniformPathToUniqueIdMapping.get(impactedTest.uniformPath);
+			if (testUniqueId == null) {
+				LOGGER.error(() ->"Retrieved invalid test '" + impactedTest.uniformPath + "' from Teamscale server!");
+				LOGGER.error(() ->"The following seem related:");
 				uniformPathToUniqueIdMapping.keySet().stream().sorted(Comparator
 						.comparing(testPath -> StringUtils.editDistance(impactedTest.uniformPath, testPath))).limit(5)
-						.forEach(testAlternative -> logger.error(" - " + testAlternative));
+						.forEach(testAlternative -> LOGGER.error(() -> " - " + testAlternative));
 
-				logger.error("Falling back to execute all...");
+				LOGGER.error(() ->"Falling back to execute all...");
 				return new ArrayList<>(uniformPathToUniqueIdMapping.values());
 			}
-			list.add(testUniqueIds);
+			list.add(testUniqueId);
 		}
 		return list;
 	}

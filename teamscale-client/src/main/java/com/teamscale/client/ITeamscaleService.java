@@ -50,21 +50,21 @@ public interface ITeamscaleService {
 
 	/** Test Impact API. */
 	@PUT("p/{projectName}/test-impact")
-	Call<List<TestForPrioritization>> getImpactedTests(
+	Call<List<TestClusterForPrioritization>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			@Body List<TestDetails> report
+			@Body List<ClusteredTestDetails> report
 	);
 
 	/** Test Impact API. */
 	@PUT("p/{projectName}/test-impact")
-	Call<List<TestForPrioritization>> getImpactedTests(
+	Call<List<TestClusterForPrioritization>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			@Body List<TestDetails> report
+			@Body List<ClusteredTestDetails> report
 	);
 
 	/**

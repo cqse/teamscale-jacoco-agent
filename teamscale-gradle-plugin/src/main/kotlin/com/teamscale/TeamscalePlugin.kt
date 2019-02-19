@@ -26,7 +26,7 @@ open class TeamscalePlugin : Plugin<Project> {
         const val teamscaleExtensionName = "teamscale"
 
         /** The name of the configuration that holds the impacted test executor and its dependencies. */
-        const val impactedTestExecutorConfiguration = "impactedTestsExecutor"
+        const val impactedTestEngineConfiguration = "impactedTestsExecutor"
 
         /** The name of the configuration that holds the teamscale jacoco agent and its dependencies. */
         const val teamscaleJaCoCoAgentConfiguration = "teamscaleJaCoCoAgent"
@@ -60,9 +60,9 @@ open class TeamscalePlugin : Plugin<Project> {
 
         // Add impacted tests executor to a custom configuration that will later be used to
         // create the classpath for the TestImpacted created by this plugin.
-        project.configurations.maybeCreate(impactedTestExecutorConfiguration)
+        project.configurations.maybeCreate(impactedTestEngineConfiguration)
             .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("com.teamscale:impacted-tests-executor:$pluginVersion"))
+                dependencies.add(project.dependencies.create("com.teamscale:impacted-test-engine:$pluginVersion"))
             }
 
         // Add teamscale jacoco agent to a custom configuration that will later be used to
@@ -88,6 +88,8 @@ open class TeamscalePlugin : Plugin<Project> {
         }
     }
 
+
+
     /** Configures the given impacted test executor. */
     private fun configureTestImpactedTask(
         project: Project,
@@ -100,7 +102,7 @@ open class TeamscalePlugin : Plugin<Project> {
 
         testImpacted.apply {
             taskExtension = extension
-            dependsOn.add(project.configurations.getByName(impactedTestExecutorConfiguration))
+            dependsOn.add(project.configurations.getByName(impactedTestEngineConfiguration))
         }
 
         val teamscaleReportTask = project.rootProject.tasks
