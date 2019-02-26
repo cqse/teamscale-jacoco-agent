@@ -29,6 +29,9 @@ public class JaCoCoTestwiseReportGenerator {
 	/** The execution data reader and converter. */
 	private CachingExecutionDataReader executionDataReader;
 
+	/** The filter for the analyzed class files. */
+	private final Predicate<String> locationIncludeFilter;
+
 	/**
 	 * Create a new generator with a collection of class directories.
 	 *
@@ -37,6 +40,7 @@ public class JaCoCoTestwiseReportGenerator {
 	 * @param logger                    The logger
 	 */
 	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
+		this.locationIncludeFilter = locationIncludeFilter;
 		this.executionDataReader = new CachingExecutionDataReader(logger);
 		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, ignoreNonidenticalDuplicateClassFiles);
 	}
@@ -45,14 +49,14 @@ public class JaCoCoTestwiseReportGenerator {
 	public TestwiseCoverage convert(Collection<File> executionDataFiles) throws IOException {
 		TestwiseCoverage aggregatedTestwiseCoverage = new TestwiseCoverage();
 		for (File executionDataFile : executionDataFiles) {
-			aggregatedTestwiseCoverage.add(executionDataReader.buildCoverage(readDumps(executionDataFile)));
+			aggregatedTestwiseCoverage.add(executionDataReader.buildCoverage(readDumps(executionDataFile), locationIncludeFilter));
 		}
 		return aggregatedTestwiseCoverage;
 	}
 
 	/** Converts the given dumps to a report. */
 	public TestwiseCoverage convert(File executionDataFile) throws IOException {
-		return executionDataReader.buildCoverage(readDumps(executionDataFile));
+		return executionDataReader.buildCoverage(readDumps(executionDataFile), locationIncludeFilter);
 	}
 
 	/** Reads the dumps from the given *.exec file. */

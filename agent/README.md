@@ -23,7 +23,7 @@ The following options are available:
 
 ### General options
 
-- `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format)
+- `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format section below)
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -36,7 +36,10 @@ The following options are available:
 - `excludes` (optional): exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format section below)
+- `logging-config`: path to a [logback][logback] configuration XML file (other configuration formats are not supported at the moment).
+  Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
+  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section below)
   
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
@@ -56,7 +59,7 @@ patterns with `*`, `**` and `?`.
 ### Options for normal mode
 
 - `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format)
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
@@ -66,9 +69,6 @@ patterns with `*`, `**` and `?`.
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
-- `logging-config`: path to a [logback][] configuration XML file (other configuration formats are not supported at the moment).
-  Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
-  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format)
 - `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
@@ -99,11 +99,11 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 ```
   
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
-  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format)
+  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format section above)
   
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format)
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format section above)
 - `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
   even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
   You might need to make your self-signed certificates available to the agent via a keystore. See
@@ -141,13 +141,16 @@ The test system (the application executing the test specification) can inform th
 finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
-  (Recommended port is 8000)
+  (Recommended port is 8123)
   
 The agent's REST API has the following endpoints:
-- `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
-- `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
-- `[GET] /test` Returns the name of the current test. The result will be empty when the test already finished or was 
+- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
+- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
+- `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
+  
+The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
+E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
 
 ## Additional steps for WebSphere
 
