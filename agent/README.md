@@ -145,7 +145,7 @@ The agent's REST API has the following endpoints:
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
   
-The `testPath` parameter describes is a hierarchically structured identifier of the test and must be url encoded.
+The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
 
 ## Additional steps for WebSphere
