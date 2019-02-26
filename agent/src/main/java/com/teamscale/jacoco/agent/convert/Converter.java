@@ -13,7 +13,7 @@ import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
-import com.teamscale.report.util.AntPatternIncludeFilter;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -51,11 +51,9 @@ public class Converter {
 		SessionInfo sessionInfo = loader.getSessionInfoStore().getMerged("merged");
 		ExecutionDataStore executionDataStore = loader.getExecutionDataStore();
 
-		AntPatternIncludeFilter locationIncludeFilter = new AntPatternIncludeFilter(
-				arguments.getLocationIncludeFilters(), arguments.getLocationExcludeFilters());
 		Logger logger = LoggingUtils.getLogger(this);
 		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				locationIncludeFilter, arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger));
+				getWildcardIncludeExcludeFilter(), arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			String xml = generator.convert(new Dump(sessionInfo, executionDataStore));
@@ -73,11 +71,10 @@ public class Converter {
 		List<File> jacocoExecutionDataList = ReportUtils
 				.listFiles(ETestArtifactFormat.JACOCO, arguments.getInputFiles());
 		ILogger logger = new CommandLineLogger();
-		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(arguments.locationIncludeFilters,
-				arguments.locationExcludeFilters);
+
 		JaCoCoTestwiseReportGenerator generator = new JaCoCoTestwiseReportGenerator(
 				arguments.getClassDirectoriesOrZips(),
-				includeFilter,
+				getWildcardIncludeExcludeFilter(),
 				true,
 				logger
 		);
@@ -92,5 +89,11 @@ public class Converter {
 					.createFrom(testDetails, coverage.getTests(), testExecutions);
 			ReportUtils.writeReportToFile(arguments.getOutputFile(), report);
 		}
+	}
+
+	private ClasspathWildcardIncludeFilter getWildcardIncludeExcludeFilter() {
+		return new ClasspathWildcardIncludeFilter(
+				String.join(":", arguments.locationIncludeFilters),
+				String.join(":", arguments.locationExcludeFilters));
 	}
 }
