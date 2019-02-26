@@ -68,7 +68,7 @@ public class HttpUtils {
 	 */
 	private static void setUpSslValidation(OkHttpClient.Builder builder) {
 		if (shouldValidateSsl) {
-			// this is the default behaviour
+			// this is the default behaviour of OkHttp, so we don't need to do anything
 			return;
 		}
 
