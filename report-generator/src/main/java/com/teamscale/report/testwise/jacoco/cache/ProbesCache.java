@@ -26,9 +26,12 @@ public class ProbesCache {
 	/** Whether to ignore non-identical duplicates of class files. */
 	private final boolean ignoreNonidenticalDuplicateClassFiles;
 
+	private final ClassNotFoundLogger classNotFoundLogger;
+
 	/** Constructor. */
 	public ProbesCache(ILogger logger, boolean ignoreNonidenticalDuplicateClassFiles) {
 		this.logger = logger;
+		this.classNotFoundLogger = new ClassNotFoundLogger(logger);
 		this.ignoreNonidenticalDuplicateClassFiles = ignoreNonidenticalDuplicateClassFiles;
 	}
 
@@ -63,12 +66,9 @@ public class ProbesCache {
 	public FileCoverageBuilder getCoverage(ExecutionData executionData, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
-			if (locationIncludeFilter.test(executionData.getName())) {
-				logger.warn(
-						"Found coverage for a class " + executionData
-								.getName() + " that was not provided. Either you did not provide " +
-								"all relevant class files or you did not adjust the include/exclude filters on the agent to exclude " +
-								"coverage from irrelevant code.");
+			String fullyQualifiedClassName = executionData.getName().replace('/', '.');
+			if (locationIncludeFilter.test(fullyQualifiedClassName)) {
+				classNotFoundLogger.log(fullyQualifiedClassName);
 			}
 			return null;
 		}
@@ -79,8 +79,13 @@ public class ProbesCache {
 		return classCoverageLookups.get(classId).getFileCoverage(executionData, logger);
 	}
 
-	/** Returns true if the cache does not contains coverage for any class. */
+	/** Returns true if the cache does not contain coverage for any class. */
 	public boolean isEmpty() {
 		return classCoverageLookups.isEmpty();
+	}
+
+	/** Prints a the collected class not found messages. */
+	public void flushLogger() {
+		classNotFoundLogger.flush();
 	}
 }

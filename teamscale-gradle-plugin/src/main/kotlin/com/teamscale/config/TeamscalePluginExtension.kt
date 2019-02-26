@@ -6,7 +6,6 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.process.JavaForkOptions
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
-import java.io.Serializable
 
 
 /**
@@ -37,7 +36,8 @@ open class TeamscalePluginExtension(val project: Project) {
 
     fun <T> applyTo(task: T): TeamscaleTaskExtension where T : Task, T : JavaForkOptions {
         val jacocoTaskExtension: JacocoTaskExtension = task.extensions.getByType(JacocoTaskExtension::class.java)
-        jacocoTaskExtension.excludes?.add("org.junit.*")
+        jacocoTaskExtension.excludes?.addAll(DEFAULT_EXCLUDES)
+
         val extension =
             task.extensions.create(
                 TeamscalePlugin.teamscaleExtensionName,
@@ -50,5 +50,20 @@ open class TeamscalePluginExtension(val project: Project) {
             project.file("${project.buildDir}/jacoco/${project.name}-${task.name}")
         })
         return extension
+    }
+
+    companion object {
+        private val DEFAULT_EXCLUDES = listOf(
+            "org.junit.*",
+            "com.teamscale.jacoco.agent.*",
+            "com.teamscale.test.listeners.*",
+            "com.teamscale.report.*",
+            "com.teamscale.client.*",
+            "org.jacoco.core.*",
+            "shadow.*",
+            "okhttp3.*",
+            "okio.*",
+            "retrofit2.*"
+        )
     }
 }

@@ -14,6 +14,7 @@ import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
