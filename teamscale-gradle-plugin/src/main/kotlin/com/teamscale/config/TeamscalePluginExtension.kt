@@ -63,7 +63,8 @@ open class TeamscalePluginExtension(val project: Project) {
             "shadow.*",
             "okhttp3.*",
             "okio.*",
-            "retrofit2.*"
+            "retrofit2.*",
+            "*\$MockitoMock\$*"
         )
     }
 }
