@@ -1,12 +1,14 @@
 package org.junit.platform.console;
 
+import com.teamscale.report.util.ILogger;
+
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 
 /** Logger to print to a given out and error stream. */
-public class Logger implements AutoCloseable {
+public class Logger implements AutoCloseable, ILogger {
 
 	/** ANSI escape sequence for writing red text to the console. */
 	private static final String ANSI_RED = "\u001B[31m";
@@ -35,11 +37,12 @@ public class Logger implements AutoCloseable {
 	}
 
 	/** Write the given exception to the error stream (stacktrace inclusive). */
-	public void error(Exception exception) {
+	@Override
+	public void error(Throwable exception) {
 		exception.printStackTrace(error);
 	}
 
-	/** Prints the given message to the error stream. */
+	/** Prints the given info to the error stream. */
 	public void error(String message) {
 		if (ansiColorEnabled) {
 			error.println(ANSI_RED + message + ANSI_RESET);
@@ -48,8 +51,9 @@ public class Logger implements AutoCloseable {
 		}
 	}
 
-	/** Prints the given message to the out stream. */
-	public void message(String message) {
+	/** Prints the given info to the out stream. */
+	@Override
+	public void info(String message) {
 		output.println(message);
 	}
 
@@ -57,5 +61,27 @@ public class Logger implements AutoCloseable {
 	public void close() {
 		error.close();
 		output.close();
+	}
+
+	@Override
+	public void debug(String s) {
+		output.println(s);
+	}
+
+	@Override
+	public void warn(String s) {
+		output.println("WARN: " + s);
+	}
+
+	@Override
+	public void warn(String s, Throwable throwable) {
+		output.println("WARN: " + s);
+		throwable.printStackTrace(output);
+	}
+
+	@Override
+	public void error(String s, Throwable throwable) {
+		error.println(s);
+		throwable.printStackTrace(error);
 	}
 }

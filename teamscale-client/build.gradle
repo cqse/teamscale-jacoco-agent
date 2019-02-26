@@ -1,12 +1,9 @@
-apply plugin: 'java-library'
-apply plugin: 'maven'
-
-group 'eu.cqse'
-version teamscaleClientVersion
-
-configurations {
-    deployerJars
+plugins {
+    id 'java-library'
+    id 'maven'
 }
+
+version teamscaleClientVersion
 
 dependencies {
     api group: 'com.squareup.retrofit2', name: 'retrofit', version: '2.2.0'
@@ -16,8 +13,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.8.0'
     testImplementation 'org.mockito:mockito-core:2.19.0'
-
-    deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
 }
 
 // At the moment we are stuck with the old maven plugin until support for private key

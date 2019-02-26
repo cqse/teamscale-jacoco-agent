@@ -10,21 +10,20 @@
 
 package org.junit.platform.console;
 
-import com.google.gson.GsonBuilder;
-import eu.cqse.teamscale.client.TeamscaleClient;
-import eu.cqse.teamscale.client.TestDetails;
+import com.teamscale.client.TeamscaleClient;
+import com.teamscale.client.TestDetails;
+import com.teamscale.client.TestForPrioritization;
+import com.teamscale.report.ReportUtils;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
 import org.junit.platform.console.options.TestExecutorCommandLineOptionsParser;
+import org.junit.platform.console.tasks.AvailableTests;
 import org.junit.platform.console.tasks.TestDetailsCollector;
 import org.junit.platform.console.tasks.TestExecutor;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import retrofit2.Response;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -68,85 +67,77 @@ public class ImpactedTestsExecutor {
 	}
 
 	/** Handles test detail collection and execution of the impacted tests. */
-	private ConsoleLauncherExecutionResult discoverAndExecuteTests(ImpactedTestsExecutorCommandLineOptions options) {
-		List<TestDetails> availableTestDetails = getTestDetails(options);
-		if (availableTestDetails.isEmpty()) {
-			return ConsoleLauncherExecutionResult.success();
+	private ConsoleLauncherExecutionResult discoverAndExecuteTests(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
+		AvailableTests availableTestDetails = null;
+		try {
+			availableTestDetails = getTestDetails(options);
+			if (availableTestDetails.isEmpty()) {
+				return ConsoleLauncherExecutionResult.success();
+			}
+		} catch (IOException e) {
+			logger.error("Failed to get test details", e);
+			logger.info("Falling back to execute all");
+			options.setRunAllTests(true);
 		}
 
-		TeamscaleClient client = new TeamscaleClient(options.server.url, options.server.userName,
-				options.server.userAccessToken, options.server.project);
-		uploadTestDetails(options, availableTestDetails, client);
-
-		return executeTests(client, options);
+		return ConsoleLauncherExecutionResult.forSummary(executeTests(options, availableTestDetails));
 	}
 
 	/** Discovers all tests that match the given filters in #options. */
-	private List<TestDetails> getTestDetails(ImpactedTestsExecutorCommandLineOptions options) {
-		List<TestDetails> availableTestDetails = new TestDetailsCollector(logger).collect(options);
+	private AvailableTests getTestDetails(ImpactedTestsExecutorCommandLineOptions options) throws IOException {
+		AvailableTests availableTestDetails = new TestDetailsCollector(logger).collect(options);
 
-		logger.message("Found " + availableTestDetails.size() + " tests");
+		logger.info("Found " + availableTestDetails.size() + " tests");
 
-		// Write out test details to file (for debugging purposes)
+		if (availableTestDetails.size() == 0) {
+			for (String includedClassNamePattern : options.getCommandLineOptions().getIncludedClassNamePatterns()) {
+				logger.info("Include: " + includedClassNamePattern);
+			}
+			for (String excludedClassNamePattern : options.getCommandLineOptions().getExcludedClassNamePatterns()) {
+				logger.info("Exclude: " + excludedClassNamePattern);
+			}
+		}
+
+		// Write out test details to file
 		if (options.getReportsDir().isPresent()) {
-			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails);
+			writeTestDetailsReport(options.getReportsDir().get().toFile(), availableTestDetails.getTestList());
 		}
 		return availableTestDetails;
 	}
 
 	/** Executes either all tests if set via the command line options or queries Teamscale for the impacted tests and executes those. */
-	private ConsoleLauncherExecutionResult executeTests(TeamscaleClient client, ImpactedTestsExecutorCommandLineOptions options) {
+	private TestExecutionSummary executeTests(ImpactedTestsExecutorCommandLineOptions options, AvailableTests availableTestDetails) throws IOException {
 		TestExecutor testExecutor = new TestExecutor(options, logger);
-		TestExecutionSummary testExecutionSummary;
-		if (options.runAllTests) {
-			testExecutionSummary = testExecutor.executeAllTests();
-		} else {
-			List<String> impactedTests = getImpactedTestsFromTeamscale(client, options);
-			if (impactedTests == null) {
-				testExecutionSummary = testExecutor.executeAllTests();
-			} else {
-				testExecutionSummary = testExecutor.executeTests(impactedTests);
-			}
+		if (options.isRunAllTests()) {
+			return testExecutor.executeAllTests();
 		}
-		return ConsoleLauncherExecutionResult.forSummary(testExecutionSummary);
+
+		List<TestForPrioritization> impactedTests = getImpactedTestsFromTeamscale(availableTestDetails.getTestList(),
+				options);
+		if (impactedTests == null) {
+			return testExecutor.executeAllTests();
+		}
+
+		List<String> uniqueIds = availableTestDetails.convertToUniqueIds(logger, impactedTests);
+		return testExecutor.executeTests(uniqueIds);
 	}
 
 	/** Writes the given test details to a report file. */
-	private void writeTestDetailsReport(File reportDir, List<TestDetails> testDetails) {
-		if (!reportDir.isDirectory() && !reportDir.mkdirs()) {
-			logger.error("Failed to create directory " + reportDir.getAbsolutePath());
-			return;
-		}
-
-		File reportFile = new File(reportDir, "testDetails.json");
-		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(reportFile)))) {
-			out.print(new GsonBuilder().setPrettyPrinting().create().toJson(testDetails));
-		} catch (IOException e) {
-			// We don't want to break the tests because writing the testDetails failed.
-			logger.error(e);
-		}
-	}
-
-	/** Uploads the test details to Teamscale. */
-	private void uploadTestDetails(ImpactedTestsExecutorCommandLineOptions options, List<TestDetails> availableTestDetails, TeamscaleClient client) {
-		try {
-			logger.message("Uploading reports to " + options.endCommit.toString() + " (" + options.partition + ")");
-			client.uploadTestList(availableTestDetails, options.endCommit,
-					options.partition, "Test list upload (" + options.partition + ")");
-		} catch (IOException e) {
-			logger.error("Test details upload failed (" + e.getMessage() + ")");
-			// The test executor will fallback to execute all tests since Teamscale will return no impacted tests in
-			// this case.
-		}
+	private void writeTestDetailsReport(File reportDir, List<TestDetails> testDetails) throws IOException {
+		ReportUtils.writeReportToFile(new File(reportDir, "test-list.json"), testDetails);
 	}
 
 	/** Queries Teamscale for impacted tests. */
-	private List<String> getImpactedTestsFromTeamscale(TeamscaleClient client, ImpactedTestsExecutorCommandLineOptions options) {
+	private List<TestForPrioritization> getImpactedTestsFromTeamscale(List<TestDetails> availableTestDetails, ImpactedTestsExecutorCommandLineOptions options) {
 		try {
-			Response<List<String>> response = client
-					.getImpactedTests(options.baseline, options.endCommit, options.partition, logger.output);
+			logger.output.println("Getting impacted tests...");
+			TeamscaleClient client = new TeamscaleClient(options.getServer().url, options.getServer().userName,
+					options.getServer().userAccessToken, options.getServer().project);
+			Response<List<TestForPrioritization>> response = client
+					.getImpactedTests(availableTestDetails, options.getBaseline(), options.getEndCommit(),
+							options.getPartition());
 			if (response.isSuccessful()) {
-				List<String> testList = response.body();
+				List<TestForPrioritization> testList = response.body();
 				if (testList == null) {
 					logger.error("Teamscale was not able to determine impacted tests.");
 				}
@@ -154,6 +145,7 @@ public class ImpactedTestsExecutor {
 			} else {
 				logger.error("Retrieval of impacted tests failed");
 				logger.error(response.code() + " " + response.message());
+				logger.info(response.errorBody().string());
 			}
 		} catch (IOException e) {
 			logger.error("Retrieval of impacted tests failed (" + e.getMessage() + ")");

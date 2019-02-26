@@ -1,11 +1,13 @@
 package org.junit.platform.console.options;
 
-import eu.cqse.teamscale.client.CommitDescriptor;
+import com.teamscale.client.CommitDescriptor;
+import okhttp3.HttpUrl;
 import org.junit.platform.console.shadow.joptsimple.OptionParser;
 import org.junit.platform.console.shadow.joptsimple.OptionSet;
 import org.junit.platform.console.shadow.joptsimple.OptionSpec;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 /** Helper class to parse command line options. */
 public class AvailableImpactedTestsExecutorCommandLineOptions {
@@ -16,7 +18,6 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	/** Holds the command line parser with the standard jUnit options and ours. */
 	private final OptionParser parser;
 
-	/** Teamscale server options */
 	private final OptionSpec<String> url;
 	private final OptionSpec<String> project;
 	private final OptionSpec<String> userName;
@@ -27,6 +28,8 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	private final OptionSpec<String> end;
 
 	private final OptionSpec<Void> runAllTests;
+
+	private OptionSpec<String> agentUrl;
 
 	/** Constructor. */
 	AvailableImpactedTestsExecutorCommandLineOptions() {
@@ -62,6 +65,10 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 
 		runAllTests = parser.acceptsAll(asList("all", "run-all-tests"),
 				"Partition of the tests");
+
+		agentUrl = parser.acceptsAll(asList("agent-url", "agent"),
+				"Url of the teamscale jacoco agent that generates coverage for the system")
+				.withRequiredArg();
 	}
 
 	/** Returns an options parser with the available options set. */
@@ -72,20 +79,58 @@ public class AvailableImpactedTestsExecutorCommandLineOptions {
 	/** Converts the parsed parameters into a {@link ImpactedTestsExecutorCommandLineOptions} object. */
 	public ImpactedTestsExecutorCommandLineOptions toCommandLineOptions(OptionSet detectedOptions) {
 		CommandLineOptions jUnitResult = jUnitOptions.toCommandLineOptions(detectedOptions);
+		jUnitResult.setIncludedClassNamePatterns(
+				jUnitResult.getIncludedClassNamePatterns().stream()
+						.map(AvailableImpactedTestsExecutorCommandLineOptions::stripQuotes)
+						.collect(toList()));
+		jUnitResult.setExcludedClassNamePatterns(
+				jUnitResult.getExcludedClassNamePatterns().stream()
+						.map(AvailableImpactedTestsExecutorCommandLineOptions::stripQuotes)
+						.collect(toList()));
+
 		ImpactedTestsExecutorCommandLineOptions result = new ImpactedTestsExecutorCommandLineOptions(jUnitResult);
 
-		result.server.url = detectedOptions.valueOf(this.url);
-		result.server.project = detectedOptions.valueOf(this.project);
-		result.server.userName = detectedOptions.valueOf(this.userName);
-		result.server.userAccessToken = detectedOptions.valueOf(this.userAccessToken);
-		result.partition = detectedOptions.valueOf(this.partition);
+		result.getServer().url = detectedOptions.valueOf(this.url);
+		result.getServer().project = detectedOptions.valueOf(this.project);
+		result.getServer().userName = detectedOptions.valueOf(this.userName);
+		result.getServer().userAccessToken = detectedOptions.valueOf(this.userAccessToken);
+		result.setPartition(detectedOptions.valueOf(this.partition));
 
-		result.runAllTests = detectedOptions.has(this.runAllTests);
+		result.setRunAllTests(detectedOptions.has(this.runAllTests));
 
-		result.baseline = CommitDescriptor.parse(detectedOptions.valueOf(this.baseline));
-		result.endCommit = CommitDescriptor.parse(detectedOptions.valueOf(this.end));
+		if (detectedOptions.has(this.baseline)) {
+			result.setBaseline(Long.parseLong(detectedOptions.valueOf(this.baseline)));
+		}
+		result.setEndCommit(CommitDescriptor.parse(detectedOptions.valueOf(this.end)));
+
+		result.setAgentUrls(detectedOptions.valuesOf(this.agentUrl).stream().map(HttpUrl::parse).collect(toList()));
 
 		return result;
+	}
+
+	/**
+	 * Helper to remove leading and trailing quotes from a string.
+	 * Works with single or double quotes.
+	 * Copied from {@link com.sun.javafx.util.Utils#stripQuotes(String)} as
+	 * javafx is not available in all cases on windows.
+	 */
+	private static String stripQuotes(String string) {
+		if (string == null) return null;
+		if (string.length() == 0) return string;
+
+		int beginIndex = 0;
+		final char openQuote = string.charAt(beginIndex);
+		if (openQuote == '\"' || openQuote == '\'') beginIndex += 1;
+
+		int endIndex = string.length();
+		final char closeQuote = string.charAt(endIndex - 1);
+		if (closeQuote == '\"' || closeQuote == '\'') endIndex -= 1;
+
+		if ((endIndex - beginIndex) < 0) return string;
+
+		// note that String.substring returns "this" if beginIndex == 0 && endIndex == count
+		// or a new string that shares the character buffer with the original string.
+		return string.substring(beginIndex, endIndex);
 	}
 }
 

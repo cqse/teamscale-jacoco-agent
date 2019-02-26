@@ -1,53 +1,120 @@
 buildscript {
-    repositories {
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
-    }
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
-    }
+	repositories {
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath "org.hidetake:gradle-ssh-plugin:2.9.0"
+	}
 }
 
+
 ext {
-    appVersion = '10.1.0'
-    pluginVersion = '0.1.24'
-    reportGeneratorVersion = '1.0.7'
-    teamscaleClientVersion = '0.1.5'
+	appVersion = '11.2.0' // Also update version in BuildVersion.kt
+	pluginVersion = '0.3.6' // Also update version in BuildVersion.kt
+	reportGeneratorVersion = '1.2.4'
+	teamscaleClientVersion = '0.2.4'
 
-    // When upgrading JaCoCo to a newer version make sure to check the comment in the AnalyzerCache.java.
-    jacocoVersion = '0.8.1'
-    log4jVersion = '2.8.2'
+    // When upgrading JaCoCo to a newer version make sure to 
+    // check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
+	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.kt.
+	jacocoVersion = '0.8.3'
+	log4jVersion = '2.8.2'
 
-    // Needed to deploy the artifacts to our public share
-    // Your public RSA key needs to be stored on the share to be able to deploy (Ask Timo)
-    cqseMavenRepositoryPrivateKey = System.getProperty("user.home") + '/.ssh/id_rsa'
-    println cqseMavenRepositoryPrivateKey
-    cqseMavenRepositoryUrl = 'scp://ext1.cqse.eu:2222/var/www/share/exchange/public/maven'
-    cqseMavenRepositoryUser = 'www-data'
+	// Needed to deploy the artifacts to our public share
+	// Your public RSA key needs to be stored on the share to be able to deploy (Ask Timo)
+	cqseMavenRepositoryPrivateKey = System.getProperty("user.home") + '/.ssh/id_rsa'
+	cqseMavenRepositoryHost = 'ext1.cqse.eu'
+	cqseMavenRepositoryPort = 2222
+	cqseMavenRepositoryMavenPath = '/var/www/share/exchange/public/maven'
+	cqseMavenRepositoryUrl = "scp://$cqseMavenRepositoryHost:$cqseMavenRepositoryPort$cqseMavenRepositoryMavenPath"
+	cqseMavenRepositoryUser = 'www-data'
 }
 
 subprojects {
-    repositories {
-        ivy {
-            url 'https://share.cqse.eu/svn/artifacts/ivy'
-        }
-        jcenter()
-    }
+	apply plugin: 'java'
+	apply plugin: 'org.hidetake.ssh'
+
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+
+	tasks.withType(JavaCompile) {
+		sourceCompatibility = "1.8"
+		targetCompatibility = "1.8"
+	}
+
+	group 'com.teamscale'
+
+	configurations {
+		deployerJars
+	}
+
+	repositories {
+		ivy {
+			url 'https://share.cqse.eu/svn/artifacts/ivy'
+		}
+		jcenter()
+	}
+
+	dependencies {
+		deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
+	}
+
+	remotes {
+		share {
+			host = cqseMavenRepositoryHost
+			port = cqseMavenRepositoryPort
+			user = cqseMavenRepositoryUser
+			identity = file(cqseMavenRepositoryPrivateKey)
+		}
+	}
+
+	tasks.withType(Upload) {
+		doFirst {
+			ssh.run {
+				session(remotes.share) {
+					// Gradle gets stuck when we do not delete these metadata files before publishing the new version
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml'
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml.md5'
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml.sha1'
+				}
+			}
+		}
+	}
+
 }
 
 // Installs the plugin to your local maven repository
 task installGradlePlugin(dependsOn: [
-        ':impacted-tests-executor:install',
-        ':report-generator:install',
-        ':teamscale-gradle-plugin:install',
-        ':teamscale-client:install'
+		':agent:install',
+		':impacted-tests-executor:install',
+		':report-generator:install',
+		':teamscale-gradle-plugin:install',
+		':teamscale-client:install'
+])
+
+// Installs the plugin to your local maven repository without the agent
+task iGP(dependsOn: [
+		':impacted-tests-executor:install',
+		':report-generator:install',
+		':teamscale-gradle-plugin:install',
+		':teamscale-client:install'
 ])
 
 // Deploys the plugin to the public share
 task deployGradlePlugin(dependsOn: [
-        ':impacted-tests-executor:uploadArchives',
-        ':report-generator:uploadShadow',
-        ':teamscale-gradle-plugin:uploadArchives',
-        ':teamscale-client:uploadArchives'
+		':agent:uploadShadow',
+		':impacted-tests-executor:uploadArchives',
+		':report-generator:uploadShadow',
+		':teamscale-gradle-plugin:uploadShadow',
+		':teamscale-client:uploadArchives'
+])
+
+// Deploys the plugin to the public share without the agent
+task dGP(dependsOn: [
+		':impacted-tests-executor:uploadArchives',
+		':report-generator:uploadShadow',
+		':teamscale-gradle-plugin:uploadShadow',
+		':teamscale-client:uploadArchives'
 ])

@@ -10,7 +10,9 @@
 
 package org.junit.platform.console.tasks;
 
-import eu.cqse.teamscale.test.listeners.JUnit5TestListenerExtension;
+import com.teamscale.report.ReportUtils;
+import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test.listeners.JUnit5TestListenerExtension;
 import org.junit.platform.console.Logger;
 import org.junit.platform.console.options.Details;
 import org.junit.platform.console.options.ImpactedTestsExecutorCommandLineOptions;
@@ -24,6 +26,8 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -46,34 +50,48 @@ public class TestExecutor {
 	/** A {@link Launcher} factory. */
 	private final Supplier<Launcher> launcherSupplier;
 
+	/** Test execution listener */
+	private JUnit5TestListenerExtension testListenerExtension;
+
 	/** Constructor. */
 	public TestExecutor(ImpactedTestsExecutorCommandLineOptions options, Logger logger) {
 		this.options = options;
 		this.logger = logger;
+		this.testListenerExtension = new JUnit5TestListenerExtension(options.getAgentUrls(), logger);
 		this.launcherSupplier = LauncherFactory::create;
 	}
 
 	/** Executes the given list of tests. */
-	public TestExecutionSummary executeTests(List<String> tests) {
-		logger.message("Executing " + tests.size() + " impacted tests...");
+	public TestExecutionSummary executeTests(List<String> tests) throws IOException {
+		logger.info("Executing " + tests.size() + " impacted tests...");
 		return executeRequest(generateImpactedDiscoveryRequest(tests));
 	}
 
 	/** Executes all tests included in {@link #options}. */
-	public TestExecutionSummary executeAllTests() {
-		logger.message("Executing all tests...");
-		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.toJUnitOptions()));
+	public TestExecutionSummary executeAllTests() throws IOException {
+		logger.info("Executing all tests...");
+		return executeRequest(new DiscoveryRequestCreator().toDiscoveryRequest(options.getCommandLineOptions()));
 	}
 
 	/** Executes the tests described by the given discovery request. */
-	private TestExecutionSummary executeRequest(LauncherDiscoveryRequest discoveryRequest) {
+	private TestExecutionSummary executeRequest(LauncherDiscoveryRequest discoveryRequest) throws IOException {
 		Launcher launcher = launcherSupplier.get();
 		SummaryGeneratingListener summaryListener = registerTestListeners(launcher);
 		ignoreOut(() -> launcher.execute(discoveryRequest));
 
+		List<TestExecution> testExecutions = testListenerExtension.getTestExecutions();
+		if (options.getReportsDir().isPresent()) {
+			writeTestExecutionReport(options.getReportsDir().get().toFile(), testExecutions);
+		}
+
 		TestExecutionSummary summary = summaryListener.getSummary();
 		printSummary(summary);
 		return summary;
+	}
+
+	/** Writes the given test executions to a report file. */
+	private void writeTestExecutionReport(File reportDir, List<TestExecution> testExecutions) throws IOException {
+		ReportUtils.writeReportToFile(new File(reportDir, "test-execution.json"), testExecutions);
 	}
 
 	/** Creates a discovery request from the given list of unique test IDs. */
@@ -95,11 +113,9 @@ public class TestExecutor {
 		SummaryGeneratingListener summaryListener = new SummaryGeneratingListener();
 		launcher.registerTestExecutionListeners(summaryListener);
 		// Add jacoco aware test execution listener
-		launcher.registerTestExecutionListeners(new JUnit5TestListenerExtension());
+		launcher.registerTestExecutionListeners(testListenerExtension);
 		// optionally, register test plan execution details printing listener
 		createDetailsPrintingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
-		// optionally, register XML reports writing listener
-		createXmlWritingListener(logger.output).ifPresent(launcher::registerTestExecutionListeners);
 		return summaryListener;
 	}
 
@@ -120,11 +136,6 @@ public class TestExecutor {
 			default:
 				return Optional.empty();
 		}
-	}
-
-	/** Creates a listener that creates a jUnit report for the executed tests. */
-	private Optional<TestExecutionListener> createXmlWritingListener(PrintWriter out) {
-		return options.getReportsDir().map(reportsDir -> new XmlReportsWritingListener(reportsDir, out));
 	}
 
 	/** Prints the test summary to the logger. */

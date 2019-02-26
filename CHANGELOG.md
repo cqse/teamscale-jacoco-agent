@@ -6,6 +6,19 @@ We use [semantic versioning][semver]
   validation will be disabled from this version on
 - [fix] Agent uses higher timeouts (20s) for all HTTP connections to account for slow networks
 
+# 11.2.0
+- [feature] The agent now also supports Java 11 code.
+
+# 11.1.0
+- [feature] The agent now also supports line coverage in Testwise Coverage mode
+
+# 11.0.4
+- [breaking change] Test impact mode no longer uploads reports to teamscale and does no longer generate reports on its own (see TEST_IMPACT_ANALYSIS_DOC -> How to get testwise coverage)
+- [feature] Added `test-env` option
+
+# 10.2.0
+- [feature] Added option to upload to azure file storage
+
 # 10.1.0
 - [feature] Paths passed to the agent can now be relative and contain ant patterns
 

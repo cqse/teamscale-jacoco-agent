@@ -1,0 +1,12 @@
+[
+  {
+    "uniformPath": "com/example/project/JUnit4Test/testMul",
+    "durationMillis": 27,
+    "result": "PASSED"
+  },
+  {
+    "uniformPath": "com/example/project/JUnit4Test/testMul2",
+    "durationMillis": 21,
+    "result": "PASSED"
+  }
+]
