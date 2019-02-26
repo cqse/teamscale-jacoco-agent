@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.util;
+package com.teamscale.jacoco.agent.util;
 
 import ch.qos.logback.core.PropertyDefinerBase;
 import com.teamscale.jacoco.agent.PreMain;

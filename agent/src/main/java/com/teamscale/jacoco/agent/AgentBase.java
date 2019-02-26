@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.util.LoggingUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 

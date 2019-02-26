@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.util;
+package com.teamscale.jacoco.agent.util;
 
 import org.slf4j.Logger;
 
