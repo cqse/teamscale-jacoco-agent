@@ -74,6 +74,10 @@ open class TeamscaleUploadTask : DefaultTask() {
     }
 }
 
+/**
+ * Retries the given block numOfRetries-times catching any thrown exceptions.
+ * If none of the retries succeeded the latest catched exception is rethrown.
+ */
 fun <T> retry(numOfRetries: Int, block: () -> T): T {
     var throwable: Throwable? = null
     (1..numOfRetries).forEach { attempt ->

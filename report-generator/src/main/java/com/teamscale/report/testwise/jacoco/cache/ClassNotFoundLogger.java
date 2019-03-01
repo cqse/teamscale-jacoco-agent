@@ -32,6 +32,7 @@ import java.util.Set;
 		}
 	}
 
+	/** Writes a summary of the missing class files to the logger. */
 	/* package */ void flush() {
 		if (classesToBeLogged.isEmpty()) {
 			return;
