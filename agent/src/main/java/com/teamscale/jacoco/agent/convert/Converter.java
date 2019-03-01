@@ -1,8 +1,8 @@
 package com.teamscale.jacoco.agent.convert;
 
 import com.teamscale.client.TestDetails;
-import com.teamscale.jacoco.util.Benchmark;
-import com.teamscale.jacoco.util.LoggingUtils;
+import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
@@ -14,6 +14,7 @@ import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -25,7 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static com.teamscale.jacoco.util.LoggingUtils.wrap;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /** Converts one .exec binary coverage file to XML. */
 public class Converter {

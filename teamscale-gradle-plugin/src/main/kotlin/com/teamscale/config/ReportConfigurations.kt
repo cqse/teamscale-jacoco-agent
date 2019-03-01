@@ -68,18 +68,19 @@ open class TestwiseCoverageConfiguration : Serializable {
         message = toCopy.message ?: default.message
         partition = toCopy.partition ?: default.partition
         upload = toCopy.upload ?: default.upload
-        partitionTransformer = toCopy.partitionTransformer ?: default.partitionTransformer ?: Transformer { p->p }
+        partitionTransformer = toCopy.partitionTransformer ?: default.partitionTransformer ?: Transformer { p -> p }
         partitionPrefix = toCopy.partitionPrefix ?: default.partitionPrefix
         partitionSuffix = toCopy.partitionSuffix ?: default.partitionSuffix
     }
 
     /** Takes the partition base name and a report format and merges it into a partition name. */
     open fun getTransformedPartition(project: Project): String {
-        if(partition == null) {
+        if (partition == null) {
             throw IllegalArgumentException("No partition set for ${project.name}")
         }
         val partitionMiddlePart = (partitionTransformer?.transform(partition!!) ?: partition!!)
-        return (partitionPrefix?.transform(project) ?: "") + partitionMiddlePart + (partitionSuffix?.transform(project) ?: "")
+        return (partitionPrefix?.transform(project) ?: "") + partitionMiddlePart + (partitionSuffix?.transform(project)
+            ?: "")
     }
 
     /** Returns a report specification used in the TeamscaleUploadTask. */

@@ -85,7 +85,9 @@ public class TestExecutor {
 		}
 
 		TestExecutionSummary summary = summaryListener.getSummary();
-		printSummary(summary);
+		if (summary.getTestsFoundCount() > 0) {
+			printSummary(summary);
+		}
 		return summary;
 	}
 

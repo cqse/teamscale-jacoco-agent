@@ -1,9 +1,7 @@
-package com.teamscale.jacoco.agent.convert;
-
-import com.teamscale.report.util.ILogger;
+package com.teamscale.report.util;
 
 /** Logger that prints all output to the console. */
-class CommandLineLogger implements ILogger {
+public class CommandLineLogger implements ILogger {
 
 	@Override
 	public void debug(String message) {

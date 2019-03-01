@@ -8,6 +8,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 /** Handles report uploads to Teamscale. */
 open class TeamscaleUploadTask : DefaultTask() {
@@ -38,14 +39,13 @@ open class TeamscaleUploadTask : DefaultTask() {
     /** Executes the report upload. */
     @TaskAction
     fun uploadReports() {
-        if(reports.isEmpty()) {
+        if (reports.isEmpty()) {
             logger.info("Skipping upload. No reports to upload.")
             return
         }
 
         server.validate()
         logger.info("Uploading to $server at $commitDescriptor...")
-        val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
 
         // We want to upload e.g. all JUnit test reports that go to the same partition
         // as one commit so we group them before uploading them
@@ -59,12 +59,34 @@ open class TeamscaleUploadTask : DefaultTask() {
             }
 
             try {
-                client.uploadReports(
-                    format, reportFiles, commitDescriptor, partition, "$message ($partition)"
-                )
+                retry(3) {
+                    val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
+                    client.uploadReports(
+                        format, reportFiles, commitDescriptor, partition, "$message ($partition)"
+                    )
+                }
             } catch (e: ConnectException) {
+                throw GradleException("Upload failed (${e.message})", e)
+            } catch (e: SocketTimeoutException) {
                 throw GradleException("Upload failed (${e.message})", e)
             }
         }
     }
+}
+
+/**
+ * Retries the given block numOfRetries-times catching any thrown exceptions.
+ * If none of the retries succeeded the latest catched exception is rethrown.
+ */
+fun <T> retry(numOfRetries: Int, block: () -> T): T {
+    var throwable: Throwable? = null
+    (1..numOfRetries).forEach { attempt ->
+        try {
+            return block()
+        } catch (e: Throwable) {
+            throwable = e
+            println("Failed attempt $attempt / $numOfRetries")
+        }
+    }
+    throw throwable!!
 }

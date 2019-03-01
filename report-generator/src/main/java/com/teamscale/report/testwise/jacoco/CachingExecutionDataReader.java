@@ -90,6 +90,7 @@ class CachingExecutionDataReader {
 		for (ExecutionData executionData : executionDataStore.getContents()) {
 			testCoverage.add(probesCache.getCoverage(executionData, locationIncludeFilter));
 		}
+		probesCache.flushLogger();
 		return testCoverage;
 	}
 }

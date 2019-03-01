@@ -54,6 +54,7 @@ class TeamscalePluginTest {
             "--stacktrace"
         )
         assertThat(build.output).contains("BUILD SUCCESSFUL", "13 tests successful", "6 tests skipped")
+            .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
         assertThat(testwiseCoverageReportFile).exists()

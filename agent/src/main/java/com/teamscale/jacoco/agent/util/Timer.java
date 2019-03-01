@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.util;
+package com.teamscale.jacoco.agent.util;
 
 import java.time.Duration;
 import java.util.concurrent.Executors;

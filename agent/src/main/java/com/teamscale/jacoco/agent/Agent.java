@@ -7,15 +7,15 @@ package com.teamscale.jacoco.agent;
 
 import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.util.Benchmark;
-import com.teamscale.jacoco.util.Timer;
+import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 
 import java.io.IOException;
 import java.time.Duration;
 
-import static com.teamscale.jacoco.util.LoggingUtils.wrap;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
