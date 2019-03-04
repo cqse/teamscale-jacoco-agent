@@ -15,6 +15,8 @@ import com.teamscale.report.jacoco.dump.Dump;
 import java.io.IOException;
 import java.time.Duration;
 
+import org.jacoco.agent.rt.IAgent;
+
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /**
@@ -33,8 +35,8 @@ public class Agent extends AgentBase {
 	protected final IXmlStore store;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploadStoreException {
-		super(options);
+	/*package*/ Agent(AgentOptions options, IAgent agent) throws IllegalStateException, UploadStoreException {
+		super(options, agent);
 
 		store = options.createStore();
 		logger.info("Storage method: {}", store.describe());

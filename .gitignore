@@ -1,7 +1,9 @@
 .gradle/
+.gradletasknamecache
 **/build/**
 **/out/**
-/*/bin/
-/*/test-tmp/
-.gradletasknamecache
 **/test-tmp/**
+**/bin/**
+**/.classpath
+**/.project
+**/.settings/**

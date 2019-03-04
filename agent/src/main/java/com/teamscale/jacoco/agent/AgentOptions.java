@@ -5,23 +5,8 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.client.TeamscaleServer;
-import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
-import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
-import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
-import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
-import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
-import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
-import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.PairList;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
@@ -33,6 +18,25 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.collections.PairList;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.jacoco.agent.rt.IAgent;
+
+import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.store.IXmlStore;
+import com.teamscale.jacoco.agent.store.UploadStoreException;
+import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
+import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
+import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
+import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
+import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -152,8 +156,8 @@ public class AgentOptions {
 			});
 		}
 
-		validator.isTrue(!useTestwiseCoverageMode() || uploadUrl == null, "'upload-url' option is " +
-				"incompatible with Testwise coverage mode!");
+		validator.isTrue(!useTestwiseCoverageMode() || uploadUrl == null,
+				"'upload-url' option is " + "incompatible with Testwise coverage mode!");
 
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
@@ -161,17 +165,17 @@ public class AgentOptions {
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
-		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
-						.hasAllRequiredFieldsNull()),
-				"If you want to upload data to an azure file storage you need to provide both " +
-						"'azure-url' and 'azure-key' ");
+		validator.isTrue(
+				(azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig.hasAllRequiredFieldsNull()),
+				"If you want to upload data to an azure file storage you need to provide both "
+						+ "'azure-url' and 'azure-key' ");
 
-		List<Boolean> configuredStores = Arrays
-				.asList(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null).stream().filter(x -> x).collect(Collectors.toList());
+		List<Boolean> configuredStores = Arrays.asList(azureFileStorageConfig.hasAllRequiredFieldsSet(),
+				teamscaleServer.hasAllRequiredFieldsSet(), uploadUrl != null).stream().filter(x -> x)
+				.collect(Collectors.toList());
 
-		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
-				"such as a teamscale instance, upload url or azure file storage");
+		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, "
+				+ "such as a teamscale instance, upload url or azure file storage");
 
 		return validator;
 	}
@@ -195,26 +199,30 @@ public class AgentOptions {
 		return builder.toString();
 	}
 
-	/** Sets output to none for normal mode and destination file in testwise coverage mode */
+	/**
+	 * Sets output to none for normal mode and destination file in testwise
+	 * coverage mode
+	 */
 	private String getModeSpecificOptions() {
 		if (useTestwiseCoverageMode()) {
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.US);
-			return "sessionid=,destfile=" + new File(outputDirectory.toFile(),
-					"jacoco-" + dateFormat.format(new Date()) + ".exec").getAbsolutePath();
+			return "sessionid=,destfile="
+					+ new File(outputDirectory.toFile(), "jacoco-" + dateFormat.format(new Date()) + ".exec")
+							.getAbsolutePath();
 		} else {
 			return "output=none";
 		}
 	}
 
 	/**
-	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
-	 * the HTTP server is used.
+	 * Returns in instance of the agent that was configured. Either an agent
+	 * with interval based line-coverage dump or the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws UploadStoreException {
+	public AgentBase createAgent(IAgent agent) throws UploadStoreException, IOException {
 		if (useTestwiseCoverageMode()) {
-			return new TestwiseCoverageAgent(this);
+			return new TestwiseCoverageAgent(this, agent);
 		} else {
-			return new Agent(this);
+			return new Agent(this, agent);
 		}
 	}
 
@@ -231,8 +239,7 @@ public class AgentOptions {
 		}
 
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
-			return new AzureFileStorageUploadStore(fileStore, azureFileStorageConfig,
-					additionalMetaDataFiles);
+			return new AzureFileStorageUploadStore(fileStore, azureFileStorageConfig, additionalMetaDataFiles);
 		}
 
 		return fileStore;
@@ -270,14 +277,16 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Returns the port at which the http server should listen for test execution information or null if disabled.
+	 * Returns the port at which the http server should listen for test
+	 * execution information or null if disabled.
 	 */
 	public Integer getHttpServerPort() {
 		return httpServerPort;
 	}
 
 	/**
-	 * Returns the name of the environment variable to read the test uniform path from.
+	 * Returns the name of the environment variable to read the test uniform
+	 * path from.
 	 */
 	public String getTestEnvironmentVariableName() {
 		return testEnvironmentVariable;

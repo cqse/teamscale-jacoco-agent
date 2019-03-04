@@ -1,6 +1,8 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+
+import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
@@ -23,9 +25,9 @@ public abstract class AgentBase {
 	private static LoggingUtils.LoggingResources loggingResources;
 
 	/** Constructor. */
-	public AgentBase(AgentOptions options) throws IllegalStateException {
+	public AgentBase(AgentOptions options, IAgent agent) throws IllegalStateException {
 		try {
-			controller = new JacocoRuntimeController(RT.getAgent());
+			controller = new JacocoRuntimeController(agent);
 		} catch (IllegalStateException e) {
 			throw new IllegalStateException(
 					"JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
@@ -57,7 +59,7 @@ public abstract class AgentBase {
 		logger.info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_1f1cc91.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
-		AgentBase agent = agentOptions.createAgent();
+		AgentBase agent = agentOptions.createAgent(RT.getAgent());
 		agent.registerShutdownHook();
 	}
 
