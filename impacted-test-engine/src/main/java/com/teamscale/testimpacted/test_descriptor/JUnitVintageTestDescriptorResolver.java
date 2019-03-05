@@ -9,4 +9,9 @@ public class JUnitVintageTestDescriptorResolver extends JUnitTestDescriptorResol
 	protected Optional<String> getClassSegment(TestDescriptor testDescriptor) {
 		return TestDescriptorUtils.getUniqueIdSegment(testDescriptor, "runner");
 	}
+
+	@Override
+	public String getEngineId() {
+		return "junit-vintage";
+	}
 }

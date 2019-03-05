@@ -10,4 +10,9 @@ public class JUnitJupiterTestDescriptorResolver extends JUnitTestDescriptorResol
 	protected Optional<String> getClassSegment(TestDescriptor testDescriptor) {
 		return TestDescriptorUtils.getUniqueIdSegment(testDescriptor, "class");
 	}
+
+	@Override
+	public String getEngineId() {
+		return "junit-jupiter";
+	}
 }

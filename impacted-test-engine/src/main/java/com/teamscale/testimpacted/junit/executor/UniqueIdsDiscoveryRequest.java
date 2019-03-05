@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.junit;
+package com.teamscale.testimpacted.junit.executor;
 
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.DiscoveryFilter;

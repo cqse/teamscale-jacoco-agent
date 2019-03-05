@@ -185,7 +185,7 @@ open class TestImpacted : Test() {
         writeEngineProperty("partition", report.partition);
         writeEngineProperty("endCommit", endCommit.toString());
         writeEngineProperty("baseline", baseline?.toString());
-        writeEngineProperty("report-directory", tempDir.absolutePath);
+        writeEngineProperty("reportDirectory", tempDir.absolutePath);
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","));
         writeEngineProperty("runImpacted", runImpacted.toString())
         writeEngineProperty("runAllTests", runAllTests.toString())

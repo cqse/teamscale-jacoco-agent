@@ -1,10 +1,16 @@
 package com.teamscale.testimpacted.junit.options;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.testimpacted.controllers.ITestwiseCoverageAgentApi;
+import com.teamscale.testimpacted.junit.executor.DelegatingTestExecutor;
+import com.teamscale.testimpacted.junit.executor.ITestExecutor;
 import com.teamscale.testimpacted.junit.ImpactedTestEngine;
+import com.teamscale.testimpacted.junit.executor.ImpactedTestsExecutor;
+import com.teamscale.testimpacted.junit.executor.TestWiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
 import org.junit.platform.commons.util.Preconditions;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,46 +37,40 @@ public class TestEngineOptions {
 	private CommitDescriptor endCommit;
 
 	/** The URLs (including port) at which the agents listen. May be empty but not null. */
-	private List<HttpUrl> agentsUrls = Collections.emptyList();
+	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis = Collections.emptyList();
 
-	/** @see #serverOptions */
-	public ServerOptions getServerOptions() {
-		return serverOptions;
-	}
-
-	/** @see #partition */
-	public String getPartition() {
-		return partition;
-	}
+	/** The directory used to store test-wise coverage reports. Must be a writeable directory. */
+	private File reportDirectory;
 
 	/** @see #runImpacted */
-	public boolean isRunImpacted() {
+	private boolean isRunImpacted() {
 		return runImpacted;
 	}
 
 	/** @see #runAllTests */
-	public boolean isRunAllTests() {
+	private boolean isRunAllTests() {
 		return runAllTests;
 	}
 
-	/** @see #endCommit */
-	public CommitDescriptor getEndCommit() {
-		return endCommit;
-	}
-
-	/** @see #baseline */
-	public Long getBaseline() {
-		return baseline;
-	}
-
-	/** @see #agentsUrls */
-	public List<HttpUrl> getAgentsUrls() {
-		return agentsUrls;
+	/** @see #reportDirectory */
+	public File getReportDirectory() {
+		return reportDirectory;
 	}
 
 	/** Returns the builder for {@link TestEngineOptions}. */
 	public static Builder builder() {
 		return new Builder();
+	}
+
+	public ITestExecutor createTestExecutor() {
+		if (!isRunImpacted()) {
+			return new DelegatingTestExecutor();
+		}
+		if (isRunAllTests()) {
+			return new TestWiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
+		}
+
+		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, serverOptions, baseline, endCommit, partition);
 	}
 
 	/** The builder for {@link TestEngineOptions}. */
@@ -87,7 +87,7 @@ public class TestEngineOptions {
 			return this;
 		}
 
-		/** @see #partition  */
+		/** @see #partition */
 		public Builder partition(String partition) {
 			testEngineOptions.partition = partition;
 			return this;
@@ -117,9 +117,18 @@ public class TestEngineOptions {
 			return this;
 		}
 
-		/** @see #agentsUrls */
+		/** @see #testwiseCoverageAgentApis */
 		public Builder agentUrls(List<String> agentUrls) {
-			testEngineOptions.agentsUrls = agentUrls.stream().map(HttpUrl::parse).collect(Collectors.toList());
+			testEngineOptions.testwiseCoverageAgentApis = agentUrls.stream()
+					.map(HttpUrl::parse)
+					.map(ITestwiseCoverageAgentApi::createService)
+					.collect(Collectors.toList());
+			return this;
+		}
+
+		/** @see #reportDirectory */
+		public Builder reportDirectory(String reportDirectory) {
+			testEngineOptions.reportDirectory = new File(reportDirectory);
 			return this;
 		}
 
@@ -127,7 +136,11 @@ public class TestEngineOptions {
 		public TestEngineOptions build() {
 			Preconditions.notNull(testEngineOptions.endCommit, "End commit must be set.");
 			Preconditions.notNull(testEngineOptions.serverOptions, "Server options must be set.");
-			Preconditions.notNull(testEngineOptions.agentsUrls, "Agent urls may be empty but not null.");
+			Preconditions.notNull(testEngineOptions.testwiseCoverageAgentApis, "Agent urls may be empty but not null.");
+			Preconditions.notNull(testEngineOptions.reportDirectory, "Report directory must be set.");
+			Preconditions.condition(
+					testEngineOptions.reportDirectory.isDirectory() && testEngineOptions.reportDirectory.canWrite(),
+					"Report directory must be readable directory: " + testEngineOptions.reportDirectory);
 			return testEngineOptions;
 		}
 	}

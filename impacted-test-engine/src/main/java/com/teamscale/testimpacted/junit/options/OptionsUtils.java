@@ -27,6 +27,7 @@ public class OptionsUtils {
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getLong("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))
+				.reportDirectory(propertyReader.getString("reportDirectory"))
 				.build();
 	}
 

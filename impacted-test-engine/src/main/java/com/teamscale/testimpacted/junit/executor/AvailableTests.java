@@ -1,8 +1,9 @@
-package com.teamscale.testimpacted.junit;
+package com.teamscale.testimpacted.junit.executor;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.TestDetails;
 import com.teamscale.client.TestForPrioritization;
+import com.teamscale.testimpacted.junit.ImpactedTestEngine;
 import org.conqat.lib.commons.string.StringUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;

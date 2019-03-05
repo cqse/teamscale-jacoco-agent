@@ -60,6 +60,7 @@ open class TeamscalePluginExtension(val project: Project) {
     }
 
     companion object {
+        // TODO (ASt) Update default excludes.
         private val DEFAULT_EXCLUDES = listOf(
             "org.junit.*",
             "com.teamscale.jacoco.agent.*",

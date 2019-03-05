@@ -1,6 +1,8 @@
 package com.teamscale.testimpacted.test_descriptor;
 
+import com.teamscale.testimpacted.junit.executor.AvailableTests;
 import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -70,5 +72,22 @@ public class TestDescriptorUtils {
 			return ms.getClassName().replace('.', '/');
 		}
 		return null;
+	}
+
+	public static AvailableTests getAvailableTests(TestEngine testEngine, TestDescriptor rootTestDescriptor) {
+		AvailableTests availableTests = new AvailableTests();
+		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
+				.getTestDescriptorResolver(testEngine);
+
+		TestDescriptorUtils.streamLeafTestDescriptors(rootTestDescriptor)
+				.forEach(testDescriptor ->
+						testDescriptorResolver
+								.toClusteredTestDetails(testDescriptor)
+								.ifPresent(clusteredTestDetails ->
+										availableTests.add(testDescriptor.getUniqueId(), clusteredTestDetails)
+								));
+
+
+		return availableTests;
 	}
 }

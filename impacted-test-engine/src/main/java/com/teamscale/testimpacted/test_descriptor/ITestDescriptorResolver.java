@@ -10,4 +10,6 @@ public interface ITestDescriptorResolver {
 	Optional<String> toUniformPath(TestDescriptor testDescriptor);
 
 	Optional<ClusteredTestDetails> toClusteredTestDetails(TestDescriptor testDescriptor);
+
+	String getEngineId();
 }
