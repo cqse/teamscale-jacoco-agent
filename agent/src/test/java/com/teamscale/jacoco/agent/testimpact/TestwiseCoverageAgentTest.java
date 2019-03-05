@@ -8,6 +8,7 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,28 +18,32 @@ import org.jacoco.agent.rt.IAgent;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 
+import com.teamscale.jacoco.agent.AgentOptionParseException;
 import com.teamscale.jacoco.agent.AgentOptions;
 import com.teamscale.jacoco.agent.AgentOptionsParser;
-import com.teamscale.report.util.CommandLineLogger;
+import com.teamscale.jacoco.agent.DummyLogger;
 
 /** Tests for {@link TestwiseCoverageAgent}. */
 public class TestwiseCoverageAgentTest {
 
-	/** JaCoCo agent mocked, since we only test the HTTP part here. */
-	IAgent mock = mock(IAgent.class);
+	/** Minimal options string without port number */
+	private static final String OPTIONS_PREFIX = "out=,class-dir=,http-server-port=";
 
-	/** An expected exception. Configured in test methods as needed. */
+	/** JaCoCo agent mocked, since we only test the HTTP part here. */
+	private IAgent mock = mock(IAgent.class);
+
+	/** Exception excepted to be thrown. Configured in tests as needed. */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
 	/** Tests whether the server listens on the given port. */
 	@Test
 	public void testSingleAgent() throws Exception {
-		String optionsString = "out=,class-dir=,http-server-port=8080";
-		AgentOptions options = AgentOptionsParser.parse(optionsString, new CommandLineLogger());
-		TestwiseCoverageAgent agent = new TestwiseCoverageAgent(options, mock);
-		assertEquals(8080, agent.getPort());
+		int port = 8080;
+		TestwiseCoverageAgent agent = new TestwiseCoverageAgent(options(port), mock);
+		assertEquals(port, agent.getPort());
 	}
 
 	/**
@@ -46,36 +51,60 @@ public class TestwiseCoverageAgentTest {
 	 * registration fail.
 	 */
 	@Test
-	public void testBlockedPort() throws Exception {
-		String optionsString = "out=,class-dir=,http-server-port=8090";
-		AgentOptions options = AgentOptionsParser.parse(optionsString, new CommandLineLogger());
-
-		try (ServerSocket socket = new ServerSocket(8090)) {
+	public void testOccupiedPort() throws Exception {
+		int port = 8090;
+		try (ServerSocket socket = new ServerSocket(port)) {
 			thrown.expect(SocketTimeoutException.class);
-			new TestwiseCoverageAgent(options, mock);
+			new TestwiseCoverageAgent(options(port), mock);
 		}
 	}
 
 	/** Tests whether high port numbers fail. */
 	@Test
 	public void testOutOfPorts() throws Exception {
-		String optionsString = "out=,class-dir=,http-server-port=65535";
-		AgentOptions options = AgentOptionsParser.parse(optionsString, new CommandLineLogger());
+		int port = 65535;
 		thrown.expect(IOException.class);
 		thrown.expectMessage("Unable to determine a free server port.");
-		new TestwiseCoverageAgent(options, mock);
+		new TestwiseCoverageAgent(options(port), mock);
 	}
 
 	/** Tests whether multiple instances register with each other. */
 	@Test
 	public void testMultiAgents() throws Exception {
-		String optionsString = "out=,class-dir=,http-server-port=8070";
-		AgentOptions options = AgentOptionsParser.parse(optionsString, new CommandLineLogger());
+		int port = 8070;
+		AgentOptions options = options(port);
 
 		TestwiseCoverageAgent agent1 = new TestwiseCoverageAgent(options, mock);
 		TestwiseCoverageAgent agent2 = new TestwiseCoverageAgent(options, mock);
 
-		assertEquals(8070, agent1.getPort());
-		assertEquals(8071, agent2.getPort());
+		assertEquals(port, agent1.getPort());
+		assertEquals(port + 1, agent2.getPort());
+	}
+
+	/** Tests whether events are forwarded. */
+	@Test
+	public void testEventForwarding() throws Exception {
+		int primaryAgentPort = 8100;
+		AgentOptions options = options(primaryAgentPort);
+
+		IAgent secondaryAgent = mock(IAgent.class);
+		ArgumentCaptor<String> stringArg = ArgumentCaptor.forClass(String.class);
+
+		new TestwiseCoverageAgent(options, mock);
+		new TestwiseCoverageAgent(options, secondaryAgent);
+
+		String testId = "FIRST_TEST";
+		IAgentService.create(primaryAgentPort).signalTestStart(testId).execute();
+
+		verify(mock).setSessionId(stringArg.capture());
+		assertEquals(testId, stringArg.getValue());
+
+		verify(secondaryAgent).setSessionId(stringArg.capture());
+		assertEquals(testId, stringArg.getValue());
+	}
+
+	/** Returns a valid options string for the given port number. */
+	private static AgentOptions options(int port) throws AgentOptionParseException {
+		return AgentOptionsParser.parse(OPTIONS_PREFIX + port, new DummyLogger());
 	}
 }

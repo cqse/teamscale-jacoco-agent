@@ -10,7 +10,6 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.jacoco.agent.rt.IAgent;
 
@@ -25,11 +24,24 @@ import spark.Service;
 
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens
- * for test events.
+ * for test events. The agent may act as a primary or secondary agent. Its role
+ * is determined at startup.
+ * 
+ * If the port given in the agent options is available, it acts as a primary
+ * agent, accepting registrations from secondary agents. In that case, any test
+ * start or test end event is forwarded to all secondary agents.
+ * 
+ * If the port given in the agent options is occupied, it will use the next
+ * available free port for itself and try to register with a primary agent that
+ * listens at the original port. Secondary agents will unregister themselves
+ * with the primary agent before shutting down.
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
-	/** Path parameter placeholder used in the http requests. */
+	/** The maximum port number for the agent to listen at. */
+	private static final int MAX_PORT_NUMBER = 65535;
+
+	/** Path parameter placeholder used in the HTTP requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
 
 	/** Map of port number to secondary agent service. */
@@ -41,7 +53,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** The agent options. */
 	private AgentOptions options;
 
-	/** The port the HTTP server listens at. */
+	/** The service for the HTTP API. */
 	private final Service service;
 
 	/** Constructor. */
@@ -74,7 +86,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		service.delete("/register", this::handleUnregister);
 
 		if (port != options.getHttpServerPort()) {
-			register();
+			registerWithPrimaryAgent();
 		}
 
 		service.awaitInitialization();
@@ -85,7 +97,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	 * one provided in {@link #options}.
 	 */
 	private int determineFreePort() throws IOException {
-		for (int currentPort = options.getHttpServerPort(); currentPort < 65535;) {
+		for (int currentPort = options.getHttpServerPort(); currentPort < MAX_PORT_NUMBER;) {
 			try (ServerSocket s = new ServerSocket(currentPort)) {
 				// found a free port. Jump out
 				return currentPort;
@@ -97,7 +109,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	/** registers with a primary agent. */
-	private void register() throws IOException {
+	private void registerWithPrimaryAgent() throws IOException {
 		primaryAgent = IAgentService.create(options.getHttpServerPort());
 		retrofit2.Response<ResponseBody> response = primaryAgent.register(getPort()).execute();
 		if (response.code() != 204) {
@@ -128,19 +140,6 @@ public class TestwiseCoverageAgent extends AgentBase {
 		return "";
 	}
 
-	/** Notifies all secondary agents about a test start event. */
-	private void notifyTestStart(String testId) {
-		new Thread(() -> {
-			for (Entry<Integer, IAgentService> entry : secondaryAgents.entrySet()) {
-				try {
-					entry.getValue().signalTestStart(testId).execute();
-				} catch (IOException e) {
-					logger.warn("Error signaling test start to agent on port " + entry.getKey());
-				}
-			}
-		}).start();
-	}
-
 	/** Handles the end of a test case by resetting the session ID. */
 	private String handleTestEnd(Request request, Response response) throws DumpException {
 		String testId = request.params(TEST_ID_PARAMETER);
@@ -157,38 +156,46 @@ public class TestwiseCoverageAgent extends AgentBase {
 		return "";
 	}
 
-	/** Notifies all secondary agents about a test end event. */
-	private void notifyTestEnd(String testId) {
-		new Thread(() -> {
-			for (Entry<Integer, IAgentService> entry : secondaryAgents.entrySet()) {
-				try {
-					entry.getValue().signalTestEnd(testId).execute();
-				} catch (IOException e) {
-					logger.warn("Error signaling test end to agent on port " + entry.getKey());
-				}
-			}
-		}).start();
+	/** Notifies all secondary agents about a test start event. */
+	private void notifyTestStart(String testId) {
+		secondaryAgents.forEach((port, agent) -> agent.signalTestStart(testId).enqueue(
+				IAgentService.fireAndForget(() -> logger.warn("Error signaling test start to agent on port " + port))));
 	}
 
-	/** Registers the port from the registration query. */
+	/** Notifies all secondary agents about a test end event. */
+	private void notifyTestEnd(String testId) {
+		secondaryAgents.forEach((port, agent) -> agent.signalTestEnd(testId).enqueue(
+				IAgentService.fireAndForget(() -> logger.warn("Error signaling test end to agent on port " + port))));
+	}
+
+	/** Handles registrations from secondary agents. */
 	private String handleRegister(Request request, Response response) {
+		if (primaryAgent != null) {
+			return error("Cannot register with a secondary agent.", response);
+		}
+
 		try {
 			int port = extractPortFromQuery(request);
 			secondaryAgents.put(port, IAgentService.create(port));
 		} catch (IllegalArgumentException e) {
 			return error(e.getMessage(), response);
 		}
+
 		response.status(204);
 		return "";
 	}
 
-	/** Registers the port from the registration query. */
+	/** Handles unregistrations from secondary agents. */
 	private String handleUnregister(Request request, Response response) {
+		if (primaryAgent != null) {
+			return error("Cannot unregister from a secondary agent.", response);
+		}
+
 		try {
 			int port = extractPortFromQuery(request);
 			IAgentService previous = secondaryAgents.remove(port);
 			if (previous == null) {
-				return error("No agent registered for port " + port, response);
+				return error("No secondary agent registered for port " + port, response);
 			}
 		} catch (IllegalArgumentException e) {
 			return error(e.getMessage(), response);
@@ -210,7 +217,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 			throw new IllegalArgumentException("Port is missing!");
 		}
 		int port = Integer.parseInt(portString);
-		if (port < 1024 || port > 65535) {
+		if (port < 1024 || port >= MAX_PORT_NUMBER) {
 			throw new NumberFormatException("Port " + port + " is not a valid port.");
 		}
 		return port;
@@ -238,7 +245,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 			try {
 				primaryAgent.unregister(getPort()).execute();
 			} catch (IOException e) {
-				logger.error("Unable to register from primary agent.");
+				logger.error("Unable to unregister from primary agent.");
 			}
 		}
 		service.stop();
