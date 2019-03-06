@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.commons;
+package com.teamscale.test_impacted.commons;
 
 public class IndentingWriter {
 

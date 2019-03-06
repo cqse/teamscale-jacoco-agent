@@ -1,9 +1,9 @@
-package com.teamscale.testimpacted.test_descriptor;
+package com.teamscale.test_impacted.test_descriptor;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.TestDetails;
-import com.teamscale.testimpacted.commons.IndentingWriter;
-import com.teamscale.testimpacted.junit.executor.AvailableTests;
+import com.teamscale.test_impacted.commons.IndentingWriter;
+import com.teamscale.test_impacted.engine.executor.AvailableTests;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;

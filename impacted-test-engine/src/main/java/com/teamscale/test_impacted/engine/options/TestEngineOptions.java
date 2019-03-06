@@ -1,12 +1,12 @@
-package com.teamscale.testimpacted.junit.options;
+package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.testimpacted.controllers.ITestwiseCoverageAgentApi;
-import com.teamscale.testimpacted.junit.ImpactedTestEngine;
-import com.teamscale.testimpacted.junit.executor.DelegatingTestExecutor;
-import com.teamscale.testimpacted.junit.executor.ITestExecutor;
-import com.teamscale.testimpacted.junit.executor.ImpactedTestsExecutor;
-import com.teamscale.testimpacted.junit.executor.TestWiseCoverageCollectingTestExecutor;
+import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
+import com.teamscale.test_impacted.engine.ImpactedTestEngine;
+import com.teamscale.test_impacted.engine.executor.DelegatingTestExecutor;
+import com.teamscale.test_impacted.engine.executor.ITestExecutor;
+import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
+import com.teamscale.test_impacted.engine.executor.TestWiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
 import org.junit.platform.commons.util.Preconditions;
 

@@ -1,13 +1,13 @@
-package com.teamscale.testimpacted.junit.executor;
+package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TestClusterForPrioritization;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.testimpacted.controllers.ITestwiseCoverageAgentApi;
-import com.teamscale.testimpacted.junit.options.ServerOptions;
-import com.teamscale.testimpacted.test_descriptor.TestDescriptorUtils;
+import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
+import com.teamscale.test_impacted.engine.options.ServerOptions;
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;

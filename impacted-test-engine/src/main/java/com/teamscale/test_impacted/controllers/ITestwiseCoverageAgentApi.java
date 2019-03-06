@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.controllers;
+package com.teamscale.test_impacted.controllers;
 
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;

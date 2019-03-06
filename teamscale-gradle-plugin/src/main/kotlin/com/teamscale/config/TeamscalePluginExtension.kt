@@ -65,7 +65,7 @@ open class TeamscalePluginExtension(val project: Project) {
             "org.gradle.*",
             "com.esotericsoftware.*",
             "com.teamscale.jacoco.agent.*",
-            "com.teamscale.testimpacted.*",
+            "com.teamscale.test_impacted.*",
             "com.teamscale.report.*",
             "com.teamscale.client.*",
             "org.jacoco.core.*",

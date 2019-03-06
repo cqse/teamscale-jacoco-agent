@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.junit.executor;
+package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.TestExecution;
 

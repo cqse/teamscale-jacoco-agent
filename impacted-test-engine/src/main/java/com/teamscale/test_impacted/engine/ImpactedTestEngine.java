@@ -1,14 +1,14 @@
-package com.teamscale.testimpacted.junit;
+package com.teamscale.test_impacted.engine;
 
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.testimpacted.junit.executor.AvailableTests;
-import com.teamscale.testimpacted.junit.executor.ITestExecutor;
-import com.teamscale.testimpacted.junit.executor.TestExecutorRequest;
-import com.teamscale.testimpacted.junit.options.OptionsUtils;
-import com.teamscale.testimpacted.junit.options.TestEngineOptions;
-import com.teamscale.testimpacted.test_descriptor.TestDescriptorUtils;
+import com.teamscale.test_impacted.engine.executor.AvailableTests;
+import com.teamscale.test_impacted.engine.executor.ITestExecutor;
+import com.teamscale.test_impacted.engine.executor.TestExecutorRequest;
+import com.teamscale.test_impacted.engine.options.OptionsUtils;
+import com.teamscale.test_impacted.engine.options.TestEngineOptions;
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineDiscoveryRequest;

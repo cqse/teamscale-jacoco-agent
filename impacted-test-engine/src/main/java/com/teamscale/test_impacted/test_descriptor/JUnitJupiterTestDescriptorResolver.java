@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.test_descriptor;
+package com.teamscale.test_impacted.test_descriptor;
 
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
@@ -15,6 +15,6 @@ public class JUnitJupiterTestDescriptorResolver extends JUnitTestDescriptorResol
 
 	@Override
 	public String getEngineId() {
-		return "junit-jupiter";
+		return "engine-jupiter";
 	}
 }

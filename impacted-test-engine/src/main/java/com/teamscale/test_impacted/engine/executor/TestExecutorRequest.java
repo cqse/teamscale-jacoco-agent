@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.junit.executor;
+package com.teamscale.test_impacted.engine.executor;
 
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.EngineExecutionListener;

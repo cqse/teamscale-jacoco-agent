@@ -1,9 +1,9 @@
-package com.teamscale.testimpacted.junit.executor;
+package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.testimpacted.controllers.ITestwiseCoverageAgentApi;
-import com.teamscale.testimpacted.test_descriptor.ITestDescriptorResolver;
-import com.teamscale.testimpacted.test_descriptor.TestDescriptorResolverRegistry;
+import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
+import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorResolverRegistry;
 import org.junit.platform.engine.ExecutionRequest;
 
 import java.util.List;

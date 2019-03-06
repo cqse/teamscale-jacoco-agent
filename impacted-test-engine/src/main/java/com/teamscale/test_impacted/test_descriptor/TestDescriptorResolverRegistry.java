@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.test_descriptor;
+package com.teamscale.test_impacted.test_descriptor;
 
 import org.junit.platform.commons.util.ClassLoaderUtils;
 import org.junit.platform.engine.TestEngine;

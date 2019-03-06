@@ -1,10 +1,10 @@
-package com.teamscale.testimpacted.junit.executor;
+package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.testimpacted.controllers.ITestwiseCoverageAgentApi;
-import com.teamscale.testimpacted.test_descriptor.ITestDescriptorResolver;
-import com.teamscale.testimpacted.test_descriptor.TestDescriptorUtils;
+import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
+import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.teamscale.testimpacted.test_descriptor.TestDescriptorUtils.isTestRepresentative;
+import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.isTestRepresentative;
 
 /**
  * An execution listener which delegates events to another {@link EngineExecutionListener} and notifies Teamscale agents

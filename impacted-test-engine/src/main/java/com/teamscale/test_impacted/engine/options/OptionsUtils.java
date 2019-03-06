@@ -1,4 +1,4 @@
-package com.teamscale.testimpacted.junit.options;
+package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
 
