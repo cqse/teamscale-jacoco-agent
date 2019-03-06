@@ -27,7 +27,7 @@ public interface IAgentService {
 	}
 
 	/** Shorthand for a callback that only acts on failures. */
-	public static Callback<ResponseBody> fireAndForget(Runnable errorHandler) {
+	public static Callback<ResponseBody> failureCallback(Runnable errorHandler) {
 		return new Callback<ResponseBody>() {
 			@Override
 			public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

@@ -159,13 +159,13 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** Notifies all secondary agents about a test start event. */
 	private void notifyTestStart(String testId) {
 		secondaryAgents.forEach((port, agent) -> agent.signalTestStart(testId).enqueue(
-				IAgentService.fireAndForget(() -> logger.warn("Error signaling test start to agent on port " + port))));
+				IAgentService.failureCallback(() -> logger.warn("Error signaling test start to agent on port " + port))));
 	}
 
 	/** Notifies all secondary agents about a test end event. */
 	private void notifyTestEnd(String testId) {
 		secondaryAgents.forEach((port, agent) -> agent.signalTestEnd(testId).enqueue(
-				IAgentService.fireAndForget(() -> logger.warn("Error signaling test end to agent on port " + port))));
+				IAgentService.failureCallback(() -> logger.warn("Error signaling test end to agent on port " + port))));
 	}
 
 	/** Handles registrations from secondary agents. */

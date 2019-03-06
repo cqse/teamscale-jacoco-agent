@@ -32,7 +32,7 @@ public class TestwiseCoverageAgentTest {
 	private static final String OPTIONS_PREFIX = "out=,class-dir=,http-server-port=";
 
 	/** JaCoCo agent mocked, since we only test the HTTP part here. */
-	private IAgent mock = mock(IAgent.class);
+	private final IAgent mock = mock(IAgent.class);
 
 	/** Exception excepted to be thrown. Configured in tests as needed. */
 	@Rule
