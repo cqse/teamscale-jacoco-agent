@@ -48,7 +48,6 @@ public class ImpactedTestEngine implements TestEngine {
 	public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
 		EngineDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "Teamscale Impacted Tests");
 		List<TestEngine> enabledTestEngines = new ArrayList<>(testEngineRegistry.getEnabledTestEngines().values());
-		List<TestDetails> allAvailableTests = new ArrayList<>();
 
 		enabledTestEngines.sort(Comparator.comparing(TestEngine::getId));
 
@@ -58,17 +57,12 @@ public class ImpactedTestEngine implements TestEngine {
 			LOGGER.debug(() -> "Starting test discovery for delegate engine: " + delegateTestEngine.getId());
 			TestDescriptor delegateEngineDescriptor = delegateTestEngine.discover(discoveryRequest,
 					UniqueId.forEngine(delegateTestEngine.getId()));
-			AvailableTests availableTests = TestDescriptorUtils
-					.getAvailableTests(delegateTestEngine, delegateEngineDescriptor);
 
 			engineDescriptor.addChild(delegateEngineDescriptor);
-			allAvailableTests.addAll(availableTests.getTestList());
 		}
 
 		LOGGER.debug(() -> "Discovered test descriptor for engine " + ENGINE_ID + ":\n" + TestDescriptorUtils
 				.getTestDescriptorAsString(engineDescriptor));
-
-		dumpTestDetails(allAvailableTests);
 
 		return engineDescriptor;
 	}
@@ -88,6 +82,7 @@ public class ImpactedTestEngine implements TestEngine {
 	}
 
 	private void runTestExecutor(ExecutionRequest request, Map<String, TestEngine> delegateTestEngines) {
+		List<TestDetails> availableTests = new ArrayList<>();
 		List<TestExecution> testExecutions = new ArrayList<>();
 		ITestExecutor testExecutor = testEngineOptions.createTestExecutor();
 
@@ -99,13 +94,17 @@ public class ImpactedTestEngine implements TestEngine {
 			}
 
 			TestEngine testEngine = delegateTestEngines.get(engineId.get());
+			AvailableTests availableTestsForEngine = TestDescriptorUtils
+					.getAvailableTests(testEngine, engineTestDescriptor);
 			TestExecutorRequest testExecutorRequest = new TestExecutorRequest(testEngine, engineTestDescriptor,
 					request.getEngineExecutionListener(), request.getConfigurationParameters());
 			List<TestExecution> testExecutionsOfEngine = testExecutor.execute(testExecutorRequest);
 
 			testExecutions.addAll(testExecutionsOfEngine);
+			availableTests.addAll(availableTestsForEngine.getTestList());
 		}
 
+		dumpTestDetails(availableTests);
 		dumpTestExecutions(testExecutions);
 	}
 

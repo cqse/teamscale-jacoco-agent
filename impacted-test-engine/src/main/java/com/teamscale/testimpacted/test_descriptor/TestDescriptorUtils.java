@@ -52,11 +52,28 @@ public class TestDescriptorUtils {
 		});
 	}
 
-	public static Stream<TestDescriptor> streamLeafTestDescriptors(TestDescriptor testDescriptor) {
-		if (testDescriptor.isTest()) {
+
+	public static boolean isRelevantTestInstance(TestDescriptor testDescriptor) {
+		boolean isParameterizedTestContainer = testDescriptor.isContainer() && containsParameterizedTestContainer(
+				testDescriptor);
+		boolean isNonParameterizedTest = testDescriptor.isTest() && !containsParameterizedTestContainer(testDescriptor);
+		return isNonParameterizedTest || isParameterizedTestContainer;
+	}
+
+	/**
+	 * Looks like this: [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]
+	 */
+	private static boolean containsParameterizedTestContainer(TestDescriptor testDescriptor) {
+		return testDescriptor.getUniqueId().getSegments().stream().map(UniqueId.Segment::getType)
+				.anyMatch("test-template"::equals);
+	}
+
+
+	public static Stream<TestDescriptor> streamRelevantTestDescriptors(TestDescriptor testDescriptor) {
+		if (isRelevantTestInstance(testDescriptor)) {
 			return Stream.of(testDescriptor);
 		}
-		return testDescriptor.getChildren().stream().flatMap(TestDescriptorUtils::streamLeafTestDescriptors);
+		return testDescriptor.getChildren().stream().flatMap(TestDescriptorUtils::streamRelevantTestDescriptors);
 	}
 
 	public static Optional<String> getUniqueIdSegment(TestDescriptor testDescriptor, String type) {
@@ -79,7 +96,7 @@ public class TestDescriptorUtils {
 		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
 				.getTestDescriptorResolver(testEngine);
 
-		TestDescriptorUtils.streamLeafTestDescriptors(rootTestDescriptor)
+		TestDescriptorUtils.streamRelevantTestDescriptors(rootTestDescriptor)
 				.forEach(testDescriptor ->
 						testDescriptorResolver
 								.toClusteredTestDetails(testDescriptor)

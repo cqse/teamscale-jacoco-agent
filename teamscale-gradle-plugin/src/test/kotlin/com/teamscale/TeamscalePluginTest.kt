@@ -23,7 +23,7 @@ class TeamscalePluginTest {
     companion object {
 
         /** Set this to true to enable debugging of the Gradle Plugin and the impacted tests engine via port 5005. */
-        private val DEBUG = true;
+        private val DEBUG = false;
     }
 
     @Rule
@@ -58,7 +58,7 @@ class TeamscalePluginTest {
             "--run-all-tests"
         )
         assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
-        //.doesNotContain("you did not provide all relevant class files")
+            .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
         assertThat(testwiseCoverageReportFile).exists()

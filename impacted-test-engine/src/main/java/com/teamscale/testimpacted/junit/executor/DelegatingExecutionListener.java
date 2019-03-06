@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.teamscale.testimpacted.test_descriptor.TestDescriptorUtils.isRelevantTestInstance;
+
 class DelegatingExecutionListener implements EngineExecutionListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DelegatingExecutionListener.class);
@@ -50,7 +52,7 @@ class DelegatingExecutionListener implements EngineExecutionListener {
 
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
-		List<TestDescriptor> testDescriptors = TestDescriptorUtils.streamLeafTestDescriptors(testDescriptor)
+		List<TestDescriptor> testDescriptors = TestDescriptorUtils.streamRelevantTestDescriptors(testDescriptor)
 				.collect(Collectors.toList());
 		for (TestDescriptor leafTestDescriptor : testDescriptors) {
 			Optional<String> testUniformPath = testDescriptorResolver.toUniformPath(leafTestDescriptor);
@@ -129,23 +131,6 @@ class DelegatingExecutionListener implements EngineExecutionListener {
 		throwable.get().printStackTrace(pw);
 		return sw.toString();
 	}
-
-
-	private boolean isRelevantTestInstance(TestDescriptor testIdentifier) {
-		boolean isParameterizedTestContainer = testIdentifier.isContainer() && containsParameterizedTestContainer(
-				testIdentifier);
-		boolean isNonParameterizedTest = testIdentifier.isTest() && !containsParameterizedTestContainer(testIdentifier);
-		return isNonParameterizedTest || isParameterizedTestContainer;
-	}
-
-	/**
-	 * Looks like this: [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]
-	 */
-	private boolean containsParameterizedTestContainer(TestDescriptor testIdentifier) {
-		// TODO (Match segments).
-		return testIdentifier.getUniqueId().toString().matches(".*/\\[test-template:[^]]*].*");
-	}
-
 
 	@Override
 	public void reportingEntryPublished(TestDescriptor testDescriptor, ReportEntry entry) {
