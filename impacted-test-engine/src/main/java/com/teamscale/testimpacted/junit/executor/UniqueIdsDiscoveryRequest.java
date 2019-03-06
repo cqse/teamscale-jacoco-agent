@@ -10,10 +10,10 @@ import org.junit.platform.engine.discovery.UniqueIdSelector;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
+/** A discovery request for discovering a set of tests by their {@link UniqueId}. */
 public class UniqueIdsDiscoveryRequest implements EngineDiscoveryRequest {
 
 	private final List<UniqueIdSelector> uniqueIdSelectors;

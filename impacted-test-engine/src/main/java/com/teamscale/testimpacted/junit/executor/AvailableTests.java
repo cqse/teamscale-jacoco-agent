@@ -16,16 +16,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths
- * returned by the Teamscale server to unique IDs used in JUnit Platform.
+ * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths returned
+ * by the Teamscale server to unique IDs used in JUnit Platform.
  */
 public class AvailableTests {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestEngine.class);
 
 	/**
-	 * A mapping from the tests uniform path (Teamscale internal representation) to
-	 * unique id (JUnit internal representation).
+	 * A mapping from the tests uniform path (Teamscale internal representation) to unique id (JUnit internal
+	 * representation).
 	 */
 	private Map<String, UniqueId> uniformPathToUniqueIdMapping = new HashMap<>();
 
@@ -38,24 +38,14 @@ public class AvailableTests {
 		testList.add(details);
 	}
 
-	/** Returns the size of the test list. */
-	public int size() {
-		return testList.size();
-	}
-
 	/** Returns the list of available tests. */
 	public List<ClusteredTestDetails> getTestList() {
 		return testList;
 	}
 
-	/** Returns whether the container holds any tests. */
-	public boolean isEmpty() {
-		return testList.isEmpty();
-	}
-
 	/**
-	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a
-	 * list of unique IDs to be fed into JUnit Platform.
+	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a list of unique IDs to be fed into JUnit
+	 * Platform.
 	 */
 	public List<UniqueId> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
 		List<UniqueId> list = new ArrayList<>();
@@ -64,13 +54,13 @@ public class AvailableTests {
 
 			UniqueId testUniqueId = uniformPathToUniqueIdMapping.get(impactedTest.uniformPath);
 			if (testUniqueId == null) {
-				LOGGER.error(() ->"Retrieved invalid test '" + impactedTest.uniformPath + "' from Teamscale server!");
-				LOGGER.error(() ->"The following seem related:");
+				LOGGER.error(() -> "Retrieved invalid test '" + impactedTest.uniformPath + "' from Teamscale server!");
+				LOGGER.error(() -> "The following seem related:");
 				uniformPathToUniqueIdMapping.keySet().stream().sorted(Comparator
 						.comparing(testPath -> StringUtils.editDistance(impactedTest.uniformPath, testPath))).limit(5)
 						.forEach(testAlternative -> LOGGER.error(() -> " - " + testAlternative));
 
-				LOGGER.error(() ->"Falling back to execute all...");
+				LOGGER.error(() -> "Falling back to execute all...");
 				return new ArrayList<>(uniformPathToUniqueIdMapping.values());
 			}
 			list.add(testUniqueId);

@@ -1,27 +1,41 @@
 package com.teamscale.testimpacted.test_descriptor;
 
-import com.teamscale.client.ClusteredTestDetails;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestEngine;
 
 import java.util.Optional;
 
+/** Test descriptor resolver for JUnit based {@link TestEngine}s. */
 public abstract class JUnitTestDescriptorResolverBase implements ITestDescriptorResolver {
 
-	@Override
-	public Optional<String> toUniformPath(TestDescriptor testDescriptor) {
-		return getClassSegment(testDescriptor)
-				.map(className -> className.replace(".", "/") + "/" + testDescriptor.getLegacyReportingName());
-	}
+	private static final Logger LOGGER = LoggerFactory.getLogger(JUnitTestDescriptorResolverBase.class);
 
 	@Override
-	public Optional<ClusteredTestDetails> toClusteredTestDetails(TestDescriptor testDescriptor) {
-		return toUniformPath(testDescriptor).map(uniformPath -> {
-			String sourcePath = TestDescriptorUtils.getSource(testDescriptor);
-			String clusterId = getClassSegment(testDescriptor).orElse(uniformPath);
-			return new ClusteredTestDetails(uniformPath, sourcePath, null, clusterId);
+	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
+		return getClassName(testDescriptor).map(className -> {
+			String classNameUniformPath = className.replace(".", "/");
+			return classNameUniformPath + "/" + testDescriptor.getLegacyReportingName();
 		});
 	}
 
-	protected abstract Optional<String> getClassSegment(TestDescriptor testDescriptor);
+	@Override
+	public Optional<String> getClusterId(TestDescriptor testDescriptor) {
+		Optional<String> classSegmentName = getClassName(testDescriptor);
+
+		if (!classSegmentName.isPresent()) {
+			LOGGER.error(
+					() -> "Falling back to test uniform path as cluster id because class segement name could not be " +
+							"determined for test descriptor: " + testDescriptor);
+			// Default to uniform path.
+			return getUniformPath(testDescriptor);
+		}
+
+		return classSegmentName;
+	}
+
+	/** Returns the test class containing the test. */
+	protected abstract Optional<String> getClassName(TestDescriptor testDescriptor);
 
 }

@@ -19,8 +19,8 @@ public interface ITestwiseCoverageAgentApi {
 	Call<ResponseBody> testFinished(@Path("testUniformPath") String testUniformPath);
 
 	/**
-	 * Generates a {@link Retrofit} instance for the given
-	 * service, which uses basic auth to authenticate against the server and which sets the accept header to json.
+	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
+	 * server and which sets the accept header to json.
 	 */
 	static ITestwiseCoverageAgentApi createService(HttpUrl baseUrl) {
 		Retrofit retrofit = new Retrofit.Builder()

@@ -2,9 +2,9 @@ package com.teamscale.testimpacted.junit.options;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.testimpacted.controllers.ITestwiseCoverageAgentApi;
+import com.teamscale.testimpacted.junit.ImpactedTestEngine;
 import com.teamscale.testimpacted.junit.executor.DelegatingTestExecutor;
 import com.teamscale.testimpacted.junit.executor.ITestExecutor;
-import com.teamscale.testimpacted.junit.ImpactedTestEngine;
 import com.teamscale.testimpacted.junit.executor.ImpactedTestsExecutor;
 import com.teamscale.testimpacted.junit.executor.TestWiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
@@ -30,7 +30,10 @@ public class TestEngineOptions {
 	/** Executes all tests, not only impacted ones if set. Defaults to true. */
 	private boolean runImpacted = true;
 
-	/** The baseline. Only code changes after the baseline are considered for determining impacted tests. May be null to indicate no baseline. */
+	/**
+	 * The baseline. Only code changes after the baseline are considered for determining impacted tests. May be null to
+	 * indicate no baseline.
+	 */
 	private Long baseline;
 
 	/** The end commit used for TIA and for uploading the coverage. May not be null. */

@@ -1,42 +1,28 @@
 package com.teamscale.testimpacted.test_descriptor;
 
+import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.TestDetails;
+import com.teamscale.testimpacted.commons.IndentingWriter;
 import com.teamscale.testimpacted.junit.executor.AvailableTests;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.UniqueId.Segment;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/** Class containing utility methods for {@link TestDescriptor}s. */
 public class TestDescriptorUtils {
 
-	private static class IndentingWriter {
+	private static final Logger LOGGER = LoggerFactory.getLogger(TestDescriptorUtils.class);
 
-		private StringBuilder builder = new StringBuilder();
-
-		private int indent = 0;
-
-		private void indent(Runnable indentedWrites) {
-			indent++;
-			indentedWrites.run();
-			indent--;
-		}
-
-		private void writeLine(String line) {
-			for (int i = 0; i < indent; i++) {
-				builder.append("\t");
-			}
-			builder.append(line).append("\n");
-		}
-
-		@Override
-		public String toString() {
-			return builder.toString();
-		}
-	}
-
+	/** Returns the test descriptor as a formatted string with indented children. */
 	public static String getTestDescriptorAsString(TestDescriptor testDescriptor) {
 		IndentingWriter writer = new IndentingWriter();
 		printTestDescriptor(writer, testDescriptor);
@@ -52,36 +38,54 @@ public class TestDescriptorUtils {
 		});
 	}
 
-
-	public static boolean isRelevantTestInstance(TestDescriptor testDescriptor) {
-		boolean isParameterizedTestContainer = testDescriptor.isContainer() && containsParameterizedTestContainer(
-				testDescriptor);
-		boolean isNonParameterizedTest = testDescriptor.isTest() && !containsParameterizedTestContainer(testDescriptor);
-		return isNonParameterizedTest || isParameterizedTestContainer;
+	/**
+	 * Returns true if the {@link TestDescriptor} is an actual representative of a test. A representative of a test is
+	 * either a regular test that was not dynamically generated or a test container that dynamically registers multiple
+	 * test cases.
+	 */
+	public static boolean isTestRepresentative(TestDescriptor testDescriptor) {
+		boolean isTestTemplateOrTestFactory = isTestTemplateOrTestFactory(testDescriptor);
+		boolean isNonParameterizedTest = testDescriptor.isTest() && !isTestTemplateOrTestFactory(
+				testDescriptor.getParent().get());
+		return isNonParameterizedTest || isTestTemplateOrTestFactory;
 	}
 
 	/**
-	 * Looks like this: [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]
+	 * Returns true if a {@link TestDescriptor} represents a test template or a test factory.
+	 * <p>
+	 * An example of a {@link UniqueId} of the {@link TestDescriptor} is:
+	 * <p>
+	 * {@code [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]}
 	 */
-	private static boolean containsParameterizedTestContainer(TestDescriptor testDescriptor) {
-		return testDescriptor.getUniqueId().getSegments().stream().map(UniqueId.Segment::getType)
-				.anyMatch("test-template"::equals);
+	private static boolean isTestTemplateOrTestFactory(TestDescriptor testDescriptor) {
+		if (testDescriptor == null) {
+			return false;
+		}
+		List<Segment> segments = testDescriptor.getUniqueId().getSegments();
+
+		if (segments.isEmpty()) {
+			return false;
+		}
+
+		String lastSegmentType = segments.get(segments.size() - 1).getType();
+		return "test-template".equals(lastSegmentType) || "test-factory".equals(lastSegmentType);
 	}
 
-
-	public static Stream<TestDescriptor> streamRelevantTestDescriptors(TestDescriptor testDescriptor) {
-		if (isRelevantTestInstance(testDescriptor)) {
+	/** Creates a stream of the test representatives contained by the {@link TestDescriptor}. */
+	public static Stream<TestDescriptor> streamTestRepresentatives(TestDescriptor testDescriptor) {
+		if (isTestRepresentative(testDescriptor)) {
 			return Stream.of(testDescriptor);
 		}
-		return testDescriptor.getChildren().stream().flatMap(TestDescriptorUtils::streamRelevantTestDescriptors);
+		return testDescriptor.getChildren().stream().flatMap(TestDescriptorUtils::streamTestRepresentatives);
 	}
 
 	public static Optional<String> getUniqueIdSegment(TestDescriptor testDescriptor, String type) {
 		return testDescriptor.getUniqueId().getSegments().stream().filter(segment -> segment.getType().equals(type))
 				.findFirst().map(
-						UniqueId.Segment::getValue);
+						Segment::getValue);
 	}
 
+	/** Returns {@link TestDetails#sourcePath} for a {@link TestDescriptor}. */
 	public static String getSource(TestDescriptor testDescriptor) {
 		Optional<TestSource> source = testDescriptor.getSource();
 		if (source.isPresent() && source.get() instanceof MethodSource) {
@@ -91,18 +95,33 @@ public class TestDescriptorUtils {
 		return null;
 	}
 
+	/** Returns the {@link AvailableTests} contained within the root {@link TestDescriptor}. */
 	public static AvailableTests getAvailableTests(TestEngine testEngine, TestDescriptor rootTestDescriptor) {
 		AvailableTests availableTests = new AvailableTests();
 		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
 				.getTestDescriptorResolver(testEngine);
 
-		TestDescriptorUtils.streamRelevantTestDescriptors(rootTestDescriptor)
-				.forEach(testDescriptor ->
-						testDescriptorResolver
-								.toClusteredTestDetails(testDescriptor)
-								.ifPresent(clusteredTestDetails ->
-										availableTests.add(testDescriptor.getUniqueId(), clusteredTestDetails)
-								));
+		TestDescriptorUtils.streamTestRepresentatives(rootTestDescriptor)
+				.forEach(testDescriptor -> {
+					Optional<String> clusterId = testDescriptorResolver.getClusterId(testDescriptor);
+					Optional<String> uniformPath = testDescriptorResolver.getUniformPath(testDescriptor);
+					String source = TestDescriptorUtils.getSource(testDescriptor);
+
+					if (!uniformPath.isPresent()) {
+						LOGGER.error(() -> "Unable to determine uniform path for test descriptor: " + testDescriptor);
+						return;
+					}
+
+					if (!clusterId.isPresent()) {
+						LOGGER.error(
+								() -> "Unable to determine cluster id path for test descriptor: " + testDescriptor);
+						return;
+					}
+
+					ClusteredTestDetails testDetails = new ClusteredTestDetails(uniformPath.get(), source, null,
+							clusterId.get());
+					availableTests.add(testDescriptor.getUniqueId(), testDetails);
+				});
 
 
 		return availableTests;

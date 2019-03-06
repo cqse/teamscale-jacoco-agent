@@ -1,15 +1,22 @@
 package com.teamscale.testimpacted.test_descriptor;
 
-import com.teamscale.client.ClusteredTestDetails;
 import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestEngine;
 
 import java.util.Optional;
 
+/** Interface for implementation of mappings from {@link TestDescriptor}s to uniform paths. */
 public interface ITestDescriptorResolver {
 
-	Optional<String> toUniformPath(TestDescriptor testDescriptor);
+	/** Returns the uniform path or {@link Optional#empty()} if no uniform path could be determined. */
+	Optional<String> getUniformPath(TestDescriptor testDescriptor);
 
-	Optional<ClusteredTestDetails> toClusteredTestDetails(TestDescriptor testDescriptor);
+	/** Returns the uniform path or {@link Optional#empty()} if no cluster id could be determined. */
+	Optional<String> getClusterId(TestDescriptor testDescriptor);
 
+	/**
+	 * Returns the {@link TestEngine#getId()} of the {@link TestEngine} to use this {@link ITestDescriptorResolver}
+	 * for.
+	 */
 	String getEngineId();
 }

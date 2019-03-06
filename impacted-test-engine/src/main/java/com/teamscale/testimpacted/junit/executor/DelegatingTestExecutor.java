@@ -6,6 +6,7 @@ import org.junit.platform.engine.ExecutionRequest;
 import java.util.Collections;
 import java.util.List;
 
+/** Simple test executor that does nothing but execute the whole {@link TestExecutorRequest}. */
 public class DelegatingTestExecutor implements ITestExecutor {
 
 	@Override

@@ -1,6 +1,5 @@
 package com.teamscale.testimpacted.junit;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.TestExecution;
@@ -24,9 +23,7 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class ImpactedTestEngine implements TestEngine {
@@ -47,13 +44,10 @@ public class ImpactedTestEngine implements TestEngine {
 	@Override
 	public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
 		EngineDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "Teamscale Impacted Tests");
-		List<TestEngine> enabledTestEngines = new ArrayList<>(testEngineRegistry.getEnabledTestEngines().values());
-
-		enabledTestEngines.sort(Comparator.comparing(TestEngine::getId));
 
 		LOGGER.debug(() -> "Starting test discovery for engine " + ENGINE_ID);
 
-		for (TestEngine delegateTestEngine : enabledTestEngines) {
+		for (TestEngine delegateTestEngine : testEngineRegistry) {
 			LOGGER.debug(() -> "Starting test discovery for delegate engine: " + delegateTestEngine.getId());
 			TestDescriptor delegateEngineDescriptor = delegateTestEngine.discover(discoveryRequest,
 					UniqueId.forEngine(delegateTestEngine.getId()));
@@ -71,17 +65,16 @@ public class ImpactedTestEngine implements TestEngine {
 	public void execute(ExecutionRequest request) {
 		EngineExecutionListener engineExecutionListener = request.getEngineExecutionListener();
 		EngineDescriptor engineDescriptor = (EngineDescriptor) request.getRootTestDescriptor();
-		Map<String, TestEngine> delegateTestEngines = testEngineRegistry.getEnabledTestEngines();
 
 		LOGGER.debug(() -> "Starting execution of request for engine " + ENGINE_ID + ":\n" + TestDescriptorUtils
 				.getTestDescriptorAsString(engineDescriptor));
 
 		engineExecutionListener.executionStarted(engineDescriptor);
-		runTestExecutor(request, delegateTestEngines);
+		runTestExecutor(request);
 		engineExecutionListener.executionFinished(engineDescriptor, TestExecutionResult.successful());
 	}
 
-	private void runTestExecutor(ExecutionRequest request, Map<String, TestEngine> delegateTestEngines) {
+	private void runTestExecutor(ExecutionRequest request) {
 		List<TestDetails> availableTests = new ArrayList<>();
 		List<TestExecution> testExecutions = new ArrayList<>();
 		ITestExecutor testExecutor = testEngineOptions.createTestExecutor();
@@ -93,7 +86,7 @@ public class ImpactedTestEngine implements TestEngine {
 				continue;
 			}
 
-			TestEngine testEngine = delegateTestEngines.get(engineId.get());
+			TestEngine testEngine = testEngineRegistry.getTestEngine(engineId.get());
 			AvailableTests availableTestsForEngine = TestDescriptorUtils
 					.getAvailableTests(testEngine, engineTestDescriptor);
 			TestExecutorRequest testExecutorRequest = new TestExecutorRequest(testEngine, engineTestDescriptor,

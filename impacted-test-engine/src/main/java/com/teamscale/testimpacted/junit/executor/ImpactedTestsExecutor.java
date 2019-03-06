@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/** Test executor that only executes impacted tests and collects test wise coverage for the executed tests. */
 public class ImpactedTestsExecutor extends TestWiseCoverageCollectingTestExecutor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestsExecutor.class);
@@ -39,6 +40,7 @@ public class ImpactedTestsExecutor extends TestWiseCoverageCollectingTestExecuto
 		this.partition = partition;
 	}
 
+	@Override
 	public List<TestExecution> execute(TestExecutorRequest testExecutorRequest) {
 		AvailableTests availableTestDetails = TestDescriptorUtils
 				.getAvailableTests(testExecutorRequest.testEngine, testExecutorRequest.engineTestDescriptor);
