@@ -3,6 +3,7 @@ package com.teamscale.report.testwise.jacoco.cache;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
+import org.jacoco.report.JavaNames;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,8 +67,8 @@ public class ProbesCache {
 	public FileCoverageBuilder getCoverage(ExecutionData executionData, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
-			String fullyQualifiedClassName = executionData.getName().replace('/', '.');
-			if (locationIncludeFilter.test(fullyQualifiedClassName)) {
+			String fullyQualifiedClassName = new JavaNames().getQualifiedClassName(executionData.getName());
+			if (locationIncludeFilter.test(fullyQualifiedClassName + ".class")) {
 				classNotFoundLogger.log(fullyQualifiedClassName);
 			}
 			return null;
