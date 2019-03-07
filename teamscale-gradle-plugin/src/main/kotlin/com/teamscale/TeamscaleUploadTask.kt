@@ -31,6 +31,9 @@ open class TeamscaleUploadTask : DefaultTask() {
     @Input
     val reports = mutableSetOf<Report>()
 
+    @Input
+    var ignoreFailures: Boolean = false
+
     init {
         group = "Teamscale"
         description = "Uploads reports to Teamscale"
@@ -38,15 +41,27 @@ open class TeamscaleUploadTask : DefaultTask() {
 
     /** Executes the report upload. */
     @TaskAction
-    fun uploadReports() {
+    fun execute() {
         if (reports.isEmpty()) {
             logger.info("Skipping upload. No reports to upload.")
             return
         }
 
         server.validate()
-        logger.info("Uploading to $server at $commitDescriptor...")
 
+        try {
+            logger.info("Uploading to $server at $commitDescriptor...")
+            uploadReports()
+        } catch (e: Exception) {
+            if (ignoreFailures) {
+                logger.error(e.message)
+            } else {
+                throw e
+            }
+        }
+    }
+
+    private fun uploadReports() {
         // We want to upload e.g. all JUnit test reports that go to the same partition
         // as one commit so we group them before uploading them
         for ((key, reports) in reports.groupBy { Triple(it.format, it.partition, it.message) }) {
@@ -60,7 +75,8 @@ open class TeamscaleUploadTask : DefaultTask() {
 
             try {
                 retry(3) {
-                    val client = TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
+                    val client =
+                        TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
                     client.uploadReports(
                         format, reportFiles, commitDescriptor, partition, "$message ($partition)"
                     )
