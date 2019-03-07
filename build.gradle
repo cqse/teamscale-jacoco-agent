@@ -16,8 +16,8 @@ ext {
 	reportGeneratorVersion = '1.3.2'
 	teamscaleClientVersion = '0.2.4'
 
-    // When upgrading JaCoCo to a newer version make sure to 
-    // check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
+	// When upgrading JaCoCo to a newer version make sure to
+	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.kt.
 	jacocoVersion = '0.8.3'
 	log4jVersion = '2.8.2'
@@ -75,9 +75,13 @@ subprojects {
 			ssh.run {
 				session(remotes.share) {
 					// Gradle gets stuck when we do not delete these metadata files before publishing the new version
-					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml'
-					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml.md5'
-					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml.sha1'
+					def artifactName = project.name
+					if (artifactName == 'agent') {
+						artifactName = 'teamscale-jacoco-agent'
+					}
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + artifactName + '/maven-metadata.xml'
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + artifactName + '/maven-metadata.xml.md5'
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + artifactName + '/maven-metadata.xml.sha1'
 				}
 			}
 		}
