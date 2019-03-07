@@ -41,7 +41,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
     /** Executes the report upload. */
     @TaskAction
-    fun execute() {
+    fun action() {
         if (reports.isEmpty()) {
             logger.info("Skipping upload. No reports to upload.")
             return
