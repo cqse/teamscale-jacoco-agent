@@ -15,6 +15,6 @@ public class JUnitJupiterTestDescriptorResolver extends JUnitTestDescriptorResol
 
 	@Override
 	public String getEngineId() {
-		return "engine-jupiter";
+		return "junit-jupiter";
 	}
 }
