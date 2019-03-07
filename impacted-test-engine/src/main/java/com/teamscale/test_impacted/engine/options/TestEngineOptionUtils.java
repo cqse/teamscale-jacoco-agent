@@ -1,6 +1,7 @@
 package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
+import org.junit.platform.engine.ConfigurationParameters;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,9 +12,9 @@ import java.util.function.Function;
 public class TestEngineOptionUtils {
 
 	/** Returns the {@link TestEngineOptions} configured in the {@link Properties}. */
-	public static TestEngineOptions getEngineOptions(Properties properties) {
+	public static TestEngineOptions getEngineOptions(ConfigurationParameters configurationParameters) {
 		PrefixingPropertyReader propertyReader = new PrefixingPropertyReader("teamscale.test.impacted.",
-				properties);
+				configurationParameters);
 		ServerOptions serverOptions = ServerOptions.builder()
 				.url(propertyReader.getString("server.url"))
 				.project(propertyReader.getString("server.project"))
@@ -35,21 +36,17 @@ public class TestEngineOptionUtils {
 
 	private static class PrefixingPropertyReader {
 
-		private final Properties properties;
+		private final ConfigurationParameters configurationParameters;
 
 		private String prefix;
 
-		private PrefixingPropertyReader(String prefix, Properties properties) {
+		private PrefixingPropertyReader(String prefix, ConfigurationParameters configurationParameters) {
 			this.prefix = prefix;
-			this.properties = properties;
+			this.configurationParameters = configurationParameters;
 		}
 
 		private <T> T get(String propertyName, Function<String, T> mapper) {
-			String textValue = (String) properties.get(prefix + propertyName);
-			if (textValue == null) {
-				return null;
-			}
-			return mapper.apply(textValue);
+			return configurationParameters.get(prefix + propertyName).map(mapper).orElse(null);
 		}
 
 		private String getString(String propertyName) {

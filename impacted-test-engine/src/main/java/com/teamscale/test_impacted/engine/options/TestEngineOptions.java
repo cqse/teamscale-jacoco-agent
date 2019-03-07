@@ -6,7 +6,7 @@ import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.engine.executor.DelegatingTestExecutor;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
-import com.teamscale.test_impacted.engine.executor.TestWiseCoverageCollectingTestExecutor;
+import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
 import org.junit.platform.commons.util.Preconditions;
 
@@ -70,7 +70,7 @@ public class TestEngineOptions {
 			return new DelegatingTestExecutor();
 		}
 		if (isRunAllTests()) {
-			return new TestWiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
+			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
 		}
 
 		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, serverOptions, baseline, endCommit, partition);

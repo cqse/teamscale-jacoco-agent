@@ -36,8 +36,6 @@ public class ImpactedTestEngine implements TestEngine {
 
 	private final TestEngineRegistry testEngineRegistry = new TestEngineRegistry();
 
-	private final TestEngineOptions testEngineOptions = TestEngineOptionUtils.getEngineOptions(System.getProperties());
-
 	@Override
 	public String getId() {
 		return ENGINE_ID;
@@ -79,6 +77,8 @@ public class ImpactedTestEngine implements TestEngine {
 	private void runTestExecutor(ExecutionRequest request) {
 		List<TestDetails> availableTests = new ArrayList<>();
 		List<TestExecution> testExecutions = new ArrayList<>();
+		TestEngineOptions testEngineOptions = TestEngineOptionUtils
+				.getEngineOptions(request.getConfigurationParameters());
 		ITestExecutor testExecutor = testEngineOptions.createTestExecutor();
 
 		for (TestDescriptor engineTestDescriptor : request.getRootTestDescriptor().getChildren()) {
@@ -99,16 +99,16 @@ public class ImpactedTestEngine implements TestEngine {
 			availableTests.addAll(availableTestsForEngine.getTestList());
 		}
 
-		dumpTestDetails(availableTests);
-		dumpTestExecutions(testExecutions);
+		dumpTestDetails(availableTests, testEngineOptions);
+		dumpTestExecutions(testExecutions, testEngineOptions);
 	}
 
-	private void dumpTestExecutions(List<TestExecution> testExecutions) {
+	private static void dumpTestExecutions(List<TestExecution> testExecutions, TestEngineOptions testEngineOptions) {
 		writeReport(new File(testEngineOptions.getReportDirectory(), "test-execution.json"), testExecutions);
 	}
 
 	/** Writes the given test details to a report file. */
-	private void dumpTestDetails(List<TestDetails> testDetails) {
+	private static void dumpTestDetails(List<TestDetails> testDetails, TestEngineOptions testEngineOptions) {
 		writeReport(new File(testEngineOptions.getReportDirectory(), "test-list.json"), testDetails);
 	}
 

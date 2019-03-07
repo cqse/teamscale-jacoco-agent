@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 /** Test executor that only executes impacted tests and collects test wise coverage for the executed tests. */
-public class ImpactedTestsExecutor extends TestWiseCoverageCollectingTestExecutor {
+public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecutor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestsExecutor.class);
 

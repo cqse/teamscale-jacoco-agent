@@ -92,11 +92,6 @@ open class TestImpacted : Test() {
         description = "Executes the impacted tests and collects coverage per test case"
     }
 
-    @Inject
-    protected open fun getExecActionFactory(): ExecActionFactory {
-        throw UnsupportedOperationException()
-    }
-
     private fun writeEngineProperty(name: String, value: String?) {
         if (value != null) {
             systemProperties.put("teamscale.test.impacted.$name", value);

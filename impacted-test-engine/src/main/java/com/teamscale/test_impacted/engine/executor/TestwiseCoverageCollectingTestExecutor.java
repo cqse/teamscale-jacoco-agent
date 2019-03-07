@@ -9,11 +9,11 @@ import org.junit.platform.engine.ExecutionRequest;
 import java.util.List;
 
 /** Test executor that records test wise coverage and executes the full {@link TestExecutorRequest}. */
-public class TestWiseCoverageCollectingTestExecutor implements ITestExecutor {
+public class TestwiseCoverageCollectingTestExecutor implements ITestExecutor {
 
 	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
 
-	public TestWiseCoverageCollectingTestExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis) {
+	public TestwiseCoverageCollectingTestExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
 	}
 
@@ -21,7 +21,7 @@ public class TestWiseCoverageCollectingTestExecutor implements ITestExecutor {
 	public List<TestExecution> execute(TestExecutorRequest testExecutorRequest) {
 		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
 				.getTestDescriptorResolver(testExecutorRequest.testEngine);
-		TestWiseCoverageCollectingExecutionListener executionListener = new TestWiseCoverageCollectingExecutionListener(
+		TestwiseCoverageCollectingExecutionListener executionListener = new TestwiseCoverageCollectingExecutionListener(
 				testwiseCoverageAgentApis,
 				testDescriptorResolver, testExecutorRequest.engineExecutionListener);
 

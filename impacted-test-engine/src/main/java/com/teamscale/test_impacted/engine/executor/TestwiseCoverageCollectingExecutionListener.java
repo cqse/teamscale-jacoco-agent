@@ -26,9 +26,9 @@ import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.is
  * An execution listener which delegates events to another {@link EngineExecutionListener} and notifies Teamscale agents
  * collecting test wise coverage.
  */
-class TestWiseCoverageCollectingExecutionListener implements EngineExecutionListener {
+class TestwiseCoverageCollectingExecutionListener implements EngineExecutionListener {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestWiseCoverageCollectingExecutionListener.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(TestwiseCoverageCollectingExecutionListener.class);
 
 	/** An API service to signal test start and end to the agent. */
 	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
@@ -43,7 +43,7 @@ class TestWiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
 
-	TestWiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ITestDescriptorResolver testDescriptorResolver, EngineExecutionListener engineExecutionListener) {
+	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ITestDescriptorResolver testDescriptorResolver, EngineExecutionListener engineExecutionListener) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
