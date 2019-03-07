@@ -6,7 +6,7 @@ import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.TestExecutorRequest;
-import com.teamscale.test_impacted.engine.options.OptionsUtils;
+import com.teamscale.test_impacted.engine.options.TestEngineOptionUtils;
 import com.teamscale.test_impacted.engine.options.TestEngineOptions;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.commons.logging.Logger;
@@ -26,15 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/** Test engine for executing impacted tests. */
 public class ImpactedTestEngine implements TestEngine {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestEngine.class);
 
+	/** The id of the {@link ImpactedTestEngine}. */
 	static final String ENGINE_ID = "teamscale-test-impacted";
 
 	private final TestEngineRegistry testEngineRegistry = new TestEngineRegistry();
 
-	private final TestEngineOptions testEngineOptions = OptionsUtils.getEngineOptions(System.getProperties());
+	private final TestEngineOptions testEngineOptions = TestEngineOptionUtils.getEngineOptions(System.getProperties());
 
 	@Override
 	public String getId() {

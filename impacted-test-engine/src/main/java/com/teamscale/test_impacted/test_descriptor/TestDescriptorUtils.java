@@ -79,6 +79,10 @@ public class TestDescriptorUtils {
 		return testDescriptor.getChildren().stream().flatMap(TestDescriptorUtils::streamTestRepresentatives);
 	}
 
+	/**
+	 * Returns the {@link Segment#getValue()} matching the type or {@link Optional#empty()} if no matching segment can
+	 * be found.
+	 */
 	public static Optional<String> getUniqueIdSegment(TestDescriptor testDescriptor, String type) {
 		return testDescriptor.getUniqueId().getSegments().stream().filter(segment -> segment.getType().equals(type))
 				.findFirst().map(

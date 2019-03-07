@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
-public class OptionsUtils {
+/** Utility class for {@link TestEngineOptions}. */
+public class TestEngineOptionUtils {
 
+	/** Returns the {@link TestEngineOptions} configured in the {@link Properties}. */
 	public static TestEngineOptions getEngineOptions(Properties properties) {
 		PrefixingPropertyReader propertyReader = new PrefixingPropertyReader("teamscale.test.impacted.",
 				properties);
