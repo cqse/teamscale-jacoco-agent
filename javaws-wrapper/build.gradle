@@ -40,15 +40,13 @@ distributions {
 				rename 'README.pdf', 'userguide.pdf'
 			}
 
-			project(':teamscale-jacoco-agent').afterEvaluate {
-				from(project(':teamscale-jacoco-agent').tasks.readmeToPdf) {
-					rename('README.pdf', 'agent-userguide.pdf')
-					into 'documentation'
-				}
+			from(project(':agent').tasks.readmeToPdf) {
+				rename('README.pdf', 'agent-userguide.pdf')
+				into 'documentation'
+			}
 
-				from(project(':teamscale-jacoco-agent').tasks.shadowJar) {
-					rename(/.*/, 'agent.jar')
-				}
+			from(project(':agent').tasks.shadowJar) {
+				rename(/.*/, 'agent.jar')
 			}
 		}
 	}

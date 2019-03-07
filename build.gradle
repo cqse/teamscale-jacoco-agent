@@ -75,9 +75,13 @@ subprojects {
 			ssh.run {
 				session(remotes.share) {
 					// Gradle gets stuck when we do not delete these metadata files before publishing the new version
-					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml'
-					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml.md5'
-					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + project.name + '/maven-metadata.xml.sha1'
+					def artifactName = project.name
+					if (artifactName == 'agent') {
+						artifactName = 'teamscale-jacoco-agent'
+					}
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + artifactName + '/maven-metadata.xml'
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + artifactName + '/maven-metadata.xml.md5'
+					remove cqseMavenRepositoryMavenPath + '/com/teamscale/' + artifactName + '/maven-metadata.xml.sha1'
 				}
 			}
 		}
@@ -87,7 +91,7 @@ subprojects {
 
 // Installs the plugin to your local maven repository
 task installGradlePlugin(dependsOn: [
-		':teamscale-jacoco-agent:install',
+		':agent:install',
 		':impacted-tests-executor:install',
 		':report-generator:install',
 		':teamscale-gradle-plugin:install',
@@ -104,7 +108,7 @@ task iGP(dependsOn: [
 
 // Deploys the plugin to the public share
 task deployGradlePlugin(dependsOn: [
-		':teamscale-jacoco-agent:uploadShadow',
+		':agent:uploadShadow',
 		':impacted-tests-executor:uploadArchives',
 		':report-generator:uploadShadow',
 		':teamscale-gradle-plugin:uploadShadow',

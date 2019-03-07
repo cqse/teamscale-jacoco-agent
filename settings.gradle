@@ -8,7 +8,7 @@
  * in the user guide at https://docs.gradle.org/3.5/userguide/multi_project_builds.html
  */
 
-include ':teamscale-jacoco-agent'
+include ':agent'
 include ':javaws-wrapper'
 include ':report-generator'
 include ':teamscale-gradle-plugin'
