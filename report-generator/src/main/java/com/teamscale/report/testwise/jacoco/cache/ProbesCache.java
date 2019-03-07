@@ -67,7 +67,7 @@ public class ProbesCache {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
 			String fullyQualifiedClassName = executionData.getName().replace('/', '.');
-			if (locationIncludeFilter.test(fullyQualifiedClassName)) {
+			if (locationIncludeFilter.test(fullyQualifiedClassName + ".class")) {
 				classNotFoundLogger.log(fullyQualifiedClassName);
 			}
 			return null;
