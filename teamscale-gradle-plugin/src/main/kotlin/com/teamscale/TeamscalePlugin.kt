@@ -26,7 +26,7 @@ open class TeamscalePlugin : Plugin<Project> {
         const val teamscaleExtensionName = "teamscale"
 
         /** The name of the configuration that holds the impacted test executor and its dependencies. */
-        const val impactedTestEngineConfiguration = "impactedTestsExecutor"
+        const val impactedTestEngineConfiguration = "impactedTestsEngine"
 
         /** The name of the configuration that holds the teamscale jacoco agent and its dependencies. */
         const val teamscaleJaCoCoAgentConfiguration = "teamscaleJaCoCoAgent"

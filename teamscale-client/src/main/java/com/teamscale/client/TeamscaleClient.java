@@ -31,7 +31,8 @@ public class TeamscaleClient {
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
-	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
+	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the
+	 * given commit.
 	 */
 	public Response<List<TestClusterForPrioritization>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline, CommitDescriptor endCommit, String partition) throws IOException {
 		if (baseline == null) {

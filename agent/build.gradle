@@ -66,6 +66,8 @@ shadowJar {
 	// The relocateShadowJar configures by default to relocate all packages to shadow.* and we are overriding this here
 	relocate 'eu.cqse', 'eu.cqse'
 	relocate 'com.teamscale', 'com.teamscale'
+	relocate 'retrofit2', 'retrofit2'
+	relocate 'okhttp3', 'okhttp3'
 
 	// Fix relocation of multi version jar
 	// Default would be shadow/META-INF/versions/9/, which is wrong
