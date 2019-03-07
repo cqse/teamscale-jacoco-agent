@@ -54,7 +54,8 @@ open class TeamscaleUploadTask : DefaultTask() {
             uploadReports()
         } catch (e: Exception) {
             if (ignoreFailures) {
-                logger.error(e.message)
+                logger.warn("Ignoring failure during upload:")
+                logger.warn(e.message, e)
             } else {
                 throw e
             }
