@@ -15,10 +15,10 @@ import java.util.Set;
 	private final ILogger logger;
 
 	/** Missing classes that will be logged when {@link #flush()} is called. */
-	private Set<String> classesToBeLogged = new HashSet<>();
+	private final Set<String> classesToBeLogged = new HashSet<>();
 
 	/** Classes that have already been reported as missing. */
-	private Set<String> alreadyLoggedClasses = new HashSet<>();
+	private final Set<String> alreadyLoggedClasses = new HashSet<>();
 
 	/** Constructor */
 	/* package */ ClassNotFoundLogger(ILogger logger) {
