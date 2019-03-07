@@ -3,7 +3,7 @@
 FROM openjdk:8 as build
 ADD . /src
 WORKDIR /src
-RUN ./gradlew :agent:assemble
+RUN ./gradlew :teamscale-jacoco-agent:assemble
 
 # --- production image ---
 
