@@ -74,7 +74,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private void initServer(int port) throws IOException {
 		logger.info("Listening for test events on port {}.", port);
 
-		service.initExceptionHandler(this::logInitException);
+		service.initExceptionHandler(this::logInitExceptionAndExit);
 		service.port(port);
 
 		service.get("/test", (request, response) -> controller.getSessionId());
@@ -99,7 +99,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private int determineFreePort() throws IOException {
 		for (int currentPort = options.getHttpServerPort(); currentPort < MAX_PORT_NUMBER;) {
 			try (ServerSocket s = new ServerSocket(currentPort)) {
-				// found a free port. Jump out
+				// We found a free port. This releases the socket on that port,
+				// so our Spark service can claim it. In case of concurrency
+				// issues, the service unable to claim the port will fail to
+				// initialize and call logInitExceptionAndExit.
 				return currentPort;
 			} catch (BindException e) {
 				currentPort++;
@@ -234,9 +237,15 @@ public class TestwiseCoverageAgent extends AgentBase {
 		return message;
 	}
 
-	/** Logs errors that occurred during agent initialization. */
-	private void logInitException(Exception e) {
+	/**
+	 * Logs errors that occurred during agent initialization. Since Spark starts
+	 * the server asynchronously, we just get a callback to this method, and the
+	 * only thing we can do to not lose data unknowingly is terminating the
+	 * process.
+	 */
+	private void logInitExceptionAndExit(Exception e) {
 		logger.error("Agent initialization failed", e);
+		System.exit(1);
 	}
 
 	/** Stops the HTTP service and unregisters from the primary agent. */
