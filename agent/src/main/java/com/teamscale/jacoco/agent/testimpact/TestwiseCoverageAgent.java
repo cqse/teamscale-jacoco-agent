@@ -57,8 +57,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private final Service service;
 
 	/** Constructor. */
-	public TestwiseCoverageAgent(AgentOptions options, IAgent agent) throws IOException {
-		super(options, agent);
+	public TestwiseCoverageAgent(AgentOptions options, IAgent jacocoAgent) throws IOException {
+		super(options, jacocoAgent);
 		this.options = options;
 		service = Service.ignite();
 		initServer(determineFreePort());
@@ -122,14 +122,11 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String handleTestStart(Request request, Response response) {
 		String testId = request.params(TEST_ID_PARAMETER);
 		if (testId == null || testId.isEmpty()) {
-			logger.error("Test name missing in " + request.url() + "!");
-
-			response.status(400);
-			return "Test name is missing!";
+			return error(response, "Test name missing in {}!", request.url());
 		}
 
 		notifyTestStart(testId);
-		logger.debug("Start test " + testId);
+		logger.debug("Start test {}", testId);
 
 		// Dump and reset coverage so that we only record coverage that belongs
 		// to this particular test case.
@@ -144,11 +141,11 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String handleTestEnd(Request request, Response response) throws DumpException {
 		String testId = request.params(TEST_ID_PARAMETER);
 		if (testId == null || testId.isEmpty()) {
-			return error("Test name missing in " + request.url() + "!", response);
+			return error(response, "Test name missing in {}!", request.url());
 		}
 
 		notifyTestEnd(testId);
-		logger.debug("End test " + testId);
+		logger.debug("End test {}", testId);
 
 		controller.dump();
 
@@ -158,27 +155,27 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 	/** Notifies all secondary agents about a test start event. */
 	private void notifyTestStart(String testId) {
-		secondaryAgents.forEach((port, agent) -> agent.signalTestStart(testId).enqueue(
-				IAgentService.failureCallback(() -> logger.warn("Error signaling test start to agent on port " + port))));
+		secondaryAgents.forEach((port, agent) -> agent.signalTestStart(testId).enqueue(IAgentService
+				.failureCallback(() -> logger.warn("Error signaling test start to agent on port {}", port))));
 	}
 
 	/** Notifies all secondary agents about a test end event. */
 	private void notifyTestEnd(String testId) {
-		secondaryAgents.forEach((port, agent) -> agent.signalTestEnd(testId).enqueue(
-				IAgentService.failureCallback(() -> logger.warn("Error signaling test end to agent on port " + port))));
+		secondaryAgents.forEach((port, agent) -> agent.signalTestEnd(testId).enqueue(IAgentService
+				.failureCallback(() -> logger.warn("Error signaling test end to agent on port {}", port))));
 	}
 
 	/** Handles registrations from secondary agents. */
 	private String handleRegister(Request request, Response response) {
 		if (primaryAgent != null) {
-			return error("Cannot register with a secondary agent.", response);
+			return error(response, "Cannot register with a secondary agent.");
 		}
 
 		try {
 			int port = extractPortFromQuery(request);
 			secondaryAgents.put(port, IAgentService.create(port));
 		} catch (IllegalArgumentException e) {
-			return error(e.getMessage(), response);
+			return error(response, e.getMessage(), e);
 		}
 
 		response.status(204);
@@ -188,17 +185,17 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** Handles unregistrations from secondary agents. */
 	private String handleUnregister(Request request, Response response) {
 		if (primaryAgent != null) {
-			return error("Cannot unregister from a secondary agent.", response);
+			return error(response, "Cannot unregister from a secondary agent.");
 		}
 
 		try {
 			int port = extractPortFromQuery(request);
 			IAgentService previous = secondaryAgents.remove(port);
 			if (previous == null) {
-				return error("No secondary agent registered for port " + port, response);
+				return error(response, "No secondary agent registered for port {}", port);
 			}
 		} catch (IllegalArgumentException e) {
-			return error(e.getMessage(), response);
+			return error(response, e.getMessage(), e);
 		}
 		response.status(204);
 		return "";
@@ -225,10 +222,14 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 	/**
 	 * Logs the message to the error log, sets the response code to 400, and
-	 * returns the message for chaining.
+	 * returns the message for chaining. As noted in the
+	 * <a href="https://www.slf4j.org/faq.html#paramException">FAQ</a>, the
+	 * arguments may be string parameters, which are concatenated into the
+	 * string if error logging is enabled, and the last argument may be an
+	 * exception/throwable, whose stack trace is then logged as well.
 	 */
-	private String error(String message, Response response) {
-		logger.error(message);
+	private String error(Response response, String message, Object... arguments) {
+		logger.error(message, arguments);
 		response.status(400);
 		return message;
 	}
@@ -245,7 +246,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 			try {
 				primaryAgent.unregister(getPort()).execute();
 			} catch (IOException e) {
-				logger.error("Unable to unregister from primary agent.");
+				logger.error("Unable to unregister from primary agent.", e);
 			}
 		}
 		service.stop();

@@ -35,8 +35,8 @@ public class Agent extends AgentBase {
 	protected final IXmlStore store;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options, IAgent agent) throws IllegalStateException, UploadStoreException {
-		super(options, agent);
+	/*package*/ Agent(AgentOptions options, IAgent jacocoAgent) throws IllegalStateException, UploadStoreException {
+		super(options, jacocoAgent);
 
 		store = options.createStore();
 		logger.info("Storage method: {}", store.describe());

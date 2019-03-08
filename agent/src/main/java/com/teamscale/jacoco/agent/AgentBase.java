@@ -25,9 +25,9 @@ public abstract class AgentBase {
 	private static LoggingUtils.LoggingResources loggingResources;
 
 	/** Constructor. */
-	public AgentBase(AgentOptions options, IAgent agent) throws IllegalStateException {
+	public AgentBase(AgentOptions options, IAgent jacocoAgent) throws IllegalStateException {
 		try {
-			controller = new JacocoRuntimeController(agent);
+			controller = new JacocoRuntimeController(jacocoAgent);
 		} catch (IllegalStateException e) {
 			throw new IllegalStateException(
 					"JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
