@@ -10,6 +10,7 @@ import org.junit.platform.engine.discovery.UniqueIdSelector;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -20,7 +21,7 @@ public class UniqueIdsDiscoveryRequest implements EngineDiscoveryRequest {
 
 	private final ConfigurationParameters configurationParameters;
 
-	UniqueIdsDiscoveryRequest(List<UniqueId> uniqueIds, ConfigurationParameters configurationParameters) {
+	UniqueIdsDiscoveryRequest(Set<UniqueId> uniqueIds, ConfigurationParameters configurationParameters) {
 		uniqueIdSelectors = uniqueIds.stream().map(DiscoverySelectors::selectUniqueId).collect(toList());
 		this.configurationParameters = configurationParameters;
 	}

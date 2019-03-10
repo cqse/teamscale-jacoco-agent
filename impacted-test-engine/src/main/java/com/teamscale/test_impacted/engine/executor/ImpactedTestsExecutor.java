@@ -17,7 +17,9 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** Test executor that only executes impacted tests and collects test wise coverage for the executed tests. */
 public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecutor {
@@ -41,29 +43,43 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 	}
 
 	@Override
-	public List<TestExecution> execute(TestExecutorRequest testExecutorRequest) {
+	public List<TestExecution> execute(TestExecutorRequest executorRequest) {
 		AvailableTests availableTestDetails = TestDescriptorUtils
-				.getAvailableTests(testExecutorRequest.testEngine, testExecutorRequest.engineTestDescriptor);
+				.getAvailableTests(executorRequest.testEngine, executorRequest.engineTestDescriptor);
 		List<TestClusterForPrioritization> testClustersForPrioritization = getImpactedTestsFromTeamscale(
 				availableTestDetails.getTestList());
+		AutoSkippingEngineExecutionListener executionListener = new AutoSkippingEngineExecutionListener(
+				getImpactedTestUniqueIds(availableTestDetails, testClustersForPrioritization),
+				executorRequest.engineExecutionListener, executorRequest.engineTestDescriptor);
+
 		List<TestExecution> testExecutions = new ArrayList<>();
 
-		LOGGER.debug(() -> "Re-discovering tests for delegate engine " + testExecutorRequest.testEngine.getId());
+		LOGGER.debug(() -> "Re-discovering tests for delegate engine " + executorRequest.testEngine.getId());
 
 		for (TestClusterForPrioritization testClusterForPrioritization : testClustersForPrioritization) {
+			Set<UniqueId> uniqueIdsOfTestsToExecute = availableTestDetails
+					.convertToUniqueIds(testClusterForPrioritization.testsForPrioritization);
 			UniqueIdsDiscoveryRequest engineDiscoveryRequest = new UniqueIdsDiscoveryRequest(
-					availableTestDetails.convertToUniqueIds(testClusterForPrioritization.testsForPrioritization),
-					testExecutorRequest.configurationParameters);
-			TestDescriptor testDescriptor = testExecutorRequest.testEngine.discover(engineDiscoveryRequest,
-					UniqueId.forEngine(testExecutorRequest.testEngine.getId()));
-			List<TestExecution> testExecutionsForCluster = super.execute(
-					new TestExecutorRequest(testExecutorRequest.testEngine, testDescriptor,
-							testExecutorRequest.engineExecutionListener, testExecutorRequest.configurationParameters));
+					uniqueIdsOfTestsToExecute, executorRequest.configurationParameters);
+			TestDescriptor testDescriptor = executorRequest.testEngine.discover(engineDiscoveryRequest,
+					UniqueId.forEngine(executorRequest.testEngine.getId()));
+			TestExecutorRequest impactedExecutorRequest = new TestExecutorRequest(executorRequest.testEngine,
+					testDescriptor, executionListener, executorRequest.configurationParameters);
+			List<TestExecution> testExecutionsForCluster = super
+					.execute(impactedExecutorRequest);
 
 			testExecutions.addAll(testExecutionsForCluster);
 		}
 
 		return testExecutions;
+	}
+
+	private static Set<UniqueId> getImpactedTestUniqueIds(AvailableTests availableTests, List<TestClusterForPrioritization> testClustersForPrioritzation) {
+		Set<UniqueId> result = new HashSet<>();
+		for (TestClusterForPrioritization testClusterForPrioritization : testClustersForPrioritzation) {
+			result.addAll(availableTests.convertToUniqueIds(testClusterForPrioritization.testsForPrioritization));
+		}
+		return result;
 	}
 
 	/** Queries Teamscale for impacted tests. */
@@ -77,11 +93,12 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 			if (response.isSuccessful()) {
 				List<TestClusterForPrioritization> testList = response.body();
 				if (testList == null) {
-					LOGGER.error(() -> "Teamscale was not able to determine impacted tests.");
+					LOGGER.error(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
 				}
 				return testList;
 			} else {
-				LOGGER.error(() -> "Retrieval of impacted tests failed: " + response.code() + " " + response.message());
+				LOGGER.error(() -> "Retrieval of impacted tests failed: " + response.code() + " " + response
+						.message() + "\n" + response.errorBody());
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Retrieval of impacted tests failed.");

@@ -57,7 +57,7 @@ public class TestDescriptorUtils {
 	 * <p>
 	 * {@code [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]}
 	 */
-	private static boolean isTestTemplateOrTestFactory(TestDescriptor testDescriptor) {
+	public static boolean isTestTemplateOrTestFactory(TestDescriptor testDescriptor) {
 		if (testDescriptor == null) {
 			return false;
 		}

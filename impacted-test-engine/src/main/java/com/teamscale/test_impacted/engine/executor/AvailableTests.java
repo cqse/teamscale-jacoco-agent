@@ -12,8 +12,10 @@ import org.junit.platform.engine.UniqueId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths returned
@@ -47,8 +49,8 @@ public class AvailableTests {
 	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a list of unique IDs to be fed into JUnit
 	 * Platform.
 	 */
-	public List<UniqueId> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
-		List<UniqueId> list = new ArrayList<>();
+	public Set<UniqueId> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
+		Set<UniqueId> list = new HashSet<>();
 		for (TestForPrioritization impactedTest : impactedTests) {
 			LOGGER.info(() -> impactedTest.uniformPath + " " + impactedTest.selectionReason);
 
@@ -61,7 +63,7 @@ public class AvailableTests {
 						.forEach(testAlternative -> LOGGER.error(() -> " - " + testAlternative));
 
 				LOGGER.error(() -> "Falling back to execute all...");
-				return new ArrayList<>(uniformPathToUniqueIdMapping.values());
+				return new HashSet<>(uniformPathToUniqueIdMapping.values());
 			}
 			list.add(testUniqueId);
 		}
