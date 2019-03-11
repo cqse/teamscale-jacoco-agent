@@ -73,7 +73,8 @@ open class TeamscalePluginExtension(val project: Project) {
             "okhttp3.*",
             "okio.*",
             "retrofit2.*",
-            "*\$MockitoMock\$*"
+            "*.MockitoMock.*",
+            "*.FastClassByGuice.*"
         )
     }
 }
