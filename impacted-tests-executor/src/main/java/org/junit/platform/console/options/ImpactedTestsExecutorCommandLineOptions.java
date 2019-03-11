@@ -120,4 +120,12 @@ public class ImpactedTestsExecutorCommandLineOptions {
 	public void setAgentUrls(List<HttpUrl> agentUrl) {
 		this.agentUrls = agentUrl;
 	}
+
+	/**
+	 * Returns whether the service call should fail if the given commit is not yet processed by Teamscale.
+	 * This is always enabled except for when the timestamp of the {@link #endCommit} is set to HEAD.
+	 */
+	public boolean shouldEnsureProcessed() {
+		return !"HEAD".equals(this.endCommit.timestamp);
+	}
 }

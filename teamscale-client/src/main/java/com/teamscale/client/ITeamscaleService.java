@@ -54,6 +54,7 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
+			@Query("ensureProcessed") boolean ensureProcessed,
 			@Body List<TestDetails> report
 	);
 
@@ -64,6 +65,7 @@ public interface ITeamscaleService {
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
+			@Query("ensureProcessed") boolean ensureProcessed,
 			@Body List<TestDetails> report
 	);
 

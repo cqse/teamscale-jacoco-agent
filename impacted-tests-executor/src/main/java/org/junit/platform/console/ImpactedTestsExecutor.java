@@ -135,7 +135,7 @@ public class ImpactedTestsExecutor {
 					options.getServer().userAccessToken, options.getServer().project);
 			Response<List<TestForPrioritization>> response = client
 					.getImpactedTests(availableTestDetails, options.getBaseline(), options.getEndCommit(),
-							options.getPartition());
+							options.getPartition(), options.shouldEnsureProcessed());
 			if (response.isSuccessful()) {
 				List<TestForPrioritization> testList = response.body();
 				if (testList == null) {
