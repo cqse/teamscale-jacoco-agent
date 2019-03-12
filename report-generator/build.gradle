@@ -1,21 +1,12 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
 plugins {
 	id 'java-library'
 	id 'maven'
-	id 'com.github.johnrengelman.shadow' version '4.0.3'
-}
-
-configurations {
-	testImplementation.extendsFrom(shadow)
 }
 
 version reportGeneratorVersion
 
 dependencies {
-	// We need to use compile here instead of implementation/api as shadow can't cope with api yet
-	// See https://github.com/johnrengelman/shadow/issues/424 -> Tagged for 4.0.4
-	shadow project(':teamscale-client')
+	implementation project(':teamscale-client')
 
 	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
@@ -37,39 +28,9 @@ test {
 	testLogging.exceptionFormat "full"
 }
 
-// Needed to bundle org.conqat.lib.commons into the report-generator
-// as this dependency is not available via mavenCentral
-shadowJar {
-	classifier = null
-	doFirst {
-		relocate('com.teamscale', 'com.teamscale')
-	}
-}
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-	target = tasks.shadowJar
-}
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
-
 install {
 	repositories.mavenInstaller {
-		configuration = configurations.shadow
 		configurePom(pom)
-	}
-}
-
-// At the moment we are stuck with the old maven plugin until support for private key
-// files is added or we add a dedicated user with a password to our server.
-// https://github.com/gradle/gradle/issues/1263
-uploadShadow {
-	repositories {
-		mavenDeployer {
-			configuration = configurations.deployerJars
-			repository(url: cqseMavenRepositoryUrl) {
-				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
-			}
-			configurePom(pom)
-		}
 	}
 }
 
@@ -81,5 +42,19 @@ private void configurePom(pom) {
 		dep.appendNode('artifactId', 'teamscale-client')
 		dep.appendNode('version', teamscaleClientVersion)
 		dep.appendNode('scope', 'compile')
+	}
+}
+
+// At the moment we are stuck with the old maven plugin until support for private key
+// files is added or we add a dedicated user with a password to our server.
+// https://github.com/gradle/gradle/issues/1263
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			configuration = configurations.deployerJars
+			repository(url: cqseMavenRepositoryUrl) {
+				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+			}
+		}
 	}
 }

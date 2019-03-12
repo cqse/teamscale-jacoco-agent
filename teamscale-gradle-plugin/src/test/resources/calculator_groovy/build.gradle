@@ -69,7 +69,6 @@ repositories {
 	mavenCentral()
 	mavenLocal()
 	maven { url 'https://share.cqse.eu/public/maven/' }
-	ivy { url 'https://share.cqse.eu/svn/artifacts/ivy' }
 }
 
 dependencies {
