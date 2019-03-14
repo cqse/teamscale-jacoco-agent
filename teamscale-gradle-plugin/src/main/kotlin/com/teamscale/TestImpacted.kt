@@ -13,9 +13,8 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.api.tasks.testing.testng.TestNGOptions
-import org.gradle.process.internal.ExecActionFactory
+import org.gradle.util.ConfigureUtil
 import java.io.File
-import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
 open class TestImpacted : Test() {
@@ -113,10 +112,13 @@ open class TestImpacted : Test() {
         }
     }
 
+    fun useImpactedJUnitPlatform(testFrameworkConfigure: Closure<*>?) {
+        useImpactedJUnitPlatform(ConfigureUtil.configureUsing(testFrameworkConfigure))
+    }
+
     override fun useJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
         throw GradleException("JUnit Platform is not supported! Use Impacted JUnit Platform instead!")
     }
-
 
     override fun useJUnit() {
         throw GradleException("JUnit 4 is not supported! Use Impacted JUnit Platform instead!")

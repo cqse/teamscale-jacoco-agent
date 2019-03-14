@@ -28,23 +28,6 @@ test {
 	testLogging.exceptionFormat "full"
 }
 
-install {
-	repositories.mavenInstaller {
-		configurePom(pom)
-	}
-}
-
-private void configurePom(pom) {
-	pom.withXml {
-		asNode().remove(asNode().get('dependencies'))
-		def dep = asNode().appendNode('dependecies').appendNode('dependency')
-		dep.appendNode('groupId', 'com.teamscale')
-		dep.appendNode('artifactId', 'teamscale-client')
-		dep.appendNode('version', teamscaleClientVersion)
-		dep.appendNode('scope', 'compile')
-	}
-}
-
 // At the moment we are stuck with the old maven plugin until support for private key
 // files is added or we add a dedicated user with a password to our server.
 // https://github.com/gradle/gradle/issues/1263
