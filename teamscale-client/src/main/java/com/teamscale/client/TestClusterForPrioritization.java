@@ -12,5 +12,5 @@ public class TestClusterForPrioritization {
 	public String clusterId;
 
 	/** The prioritized tests in the test cluster. */
-	public List<TestForPrioritization> testsForPrioritization;
+	public List<TestForPrioritization> tests;
 }

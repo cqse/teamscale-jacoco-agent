@@ -19,6 +19,10 @@ import java.io.File
 /** Task which runs the impacted tests. */
 open class TestImpacted : Test() {
 
+    companion object {
+        val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
+    }
+
     /** Command line switch to activate running all tests. */
     @Input
     @Option(
@@ -97,9 +101,18 @@ open class TestImpacted : Test() {
         }
     }
 
-    /** Specifies that the JUnit Platform should be used, but only impacted tests are executed. */
-    fun useImpactedJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
+    /** Overrides default behavior to only execute impacted tests. */
+    override fun useJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
         testFrameworkConfigure.execute(junitPlatformOptions)
+
+        if (includeEngines.isEmpty()) {
+            // Set the default engines as included engines
+            includeEngines = setOf("junit-jupiter", "junit-vintage")
+            junitPlatformOptions.includeEngines = includeEngines
+        }
+        if (junitPlatformOptions.excludeEngines.contains(IMPACTED_TEST_ENGINE)) {
+            throw GradleException("Engine '$IMPACTED_TEST_ENGINE' can't be excluded in '$TestImpacted' Gradle task")
+        }
 
         includeEngines = junitPlatformOptions.includeEngines
         junitPlatformOptions.includeEngines = setOf("teamscale-test-impacted")
@@ -110,14 +123,6 @@ open class TestImpacted : Test() {
             it.includeTags = junitPlatformOptions.includeTags
             it.excludeTags = junitPlatformOptions.excludeTags
         }
-    }
-
-    fun useImpactedJUnitPlatform(testFrameworkConfigure: Closure<*>?) {
-        useImpactedJUnitPlatform(ConfigureUtil.configureUsing(testFrameworkConfigure))
-    }
-
-    override fun useJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
-        throw GradleException("JUnit Platform is not supported! Use Impacted JUnit Platform instead!")
     }
 
     override fun useJUnit() {

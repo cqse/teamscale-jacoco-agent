@@ -38,8 +38,7 @@ teamscale {
 }
 
 task unitTest(type: TestImpacted) {
-	useImpactedJUnitPlatform {
-		includeEngines 'junit-jupiter', 'junit-vintage'
+	useJUnitPlatform {
 		excludeTags 'integration'
 	}
 	teamscale.report.partition = 'Unit Tests'
@@ -58,8 +57,7 @@ task unitTest(type: TestImpacted) {
 }
 
 task integrationTest(type: TestImpacted) {
-	useImpactedJUnitPlatform {
-		includeEngines 'junit-jupiter', 'junit-vintage'
+	useJUnitPlatform {
 		includeTags 'integration'
 	}
 	teamscale.report.partition = 'Integration Tests'

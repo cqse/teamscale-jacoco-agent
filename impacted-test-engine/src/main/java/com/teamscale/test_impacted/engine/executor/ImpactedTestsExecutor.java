@@ -58,7 +58,7 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 
 		for (TestClusterForPrioritization testClusterForPrioritization : testClustersForPrioritization) {
 			Set<UniqueId> uniqueIdsOfTestsToExecute = availableTestDetails
-					.convertToUniqueIds(testClusterForPrioritization.testsForPrioritization);
+					.convertToUniqueIds(testClusterForPrioritization.tests);
 			UniqueIdsDiscoveryRequest engineDiscoveryRequest = new UniqueIdsDiscoveryRequest(
 					uniqueIdsOfTestsToExecute, executorRequest.configurationParameters);
 			TestDescriptor testDescriptor = executorRequest.testEngine.discover(engineDiscoveryRequest,
@@ -77,7 +77,7 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 	private static Set<UniqueId> getImpactedTestUniqueIds(AvailableTests availableTests, List<TestClusterForPrioritization> testClustersForPrioritzation) {
 		Set<UniqueId> result = new HashSet<>();
 		for (TestClusterForPrioritization testClusterForPrioritization : testClustersForPrioritzation) {
-			result.addAll(availableTests.convertToUniqueIds(testClusterForPrioritization.testsForPrioritization));
+			result.addAll(availableTests.convertToUniqueIds(testClusterForPrioritization.tests));
 		}
 		return result;
 	}
