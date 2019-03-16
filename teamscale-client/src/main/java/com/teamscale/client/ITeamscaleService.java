@@ -50,7 +50,7 @@ public interface ITeamscaleService {
 
 	/** Test Impact API. */
 	@PUT("p/{projectName}/test-impact")
-	Call<List<TestClusterForPrioritization>> getImpactedTests(
+	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
@@ -59,7 +59,7 @@ public interface ITeamscaleService {
 
 	/** Test Impact API. */
 	@PUT("p/{projectName}/test-impact")
-	Call<List<TestClusterForPrioritization>> getImpactedTests(
+	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,

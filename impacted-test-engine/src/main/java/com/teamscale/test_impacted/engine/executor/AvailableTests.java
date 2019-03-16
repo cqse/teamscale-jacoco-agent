@@ -1,12 +1,13 @@
 package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.TestDetails;
-import com.teamscale.client.TestForPrioritization;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import org.conqat.lib.commons.string.StringUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
+import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.UniqueId;
 
 import java.util.ArrayList;
@@ -46,12 +47,12 @@ public class AvailableTests {
 	}
 
 	/**
-	 * Converts the {@link TestForPrioritization}s returned from Teamscale to a list of unique IDs to be fed into JUnit
-	 * Platform.
+	 * Converts the {@link PrioritizableTest}s which are match the {@link UniqueId}s returned by the {@link TestEngine}s
+	 * used by the {@link ImpactedTestEngine}.
 	 */
-	public Set<UniqueId> convertToUniqueIds(List<TestForPrioritization> impactedTests) {
+	public Set<UniqueId> convertToUniqueIds(List<PrioritizableTest> impactedTests) {
 		Set<UniqueId> list = new HashSet<>();
-		for (TestForPrioritization impactedTest : impactedTests) {
+		for (PrioritizableTest impactedTest : impactedTests) {
 			LOGGER.info(() -> impactedTest.uniformPath + " " + impactedTest.selectionReason);
 
 			UniqueId testUniqueId = uniformPathToUniqueIdMapping.get(impactedTest.uniformPath);
