@@ -12,7 +12,7 @@ repositories {
 dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
-	
+
 	implementation group: 'org.conqat', name: 'org.conqat.lib.commons', version: '0.20160822'
 	implementation group: 'org.junit.platform', name: 'junit-platform-engine', version: '1.4.0'
 	implementation group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.4.0'

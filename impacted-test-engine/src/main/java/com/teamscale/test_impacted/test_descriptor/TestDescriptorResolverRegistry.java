@@ -20,7 +20,7 @@ public class TestDescriptorResolverRegistry {
 		registerTestDescriptorResolver(new JUnitJupiterTestDescriptorResolver());
 		registerTestDescriptorResolver(new JUnitVintageTestDescriptorResolver());
 
-		// Override or register new test descriptor resolvers
+		// Override existing or register new test descriptor resolvers
 		for (ITestDescriptorResolver testDescriptorResolver : ServiceLoader
 				.load(ITestDescriptorResolver.class, ClassLoaderUtils.getDefaultClassLoader())) {
 			registerTestDescriptorResolver(testDescriptorResolver);

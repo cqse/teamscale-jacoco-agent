@@ -34,7 +34,8 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 
 	private final String partition;
 
-	public ImpactedTestsExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ServerOptions serverOptions, Long baseline, CommitDescriptor endCommit, String partition) {
+	public ImpactedTestsExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ServerOptions serverOptions,
+								 Long baseline, CommitDescriptor endCommit, String partition) {
 		super(testwiseCoverageAgentApis);
 		this.serverOptions = serverOptions;
 		this.baseline = baseline;
@@ -74,7 +75,8 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 		return testExecutions;
 	}
 
-	private static Set<UniqueId> getImpactedTestUniqueIds(AvailableTests availableTests, List<TestClusterForPrioritization> testClustersForPrioritzation) {
+	private static Set<UniqueId> getImpactedTestUniqueIds(AvailableTests availableTests,
+														  List<TestClusterForPrioritization> testClustersForPrioritzation) {
 		Set<UniqueId> result = new HashSet<>();
 		for (TestClusterForPrioritization testClusterForPrioritization : testClustersForPrioritzation) {
 			result.addAll(availableTests.convertToUniqueIds(testClusterForPrioritization.tests));
@@ -83,7 +85,8 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 	}
 
 	/** Queries Teamscale for impacted tests. */
-	private List<TestClusterForPrioritization> getImpactedTestsFromTeamscale(List<ClusteredTestDetails> availableTestDetails) {
+	private List<TestClusterForPrioritization> getImpactedTestsFromTeamscale(
+			List<ClusteredTestDetails> availableTestDetails) {
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
 			TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),

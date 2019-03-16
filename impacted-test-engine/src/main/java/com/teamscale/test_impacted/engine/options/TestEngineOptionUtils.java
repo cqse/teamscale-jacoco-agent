@@ -1,9 +1,11 @@
 package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
+import org.conqat.lib.commons.string.StringUtils;
 import org.junit.platform.engine.ConfigurationParameters;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
@@ -30,6 +32,7 @@ public class TestEngineOptionUtils {
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getLong("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))
+				.testEngineIds(propertyReader.getStringList("engines"))
 				.reportDirectory(propertyReader.getString("reportDirectory"))
 				.build();
 	}
@@ -62,7 +65,13 @@ public class TestEngineOptionUtils {
 		}
 
 		private List<String> getStringList(String propertyName) {
-			return get(propertyName, listAsString -> Arrays.asList(listAsString.split(",")));
+			return get(propertyName, listAsString -> {
+				if (StringUtils.isEmpty(listAsString)) {
+					return Collections.emptyList();
+				}
+
+				return Arrays.asList(listAsString.split(","));
+			});
 		}
 
 		private Long getLong(String propertyName) {

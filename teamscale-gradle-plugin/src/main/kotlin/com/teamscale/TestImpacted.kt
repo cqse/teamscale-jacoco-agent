@@ -95,21 +95,10 @@ open class TestImpacted : Test() {
         description = "Executes the impacted tests and collects coverage per test case"
     }
 
-    private fun writeEngineProperty(name: String, value: String?) {
-        if (value != null) {
-            systemProperties.put("teamscale.test.impacted.$name", value);
-        }
-    }
-
     /** Overrides default behavior to only execute impacted tests. */
     override fun useJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
         testFrameworkConfigure.execute(junitPlatformOptions)
 
-        if (includeEngines.isEmpty()) {
-            // Set the default engines as included engines
-            includeEngines = setOf("junit-jupiter", "junit-vintage")
-            junitPlatformOptions.includeEngines = includeEngines
-        }
         if (junitPlatformOptions.excludeEngines.contains(IMPACTED_TEST_ENGINE)) {
             throw GradleException("Engine '$IMPACTED_TEST_ENGINE' can't be excluded in '$TestImpacted' Gradle task")
         }
@@ -126,27 +115,27 @@ open class TestImpacted : Test() {
     }
 
     override fun useJUnit() {
-        throw GradleException("JUnit 4 is not supported! Use Impacted JUnit Platform instead!")
+        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
     }
 
     override fun useJUnit(testFrameworkConfigure: Closure<*>?) {
-        throw GradleException("JUnit 4 is not supported! Use Impacted JUnit Platform instead!")
+        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
     }
 
     override fun useJUnit(testFrameworkConfigure: Action<in JUnitOptions>) {
-        throw GradleException("JUnit 4 is not supported! Use Impacted JUnit Platform instead!")
+        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
     }
 
     override fun useTestNG() {
-        throw GradleException("TestNG is not supported! Use Impacted JUnit Platform instead!")
+        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
     }
 
     override fun useTestNG(testFrameworkConfigure: Closure<Any>) {
-        throw GradleException("TestNG is not supported! Use Impacted JUnit Platform instead!")
+        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
     }
 
     override fun useTestNG(testFrameworkConfigure: Action<in TestNGOptions>) {
-        throw GradleException("TestNG is not supported! Use Impacted JUnit Platform instead!")
+        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
     }
 
     @TaskAction
@@ -176,6 +165,12 @@ open class TestImpacted : Test() {
 
         setImpactedTestEngineOptions(report);
         super.executeTests();
+    }
+
+    private fun writeEngineProperty(name: String, value: String?) {
+        if (value != null) {
+            systemProperties.put("teamscale.test.impacted.$name", value);
+        }
     }
 
     private fun setImpactedTestEngineOptions(report: Report) {

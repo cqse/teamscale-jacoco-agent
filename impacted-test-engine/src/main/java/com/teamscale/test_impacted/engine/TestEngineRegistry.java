@@ -4,68 +4,55 @@ import org.junit.platform.commons.util.ClassLoaderUtils;
 import org.junit.platform.engine.TestEngine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static java.util.Collections.unmodifiableMap;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+import static org.conqat.lib.commons.collections.CollectionUtils.filter;
 
 /** The test engine registry containing all */
-class TestEngineRegistry implements Iterable<TestEngine> {
+public class TestEngineRegistry implements Iterable<TestEngine> {
 
-	private static final Set<String> TEST_ENGINE_IDS;
+	private Map<String, TestEngine> testEnginesById;
 
-	static {
-		TEST_ENGINE_IDS = getConfiguredTestEngineIds();
-	}
+	public TestEngineRegistry(Set<String> testEngineIds) {
+		List<TestEngine> otherTestEngines = loadOtherTestEngines();
 
-	private Map<String, TestEngine> testEnginesById = null;
-
-	private static Set<String> getConfiguredTestEngineIds() {
-		String testEnginesProperty = System.getProperty("teamscale.test.impacted.engines");
-		return Arrays.stream(testEnginesProperty.split(",")).map(String::trim).collect(Collectors.toSet());
-	}
-
-	/**
-	 * Utility method for lazily initializing the actual {@link TestEngine} test engines the {@link ImpactedTestEngine}
-	 * delegates to. Must be lazy because of otherwise infinite recursion since the {@link ServiceLoader} will again
-	 * discover the {@link ImpactedTestEngine} which references this {@link TestEngineRegistry}.
-	 */
-	private Map<String, TestEngine> getEnabledTestEngines() {
-		if (testEnginesById != null) {
-			return testEnginesById;
+		// If there are no test engines set we don't need to filter but simply use all other test engines.
+		if (!testEngineIds.isEmpty()) {
+			otherTestEngines = filter(otherTestEngines, testEngine -> testEngineIds.contains(testEngine.getId()));
 		}
 
-		Map<String, TestEngine> collectedTestEnginesById = new HashMap<>();
+		testEnginesById = unmodifiableMap(otherTestEngines.stream().collect(toMap(TestEngine::getId, identity())));
+	}
+
+	/** Uses the {@link ServiceLoader} to discover all {@link TestEngine}s but the {@link ImpactedTestEngine}. */
+	private List<TestEngine> loadOtherTestEngines() {
+		List<TestEngine> testEngines = new ArrayList<>();
 
 		for (TestEngine testEngine : ServiceLoader.load(TestEngine.class, ClassLoaderUtils.getDefaultClassLoader())) {
-			String testEngineId = testEngine.getId();
-
-			if (ImpactedTestEngine.ENGINE_ID.equals(testEngineId)) {
-				continue;
-			}
-			if (TEST_ENGINE_IDS.contains(testEngineId)) {
-				collectedTestEnginesById.put(testEngineId, testEngine);
+			if (!ImpactedTestEngine.ENGINE_ID.equals(testEngine.getId())) {
+				testEngines.add(testEngine);
 			}
 		}
 
-		testEnginesById = Collections.unmodifiableMap(collectedTestEnginesById);
-		return testEnginesById;
+		return testEngines;
 	}
 
 	/** Returns the {@link TestEngine} for the engine id or null if none is present. */
-	TestEngine getTestEngine(String engineId) {
-		return getEnabledTestEngines().get(engineId);
+	public TestEngine getTestEngine(String engineId) {
+		return testEnginesById.get(engineId);
 	}
 
 	@Override
 	public Iterator<TestEngine> iterator() {
-		List<TestEngine> testEngines = new ArrayList<>(getEnabledTestEngines().values());
+		List<TestEngine> testEngines = new ArrayList<>(testEnginesById.values());
 		testEngines.sort(Comparator.comparing(TestEngine::getId));
 		return testEngines.iterator();
 	}

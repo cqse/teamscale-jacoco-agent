@@ -20,7 +20,9 @@ public class TestExecutorRequest {
 	/** Configuration parameters. */
 	public final ConfigurationParameters configurationParameters;
 
-	public TestExecutorRequest(TestEngine testEngine, TestDescriptor engineTestDescriptor, EngineExecutionListener engineExecutionListener, ConfigurationParameters configurationParameters) {
+	public TestExecutorRequest(TestEngine testEngine, TestDescriptor engineTestDescriptor,
+							   EngineExecutionListener engineExecutionListener,
+							   ConfigurationParameters configurationParameters) {
 		this.testEngine = testEngine;
 		this.engineTestDescriptor = engineTestDescriptor;
 		this.engineExecutionListener = engineExecutionListener;

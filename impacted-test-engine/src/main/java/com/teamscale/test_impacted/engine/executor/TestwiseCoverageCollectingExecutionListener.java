@@ -43,7 +43,9 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
 
-	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ITestDescriptorResolver testDescriptorResolver, EngineExecutionListener engineExecutionListener) {
+	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
+												ITestDescriptorResolver testDescriptorResolver,
+												EngineExecutionListener engineExecutionListener) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
