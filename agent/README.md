@@ -188,6 +188,17 @@ script in the Tomcat installation directory. Create this file if it does not yet
 Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
 This ensures that the performance of your application does not degrade.
 
+## Additional steps for Glassfish
+
+You have two options to register the JVM option:
+
+1. Register the agent [via the `asadmin` tool][glassfish-asadmin].
+2. Register the agent by [manually editing `domain.xml`][glassfish-domainxml] and modifying the `jvm-options` element.
+
+Some characters need to be escaped with a backslash, see [this StackOverflow answer][glassfish-escaping].
+
+Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jvm-options` command.
+
 ## Additional steps for Java Web Start
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
@@ -375,3 +386,6 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
 [jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
 [logback]: https://logback.qos.ch/manual/index.html
+[glassfish-asadmin]: https://docs.oracle.com/cd/E19798-01/821-1751/gepzd/index.html
+[glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
+[glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
