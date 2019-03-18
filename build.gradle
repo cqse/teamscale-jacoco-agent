@@ -22,8 +22,21 @@ ext {
 	jacocoVersion = '0.8.3'
 	log4jVersion = '2.8.2'
 
-	// Needed to deploy the artifacts to our public share
-	// Your public RSA key needs to be stored on the share to be able to deploy (Ask Timo)
+	// For deploying Jars you have to configure SSH keys locally and on the CQSE share server.
+	// 1. Generate a new key using ssh-keygen or use the existing key at ~/.ssh/id_rsa(.pub)
+	// 2. Tell Timo Pawelka to copy your public key ~/.ssh/id_rsa to ext1 at ssh authorized_keys
+	// 3. Add the server keys to your known hosts: ssh-keyscan -p 2222 ext1.cqse.eu >> ~/.ssh/known_hosts
+	//   - Simple "ssh ext1.cqse.eu" won't work because you need the rsa version of the server key for the SSH library
+	//     used by the gradle-ssh-plugin to work
+	// 4. (Optional) Add this entry to your ~/.ssh/config to be able to login to CQSE share via ssh on the command line
+	// 	Host ext1.cqse.eu
+	//    	Port 2222
+	//    	HostName ext1.cqse.eu
+	//    	IdentityFile ~/.ssh/id_rsa
+	//   	User www-data
+	// 5. Now the deploy job should work.
+	// 6. If you have issues with invalid private keys convert them to the older format using:
+	//    puttygen <private-key-path> -O private-openssh -o <old-format-private-key-path>
 	cqseMavenRepositoryPrivateKey = System.getProperty("user.home") + '/.ssh/id_rsa'
 	cqseMavenRepositoryHost = 'ext1.cqse.eu'
 	cqseMavenRepositoryPort = 2222
