@@ -113,16 +113,16 @@ task iGP(dependsOn: [
 // Deploys the plugin to the public share
 task deployGradlePlugin(dependsOn: [
 		':agent:uploadShadow',
-		':impacted-tests-executor:uploadArchives',
-		':report-generator:uploadShadow',
-		':teamscale-gradle-plugin:uploadShadow',
+		':impacted-test-engine:uploadArchives',
+		':report-generator:uploadArchives',
+		':teamscale-gradle-plugin:uploadArchives',
 		':teamscale-client:uploadArchives'
 ])
 
 // Deploys the plugin to the public share without the agent
 task dGP(dependsOn: [
-		':impacted-tests-executor:uploadArchives',
-		':report-generator:uploadShadow',
-		':teamscale-gradle-plugin:uploadShadow',
+		':impacted-test-engine:uploadArchives',
+		':report-generator:uploadArchives',
+		':teamscale-gradle-plugin:uploadArchives',
 		':teamscale-client:uploadArchives'
 ])

@@ -17,3 +17,17 @@ dependencies {
 	implementation group: 'org.junit.platform', name: 'junit-platform-engine', version: '1.4.0'
 	implementation group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.4.0'
 }
+
+// At the moment we are stuck with the old maven plugin until support for private key
+// files is added or we add a dedicated user with a password to our server.
+// https://github.com/gradle/gradle/issues/1263
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			configuration = configurations.deployerJars
+			repository(url: cqseMavenRepositoryUrl) {
+				authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
+			}
+		}
+	}
+}
