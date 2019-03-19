@@ -17,6 +17,7 @@ import org.gradle.util.ConfigureUtil
 import java.io.File
 
 /** Task which runs the impacted tests. */
+@CacheableTask
 open class TestImpacted : Test() {
 
     companion object {
@@ -66,7 +67,7 @@ open class TestImpacted : Test() {
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
     private val endCommit
-        @Input
+        @Internal
         get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
 
 
