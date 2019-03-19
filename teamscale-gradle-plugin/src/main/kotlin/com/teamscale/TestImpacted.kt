@@ -4,23 +4,20 @@ import com.teamscale.config.TeamscaleTaskExtension
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.GradleException
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.api.tasks.testing.testng.TestNGOptions
-import org.gradle.util.ConfigureUtil
 import java.io.File
 
 /** Task which runs the impacted tests. */
+@CacheableTask
 open class TestImpacted : Test() {
 
     companion object {
-        val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
+        const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
     }
 
     /** Command line switch to activate running all tests. */
@@ -66,7 +63,7 @@ open class TestImpacted : Test() {
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
     private val endCommit
-        @Input
+        @Internal
         get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
 
 
@@ -163,27 +160,27 @@ open class TestImpacted : Test() {
         }
         reportTask.classDirs.add(classpath)
 
-        setImpactedTestEngineOptions(report);
-        super.executeTests();
+        setImpactedTestEngineOptions(report)
+        super.executeTests()
     }
 
     private fun writeEngineProperty(name: String, value: String?) {
         if (value != null) {
-            systemProperties.put("teamscale.test.impacted.$name", value);
+            systemProperties["teamscale.test.impacted.$name"] = value
         }
     }
 
     private fun setImpactedTestEngineOptions(report: Report) {
         serverConfiguration.validate()
-        writeEngineProperty("server.url", serverConfiguration.url!!);
-        writeEngineProperty("server.project", serverConfiguration.project!!);
-        writeEngineProperty("server.userName", serverConfiguration.userName!!);
-        writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!);
-        writeEngineProperty("partition", report.partition);
-        writeEngineProperty("endCommit", endCommit.toString());
-        writeEngineProperty("baseline", baseline?.toString());
-        writeEngineProperty("reportDirectory", tempDir.absolutePath);
-        writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","));
+        writeEngineProperty("server.url", serverConfiguration.url!!)
+        writeEngineProperty("server.project", serverConfiguration.project!!)
+        writeEngineProperty("server.userName", serverConfiguration.userName!!)
+        writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
+        writeEngineProperty("partition", report.partition)
+        writeEngineProperty("endCommit", endCommit.toString())
+        writeEngineProperty("baseline", baseline?.toString())
+        writeEngineProperty("reportDirectory", tempDir.absolutePath)
+        writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
         writeEngineProperty("runImpacted", runImpacted.toString())
         writeEngineProperty("runAllTests", runAllTests.toString())
         writeEngineProperty("engines", includeEngines.joinToString(","))
