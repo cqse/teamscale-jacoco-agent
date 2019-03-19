@@ -73,7 +73,7 @@ open class TeamscalePlugin : Plugin<Project> {
             }
 
         teamscaleUploadTask =
-                project.rootProject.tasks.maybeCreate("teamscaleReportUpload", TeamscaleUploadTask::class.java)
+            project.rootProject.tasks.maybeCreate("teamscaleReportUpload", TeamscaleUploadTask::class.java)
         teamscaleUploadTask.apply {
             extension = pluginExtension
         }
@@ -87,7 +87,6 @@ open class TeamscalePlugin : Plugin<Project> {
             )
         }
     }
-
 
 
     /** Configures the given impacted test executor. */
