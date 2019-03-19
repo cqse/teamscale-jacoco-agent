@@ -19,6 +19,9 @@ ext {
 }
 
 dependencies {
+	implementation project(':teamscale-client')
+	implementation project(':report-generator')
+
     implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
     implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
@@ -34,9 +37,6 @@ dependencies {
     implementation 'com.sparkjava:spark-core:2.7.2'
 
 	implementation 'com.google.code.gson:gson:2.8.5'
-
-    implementation project(':teamscale-client')
-    implementation project(':report-generator')
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.8.0'
@@ -61,11 +61,6 @@ shadowJar {
 		// The jaxb library, which we are shading is a multi release jar, so we have to explicitly "inherit" this attribute
 		attributes 'Multi-Release': 'true'
 	}
-
-	// Don't relocate our own code
-	// The relocateShadowJar configures by default to relocate all packages to shadow.* and we are overriding this here
-	relocate 'eu.cqse', 'eu.cqse'
-	relocate 'com.teamscale', 'com.teamscale'
 
 	// Fix relocation of multi version jar
 	// Default would be shadow/META-INF/versions/9/, which is wrong

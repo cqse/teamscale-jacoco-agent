@@ -31,9 +31,12 @@ public class TeamscaleClient {
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
-	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the given commit.
+	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the
+	 * given commit.
 	 */
-	public Response<List<TestForPrioritization>> getImpactedTests(List<TestDetails> testList, Long baseline, CommitDescriptor endCommit, String partition) throws IOException {
+	public Response<List<PrioritizableTestCluster>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline,
+																	 CommitDescriptor endCommit,
+																	 String partition) throws IOException {
 		if (baseline == null) {
 			return service
 					.getImpactedTests(projectId, endCommit, partition, testList)
@@ -46,7 +49,8 @@ public class TeamscaleClient {
 	}
 
 	/** Uploads multiple reports to Teamscale. */
-	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor, String partition, String message) throws IOException {
+	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
+							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);
 			return MultipartBody.Part.createFormData("report", file.getName(), requestBody);

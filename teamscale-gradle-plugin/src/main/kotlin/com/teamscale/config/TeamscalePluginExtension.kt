@@ -27,6 +27,13 @@ open class TeamscalePluginExtension(val project: Project) {
         action.execute(commit)
     }
 
+    var baseline: Long? = null
+
+    /** Configures the baseline. */
+    fun baseline(action: Action<in Long?>) {
+        action.execute(baseline)
+    }
+
     val report = Reports()
 
     /** Configures the reports to be uploaded. */
@@ -55,8 +62,10 @@ open class TeamscalePluginExtension(val project: Project) {
     companion object {
         private val DEFAULT_EXCLUDES = listOf(
             "org.junit.*",
+            "org.gradle.*",
+            "com.esotericsoftware.*",
             "com.teamscale.jacoco.agent.*",
-            "com.teamscale.test.listeners.*",
+            "com.teamscale.test_impacted.*",
             "com.teamscale.report.*",
             "com.teamscale.client.*",
             "org.jacoco.core.*",

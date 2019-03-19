@@ -18,7 +18,9 @@
     </codeStyleSettings>
     <codeStyleSettings language="JAVA">
       <option name="CALL_PARAMETERS_WRAP" value="1" />
+      <option name="METHOD_PARAMETERS_WRAP" value="1" />
       <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
+      <option name="WRAP_COMMENTS" value="true" />
       <indentOptions>
         <option name="USE_TAB_CHARACTER" value="true" />
       </indentOptions>

@@ -20,6 +20,12 @@ import java.io.File
  */
 class TeamscalePluginTest {
 
+    companion object {
+
+        /** Set this to true to enable debugging of the Gradle Plugin and the impacted tests engine via port 5005. */
+        private val DEBUG = false;
+    }
+
     @Rule
     @JvmField
     val temporaryFolder = TemporaryFolder()
@@ -32,28 +38,26 @@ class TeamscalePluginTest {
     @Test
     fun `teamscale plugin can be configured`() {
         assertThat(
-            build("clean", "tasks").output
+            build(false, "clean", "tasks").output
         ).contains("SUCCESS")
     }
 
     @Test
     fun `unit tests can be executed normally`() {
         assertThat(
-            build("clean", "unitTest").output
+            build(true,"clean", "unitTest").output
         ).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
     }
 
     @Test
     fun `impacted unit tests produce coverage`() {
-        val build = build(
+        val build = build(true,
             "clean",
             "unitTest",
             "--impacted",
-            "--run-all-tests",
-            "--info",
-            "--stacktrace"
+            "--run-all-tests"
         )
-        assertThat(build.output).contains("BUILD SUCCESSFUL", "13 tests successful", "6 tests skipped")
+        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
@@ -78,21 +82,33 @@ class TeamscalePluginTest {
             .hasSize(18)
     }
 
-    /**
-     * Useful switches:
-     * --refresh-dependencies
-     * --debug-jvm
-     * */
+    private fun build(executesTask: Boolean, vararg arguments: String): BuildResult {
+        val runnerArgs = arguments.toMutableList()
+        val runner = GradleRunner.create()
 
-    private
-    fun build(vararg arguments: String): BuildResult =
-        GradleRunner
-            .create()
+        if (DEBUG) {
+            runner.withDebug(true)
+            runnerArgs.add("--refresh-dependencies")
+            runnerArgs.add("--debug")
+            runnerArgs.add("--stacktrace")
+            if (executesTask) {
+                runnerArgs.add("--debug-jvm")
+            }
+        }
+
+        runner
             .withProjectDir(temporaryFolder.root)
             .withPluginClasspath()
-            .withArguments(*arguments)
+            .withArguments(runnerArgs)
             .withGradleVersion("4.6")
-//            .withDebug(true)
-            .build()
+
+        val buildResult = runner.build()
+
+        if (DEBUG) {
+            println(buildResult.output)
+        }
+
+        return buildResult;
+    }
 }
 
