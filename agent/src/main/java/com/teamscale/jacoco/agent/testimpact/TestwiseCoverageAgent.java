@@ -41,6 +41,9 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** The maximum port number for the agent to listen at. */
 	private static final int MAX_PORT_NUMBER = 65535;
 
+	/** The threshold for {@link #serviceInitializationCounter}. */
+	private static final int MAX_INIT_COUNT = 5;
+
 	/** Path parameter placeholder used in the HTTP requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
 
@@ -54,13 +57,15 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private AgentOptions options;
 
 	/** The service for the HTTP API. */
-	private final Service service;
+	private Service service;
+
+	/** The number of times we tried to initialize {@link #service}. */
+	public int serviceInitializationCounter = 0;
 
 	/** Constructor. */
 	public TestwiseCoverageAgent(AgentOptions options, IAgent jacocoAgent) throws IOException {
 		super(options, jacocoAgent);
 		this.options = options;
-		service = Service.ignite();
 		initServer(determineFreePort());
 	}
 
@@ -73,8 +78,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 	 */
 	private void initServer(int port) throws IOException {
 		logger.info("Listening for test events on port {}.", port);
+		serviceInitializationCounter++;
 
-		service.initExceptionHandler(this::logInitExceptionAndExit);
+		service = Service.ignite();
+		service.initExceptionHandler(this::handleInitException);
 		service.port(port);
 
 		service.get("/test", (request, response) -> controller.getSessionId());
@@ -88,8 +95,6 @@ public class TestwiseCoverageAgent extends AgentBase {
 		if (port != options.getHttpServerPort()) {
 			registerWithPrimaryAgent();
 		}
-
-		service.awaitInitialization();
 	}
 
 	/**
@@ -238,13 +243,22 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	/**
-	 * Logs errors that occurred during agent initialization. Since Spark starts
-	 * the server asynchronously, we just get a callback to this method, and the
-	 * only thing we can do to not lose data unknowingly is terminating the
-	 * process.
+	 * Handles errors that occurred during agent initialization. The most
+	 * typical case is concurrency issues in port assignment, in which case we
+	 * try to find an unused port up to five times. Other exceptions are handled
+	 * by exiting the process, since we would lose data otherwise.
 	 */
-	private void logInitExceptionAndExit(Exception e) {
-		logger.error("Agent initialization failed", e);
+	private void handleInitException(Exception e) {
+		try {
+			if (e instanceof BindException && serviceInitializationCounter < MAX_INIT_COUNT) {
+				logger.warn("Web server port collision. Retrying...");
+				initServer(determineFreePort());
+				return;
+			}
+		} catch (IOException e1) {
+			// Nothing to do, since we fail below anyway.
+		}
+		logger.error("Unrecoverable initialization error. Exiting.");
 		System.exit(1);
 	}
 
@@ -259,6 +273,14 @@ public class TestwiseCoverageAgent extends AgentBase {
 			}
 		}
 		service.stop();
+	}
+
+	/**
+	 * Waits for the HTTP service to be initialized. Mainly used in tests to
+	 * prevent them from finishing before we can work with them.
+	 */
+	/* package */ void awaitServiceInitialization() {
+		service.awaitInitialization();
 	}
 
 	/** The port the HTTP server is listening at. */

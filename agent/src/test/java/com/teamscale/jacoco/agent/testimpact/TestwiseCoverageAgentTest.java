@@ -75,7 +75,9 @@ public class TestwiseCoverageAgentTest {
 		AgentOptions options = options(port);
 
 		TestwiseCoverageAgent agent1 = new TestwiseCoverageAgent(options, mock);
+		agent1.awaitServiceInitialization();
 		TestwiseCoverageAgent agent2 = new TestwiseCoverageAgent(options, mock);
+		agent2.awaitServiceInitialization();
 
 		assertEquals(port, agent1.getPort());
 		assertEquals(port + 1, agent2.getPort());
@@ -90,8 +92,8 @@ public class TestwiseCoverageAgentTest {
 		IAgent secondaryAgent = mock(IAgent.class);
 		ArgumentCaptor<String> stringArg = ArgumentCaptor.forClass(String.class);
 
-		new TestwiseCoverageAgent(options, mock);
-		new TestwiseCoverageAgent(options, secondaryAgent);
+		new TestwiseCoverageAgent(options, mock).awaitServiceInitialization();
+		new TestwiseCoverageAgent(options, secondaryAgent).awaitServiceInitialization();
 
 		String testId = "FIRST_TEST";
 		IAgentService.create(primaryAgentPort).signalTestStart(testId).execute();
