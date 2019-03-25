@@ -15,6 +15,7 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -260,8 +261,12 @@ public class AgentOptions {
 	/**
 	 * @see #shouldIgnoreDuplicateClassFiles
 	 */
-	public boolean shouldIgnoreDuplicateClassFiles() {
-		return shouldIgnoreDuplicateClassFiles;
+	public EDuplicateClassFileBehavior duplicateClassFileBehavior() {
+		if (shouldIgnoreDuplicateClassFiles) {
+			return EDuplicateClassFileBehavior.WARN;
+		} else {
+			return EDuplicateClassFileBehavior.FAIL;
+		}
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */

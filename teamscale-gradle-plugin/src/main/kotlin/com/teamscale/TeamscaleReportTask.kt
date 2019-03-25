@@ -8,6 +8,7 @@ import com.teamscale.report.ReportUtils
 import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator
+import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
@@ -96,7 +97,7 @@ open class TeamscaleReportTask : DefaultTask() {
         val jaCoCoTestwiseReportGenerator = JaCoCoTestwiseReportGenerator(
             classDirs.flatMap { it.files },
             agentFilter.getPredicate(),
-            true,
+            EDuplicateClassFileBehavior.IGNORE,
             project.logger.wrapInILogger()
         )
 

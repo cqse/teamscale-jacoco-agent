@@ -2,6 +2,7 @@ package com.teamscale.report.testwise.jacoco;
 
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
@@ -39,10 +40,10 @@ public class JaCoCoTestwiseReportGenerator {
 	 * @param locationIncludeFilter     Filter for class files
 	 * @param logger                    The logger
 	 */
-	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, boolean ignoreNonidenticalDuplicateClassFiles, ILogger logger) throws CoverageGenerationException {
+	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) throws CoverageGenerationException {
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.executionDataReader = new CachingExecutionDataReader(logger);
-		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, ignoreNonidenticalDuplicateClassFiles);
+		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, duplicateClassFileBehavior);
 	}
 
 	/** Converts the given dumps to a report. */

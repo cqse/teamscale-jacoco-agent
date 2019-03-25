@@ -2,6 +2,7 @@ package com.teamscale.report.testwise.jacoco;
 
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.ReportUtils;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
@@ -47,7 +48,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
 		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(
 				Collections.singletonList(classFileFolder),
-				includeFilter, true,
+				includeFilter, EDuplicateClassFileBehavior.IGNORE,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
 		return ReportUtils.getReportAsString(generateDummyReportFrom(testwiseCoverage));
 	}
