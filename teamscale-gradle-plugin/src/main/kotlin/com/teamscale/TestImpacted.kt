@@ -101,11 +101,10 @@ open class TestImpacted : Test() {
         }
 
         includeEngines = junitPlatformOptions.includeEngines
-        junitPlatformOptions.includeEngines = setOf("teamscale-test-impacted")
 
         super.useJUnitPlatform {
             it.excludeEngines = junitPlatformOptions.excludeEngines
-            it.includeEngines = junitPlatformOptions.includeEngines
+            it.includeEngines = setOf("teamscale-test-impacted")
             it.includeTags = junitPlatformOptions.includeTags
             it.excludeTags = junitPlatformOptions.excludeTags
         }
