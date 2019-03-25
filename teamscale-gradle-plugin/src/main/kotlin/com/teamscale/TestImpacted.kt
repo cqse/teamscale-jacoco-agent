@@ -4,13 +4,13 @@ import com.teamscale.config.TeamscaleTaskExtension
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.GradleException
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.api.tasks.testing.testng.TestNGOptions
-import java.io.File
 
 /** Task which runs the impacted tests. */
 @CacheableTask
@@ -73,9 +73,13 @@ open class TestImpacted : Test() {
         @Optional
         get() = taskExtension.parent.baseline
 
-    /** The directory to write the jacoco execution data to. */
-    @Internal
-    private lateinit var tempDir: File
+    /**
+     * The directory to write the jacoco execution data to. Ensures that the directory
+     * is cleared before executing the task by Gradle.
+     */
+    private val reportOutputDir
+        @OutputDirectory
+        get() = taskExtension.agent.destination
 
     /** The report task used to setup and cleanup report directories. */
     @Internal
@@ -86,6 +90,11 @@ open class TestImpacted : Test() {
 
     @Internal
     private val junitPlatformOptions: JUnitPlatformOptions = JUnitPlatformOptions()
+
+    private val testEngineConfiguration: FileCollection
+        @InputFiles
+        @Classpath
+        get() = project.configurations.getByName(TeamscalePlugin.impactedTestEngineConfiguration)
 
     init {
         group = "Teamscale"
@@ -136,15 +145,9 @@ open class TestImpacted : Test() {
 
     @TaskAction
     override fun executeTests() {
-        classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestEngineConfiguration))
+        classpath = classpath.plus(testEngineConfiguration)
 
         jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
-
-        tempDir = taskExtension.agent.destination
-        if (tempDir.exists()) {
-            logger.debug("Removing old execution data file(s) at ${tempDir.absolutePath}")
-            tempDir.deleteRecursively()
-        }
 
         taskExtension.agent.localAgent?.let {
             jvmArgs(it.getJvmArgs())
@@ -153,7 +156,7 @@ open class TestImpacted : Test() {
         val reportConfig = taskExtension.getMergedReports()
         val report = reportConfig.testwiseCoverage.getReport(project, this)
 
-        reportTask.addTestArtifactsDirs(report, tempDir)
+        reportTask.addTestArtifactsDirs(report, reportOutputDir)
         reportConfig.googleClosureCoverage.destination?.let {
             reportTask.addTestArtifactsDirs(report, it)
         }
@@ -178,7 +181,7 @@ open class TestImpacted : Test() {
         writeEngineProperty("partition", report.partition)
         writeEngineProperty("endCommit", endCommit.toString())
         writeEngineProperty("baseline", baseline?.toString())
-        writeEngineProperty("reportDirectory", tempDir.absolutePath)
+        writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
         writeEngineProperty("runImpacted", runImpacted.toString())
         writeEngineProperty("runAllTests", runAllTests.toString())

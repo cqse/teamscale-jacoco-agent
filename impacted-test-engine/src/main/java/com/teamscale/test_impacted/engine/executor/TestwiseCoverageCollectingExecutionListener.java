@@ -58,8 +58,8 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
-		TestDescriptorUtils.streamTestRepresentatives(testDescriptor).forEach(testRerpesentative -> {
-			Optional<String> testUniformPath = testDescriptorResolver.getUniformPath(testRerpesentative);
+		TestDescriptorUtils.streamTestRepresentatives(testDescriptor).forEach(testRepresentative -> {
+			Optional<String> testUniformPath = testDescriptorResolver.getUniformPath(testRepresentative);
 			if (!testUniformPath.isPresent()) {
 				return;
 			}
@@ -124,7 +124,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 			case FAILED:
 				return Optional.of(new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE, message));
 			default:
-				LOGGER.error(() -> "Got unexpected test exectuion result status: " + status);
+				LOGGER.error(() -> "Got unexpected test execution result status: " + status);
 				return Optional.empty();
 		}
 	}
