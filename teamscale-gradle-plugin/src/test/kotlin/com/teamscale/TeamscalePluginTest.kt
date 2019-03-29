@@ -48,13 +48,14 @@ class TeamscalePluginTest {
     @Test
     fun `unit tests can be executed normally`() {
         assertThat(
-            build(true,"clean", "unitTest").output
+            build(true, "clean", "unitTest").output
         ).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
     }
 
     @Test
     fun `impacted unit tests produce coverage`() {
-        val build = build(true,
+        val build = build(
+            true,
             "clean",
             "unitTest",
             "--impacted",
@@ -85,6 +86,29 @@ class TeamscalePluginTest {
             .hasSize(18)
     }
 
+    @Test
+    fun `report directory is cleaned`() {
+        val oldReportFile = File(
+            temporaryFolder.root,
+            "build/reports/testwise_coverage/old-report-testwise_coverage-Unit-Tests-unitTest.json"
+        )
+        oldReportFile.writeText("Test")
+        assertThat(oldReportFile).exists()
+
+        val build = build(
+            true,
+            "unitTest",
+            "--impacted",
+            "--run-all-tests"
+        )
+        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+            .doesNotContain("you did not provide all relevant class files")
+        val testwiseCoverageReportFile =
+            File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
+        assertThat(testwiseCoverageReportFile).exists()
+        assertThat(oldReportFile).doesNotExist()
+    }
+
     private fun build(executesTask: Boolean, vararg arguments: String): BuildResult {
         val runnerArgs = arguments.toMutableList()
         val runner = GradleRunner.create()
@@ -105,7 +129,7 @@ class TeamscalePluginTest {
             .withArguments(runnerArgs)
             .withGradleVersion("4.6")
 
-        if(DEBUG_PLUGIN) {
+        if (DEBUG_PLUGIN) {
             runner.withDebug(true)
         }
 

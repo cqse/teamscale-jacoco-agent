@@ -74,7 +74,8 @@ open class TeamscalePluginExtension(val project: Project) {
             "okio.*",
             "retrofit2.*",
             "*.MockitoMock.*",
-            "*.FastClassByGuice.*"
+            "*.FastClassByGuice.*",
+            "*.ConstructorAccess"
         )
     }
 }

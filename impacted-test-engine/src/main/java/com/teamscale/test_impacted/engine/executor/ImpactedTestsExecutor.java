@@ -14,6 +14,7 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
 import retrofit2.Response;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,13 +34,17 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 
 	private final String partition;
 
+	private File requestLogFile;
+
 	public ImpactedTestsExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ServerOptions serverOptions,
-								 Long baseline, CommitDescriptor endCommit, String partition) {
+								 Long baseline, CommitDescriptor endCommit, String partition,
+								 File requestLogFile) {
 		super(testwiseCoverageAgentApis);
 		this.serverOptions = serverOptions;
 		this.baseline = baseline;
 		this.endCommit = endCommit;
 		this.partition = partition;
+		this.requestLogFile = requestLogFile;
 	}
 
 	@Override
@@ -91,7 +96,7 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
 			TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
-					serverOptions.getUserAccessToken(), serverOptions.getProject());
+					serverOptions.getUserAccessToken(), serverOptions.getProject(), requestLogFile);
 			Response<List<PrioritizableTestCluster>> response = client
 					.getImpactedTests(availableTestDetails, baseline, endCommit, partition);
 			if (response.isSuccessful()) {
