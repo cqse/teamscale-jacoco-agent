@@ -193,9 +193,9 @@ This ensures that the performance of your application does not degrade.
 You have two options to register the JVM option:
 
 1. Register the agent [via the `asadmin` tool][glassfish-asadmin].
-2. Register the agent by [manually editing `domain.xml`][glassfish-domainxml] and modifying the `jvm-options` element.
+2. Register the agent by [manually editing `domain.xml`][glassfish-domainxml] and adding a `jvm-options` element.
 
-Some characters need to be escaped with a backslash, see [this StackOverflow answer][glassfish-escaping].
+When using the `asadmin` tool, some characters need to be escaped with a backslash, see [this StackOverflow answer][glassfish-escaping].
 
 Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jvm-options` command.
 
