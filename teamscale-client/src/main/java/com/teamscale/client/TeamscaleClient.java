@@ -52,6 +52,7 @@ public class TeamscaleClient {
 					endCommit, partition);
 			// Retry for up to one minute until the coverage uploads are processed by Teamscale
 		} while (impactedTestsResponse.code() == 412 && System.currentTimeMillis() - startTime < 60000);
+		return impactedTestsResponse;
 	}
 
 	/**

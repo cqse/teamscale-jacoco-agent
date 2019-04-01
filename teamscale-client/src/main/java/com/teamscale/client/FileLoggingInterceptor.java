@@ -29,7 +29,7 @@ public class FileLoggingInterceptor implements Interceptor {
 	public Response intercept(Chain chain) throws IOException {
 		Request request = chain.request();
 
-		long t1 = System.nanoTime();
+		long requestStartTime = System.nanoTime();
 		try (PrintWriter fileWriter = new PrintWriter(new FileWriter(file))) {
 			fileWriter.write(String.format("--> Sending request %s on %s %s%n%s%n", request.method(), request.url(),
 					chain.connection(),
@@ -41,19 +41,12 @@ public class FileLoggingInterceptor implements Interceptor {
 			}
 			fileWriter.write(requestBuffer.readUtf8());
 
-			Response response;
-			try {
-				response = chain.proceed(request);
-			} catch (Exception e) {
-				fileWriter.write("\n\nRequest failed!\n");
-				e.printStackTrace(fileWriter);
-				throw e;
-			}
+			Response response = getResponse(chain, request, fileWriter);
 
-			long t2 = System.nanoTime();
+			long requestEndTime = System.nanoTime();
 			fileWriter.write(String
 					.format("<-- Received response for %s %s in %.1fms%n%s%n%n", response.code(),
-							response.request().url(), (t2 - t1) / 1e6d, response.headers()));
+							response.request().url(), (requestEndTime - requestStartTime) / 1e6d, response.headers()));
 
 			ResponseBody wrappedBody = null;
 			if (response.body() != null) {
@@ -65,5 +58,17 @@ public class FileLoggingInterceptor implements Interceptor {
 			}
 			return response.newBuilder().body(wrappedBody).build();
 		}
+	}
+
+	private Response getResponse(Chain chain, Request request, PrintWriter fileWriter) throws IOException {
+		Response response;
+		try {
+			response = chain.proceed(request);
+		} catch (Exception e) {
+			fileWriter.write("\n\nRequest failed!\n");
+			e.printStackTrace(fileWriter);
+			throw e;
+		}
+		return response;
 	}
 }
