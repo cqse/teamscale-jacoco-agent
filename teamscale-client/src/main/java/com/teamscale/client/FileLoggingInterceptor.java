@@ -61,14 +61,12 @@ public class FileLoggingInterceptor implements Interceptor {
 	}
 
 	private Response getResponse(Chain chain, Request request, PrintWriter fileWriter) throws IOException {
-		Response response;
 		try {
-			response = chain.proceed(request);
+			return chain.proceed(request);
 		} catch (Exception e) {
 			fileWriter.write("\n\nRequest failed!\n");
 			e.printStackTrace(fileWriter);
 			throw e;
 		}
-		return response;
 	}
 }
