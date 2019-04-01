@@ -92,6 +92,7 @@ class TeamscalePluginTest {
             temporaryFolder.root,
             "build/reports/testwise_coverage/old-report-testwise_coverage-Unit-Tests-unitTest.json"
         )
+        oldReportFile.parentFile.mkdirs()
         oldReportFile.writeText("Test")
         assertThat(oldReportFile).exists()
 
