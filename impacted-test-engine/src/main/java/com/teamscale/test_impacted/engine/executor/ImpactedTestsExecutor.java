@@ -14,9 +14,9 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
 import retrofit2.Response;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,13 +34,17 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 
 	private final String partition;
 
+	private File requestLogFile;
+
 	public ImpactedTestsExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, ServerOptions serverOptions,
-								 Long baseline, CommitDescriptor endCommit, String partition) {
+								 Long baseline, CommitDescriptor endCommit, String partition,
+								 File requestLogFile) {
 		super(testwiseCoverageAgentApis);
 		this.serverOptions = serverOptions;
 		this.baseline = baseline;
 		this.endCommit = endCommit;
 		this.partition = partition;
+		this.requestLogFile = requestLogFile;
 	}
 
 	@Override
@@ -49,6 +53,11 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 				.getAvailableTests(executorRequest.testEngine, executorRequest.engineTestDescriptor);
 		List<PrioritizableTestCluster> testClusters = getImpactedTestsFromTeamscale(
 				availableTestDetails.getTestList());
+		if (testClusters == null) {
+			LOGGER.debug(() -> "Falling back to execute all!");
+			return super.execute(executorRequest);
+		}
+
 		AutoSkippingEngineExecutionListener executionListener = new AutoSkippingEngineExecutionListener(
 				getImpactedTestUniqueIds(availableTestDetails, testClusters),
 				executorRequest.engineExecutionListener, executorRequest.engineTestDescriptor);
@@ -87,15 +96,15 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
 			TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
-					serverOptions.getUserAccessToken(), serverOptions.getProject());
+					serverOptions.getUserAccessToken(), serverOptions.getProject(), requestLogFile);
 			Response<List<PrioritizableTestCluster>> response = client
 					.getImpactedTests(availableTestDetails, baseline, endCommit, partition);
 			if (response.isSuccessful()) {
 				List<PrioritizableTestCluster> testClusters = response.body();
-				if (testClusters == null) {
-					LOGGER.error(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
+				if (testClusters != null) {
+					return testClusters;
 				}
-				return testClusters;
+				LOGGER.error(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
 			} else {
 				LOGGER.error(() -> "Retrieval of impacted tests failed: " + response.code() + " " + response
 						.message() + "\n" + response.errorBody());
@@ -103,7 +112,7 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Retrieval of impacted tests failed.");
 		}
-		return Collections.emptyList();
+		return null;
 	}
 
 }

@@ -4,6 +4,7 @@ import com.teamscale.client.TestDetails
 import com.teamscale.config.GoogleClosureConfiguration
 import com.teamscale.config.SerializableFilter
 import com.teamscale.config.TeamscaleTaskExtension
+import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.ReportUtils
 import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
@@ -61,9 +62,9 @@ open class TeamscaleReportTask : DefaultTask() {
         get() = reportsToArtifacts.values.flatten()
 
     /** The report files that will be produced by the task. */
-    @get:OutputFiles
     val reportFiles
-        get() = reportsToArtifacts.keys.map { it.reportFile }
+        @OutputDirectories
+        get() = reportsToArtifacts.keys.map { it.reportFile.parentFile }
 
     init {
         group = "Teamscale"
@@ -96,7 +97,7 @@ open class TeamscaleReportTask : DefaultTask() {
         val jaCoCoTestwiseReportGenerator = JaCoCoTestwiseReportGenerator(
             classDirs.flatMap { it.files },
             agentFilter.getPredicate(),
-            true,
+            EDuplicateClassFileBehavior.IGNORE,
             project.logger.wrapInILogger()
         )
 

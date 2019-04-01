@@ -83,7 +83,8 @@ public class TestEngineOptions {
 			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
 		}
 
-		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, serverOptions, baseline, endCommit, partition);
+		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, serverOptions, baseline, endCommit, partition,
+				new File(reportDirectory, "server-request.txt"));
 	}
 
 	/** Returns the builder for {@link TestEngineOptions}. */

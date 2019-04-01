@@ -22,8 +22,11 @@ class TeamscalePluginTest {
 
     companion object {
 
-        /** Set this to true to enable debugging of the Gradle Plugin and the impacted tests engine via port 5005. */
-        private val DEBUG = false;
+        /** Set this to true to enable debugging of the Gradle Plugin via port 5005. */
+        private const val DEBUG_PLUGIN = false
+
+        /** Set this to true to enable debugging of the impacted tests engine via port 5005. */
+        private const val DEBUG_TEST_ENGINE = false
     }
 
     @Rule
@@ -45,13 +48,14 @@ class TeamscalePluginTest {
     @Test
     fun `unit tests can be executed normally`() {
         assertThat(
-            build(true,"clean", "unitTest").output
+            build(true, "clean", "unitTest").output
         ).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
     }
 
     @Test
     fun `impacted unit tests produce coverage`() {
-        val build = build(true,
+        val build = build(
+            true,
             "clean",
             "unitTest",
             "--impacted",
@@ -82,18 +86,42 @@ class TeamscalePluginTest {
             .hasSize(18)
     }
 
+    @Test
+    fun `report directory is cleaned`() {
+        val oldReportFile = File(
+            temporaryFolder.root,
+            "build/reports/testwise_coverage/old-report-testwise_coverage-Unit-Tests-unitTest.json"
+        )
+        oldReportFile.parentFile.mkdirs()
+        oldReportFile.writeText("Test")
+        assertThat(oldReportFile).exists()
+
+        val build = build(
+            true,
+            "unitTest",
+            "--impacted",
+            "--run-all-tests"
+        )
+        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+            .doesNotContain("you did not provide all relevant class files")
+        val testwiseCoverageReportFile =
+            File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
+        assertThat(testwiseCoverageReportFile).exists()
+        assertThat(oldReportFile).doesNotExist()
+    }
+
     private fun build(executesTask: Boolean, vararg arguments: String): BuildResult {
         val runnerArgs = arguments.toMutableList()
         val runner = GradleRunner.create()
 
-        if (DEBUG) {
+        if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
             runner.withDebug(true)
             runnerArgs.add("--refresh-dependencies")
             runnerArgs.add("--debug")
             runnerArgs.add("--stacktrace")
-            if (executesTask) {
-                runnerArgs.add("--debug-jvm")
-            }
+        }
+        if (executesTask && DEBUG_TEST_ENGINE) {
+            runnerArgs.add("--debug-jvm")
         }
 
         runner
@@ -102,13 +130,17 @@ class TeamscalePluginTest {
             .withArguments(runnerArgs)
             .withGradleVersion("4.6")
 
+        if (DEBUG_PLUGIN) {
+            runner.withDebug(true)
+        }
+
         val buildResult = runner.build()
 
-        if (DEBUG) {
+        if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
             println(buildResult.output)
         }
 
-        return buildResult;
+        return buildResult
     }
 }
 

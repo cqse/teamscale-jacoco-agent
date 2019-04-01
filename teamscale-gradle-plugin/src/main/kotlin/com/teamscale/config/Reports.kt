@@ -7,9 +7,6 @@ import java.io.Serializable
 /** Holds all the configuration of all report types that should be generated and uploaded to Teamscale. */
 class Reports : Serializable {
 
-    /** The destination where the reports should be written to. */
-    var destination: File? = null
-
     /** The testwise coverage configuration. */
     val testwiseCoverage = TestwiseCoverageConfiguration()
 

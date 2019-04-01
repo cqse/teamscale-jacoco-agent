@@ -41,7 +41,7 @@ public class Agent extends AgentBase {
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
-				options.shouldIgnoreDuplicateClassFiles(), wrap(logger));
+				options.duplicateClassFileBehavior(), wrap(logger));
 
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));

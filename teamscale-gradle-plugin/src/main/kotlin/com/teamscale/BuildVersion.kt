@@ -5,10 +5,10 @@ object BuildVersion {
 
     /** Extracts the plugin's version from the jar's manifest file. */
     val buildVersion: String
-        get() = BuildVersion::class.java.getPackage().implementationVersion ?: "0.4.1"
+        get() = "0.4.7"
 
     /** Extracts the agent's version from the jar's manifest file. */
     val agentVersion: String
-        get() = BuildVersion::class.java.getPackage().specificationVersion ?: "11.3.1"
+        get() = "11.3.1"
 
 }

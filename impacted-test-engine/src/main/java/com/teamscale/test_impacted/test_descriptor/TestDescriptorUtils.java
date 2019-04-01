@@ -11,6 +11,7 @@ import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.UniqueId.Segment;
+import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.util.List;
@@ -95,6 +96,10 @@ public class TestDescriptorUtils {
 		if (source.isPresent() && source.get() instanceof MethodSource) {
 			MethodSource ms = (MethodSource) source.get();
 			return ms.getClassName().replace('.', '/');
+		}
+		if(source.isPresent() && source.get() instanceof ClassSource) {
+			ClassSource classSource = (ClassSource) source.get();
+			return classSource.getClassName().replace('.', '/');
 		}
 		return null;
 	}

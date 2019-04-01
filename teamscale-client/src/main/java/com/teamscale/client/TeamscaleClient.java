@@ -28,6 +28,14 @@ public class TeamscaleClient {
 				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken);
 	}
 
+	/** Constructor. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File file) {
+		this.projectId = projectId;
+		service = TeamscaleServiceGenerator
+				.createServiceWithRequestLogging(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
+						file);
+	}
+
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
@@ -37,6 +45,26 @@ public class TeamscaleClient {
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline,
 																	 CommitDescriptor endCommit,
 																	 String partition) throws IOException {
+		long startTime = System.currentTimeMillis();
+		Response<List<PrioritizableTestCluster>> impactedTestsResponse;
+		do {
+			impactedTestsResponse = getImpactedTestsOnce(testList, baseline,
+					endCommit, partition);
+			// Retry for up to one minute until the coverage uploads are processed by Teamscale
+		} while (impactedTestsResponse.code() == 412 && System.currentTimeMillis() - startTime < 60000);
+		return impactedTestsResponse;
+	}
+
+	/**
+	 * Tries to retrieve the impacted tests from Teamscale.
+	 *
+	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the
+	 * given commit.
+	 */
+	private Response<List<PrioritizableTestCluster>> getImpactedTestsOnce(List<ClusteredTestDetails> testList,
+																		  Long baseline,
+																		  CommitDescriptor endCommit,
+																		  String partition) throws IOException {
 		if (baseline == null) {
 			return service
 					.getImpactedTests(projectId, endCommit, partition, testList)
