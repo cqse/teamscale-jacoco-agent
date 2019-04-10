@@ -2,9 +2,9 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTest;
+import com.teamscale.client.StringUtils;
 import com.teamscale.client.TestDetails;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
-import org.conqat.lib.commons.string.StringUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestEngine;

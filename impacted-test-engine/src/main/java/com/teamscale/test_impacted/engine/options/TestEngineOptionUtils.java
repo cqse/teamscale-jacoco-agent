@@ -1,7 +1,7 @@
 package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
-import org.conqat.lib.commons.string.StringUtils;
+import com.teamscale.client.StringUtils;
 import org.junit.platform.engine.ConfigurationParameters;
 
 import java.util.Arrays;

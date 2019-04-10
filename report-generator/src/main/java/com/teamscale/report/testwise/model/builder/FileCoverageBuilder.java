@@ -2,10 +2,8 @@ package com.teamscale.report.testwise.model.builder;
 
 import com.teamscale.report.testwise.model.FileCoverage;
 import com.teamscale.report.testwise.model.LineRange;
-import org.conqat.lib.commons.assertion.CCSMAssert;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,17 +55,18 @@ public class FileCoverageBuilder {
 
 	/** Merges the list of ranges into the current list. */
 	public void merge(FileCoverageBuilder other) {
-		CCSMAssert.isTrue(other.fileName.equals(fileName) && other.path.equals(path),
-				"Cannot merge coverage of two different files! This is a bug!");
+		if (!other.fileName.equals(fileName) || !other.path.equals(path)) {
+			throw new AssertionError("Cannot merge coverage of two different files! This is a bug!");
+		}
 		coveredLines.addAll(other.coveredLines);
 	}
 
 	/**
-	 * Merges all overlapping and neighboring {@link LineRange}s.
-	 * E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes [[1-10],[12-14]]
+	 * Merges all overlapping and neighboring {@link LineRange}s. E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes
+	 * [[1-10],[12-14]]
 	 */
 	public static List<LineRange> compactifyToRanges(Set<Integer> lines) {
-		if(lines.isEmpty()) {
+		if (lines.isEmpty()) {
 			return new ArrayList<>();
 		}
 
@@ -81,7 +80,7 @@ public class FileCoverageBuilder {
 		compactifiedRanges.add(currentRange);
 
 		for (Integer currentLine : linesList) {
-			if(currentRange.getEnd() == currentLine || currentRange.getEnd() == currentLine - 1) {
+			if (currentRange.getEnd() == currentLine || currentRange.getEnd() == currentLine - 1) {
 				currentRange.setEnd(currentLine);
 			} else {
 				currentRange = new LineRange(currentLine, currentLine);
@@ -93,9 +92,8 @@ public class FileCoverageBuilder {
 	}
 
 	/**
-	 * Returns a compact string representation of the covered lines.
-	 * Continuous line ranges are merged to ranges and sorted.
-	 * Individual ranges are separated by commas. E.g. 1-5,7,9-11.
+	 * Returns a compact string representation of the covered lines. Continuous line ranges are merged to ranges and
+	 * sorted. Individual ranges are separated by commas. E.g. 1-5,7,9-11.
 	 */
 	public String computeCompactifiedRangesAsString() {
 		List<LineRange> coveredRanges = compactifyToRanges(coveredLines);

@@ -1,14 +1,14 @@
 package com.teamscale.report.testwise.closure;
 
 import com.google.gson.Gson;
+import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.Pair;
+import com.teamscale.client.PairList;
+import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.closure.model.ClosureCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
-import org.conqat.lib.commons.collections.Pair;
-import org.conqat.lib.commons.collections.PairList;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,14 +37,15 @@ public class ClosureTestwiseCoverageGenerator {
 	 * @param closureCoverageDirectories Root directory that contains the Google closure coverage reports.
 	 * @param locationIncludeFilter      Filter for js files
 	 */
-	public ClosureTestwiseCoverageGenerator(Collection<File> closureCoverageDirectories, Predicate<String> locationIncludeFilter) {
+	public ClosureTestwiseCoverageGenerator(Collection<File> closureCoverageDirectories,
+											Predicate<String> locationIncludeFilter) {
 		this.closureCoverageDirectories = closureCoverageDirectories;
 		this.locationIncludeFilter = locationIncludeFilter;
 	}
 
 	/**
-	 * Converts all JSON files in {@link #closureCoverageDirectories} to {@link TestCoverageBuilder}
-	 * and takes care of merging coverage distributed over multiple files.
+	 * Converts all JSON files in {@link #closureCoverageDirectories} to {@link TestCoverageBuilder} and takes care of
+	 * merging coverage distributed over multiple files.
 	 */
 	public TestwiseCoverage readTestCoverage() {
 		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
@@ -63,8 +64,8 @@ public class ClosureTestwiseCoverageGenerator {
 	}
 
 	/**
-	 * Reads the given JSON file and converts its content to {@link TestCoverageBuilder}.
-	 * If this fails for some reason the method returns null.
+	 * Reads the given JSON file and converts its content to {@link TestCoverageBuilder}. If this fails for some reason
+	 * the method returns null.
 	 */
 	private TestCoverageBuilder readTestCoverage(File file) {
 		try {

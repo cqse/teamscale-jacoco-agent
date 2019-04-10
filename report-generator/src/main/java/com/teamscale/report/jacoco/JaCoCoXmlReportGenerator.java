@@ -1,9 +1,9 @@
 package com.teamscale.report.jacoco;
 
+import com.teamscale.client.FileSystemUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ILogger;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;

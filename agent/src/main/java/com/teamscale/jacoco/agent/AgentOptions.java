@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
@@ -20,7 +21,6 @@ import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -28,12 +28,12 @@ import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Parses agent command line options.
@@ -167,9 +167,9 @@ public class AgentOptions {
 				"If you want to upload data to an azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
-		List<Boolean> configuredStores = Arrays
-				.asList(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null).stream().filter(x -> x).collect(Collectors.toList());
+		List<Boolean> configuredStores = Stream
+				.of(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
+						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
 
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
 				"such as a teamscale instance, upload url or azure file storage");

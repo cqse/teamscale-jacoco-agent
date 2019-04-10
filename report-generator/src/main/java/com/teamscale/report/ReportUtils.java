@@ -2,8 +2,8 @@ package com.teamscale.report;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.teamscale.client.FileSystemUtils;
 import com.teamscale.report.testwise.ETestArtifactFormat;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
 import java.io.FileReader;

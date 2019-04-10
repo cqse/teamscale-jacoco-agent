@@ -4,8 +4,8 @@ import com.teamscale.client.TestDetails;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import org.conqat.lib.commons.collections.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,8 +19,8 @@ public class TestwiseCoverageReportBuilder {
 	private final Map<String, TestInfoBuilder> tests = new HashMap<>();
 
 	/**
-	 * Adds the {@link TestCoverageBuilder} to the map.
-	 * If there is already a test with the same ID the coverage is merged.
+	 * Adds the {@link TestCoverageBuilder} to the map. If there is already a test with the same ID the coverage is
+	 * merged.
 	 */
 	public static TestwiseCoverageReport createFrom(
 			Collection<TestDetails> testDetailsList,
@@ -65,8 +65,8 @@ public class TestwiseCoverageReportBuilder {
 
 	private TestwiseCoverageReport build() {
 		TestwiseCoverageReport report = new TestwiseCoverageReport();
-		List<TestInfoBuilder> testInfoBuilders = CollectionUtils
-				.sort(tests.values(), Comparator.comparing(TestInfoBuilder::getUniformPath));
+		List<TestInfoBuilder> testInfoBuilders = new ArrayList<>(tests.values());
+		testInfoBuilders.sort(Comparator.comparing(TestInfoBuilder::getUniformPath));
 		for (TestInfoBuilder testInfoBuilder : testInfoBuilders) {
 			TestInfo testInfo = testInfoBuilder.build();
 			if (testInfo == null) {
