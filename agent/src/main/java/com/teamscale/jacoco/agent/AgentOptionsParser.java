@@ -420,6 +420,10 @@ public class AgentOptionsParser {
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			value = "http://" + value;
 		}
+		
+		if(!value.endsWith("/")) {
+			value += "/";
+		}
 
 		return HttpUrl.parse(value);
 	}
