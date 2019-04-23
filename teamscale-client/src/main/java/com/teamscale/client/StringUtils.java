@@ -55,6 +55,17 @@ public class StringUtils {
 		return EMPTY_STRING.equals(text.trim());
 	}
 
+	/**
+	 * Determine if the supplied {@link String} is <em>blank</em> (i.e.,
+	 * {@code null} or consisting only of whitespace characters).
+	 *
+	 * @param str the string to check; may be {@code null}
+	 * @return {@code true} if the string is blank
+	 */
+	public static boolean isBlank(String str) {
+		return (str == null || str.trim().isEmpty());
+	}
+
 
 	/**
 	 * Returns the beginning of a String, cutting off the last part which is separated by the given character.
