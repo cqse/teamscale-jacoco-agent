@@ -1,7 +1,5 @@
 package com.teamscale.test_impacted.engine.options;
 
-import org.junit.platform.commons.util.Preconditions;
-
 /** Represents options for the connection to the Teamscale server. */
 public class ServerOptions {
 
@@ -45,9 +43,10 @@ public class ServerOptions {
 	/** The builder for {@link ServerOptions}. */
 	public static class Builder {
 
-		private ServerOptions serverOptions = new ServerOptions();
+		private final ServerOptions serverOptions = new ServerOptions();
 
 		private Builder() {
+			// Just needed to make the constructor private
 		}
 
 		/** @see #url */
@@ -76,13 +75,11 @@ public class ServerOptions {
 
 		/** Checks field conditions and returns the built {@link ServerOptions}. */
 		public ServerOptions build() {
-			Preconditions.notBlank(serverOptions.url, "The server URL must be set.");
-			Preconditions.notBlank(serverOptions.project, "The Teamscale project must be set.");
-			Preconditions.notBlank(serverOptions.userName, "The user name must be set.");
-			Preconditions.notBlank(serverOptions.userAccessToken, "The user access token must be set.");
+			TestEngineOptionUtils.assertNotBlank(serverOptions.url, "The server URL must be set.");
+			TestEngineOptionUtils.assertNotBlank(serverOptions.project, "The Teamscale project must be set.");
+			TestEngineOptionUtils.assertNotBlank(serverOptions.userName, "The user name must be set.");
+			TestEngineOptionUtils.assertNotBlank(serverOptions.userAccessToken, "The user access token must be set.");
 			return serverOptions;
 		}
-
-
 	}
 }

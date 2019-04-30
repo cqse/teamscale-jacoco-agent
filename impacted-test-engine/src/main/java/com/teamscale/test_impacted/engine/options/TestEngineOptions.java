@@ -10,7 +10,6 @@ import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
-import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.engine.TestEngine;
 
 import java.io.File;
@@ -32,7 +31,7 @@ public class TestEngineOptions {
 	/** Executes all tests, not only impacted ones if set. Defaults to false. */
 	private boolean runAllTests = false;
 
-	/** Executes all tests, not only impacted ones if set. Defaults to true. */
+	/** Executes only impacted tests, not all ones if set. Defaults to true. */
 	private boolean runImpacted = true;
 
 	/**
@@ -63,11 +62,6 @@ public class TestEngineOptions {
 		return runAllTests;
 	}
 
-	/** @see #reportDirectory */
-	public File getReportDirectory() {
-		return reportDirectory;
-	}
-
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
 		ITestExecutor testExecutor = createTestExecutor();
 		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(testEngineIds);
@@ -95,9 +89,10 @@ public class TestEngineOptions {
 	/** The builder for {@link TestEngineOptions}. */
 	public static class Builder {
 
-		private TestEngineOptions testEngineOptions = new TestEngineOptions();
+		private final TestEngineOptions testEngineOptions = new TestEngineOptions();
 
 		private Builder() {
+			// Only needed to make constructor private
 		}
 
 		/** @see #serverOptions */
@@ -159,13 +154,15 @@ public class TestEngineOptions {
 
 		/** Checks field conditions and returns the built {@link TestEngineOptions}. */
 		public TestEngineOptions build() {
-			Preconditions.notNull(testEngineOptions.endCommit, "End commit must be set.");
-			Preconditions.notNull(testEngineOptions.serverOptions, "Server options must be set.");
-			Preconditions.notNull(testEngineOptions.testwiseCoverageAgentApis, "Agent urls may be empty but not null.");
-			Preconditions.notNull(testEngineOptions.reportDirectory, "Report directory must be set.");
-			Preconditions.condition(
-					testEngineOptions.reportDirectory.isDirectory() && testEngineOptions.reportDirectory.canWrite(),
-					"Report directory must be readable directory: " + testEngineOptions.reportDirectory);
+			TestEngineOptionUtils.assertNotNull(testEngineOptions.endCommit, "End commit must be set.");
+			TestEngineOptionUtils.assertNotNull(testEngineOptions.serverOptions, "Server options must be set.");
+			TestEngineOptionUtils.assertNotNull(testEngineOptions.testwiseCoverageAgentApis,
+					"Agent urls may be empty but not null.");
+			TestEngineOptionUtils.assertNotNull(testEngineOptions.reportDirectory, "Report directory must be set.");
+			if (!testEngineOptions.reportDirectory.isDirectory() || !testEngineOptions.reportDirectory.canWrite()) {
+				throw new AssertionError(
+						"Report directory must be readable directory: " + testEngineOptions.reportDirectory);
+			}
 			return testEngineOptions;
 		}
 	}

@@ -1,7 +1,7 @@
 package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
-import org.conqat.lib.commons.string.StringUtils;
+import com.teamscale.client.StringUtils;
 import org.junit.platform.engine.ConfigurationParameters;
 
 import java.util.Arrays;
@@ -35,6 +35,24 @@ public class TestEngineOptionUtils {
 				.testEngineIds(propertyReader.getStringList("engines"))
 				.reportDirectory(propertyReader.getString("reportDirectory"))
 				.build();
+	}
+
+	/**
+	 * Throws an {@link AssertionError} if the given value is blank.
+	 */
+	static void assertNotBlank(String value, String message) {
+		if (StringUtils.isBlank(value)) {
+			throw new AssertionError(message);
+		}
+	}
+
+	/**
+	 * Throws an {@link AssertionError} if the given value is null.
+	 */
+	static void assertNotNull(Object value, String message) {
+		if (value == null) {
+			throw new AssertionError(message);
+		}
 	}
 
 	private static class PrefixingPropertyReader {

@@ -1,7 +1,7 @@
 package com.teamscale.report.util;
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
+import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
 import org.jacoco.report.JavaNames;
 
@@ -14,14 +14,12 @@ import java.util.function.Predicate;
 public class ClasspathWildcardIncludeFilter implements Predicate<String> {
 
 	/**
-	 * Include patterns to apply during JaCoCo's traversal of class files. If null
-	 * then everything is included.
+	 * Include patterns to apply during JaCoCo's traversal of class files. If null then everything is included.
 	 */
 	private WildcardMatcher locationIncludeFilters = null;
 
 	/**
-	 * Exclude patterns to apply during JaCoCo's traversal of class files. If null
-	 * then nothing is excluded.
+	 * Exclude patterns to apply during JaCoCo's traversal of class files. If null then nothing is excluded.
 	 */
 	private WildcardMatcher locationExcludeFilters = null;
 
@@ -54,7 +52,8 @@ public class ClasspathWildcardIncludeFilter implements Predicate<String> {
 	/**
 	 * Returns the normalized class name of the given class file's path.
 	 */
-	/* package */ static String getClassName(String path) {
+	/* package */
+	static String getClassName(String path) {
 		String[] parts = FileSystemUtils.normalizeSeparators(path).split("@");
 		if (parts.length == 0) {
 			return "";

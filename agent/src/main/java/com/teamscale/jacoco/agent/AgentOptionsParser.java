@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.report.util.ILogger;
@@ -13,7 +14,6 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

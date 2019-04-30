@@ -5,15 +5,13 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.report.util;
 
-import org.conqat.lib.commons.collections.CollectionUtils;
-import org.conqat.lib.commons.filesystem.AntPatternUtils;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import com.teamscale.client.AntPatternUtils;
+import com.teamscale.client.FileSystemUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Applies ANT include and exclude patterns to paths.
@@ -28,10 +26,10 @@ public class AntPatternIncludeFilter implements Predicate<String> {
 
 	/** Constructor. */
 	public AntPatternIncludeFilter(List<String> locationIncludeFilters, List<String> locationExcludeFilters) {
-		this.locationIncludeFilters = CollectionUtils.map(locationIncludeFilters,
-				filter -> AntPatternUtils.convertPattern(filter, false));
-		this.locationExcludeFilters = CollectionUtils.map(locationExcludeFilters,
-				filter -> AntPatternUtils.convertPattern(filter, false));
+		this.locationIncludeFilters = locationIncludeFilters.stream().map(
+				filter -> AntPatternUtils.convertPattern(filter, false)).collect(Collectors.toList());
+		this.locationExcludeFilters = locationExcludeFilters.stream().map(
+				filter -> AntPatternUtils.convertPattern(filter, false)).collect(Collectors.toList());
 	}
 
 	/** {@inheritDoc} */
@@ -41,8 +39,8 @@ public class AntPatternIncludeFilter implements Predicate<String> {
 	}
 
 	/**
-	 * Returns <code>true</code> if the given class file location (normalized to
-	 * forward slashes as path separators) should not be analyzed.
+	 * Returns <code>true</code> if the given class file location (normalized to forward slashes as path separators)
+	 * should not be analyzed.
 	 * <p>
 	 * Exclude filters overrule include filters.
 	 */

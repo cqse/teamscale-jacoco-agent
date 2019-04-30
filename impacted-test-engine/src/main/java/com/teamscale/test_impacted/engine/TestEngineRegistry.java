@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static org.conqat.lib.commons.collections.CollectionUtils.filter;
 
 /** The test engine registry containing all */
 public class TestEngineRegistry implements Iterable<TestEngine> {
@@ -26,7 +26,9 @@ public class TestEngineRegistry implements Iterable<TestEngine> {
 
 		// If there are no test engines set we don't need to filter but simply use all other test engines.
 		if (!testEngineIds.isEmpty()) {
-			otherTestEngines = filter(otherTestEngines, testEngine -> testEngineIds.contains(testEngine.getId()));
+			otherTestEngines = otherTestEngines.stream()
+					.filter(testEngine -> testEngineIds.contains(testEngine.getId())).collect(
+							Collectors.toList());
 		}
 
 		testEnginesById = unmodifiableMap(otherTestEngines.stream().collect(toMap(TestEngine::getId, identity())));
