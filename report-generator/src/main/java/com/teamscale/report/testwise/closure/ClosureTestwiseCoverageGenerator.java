@@ -2,8 +2,6 @@ package com.teamscale.report.testwise.closure;
 
 import com.google.gson.Gson;
 import com.teamscale.client.FileSystemUtils;
-import com.teamscale.client.Pair;
-import com.teamscale.client.PairList;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.closure.model.ClosureCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
@@ -13,7 +11,9 @@ import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -84,14 +84,14 @@ public class ClosureTestwiseCoverageGenerator {
 			return null;
 		}
 		TestCoverageBuilder testCoverage = new TestCoverageBuilder(coverage.uniformPath);
-		PairList<String, List<Boolean>> executedLines = PairList.zip(coverage.fileNames, coverage.executedLines);
-		for (Pair<String, List<Boolean>> fileNameAndExecutedLines : executedLines) {
-			if (!locationIncludeFilter.test(fileNameAndExecutedLines.getFirst())) {
+		List<FileAndCoveredLines> executedLines = zip(coverage.fileNames, coverage.executedLines);
+		for (FileAndCoveredLines fileNameAndExecutedLines : executedLines) {
+			if (!locationIncludeFilter.test(fileNameAndExecutedLines.fileName)) {
 				continue;
 			}
 
-			File coveredFile = new File(fileNameAndExecutedLines.getFirst());
-			List<Boolean> coveredLines = fileNameAndExecutedLines.getSecond();
+			File coveredFile = new File(fileNameAndExecutedLines.fileName);
+			List<Boolean> coveredLines = fileNameAndExecutedLines.coveredLines;
 			String path = Optional.ofNullable(coveredFile.getParent()).orElse("");
 			FileCoverageBuilder fileCoverage = new FileCoverageBuilder(path, coveredFile.getName());
 			for (int i = 0; i < coveredLines.size(); i++) {
@@ -102,5 +102,29 @@ public class ClosureTestwiseCoverageGenerator {
 			testCoverage.add(fileCoverage);
 		}
 		return testCoverage;
+	}
+
+	private static List<FileAndCoveredLines> zip(List<String> firstValues, List<List<Boolean>> secondValues) {
+		List<FileAndCoveredLines> result = new ArrayList<>(firstValues.size());
+		Iterator<String> firstIterator = firstValues.iterator();
+		Iterator<List<Boolean>> secondIterator = secondValues.iterator();
+		while (firstIterator.hasNext()) {
+			result.add(new FileAndCoveredLines(firstIterator.next(), secondIterator.next()));
+		}
+		return result;
+	}
+
+	/** Wrapper that holds closure coverage for a single file. */
+	private static class FileAndCoveredLines {
+
+		private final String fileName;
+
+		private final List<Boolean> coveredLines;
+
+		/** Constructor. */
+		public FileAndCoveredLines(String fileName, List<Boolean> coveredLines) {
+			this.fileName = fileName;
+			this.coveredLines = coveredLines;
+		}
 	}
 }
