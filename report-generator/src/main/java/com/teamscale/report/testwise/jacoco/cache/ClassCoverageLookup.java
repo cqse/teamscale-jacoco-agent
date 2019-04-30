@@ -12,10 +12,13 @@ import java.util.Set;
 /**
  * Holds information about a class' probes and to which line ranges they refer.
  * <p>
- * - Create an instance of this class for every analyzed java class. - Set the file name of the java source file from
- * which the class has been created. - Then call {@link #addProbe(int, Set)} for all probes and lines that belong to
- * that probe. - Afterwards call {@link #getFileCoverage(ExecutionData, ILogger)} to transform probes ({@link
+ * <ul>
+ * <li> Create an instance of this class for every analyzed java class.
+ * <li> Set the file name of the java source file from which the class has been created.
+ * <li> Then call {@link #addProbe(int, Set)} for all probes and lines that belong to that probe.
+ * <li> Afterwards call {@link #getFileCoverage(ExecutionData, ILogger)} to transform probes ({@link
  * ExecutionData}) for this class into covered lines ({@link FileCoverageBuilder}).
+ * </ul>
  */
 public class ClassCoverageLookup {
 

@@ -31,16 +31,6 @@ public class StringUtils {
 	/** The empty string. */
 	public static final String EMPTY_STRING = "";
 
-	/** Number formatter. */
-	private static NumberFormat numberFormat = NumberFormat.getInstance();
-
-	/**
-	 * Format number
-	 */
-	public static String format(Number number) {
-		return numberFormat.format(number);
-	}
-
 	/**
 	 * Checks if a string is empty (after trimming).
 	 *
@@ -56,8 +46,8 @@ public class StringUtils {
 	}
 
 	/**
-	 * Determine if the supplied {@link String} is <em>blank</em> (i.e.,
-	 * {@code null} or consisting only of whitespace characters).
+	 * Determine if the supplied {@link String} is <em>blank</em> (i.e., {@code null} or consisting only of whitespace
+	 * characters).
 	 *
 	 * @param str the string to check; may be {@code null}
 	 * @return {@code true} if the string is blank
