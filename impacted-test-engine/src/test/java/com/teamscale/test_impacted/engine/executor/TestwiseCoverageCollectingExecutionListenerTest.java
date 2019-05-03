@@ -1,5 +1,6 @@
 package com.teamscale.test_impacted.engine.executor;
 
+import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
@@ -106,5 +107,43 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		assertThat(testExecutions).anySatisfy(testExecution -> {
 			assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/regularSkippedTestCase()");
 		});
+	}
+
+	@Test
+	void testSkipOfTestClass() {
+		UniqueId testClassId = rootId.append("TEST_CONTAINER", "MyClass");
+		UniqueId testCase1Id = testClassId.append("TEST_CASE", "testCase1()");
+		UniqueId testCase2Id = testClassId.append("TEST_CASE", "testCase2()");
+
+		TestDescriptor testCase1 = testCase(testCase1Id);
+		TestDescriptor testCase2 = testCase(testCase2Id);
+		TestDescriptor testClass = testContainer(testClassId, testCase1, testCase2);
+		TestDescriptor testRoot = testContainer(rootId, testClass);
+
+		when(resolver.getUniformPath(testCase1)).thenReturn(Optional.of("MyClass/testCase1()"));
+		when(resolver.getClusterId(testCase1)).thenReturn(Optional.of("MyClass"));
+		when(resolver.getUniformPath(testCase2)).thenReturn(Optional.of("MyClass/testCase2()"));
+		when(resolver.getClusterId(testCase2)).thenReturn(Optional.of("MyClass"));
+
+		// Start engine and class.
+		executionListener.executionStarted(testRoot);
+		verify(executionListenerMock).executionStarted(testRoot);
+
+		executionListener.executionSkipped(testClass, "Test class is disabled.");
+		verify(executionListenerMock).executionStarted(testClass);
+		verify(executionListenerMock).executionSkipped(testCase1, "Test class is disabled.");
+		verify(executionListenerMock).executionSkipped(testCase2, "Test class is disabled.");
+		verify(executionListenerMock).executionFinished(testClass, successful());
+
+		executionListener.executionFinished(testRoot, successful());
+		verify(executionListenerMock).executionFinished(testRoot, successful());
+
+		verifyNoMoreInteractions(executionListenerMock);
+
+		List<TestExecution> testExecutions = executionListener.getTestExecutions();
+
+		assertThat(testExecutions).hasSize(2);
+		assertThat(testExecutions)
+				.allMatch(testExecution -> testExecution.getResult().equals(ETestExecutionResult.SKIPPED));
 	}
 }
