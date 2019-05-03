@@ -58,14 +58,19 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
-		TestDescriptorUtils.streamTestRepresentatives(testDescriptor).forEach(testRepresentative -> {
-			Optional<String> testUniformPath = testDescriptorResolver.getUniformPath(testRepresentative);
-			if (!testUniformPath.isPresent()) {
-				return;
+		if (!TestDescriptorUtils.isTestRepresentative(testDescriptor)) {
+			delegateEngineExecutionListener.executionStarted(testDescriptor);
+			testDescriptor.getChildren().forEach(child -> this.executionSkipped(child, reason));
+			delegateEngineExecutionListener.executionFinished(testDescriptor, TestExecutionResult.successful());
+			return;
+		}
+
+		testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(testUniformPath -> {
+			if (!AutoSkippingEngineExecutionListener.TEST_NOT_IMPACTED_REASON.equals(reason)) {
+				testExecutions.add(new TestExecution(testUniformPath, 0L, ETestExecutionResult.SKIPPED, reason));
 			}
-			testExecutions.add(new TestExecution(testUniformPath.get(), 0, ETestExecutionResult.SKIPPED, reason));
+			delegateEngineExecutionListener.executionSkipped(testDescriptor, reason);
 		});
-		delegateEngineExecutionListener.executionSkipped(testDescriptor, reason);
 	}
 
 	@Override

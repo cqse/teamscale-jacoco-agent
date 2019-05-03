@@ -21,9 +21,9 @@ public class TestwiseCoverageCollectingTestExecutor implements ITestExecutor {
 	public List<TestExecution> execute(TestExecutorRequest testExecutorRequest) {
 		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
 				.getTestDescriptorResolver(testExecutorRequest.testEngine);
-		TestwiseCoverageCollectingExecutionListener executionListener = new TestwiseCoverageCollectingExecutionListener(
-				testwiseCoverageAgentApis,
-				testDescriptorResolver, testExecutorRequest.engineExecutionListener);
+		TestwiseCoverageCollectingExecutionListener executionListener =
+				new TestwiseCoverageCollectingExecutionListener(testwiseCoverageAgentApis, testDescriptorResolver,
+						testExecutorRequest.engineExecutionListener);
 
 		testExecutorRequest.testEngine.execute(new ExecutionRequest(testExecutorRequest.engineTestDescriptor,
 				executionListener, testExecutorRequest.configurationParameters));

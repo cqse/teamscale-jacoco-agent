@@ -1,14 +1,12 @@
 package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
-import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
-import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.reporting.ReportEntry;
@@ -16,6 +14,7 @@ import org.junit.platform.engine.reporting.ReportEntry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -24,7 +23,10 @@ import java.util.Set;
  * impacted {@link TestDescriptor} have been finished. Needed to ensure that all children of a container {@link
  * TestDescriptor} have been finished or skipped before the container {@link TestDescriptor} is finished.
  */
-public class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
+class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
+
+	/** Skip reason message if a test case is not impacted. */
+	static final String TEST_NOT_IMPACTED_REASON = "Test not impacted by code changes.";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AutoSkippingEngineExecutionListener.class);
 
@@ -87,18 +89,8 @@ public class AutoSkippingEngineExecutionListener implements EngineExecutionListe
 		requestedTestDescriptorsById.put(uniqueId, testDescriptor);
 	}
 
-	@Override
-	public void dynamicTestRegistered(TestDescriptor testDescriptor) {
-		UniqueId uniqueId = testDescriptor.getUniqueId();
-
-		requestedTestDescriptorsById.put(uniqueId, testDescriptor);
-		openImpactedTestDescriptorIds.add(uniqueId);
-		delegateExecutionListener.dynamicTestRegistered(testDescriptor);
-	}
-
 	private TestDescriptor resolveOriginalTestDescriptor(TestDescriptor testDescriptor) {
 		UniqueId testDescriptorUniqueId = testDescriptor.getUniqueId();
-
 		TestDescriptor requestedTestDescriptor = requestedTestDescriptorsById.get(testDescriptorUniqueId);
 
 		if (requestedTestDescriptor != null) {
@@ -112,13 +104,14 @@ public class AutoSkippingEngineExecutionListener implements EngineExecutionListe
 
 	/**
 	 * Finishes an impacted {@link TestDescriptor} by moving it from the {@link #openImpactedTestDescriptorIds} to the
-	 * {@link #finishedImpactedTestDescriptorIds}. Also asserts that the move actually occurred.
+	 * {@link #finishedImpactedTestDescriptorIds}. Also asserts that the move actually occurred. Assumes that all
+	 * unfinished child {@link TestDescriptor}s represent not impacted tests and skips them.
 	 */
 	private void finishTestDescriptor(TestDescriptor testDescriptor) {
 		for (TestDescriptor testDescriptorChild : testDescriptor.getChildren()) {
-			Preconditions.condition(finishedImpactedTestDescriptorIds.contains(testDescriptorChild.getUniqueId()),
-					() -> "Unexpectedly tried to finish unfinished test descriptor child: " + testDescriptorChild);
-			skipAsNonImpactedTests(testDescriptorChild);
+			if (!finishedImpactedTestDescriptorIds.contains(testDescriptorChild.getUniqueId())) {
+				delegateExecutionListener.executionSkipped(testDescriptorChild, TEST_NOT_IMPACTED_REASON);
+			}
 		}
 		Preconditions.condition(openImpactedTestDescriptorIds.remove(testDescriptor.getUniqueId()),
 				() -> "Expected impacted and unfinished test descriptor to be part of the open impacted nodes: " + testDescriptor);
@@ -126,11 +119,33 @@ public class AutoSkippingEngineExecutionListener implements EngineExecutionListe
 				() -> "Expected impacted and unfinished test descriptor to not be part of the finished impacted nodes: " + testDescriptor);
 	}
 
+	/**
+	 * Wraps the dynamicall registered {@link TestDescriptor} into a new one which is part of the parent-child hierarchy
+	 * of the requested {@link TestDescriptor}s in {@link #requestedTestDescriptorsById}.
+	 */
+	@Override
+	public void dynamicTestRegistered(TestDescriptor testDescriptor) {
+		TestDescriptor wrappedTestDescriptor = new DelegatingTestDescriptor(testDescriptor);
+		UniqueId uniqueId = wrappedTestDescriptor.getUniqueId();
+
+		Optional<TestDescriptor> parentTestDescriptor = testDescriptor.getParent();
+		Preconditions.condition(parentTestDescriptor.isPresent(),
+				"Dynamically registered test with id " + uniqueId + " must have a known parent test descriptor.");
+
+		TestDescriptor originalParentTestDescriptor = requestedTestDescriptorsById
+				.get(parentTestDescriptor.get().getUniqueId());
+
+		originalParentTestDescriptor.addChild(wrappedTestDescriptor);
+		requestedTestDescriptorsById.put(uniqueId, wrappedTestDescriptor);
+		openImpactedTestDescriptorIds.add(uniqueId);
+		delegateExecutionListener.dynamicTestRegistered(wrappedTestDescriptor);
+	}
+
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
 		TestDescriptor originalTestDescriptor = resolveOriginalTestDescriptor(testDescriptor);
-		finishTestDescriptor(originalTestDescriptor);
 		delegateExecutionListener.executionSkipped(originalTestDescriptor, reason);
+		finishTestDescriptor(originalTestDescriptor);
 	}
 
 	@Override
@@ -154,21 +169,6 @@ public class AutoSkippingEngineExecutionListener implements EngineExecutionListe
 
 		finishTestDescriptor(originalTestDescriptor);
 		delegateExecutionListener.executionFinished(originalTestDescriptor, testExecutionResult);
-	}
-
-	/** Recursively skips all non-impacted {@link TestDescriptor}. */
-	private void skipAsNonImpactedTests(TestDescriptor testDescriptor) {
-		if (TestDescriptorUtils.isTestRepresentative(testDescriptor)) {
-			delegateExecutionListener.executionSkipped(testDescriptor, "Test is not impacted by code changes.");
-			return;
-		}
-		for (TestDescriptor testDescriptorChild : testDescriptor.getChildren()) {
-			skipAsNonImpactedTests(testDescriptorChild);
-		}
-
-		// Containers are not skipped but finished successfully according to the documentation of the
-		// EngineExecutionListener.
-		delegateExecutionListener.executionFinished(testDescriptor, TestExecutionResult.successful());
 	}
 
 	@Override
