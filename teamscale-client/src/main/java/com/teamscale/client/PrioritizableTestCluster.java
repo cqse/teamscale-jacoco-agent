@@ -25,4 +25,9 @@ public class PrioritizableTestCluster {
 
 	/** The {@link PrioritizableTest}s in this cluster. */
 	public List<PrioritizableTest> tests;
+
+	public PrioritizableTestCluster(String clusterId, List<PrioritizableTest> tests) {
+		this.clusterId = clusterId;
+		this.tests = tests;
+	}
 }

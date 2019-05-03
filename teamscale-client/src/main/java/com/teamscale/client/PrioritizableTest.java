@@ -13,4 +13,8 @@ public class PrioritizableTest {
 	/** The reason the test has been selected. */
 	public String selectionReason;
 
+	public PrioritizableTest(String uniformPath) {
+		this.uniformPath = uniformPath;
+	}
+
 }

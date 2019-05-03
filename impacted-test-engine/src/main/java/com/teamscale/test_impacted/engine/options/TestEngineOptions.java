@@ -1,6 +1,7 @@
 package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.TeamscaleClient;
 import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration;
@@ -8,6 +9,7 @@ import com.teamscale.test_impacted.engine.TestEngineRegistry;
 import com.teamscale.test_impacted.engine.executor.DelegatingTestExecutor;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
+import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
 import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
 import org.junit.platform.engine.TestEngine;
@@ -77,8 +79,12 @@ public class TestEngineOptions {
 			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
 		}
 
-		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, serverOptions, baseline, endCommit, partition,
+		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
+				serverOptions.getUserAccessToken(), serverOptions.getProject(),
 				new File(reportDirectory, "server-request.txt"));
+		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition);
+
+		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, testsProvider);
 	}
 
 	/** Returns the builder for {@link TestEngineOptions}. */
