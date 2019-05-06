@@ -129,8 +129,11 @@ class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
 		UniqueId uniqueId = wrappedTestDescriptor.getUniqueId();
 
 		Optional<TestDescriptor> parentTestDescriptor = testDescriptor.getParent();
-		Preconditions.condition(parentTestDescriptor.isPresent(),
-				"Dynamically registered test with id " + uniqueId + " must have a known parent test descriptor.");
+
+		if (!parentTestDescriptor.isPresent()) {
+			throw new AssertionError(
+					"Dynamically registered test with id " + uniqueId + " must have a known parent test descriptor.");
+		}
 
 		TestDescriptor originalParentTestDescriptor = requestedTestDescriptorsById
 				.get(parentTestDescriptor.get().getUniqueId());

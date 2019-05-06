@@ -27,7 +27,7 @@ import static com.teamscale.test_impacted.engine.ImpactedTestEngine.ENGINE_ID;
 /**
  * Test engine called internally to allow testing without needing a {@link ServiceLoader} for {@link TestEngine} setup.
  */
-class InternalImpactedTestEngine implements TestEngine {
+class InternalImpactedTestEngine {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(InternalImpactedTestEngine.class);
 
@@ -45,13 +45,11 @@ class InternalImpactedTestEngine implements TestEngine {
 		this.testDataWriter = testDataWriter;
 	}
 
-	@Override
-	public String getId() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+	/**
+	 * Performs test discovery by aggregating the result of all {@link TestEngine}s from the {@link TestEngineRegistry}
+	 * in a single engine {@link TestDescriptor}.
+	 */
+	TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
 		EngineDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "Teamscale Impacted Tests");
 
 		LOGGER.debug(() -> "Starting test discovery for engine " + ENGINE_ID);
@@ -70,8 +68,11 @@ class InternalImpactedTestEngine implements TestEngine {
 		return engineDescriptor;
 	}
 
-	@Override
-	public void execute(ExecutionRequest request) {
+	/**
+	 * Executes the request by requesting execution of the {@link TestDescriptor} children aggregated in {@link
+	 * #discover(EngineDiscoveryRequest, UniqueId)} with the corresponding {@link TestEngine}.
+	 */
+	void execute(ExecutionRequest request) {
 		EngineExecutionListener engineExecutionListener = request.getEngineExecutionListener();
 		EngineDescriptor engineDescriptor = (EngineDescriptor) request.getRootTestDescriptor();
 
@@ -91,6 +92,8 @@ class InternalImpactedTestEngine implements TestEngine {
 			Optional<String> engineId = engineTestDescriptor.getUniqueId().getEngineId();
 
 			if (!engineId.isPresent()) {
+				LOGGER.error(
+						() -> "Engine id for test descriptor " + engineTestDescriptor + " not present. Skipping execution of the engine.");
 				continue;
 			}
 

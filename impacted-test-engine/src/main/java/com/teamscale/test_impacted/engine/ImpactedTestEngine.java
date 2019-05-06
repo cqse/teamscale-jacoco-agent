@@ -2,7 +2,6 @@ package com.teamscale.test_impacted.engine;
 
 import com.teamscale.test_impacted.engine.options.TestEngineOptionUtils;
 import com.teamscale.test_impacted.engine.options.TestEngineOptions;
-import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
@@ -31,7 +30,7 @@ public class ImpactedTestEngine implements TestEngine {
 		// Re-initialize the configuration for this discovery (and optional following execution).
 		internalImpactedTestEngine =
 				new InternalImpactedTestEngine(configuration.testEngineRegistry, configuration.testExecutor,
-				new TestDataWriter(configuration.reportDirectory));
+						new TestDataWriter(configuration.reportDirectory));
 
 		return internalImpactedTestEngine.discover(discoveryRequest, uniqueId);
 	}
@@ -40,7 +39,9 @@ public class ImpactedTestEngine implements TestEngine {
 	public void execute(ExecutionRequest request) {
 		// According to the TestEngine interface the request must correspond to the last execution request. Therefore we
 		// may re-use the configuration initialized during discovery.
-		Preconditions.notNull(internalImpactedTestEngine, "Can't execute request without discovering it first.");
+		if (internalImpactedTestEngine == null) {
+			throw new AssertionError("Can't execute request without discovering it first.");
+		}
 		internalImpactedTestEngine.execute(request);
 	}
 }

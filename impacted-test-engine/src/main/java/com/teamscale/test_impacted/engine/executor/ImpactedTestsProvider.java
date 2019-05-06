@@ -11,6 +11,11 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.List;
 
+
+/**
+ * Class for retrieving the impacted {@link PrioritizableTestCluster}s corresponding to {@link ClusteredTestDetails}s
+ * available for test execution.
+ */
 public class ImpactedTestsProvider {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestsProvider.class);
