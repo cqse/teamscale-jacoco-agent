@@ -97,7 +97,7 @@ public class TestDescriptorUtils {
 			MethodSource ms = (MethodSource) source.get();
 			return ms.getClassName().replace('.', '/');
 		}
-		if(source.isPresent() && source.get() instanceof ClassSource) {
+		if (source.isPresent() && source.get() instanceof ClassSource) {
 			ClassSource classSource = (ClassSource) source.get();
 			return classSource.getClassName().replace('.', '/');
 		}

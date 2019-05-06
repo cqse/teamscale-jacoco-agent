@@ -9,8 +9,8 @@ public class SimpleTestDescriptor extends AbstractTestDescriptor {
 
 	private final Type type;
 
-	private SimpleTestDescriptor(UniqueId uniqueId, Type type) {
-		super(uniqueId, uniqueId.toString());
+	private SimpleTestDescriptor(UniqueId uniqueId, Type type, String displayName) {
+		super(uniqueId, displayName);
 		this.type = type;
 	}
 
@@ -21,12 +21,16 @@ public class SimpleTestDescriptor extends AbstractTestDescriptor {
 
 	/** Creates a {@link TestDescriptor} for a concrete test case without children. */
 	public static TestDescriptor testCase(UniqueId uniqueId) {
-		return new SimpleTestDescriptor(uniqueId, Type.TEST);
+		return new SimpleTestDescriptor(uniqueId, Type.TEST, getSimpleDisplayName(uniqueId));
+	}
+
+	private static String getSimpleDisplayName(UniqueId uniqueId) {
+		return uniqueId.getSegments().get(uniqueId.getSegments().size() - 1).getValue();
 	}
 
 	/** Creates a {@link TestDescriptor} for a dynamic test case which registers children during test execution. */
 	public static TestDescriptor dynamicTestCase(UniqueId uniqueId) {
-		return new SimpleTestDescriptor(uniqueId, Type.CONTAINER_AND_TEST);
+		return new SimpleTestDescriptor(uniqueId, Type.CONTAINER_AND_TEST, getSimpleDisplayName(uniqueId));
 	}
 
 	/**
@@ -34,7 +38,7 @@ public class SimpleTestDescriptor extends AbstractTestDescriptor {
 	 * TestDescriptor} children.
 	 */
 	public static TestDescriptor testContainer(UniqueId uniqueId, TestDescriptor... children) {
-		TestDescriptor result = new SimpleTestDescriptor(uniqueId, Type.CONTAINER);
+		TestDescriptor result = new SimpleTestDescriptor(uniqueId, Type.CONTAINER, getSimpleDisplayName(uniqueId));
 		for (TestDescriptor child : children) {
 			result.addChild(child);
 		}

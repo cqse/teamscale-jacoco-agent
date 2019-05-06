@@ -14,6 +14,8 @@ import static com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor.d
 import static com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor.testCase;
 import static com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor.testContainer;
 import static org.junit.platform.engine.TestExecutionResult.successful;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 /** Tests for {@link AutoSkippingEngineExecutionListener}. */
 class AutoSkippingEngineExecutionListenerTest {
@@ -50,24 +52,26 @@ class AutoSkippingEngineExecutionListenerTest {
 		// Test case is added dynamically and executed.
 		dynamicTestCase.addChild(dynamicallyRegisteredTestCase);
 		executionListener.dynamicTestRegistered(dynamicallyRegisteredTestCase);
-		Mockito.verify(executionListenerMock).dynamicTestRegistered(dynamicallyRegisteredTestCase);
+		Mockito.verify(executionListenerMock).dynamicTestRegistered(any(DelegatingTestDescriptor.class));
 		executionListener.executionStarted(dynamicallyRegisteredTestCase);
-		Mockito.verify(executionListenerMock).executionStarted(dynamicallyRegisteredTestCase);
+		Mockito.verify(executionListenerMock).executionStarted(any(DelegatingTestDescriptor.class));
 		executionListener.executionFinished(dynamicallyRegisteredTestCase, successful());
-		Mockito.verify(executionListenerMock).executionFinished(dynamicallyRegisteredTestCase, successful());
+		Mockito.verify(executionListenerMock).executionFinished(any(DelegatingTestDescriptor.class), eq(successful()));
 
 		// Parent test descriptors are also finished.
 		executionListener.executionFinished(dynamicTestCase, successful());
 		Mockito.verify(executionListenerMock).executionFinished(dynamicTestCase, successful());
 		executionListener.executionFinished(testRoot, successful());
 		Mockito.verify(executionListenerMock).executionFinished(testRoot, successful());
+
+		Mockito.verifyNoMoreInteractions(executionListenerMock);
 	}
 
 	@Test
 	void testAutoSkipping() {
 		UniqueId testClassId = rootId.append("CLASS", "TestClass");
 		UniqueId impactedTestId = testClassId.append("TEST", "impactedTest()");
-		UniqueId nonImpactedTestId = testClassId.append("TEST", "impactedTest()");
+		UniqueId nonImpactedTestId = testClassId.append("TEST", "nonImpactedTest()");
 
 		TestDescriptor impactedTest = testCase(impactedTestId);
 		TestDescriptor nonImpactedTest = testCase(nonImpactedTestId);
@@ -87,9 +91,12 @@ class AutoSkippingEngineExecutionListenerTest {
 		executionListener.executionFinished(impactedTest, successful());
 		Mockito.verify(executionListenerMock).executionFinished(impactedTest, successful());
 		executionListener.executionFinished(testClass, successful());
-		Mockito.verify(executionListenerMock).executionFinished(nonImpactedTest, successful());
+		Mockito.verify(executionListenerMock)
+				.executionSkipped(nonImpactedTest, AutoSkippingEngineExecutionListener.TEST_NOT_IMPACTED_REASON);
 		Mockito.verify(executionListenerMock).executionFinished(testClass, successful());
 		executionListener.executionFinished(testRoot, successful());
 		Mockito.verify(executionListenerMock).executionFinished(testRoot, successful());
+
+		Mockito.verifyNoMoreInteractions(executionListenerMock);
 	}
 }
