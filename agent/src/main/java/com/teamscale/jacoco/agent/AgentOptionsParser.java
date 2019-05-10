@@ -156,6 +156,8 @@ public class AgentOptionsParser {
 				return true;
 			case "ignore-duplicates":
 				options.shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
+			case "dump-on-exit":
+				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");

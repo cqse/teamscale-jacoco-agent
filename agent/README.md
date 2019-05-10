@@ -62,6 +62,7 @@ patterns with `*`, `**` and `?`.
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
+- `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.

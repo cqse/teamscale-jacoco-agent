@@ -20,10 +20,14 @@ public abstract class AgentBase {
 	/** Controls the JaCoCo runtime. */
 	protected final JacocoRuntimeController controller;
 
+	/** The agent options. */
+	protected AgentOptions options;
+
 	private static LoggingUtils.LoggingResources loggingResources;
 
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
+		this.options = options;
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
@@ -74,5 +78,5 @@ public abstract class AgentBase {
 	}
 
 	/** Called when the shutdown hook is triggered. */
-	protected abstract void prepareShutdown();
+	protected void prepareShutdown() {}
 }

@@ -24,13 +24,9 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** Path parameter placeholder used in the http requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
 
-	/** The agent options. */
-	private AgentOptions options;
-
 	/** Constructor. */
 	public TestwiseCoverageAgent(AgentOptions options) throws IllegalStateException {
 		super(options);
-		this.options = options;
 		initServer();
 	}
 

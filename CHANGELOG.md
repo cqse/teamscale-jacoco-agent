@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [feature] added `dump-on-exit` option
 
 # 11.3.0
 - [breaking change] The convert tool now uses wildcard patterns for the class matching (was ant pattern before)

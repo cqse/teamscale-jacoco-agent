@@ -5,8 +5,8 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.IXmlStore;
+import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -18,8 +18,8 @@ import java.time.Duration;
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /**
- * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
- * XML conversion based on a time interval.
+ * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
+ * interval.
  */
 public class Agent extends AgentBase {
 
@@ -55,12 +55,14 @@ public class Agent extends AgentBase {
 		if (timer != null) {
 			timer.stop();
 		}
-		dumpReport();
+		if (options.shouldDumpOnExit()) {
+			dumpReport();
+		}
 	}
 
 	/**
-	 * Dumps the current execution data, converts it and writes it to the
-	 * {@link #store}. Logs any errors, never throws an exception.
+	 * Dumps the current execution data, converts it and writes it to the {@link #store}. Logs any errors, never throws
+	 * an exception.
 	 */
 	private void dumpReport() {
 		logger.debug("Starting dump");

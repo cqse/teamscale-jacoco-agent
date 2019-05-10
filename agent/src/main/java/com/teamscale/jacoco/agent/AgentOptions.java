@@ -75,6 +75,10 @@ public class AgentOptions {
 	 */
 	/* package */ int dumpIntervalInMinutes = 60;
 
+
+	/** Whether to dump coverage when the JVM shuts down. */
+	/* package */ boolean shouldDumpOnExit = true;
+
 	/**
 	 * Whether to ignore duplicate, non-identical class files.
 	 */
@@ -313,5 +317,10 @@ public class AgentOptions {
 	/** Whether coverage should be dumped in regular intervals. */
 	public boolean shouldDumpInIntervals() {
 		return dumpIntervalInMinutes > 0;
+	}
+
+	/** Whether coverage should be dumped on JVM shutdown. */
+	public boolean shouldDumpOnExit() {
+		return shouldDumpOnExit;
 	}
 }
