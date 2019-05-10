@@ -31,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -207,7 +206,7 @@ public class AgentOptions {
 	}
 
 	private File getTempFile(final String prefix, final String extension) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.US);
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
 		return new File(outputDirectory.toFile(),
 				prefix + "-" + dateFormat.format(new Date()) + "." + extension);
 	}
