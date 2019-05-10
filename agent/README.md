@@ -140,10 +140,26 @@ finished via a REST API. The corresponding server listens at the specified port.
   (Recommended port is 8123)
   
 The agent's REST API has the following endpoints:
-- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
-- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
+- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
+- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
+  The body of the request may optionally contain the test execution result in json format:
+```json
+{
+ "result": "ERROR",
+ "message": "<stacktrace>|<ignore reason>"
+}
+```
+
+`result` can be one of:
+- `PASSED` Test execution was successful. 
+- `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore or @Disabled).
+- `SKIPPED` Caused by a failing assumption.
+- `FAILURE` Caused by a failing assertion.
+- `ERROR` Caused by an error during test execution (e.g. exception thrown).
+
+(`uniformPath` and `durationMillis` is set automatically)
   
 The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.

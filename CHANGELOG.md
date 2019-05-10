@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [feature] The agent now optionally accepts test execution results via /test/end
 
 # 11.3.0
 - [breaking change] The convert tool now uses wildcard patterns for the class matching (was ant pattern before)
