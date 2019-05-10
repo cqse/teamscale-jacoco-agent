@@ -159,6 +159,9 @@ public class AgentOptionsParser {
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
+			case "mode":
+				options.mode = AgentOptions.EMode.valueOf(value.toUpperCase());
+				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
 				return true;

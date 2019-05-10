@@ -12,9 +12,7 @@ import spark.Request;
 import spark.Response;
 
 import static spark.Spark.get;
-import static spark.Spark.port;
 import static spark.Spark.post;
-import static spark.Spark.stop;
 
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens for test events.
@@ -27,16 +25,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** Constructor. */
 	public TestwiseCoverageAgent(AgentOptions options) throws IllegalStateException {
 		super(options);
-		initServer();
 	}
 
-	/**
-	 * Starts the http server, which waits for information about started and finished tests.
-	 */
-	private void initServer() {
-		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
-		port(options.getHttpServerPort());
-
+	@Override
+	protected void initServerEndpoints() {
 		get("/test", (request, response) -> controller.getSessionId());
 
 		post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
@@ -78,10 +70,5 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 		response.status(204);
 		return "";
-	}
-
-	@Override
-	protected void prepareShutdown() {
-		stop();
 	}
 }

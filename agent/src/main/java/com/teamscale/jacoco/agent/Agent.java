@@ -11,17 +11,25 @@ import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
+import spark.Request;
+import spark.Response;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Optional;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
+import static spark.Spark.get;
+import static spark.Spark.post;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
  * interval.
  */
 public class Agent extends AgentBase {
+
+	/** Path parameter placeholder used in the http requests. */
+	private static final String PARTITION_PARAMETER = ":partition";
 
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
@@ -48,6 +56,52 @@ public class Agent extends AgentBase {
 			timer.start();
 			logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
 		}
+		if (options.getTeamscaleServerOptions().partition != null) {
+			controller.setSessionId(options.getTeamscaleServerOptions().partition);
+		}
+	}
+
+	@Override
+	protected void initServerEndpoints() {
+		get("/partition", (request, response) -> Optional.ofNullable(options.teamscaleServer.partition).orElse(""));
+
+		post("/dump", this::handleDump);
+		post("/reset", this::handleReset);
+		post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
+	}
+
+	/** Handles dumping a XML coverage report for coverage collected until now. */
+	private String handleDump(Request request, Response response) {
+		logger.debug("Dumping report triggered via HTTP request");
+		dumpReport();
+		response.status(204);
+		return "";
+	}
+
+	/** Handles resetting of coverage. */
+	private String handleReset(Request request, Response response) {
+		logger.debug("Resetting coverage triggered via HTTP request");
+		controller.reset();
+		response.status(204);
+		return "";
+	}
+
+	/** Handles setting the partition name. */
+	private String handleSetPartition(Request request, Response response) {
+		String partition = request.params(PARTITION_PARAMETER);
+		if (partition == null || partition.isEmpty()) {
+			logger.error("Partition missing in " + request.url() + "! Expected /partition/Some%20Partition%20Name.");
+
+			response.status(400);
+			return "Partition name is missing!";
+		}
+
+		logger.debug("Changing partition name to " + partition);
+		controller.setSessionId(partition);
+		options.teamscaleServer.partition = partition;
+
+		response.status(204);
+		return "";
 	}
 
 	@Override
