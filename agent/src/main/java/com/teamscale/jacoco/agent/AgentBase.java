@@ -6,9 +6,12 @@ import org.slf4j.Logger;
 
 import java.lang.instrument.Instrumentation;
 
+import static spark.Spark.port;
+import static spark.Spark.stop;
+
 /**
- * Base class for agent implementations. Handles logger shutdown,
- * store creation and instantiation of the {@link JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
+ * JacocoRuntimeController}.
  * <p>
  * Subclasses must handle dumping into the store.
  */
@@ -20,10 +23,14 @@ public abstract class AgentBase {
 	/** Controls the JaCoCo runtime. */
 	protected final JacocoRuntimeController controller;
 
+	/** The agent options. */
+	protected AgentOptions options;
+
 	private static LoggingUtils.LoggingResources loggingResources;
 
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
+		this.options = options;
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
@@ -32,7 +39,23 @@ public abstract class AgentBase {
 		}
 
 		logger.info("Starting JaCoCo agent with options: {}", options.getOriginalOptionsString());
+		if (options.getHttpServerPort() != null) {
+			initServer();
+		}
 	}
+
+	/**
+	 * Starts the http server, which waits for information about started and finished tests.
+	 */
+	private void initServer() {
+		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
+		port(options.getHttpServerPort());
+
+		initServerEndpoints();
+	}
+
+	/** Adds the endpoints that are available in the implemented mode. */
+	protected abstract void initServerEndpoints();
 
 	/** Called by the actual premain method once the agent is isolated from the rest of the application. */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
@@ -62,11 +85,13 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Registers a shutdown hook that stops the timer and dumps coverage a final
-	 * time.
+	 * Registers a shutdown hook that stops the timer and dumps coverage a final time.
 	 */
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			if (options.getHttpServerPort() != null) {
+				stop();
+			}
 			prepareShutdown();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
 			loggingResources.close();
@@ -74,5 +99,6 @@ public abstract class AgentBase {
 	}
 
 	/** Called when the shutdown hook is triggered. */
-	protected abstract void prepareShutdown();
+	protected void prepareShutdown() {
+	}
 }

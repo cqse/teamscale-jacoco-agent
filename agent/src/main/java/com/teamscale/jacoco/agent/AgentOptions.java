@@ -70,10 +70,17 @@ public class AgentOptions {
 	 */
 	/* package */ List<Path> additionalMetaDataFiles = new ArrayList<>();
 
+	/** Whether the agent should be run in testwise coverage mode or normal mode. */
+	/* package */ EMode mode = EMode.NORMAL;
+
 	/**
 	 * The interval in minutes for dumping XML data.
 	 */
 	/* package */ int dumpIntervalInMinutes = 60;
+
+
+	/** Whether to dump coverage when the JVM shuts down. */
+	/* package */ boolean shouldDumpOnExit = true;
 
 	/**
 	 * Whether to ignore duplicate, non-identical class files.
@@ -189,9 +196,7 @@ public class AgentOptions {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
 
-		additionalJacocoOptions.forEach((key, value) -> {
-			builder.append(",").append(key).append("=").append(value);
-		});
+		additionalJacocoOptions.forEach((key, value) -> builder.append(",").append(key).append("=").append(value));
 
 		return builder.toString();
 	}
@@ -271,7 +276,7 @@ public class AgentOptions {
 
 	/** Returns whether the config indicates to use Test Impact mode. */
 	private boolean useTestwiseCoverageMode() {
-		return httpServerPort != null || testEnvironmentVariable != null;
+		return mode == EMode.TESTWISE;
 	}
 
 	/**
@@ -313,5 +318,26 @@ public class AgentOptions {
 	/** Whether coverage should be dumped in regular intervals. */
 	public boolean shouldDumpInIntervals() {
 		return dumpIntervalInMinutes > 0;
+	}
+
+	/** Whether coverage should be dumped on JVM shutdown. */
+	public boolean shouldDumpOnExit() {
+		return shouldDumpOnExit;
+	}
+
+	/** Describes the two possible modes the agent can be started in. */
+	public enum EMode {
+
+		/**
+		 * The default mode which produces JaCoCo XML coverage files on exit, in a defined interval or when triggered
+		 * via an HTTP endpoint. Each dump produces a new file containing the all collected coverage.
+		 */
+		NORMAL,
+
+		/**
+		 * Testwise coverage mode in which the agent only dumps when triggered via an HTTP endpoint. Coverage is written
+		 * as exec and appended into a single file.
+		 */
+		TESTWISE
 	}
 }
