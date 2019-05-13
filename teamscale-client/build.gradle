@@ -6,9 +6,9 @@ plugins {
 version teamscaleClientVersion
 
 dependencies {
-    api group: 'com.squareup.retrofit2', name: 'retrofit', version: '2.4.0'
+    api 'com.squareup.retrofit2:retrofit:2.5.0'
     
-    implementation group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.4.0'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.5.0'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.8.0'

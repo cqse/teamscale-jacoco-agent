@@ -1,9 +1,10 @@
 package com.teamscale
 
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
+import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -67,9 +68,10 @@ class TeamscalePluginTest {
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
         assertThat(testwiseCoverageReportFile).exists()
 
+        val source = Okio.buffer(Okio.source(testwiseCoverageReportFile))
         val testwiseCoverageReport =
-            Gson().fromJson(testwiseCoverageReportFile.reader(), TestwiseCoverageReport::class.java)
-        assertThat(testwiseCoverageReport)
+            Moshi.Builder().build().adapter(TestwiseCoverageReport::class.java).fromJson(source)
+        assertThat(testwiseCoverageReport!!)
             .containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
             .containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
             .containsExecutionResult(

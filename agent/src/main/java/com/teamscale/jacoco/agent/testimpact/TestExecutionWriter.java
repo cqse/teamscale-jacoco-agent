@@ -1,10 +1,13 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.google.gson.Gson;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import com.teamscale.report.testwise.model.TestExecution;
+import okio.BufferedSink;
+import okio.Okio;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +15,9 @@ import java.util.List;
 /** Helper class for writing a list of test executions to a file. */
 public class TestExecutionWriter {
 
-	private static final Gson GSON = new Gson();
+	/** JSON adapter for test executions. */
+	private JsonAdapter<List<TestExecution>> testExecutionsAdapter = new Moshi.Builder().build()
+			.adapter(Types.newParameterizedType(List.class, TestExecution.class));
 
 	private List<TestExecution> testExecutionsList = new ArrayList<>();
 
@@ -28,8 +33,8 @@ public class TestExecutionWriter {
 		if (!testExecutionFile.exists()) {
 			this.testExecutionFile.createNewFile();
 		}
-		FileWriter writer = new FileWriter(testExecutionFile);
-		GSON.toJson(testExecutionsList, writer);
-		writer.close();
+		try (BufferedSink writer = Okio.buffer(Okio.sink(testExecutionFile))) {
+			testExecutionsAdapter.toJson(writer, testExecutionsList);
+		}
 	}
 }

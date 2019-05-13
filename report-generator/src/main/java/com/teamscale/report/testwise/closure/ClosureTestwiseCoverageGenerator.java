@@ -1,16 +1,19 @@
 package com.teamscale.report.testwise.closure;
 
-import com.google.gson.Gson;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonReader;
+import com.squareup.moshi.Moshi;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.closure.model.ClosureCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
+import okio.BufferedSource;
+import okio.Okio;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,6 +33,10 @@ public class ClosureTestwiseCoverageGenerator {
 
 	/** Include filter to apply to all js files contained in the original Closure coverage report. */
 	private Predicate<String> locationIncludeFilter;
+
+	/** JSON adapter for google closure coverage. */
+	private JsonAdapter<ClosureCoverage> closureCoverageAdapter = new Moshi.Builder().build()
+			.adapter(ClosureCoverage.class);
 
 	/**
 	 * Create a new generator with a collection of report files.
@@ -68,19 +75,18 @@ public class ClosureTestwiseCoverageGenerator {
 	 * the method returns null.
 	 */
 	private TestCoverageBuilder readTestCoverage(File file) {
-		try {
-			FileReader fileReader = new FileReader(file);
-			ClosureCoverage coverage = new Gson().fromJson(fileReader, ClosureCoverage.class);
+		try (BufferedSource source = Okio.buffer(Okio.source(file))){
+			ClosureCoverage coverage = closureCoverageAdapter.fromJson(JsonReader.of(source));
 			return convertToTestCoverage(coverage);
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
 	/** Converts the given {@link ClosureCoverage} to {@link TestCoverageBuilder}. */
 	private TestCoverageBuilder convertToTestCoverage(ClosureCoverage coverage) {
-		if (StringUtils.isEmpty(coverage.uniformPath)) {
+		if (coverage == null || StringUtils.isEmpty(coverage.uniformPath)) {
 			return null;
 		}
 		TestCoverageBuilder testCoverage = new TestCoverageBuilder(coverage.uniformPath);

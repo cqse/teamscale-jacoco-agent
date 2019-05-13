@@ -5,7 +5,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 
 import java.io.File;
 import java.util.Base64;
@@ -34,7 +34,7 @@ public class TeamscaleServiceGenerator {
 		Retrofit retrofit = new Retrofit.Builder()
 				.baseUrl(baseUrl)
 				.client(client)
-				.addConverterFactory(GsonConverterFactory.create())
+				.addConverterFactory(MoshiConverterFactory.create())
 				.build();
 		return retrofit.create(serviceClass);
 	}

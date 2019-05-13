@@ -5,7 +5,8 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.google.gson.Gson;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.AgentOptions;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
@@ -23,7 +24,10 @@ import static spark.Spark.post;
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
-	private static final Gson GSON = new Gson();
+
+	/** JSON adapter for test executions. */
+	private JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
+			.adapter(TestExecution.class);
 
 	/** Path parameter placeholder used in the http requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
@@ -86,7 +90,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 		if (!request.body().isEmpty()) {
 			try {
-				TestExecution testExecution = GSON.fromJson(request.body(), TestExecution.class);
+				TestExecution testExecution = testExecutionJsonAdapter.fromJson(request.body());
+				if (testExecution == null) {
+					return "";
+				}
 				testExecution.setUniformPath(testId);
 				long endTimestamp = System.currentTimeMillis();
 				testExecution.setDurationMillis(endTimestamp - startTimestamp);

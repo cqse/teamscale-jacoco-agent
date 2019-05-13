@@ -9,14 +9,14 @@ import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static com.teamscale.report.ReportUtils.getReportAsString;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /** Tests for {@link ClosureTestwiseCoverageGenerator}. */
 @RunWith(JUnit4.class)
@@ -24,10 +24,10 @@ public class ClosureTestwiseCoverageGeneratorTest extends CCSMTestCaseBase {
 
 	/** Tests that the JSON reports produce the expected result. */
 	@Test
-	public void testTestwiseReportGeneration() throws IOException {
+	public void testTestwiseReportGeneration() throws Exception {
 		String actual = runGenerator("closure");
-		assertThat(actual)
-				.isEqualToNormalizingWhitespace(FileSystemUtils.readFileUTF8(useTestFile("closure/report.json.expected")));
+		JSONAssert.assertEquals(FileSystemUtils.readFileUTF8(useTestFile("closure/report.json.expected")), actual,
+				JSONCompareMode.STRICT);
 	}
 
 	/** Runs the report generator. */
