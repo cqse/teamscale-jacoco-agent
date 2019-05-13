@@ -5,11 +5,15 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.testimpact;
 
+import com.google.gson.Gson;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.AgentOptions;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
+import com.teamscale.report.testwise.model.TestExecution;
 import spark.Request;
 import spark.Response;
+
+import java.io.IOException;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -19,12 +23,23 @@ import static spark.Spark.post;
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
+	private static final Gson GSON = new Gson();
+
 	/** Path parameter placeholder used in the http requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
 
+
+	/** Helper for writing test executions to disk. */
+	private final TestExecutionWriter testExecutionWriter;
+
+	/** The timestamp at which the /test/start endpoint has been called last time. */
+	private long startTimestamp;
+
 	/** Constructor. */
-	public TestwiseCoverageAgent(AgentOptions options) throws IllegalStateException {
+	public TestwiseCoverageAgent(AgentOptions options,
+								 TestExecutionWriter testExecutionWriter) throws IllegalStateException {
 		super(options);
+		this.testExecutionWriter = testExecutionWriter;
 	}
 
 	@Override
@@ -50,6 +65,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		// Dump and reset coverage so that we only record coverage that belongs to this particular test case.
 		controller.reset();
 		controller.setSessionId(testId);
+		startTimestamp = System.currentTimeMillis();
 
 		response.status(204);
 		return "";
@@ -67,6 +83,18 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 		logger.debug("End test " + testId);
 		controller.dump();
+
+		if (!request.body().isEmpty()) {
+			try {
+				TestExecution testExecution = GSON.fromJson(request.body(), TestExecution.class);
+				testExecution.setUniformPath(testId);
+				long endTimestamp = System.currentTimeMillis();
+				testExecution.setDurationMillis(endTimestamp - startTimestamp);
+				testExecutionWriter.append(testExecution);
+			} catch (IOException e) {
+				logger.error("Failed to store test execution: " + e.getMessage(), e);
+			}
+		}
 
 		response.status(204);
 		return "";

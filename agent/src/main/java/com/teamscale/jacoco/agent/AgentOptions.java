@@ -15,6 +15,7 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
+import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
@@ -30,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -204,12 +204,16 @@ public class AgentOptions {
 	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
 		if (useTestwiseCoverageMode()) {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.US);
-			return "sessionid=,destfile=" + new File(outputDirectory.toFile(),
-					"jacoco-" + dateFormat.format(new Date()) + ".exec").getAbsolutePath();
+			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
 			return "output=none";
 		}
+	}
+
+	private File getTempFile(final String prefix, final String extension) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
+		return new File(outputDirectory.toFile(),
+				prefix + "-" + dateFormat.format(new Date()) + "." + extension);
 	}
 
 	/**
@@ -218,7 +222,7 @@ public class AgentOptions {
 	 */
 	public AgentBase createAgent() throws UploadStoreException {
 		if (useTestwiseCoverageMode()) {
-			return new TestwiseCoverageAgent(this);
+			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
 			return new Agent(this);
 		}

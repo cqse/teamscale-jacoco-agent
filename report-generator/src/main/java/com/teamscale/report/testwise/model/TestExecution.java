@@ -32,19 +32,19 @@ public class TestExecution implements Serializable {
 	 * was parameterized, this path is expected to reflect the parameter in some
 	 * manner.
 	 */
-	private final String uniformPath;
+	private String uniformPath;
 
 	/** Duration of the execution in milliseconds. */
-	private final long durationMillis;
+	private long durationMillis;
 
 	/** The actual execution result state. */
-	private final ETestExecutionResult result;
+	private ETestExecutionResult result;
 
 	/**
 	 * Optional message given for test failures (normally contains a stack trace).
 	 * May be {@code null}.
 	 */
-	private final String message;
+	private String message;
 
 	public TestExecution(String name, long durationMillis, ETestExecutionResult result) {
 		this(name, durationMillis, result, null);
@@ -67,6 +67,7 @@ public class TestExecution implements Serializable {
 		return durationMillis / 1000.0;
 	}
 
+	/** @see #result */
 	public ETestExecutionResult getResult() {
 		return result;
 	}
@@ -76,7 +77,28 @@ public class TestExecution implements Serializable {
 		return message;
 	}
 
+	/** @see #uniformPath */
 	public String getUniformPath() {
 		return uniformPath;
+	}
+
+	/** @see #uniformPath */
+	public void setUniformPath(String uniformPath) {
+		this.uniformPath = uniformPath;
+	}
+
+	/** @see #durationMillis */
+	public void setDurationMillis(long durationMillis) {
+		this.durationMillis = durationMillis;
+	}
+
+	/** @see #result */
+	public void setResult(ETestExecutionResult result) {
+		this.result = result;
+	}
+
+	/** @see #message */
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }
