@@ -19,7 +19,7 @@ ext {
 	// When upgrading JaCoCo to a newer version make sure to
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.kt.
-	jacocoVersion = '0.8.3'
+	jacocoVersion = '0.8.4'
 	log4jVersion = '2.8.2'
 
 	// For deploying Jars you have to configure SSH keys locally and on the CQSE share server.
