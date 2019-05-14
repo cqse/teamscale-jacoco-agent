@@ -78,7 +78,7 @@ public abstract class AgentBase {
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 		logger.info("Starting JaCoCo's agent");
-		org.jacoco.agent.rt.internal_1f1cc91.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
+		org.jacoco.agent.rt.internal_035b120.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
 		AgentBase agent = agentOptions.createAgent();
 		agent.registerShutdownHook();

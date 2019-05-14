@@ -1,8 +1,8 @@
 package com.teamscale.report.testwise.jacoco;
 
 import com.teamscale.client.TestDetails;
-import com.teamscale.report.ReportUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
+import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
@@ -11,10 +11,11 @@ import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
 import com.teamscale.report.util.AntPatternIncludeFilter;
 import com.teamscale.report.util.ILogger;
-import org.assertj.core.api.Assertions;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 	public void testSmokeTestTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/cqddl/report.json.expected"));
-		Assertions.assertThat(report).isEqualToNormalizingWhitespace(expected);
+		JSONAssert.assertEquals(expected, report, JSONCompareMode.STRICT);
 	}
 
 	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
@@ -39,7 +40,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends CCSMTestCaseBase {
 	public void testSampleTestwiseReportGeneration() throws Exception {
 		String report = runGenerator("jacoco/sample/classes.zip", "jacoco/sample/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/sample/report.json.expected"));
-		Assertions.assertThat(report).isEqualTo(expected);
+		JSONAssert.assertEquals(expected, report, JSONCompareMode.STRICT);
 	}
 
 	/** Runs the report generator. */

@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.report.util.CommandLineLogger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -154,7 +155,8 @@ public class AgentOptionsTest {
 				"**.war. The pattern **.war did not match any files in");
 	}
 
-	private void assertInputInWorkingDirectoryMatches(String workingDir, String input, String expected) throws AgentOptionParseException {
+	private void assertInputInWorkingDirectoryMatches(String workingDir, String input,
+													  String expected) throws AgentOptionParseException {
 		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
 		File actualFile = getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input);
 		File expectedFile = new File(testFolder.getRoot(), expected);
@@ -174,6 +176,6 @@ public class AgentOptionsTest {
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new DummyLogger());
+		return new AgentOptionsParser(new CommandLineLogger());
 	}
 }
