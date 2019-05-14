@@ -27,21 +27,15 @@ public class ReportUtils {
 		if (!directory.isDirectory() && !directory.mkdirs()) {
 			throw new IOException("Failed to create directory " + directory.getAbsolutePath());
 		}
-		try (BufferedSink writer = Okio.buffer(Okio.sink(reportFile))) {
+		try (BufferedSink sink = Okio.buffer(Okio.sink(reportFile))) {
 			JsonAdapter<T> test = moshi.adapter((Class<T>) report.getClass()).indent("\t");
-			test.toJson(writer, report);
+			test.toJson(sink, report);
 		}
 	}
 
 	/** Converts to given report to a json string. */
 	public static <T> String getReportAsString(T report) {
 		return moshi.adapter((Class<T>) report.getClass()).indent("\t").toJson(report);
-	}
-
-	/** Recursively lists all files in the given directory that match the specified extension. */
-	public static <T> List<T> readObjects(ETestArtifactFormat format, Class<T[]> clazz,
-										  File... directoriesOrFiles) throws IOException {
-		return readObjects(format, clazz, Arrays.asList(directoriesOrFiles));
 	}
 
 	/** Recursively lists all files in the given directory that match the specified extension. */
@@ -58,11 +52,6 @@ public class ReportUtils {
 			}
 		}
 		return result;
-	}
-
-	/** Recursively lists all files of the given artifact type. */
-	public static List<File> listFiles(ETestArtifactFormat format, File... directoriesOrFiles) {
-		return listFiles(format, Arrays.asList(directoriesOrFiles));
 	}
 
 	/** Recursively lists all files of the given artifact type. */

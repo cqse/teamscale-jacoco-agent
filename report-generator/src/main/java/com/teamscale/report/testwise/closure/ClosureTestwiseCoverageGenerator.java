@@ -9,6 +9,7 @@ import com.teamscale.report.testwise.closure.model.ClosureCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
+import com.teamscale.report.util.ILogger;
 import okio.BufferedSource;
 import okio.Okio;
 
@@ -34,8 +35,11 @@ public class ClosureTestwiseCoverageGenerator {
 	/** Include filter to apply to all js files contained in the original Closure coverage report. */
 	private Predicate<String> locationIncludeFilter;
 
+	/** The logger. */
+	private final ILogger logger;
+
 	/** JSON adapter for google closure coverage. */
-	private JsonAdapter<ClosureCoverage> closureCoverageAdapter = new Moshi.Builder().build()
+	private final JsonAdapter<ClosureCoverage> closureCoverageAdapter = new Moshi.Builder().build()
 			.adapter(ClosureCoverage.class);
 
 	/**
@@ -45,9 +49,10 @@ public class ClosureTestwiseCoverageGenerator {
 	 * @param locationIncludeFilter      Filter for js files
 	 */
 	public ClosureTestwiseCoverageGenerator(Collection<File> closureCoverageDirectories,
-											Predicate<String> locationIncludeFilter) {
+											Predicate<String> locationIncludeFilter, ILogger logger) {
 		this.closureCoverageDirectories = closureCoverageDirectories;
 		this.locationIncludeFilter = locationIncludeFilter;
+		this.logger = logger;
 	}
 
 	/**
@@ -75,11 +80,11 @@ public class ClosureTestwiseCoverageGenerator {
 	 * the method returns null.
 	 */
 	private TestCoverageBuilder readTestCoverage(File file) {
-		try (BufferedSource source = Okio.buffer(Okio.source(file))){
+		try (BufferedSource source = Okio.buffer(Okio.source(file))) {
 			ClosureCoverage coverage = closureCoverageAdapter.fromJson(JsonReader.of(source));
 			return convertToTestCoverage(coverage);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Error while reading closure coverage from " + file.getAbsolutePath() + "!", e);
 			return null;
 		}
 	}

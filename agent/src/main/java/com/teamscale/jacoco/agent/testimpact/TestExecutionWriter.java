@@ -16,10 +16,10 @@ import java.util.List;
 public class TestExecutionWriter {
 
 	/** JSON adapter for test executions. */
-	private JsonAdapter<List<TestExecution>> testExecutionsAdapter = new Moshi.Builder().build()
+	private final JsonAdapter<List<TestExecution>> testExecutionsAdapter = new Moshi.Builder().build()
 			.adapter(Types.newParameterizedType(List.class, TestExecution.class));
 
-	private List<TestExecution> testExecutionsList = new ArrayList<>();
+	private final List<TestExecution> testExecutionsList = new ArrayList<>();
 
 	private final File testExecutionFile;
 
@@ -33,8 +33,8 @@ public class TestExecutionWriter {
 		if (!testExecutionFile.exists()) {
 			this.testExecutionFile.createNewFile();
 		}
-		try (BufferedSink writer = Okio.buffer(Okio.sink(testExecutionFile))) {
-			testExecutionsAdapter.toJson(writer, testExecutionsList);
+		try (BufferedSink sink = Okio.buffer(Okio.sink(testExecutionFile))) {
+			testExecutionsAdapter.toJson(sink, testExecutionsList);
 		}
 	}
 }

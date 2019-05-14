@@ -11,7 +11,6 @@ import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
 import com.teamscale.report.util.AntPatternIncludeFilter;
 import com.teamscale.report.util.ILogger;
-import org.assertj.core.api.Assertions;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
 import org.junit.Test;

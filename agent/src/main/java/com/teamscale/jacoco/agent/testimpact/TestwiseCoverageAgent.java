@@ -24,13 +24,12 @@ import static spark.Spark.post;
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
-
-	/** JSON adapter for test executions. */
-	private JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
-			.adapter(TestExecution.class);
-
 	/** Path parameter placeholder used in the http requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
+
+	/** JSON adapter for test executions. */
+	private final JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
+			.adapter(TestExecution.class);
 
 
 	/** Helper for writing test executions to disk. */

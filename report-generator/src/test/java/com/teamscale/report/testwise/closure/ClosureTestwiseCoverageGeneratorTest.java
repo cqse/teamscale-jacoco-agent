@@ -3,6 +3,7 @@ package com.teamscale.report.testwise.closure;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGeneratorTest;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.util.AntPatternIncludeFilter;
+import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.CCSMTestCaseBase;
@@ -36,7 +37,7 @@ public class ClosureTestwiseCoverageGeneratorTest extends CCSMTestCaseBase {
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
 				Arrays.asList("**/google-closure-library/**", "**.soy.generated.js", "soyutils_usegoog.js"));
 		TestwiseCoverage testwiseCoverage = new ClosureTestwiseCoverageGenerator(
-				Collections.singletonList(coverageFolder), includeFilter)
+				Collections.singletonList(coverageFolder), includeFilter, new CommandLineLogger())
 				.readTestCoverage();
 		return getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
 	}

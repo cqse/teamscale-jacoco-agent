@@ -149,11 +149,12 @@ open class TeamscaleReportTask : DefaultTask() {
         val testwiseCoverage = jaCoCoTestwiseReportGenerator.convert(jacocoExecutionData)
 
         val jsCoverageData = ReportUtils.listFiles(ETestArtifactFormat.CLOSURE, artifacts)
-        if (!jsCoverageData.isEmpty()) {
+        if (jsCoverageData.isNotEmpty()) {
             testwiseCoverage.add(
                 ClosureTestwiseCoverageGenerator(
                     jsCoverageData,
-                    closureIncludeFilter.getPredicate()
+                    closureIncludeFilter.getPredicate(),
+                    logger.wrapInILogger()
                 ).readTestCoverage()
             )
         }
