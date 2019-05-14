@@ -87,11 +87,13 @@ public class TestwiseCoverageAgent extends AgentBase {
 		logger.debug("End test " + testId);
 		controller.dump();
 
+		// Test execution is optional
 		if (!request.body().isEmpty()) {
 			try {
 				TestExecution testExecution = testExecutionJsonAdapter.fromJson(request.body());
 				if (testExecution == null) {
-					return "";
+					response.status(400);
+					return "Test execution may not be null!";
 				}
 				testExecution.setUniformPath(testId);
 				long endTimestamp = System.currentTimeMillis();
