@@ -1,12 +1,14 @@
 We use [semantic versioning][semver]
 
 # Next version
+
+# 13.0.0
 - [feature] added `dump-on-exit` option
 - [breaking change] added `mode` option (Must be set for Testwise Coverage mode. `http-server-port` or `test-env` alone is no longer sufficient)
 - [feature] The agent now optionally accepts test execution results via /test/end
 - [feature] Support for Java 12
 
-# 11.3.0
+# 12.0.0
 - [breaking change] The convert tool now uses wildcard patterns for the class matching (was ant pattern before)
 - [breaking change] The agent returns the correct 204 and 400 status codes in Testwise Coverage mode
 
