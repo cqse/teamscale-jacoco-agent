@@ -15,19 +15,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Stateful builder for the {@link Instruction}s of a method. All instructions
- * of a method must be added in their original sequence along with additional
- * information like line numbers. Afterwards the instructions can be obtained
+ * Stateful builder for the {@link Instruction}s of a method. All instructions of a method must be added in their
+ * original sequence along with additional information like line numbers. Afterwards the instructions can be obtained
  * with the <code>getInstructions()</code> method.
  * <p>
- * It's core is a copy of {@link org.jacoco.core.internal.analysis.InstructionsBuilder} that has been
- * extended with caching functionality to speed up report generation.
+ * It's core is a copy of {@link org.jacoco.core.internal.analysis.InstructionsBuilder} that has been extended with
+ * caching functionality to speed up report generation.
  * <p>
- * This class contains callbacks for stepping through a method at bytecode level which has been
- * decorated with probes by JaCoCo in a depth-first-search like way.
+ * This class contains callbacks for stepping through a method at bytecode level which has been decorated with probes by
+ * JaCoCo in a depth-first-search like way.
  * <p>
- * Changes that have been applied to the original class are marked with ADDED and REMOVED comments to make it as easy
- * as possible to adjust the implementation to new versions of JaCoCo.
+ * Changes that have been applied to the original class are marked with ADDED and REMOVED comments to make it as easy as
+ * possible to adjust the implementation to new versions of JaCoCo.
  * <p>
  * When updating JaCoCo make a diff of the previous {@link org.jacoco.core.internal.analysis.InstructionsBuilder}
  * implementation and the new implementation and update this class accordingly.
@@ -48,8 +47,7 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	private Instruction currentInsn;
 
 	/**
-	 * All instructions of a method mapped from the ASM node to the
-	 * corresponding {@link Instruction} instance.
+	 * All instructions of a method mapped from the ASM node to the corresponding {@link Instruction} instance.
 	 */
 	private final Map<AbstractInsnNode, Instruction> instructions;
 
@@ -61,18 +59,16 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	private final List<Label> currentLabel;
 
 	/**
-	 * List of all jumps within the control flow. We need to store jumps
-	 * temporarily as the target {@link Instruction} may not been known yet.
+	 * List of all jumps within the control flow. We need to store jumps temporarily as the target {@link Instruction}
+	 * may not been known yet.
 	 */
 	private final List<Jump> jumps;
 
 
 	/**
-	 * Creates a new builder instance which can be used to analyze a single
-	 * method.
+	 * Creates a new builder instance which can be used to analyze a single method.
 	 * <p>
-	 * ADDED ClassCoverageLookup classCoverageLookup parameter
-	 * REMOVED final boolean[] probes
+	 * ADDED ClassCoverageLookup classCoverageLookup parameter REMOVED final boolean[] probes
 	 *
 	 * @param classCoverageLookup cache of the class' probes
 	 */
@@ -87,18 +83,17 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	}
 
 	/**
-	 * Sets the current source line. All subsequently added instructions will be
-	 * assigned to this line. If no line is set (e.g. for classes compiled
-	 * without debug information) {@link ISourceNode#UNKNOWN_LINE} is assigned
-	 * to the instructions.
+	 * Sets the current source line. All subsequently added instructions will be assigned to this line. If no line is
+	 * set (e.g. for classes compiled without debug information) {@link ISourceNode#UNKNOWN_LINE} is assigned to the
+	 * instructions.
 	 */
 	void setCurrentLine(final int line) {
 		currentLine = line;
 	}
 
 	/**
-	 * Adds a label which applies to the subsequently added instruction. Due to
-	 * ASM internals multiple {@link Label}s can be added to an instruction.
+	 * Adds a label which applies to the subsequently added instruction. Due to ASM internals multiple {@link Label}s
+	 * can be added to an instruction.
 	 */
 	void addLabel(final Label label) {
 		currentLabel.add(label);
@@ -108,8 +103,8 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	}
 
 	/**
-	 * Adds a new instruction. Instructions are by default linked with the
-	 * previous instruction unless specified otherwise.
+	 * Adds a new instruction. Instructions are by default linked with the previous instruction unless specified
+	 * otherwise.
 	 */
 	void addInstruction(final AbstractInsnNode node) {
 		final Instruction insn = new Instruction(currentLine);
@@ -128,9 +123,8 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	}
 
 	/**
-	 * Declares that the next instruction will not be a successor of the current
-	 * instruction. This is the case with an unconditional jump or technically
-	 * when a probe was inserted before.
+	 * Declares that the next instruction will not be a successor of the current instruction. This is the case with an
+	 * unconditional jump or technically when a probe was inserted before.
 	 */
 	void noSuccessor() {
 		currentInsn = null;
@@ -163,8 +157,8 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	}
 
 	/**
-	 * Returns the status for all instructions of this method. This method must
-	 * be called exactly once after the instructions have been added.
+	 * Returns the status for all instructions of this method. This method must be called exactly once after the
+	 * instructions have been added.
 	 */
 	public void fillCache() {
 		// Wire jumps:
@@ -180,7 +174,11 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 			Instruction instruction = coveredProbe.instruction;
 			Set<Integer> coveredLines = new HashSet<>();
 			while (instruction != null) {
-				coveredLines.add(instruction.getLine());
+				if (instruction.getLine() != -1) {
+					// Only add the line number if one is associated with the instruction.
+					// This is not the case for e.g. Lombok generated code.
+					coveredLines.add(instruction.getLine());
+				}
 				instruction = getPredecessor(instruction);
 			}
 			classCoverageLookup.addProbe(coveredProbe.probeId, coveredLines);
@@ -188,9 +186,8 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	}
 
 	/**
-	 * ADDED
-	 * Helper to get the private field predecessor from an instruction. The predecessor of an instruction
-	 * is the preceding node according to the control flow graph of the method.
+	 * ADDED Helper to get the private field predecessor from an instruction. The predecessor of an instruction is the
+	 * preceding node according to the control flow graph of the method.
 	 */
 	private Instruction getPredecessor(Instruction instruction) {
 		try {

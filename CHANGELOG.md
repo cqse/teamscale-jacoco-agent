@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [fix] Prevent `-1` to show up as covered line in Testwise Coverage report
 
 # 13.0.0
 - [feature] added `dump-on-exit` option
