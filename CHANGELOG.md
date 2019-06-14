@@ -1,6 +1,8 @@
 We use [semantic versioning][semver]
 
 # Next version
+
+# 13.0.1
 - [fix] Prevent `-1` to show up as covered line in Testwise Coverage report
 
 # 13.0.0
