@@ -1,12 +1,12 @@
 package com.teamscale.report.testwise.jacoco;
 
+import com.teamscale.report.EDuplicateClassFileBehavior;
+import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.AnalyzerCache;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.cache.ProbesCache;
-import com.teamscale.report.jacoco.dump.Dump;
-import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -14,7 +14,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -37,7 +37,8 @@ class CachingExecutionDataReader {
 	/**
 	 * Analyzes the given class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter, EDuplicateClassFileBehavior duplicateClassFileBehavior) throws CoverageGenerationException {
+	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter,
+								 EDuplicateClassFileBehavior duplicateClassFileBehavior) throws CoverageGenerationException {
 		if (probesCache != null) {
 			return;
 		}
@@ -63,15 +64,34 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	public TestwiseCoverage buildCoverage(List<Dump> dumps, Predicate<String> locationIncludeFilter) {
-		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
-		for (Dump dump : dumps) {
+	public DumpConsumer buildCoverageConsumer(Predicate<String> locationIncludeFilter) {
+		return new DumpConsumer(logger, locationIncludeFilter);
+	}
+
+	public class DumpConsumer implements Consumer<Dump> {
+
+		/** The logger. */
+		private final ILogger logger;
+
+		/** The location include filter to be applied on the profiled classes. */
+		private final Predicate<String> locationIncludeFilter;
+
+		/** The collected testwise coverage. */
+		private final TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+
+		private DumpConsumer(ILogger logger, Predicate<String> locationIncludeFilter) {
+			this.logger = logger;
+			this.locationIncludeFilter = locationIncludeFilter;
+		}
+
+		@Override
+		public void accept(Dump dump) {
 			String testId = dump.info.getId();
 			if (testId.isEmpty()) {
 				// Ignore intermediate coverage that does not belong to any specific test
 				logger.debug("Found a session with empty name! This could indicate that coverage is dumped also for " +
 						"coverage in between tests or that the given test name was empty");
-				continue;
+				return;
 			}
 			try {
 				TestCoverageBuilder testCoverage = buildCoverage(testId, dump.store, locationIncludeFilter);
@@ -80,18 +100,23 @@ class CachingExecutionDataReader {
 				logger.error("Failed to generate coverage for test " + testId + "! Skipping to the next test.", e);
 			}
 		}
-		return testwiseCoverage;
-	}
 
-	/**
-	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
-	 */
-	private TestCoverageBuilder buildCoverage(String testId, ExecutionDataStore executionDataStore, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
-		TestCoverageBuilder testCoverage = new TestCoverageBuilder(testId);
-		for (ExecutionData executionData : executionDataStore.getContents()) {
-			testCoverage.add(probesCache.getCoverage(executionData, locationIncludeFilter));
+		/**
+		 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
+		 */
+		private TestCoverageBuilder buildCoverage(String testId, ExecutionDataStore executionDataStore,
+												  Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
+			TestCoverageBuilder testCoverage = new TestCoverageBuilder(testId);
+			for (ExecutionData executionData : executionDataStore.getContents()) {
+				testCoverage.add(probesCache.getCoverage(executionData, locationIncludeFilter));
+			}
+			probesCache.flushLogger();
+			return testCoverage;
 		}
-		probesCache.flushLogger();
-		return testCoverage;
+
+		/** Returns the collected testwise coverage report object. */
+		public TestwiseCoverage getTestwiseCoverage() {
+			return testwiseCoverage;
+		}
 	}
 }

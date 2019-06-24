@@ -1,8 +1,8 @@
 package com.teamscale.report.testwise.jacoco;
 
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
@@ -15,9 +15,8 @@ import org.jacoco.core.data.SessionInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -40,55 +39,79 @@ public class JaCoCoTestwiseReportGenerator {
 	 * @param locationIncludeFilter     Filter for class files
 	 * @param logger                    The logger
 	 */
-	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter, EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) throws CoverageGenerationException {
+	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives,
+										 Predicate<String> locationIncludeFilter,
+										 EDuplicateClassFileBehavior duplicateClassFileBehavior,
+										 ILogger logger) throws CoverageGenerationException {
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.executionDataReader = new CachingExecutionDataReader(logger);
-		this.executionDataReader.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, duplicateClassFileBehavior);
+		this.executionDataReader
+				.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, duplicateClassFileBehavior);
 	}
 
 	/** Converts the given dumps to a report. */
 	public TestwiseCoverage convert(Collection<File> executionDataFiles) throws IOException {
-		TestwiseCoverage aggregatedTestwiseCoverage = new TestwiseCoverage();
+		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
+				.buildCoverageConsumer(locationIncludeFilter);
 		for (File executionDataFile : executionDataFiles) {
-			aggregatedTestwiseCoverage.add(executionDataReader.buildCoverage(readDumps(executionDataFile), locationIncludeFilter));
+			readAndConsumeDumps(executionDataFile, dumpConsumer);
 		}
-		return aggregatedTestwiseCoverage;
+		return dumpConsumer.getTestwiseCoverage();
 	}
 
 	/** Converts the given dumps to a report. */
 	public TestwiseCoverage convert(File executionDataFile) throws IOException {
-		return executionDataReader.buildCoverage(readDumps(executionDataFile), locationIncludeFilter);
+		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
+				.buildCoverageConsumer(locationIncludeFilter);
+		readAndConsumeDumps(executionDataFile, dumpConsumer);
+		return dumpConsumer.getTestwiseCoverage();
 	}
 
 	/** Reads the dumps from the given *.exec file. */
-	private List<Dump> readDumps(File executionDataFile) throws IOException {
+	private void readAndConsumeDumps(File executionDataFile, Consumer<Dump> dumpConsumer) throws IOException {
 		FileInputStream input = new FileInputStream(executionDataFile);
 		ExecutionDataReader executionDataReader = new ExecutionDataReader(input);
-		DumpCollector dumpCollector = new DumpCollector();
-		executionDataReader.setExecutionDataVisitor(dumpCollector);
-		executionDataReader.setSessionInfoVisitor(dumpCollector);
+		DumpCallback dumpCallback = new DumpCallback(dumpConsumer);
+		executionDataReader.setExecutionDataVisitor(dumpCallback);
+		executionDataReader.setSessionInfoVisitor(dumpCallback);
 		executionDataReader.read();
-		return dumpCollector.dumps;
+		// Ensure that the last read dump is also consumed
+		dumpCallback.processDump();
 	}
 
-	/** Collects dumps per session. */
-	private static class DumpCollector implements IExecutionDataVisitor, ISessionInfoVisitor {
+	/** Collects execution information per session and passes it to the consumer . */
+	private static class DumpCallback implements IExecutionDataVisitor, ISessionInfoVisitor {
 
-		/** List of dumps. */
-		public final List<Dump> dumps = new ArrayList<>();
+		/** The dump that is currently being read. */
+		private Dump currentDump = null;
 
 		/** The store to which coverage is currently written to. */
 		private ExecutionDataStore store;
 
+		/** The consumer to pass {@link Dump}s to. */
+		private Consumer<Dump> dumpConsumer;
+
+		private DumpCallback(Consumer<Dump> dumpConsumer) {
+			this.dumpConsumer = dumpConsumer;
+		}
+
 		@Override
 		public void visitSessionInfo(SessionInfo info) {
+			processDump();
 			store = new ExecutionDataStore();
-			dumps.add(new Dump(info, store));
+			currentDump = new Dump(info, store);
 		}
 
 		@Override
 		public void visitClassExecution(ExecutionData data) {
 			store.put(data);
+		}
+
+		private void processDump() {
+			if (currentDump != null) {
+				dumpConsumer.accept(currentDump);
+				currentDump = null;
+			}
 		}
 	}
 }
