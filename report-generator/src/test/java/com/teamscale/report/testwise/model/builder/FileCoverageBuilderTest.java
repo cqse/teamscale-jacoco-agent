@@ -1,6 +1,7 @@
 package com.teamscale.report.testwise.model.builder;
 
 import com.teamscale.report.testwise.model.LineRange;
+import com.teamscale.report.util.IntSet;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.junit.Test;
 
@@ -16,7 +17,9 @@ public class FileCoverageBuilderTest {
 	@Test
 	public void compactifyRanges() {
 		Set<Integer> input = CollectionUtils.asHashSet(1, 3, 4, 6, 7, 10);
-		List<LineRange> result = FileCoverageBuilder.compactifyToRanges(input);
+		IntSet intSet = new IntSet();
+		intSet.addAll(input);
+		List<LineRange> result = FileCoverageBuilder.compactifyToRanges(intSet);
 		assertEquals("[1, 3-4, 6-7, 10]", result.toString());
 	}
 
