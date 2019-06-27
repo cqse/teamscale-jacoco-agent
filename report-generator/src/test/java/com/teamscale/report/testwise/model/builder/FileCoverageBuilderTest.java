@@ -1,31 +1,35 @@
 package com.teamscale.report.testwise.model.builder;
 
 import com.teamscale.report.testwise.model.LineRange;
-import com.teamscale.report.util.IntSet;
-import org.conqat.lib.commons.collections.CollectionUtils;
-import org.junit.Test;
+import com.teamscale.report.util.SortedIntList;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /** Tests the {@link FileCoverageBuilder} class. */
-public class FileCoverageBuilderTest {
+class FileCoverageBuilderTest {
 
 	/** Tests the compactification algorithm for line ranges. */
 	@Test
-	public void compactifyRanges() {
-		Set<Integer> input = CollectionUtils.asHashSet(1, 3, 4, 6, 7, 10);
-		IntSet intSet = new IntSet();
-		intSet.addAll(input);
-		List<LineRange> result = FileCoverageBuilder.compactifyToRanges(intSet);
-		assertEquals("[1, 3-4, 6-7, 10]", result.toString());
+	void compactifyRanges() {
+		SortedIntList sortedIntList = new SortedIntList();
+		sortedIntList.add(1);
+		sortedIntList.add(3);
+		sortedIntList.add(4);
+		sortedIntList.add(6);
+		sortedIntList.add(7);
+		sortedIntList.add(10);
+		List<LineRange> result = FileCoverageBuilder.compactifyToRanges(sortedIntList);
+		assertThat(result).hasToString("[1, 3-4, 6-7, 10]");
 	}
 
 	/** Tests the merge of two {@link FileCoverageBuilder} objects. */
 	@Test
-	public void mergeDoesMergeRanges() {
+	void mergeDoesMergeRanges() {
 		FileCoverageBuilder fileCoverage = new FileCoverageBuilder("path", "file");
 		fileCoverage.addLine(1);
 		fileCoverage.addLineRange(3, 4);
@@ -35,23 +39,23 @@ public class FileCoverageBuilderTest {
 		fileCoverage.addLineRange(1, 3);
 		fileCoverage.addLineRange(12, 14);
 		fileCoverage.merge(otherFileCoverage);
-		assertEquals("1-4,7-10,12-14", fileCoverage.computeCompactifiedRangesAsString());
+		assertThat(fileCoverage.computeCompactifiedRangesAsString()).isEqualTo("1-4,7-10,12-14");
 	}
 
 	/** Tests that two {@link FileCoverageBuilder} objects from different files throws an exception. */
-	@Test(expected = AssertionError.class)
-	public void mergeDoesNotAllowMergeOfTwoDifferentFiles() {
+	@Test
+	void mergeDoesNotAllowMergeOfTwoDifferentFiles() {
 		FileCoverageBuilder fileCoverage = new FileCoverageBuilder("path", "file");
 		fileCoverage.addLine(1);
 
 		FileCoverageBuilder otherFileCoverage = new FileCoverageBuilder("path", "file2");
 		fileCoverage.addLineRange(1, 3);
-		fileCoverage.merge(otherFileCoverage);
+		assertThatCode(() -> fileCoverage.merge(otherFileCoverage)).isInstanceOf(AssertionError.class);
 	}
 
 	/** Tests the transformation from line ranges into its string representation. */
 	@Test
-	public void getRangesAsString() {
+	void getRangesAsString() {
 		FileCoverageBuilder fileCoverage = new FileCoverageBuilder("path", "file");
 		fileCoverage.addLine(1);
 		fileCoverage.addLineRange(3, 4);

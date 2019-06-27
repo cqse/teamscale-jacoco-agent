@@ -4,12 +4,10 @@ import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGeneratorTest;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.util.AntPatternIncludeFilter;
 import com.teamscale.report.util.CommandLineLogger;
+import com.teamscale.test.TestDataBase;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.test.CCSMTestCaseBase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
@@ -20,12 +18,11 @@ import java.util.Collections;
 import static com.teamscale.report.ReportUtils.getReportAsString;
 
 /** Tests for {@link ClosureTestwiseCoverageGenerator}. */
-@RunWith(JUnit4.class)
-public class ClosureTestwiseCoverageGeneratorTest extends CCSMTestCaseBase {
+public class ClosureTestwiseCoverageGeneratorTest extends TestDataBase {
 
 	/** Tests that the JSON reports produce the expected result. */
 	@Test
-	public void testTestwiseReportGeneration() throws Exception {
+	void testTestwiseReportGeneration() throws Exception {
 		String actual = runGenerator("closure");
 		JSONAssert.assertEquals(FileSystemUtils.readFileUTF8(useTestFile("closure/report.json.expected")), actual,
 				JSONCompareMode.STRICT);
