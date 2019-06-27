@@ -3,6 +3,7 @@ package com.teamscale.report.testwise;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonWriter;
 import com.squareup.moshi.Moshi;
+import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.factory.TestInfoFactory;
@@ -21,28 +22,39 @@ public class TestwiseCoverageReportWriter implements Consumer<TestCoverageBuilde
 	/** Factory for converting {@link TestCoverageBuilder} objects to {@link TestInfo}s. */
 	private final TestInfoFactory testInfoFactory;
 
-	/** Writer instance to where the {@link com.teamscale.report.testwise.model.TestwiseCoverageReport} is written to. */
-	private final JsonWriter writer;
-
 	/** Adapter instance for converting {@link TestInfo} objects to JSON. */
 	private final JsonAdapter<TestInfo> testInfoJsonAdapter;
 
-	public TestwiseCoverageReportWriter(TestInfoFactory testInfoFactory, File outputFile) throws IOException {
-		this.testInfoFactory = testInfoFactory;
-		testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class).indent("\t");
+	private final File outputFile;
+	/** After how many written tests a new file should be started. */
+	private final int splitAfter;
 
-		writer = JsonWriter.of(Okio.buffer(Okio.sink(outputFile)));
-		writer.beginObject();
-		writer.name("tests");
-		writer.beginArray();
+	/** Writer instance to where the {@link com.teamscale.report.testwise.model.TestwiseCoverageReport} is written to. */
+	private JsonWriter writer;
+
+	/** Number of tests written to the file. */
+	private int testsWritten = 0;
+
+	/** Number of test files that have been written. */
+	private int testFileCounter = 0;
+
+	public TestwiseCoverageReportWriter(TestInfoFactory testInfoFactory, File outputFile,
+										int splitAfter) throws IOException {
+		this.testInfoFactory = testInfoFactory;
+		this.outputFile = outputFile;
+		this.splitAfter = splitAfter;
+		this.testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class).indent("\t");
+
+		startReport();
 	}
 
 	@Override
 	public void accept(TestCoverageBuilder testCoverageBuilder) {
 		TestInfo testInfo = testInfoFactory.createFor(testCoverageBuilder);
 		try {
-			testInfoJsonAdapter.toJson(writer, testInfo);
+			writeTestInfo(testInfo);
 		} catch (IOException e) {
+			// Need to be wrapped in RuntimeException as Consumer does not allow to throw a checked Exception
 			throw new RuntimeException("Writing test info to report failed.", e);
 		}
 	}
@@ -50,8 +62,37 @@ public class TestwiseCoverageReportWriter implements Consumer<TestCoverageBuilde
 	@Override
 	public void close() throws IOException {
 		for (TestInfo testInfo : testInfoFactory.createTestInfosWithoutCoverage()) {
-			testInfoJsonAdapter.toJson(writer, testInfo);
+			writeTestInfo(testInfo);
 		}
+		endReport();
+	}
+
+	private void startReport() throws IOException {
+		testFileCounter++;
+		writer = JsonWriter.of(Okio.buffer(Okio.sink(getOutputFile(testFileCounter))));
+		writer.beginObject();
+		writer.name("tests");
+		writer.beginArray();
+	}
+
+	private File getOutputFile(int testFileCounter) {
+		String name = this.outputFile.getName();
+		name = StringUtils.stripSuffix(name, ".json");
+		name = name + "-" + testFileCounter + ".json";
+		return new File(this.outputFile.getParent(), name);
+	}
+
+	private void writeTestInfo(TestInfo testInfo) throws IOException {
+		if (testsWritten >= splitAfter) {
+			endReport();
+			testsWritten = 0;
+			startReport();
+		}
+		testInfoJsonAdapter.toJson(writer, testInfo);
+		testsWritten++;
+	}
+
+	private void endReport() throws IOException {
 		writer.endArray();
 		writer.endObject();
 		writer.close();

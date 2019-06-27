@@ -94,7 +94,7 @@ public class Converter {
 					"Writing report with " + testDetails.size() + " Details/" + testExecutions.size() + " Results");
 
 			try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
-					arguments.getOutputFile())) {
+					arguments.getOutputFile(), arguments.getSplitAfter())) {
 				for (File executionDataFile : jacocoExecutionDataList) {
 					generator.convertAndConsume(executionDataFile, coverageWriter);
 				}
