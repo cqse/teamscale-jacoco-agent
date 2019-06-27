@@ -1,8 +1,5 @@
 package com.teamscale.report.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Performant implementation of a deduplicated sorted integer list that assumes that insertions mainly happen at the end
  * and that input is already sorted.
@@ -57,40 +54,36 @@ public class SortedIntList {
 		return count;
 	}
 
-	public List<Integer> getSortedList() {
-		ArrayList<Integer> result = new ArrayList<>(count);
-		for (int i = 0; i < count; i++) {
-			result.add(list[i]);
-		}
-		return result;
-	}
 
 	public void addAll(SortedIntList input) {
-		int[] a = list;
-		int aSize = count;
-		int[] b = input.list;
-		int bSize = input.count;
-		list = new int[count + input.count];
-		int aIndex = 0;
-		int bIndex = 0;
-		int index = 0;
-		while (aIndex < aSize && bIndex < bSize) {
-			if (a[aIndex] < b[bIndex]) {
-				list[index++] = a[aIndex++];
-			} else if (a[aIndex] == b[bIndex]) {
-				list[index++] = a[aIndex++];
-				bIndex++;
-			} else {
-				list[index++] = b[bIndex++];
-			}
+		for (int i = 0; i < input.size(); i++) {
+			add(input.get(i));
 		}
-		while (aIndex < aSize) {
-			list[index++] = a[aIndex++];
-		}
-		while (bIndex < bSize) {
-			list[index++] = b[bIndex++];
-		}
-		count = index;
+//		int[] a = list;
+//		int aSize = count;
+//		int[] b = input.list;
+//		int bSize = input.count;
+//		list = new int[count + input.count];
+//		int aIndex = 0;
+//		int bIndex = 0;
+//		int index = 0;
+//		while (aIndex < aSize && bIndex < bSize) {
+//			if (a[aIndex] < b[bIndex]) {
+//				list[index++] = a[aIndex++];
+//			} else if (a[aIndex] == b[bIndex]) {
+//				list[index++] = a[aIndex++];
+//				bIndex++;
+//			} else {
+//				list[index++] = b[bIndex++];
+//			}
+//		}
+//		while (aIndex < aSize) {
+//			list[index++] = a[aIndex++];
+//		}
+//		while (bIndex < bSize) {
+//			list[index++] = b[bIndex++];
+//		}
+//		count = index;
 	}
 
 	public boolean isEmpty() {
