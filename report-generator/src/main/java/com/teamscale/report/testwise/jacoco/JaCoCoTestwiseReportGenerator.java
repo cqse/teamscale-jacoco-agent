@@ -13,9 +13,11 @@ import org.jacoco.core.data.IExecutionDataVisitor;
 import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -68,7 +70,7 @@ public class JaCoCoTestwiseReportGenerator {
 
 	/** Reads the dumps from the given *.exec file. */
 	private void readAndConsumeDumps(File executionDataFile, Consumer<Dump> dumpConsumer) throws IOException {
-		FileInputStream input = new FileInputStream(executionDataFile);
+		InputStream input = new BufferedInputStream(new FileInputStream(executionDataFile));
 		ExecutionDataReader executionDataReader = new ExecutionDataReader(input);
 		DumpCallback dumpCallback = new DumpCallback(dumpConsumer);
 		executionDataReader.setExecutionDataVisitor(dumpCallback);
