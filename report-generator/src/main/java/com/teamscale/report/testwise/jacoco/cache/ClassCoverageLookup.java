@@ -3,6 +3,7 @@ package com.teamscale.report.testwise.jacoco.cache;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
+import com.teamscale.report.util.SortedIntList;
 import org.jacoco.core.data.ExecutionData;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class ClassCoverageLookup {
 	/**
 	 * Mapping from probe IDs to sets of covered lines. The index in this list corresponds to the probe ID.
 	 */
-	private final List<Set<Integer>> probes = new ArrayList<>();
+	private final List<SortedIntList> probes = new ArrayList<>();
 
 	/**
 	 * Constructor.
@@ -53,7 +54,7 @@ public class ClassCoverageLookup {
 	}
 
 	/** Adds the probe with the given id to the method. */
-	public void addProbe(int probeId, Set<Integer> lines) {
+	public void addProbe(int probeId, SortedIntList lines) {
 		ensureArraySize(probeId);
 		probes.set(probeId, lines);
 	}
@@ -98,7 +99,7 @@ public class ClassCoverageLookup {
 
 	private void fillFileCoverage(FileCoverageBuilder fileCoverage, boolean[] executedProbes, ILogger logger) {
 		for (int i = 0; i < probes.size(); i++) {
-			Set<Integer> coveredLines = probes.get(i);
+			SortedIntList coveredLines = probes.get(i);
 			if (!executedProbes[i]) {
 				continue;
 			}

@@ -2,12 +2,10 @@ package com.teamscale.report.testwise.model.builder;
 
 import com.teamscale.report.testwise.model.FileCoverage;
 import com.teamscale.report.testwise.model.LineRange;
-import com.teamscale.report.util.IntSet;
+import com.teamscale.report.util.SortedIntList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /** Holds coverage of a single file. */
@@ -22,7 +20,7 @@ public class FileCoverageBuilder {
 	/**
 	 * A list of line numbers that have been covered. Using a set here is too memory intensive.
 	 */
-	private final IntSet coveredLines = new IntSet();
+	private final SortedIntList coveredLines = new SortedIntList();
 
 	/** Constructor. */
 	public FileCoverageBuilder(String path, String file) {
@@ -53,7 +51,7 @@ public class FileCoverageBuilder {
 	}
 
 	/** Adds set of lines as covered. */
-	public void addLines(Set<Integer> range) {
+	public void addLines(SortedIntList range) {
 		coveredLines.addAll(range);
 	}
 
@@ -62,29 +60,26 @@ public class FileCoverageBuilder {
 		if (!other.fileName.equals(fileName) || !other.path.equals(path)) {
 			throw new AssertionError("Cannot merge coverage of two different files! This is a bug!");
 		}
-		for (int i : other.coveredLines.getSortedList()) {
-			coveredLines.add(i);
-		}
+		coveredLines.addAll(other.coveredLines);
 	}
 
 	/**
 	 * Merges all neighboring line numbers to ranges. E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes
 	 * [[1-10],[12-14]]
 	 */
-	public static List<LineRange> compactifyToRanges(IntSet lines) {
+	public static List<LineRange> compactifyToRanges(SortedIntList lines) {
 		if (lines.size() == 0) {
 			return new ArrayList<>();
 		}
 
-		List<Integer> linesList = lines.getSortedList();
-
-		Integer firstLine = linesList.get(0);
+		int firstLine = lines.get(0);
 		LineRange currentRange = new LineRange(firstLine, firstLine);
 
 		List<LineRange> compactifiedRanges = new ArrayList<>();
 		compactifiedRanges.add(currentRange);
 
-		for (Integer currentLine : linesList) {
+		for (int i = 0; i < lines.size(); i++) {
+			int currentLine = lines.get(i);
 			if (currentRange.getEnd() == currentLine || currentRange.getEnd() == currentLine - 1) {
 				currentRange.setEnd(currentLine);
 			} else {
@@ -92,7 +87,6 @@ public class FileCoverageBuilder {
 				compactifiedRanges.add(currentRange);
 			}
 		}
-
 		return compactifiedRanges;
 	}
 
