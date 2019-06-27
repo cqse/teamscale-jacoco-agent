@@ -6,30 +6,35 @@ package com.teamscale.report.util;
  */
 public class SortedIntList {
 
+	/**
+	 * The list of values in sorted order and without duplicates. The list might be bigger than the number of elements.
+	 */
 	protected int[] list;
 
+	/** The number of actual elements in the list. */
 	private int count;
 
 	public SortedIntList() {
 		list = new int[64];
 	}
 
-	public boolean add(int key) {
+	/** Adds the given value to the list at the correct location, ignoring duplicates. */
+	public boolean add(int value) {
 		int high = count;
 		int low = 0;
 
 		if (isEmpty()) {
-			list[0] = key;
+			list[0] = value;
 			count = 1;
 			return true;
 		}
 
-		// Perform binary search to find
+		// Perform binary search to find target location
 		do {
 			int p = (low + high) >>> 1;
-			if (key < list[p]) {
+			if (value < list[p]) {
 				high = p;
-			} else if (key == list[p]) {
+			} else if (value == list[p]) {
 				// Element already exists in the list
 				return false;
 			} else {
@@ -43,53 +48,32 @@ public class SortedIntList {
 			list = n;
 		}
 
-		if (low < count)
+		if (low < count) {
 			System.arraycopy(list, low, list, low + 1, count - low);
-		list[low] = key;
+		}
+		list[low] = value;
 		count++;
 		return true;
 	}
 
-	public int size() {
-		return count;
-	}
-
-
+	/** Inserts all values from the given list, ignoring duplicates. */
 	public void addAll(SortedIntList input) {
 		for (int i = 0; i < input.size(); i++) {
 			add(input.get(i));
 		}
-//		int[] a = list;
-//		int aSize = count;
-//		int[] b = input.list;
-//		int bSize = input.count;
-//		list = new int[count + input.count];
-//		int aIndex = 0;
-//		int bIndex = 0;
-//		int index = 0;
-//		while (aIndex < aSize && bIndex < bSize) {
-//			if (a[aIndex] < b[bIndex]) {
-//				list[index++] = a[aIndex++];
-//			} else if (a[aIndex] == b[bIndex]) {
-//				list[index++] = a[aIndex++];
-//				bIndex++;
-//			} else {
-//				list[index++] = b[bIndex++];
-//			}
-//		}
-//		while (aIndex < aSize) {
-//			list[index++] = a[aIndex++];
-//		}
-//		while (bIndex < bSize) {
-//			list[index++] = b[bIndex++];
-//		}
-//		count = index;
 	}
 
+	/** Returns the size of the list. */
+	public int size() {
+		return count;
+	}
+
+	/** Returns whether the list is empty. */
 	public boolean isEmpty() {
 		return count == 0;
 	}
 
+	/** Returns the i-th element of the list. */
 	public int get(int i) {
 		return list[i];
 	}
