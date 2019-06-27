@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class SortedIntList {
 
-	private int[] list;
+	protected int[] list;
 
 	private int count;
 
