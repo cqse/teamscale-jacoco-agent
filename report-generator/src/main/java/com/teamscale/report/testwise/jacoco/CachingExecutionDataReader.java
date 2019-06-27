@@ -5,7 +5,6 @@ import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.AnalyzerCache;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.jacoco.cache.ProbesCache;
-import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
@@ -64,8 +63,9 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	public DumpConsumer buildCoverageConsumer(Predicate<String> locationIncludeFilter) {
-		return new DumpConsumer(logger, locationIncludeFilter);
+	public DumpConsumer buildCoverageConsumer(Predicate<String> locationIncludeFilter,
+											  Consumer<TestCoverageBuilder> nextConsumer) {
+		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
 
 	public class DumpConsumer implements Consumer<Dump> {
@@ -76,12 +76,14 @@ class CachingExecutionDataReader {
 		/** The location include filter to be applied on the profiled classes. */
 		private final Predicate<String> locationIncludeFilter;
 
-		/** The collected testwise coverage. */
-		private final TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+		/** Consumer that should be called with the newly built TestCoverageBuilder. */
+		private final Consumer<TestCoverageBuilder> nextConsumer;
 
-		private DumpConsumer(ILogger logger, Predicate<String> locationIncludeFilter) {
+		private DumpConsumer(ILogger logger, Predicate<String> locationIncludeFilter,
+							 Consumer<TestCoverageBuilder> nextConsumer) {
 			this.logger = logger;
 			this.locationIncludeFilter = locationIncludeFilter;
+			this.nextConsumer = nextConsumer;
 		}
 
 		@Override
@@ -95,7 +97,7 @@ class CachingExecutionDataReader {
 			}
 			try {
 				TestCoverageBuilder testCoverage = buildCoverage(testId, dump.store, locationIncludeFilter);
-				testwiseCoverage.add(testCoverage);
+				nextConsumer.accept(testCoverage);
 			} catch (CoverageGenerationException e) {
 				logger.error("Failed to generate coverage for test " + testId + "! Skipping to the next test.", e);
 			}
@@ -112,11 +114,6 @@ class CachingExecutionDataReader {
 			}
 			probesCache.flushLogger();
 			return testCoverage;
-		}
-
-		/** Returns the collected testwise coverage report object. */
-		public TestwiseCoverage getTestwiseCoverage() {
-			return testwiseCoverage;
 		}
 	}
 }

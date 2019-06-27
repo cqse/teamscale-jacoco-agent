@@ -4,6 +4,7 @@ import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -50,21 +51,19 @@ public class JaCoCoTestwiseReportGenerator {
 	}
 
 	/** Converts the given dumps to a report. */
-	public TestwiseCoverage convert(Collection<File> executionDataFiles) throws IOException {
+	public TestwiseCoverage convert(File executionDataFile) throws IOException {
+		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
-				.buildCoverageConsumer(locationIncludeFilter);
-		for (File executionDataFile : executionDataFiles) {
-			readAndConsumeDumps(executionDataFile, dumpConsumer);
-		}
-		return dumpConsumer.getTestwiseCoverage();
+				.buildCoverageConsumer(locationIncludeFilter, testwiseCoverage::add);
+		readAndConsumeDumps(executionDataFile, dumpConsumer);
+		return testwiseCoverage;
 	}
 
 	/** Converts the given dumps to a report. */
-	public TestwiseCoverage convert(File executionDataFile) throws IOException {
+	public void convertAndConsume(File executionDataFile, Consumer<TestCoverageBuilder> consumer) throws IOException {
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
-				.buildCoverageConsumer(locationIncludeFilter);
+				.buildCoverageConsumer(locationIncludeFilter, consumer);
 		readAndConsumeDumps(executionDataFile, dumpConsumer);
-		return dumpConsumer.getTestwiseCoverage();
 	}
 
 	/** Reads the dumps from the given *.exec file. */

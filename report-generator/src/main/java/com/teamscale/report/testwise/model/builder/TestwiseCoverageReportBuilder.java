@@ -55,12 +55,16 @@ public class TestwiseCoverageReportBuilder {
 		if (container != null) {
 			return container;
 		}
-		String shortenedUniformPath = uniformPath.replaceFirst("(.*\\))\\[.*]", "$1");
+		String shortenedUniformPath = stripParameterizedTestArguments(uniformPath);
 		TestInfoBuilder testInfoBuilder = report.tests.get(shortenedUniformPath);
 		if (testInfoBuilder == null) {
 			System.err.println("No container found for test '" + uniformPath + "'!");
 		}
 		return testInfoBuilder;
+	}
+
+	public static String stripParameterizedTestArguments(String uniformPath) {
+		return uniformPath.replaceFirst("(.*\\))\\[.*]", "$1");
 	}
 
 	private TestwiseCoverageReport build() {

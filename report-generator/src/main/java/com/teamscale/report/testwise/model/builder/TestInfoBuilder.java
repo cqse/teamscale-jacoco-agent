@@ -20,7 +20,8 @@ public class TestInfoBuilder {
 	private TestCoverageBuilder coverage;
 
 	/** Constructor. */
-	/* package */ TestInfoBuilder(String uniformPath) {
+	/* package */
+	public TestInfoBuilder(String uniformPath) {
 		this.uniformPath = uniformPath;
 	}
 
