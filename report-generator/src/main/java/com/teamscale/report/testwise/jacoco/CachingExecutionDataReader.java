@@ -68,6 +68,10 @@ class CachingExecutionDataReader {
 		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
 
+	/**
+	 * Consumer of {@link Dump} objects. Converts them to {@link TestCoverageBuilder} and passes them to the
+	 * nextConsumer.
+	 */
 	public class DumpConsumer implements Consumer<Dump> {
 
 		/** The logger. */
