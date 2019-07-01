@@ -42,6 +42,7 @@ task unitTest(type: TestImpacted) {
 		excludeTags 'integration'
 	}
 	teamscale.report.partition = 'Unit Tests'
+	jacoco.includes = [ 'com.example.project.*' ]
 	testLogging {
 		// events "started", "skipped", "failed"
 		exceptionFormat "short"
@@ -60,6 +61,8 @@ task integrationTest(type: TestImpacted) {
 	useJUnitPlatform {
 		includeTags 'integration'
 	}
+
+	jacoco.includes = [ 'com.example.project.*' ]
 	teamscale.report.partition = 'Integration Tests'
 }
 

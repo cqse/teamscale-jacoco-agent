@@ -70,14 +70,15 @@ public class JaCoCoTestwiseReportGenerator {
 
 	/** Reads the dumps from the given *.exec file. */
 	private void readAndConsumeDumps(File executionDataFile, Consumer<Dump> dumpConsumer) throws IOException {
-		InputStream input = new BufferedInputStream(new FileInputStream(executionDataFile));
-		ExecutionDataReader executionDataReader = new ExecutionDataReader(input);
-		DumpCallback dumpCallback = new DumpCallback(dumpConsumer);
-		executionDataReader.setExecutionDataVisitor(dumpCallback);
-		executionDataReader.setSessionInfoVisitor(dumpCallback);
-		executionDataReader.read();
-		// Ensure that the last read dump is also consumed
-		dumpCallback.processDump();
+		try (InputStream input = new BufferedInputStream(new FileInputStream(executionDataFile))) {
+			ExecutionDataReader executionDataReader = new ExecutionDataReader(input);
+			DumpCallback dumpCallback = new DumpCallback(dumpConsumer);
+			executionDataReader.setExecutionDataVisitor(dumpCallback);
+			executionDataReader.setSessionInfoVisitor(dumpCallback);
+			executionDataReader.read();
+			// Ensure that the last read dump is also consumed
+			dumpCallback.processDump();
+		}
 	}
 
 	/** Collects execution information per session and passes it to the consumer . */
