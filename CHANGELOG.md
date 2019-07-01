@@ -2,6 +2,14 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 14.0.0
+- [fix] Reduced memory requirements for generating testwise coverage.
+- [breaking change] When using the `convert` tool in `--testwise-coverage` mode the new `--split-after 5000` option will
+  break up testwise coverage files automatically after the specified number of tests written. This ensures that generated 
+  reports are small enough to be uploaded to Teamscale. Default is `5000`. The given output file will now be appended 
+  suffixed `-1`, `-2` etc.. If the specified output file is named `testwise_coverage.json` the actually written file 
+  will be called `testwise_coverage-1.json` for the first 5000 tests. For uploading multiple files use an upload session.
+
 # 13.0.1
 - [fix] Prevent `-1` to show up as covered line in Testwise Coverage report
 
