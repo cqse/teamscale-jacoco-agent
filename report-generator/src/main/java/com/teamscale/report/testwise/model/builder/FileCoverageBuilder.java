@@ -2,13 +2,11 @@ package com.teamscale.report.testwise.model.builder;
 
 import com.teamscale.report.testwise.model.FileCoverage;
 import com.teamscale.report.testwise.model.LineRange;
+import com.teamscale.report.util.SortedIntList;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /** Holds coverage of a single file. */
 public class FileCoverageBuilder {
@@ -19,8 +17,10 @@ public class FileCoverageBuilder {
 	/** The name of the file. */
 	private final String fileName;
 
-	/** A set of line numbers that have been covered. */
-	private final Set<Integer> coveredLines = new HashSet<>();
+	/**
+	 * A list of line numbers that have been covered. Using a set here is too memory intensive.
+	 */
+	private final SortedIntList coveredLines = new SortedIntList();
 
 	/** Constructor. */
 	public FileCoverageBuilder(String path, String file) {
@@ -45,11 +45,13 @@ public class FileCoverageBuilder {
 
 	/** Adds a line range as covered. */
 	public void addLineRange(int start, int end) {
-		coveredLines.addAll(IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList()));
+		for (int i = start; i <= end; i++) {
+			coveredLines.add(i);
+		}
 	}
 
 	/** Adds set of lines as covered. */
-	public void addLines(Set<Integer> range) {
+	public void addLines(SortedIntList range) {
 		coveredLines.addAll(range);
 	}
 
@@ -62,24 +64,22 @@ public class FileCoverageBuilder {
 	}
 
 	/**
-	 * Merges all overlapping and neighboring {@link LineRange}s. E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes
+	 * Merges all neighboring line numbers to ranges. E.g. a list of [[1-5],[3-7],[8-10],[12-14]] becomes
 	 * [[1-10],[12-14]]
 	 */
-	public static List<LineRange> compactifyToRanges(Set<Integer> lines) {
-		if (lines.isEmpty()) {
+	public static List<LineRange> compactifyToRanges(SortedIntList lines) {
+		if (lines.size() == 0) {
 			return new ArrayList<>();
 		}
 
-		List<Integer> linesList = new ArrayList<>(lines);
-		linesList.sort(Integer::compareTo);
-
-		Integer firstLine = linesList.get(0);
+		int firstLine = lines.get(0);
 		LineRange currentRange = new LineRange(firstLine, firstLine);
 
 		List<LineRange> compactifiedRanges = new ArrayList<>();
 		compactifiedRanges.add(currentRange);
 
-		for (Integer currentLine : linesList) {
+		for (int i = 0; i < lines.size(); i++) {
+			int currentLine = lines.get(i);
 			if (currentRange.getEnd() == currentLine || currentRange.getEnd() == currentLine - 1) {
 				currentRange.setEnd(currentLine);
 			} else {
@@ -87,7 +87,6 @@ public class FileCoverageBuilder {
 				compactifiedRanges.add(currentRange);
 			}
 		}
-
 		return compactifiedRanges;
 	}
 
@@ -102,7 +101,7 @@ public class FileCoverageBuilder {
 
 	/** Returns true if there is no coverage for the file yet. */
 	public boolean isEmpty() {
-		return coveredLines.isEmpty();
+		return coveredLines.size() == 0;
 	}
 
 	/** Builds the {@link FileCoverage} object, which is serialized into the report. */

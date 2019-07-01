@@ -146,7 +146,10 @@ open class TeamscaleReportTask : DefaultTask() {
         }
         logger.info("Generating testwise coverage for $jacocoExecutionData")
 
-        val testwiseCoverage = jaCoCoTestwiseReportGenerator.convert(jacocoExecutionData)
+        val testwiseCoverage = TestwiseCoverage()
+        for (file in jacocoExecutionData) {
+            testwiseCoverage.add(jaCoCoTestwiseReportGenerator.convert(file))
+        }
 
         val jsCoverageData = ReportUtils.listFiles(ETestArtifactFormat.CLOSURE, artifacts)
         if (jsCoverageData.isNotEmpty()) {
