@@ -21,18 +21,21 @@ class TestDataWriter {
 		this.reportDirectory = reportDirectory;
 	}
 
+	/** Writes the given test executions to a report file. */
 	void dumpTestExecutions(List<TestExecution> testExecutions) {
-		writeReport(new File(reportDirectory, "test-execution.json"), testExecutions);
+		File file = new File(reportDirectory, "test-execution.json");
+		try {
+			ReportUtils.writeTestExecutionReport(file, testExecutions);
+		} catch (IOException e) {
+			LOGGER.error(e, () -> "Error while writing report to file: " + file);
+		}
 	}
 
 	/** Writes the given test details to a report file. */
 	void dumpTestDetails(List<TestDetails> testDetails) {
-		writeReport(new File(reportDirectory, "test-list.json"), testDetails);
-	}
-
-	private static <T> void writeReport(File file, T report) {
+		File file = new File(reportDirectory, "test-list.json");
 		try {
-			ReportUtils.writeReportToFile(file, report);
+			ReportUtils.writeTestListReport(file, testDetails);
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error while writing report to file: " + file);
 		}

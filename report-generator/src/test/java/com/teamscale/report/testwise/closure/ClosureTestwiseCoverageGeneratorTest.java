@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static com.teamscale.report.ReportUtils.getReportAsString;
+import static com.teamscale.report.ReportUtils.getTestwiseCoverageReportAsString;
 
 /** Tests for {@link ClosureTestwiseCoverageGenerator}. */
 public class ClosureTestwiseCoverageGeneratorTest extends TestDataBase {
@@ -36,6 +36,7 @@ public class ClosureTestwiseCoverageGeneratorTest extends TestDataBase {
 		TestwiseCoverage testwiseCoverage = new ClosureTestwiseCoverageGenerator(
 				Collections.singletonList(coverageFolder), includeFilter, new CommandLineLogger())
 				.readTestCoverage();
-		return getReportAsString(JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
+		return getTestwiseCoverageReportAsString(
+				JaCoCoTestwiseReportGeneratorTest.generateDummyReportFrom(testwiseCoverage));
 	}
 }

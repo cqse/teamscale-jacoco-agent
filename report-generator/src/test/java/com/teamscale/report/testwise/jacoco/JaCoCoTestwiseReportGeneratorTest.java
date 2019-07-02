@@ -51,7 +51,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends TestDataBase {
 				Collections.singletonList(classFileFolder),
 				includeFilter, EDuplicateClassFileBehavior.IGNORE,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
-		return ReportUtils.getReportAsString(generateDummyReportFrom(testwiseCoverage));
+		return ReportUtils.getTestwiseCoverageReportAsString(generateDummyReportFrom(testwiseCoverage));
 	}
 
 	/** Generates a dummy coverage report object that wraps the given {@link TestwiseCoverage}. */

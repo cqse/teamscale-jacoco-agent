@@ -127,7 +127,7 @@ open class TeamscaleReportTask : DefaultTask() {
 
         val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
         logger.info("Writing report to ${reportConfig.reportFile}")
-        ReportUtils.writeReportToFile(reportConfig.reportFile, report)
+        ReportUtils.writeTestwiseCoverageReport(reportConfig.reportFile, report)
 
         if (reportConfig.upload) {
             uploadTask.reports.add(reportConfig)
