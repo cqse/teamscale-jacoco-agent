@@ -309,7 +309,7 @@ Three artifacts are needed:
      
      `result` can be one of:
      - `PASSED` Test execution was successful. 
-     - `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore).
+     - `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore or @Disabled).
      - `SKIPPED` Caused by a failing assumption.
      - `FAILURE` Caused by a failing assertion.
      - `ERROR` Caused by an error during test execution (e.g. exception thrown).

@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Encapsulates all command line options for the convert command for parsing
- * with {@link JCommander}.
+ * Encapsulates all command line options for the convert command for parsing with {@link JCommander}.
  */
 @Parameters(commandNames = "convert", commandDescription = "Converts a binary .exec coverage file to XML.")
 public class ConvertCommand implements ICommand {
@@ -71,10 +70,15 @@ public class ConvertCommand implements ICommand {
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
 	/* package */ boolean shouldIgnoreDuplicateClassFiles = false;
 
-	/** Whether to ignore duplicate, non-identical class files. */
+	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
 			"coverage or jacoco coverage should be generated.")
 	/* package */ boolean shouldGenerateTestwiseCoverage = false;
+
+	/** After how many tests testwise coverage should be split into multiple reports. */
+	@Parameter(names = {"--split-after", "-s"}, required = false, arity = 1, description = "After how many tests " +
+			"testwise coverage should be split into multiple reports (Default is 5000).")
+	private int splitAfter = 5000;
 
 	/** @see #classDirectoriesOrZips */
 	public List<File> getClassDirectoriesOrZips() {
@@ -114,6 +118,11 @@ public class ConvertCommand implements ICommand {
 	/** @see #outputFile */
 	public File getOutputFile() {
 		return new File(outputFile);
+	}
+
+	/** @see #splitAfter */
+	public int getSplitAfter() {
+		return splitAfter;
 	}
 
 	/** @see #shouldIgnoreDuplicateClassFiles */

@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
@@ -14,12 +15,13 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
+import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -27,12 +29,11 @@ import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Parses agent command line options.
@@ -69,10 +70,17 @@ public class AgentOptions {
 	 */
 	/* package */ List<Path> additionalMetaDataFiles = new ArrayList<>();
 
+	/** Whether the agent should be run in testwise coverage mode or normal mode. */
+	/* package */ EMode mode = EMode.NORMAL;
+
 	/**
 	 * The interval in minutes for dumping XML data.
 	 */
 	/* package */ int dumpIntervalInMinutes = 60;
+
+
+	/** Whether to dump coverage when the JVM shuts down. */
+	/* package */ boolean shouldDumpOnExit = true;
 
 	/**
 	 * Whether to validate SSL certificates or simply ignore them.
@@ -174,9 +182,9 @@ public class AgentOptions {
 				"If you want to upload data to an azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
-		List<Boolean> configuredStores = Arrays
-				.asList(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null).stream().filter(x -> x).collect(Collectors.toList());
+		List<Boolean> configuredStores = Stream
+				.of(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
+						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
 
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
 				"such as a teamscale instance, upload url or azure file storage");
@@ -196,9 +204,7 @@ public class AgentOptions {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
 
-		additionalJacocoOptions.forEach((key, value) -> {
-			builder.append(",").append(key).append("=").append(value);
-		});
+		additionalJacocoOptions.forEach((key, value) -> builder.append(",").append(key).append("=").append(value));
 
 		return builder.toString();
 	}
@@ -206,12 +212,16 @@ public class AgentOptions {
 	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
 		if (useTestwiseCoverageMode()) {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.US);
-			return "sessionid=,destfile=" + new File(outputDirectory.toFile(),
-					"jacoco-" + dateFormat.format(new Date()) + ".exec").getAbsolutePath();
+			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
 			return "output=none";
 		}
+	}
+
+	private File getTempFile(final String prefix, final String extension) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
+		return new File(outputDirectory.toFile(),
+				prefix + "-" + dateFormat.format(new Date()) + "." + extension);
 	}
 
 	/**
@@ -220,7 +230,7 @@ public class AgentOptions {
 	 */
 	public AgentBase createAgent() throws UploadStoreException {
 		if (useTestwiseCoverageMode()) {
-			return new TestwiseCoverageAgent(this);
+			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
 			return new Agent(this);
 		}
@@ -268,13 +278,17 @@ public class AgentOptions {
 	/**
 	 * @see #shouldIgnoreDuplicateClassFiles
 	 */
-	public boolean shouldIgnoreDuplicateClassFiles() {
-		return shouldIgnoreDuplicateClassFiles;
+	public EDuplicateClassFileBehavior duplicateClassFileBehavior() {
+		if (shouldIgnoreDuplicateClassFiles) {
+			return EDuplicateClassFileBehavior.WARN;
+		} else {
+			return EDuplicateClassFileBehavior.FAIL;
+		}
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */
 	private boolean useTestwiseCoverageMode() {
-		return httpServerPort != null || testEnvironmentVariable != null;
+		return mode == EMode.TESTWISE;
 	}
 
 	/**
@@ -316,5 +330,26 @@ public class AgentOptions {
 	/** Whether coverage should be dumped in regular intervals. */
 	public boolean shouldDumpInIntervals() {
 		return dumpIntervalInMinutes > 0;
+	}
+
+	/** Whether coverage should be dumped on JVM shutdown. */
+	public boolean shouldDumpOnExit() {
+		return shouldDumpOnExit;
+	}
+
+	/** Describes the two possible modes the agent can be started in. */
+	public enum EMode {
+
+		/**
+		 * The default mode which produces JaCoCo XML coverage files on exit, in a defined interval or when triggered
+		 * via an HTTP endpoint. Each dump produces a new file containing the all collected coverage.
+		 */
+		NORMAL,
+
+		/**
+		 * Testwise coverage mode in which the agent only dumps when triggered via an HTTP endpoint. Coverage is written
+		 * as exec and appended into a single file.
+		 */
+		TESTWISE
 	}
 }

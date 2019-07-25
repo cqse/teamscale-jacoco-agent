@@ -3,13 +3,16 @@ package com.teamscale.client;
 import eu.cqse.teamscale.client.HttpUtils;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 /** Helper class for generating a teamscale compatible service. */
 public class TeamscaleServiceGenerator {
@@ -20,13 +23,25 @@ public class TeamscaleServiceGenerator {
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(GsonConverterFactory.create()),
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
 				okHttpBuilder -> okHttpBuilder
 						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
 		);
 		return retrofit.create(serviceClass);
 	}
+public static <S> S createServiceWithRequestLogging(Class<S> serviceClass, HttpUrl baseUrl, String username,
+														String password, File file) {
+		Retrofit retrofit = HttpUtils.createRetrofit(
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
+				okHttpBuilder -> okHttpBuilder
+						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, accessToken))
+						.addInterceptor(new AcceptJsonInterceptor()
+						.addInterceptor(new FileLoggingInterceptor(file)))
+		);
+		return retrofit.create(serviceClass);
+	}
+
 
 	/**
 	 * Sets an <code>Accept: application/json</code> header on all requests.
@@ -52,4 +67,5 @@ public class TeamscaleServiceGenerator {
 			return chain.proceed(newRequest);
 		};
 	}
+
 }

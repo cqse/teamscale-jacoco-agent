@@ -6,7 +6,24 @@ We use [semantic versioning][semver]
   validation will be disabled from this version on
 - [fix] Agent uses higher timeouts (20s) for all HTTP connections to account for slow networks
 
-# 11.3.0
+# 14.0.0
+- [fix] Reduced memory requirements for generating testwise coverage.
+- [breaking change] When using the `convert` tool in `--testwise-coverage` mode the new `--split-after 5000` option will
+  break up testwise coverage files automatically after the specified number of tests written. This ensures that generated 
+  reports are small enough to be uploaded to Teamscale. Default is `5000`. The given output file will now be appended 
+  suffixed `-1`, `-2` etc.. If the specified output file is named `testwise_coverage.json` the actually written file 
+  will be called `testwise_coverage-1.json` for the first 5000 tests. For uploading multiple files use an upload session.
+
+# 13.0.1
+- [fix] Prevent `-1` to show up as covered line in Testwise Coverage report
+
+# 13.0.0
+- [feature] added `dump-on-exit` option
+- [breaking change] added `mode` option (Must be set for Testwise Coverage mode. `http-server-port` or `test-env` alone is no longer sufficient)
+- [feature] The agent now optionally accepts test execution results via /test/end
+- [feature] Support for Java 12
+
+# 12.0.0
 - [breaking change] The convert tool now uses wildcard patterns for the class matching (was ant pattern before)
 - [breaking change] The agent returns the correct 204 and 400 status codes in Testwise Coverage mode
 

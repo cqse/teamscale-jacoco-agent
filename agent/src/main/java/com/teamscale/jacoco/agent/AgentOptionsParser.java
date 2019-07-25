@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.report.util.ILogger;
@@ -13,7 +14,6 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -159,6 +159,11 @@ public class AgentOptionsParser {
 				return true;
 			case "ignore-duplicates":
 				options.shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
+			case "dump-on-exit":
+				options.shouldDumpOnExit = Boolean.parseBoolean(value);
+				return true;
+			case "mode":
+				options.mode = AgentOptions.EMode.valueOf(value.toUpperCase());
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
@@ -422,6 +427,10 @@ public class AgentOptionsParser {
 		// default to HTTP if no scheme is given
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			value = "http://" + value;
+		}
+		
+		if(!value.endsWith("/")) {
+			value += "/";
 		}
 
 		return HttpUrl.parse(value);

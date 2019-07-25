@@ -1,36 +1,32 @@
 package com.teamscale
 
 import com.teamscale.config.TeamscaleTaskExtension
-import com.teamscale.report.util.AntPatternUtils
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.GradleException
-import org.gradle.api.Project
-import org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestFramework
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.SourceSetContainer
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
+import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.api.tasks.testing.testng.TestNGOptions
-import org.gradle.process.internal.ExecActionFactory
-import java.io.File
-import java.util.regex.Pattern
-import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
+@CacheableTask
 open class TestImpacted : Test() {
+
+    companion object {
+        const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
+    }
 
     /** Command line switch to activate running all tests. */
     @Input
     @Option(
         option = "impacted",
-        description = "If set only impacted tests are executed."
+        description = "If set Testwise coverage is recorded. By default only impacted tests are executed."
     )
-    var onlyRunImpacted: Boolean = false
+    var runImpacted: Boolean = false
 
     /** Command line switch to activate running all tests. */
     @Input
@@ -46,46 +42,81 @@ open class TestImpacted : Test() {
     @Internal
     internal lateinit var taskExtension: TeamscaleTaskExtension
 
-    @get:Input
-    val reportConfiguration
+    private val reportConfiguration
+        @Input
         get() = taskExtension.report
 
-    @get:Input
-    val agentFilterConfiguration
+    private val agentFilterConfiguration
+        @Input
         get() = taskExtension.agent.getFilter()
 
-    @get:Input
-    val agentJvmConfiguration
+    private val agentJvmConfiguration
+        @Input
         get() = taskExtension.agent.getAllAgents().map { it.getJvmArgs() }
 
-    @get:Input
-    val serverConfiguration
+    private val serverConfiguration
+        @Input
         get() = taskExtension.parent.server
 
     /**
      * The (current) commit at which test details should be uploaded to.
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
-    val endCommit
-        @Input
+    private val endCommit
+        @Internal
         get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
 
-    /** The directory to write the jacoco execution data to. */
-    @Internal
-    private lateinit var tempDir: File
 
+    /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
+    private val baseline
+        @Input
+        @Optional
+        get() = taskExtension.parent.baseline
+
+    /**
+     * The directory to write the jacoco execution data to. Ensures that the directory
+     * is cleared before executing the task by Gradle.
+     */
+    private val reportOutputDir
+        @OutputDirectory
+        get() = taskExtension.agent.destination
+
+    /** The report task used to setup and cleanup report directories. */
     @Internal
     lateinit var reportTask: TeamscaleReportTask
+
+    @Internal
+    private var includeEngines: Set<String> = emptySet()
+
+    @Internal
+    private val junitPlatformOptions: JUnitPlatformOptions = JUnitPlatformOptions()
+
+    private val testEngineConfiguration: FileCollection
+        @InputFiles
+        @Classpath
+        get() = project.configurations.getByName(TeamscalePlugin.impactedTestEngineConfiguration)
 
     init {
         group = "Teamscale"
         description = "Executes the impacted tests and collects coverage per test case"
-        useJUnitPlatform()
     }
 
-    @Inject
-    protected open fun getExecActionFactory(): ExecActionFactory {
-        throw UnsupportedOperationException()
+    /** Overrides default behavior to only execute impacted tests. */
+    override fun useJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
+        testFrameworkConfigure.execute(junitPlatformOptions)
+
+        if (junitPlatformOptions.excludeEngines.contains(IMPACTED_TEST_ENGINE)) {
+            throw GradleException("Engine '$IMPACTED_TEST_ENGINE' can't be excluded in '$TestImpacted' Gradle task")
+        }
+
+        includeEngines = junitPlatformOptions.includeEngines
+
+        super.useJUnitPlatform {
+            it.excludeEngines = junitPlatformOptions.excludeEngines
+            it.includeEngines = setOf("teamscale-test-impacted")
+            it.includeTags = junitPlatformOptions.includeTags
+            it.excludeTags = junitPlatformOptions.excludeTags
+        }
     }
 
     override fun useJUnit() {
@@ -114,22 +145,9 @@ open class TestImpacted : Test() {
 
     @TaskAction
     override fun executeTests() {
-        if (!onlyRunImpacted) {
-            super.executeTests()
-            return
-        } else {
-            runImpactedTests()
-        }
-    }
+        classpath = classpath.plus(testEngineConfiguration)
 
-    private fun runImpactedTests() {
         jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
-
-        tempDir = taskExtension.agent.destination
-        if (tempDir.exists()) {
-            logger.debug("Removing old execution data file(s) at ${tempDir.absolutePath}")
-            tempDir.deleteRecursively()
-        }
 
         taskExtension.agent.localAgent?.let {
             jvmArgs(it.getJvmArgs())
@@ -137,120 +155,36 @@ open class TestImpacted : Test() {
 
         val reportConfig = taskExtension.getMergedReports()
         val report = reportConfig.testwiseCoverage.getReport(project, this)
-        reportTask.addTestArtifactsDirs(report, tempDir)
+
+        reportTask.addTestArtifactsDirs(report, reportOutputDir)
         reportConfig.googleClosureCoverage.destination?.let {
             reportTask.addTestArtifactsDirs(report, it)
         }
         reportTask.classDirs.add(classpath)
 
-        val javaExecHandleBuilder = getExecActionFactory().newJavaExecAction()
-        this.copyTo(javaExecHandleBuilder)
-        javaExecHandleBuilder.classpath = classpath.plus(project.configurations.getByName(TeamscalePlugin.impactedTestExecutorConfiguration))
-
-        javaExecHandleBuilder.main = "org.junit.platform.console.ImpactedTestsExecutor"
-        javaExecHandleBuilder.args = getImpactedTestExecutorProgramArguments(report)
-
-        logger.info("Starting agent with jvm args ${javaExecHandleBuilder.allJvmArgs}")
-        logger.info("Starting impacted tests executor with args ${javaExecHandleBuilder.args}")
-        logger.info("With workingDir ${javaExecHandleBuilder.workingDir}")
-        logger.debug("Starting impacted tests with classpath ${javaExecHandleBuilder.classpath.files}")
-
-        javaExecHandleBuilder.execute()
+        setImpactedTestEngineOptions(report)
+        super.executeTests()
     }
 
-    private fun getImpactedTestExecutorProgramArguments(report: Report): List<String> {
-        val args = mutableListOf(
-            "--url", serverConfiguration.url ?: throw IllegalArgumentException("Server url is not set!"),
-            "--project", serverConfiguration.project ?: throw IllegalArgumentException("Project id is not set!"),
-            "--user", serverConfiguration.userName ?: throw IllegalArgumentException("Username is not set!"),
-            "--access-token", serverConfiguration.userAccessToken ?: throw IllegalArgumentException("User-Access-Token is not set!"),
-            "--partition", report.partition,
-            "--end", endCommit.toString()
-        )
-
-        taskExtension.agent.getAllAgents().forEach {
-            args.addAll(listOf("--agent", it.url.toString()))
-        }
-
-        if (runAllTests) {
-            args.add("--all")
-        }
-
-        addFilters(args)
-
-        args.add("--reports-dir")
-        args.add(tempDir.absolutePath)
-
-        val rootDirs = mutableListOf<File>()
-        project.sourceSets.forEach { sourceSet ->
-            val output = sourceSet.output
-            rootDirs.addAll(output.classesDirs.files)
-            if (output.resourcesDir != null) {
-                rootDirs.add(output.resourcesDir!!)
-            }
-            rootDirs.addAll(output.dirs.files)
-        }
-        args.addAll(listOf("--scan-class-path", rootDirs.joinToString(File.pathSeparator)))
-
-        return args
-    }
-
-    private fun addFilters(args: MutableList<String>) {
-        val platformOptions = (testFramework as JUnitPlatformTestFramework).options
-        platformOptions.includeTags.forEach { tag ->
-            args.addAll(listOf("-t", tag))
-        }
-        platformOptions.excludeTags.forEach { tag ->
-            args.addAll(listOf("-T", tag))
-        }
-        platformOptions.includeEngines.forEach { engineId ->
-            args.addAll(listOf("-e", engineId))
-        }
-        platformOptions.excludeEngines.forEach { engineId ->
-            args.addAll(listOf("-E", engineId))
-        }
-        // JUnit by default only includes classes ending with Test, but we want to include all classes.
-        if (includes.isEmpty()) {
-            // .* Needs to be set in quotes as windows expands this to all file names starting with dot otherwise
-            args.addAll(listOf("-n", "\".*\""))
-        }
-        includes.forEach { classIncludePattern ->
-            args.addAll(
-                listOf(
-                    "-n", '"' + normalizeAntPattern(
-                        classIncludePattern
-                    ).pattern() + '"'
-                )
-            )
-        }
-        excludes.forEach { classExcludePattern ->
-            args.addAll(
-                listOf(
-                    "-N", '"' + normalizeAntPattern(
-                        classExcludePattern
-                    ).pattern() + '"'
-                )
-            )
+    private fun writeEngineProperty(name: String, value: String?) {
+        if (value != null) {
+            systemProperties["teamscale.test.impacted.$name"] = value
         }
     }
 
-    companion object {
-
-        fun normalizeAntPattern(antPattern: String): Pattern =
-            AntPatternUtils.convertPattern(normalize(antPattern), false)
-
-        fun normalize(pattern: String): String {
-            return pattern
-                .replace("\\.class$".toRegex(), "")
-                .replace("[/\\\\]".toRegex(), ".")
-                .replace(".?\\*\\*.?".toRegex(), "**")
-        }
-
+    private fun setImpactedTestEngineOptions(report: Report) {
+        serverConfiguration.validate()
+        writeEngineProperty("server.url", serverConfiguration.url!!)
+        writeEngineProperty("server.project", serverConfiguration.project!!)
+        writeEngineProperty("server.userName", serverConfiguration.userName!!)
+        writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
+        writeEngineProperty("partition", report.partition)
+        writeEngineProperty("endCommit", endCommit.toString())
+        writeEngineProperty("baseline", baseline?.toString())
+        writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
+        writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
+        writeEngineProperty("runImpacted", runImpacted.toString())
+        writeEngineProperty("runAllTests", runAllTests.toString())
+        writeEngineProperty("engines", includeEngines.joinToString(","))
     }
 }
-
-/** Returns the sourceSets container of the given project. */
-val Project.sourceSets: SourceSetContainer
-    get() {
-        return convention.getPlugin(JavaPluginConvention::class.java).sourceSets
-    }

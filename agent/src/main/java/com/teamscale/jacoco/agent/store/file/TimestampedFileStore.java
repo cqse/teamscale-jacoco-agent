@@ -1,9 +1,8 @@
 package com.teamscale.jacoco.agent.store.file;
 
-import com.teamscale.client.EReportFormat;
 import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.util.Benchmark;
-import com.teamscale.jacoco.util.LoggingUtils;
+import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 

@@ -1,8 +1,10 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
+import org.jacoco.report.JavaNames;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,23 +26,28 @@ public class ProbesCache {
 	private final Set<String> containedClasses = new HashSet<>();
 
 	/** Whether to ignore non-identical duplicates of class files. */
-	private final boolean ignoreNonidenticalDuplicateClassFiles;
+	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
+
+	private final ClassNotFoundLogger classNotFoundLogger;
 
 	/** Constructor. */
-	public ProbesCache(ILogger logger, boolean ignoreNonidenticalDuplicateClassFiles) {
+	public ProbesCache(ILogger logger, EDuplicateClassFileBehavior duplicateClassFileBehavior) {
 		this.logger = logger;
-		this.ignoreNonidenticalDuplicateClassFiles = ignoreNonidenticalDuplicateClassFiles;
+		this.classNotFoundLogger = new ClassNotFoundLogger(logger);
+		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 	}
 
 	/** Adds a new class entry to the cache and returns its {@link ClassCoverageLookup}. */
 	public ClassCoverageLookup createClass(long classId, String className) {
 		if (containedClasses.contains(className)) {
-			logger.warn("Non-identical class file for class " + className + "."
-					+ " This happens when a class with the same fully-qualified name is loaded twice but the two loaded class files are not identical."
-					+ " A common reason for this is that the same library or shared code is included twice in your application but in two different versions."
-					+ " The produced coverage for this class may not be accurate or may even be unusable."
-					+ " To fix this problem, please resolve the conflict between both class files in your application.");
-			if (!ignoreNonidenticalDuplicateClassFiles) {
+			if (duplicateClassFileBehavior != EDuplicateClassFileBehavior.IGNORE) {
+				logger.warn("Non-identical class file for class " + className + "."
+						+ " This happens when a class with the same fully-qualified name is loaded twice but the two loaded class files are not identical."
+						+ " A common reason for this is that the same library or shared code is included twice in your application but in two different versions."
+						+ " The produced coverage for this class may not be accurate or may even be unusable."
+						+ " To fix this problem, please resolve the conflict between both class files in your application.");
+			}
+			if (duplicateClassFileBehavior == EDuplicateClassFileBehavior.FAIL) {
 				throw new IllegalStateException(
 						"Found non-identical class file for class " + className + ". See logs for more details.");
 			}
@@ -57,18 +64,16 @@ public class ProbesCache {
 	}
 
 	/**
-	 * Converts the given {@link ExecutionData} to {@link FileCoverageBuilder} using the cached lookups or null if the class
-	 * file of this class has not been included in the analysis or was not covered.
+	 * Converts the given {@link ExecutionData} to {@link FileCoverageBuilder} using the cached lookups or null if the
+	 * class file of this class has not been included in the analysis or was not covered.
 	 */
-	public FileCoverageBuilder getCoverage(ExecutionData executionData, Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
+	public FileCoverageBuilder getCoverage(ExecutionData executionData,
+										   Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
-			if (locationIncludeFilter.test(executionData.getName())) {
-				logger.warn(
-						"Found coverage for a class " + executionData
-								.getName() + " that was not provided. Either you did not provide " +
-								"all relevant class files or you did not adjust the include/exclude filters on the agent to exclude " +
-								"coverage from irrelevant code.");
+			String fullyQualifiedClassName = new JavaNames().getQualifiedClassName(executionData.getName());
+			if (locationIncludeFilter.test(fullyQualifiedClassName + ".class")) {
+				classNotFoundLogger.log(fullyQualifiedClassName);
 			}
 			return null;
 		}
@@ -79,8 +84,13 @@ public class ProbesCache {
 		return classCoverageLookups.get(classId).getFileCoverage(executionData, logger);
 	}
 
-	/** Returns true if the cache does not contains coverage for any class. */
+	/** Returns true if the cache does not contain coverage for any class. */
 	public boolean isEmpty() {
 		return classCoverageLookups.isEmpty();
+	}
+
+	/** Prints a the collected class not found messages. */
+	public void flushLogger() {
+		classNotFoundLogger.flush();
 	}
 }

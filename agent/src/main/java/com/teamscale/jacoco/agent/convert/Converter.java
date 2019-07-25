@@ -1,19 +1,20 @@
 package com.teamscale.jacoco.agent.convert;
 
 import com.teamscale.client.TestDetails;
-import com.teamscale.jacoco.util.Benchmark;
-import com.teamscale.jacoco.util.LoggingUtils;
+import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.ETestArtifactFormat;
+import com.teamscale.report.testwise.TestwiseCoverageReportWriter;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.report.testwise.model.TestwiseCoverage;
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
+import com.teamscale.report.testwise.model.factory.TestInfoFactory;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -25,7 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static com.teamscale.jacoco.util.LoggingUtils.wrap;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /** Converts one .exec binary coverage file to XML. */
 public class Converter {
@@ -52,8 +53,15 @@ public class Converter {
 		ExecutionDataStore executionDataStore = loader.getExecutionDataStore();
 
 		Logger logger = LoggingUtils.getLogger(this);
+		EDuplicateClassFileBehavior duplicateClassFileBehavior;
+		if (arguments.shouldIgnoreDuplicateClassFiles()) {
+			duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
+		} else {
+			duplicateClassFileBehavior = EDuplicateClassFileBehavior.FAIL;
+		}
 		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				getWildcardIncludeExcludeFilter(), arguments.shouldIgnoreDuplicateClassFiles(), wrap(logger));
+				getWildcardIncludeExcludeFilter(), duplicateClassFileBehavior,
+				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			String xml = generator.convert(new Dump(sessionInfo, executionDataStore));
@@ -75,19 +83,22 @@ public class Converter {
 		JaCoCoTestwiseReportGenerator generator = new JaCoCoTestwiseReportGenerator(
 				arguments.getClassDirectoriesOrZips(),
 				getWildcardIncludeExcludeFilter(),
-				true,
+				EDuplicateClassFileBehavior.WARN,
 				logger
 		);
 
-		try (Benchmark benchmark = new Benchmark("Generating the testwise coverage report")) {
-			TestwiseCoverage coverage = generator.convert(jacocoExecutionDataList);
-			logger.info(
-					"Merging report with " + testDetails.size() + " Details/" + coverage.getTests()
-							.size() + " Coverage/" + testExecutions.size() + " Results");
+		TestInfoFactory testInfoFactory = new TestInfoFactory(testDetails, testExecutions);
 
-			TestwiseCoverageReport report = TestwiseCoverageReportBuilder
-					.createFrom(testDetails, coverage.getTests(), testExecutions);
-			ReportUtils.writeReportToFile(arguments.getOutputFile(), report);
+		try (Benchmark benchmark = new Benchmark("Generating the testwise coverage report")) {
+			logger.info(
+					"Writing report with " + testDetails.size() + " Details/" + testExecutions.size() + " Results");
+
+			try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
+					arguments.getOutputFile(), arguments.getSplitAfter())) {
+				for (File executionDataFile : jacocoExecutionDataList) {
+					generator.convertAndConsume(executionDataFile, coverageWriter);
+				}
+			}
 		}
 	}
 
@@ -96,4 +107,5 @@ public class Converter {
 				String.join(":", arguments.locationIncludeFilters),
 				String.join(":", arguments.locationExcludeFilters));
 	}
+
 }
