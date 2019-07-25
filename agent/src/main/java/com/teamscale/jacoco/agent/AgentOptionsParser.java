@@ -23,9 +23,17 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -37,6 +45,17 @@ import static java.util.stream.Collectors.toList;
  * Parses agent command line options.
  */
 public class AgentOptionsParser {
+
+	/** Supported locations of git.property files. */
+	private static Set<String> GIT_PROPERTIES_LOCATIONS = new HashSet<>(
+			Arrays.asList(
+					"git.properties", // plain JAR
+					"BOOT-INF/classes/git.properties", // Spring Boot JAR
+					"WEB-INF/classes/git.properties" // Spring Boot WAR
+			));
+
+	/** The standard date format used by Spring Boot. */
+	private static DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
@@ -238,6 +257,9 @@ public class AgentOptionsParser {
 			case "teamscale-commit-manifest-jar":
 				options.teamscaleServer.commit = getCommitFromManifest(parseFile(key, value));
 				return true;
+			case "teamscale-git-properties-jar":
+				options.teamscaleServer.commit = getCommitFromGitProperties(parseFile(key, value));
+				return true;				
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
@@ -269,7 +291,7 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar/war file and
+	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and
 	 * builds a commit descriptor out of it.
 	 */
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
@@ -285,10 +307,68 @@ public class AgentOptionsParser {
 			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
 			return new CommitDescriptor(branch, timestamp);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " failed!", e);
+			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
+					"descriptor from MANIFEST failed!", e);
 		}
 	}
-
+	
+	/**
+	 * Reads `Branch` and `Timestamp` entries from the given jar file's git.properties and
+	 * builds a commit descriptor out of it.
+	 */
+	private CommitDescriptor getCommitFromGitProperties(File jarFile) throws AgentOptionParseException {
+		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+			return getCommitFromGitProperties(jarStream).orElseThrow(
+					() -> new AgentOptionParseException("None of " + GIT_PROPERTIES_LOCATIONS + " was found in " +  jarFile.getAbsolutePath() + "!"));
+		} catch (IOException e) {
+			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
+					"descriptor from git.properties failed!", e);
+		}
+	}
+	
+	Optional<CommitDescriptor> getCommitFromGitProperties(JarInputStream jarStream) throws IOException, AgentOptionParseException  {
+		JarEntry entry;
+		while ((entry = jarStream.getNextJarEntry()) != null) {
+			if(GIT_PROPERTIES_LOCATIONS.contains((entry.getName()))) {
+				logger.debug("Found git.properties in " + entry.getName() + ".");
+				
+				Properties gitProperties = new Properties();
+				gitProperties.load(jarStream);
+				return Optional.of(getGitPropertiesCommitDescriptor(entry.getName(), gitProperties));
+			}
+		}
+		
+		return Optional.empty();
+	}
+	
+	CommitDescriptor getGitPropertiesCommitDescriptor(String entryName, Properties gitProperties) throws AgentOptionParseException{
+		Object branchObj = gitProperties.get("git.branch");
+		String branch = branchObj != null ? branchObj.toString() : null;
+		Object timestampObj = gitProperties.get("git.commit.time");
+		String timestamp = timestampObj != null ? timestampObj.toString() : null;
+		
+		if (StringUtils.isEmpty(branch)) {
+			throw new AgentOptionParseException("No entry 'git.branch' in '" +entryName + "'!");
+		} else if (StringUtils.isEmpty(timestamp)) {
+			throw new AgentOptionParseException("No entry 'git.commit.time' in '" + entryName + "'!");
+		}
+		
+		long parsedTimestamp;
+		try {
+			parsedTimestamp = OffsetDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toEpochSecond() * 1000;
+		} catch (DateTimeParseException e) {
+			try {
+				parsedTimestamp = Long.parseLong(timestamp) * 1000;
+			} catch (NumberFormatException e2) {
+				throw new AgentOptionParseException("'" + timestamp + "' can't neither be parsed with the pattern "
+						+ GIT_PROPERTIES_DATE_FORMAT + " nor as a long!");
+			}
+		}
+		
+		logger.debug("Found commit " + branch + ":" + parsedTimestamp + " in file " + entryName);
+		return new CommitDescriptor(branch, parsedTimestamp);
+	}
+	
 	/**
 	 * Handles all command line options prefixed with "http-server-".
 	 *
