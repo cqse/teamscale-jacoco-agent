@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import eu.cqse.teamscale.client.HttpUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
@@ -77,6 +78,9 @@ public abstract class AgentBase {
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
+
+		HttpUtils.setShouldValidateSsl(agentOptions.validateSsl);
+
 		logger.info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_035b120.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
