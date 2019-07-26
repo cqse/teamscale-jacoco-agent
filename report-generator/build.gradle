@@ -12,9 +12,6 @@ dependencies {
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	implementation "org.apache.logging.log4j:log4j-api:$log4jVersion"
-	implementation "org.apache.logging.log4j:log4j-core:$log4jVersion"
-
 	implementation 'com.squareup.moshi:moshi:1.8.0'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
