@@ -95,7 +95,7 @@ public class HttpUtils {
 	public static class TrustAllCertificatesManager implements X509TrustManager {
 
 		/** Singleton instance. */
-		public static final TrustAllCertificatesManager INSTANCE = new TrustAllCertificatesManager();
+		/*package*/ static final TrustAllCertificatesManager INSTANCE = new TrustAllCertificatesManager();
 
 		/** Returns <code>null</code>. */
 		@Override
