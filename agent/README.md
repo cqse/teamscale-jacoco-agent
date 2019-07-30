@@ -112,7 +112,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format 
   section above)
 - `teamscale-git-properties-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
-  a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring].
+  a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent 
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
@@ -247,7 +247,7 @@ Please ask CQSE for special tooling that is available to instrument Java Web Sta
 ## Store Commit in Jar file
 
 If you are using Git, you can use either a Maven or Gradle plugin to store the commit
-in any Jar file and tell the agent to read it via `teamscale-git-properties-jar`.
+in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
 
 Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
 especially when tests are executed independently from the build. The following assumes that we are using a Git 

@@ -22,7 +22,7 @@ public class AgentOptionsParserTest {
 			.asList("plain-git-properties.jar", "spring-boot-git-properties.jar", "spring-boot-git-properties.war");
 
 	@Test
-	public void testFromArchive() throws IOException, AgentOptionParseException {
+	public void testReadingGitPropertiesFromArchive() throws IOException, AgentOptionParseException {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(this.getClass().getResourceAsStream(archiveName));
 			CommitDescriptor commitDescriptor = parser.getCommitFromGitProperties(jarInputStream, new File("test.jar"));
@@ -31,7 +31,7 @@ public class AgentOptionsParserTest {
 	}
 
 	@Test
-	public void testInvalidTimestamp() {
+	public void testGitPropertiesWithInvalidTimestamp() {
 		Properties gitProperties = new Properties();
 		gitProperties.put("git.commit.time", "123ab");
 		gitProperties.put("git.branch", "master");

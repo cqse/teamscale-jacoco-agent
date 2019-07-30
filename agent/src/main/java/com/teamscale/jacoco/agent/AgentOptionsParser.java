@@ -27,10 +27,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -45,13 +43,8 @@ import static java.util.stream.Collectors.toList;
  */
 public class AgentOptionsParser {
 
-	/** Supported locations of git.property files. */
-	private static final Set<String> GIT_PROPERTIES_LOCATIONS = new HashSet<>(
-			Arrays.asList(
-					"git.properties", // plain JAR
-					"BOOT-INF/classes/git.properties", // Spring Boot JAR
-					"WEB-INF/classes/git.properties" // Spring Boot WAR
-			));
+	/** Name of the git.property file. */
+	private static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
 	/** The standard date format used by git.properties. */
 	private static final DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter
@@ -76,7 +69,8 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given command-line options.
 	 */
-	/*package*/ static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
+	/*package*/
+	static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
 		return new AgentOptionsParser(logger).parse(optionsString);
 	}
 
@@ -327,7 +321,7 @@ public class AgentOptionsParser {
 			JarInputStream jarStream, File jarFile) throws IOException, AgentOptionParseException {
 		JarEntry entry = jarStream.getNextJarEntry();
 		while (entry != null) {
-			if (GIT_PROPERTIES_LOCATIONS.contains((entry.getName()))) {
+			if (Paths.get(entry.getName()).getFileName().toString().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME)) {
 				Properties gitProperties = new Properties();
 				gitProperties.load(jarStream);
 				return parseGitPropertiesJarEntry(entry.getName(), gitProperties, jarFile);
@@ -335,8 +329,9 @@ public class AgentOptionsParser {
 			entry = jarStream.getNextJarEntry();
 		}
 
-		throw new AgentOptionParseException("Cannot resolve commit timestamp. None of " + GIT_PROPERTIES_LOCATIONS +
-				" was found in " + jarFile.getAbsolutePath());
+		throw new AgentOptionParseException(
+				"Cannot resolve commit timestamp. Could not find any file named " + GIT_PROPERTIES_FILE_NAME +
+						" in " + jarFile.getAbsolutePath());
 	}
 
 	/** Visible for testing. */
