@@ -111,6 +111,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format 
   section above)
+- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
+  a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring].
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent 
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
@@ -242,9 +244,12 @@ Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jv
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
 
-## Store Commit in Manifest
+## Store Commit in Jar file
 
-As it is very convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
+If you are using Git, you can use either a Maven or Gradle plugin to store the commit
+in any Jar file and tell the agent to read it via `teamscale-git-properties-jar`.
+
+Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
 especially when tests are executed independently from the build. The following assumes that we are using a Git 
 repository.
 
@@ -429,3 +434,4 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [glassfish-asadmin]: https://docs.oracle.com/cd/E19798-01/821-1751/gepzd/index.html
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
+[git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
