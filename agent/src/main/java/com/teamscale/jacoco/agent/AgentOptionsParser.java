@@ -5,9 +5,9 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
@@ -23,13 +23,12 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -47,15 +46,16 @@ import static java.util.stream.Collectors.toList;
 public class AgentOptionsParser {
 
 	/** Supported locations of git.property files. */
-	private static Set<String> GIT_PROPERTIES_LOCATIONS = new HashSet<>(
+	private static final Set<String> GIT_PROPERTIES_LOCATIONS = new HashSet<>(
 			Arrays.asList(
 					"git.properties", // plain JAR
 					"BOOT-INF/classes/git.properties", // Spring Boot JAR
 					"WEB-INF/classes/git.properties" // Spring Boot WAR
 			));
 
-	/** The standard date format used by Spring Boot. */
-	private static DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+	/** The standard date format used by git.properties. */
+	private static final DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
@@ -76,7 +76,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given command-line options.
 	 */
-	public static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
+	/*package*/ static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
 		return new AgentOptionsParser(logger).parse(optionsString);
 	}
 
@@ -142,7 +142,8 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	private boolean handleAgentOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleAgentOptions(AgentOptions options, String key,
+									   String value) throws AgentOptionParseException {
 		switch (key) {
 			case "config-file":
 				readConfigFromFile(options, parseFile(key, value));
@@ -197,13 +198,8 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads configuration parameters from the given file.
-	 * The expected format is basically the same as for the command line, but line breaks are also considered as
-	 * separators.
-	 * e.g.
-	 * class-dir=out
-	 * # Some comment
-	 * includes=test.*
+	 * Reads configuration parameters from the given file. The expected format is basically the same as for the command
+	 * line, but line breaks are also considered as separators. e.g. class-dir=out # Some comment includes=test.*
 	 * excludes=third.party.*
 	 */
 	private void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
@@ -218,10 +214,10 @@ public class AgentOptionsParser {
 			}
 		} catch (FileNotFoundException e) {
 			throw new AgentOptionParseException(
-					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found!", e);
+					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found", e);
 		} catch (IOException e) {
 			throw new AgentOptionParseException(
-					"An error occurred while reading the config file " + configFile.getAbsolutePath() + "!", e);
+					"An error occurred while reading the config file " + configFile.getAbsolutePath(), e);
 		}
 	}
 
@@ -230,13 +226,14 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleTeamscaleOptions(AgentOptions options, String key,
+										   String value) throws AgentOptionParseException {
 		switch (key) {
 			case "teamscale-server-url":
 				options.teamscaleServer.url = parseUrl(value);
 				if (options.teamscaleServer.url == null) {
 					throw new AgentOptionParseException(
-							"Invalid URL " + value + " given for option 'teamscale-server-url'!");
+							"Invalid URL " + value + " given for option 'teamscale-server-url'");
 				}
 				return true;
 			case "teamscale-project":
@@ -259,7 +256,7 @@ public class AgentOptionsParser {
 				return true;
 			case "teamscale-git-properties-jar":
 				options.teamscaleServer.commit = getCommitFromGitProperties(parseFile(key, value));
-				return true;				
+				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
@@ -291,8 +288,8 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and
-	 * builds a commit descriptor out of it.
+	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and builds a commit descriptor out
+	 * of it.
 	 */
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
@@ -300,81 +297,80 @@ public class AgentOptionsParser {
 			String branch = manifest.getMainAttributes().getValue("Branch");
 			String timestamp = manifest.getMainAttributes().getValue("Timestamp");
 			if (StringUtils.isEmpty(branch)) {
-				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST!");
+				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST");
 			} else if (StringUtils.isEmpty(timestamp)) {
-				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST!");
+				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST");
 			}
 			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
 			return new CommitDescriptor(branch, timestamp);
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
-					"descriptor from MANIFEST failed!", e);
+					"descriptor from MANIFEST failed", e);
 		}
 	}
-	
+
 	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar file's git.properties and
-	 * builds a commit descriptor out of it.
+	 * Reads `Branch` and `Timestamp` entries from the given jar file's git.properties and builds a commit descriptor
+	 * out of it.
 	 */
 	private CommitDescriptor getCommitFromGitProperties(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
-			return getCommitFromGitProperties(jarStream).orElseThrow(
-					() -> new AgentOptionParseException("None of " + GIT_PROPERTIES_LOCATIONS + " was found in " +  jarFile.getAbsolutePath() + "!"));
+			return getCommitFromGitProperties(jarStream, jarFile);
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
-					"descriptor from git.properties failed!", e);
+					"descriptor from git.properties failed", e);
 		}
 	}
-	
-	Optional<CommitDescriptor> getCommitFromGitProperties(JarInputStream jarStream) throws IOException, AgentOptionParseException  {
-		JarEntry entry;
-		while ((entry = jarStream.getNextJarEntry()) != null) {
-			if(GIT_PROPERTIES_LOCATIONS.contains((entry.getName()))) {
-				logger.debug("Found git.properties in " + entry.getName() + ".");
-				
+
+	/** Visible for testing. */
+	/*package*/ CommitDescriptor getCommitFromGitProperties(
+			JarInputStream jarStream, File jarFile) throws IOException, AgentOptionParseException {
+		JarEntry entry = jarStream.getNextJarEntry();
+		while (entry != null) {
+			if (GIT_PROPERTIES_LOCATIONS.contains((entry.getName()))) {
 				Properties gitProperties = new Properties();
 				gitProperties.load(jarStream);
-				return Optional.of(getGitPropertiesCommitDescriptor(entry.getName(), gitProperties));
+				return parseGitPropertiesJarEntry(entry.getName(), gitProperties, jarFile);
 			}
+			entry = jarStream.getNextJarEntry();
 		}
-		
-		return Optional.empty();
+
+		throw new AgentOptionParseException("Cannot resolve commit timestamp. None of " + GIT_PROPERTIES_LOCATIONS +
+				" was found in " + jarFile.getAbsolutePath());
 	}
-	
-	CommitDescriptor getGitPropertiesCommitDescriptor(String entryName, Properties gitProperties) throws AgentOptionParseException{
-		Object branchObj = gitProperties.get("git.branch");
-		String branch = branchObj != null ? branchObj.toString() : null;
-		Object timestampObj = gitProperties.get("git.commit.time");
-		String timestamp = timestampObj != null ? timestampObj.toString() : null;
-		
+
+	/** Visible for testing. */
+	/*package*/  CommitDescriptor parseGitPropertiesJarEntry(
+			String entryName, Properties gitProperties, File jarFile) throws AgentOptionParseException {
+		String branch = gitProperties.getProperty("git.branch");
+		String timestamp = gitProperties.getProperty("git.commit.time");
+
 		if (StringUtils.isEmpty(branch)) {
-			throw new AgentOptionParseException("No entry 'git.branch' in '" +entryName + "'!");
+			throw new AgentOptionParseException(
+					"No entry or empty value for 'git.branch' in " + entryName + " in " + jarFile);
 		} else if (StringUtils.isEmpty(timestamp)) {
-			throw new AgentOptionParseException("No entry 'git.commit.time' in '" + entryName + "'!");
+			throw new AgentOptionParseException(
+					"No entry or empty value for 'git.commit.time' in " + entryName + " in " + jarFile);
 		}
-		
-		long parsedTimestamp;
+
 		try {
-			parsedTimestamp = OffsetDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toEpochSecond() * 1000;
+			long parsedTimestamp = ZonedDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toInstant()
+					.toEpochMilli();
+			return new CommitDescriptor(branch, parsedTimestamp);
 		} catch (DateTimeParseException e) {
-			try {
-				parsedTimestamp = Long.parseLong(timestamp) * 1000;
-			} catch (NumberFormatException e2) {
-				throw new AgentOptionParseException("'" + timestamp + "' can't neither be parsed with the pattern "
-						+ GIT_PROPERTIES_DATE_FORMAT + " nor as a long!");
-			}
+			throw new AgentOptionParseException(
+					"git.commit.time value '" + timestamp + "' in " + entryName + " in " + jarFile +
+							" cannot be parsed with the pattern " + GIT_PROPERTIES_DATE_FORMAT, e);
 		}
-		
-		logger.debug("Found commit " + branch + ":" + parsedTimestamp + " in file " + entryName);
-		return new CommitDescriptor(branch, parsedTimestamp);
 	}
-	
+
 	/**
 	 * Handles all command line options prefixed with "http-server-".
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	private boolean handleHttpServerOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleHttpServerOptions(AgentOptions options, String key,
+											String value) throws AgentOptionParseException {
 		switch (key) {
 			case "test-env":
 				options.testEnvironmentVariable = value;
@@ -384,7 +380,7 @@ public class AgentOptionsParser {
 					options.httpServerPort = Integer.parseInt(value);
 				} catch (NumberFormatException e) {
 					throw new AgentOptionParseException(
-							"Invalid port number " + value + " given for option 'http-server-port'!");
+							"Invalid port number " + value + " given for option 'http-server-port'");
 				}
 				return true;
 			default:
@@ -395,28 +391,22 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given value as a {@link File}.
 	 */
-	/* package */ File parseFile(String optionName, String value) throws AgentOptionParseException {
+	private File parseFile(String optionName, String value) throws AgentOptionParseException {
 		return parsePath(optionName, new File("."), value).toFile();
 	}
 
 	/**
 	 * Parses the given value as a {@link Path}.
 	 */
-	/* package */ Path parsePath(String optionName, String value) throws AgentOptionParseException {
+	private Path parsePath(String optionName, String value) throws AgentOptionParseException {
 		return parsePath(optionName, new File("."), value);
-	}
-
-	/**
-	 * Parses the given value as a {@link File}.
-	 */
-	/* package */ File parseFile(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
-		return parsePath(optionName, workingDirectory, value).toFile();
 	}
 
 	/**
 	 * Parses the given value as a {@link Path}.
 	 */
-	/* package */ Path parsePath(String optionName, File workingDirectory, String value) throws AgentOptionParseException {
+	/* package */ Path parsePath(String optionName, File workingDirectory,
+								 String value) throws AgentOptionParseException {
 		if (isPathWithPattern(value)) {
 			return parseFileFromPattern(workingDirectory, optionName, value);
 		}
@@ -428,7 +418,8 @@ public class AgentOptionsParser {
 	}
 
 	/** Parses the value as a ant pattern to a file or directory. */
-	private Path parseFileFromPattern(File workingDirectory, String optionName, String value) throws AgentOptionParseException {
+	private Path parseFileFromPattern(File workingDirectory, String optionName,
+									  String value) throws AgentOptionParseException {
 		Pair<String, String> baseDirAndPattern = splitIntoBaseDirAndPattern(value);
 		String baseDir = baseDirAndPattern.getFirst();
 		String pattern = baseDirAndPattern.getSecond();
@@ -452,7 +443,7 @@ public class AgentOptionsParser {
 		if (matchingPaths.isEmpty()) {
 			throw new AgentOptionParseException(
 					"Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
-							" did not match any files in " + basePath.toAbsolutePath() + "!");
+							" did not match any files in " + basePath.toAbsolutePath());
 		} else if (matchingPaths.size() > 1) {
 			logger.warn(
 					"Multiple files match the pattern " + pattern + " in " + basePath
@@ -469,8 +460,8 @@ public class AgentOptionsParser {
 
 	/**
 	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
-	 * placeholders, and a pattern suffix.
-	 * We need to replace the pattern characters with stand-ins, because ? and * are not allowed as path characters on windows.
+	 * placeholders, and a pattern suffix. We need to replace the pattern characters with stand-ins, because ? and * are
+	 * not allowed as path characters on windows.
 	 */
 	private Pair<String, String> splitIntoBaseDirAndPattern(String value) {
 		String pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT);
@@ -492,7 +483,10 @@ public class AgentOptionsParser {
 		return path.contains("?") || path.contains("*");
 	}
 
-	/** Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link #ASTERISK_REPLACEMENT}). */
+	/**
+	 * Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link
+	 * #ASTERISK_REPLACEMENT}).
+	 */
 	private static boolean isPathWithArtificialPattern(String path) {
 		return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT);
 	}
@@ -505,8 +499,8 @@ public class AgentOptionsParser {
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			value = "http://" + value;
 		}
-		
-		if(!value.endsWith("/")) {
+
+		if (!value.endsWith("/")) {
 			value += "/";
 		}
 
