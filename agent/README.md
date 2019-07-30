@@ -118,6 +118,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
   section above)
+- `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
+  even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
+  You might need to make your self-signed certificates available to the agent via a keystore. See
+  [the Teamscale userguide's section on that topic][ts-userguide] for how to do that.
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
   https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case 
   that the given
@@ -435,3 +439,4 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
+[ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf

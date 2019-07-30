@@ -2,6 +2,10 @@ We use [semantic versioning][semver]
 
 # Next version
 - [feature] support for git.properties to supply commit information
+- [breaking change] Agent now ignores SSL certificates by default and only turns on validation if
+  `validate-ssl=true` is passed in the agent arguments. Existing setups will continue to work but
+  validation will be disabled from this version on
+- [fix] Agent uses higher timeouts (20s) for all HTTP connections to account for slow networks
 
 # 14.0.0
 - [fix] Reduced memory requirements for generating testwise coverage.

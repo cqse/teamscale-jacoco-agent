@@ -152,6 +152,9 @@ public class AgentOptionsParser {
 					throw new AgentOptionParseException("Non-numeric value given for option 'interval'");
 				}
 				return true;
+			case "validate-ssl":
+				options.validateSsl = Boolean.parseBoolean(value);
+				return true;
 			case "out":
 				options.outputDirectory = parsePath(key, value);
 				return true;
