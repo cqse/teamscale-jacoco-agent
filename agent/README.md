@@ -244,9 +244,14 @@ When using the `asadmin` tool, some characters need to be escaped with a backsla
 
 Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jvm-options` command.
 
+## Additional steps for Jetty
+
+Register the agent by setting a `JAVA_OPTIONS` variable such that the Jetty process can see it.
+
 ## Additional steps for Java Web Start
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
+
 
 ## Store Commit in Jar file
 
