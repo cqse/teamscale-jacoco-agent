@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [feature] support for git.properties to supply commit information
 
 # 14.0.0
 - [fix] Reduced memory requirements for generating testwise coverage.
