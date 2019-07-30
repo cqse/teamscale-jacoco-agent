@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [feature] support for git.properties to supply commit information
 - [breaking change] Agent now ignores SSL certificates by default and only turns on validation if
   `validate-ssl=true` is passed in the agent arguments. Existing setups will continue to work but
   validation will be disabled from this version on
