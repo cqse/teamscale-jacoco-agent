@@ -149,9 +149,6 @@ public class AgentOptions {
 	 */
 	/* package */ Validator getValidator() {
 		Validator validator = new Validator();
-
-		validator.isTrue(!getClassDirectoriesOrZips().isEmpty() || useTestwiseCoverageMode(),
-				"You must specify at least one directory or zip that contains class files");
 		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
