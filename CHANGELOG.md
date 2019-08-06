@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [feature] supplying a `class-dir` option is no longer mandatory
 
 # 15.0.0
 - [feature] support for git.properties to supply commit information
