@@ -1,10 +1,7 @@
 package com.teamscale.jacoco.agent.util;
 
 import ch.qos.logback.core.PropertyDefinerBase;
-import com.teamscale.jacoco.agent.PreMain;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

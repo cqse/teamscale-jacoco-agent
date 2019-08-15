@@ -167,7 +167,7 @@ public class AgentOptions {
 						"The path provided for the logging configuration is not a file: " + loggingConfig);
 				CCSMAssert.isTrue(Files.isReadable(loggingConfig),
 						"The file provided for the logging configuration is not readable: " + loggingConfig);
-				CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
+				CCSMAssert.isTrue("xml".equalsIgnoreCase(FileSystemUtils.getFileExtension(loggingConfig.toFile())),
 						"The logging configuration file must have the file extension .xml and be a valid XML file");
 			});
 		}
@@ -241,7 +241,7 @@ public class AgentOptions {
 		try {
 			return Files.createTempDirectory(agentDirectory, "jacoco-class-dump");
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Unable to create a temporary directory anywhere");
+			throw new AgentOptionParseException("Unable to create a temporary directory anywhere", e);
 		}
 	}
 
