@@ -1,6 +1,8 @@
 We use [semantic versioning][semver]
 
 # Next version
+
+# 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
 
 # 15.0.0
