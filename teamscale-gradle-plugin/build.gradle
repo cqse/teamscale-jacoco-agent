@@ -56,7 +56,7 @@ processResources {
 	filesMatching('**/plugin.properties') {
 		filter {
 			it.replace('%AGENT_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
-			it.replace('%PLUGIN_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.pluginVersion)
+					.replace('%PLUGIN_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.pluginVersion)
 		}
 	}
 }
