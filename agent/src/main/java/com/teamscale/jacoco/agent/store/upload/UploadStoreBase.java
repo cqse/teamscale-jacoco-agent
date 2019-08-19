@@ -5,6 +5,7 @@ import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import eu.cqse.teamscale.client.HttpUtils;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -44,7 +45,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 		this.uploadUrl = uploadUrl;
 		this.additionalMetaDataFiles = additionalMetaDataFiles;
 
-		Retrofit retrofit = new Retrofit.Builder().baseUrl(uploadUrl).build();
+		Retrofit retrofit = HttpUtils.createRetrofit(retrofitBuilder -> retrofitBuilder.baseUrl(uploadUrl));
 		api = getApi(retrofit);
 	}
 
@@ -56,7 +57,7 @@ public abstract class UploadStoreBase<T> implements IXmlStore {
 
 	@Override
 	public void store(String xml) {
-		try (Benchmark benchmark = new Benchmark("Uploading report via HTTP")) {
+		try (Benchmark ignored = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUpload(xml)) {
 				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
 				failureStore.store(xml);

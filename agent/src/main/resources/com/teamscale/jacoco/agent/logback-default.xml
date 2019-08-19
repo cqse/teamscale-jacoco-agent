@@ -24,4 +24,7 @@
     <root level="INFO">
         <appender-ref ref="RollingFile"/>
     </root>
+
+    <logger name="shadow.org.apache.spark" level="warn" />
+    <logger name="shadow.org.eclipse.jetty" level="warn" />
 </configuration>

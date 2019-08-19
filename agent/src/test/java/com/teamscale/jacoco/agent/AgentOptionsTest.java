@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.report.util.CommandLineLogger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -150,13 +151,18 @@ public class AgentOptionsTest {
 	/** Tests path resolution with incorrect input. */
 	@Test
 	public void testPathResolutionWithPatternErrorCases() {
-		assertPathResolutionInWorkingDirFailsWith(".", "**.war", "Invalid path given for option option-name: " +
+		final File workingDirectory = new File(testFolder.getRoot(), ".");
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, "**.war"))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(
+				"Invalid path given for option option-name: " +
 				"**.war. The pattern **.war did not match any files in");
 	}
 
-	private void assertInputInWorkingDirectoryMatches(String workingDir, String input, String expected) throws AgentOptionParseException {
+	private void assertInputInWorkingDirectoryMatches(String workingDir, String input,
+													  String expected) throws AgentOptionParseException {
 		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
-		File actualFile = getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input);
+		File actualFile = getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, input).toFile();
 		File expectedFile = new File(testFolder.getRoot(), expected);
 		assertThat(getNormalizedPath(actualFile)).isEqualByComparingTo(getNormalizedPath(expectedFile));
 	}
@@ -166,14 +172,7 @@ public class AgentOptionsTest {
 		return file.getAbsoluteFile().toPath().normalize();
 	}
 
-	private void assertPathResolutionInWorkingDirFailsWith(String workingDir, String input, String expectedMessage) {
-		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
-		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parseFile("option-name", workingDirectory, input))
-				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(expectedMessage);
-	}
-
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new DummyLogger());
+		return new AgentOptionsParser(new CommandLineLogger());
 	}
 }

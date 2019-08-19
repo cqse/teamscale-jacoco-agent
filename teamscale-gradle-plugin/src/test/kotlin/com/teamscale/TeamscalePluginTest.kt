@@ -1,9 +1,10 @@
 package com.teamscale
 
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
+import okio.Okio
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -20,6 +21,15 @@ import java.io.File
  */
 class TeamscalePluginTest {
 
+    companion object {
+
+        /** Set this to true to enable debugging of the Gradle Plugin via port 5005. */
+        private const val DEBUG_PLUGIN = false
+
+        /** Set this to true to enable debugging of the impacted tests engine via port 5005. */
+        private const val DEBUG_TEST_ENGINE = false
+    }
+
     @Rule
     @JvmField
     val temporaryFolder = TemporaryFolder()
@@ -32,36 +42,36 @@ class TeamscalePluginTest {
     @Test
     fun `teamscale plugin can be configured`() {
         assertThat(
-            build("clean", "tasks").output
+            build(false, "clean", "tasks").output
         ).contains("SUCCESS")
     }
 
     @Test
     fun `unit tests can be executed normally`() {
         assertThat(
-            build("clean", "unitTest").output
+            build(true, "clean", "unitTest").output
         ).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
     }
 
     @Test
     fun `impacted unit tests produce coverage`() {
         val build = build(
+            true,
             "clean",
             "unitTest",
             "--impacted",
-            "--run-all-tests",
-            "--info",
-            "--stacktrace"
+            "--run-all-tests"
         )
-        assertThat(build.output).contains("BUILD SUCCESSFUL", "13 tests successful", "6 tests skipped")
+        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
         assertThat(testwiseCoverageReportFile).exists()
 
+        val source = Okio.buffer(Okio.source(testwiseCoverageReportFile))
         val testwiseCoverageReport =
-            Gson().fromJson(testwiseCoverageReportFile.reader(), TestwiseCoverageReport::class.java)
-        assertThat(testwiseCoverageReport)
+            Moshi.Builder().build().adapter(TestwiseCoverageReport::class.java).fromJson(source)
+        assertThat(testwiseCoverageReport!!)
             .containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
             .containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
             .containsExecutionResult(
@@ -78,21 +88,61 @@ class TeamscalePluginTest {
             .hasSize(18)
     }
 
-    /**
-     * Useful switches:
-     * --refresh-dependencies
-     * --debug-jvm
-     * */
+    @Test
+    fun `report directory is cleaned`() {
+        val oldReportFile = File(
+            temporaryFolder.root,
+            "build/reports/testwise_coverage/old-report-testwise_coverage-Unit-Tests-unitTest.json"
+        )
+        oldReportFile.parentFile.mkdirs()
+        oldReportFile.writeText("Test")
+        assertThat(oldReportFile).exists()
 
-    private
-    fun build(vararg arguments: String): BuildResult =
-        GradleRunner
-            .create()
+        val build = build(
+            true,
+            "unitTest",
+            "--impacted",
+            "--run-all-tests"
+        )
+        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+            .doesNotContain("you did not provide all relevant class files")
+        val testwiseCoverageReportFile =
+            File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
+        assertThat(testwiseCoverageReportFile).exists()
+        assertThat(oldReportFile).doesNotExist()
+    }
+
+    private fun build(executesTask: Boolean, vararg arguments: String): BuildResult {
+        val runnerArgs = arguments.toMutableList()
+        val runner = GradleRunner.create()
+
+        if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
+            runner.withDebug(true)
+            runnerArgs.add("--refresh-dependencies")
+            runnerArgs.add("--debug")
+            runnerArgs.add("--stacktrace")
+        }
+        if (executesTask && DEBUG_TEST_ENGINE) {
+            runnerArgs.add("--debug-jvm")
+        }
+
+        runner
             .withProjectDir(temporaryFolder.root)
             .withPluginClasspath()
-            .withArguments(*arguments)
+            .withArguments(runnerArgs)
             .withGradleVersion("4.6")
-//            .withDebug(true)
-            .build()
+
+        if (DEBUG_PLUGIN) {
+            runner.withDebug(true)
+        }
+
+        val buildResult = runner.build()
+
+        if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
+            println(buildResult.output)
+        }
+
+        return buildResult
+    }
 }
 

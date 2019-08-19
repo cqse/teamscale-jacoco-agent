@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +24,7 @@ import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.agent.rt.IAgent;
+import org.slf4j.Logger;
 
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
@@ -33,15 +35,22 @@ import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
+import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
+import com.teamscale.jacoco.agent.util.AgentUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 
 import okhttp3.HttpUrl;
+import java.util.stream.Stream;
 
 /**
  * Parses agent command line options.
  */
 public class AgentOptions {
+
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/**
 	 * The original options passed to the agent.
@@ -49,7 +58,8 @@ public class AgentOptions {
 	/* package */ String originalOptionsString;
 
 	/**
-	 * The directories and/or zips that contain all class files being profiled.
+	 * The directories and/or zips that contain all class files being profiled. Never null. If this is empty, classes
+	 * should be dumped to a temporary directory which should be used as the class-dir.
 	 */
 	/* package */ List<File> classDirectoriesOrZips = new ArrayList<>();
 
@@ -73,10 +83,24 @@ public class AgentOptions {
 	 */
 	/* package */ List<Path> additionalMetaDataFiles = new ArrayList<>();
 
+	/** Whether the agent should be run in testwise coverage mode or normal mode. */
+	/* package */ EMode mode = EMode.NORMAL;
+
 	/**
 	 * The interval in minutes for dumping XML data.
 	 */
 	/* package */ int dumpIntervalInMinutes = 60;
+
+
+	/** Whether to dump coverage when the JVM shuts down. */
+	/* package */ boolean shouldDumpOnExit = true;
+
+	/**
+	 * Whether to validate SSL certificates or simply ignore them. We disable this by default on purpose in order to
+	 * make the initial setup of the agent as smooth as possible. Many users have self-signed certificates that cause
+	 * problems. Users that need this feature can turn it on deliberately.
+	 */
+	/* package */ boolean validateSsl = false;
 
 	/**
 	 * Whether to ignore duplicate, non-identical class files.
@@ -130,9 +154,6 @@ public class AgentOptions {
 	 */
 	/* package */ Validator getValidator() {
 		Validator validator = new Validator();
-
-		validator.isTrue(!getClassDirectoriesOrZips().isEmpty() || useTestwiseCoverageMode(),
-				"You must specify at least one directory or zip that contains class files");
 		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
@@ -151,7 +172,7 @@ public class AgentOptions {
 						"The path provided for the logging configuration is not a file: " + loggingConfig);
 				CCSMAssert.isTrue(Files.isReadable(loggingConfig),
 						"The file provided for the logging configuration is not readable: " + loggingConfig);
-				CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
+				CCSMAssert.isTrue("xml".equalsIgnoreCase(FileSystemUtils.getFileExtension(loggingConfig.toFile())),
 						"The logging configuration file must have the file extension .xml and be a valid XML file");
 			});
 		}
@@ -170,9 +191,9 @@ public class AgentOptions {
 				"If you want to upload data to an azure file storage you need to provide both "
 						+ "'azure-url' and 'azure-key' ");
 
-		List<Boolean> configuredStores = Arrays.asList(azureFileStorageConfig.hasAllRequiredFieldsSet(),
-				teamscaleServer.hasAllRequiredFieldsSet(), uploadUrl != null).stream().filter(x -> x)
-				.collect(Collectors.toList());
+		List<Boolean> configuredStores = Stream
+				.of(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
+						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
 
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, "
 				+ "such as a teamscale instance, upload url or azure file storage");
@@ -183,7 +204,7 @@ public class AgentOptions {
 	/**
 	 * Returns the options to pass to the JaCoCo agent.
 	 */
-	public String createJacocoAgentOptions() {
+	public String createJacocoAgentOptions() throws AgentOptionParseException {
 		StringBuilder builder = new StringBuilder(getModeSpecificOptions());
 		if (jacocoIncludes != null) {
 			builder.append(",includes=").append(jacocoIncludes);
@@ -192,26 +213,56 @@ public class AgentOptions {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
 
-		additionalJacocoOptions.forEach((key, value) -> {
-			builder.append(",").append(key).append("=").append(value);
-		});
+		if (classDirectoriesOrZips.isEmpty()) {
+			Path tempDir = createTemporaryDumpDirectory();
+			tempDir.toFile().deleteOnExit();
+			builder.append(",classdumpdir=").append(tempDir.toAbsolutePath().toString());
+
+			classDirectoriesOrZips = Collections.singletonList(tempDir.toFile());
+		}
+
+		additionalJacocoOptions.forEach((key, value) -> builder.append(",").append(key).append("=").append(value));
 
 		return builder.toString();
 	}
 
-	/**
-	 * Sets output to none for normal mode and destination file in testwise
-	 * coverage mode
-	 */
+	private Path createTemporaryDumpDirectory() throws AgentOptionParseException {
+		try {
+			return Files.createTempDirectory("jacoco-class-dump");
+		} catch (IOException e) {
+			logger.warn("Unable to create temporary directory in default location. Trying in output directory.");
+		}
+
+		try {
+			return Files.createTempDirectory(outputDirectory, "jacoco-class-dump");
+		} catch (IOException e) {
+			logger.warn("Unable to create temporary directory in output directory. Trying in agent's directory.");
+		}
+
+		Path agentDirectory = AgentUtils.getAgentDirectory();
+		if (agentDirectory == null) {
+			throw new AgentOptionParseException("Could not resolve directory that contains the agent");
+		}
+		try {
+			return Files.createTempDirectory(agentDirectory, "jacoco-class-dump");
+		} catch (IOException e) {
+			throw new AgentOptionParseException("Unable to create a temporary directory anywhere", e);
+		}
+	}
+
+	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
 		if (useTestwiseCoverageMode()) {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.US);
-			return "sessionid=,destfile="
-					+ new File(outputDirectory.toFile(), "jacoco-" + dateFormat.format(new Date()) + ".exec")
-							.getAbsolutePath();
+			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
 			return "output=none";
 		}
+	}
+
+	private File getTempFile(final String prefix, final String extension) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
+		return new File(outputDirectory.toFile(),
+				prefix + "-" + dateFormat.format(new Date()) + "." + extension);
 	}
 
 	/**
@@ -220,7 +271,7 @@ public class AgentOptions {
 	 */
 	public AgentBase createAgent(IAgent agent) throws UploadStoreException, IOException {
 		if (useTestwiseCoverageMode()) {
-			return new TestwiseCoverageAgent(this, agent);
+			return new TestwiseCoverageAgent(this, agent, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
 			return new Agent(this, agent);
 		}
@@ -267,13 +318,17 @@ public class AgentOptions {
 	/**
 	 * @see #shouldIgnoreDuplicateClassFiles
 	 */
-	public boolean shouldIgnoreDuplicateClassFiles() {
-		return shouldIgnoreDuplicateClassFiles;
+	public EDuplicateClassFileBehavior duplicateClassFileBehavior() {
+		if (shouldIgnoreDuplicateClassFiles) {
+			return EDuplicateClassFileBehavior.WARN;
+		} else {
+			return EDuplicateClassFileBehavior.FAIL;
+		}
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */
 	private boolean useTestwiseCoverageMode() {
-		return httpServerPort != null || testEnvironmentVariable != null;
+		return mode == EMode.TESTWISE;
 	}
 
 	/**
@@ -300,10 +355,10 @@ public class AgentOptions {
 	}
 
 	/**
-	 * @see #loggingConfig
+	 * @see #validateSsl
 	 */
-	public void setLoggingConfig(Path loggingConfig) {
-		this.loggingConfig = loggingConfig;
+	public boolean shouldValidateSsl() {
+		return validateSsl;
 	}
 
 	/**
@@ -317,5 +372,26 @@ public class AgentOptions {
 	/** Whether coverage should be dumped in regular intervals. */
 	public boolean shouldDumpInIntervals() {
 		return dumpIntervalInMinutes > 0;
+	}
+
+	/** Whether coverage should be dumped on JVM shutdown. */
+	public boolean shouldDumpOnExit() {
+		return shouldDumpOnExit;
+	}
+
+	/** Describes the two possible modes the agent can be started in. */
+	public enum EMode {
+
+		/**
+		 * The default mode which produces JaCoCo XML coverage files on exit, in a defined interval or when triggered
+		 * via an HTTP endpoint. Each dump produces a new file containing the all collected coverage.
+		 */
+		NORMAL,
+
+		/**
+		 * Testwise coverage mode in which the agent only dumps when triggered via an HTTP endpoint. Coverage is written
+		 * as exec and appended into a single file.
+		 */
+		TESTWISE
 	}
 }

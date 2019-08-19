@@ -1,8 +1,9 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
+import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
-import org.conqat.lib.commons.string.StringUtils;
+import com.teamscale.report.util.SortedIntList;
 import org.jacoco.core.data.ExecutionData;
 
 import java.util.ArrayList;
@@ -12,11 +13,13 @@ import java.util.Set;
 /**
  * Holds information about a class' probes and to which line ranges they refer.
  * <p>
- * - Create an instance of this class for every analyzed java class.
- * - Set the file name of the java source file from which the class has been created.
- * - Then call {@link #addProbe(int, Set)} for all probes and lines that belong to that probe.
- * - Afterwards call {@link #getFileCoverage(ExecutionData, ILogger)} to transform probes ({@link ExecutionData}) for
- * this class into covered lines ({@link FileCoverageBuilder}).
+ * <ul>
+ * <li> Create an instance of this class for every analyzed java class.
+ * <li> Set the file name of the java source file from which the class has been created.
+ * <li> Then call {@link #addProbe(int, Set)} for all probes and lines that belong to that probe.
+ * <li> Afterwards call {@link #getFileCoverage(ExecutionData, ILogger)} to transform probes ({@link
+ * ExecutionData}) for this class into covered lines ({@link FileCoverageBuilder}).
+ * </ul>
  */
 public class ClassCoverageLookup {
 
@@ -29,7 +32,7 @@ public class ClassCoverageLookup {
 	/**
 	 * Mapping from probe IDs to sets of covered lines. The index in this list corresponds to the probe ID.
 	 */
-	private final List<Set<Integer>> probes = new ArrayList<>();
+	private final List<SortedIntList> probes = new ArrayList<>();
 
 	/**
 	 * Constructor.
@@ -51,14 +54,14 @@ public class ClassCoverageLookup {
 	}
 
 	/** Adds the probe with the given id to the method. */
-	public void addProbe(int probeId, Set<Integer> lines) {
+	public void addProbe(int probeId, SortedIntList lines) {
 		ensureArraySize(probeId);
 		probes.set(probeId, lines);
 	}
 
 	/**
-	 * Ensures that the probes list is big enough to allow access to the given index.
-	 * Intermediate list entries are filled with null.
+	 * Ensures that the probes list is big enough to allow access to the given index. Intermediate list entries are
+	 * filled with null.
 	 */
 	private void ensureArraySize(int index) {
 		while (index >= probes.size()) {
@@ -67,12 +70,12 @@ public class ClassCoverageLookup {
 	}
 
 	/**
-	 * Generates {@link FileCoverageBuilder} from an {@link ExecutionData}.
-	 * {@link ExecutionData} holds coverage of exactly one class (whereby inner classes are a separate class).
-	 * This method returns a {@link FileCoverageBuilder} object which is later merged with the {@link FileCoverageBuilder} of other
-	 * classes that reside in the same file.
+	 * Generates {@link FileCoverageBuilder} from an {@link ExecutionData}. {@link ExecutionData} holds coverage of
+	 * exactly one class (whereby inner classes are a separate class). This method returns a {@link FileCoverageBuilder}
+	 * object which is later merged with the {@link FileCoverageBuilder} of other classes that reside in the same file.
 	 */
-	public FileCoverageBuilder getFileCoverage(ExecutionData executionData, ILogger logger) throws CoverageGenerationException {
+	public FileCoverageBuilder getFileCoverage(ExecutionData executionData,
+											   ILogger logger) throws CoverageGenerationException {
 		boolean[] executedProbes = executionData.getProbes();
 
 		if (checkProbeInvariant(executedProbes)) {
@@ -96,7 +99,7 @@ public class ClassCoverageLookup {
 
 	private void fillFileCoverage(FileCoverageBuilder fileCoverage, boolean[] executedProbes, ILogger logger) {
 		for (int i = 0; i < probes.size(); i++) {
-			Set<Integer> coveredLines = probes.get(i);
+			SortedIntList coveredLines = probes.get(i);
 			if (!executedProbes[i]) {
 				continue;
 			}

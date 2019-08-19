@@ -35,7 +35,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
     }
 
     /** The local agent's server url to connect to. */
-    var localAgent: TeamscaleAgent? = TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:8123/"))
+    var localAgent: TeamscaleAgent? = TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:8123/")!!)
 
     /** A remote agent's server url to connect to. */
     var remoteAgent: TeamscaleAgent? = null
@@ -55,7 +55,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
      */
     @JvmOverloads
     fun useLocalAgent(url: String = "http://127.0.0.1:8123/") {
-        localAgent = TeamscaleAgent(HttpUrl.parse(url))
+        localAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
     }
 
     /**
@@ -65,7 +65,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
      */
     @JvmOverloads
     fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
-        remoteAgent = TeamscaleAgent(HttpUrl.parse(url))
+        remoteAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
     }
 
     /** Returns a filter predicate that respects the configured include and exclude patterns. */
@@ -102,6 +102,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
             argument.append("out", destination)
             argument.append("includes", jacocoExtension.includes)
             argument.append("excludes", jacocoExtension.excludes)
+            argument.append("mode", "testwise")
             argument.append("http-server-port", url.port())
         }
     }

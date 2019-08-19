@@ -1,8 +1,9 @@
 package com.teamscale.report.jacoco;
 
+import com.teamscale.client.FileSystemUtils;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ILogger;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -34,13 +35,13 @@ public class JaCoCoXmlReportGenerator {
 	private final Predicate<String> locationIncludeFilter;
 
 	/** Whether to ignore non-identical duplicates of class files. */
-	private final boolean ignoreNonidenticalDuplicateClassFiles;
+	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
 
 	/** Constructor. */
 	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
-									boolean ignoreDuplicates, ILogger logger) {
+									EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
-		this.ignoreNonidenticalDuplicateClassFiles = ignoreDuplicates;
+		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.logger = logger;
 	}
@@ -60,7 +61,8 @@ public class JaCoCoXmlReportGenerator {
 	}
 
 	/** Creates an XML report based on the given session and coverage data. */
-	private static void createReport(OutputStream output, IBundleCoverage bundleCoverage, SessionInfo sessionInfo, ExecutionDataStore store) throws IOException {
+	private static void createReport(OutputStream output, IBundleCoverage bundleCoverage, SessionInfo sessionInfo,
+									 ExecutionDataStore store) throws IOException {
 		XMLFormatter xmlFormatter = new XMLFormatter();
 		IReportVisitor visitor = xmlFormatter.createVisitor(output);
 
@@ -70,14 +72,14 @@ public class JaCoCoXmlReportGenerator {
 	}
 
 	/**
-	 * Analyzes the structure of the class files in
-	 * {@link #codeDirectoriesOrArchives} and builds an in-memory coverage report
-	 * with the coverage in the given store.
+	 * Analyzes the structure of the class files in {@link #codeDirectoriesOrArchives} and builds an in-memory coverage
+	 * report with the coverage in the given store.
 	 */
 	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionDataStore store) throws IOException {
 		CoverageBuilder coverageBuilder = new CoverageBuilder();
-		if (ignoreNonidenticalDuplicateClassFiles) {
-			coverageBuilder = new DuplicateIgnoringCoverageBuilder(this.logger);
+		if (duplicateClassFileBehavior != EDuplicateClassFileBehavior.FAIL) {
+			coverageBuilder = new DuplicateIgnoringCoverageBuilder(this.logger,
+					duplicateClassFileBehavior == EDuplicateClassFileBehavior.WARN);
 		}
 
 		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);

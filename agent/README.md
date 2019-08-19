@@ -23,7 +23,8 @@ The following options are available:
 
 ### General options
 
-- `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details see path format section below)
+- `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details 
+  see path format section below)
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -32,18 +33,23 @@ The following options are available:
   precaution in case your classes are nested inside e.g. a `src` folder, which might be interpreted as a part
   of the package name. We recommend always using this form).
   Make sure to include **all** relevant application code
-  but no external libraries. For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
+  but no external libraries. For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" 
+  section.
 - `excludes` (optional): exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format section below)
-- `logging-config`: path to a [logback][logback] configuration XML file (other configuration formats are not supported at the moment).
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
+  section below)
+- `logging-config`: path to a [logback][logback] configuration XML file (other configuration formats are not supported 
+  at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
-  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section below)
+  `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section 
+  below)
+- `mode`: which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
   
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
-`jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo documentation
-for a list of all available options.
+`jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo 
+documentation for a list of all available options.
 
 __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
@@ -58,16 +64,20 @@ patterns with `*`, `**` and `?`.
 
 ### Options for normal mode
 
-- `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
+- `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.
+- `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
+  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
+  above)
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
   Note that you still need to specify an `out` directory where failed uploads are stored.
-- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a semicolon.
+- `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
+  semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
@@ -92,27 +102,47 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
   
-  If **Subversion** is your VCS and your reposiory follows the SVN convention with `trunk`, `branches`, and `tags` directories, you can get the commit info via
+  If **Subversion** is your VCS and your reposiory follows the SVN convention with `trunk`, `branches`, and `tags` 
+  directories, you can get the commit info via
   
   ```bash
  echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
 ```
   
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
-  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format section above)
-  
-- `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent coverage upload").
+  `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format 
+  section above)
+- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
+  a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
+- `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent 
+  coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format section above)
+  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
+  section above)
+- `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
+  even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
+  You might need to make your self-signed certificates available to the agent via a keystore. See
+  [the Teamscale userguide's section on that topic][ts-userguide] for how to do that.
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
-  https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case that the given
+  https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case 
+  that the given
   path does not yet exists at the given share, it will be created.
 - `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
+- `http-server-port`: the port at which the agent should start an HTTP server that listens for commands.
+    The agent's REST API has the following endpoints:
+    - `[GET] /partition` Returns the name of the currently configured partition name.
+    - `[POST] /partition/{partitionName}` Sets the name of the partition name that should be used for all followup 
+      report dumps (see `teamscale-partition`). For reports that are not directly sent to Teamscale the generated report 
+      will contain the partition name as session ID.
+    - `[POST] /dump` Instructs the agent to dump the collected coverage.
+    - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
+      the current JVM session.
 
-## Testwise coverage mode
+## Options for testwise mode
 
 The testwise coverage mode allows to record coverage per test, which is needed for test impact analysis. This means that
-you can distinguish later, which test did produce which coverage.
+you can distinguish later, which test did produce which coverage. To enable this the `mode` option must be set to 
+`testwise`.
 
 Tests are identified by the `uniformPath`, which is a file system like path that is used to uniquely identify a test 
 within Teamscale and should be chosen accordingly. It is furthermore used to make the set of tests hierarchically 
@@ -140,10 +170,26 @@ finished via a REST API. The corresponding server listens at the specified port.
   (Recommended port is 8123)
   
 The agent's REST API has the following endpoints:
-- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
-- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
+- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
+- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
+  The body of the request may optionally contain the test execution result in json format:
+```json
+{
+ "result": "ERROR",
+ "message": "<stacktrace>|<ignore reason>"
+}
+```
+
+`result` can be one of:
+- `PASSED` Test execution was successful. 
+- `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore or @Disabled).
+- `SKIPPED` Caused by a failing assumption.
+- `FAILURE` Caused by a failing assertion.
+- `ERROR` Caused by an error during test execution (e.g. exception thrown).
+
+(`uniformPath` and `durationMillis` is set automatically)
   
 The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
@@ -188,14 +234,34 @@ script in the Tomcat installation directory. Create this file if it does not yet
 Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
 This ensures that the performance of your application does not degrade.
 
+## Additional steps for Glassfish
+
+You have two options to register the JVM option:
+
+1. Register the agent [via the `asadmin` tool][glassfish-asadmin].
+2. Register the agent by [manually editing `domain.xml`][glassfish-domainxml] and adding a `jvm-options` element.
+
+When using the `asadmin` tool, some characters need to be escaped with a backslash, see [this StackOverflow answer][glassfish-escaping].
+
+Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jvm-options` command.
+
+## Additional steps for Jetty
+
+Register the agent by setting a `JAVA_OPTIONS` variable such that the Jetty process can see it.
+
 ## Additional steps for Java Web Start
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
 
-## Store Commit in Manifest
 
-As it is very convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
-especially when tests are executed independently from the build. The following assumes that we are using a Git repository.
+## Store Commit in Jar file
+
+If you are using Git, you can use either a Maven or Gradle plugin to store the commit
+in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
+
+Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits, 
+especially when tests are executed independently from the build. The following assumes that we are using a Git 
+repository.
 
 ### Maven
 
@@ -346,9 +412,7 @@ Enable debug logging to see what is being filtered out and fine-tune these patte
 
 ## I do not have access to the class files
 
-In case the class files of the application are not locally available (e.g. loaded with custom class loader, ...)
-you can set the `jacoco-classdumpdir` option to dump the classes to any temporary directory and instruct the
-agent to read them from there with the `class-dir` option.
+In that case simply _don't_ specify a `class-dir` option.
 
 ## Error: "Can't add different class with same name"
 
@@ -375,3 +439,8 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
 [jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
 [logback]: https://logback.qos.ch/manual/index.html
+[glassfish-asadmin]: https://docs.oracle.com/cd/E19798-01/821-1751/gepzd/index.html
+[glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
+[glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
+[git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
+[ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf

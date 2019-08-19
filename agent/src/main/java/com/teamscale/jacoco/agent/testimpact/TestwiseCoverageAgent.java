@@ -6,21 +6,17 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import java.io.IOException;
-import java.net.BindException;
-import java.net.ServerSocket;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jacoco.agent.rt.IAgent;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.AgentOptions;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
+import com.teamscale.report.testwise.model.TestExecution;
 
-import okhttp3.ResponseBody;
 import spark.Request;
 import spark.Response;
-import spark.Service;
 
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens
@@ -38,92 +34,36 @@ import spark.Service;
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
-	/** The maximum port number for the agent to listen at. */
-	private static final int MAX_PORT_NUMBER = 65535;
-
-	/** The threshold for {@link #serviceInitializationCounter}. */
-	private static final int MAX_INIT_COUNT = 5;
-
 	/** Path parameter placeholder used in the HTTP requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
 
-	/** Map of port number to secondary agent service. */
-	private final Map<Integer, IAgentService> secondaryAgents = new LinkedHashMap<>();
+	/** JSON adapter for test executions. */
+	private final JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
+			.adapter(TestExecution.class);
 
-	/** Primary agent service (if any) or null. */
-	private IAgentService primaryAgent = null;
+	/** Helper for writing test executions to disk. */
+	private final TestExecutionWriter testExecutionWriter;
 
-	/** The agent options. */
-	private AgentOptions options;
-
-	/** The service for the HTTP API. */
-	private Service service;
-
-	/** The number of times we tried to initialize {@link #service}. */
-	public int serviceInitializationCounter = 0;
+	/** The timestamp at which the /test/start endpoint has been called last time. */
+	private long startTimestamp;
 
 	/** Constructor. */
-	public TestwiseCoverageAgent(AgentOptions options, IAgent jacocoAgent) throws IOException {
+	public TestwiseCoverageAgent(AgentOptions options, IAgent jacocoAgent,
+			 TestExecutionWriter testExecutionWriter) throws IOException {
 		super(options, jacocoAgent);
-		this.options = options;
-		initServer(determineFreePort());
+		this.testExecutionWriter = testExecutionWriter;
 	}
 
 	/**
 	 * Starts the HTTP server, which waits for information about started and
 	 * finished tests.
-	 * 
-	 * @throws IOException
-	 *             in case registration with the primary agent failed.
 	 */
-	private void initServer(int port) throws IOException {
-		logger.info("Listening for test events on port {}.", port);
-		serviceInitializationCounter++;
-
-		service = Service.ignite();
-		service.initExceptionHandler(this::handleInitException);
-		service.port(port);
-
+	@Override
+	protected void initServerEndpoints() {
 		service.get("/test", (request, response) -> controller.getSessionId());
 
 		service.post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
 		service.post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
-
-		service.post("/register", this::handleRegister);
-		service.delete("/register", this::handleUnregister);
-
-		if (port != options.getHttpServerPort()) {
-			registerWithPrimaryAgent();
-		}
-	}
-
-	/**
-	 * Returns the lowest unused local port that is equal or greater than the
-	 * one provided in {@link #options}.
-	 */
-	private int determineFreePort() throws IOException {
-		for (int currentPort = options.getHttpServerPort(); currentPort < MAX_PORT_NUMBER;) {
-			try (ServerSocket s = new ServerSocket(currentPort)) {
-				// We found a free port. This releases the socket on that port,
-				// so our Spark service can claim it. In case of concurrency
-				// issues, the service unable to claim the port will fail to
-				// initialize and call logInitExceptionAndExit.
-				return currentPort;
-			} catch (BindException e) {
-				currentPort++;
-			}
-		}
-		throw new IOException("Unable to determine a free server port.");
-	}
-
-	/** registers with a primary agent. */
-	private void registerWithPrimaryAgent() throws IOException {
-		primaryAgent = IAgentService.create(options.getHttpServerPort());
-		retrofit2.Response<ResponseBody> response = primaryAgent.register(getPort()).execute();
-		if (response.code() != 204) {
-			throw new IOException("Unable to register with primary agent at port: " + options.getHttpServerPort()
-					+ ". HTTP status: " + response.code());
-		}
 	}
 
 	/** Handles the start of a new test case by setting the session ID. */
@@ -140,6 +80,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		// to this particular test case.
 		controller.reset();
 		controller.setSessionId(testId);
+		startTimestamp = System.currentTimeMillis();
 
 		response.status(204);
 		return "";
@@ -156,6 +97,23 @@ public class TestwiseCoverageAgent extends AgentBase {
 		logger.debug("End test {}", testId);
 
 		controller.dump();
+		
+		// Test execution is optional
+		if (!request.body().isEmpty()) {
+			try {
+				TestExecution testExecution = testExecutionJsonAdapter.fromJson(request.body());
+				if (testExecution == null) {
+					response.status(400);
+					return "Test execution may not be null!";
+				}
+				testExecution.setUniformPath(testId);
+				long endTimestamp = System.currentTimeMillis();
+				testExecution.setDurationMillis(endTimestamp - startTimestamp);
+				testExecutionWriter.append(testExecution);
+			} catch (IOException e) {
+				logger.error("Failed to store test execution: " + e.getMessage(), e);
+			}
+		}
 
 		response.status(204);
 		return "";
@@ -172,119 +130,12 @@ public class TestwiseCoverageAgent extends AgentBase {
 		secondaryAgents.forEach((port, agent) -> agent.signalTestEnd(testId).enqueue(IAgentService
 				.failureCallback(() -> logger.warn("Error signaling test end to agent on port {}", port))));
 	}
-
-	/** Handles registrations from secondary agents. */
-	private String handleRegister(Request request, Response response) {
-		if (primaryAgent != null) {
-			return error(response, "Cannot register with a secondary agent.");
-		}
-
-		try {
-			int port = extractPortFromQuery(request);
-			secondaryAgents.put(port, IAgentService.create(port));
-		} catch (IllegalArgumentException e) {
-			return error(response, e.getMessage(), e);
-		}
-
-		response.status(204);
-		return "";
-	}
-
-	/** Handles unregistrations from secondary agents. */
-	private String handleUnregister(Request request, Response response) {
-		if (primaryAgent != null) {
-			return error(response, "Cannot unregister from a secondary agent.");
-		}
-
-		try {
-			int port = extractPortFromQuery(request);
-			IAgentService previous = secondaryAgents.remove(port);
-			if (previous == null) {
-				return error(response, "No secondary agent registered for port {}", port);
-			}
-		} catch (IllegalArgumentException e) {
-			return error(response, e.getMessage(), e);
-		}
-		response.status(204);
-		return "";
-	}
-
-	/**
-	 * Extracts and validates the port number from the request.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the port number is missing, not a number, or an invalid
-	 *             port.
-	 */
-	private static int extractPortFromQuery(Request request) throws IllegalArgumentException {
-		String portString = request.queryParams("port");
-		if (portString == null || portString.isEmpty()) {
-			throw new IllegalArgumentException("Port is missing!");
-		}
-		int port = Integer.parseInt(portString);
-		if (port < 1024 || port >= MAX_PORT_NUMBER) {
-			throw new NumberFormatException("Port " + port + " is not a valid port.");
-		}
-		return port;
-	}
-
-	/**
-	 * Logs the message to the error log, sets the response code to 400, and
-	 * returns the message for chaining. As noted in the
-	 * <a href="https://www.slf4j.org/faq.html#paramException">FAQ</a>, the
-	 * arguments may be string parameters, which are concatenated into the
-	 * string if error logging is enabled, and the last argument may be an
-	 * exception/throwable, whose stack trace is then logged as well.
-	 */
-	private String error(Response response, String message, Object... arguments) {
-		logger.error(message, arguments);
-		response.status(400);
-		return message;
-	}
-
-	/**
-	 * Handles errors that occurred during agent initialization. The most
-	 * typical case is concurrency issues in port assignment, in which case we
-	 * try to find an unused port up to five times. Other exceptions are handled
-	 * by exiting the process, since we would lose data otherwise.
-	 */
-	private void handleInitException(Exception e) {
-		try {
-			if (e instanceof BindException && serviceInitializationCounter < MAX_INIT_COUNT) {
-				logger.warn("Web server port collision. Retrying...");
-				initServer(determineFreePort());
-				return;
-			}
-		} catch (IOException e1) {
-			// Nothing to do, since we fail below anyway.
-		}
-		logger.error("Unrecoverable initialization error. Exiting.");
-		System.exit(1);
-	}
-
-	/** Stops the HTTP service and unregisters from the primary agent. */
-	@Override
-	protected void prepareShutdown() {
-		if (primaryAgent != null) {
-			try {
-				primaryAgent.unregister(getPort()).execute();
-			} catch (IOException e) {
-				logger.error("Unable to unregister from primary agent.", e);
-			}
-		}
-		service.stop();
-	}
-
+	
 	/**
 	 * Waits for the HTTP service to be initialized. Mainly used in tests to
 	 * prevent them from finishing before we can work with them.
 	 */
 	/* package */ void awaitServiceInitialization() {
 		service.awaitInitialization();
-	}
-
-	/** The port the HTTP server is listening at. */
-	public int getPort() {
-		return service.port();
 	}
 }
