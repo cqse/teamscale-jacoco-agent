@@ -7,6 +7,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -97,12 +98,12 @@ public class TestwiseCoverageAgentTest {
 
 		String testId = "FIRST_TEST";
 		IAgentService.create(primaryAgentPort).signalTestStart(testId).execute();
-
-		verify(mock).setSessionId(stringArg.capture());
-		assertEquals(testId, stringArg.getValue());
-
-		verify(secondaryAgent).setSessionId(stringArg.capture());
-		assertEquals(testId, stringArg.getValue());
+		
+		verify(mock, timeout(200)).setSessionId(stringArg.capture());
+		assertEquals("Primary agent does not have the correct test ID", testId, stringArg.getValue());
+		
+		verify(secondaryAgent, timeout(200)).setSessionId(stringArg.capture());
+		assertEquals("Secondary agent does not have the correct test ID", testId, stringArg.getValue());
 	}
 
 	/** Returns a valid options string for the given port number. */
