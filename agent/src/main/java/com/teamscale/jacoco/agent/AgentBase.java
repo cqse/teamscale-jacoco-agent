@@ -240,8 +240,9 @@ public abstract class AgentBase {
 	/**
 	 * Handles errors that occurred during agent initialization. The most
 	 * typical case is concurrency issues in port assignment, in which case we
-	 * try to find an unused port up to five times. Other exceptions are handled
-	 * by exiting the process, since we would lose data otherwise.
+	 * try to find an unused port up to {@value #MAX_INIT_COUNT} times. Other
+	 * exceptions are handled by exiting the process, since we would lose data
+	 * otherwise.
 	 */
 	private void handleInitException(Exception e) {
 		try {
