@@ -80,8 +80,7 @@ public class AgentOptionsParser {
 	/* package */ AgentOptions parse(String optionsString) throws AgentOptionParseException {
 		if (StringUtils.isEmpty(optionsString)) {
 			throw new AgentOptionParseException(
-					"No agent options given. You must at least provide an output directory (out)"
-							+ " and a classes directory (class-dir)");
+					"No agent options given. You must at least provide an output directory (out)");
 		}
 
 		AgentOptions options = new AgentOptions();

@@ -64,15 +64,16 @@ patterns with `*`, `**` and `?`.
 
 ### Options for normal mode
 
-- `class-dir` (required): the path under which all class files of the profiled application are stored. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
-  above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.
+- `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
+  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
+  above)
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
   Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
@@ -411,9 +412,7 @@ Enable debug logging to see what is being filtered out and fine-tune these patte
 
 ## I do not have access to the class files
 
-In case the class files of the application are not locally available (e.g. loaded with custom class loader, ...)
-you can set the `jacoco-classdumpdir` option to dump the classes to any temporary directory and instruct the
-agent to read them from there with the `class-dir` option.
+In that case simply _don't_ specify a `class-dir` option.
 
 ## Error: "Can't add different class with same name"
 

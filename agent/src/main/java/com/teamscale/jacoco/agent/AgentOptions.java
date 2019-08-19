@@ -17,18 +17,23 @@ import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
+import com.teamscale.jacoco.agent.util.AgentUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
+import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
@@ -40,13 +45,16 @@ import java.util.stream.Stream;
  */
 public class AgentOptions {
 
+	private final Logger logger = LoggingUtils.getLogger(this);
+
 	/**
 	 * The original options passed to the agent.
 	 */
 	/* package */ String originalOptionsString;
 
 	/**
-	 * The directories and/or zips that contain all class files being profiled.
+	 * The directories and/or zips that contain all class files being profiled. Never null. If this is empty, classes
+	 * should be dumped to a temporary directory which should be used as the class-dir.
 	 */
 	/* package */ List<File> classDirectoriesOrZips = new ArrayList<>();
 
@@ -83,10 +91,9 @@ public class AgentOptions {
 	/* package */ boolean shouldDumpOnExit = true;
 
 	/**
-	 * Whether to validate SSL certificates or simply ignore them.
-	 * We disable this by default on purpose in order to make the initial setup of the agent as smooth
-	 * as possible. Many users have self-signed certificates that cause problems.
-	 * Users that need this feature can turn it on deliberately.
+	 * Whether to validate SSL certificates or simply ignore them. We disable this by default on purpose in order to
+	 * make the initial setup of the agent as smooth as possible. Many users have self-signed certificates that cause
+	 * problems. Users that need this feature can turn it on deliberately.
 	 */
 	/* package */ boolean validateSsl = false;
 
@@ -142,9 +149,6 @@ public class AgentOptions {
 	 */
 	/* package */ Validator getValidator() {
 		Validator validator = new Validator();
-
-		validator.isTrue(!getClassDirectoriesOrZips().isEmpty() || useTestwiseCoverageMode(),
-				"You must specify at least one directory or zip that contains class files");
 		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
@@ -163,7 +167,7 @@ public class AgentOptions {
 						"The path provided for the logging configuration is not a file: " + loggingConfig);
 				CCSMAssert.isTrue(Files.isReadable(loggingConfig),
 						"The file provided for the logging configuration is not readable: " + loggingConfig);
-				CCSMAssert.isTrue(FileSystemUtils.getFileExtension(loggingConfig.toFile()).equalsIgnoreCase("xml"),
+				CCSMAssert.isTrue("xml".equalsIgnoreCase(FileSystemUtils.getFileExtension(loggingConfig.toFile())),
 						"The logging configuration file must have the file extension .xml and be a valid XML file");
 			});
 		}
@@ -195,7 +199,7 @@ public class AgentOptions {
 	/**
 	 * Returns the options to pass to the JaCoCo agent.
 	 */
-	public String createJacocoAgentOptions() {
+	public String createJacocoAgentOptions() throws AgentOptionParseException {
 		StringBuilder builder = new StringBuilder(getModeSpecificOptions());
 		if (jacocoIncludes != null) {
 			builder.append(",includes=").append(jacocoIncludes);
@@ -204,9 +208,41 @@ public class AgentOptions {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
 
+		if (classDirectoriesOrZips.isEmpty()) {
+			Path tempDir = createTemporaryDumpDirectory();
+			tempDir.toFile().deleteOnExit();
+			builder.append(",classdumpdir=").append(tempDir.toAbsolutePath().toString());
+
+			classDirectoriesOrZips = Collections.singletonList(tempDir.toFile());
+		}
+
 		additionalJacocoOptions.forEach((key, value) -> builder.append(",").append(key).append("=").append(value));
 
 		return builder.toString();
+	}
+
+	private Path createTemporaryDumpDirectory() throws AgentOptionParseException {
+		try {
+			return Files.createTempDirectory("jacoco-class-dump");
+		} catch (IOException e) {
+			logger.warn("Unable to create temporary directory in default location. Trying in output directory.");
+		}
+
+		try {
+			return Files.createTempDirectory(outputDirectory, "jacoco-class-dump");
+		} catch (IOException e) {
+			logger.warn("Unable to create temporary directory in output directory. Trying in agent's directory.");
+		}
+
+		Path agentDirectory = AgentUtils.getAgentDirectory();
+		if (agentDirectory == null) {
+			throw new AgentOptionParseException("Could not resolve directory that contains the agent");
+		}
+		try {
+			return Files.createTempDirectory(agentDirectory, "jacoco-class-dump");
+		} catch (IOException e) {
+			throw new AgentOptionParseException("Unable to create a temporary directory anywhere", e);
+		}
 	}
 
 	/** Sets output to none for normal mode and destination file in testwise coverage mode */
