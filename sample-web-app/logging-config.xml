@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<define name="defaultLogDir" class="com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner" />
+
+	<appender name="CONSOLE" class="shadow.ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%date{yyyy-MM-dd HH:mm:ss} %-5level %logger{35} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="File" class="shadow.ch.qos.logback.core.FileAppender">
+		<!-- TODO: adjust the path where the log file should be written -->
+		<file>tmp/teamscale-jacoco-agent.log</file>
+		<encoder>
+			<pattern>%date{yyyy-MM-dd HH:mm:ss} %-5level %logger{35} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="DEBUG">
+		<appender-ref ref="File"/>
+		<appender-ref ref="CONSOLE"/>
+	</root>
+
+	<logger name="shadow.org.apache.spark" level="warn" />
+	<logger name="shadow.org.eclipse.jetty" level="warn" />
+</configuration>
