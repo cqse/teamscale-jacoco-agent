@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [fix] prevent NPE when trying to read manifest from Jar file
 
 # 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
