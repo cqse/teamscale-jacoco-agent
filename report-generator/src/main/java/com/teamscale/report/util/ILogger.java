@@ -25,6 +25,7 @@ public interface ILogger {
 	/** Logs at error level. The given {@link Throwable} may be null. */
 	void error(String message, Throwable throwable);
 
+	/** Logs at error level. */
 	default void error(String message) {
 		error(message, null);
 	}
