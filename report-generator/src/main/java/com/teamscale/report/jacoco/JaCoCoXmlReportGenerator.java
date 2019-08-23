@@ -62,14 +62,16 @@ public class JaCoCoXmlReportGenerator {
 	}
 
 	private void sanityCheck(IBundleCoverage coverage) {
+		String mostLikelyCauseMessage = "Most likely you did not configure the agent correctly." +
+				" Please check that the includes and excludes options are set correctly so the relevant code is included." +
+				" If in doubt, first include more code and then iteratively narrow the patterns down to just the relevant code." +
+				" If you have specified the class-dir option, please make sure it points to a directory containing the" +
+				" class files/jars/wars/ears/etc. for which you are trying to measure code coverage.";
 		if (coverage.getPackages().size() == 0 || coverage.getLineCounter().getTotalCount() == 0) {
-			logger.error("The generated coverage report does not contain anything. " +
-					"Most likely you did not set the class-dir option correctly and no code was found");
-			return;
-		}
-		if (coverage.getLineCounter().getCoveredCount() == 0) {
+			logger.error("The generated coverage report is empty. " + mostLikelyCauseMessage);
+		} else if (coverage.getLineCounter().getCoveredCount() == 0) {
 			logger.error("The generated coverage report does not contain any covered source code lines. " +
-					"Most likely you did not set correct include/exclude patterns.");
+					mostLikelyCauseMessage);
 		}
 	}
 
