@@ -2,6 +2,9 @@ We use [semantic versioning][semver]
 
 # Next version
 
+# 15.2.0
+- [feature] agent logs errors in case of empty coverage dumps (i.e. misconfigured agent)
+
 # 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
 
