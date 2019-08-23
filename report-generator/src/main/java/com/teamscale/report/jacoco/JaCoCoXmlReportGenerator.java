@@ -54,10 +54,23 @@ public class JaCoCoXmlReportGenerator {
 	}
 
 	/** Creates the report. */
-	public void convertToReport(OutputStream output, Dump dump) throws IOException {
+	private void convertToReport(OutputStream output, Dump dump) throws IOException {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
+		sanityCheck(bundleCoverage);
 		createReport(output, bundleCoverage, dump.info, mergedStore);
+	}
+
+	private void sanityCheck(IBundleCoverage coverage) {
+		if (coverage.getPackages().size() == 0 || coverage.getLineCounter().getTotalCount() == 0) {
+			logger.error("The generated coverage report does not contain anything. " +
+					"Most likely you did not set the class-dir option correctly and no code was found");
+			return;
+		}
+		if (coverage.getLineCounter().getCoveredCount() == 0) {
+			logger.error("The generated coverage report does not contain any covered source code lines. " +
+					"Most likely you did not set correct include/exclude patterns.");
+		}
 	}
 
 	/** Creates an XML report based on the given session and coverage data. */
