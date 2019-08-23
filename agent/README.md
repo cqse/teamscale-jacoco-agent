@@ -3,6 +3,13 @@
 This program provides a Java agent that can regularly dump coverage from a running application.
 The JaCoCo coverage tool is used underneath.
 
+## Requirements
+
+The agent might need additional memory whenever a coverage report is created. If your JVM is
+configured to only use very little memory, you might have to increase this limit in order for
+the agent to function properly. How much memory is needed depends on how much code is being
+analyzed and thus on how you configure the agent.
+
 ## Installing
 
 Unzip this zip file into any folder.
