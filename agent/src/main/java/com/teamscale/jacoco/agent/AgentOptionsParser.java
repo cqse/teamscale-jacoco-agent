@@ -289,6 +289,10 @@ public class AgentOptionsParser {
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
 			Manifest manifest = jarStream.getManifest();
+			if (manifest == null) {
+				throw new AgentOptionParseException(
+						"Unable to read manifest from " + jarFile + ". Maybe the manifest is corrupt?");
+			}
 			String branch = manifest.getMainAttributes().getValue("Branch");
 			String timestamp = manifest.getMainAttributes().getValue("Timestamp");
 			if (StringUtils.isEmpty(branch)) {
