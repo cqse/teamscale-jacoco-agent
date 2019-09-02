@@ -3,9 +3,12 @@
 This program provides a Java agent that can regularly dump coverage from a running application.
 The JaCoCo coverage tool is used underneath.
 
-When used as a Java agent for your Java application, coverage is dumped to the file system, via
-HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
-Coverage is also dumped when the application is shut down.
+## Requirements
+
+The agent might need additional memory whenever a coverage report is created. If your JVM is
+configured to only use very little memory, you might have to increase this limit in order for
+the agent to function properly. How much memory is needed depends on how much code is being
+analyzed and thus on how you configure the agent.
 
 ## Installing
 

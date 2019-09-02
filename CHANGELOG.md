@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next version
+- [fix] prevent NPE when trying to read manifest from Jar file
 
 # 15.2.0
 - [feature] agent logs errors in case of empty coverage dumps (i.e. misconfigured agent)
