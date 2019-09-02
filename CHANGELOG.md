@@ -3,6 +3,9 @@ We use [semantic versioning][semver]
 # Next version
 - [fix] prevent NPE when trying to read manifest from Jar file
 
+# 15.2.0
+- [feature] agent logs errors in case of empty coverage dumps (i.e. misconfigured agent)
+
 # 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
 

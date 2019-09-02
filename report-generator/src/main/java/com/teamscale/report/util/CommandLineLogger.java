@@ -21,7 +21,9 @@ public class CommandLineLogger implements ILogger {
 	@Override
 	public void warn(String message, Throwable throwable) {
 		System.err.println(message);
-		throwable.printStackTrace();
+		if (throwable != null) {
+			throwable.printStackTrace();
+		}
 	}
 
 	@Override
@@ -32,6 +34,8 @@ public class CommandLineLogger implements ILogger {
 	@Override
 	public void error(String message, Throwable throwable) {
 		System.err.println(message);
-		throwable.printStackTrace();
+		if (throwable != null) {
+			throwable.printStackTrace();
+		}
 	}
 }

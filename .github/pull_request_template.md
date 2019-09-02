@@ -1,6 +1,6 @@
 Addresses issue #
 
-- [ ] [Changes are tested adequately](https://build.cqse.eu/teamscale/tests.html#/jacoco-client/)
+- [ ] Changes are tested adequately
 - [ ] Agent's README.md updated in case of user-visible changes
 - [ ] CHANGELOG.md updated
 

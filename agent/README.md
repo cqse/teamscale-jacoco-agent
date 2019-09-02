@@ -12,10 +12,8 @@ analyzed and thus on how you configure the agent.
 
 ## Installing
 
-Unzip this zip file into any folder.
-When used as a Java agent for your Java application, coverage is dumped to the file system, via
-HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
-Coverage is also transferred when the application is shut down.
+Unzip this zip file into any folder. __All files contained in the zip file are required for the agent
+to work.__
 
 Configure the agent on your application's JVM:
 
@@ -62,7 +60,7 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
-The log file is written to the agent's directory in the subdirectory `logs` by default.
+The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
 
 #### Path format
 
