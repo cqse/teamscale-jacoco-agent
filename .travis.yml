@@ -13,9 +13,9 @@ after_script:
   curl -L -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
   unzip teamscale-timestamp.zip
   echo ----
-  teamscale-timestamp --verbose
+  ./teamscale-timestamp --verbose
   echo ----
-  timestamp=$(teamscale-timestamp)
+  timestamp=$(./teamscale-timestamp)
   reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
   echo ----
   echo "curl -kv -X POST -ubuild:REDACTED $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
