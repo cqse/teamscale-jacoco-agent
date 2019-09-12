@@ -10,7 +10,7 @@ before_cache:
 after_script:
 - |
   # upload coverage to Teamscale
-  curl -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
+  curl -L -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
   unzip teamscale-timestamp.zip
   echo ----
   teamscale-timestamp --verbose
