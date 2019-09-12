@@ -14,7 +14,6 @@ after_script:
   unzip teamscale-timestamp.zip
   timestamp=$(./teamscale-timestamp)
   reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
-  echo "curl -kv -X POST -ubuild:REDACTED $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
   eval "curl -kv -X POST -ubuild:$TS_BUILD_USER_ACCESS_KEY $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
 cache:
   directories:
