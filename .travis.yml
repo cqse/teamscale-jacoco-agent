@@ -7,6 +7,20 @@ before_cache:
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 - rm -fr $HOME/.gradle/caches/*/fileHashes/
 - rm -fr $HOME/.gradle/caches/jars-3/*/buildSrc.jar
+after_script:
+- |
+  # upload coverage to Teamscale
+  curl -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
+  unzip teamscale-timestamp.zip
+  echo ----
+  teamscale-timestamp --verbose
+  echo ----
+  timestamp=$(teamscale-timestamp)
+  reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
+  echo ----
+  echo "curl -kv -X POST -ubuild:REDACTED $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
+  exec "curl -kv -X POST -ubuild:$TS_BUILD_USER_ACCESS_KEY $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
+  echo ----
 cache:
   directories:
   - "$HOME/.gradle/caches/"
