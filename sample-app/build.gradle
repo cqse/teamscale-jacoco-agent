@@ -1,11 +1,19 @@
 plugins {
     id 'java'
     id 'application'
+    id 'jacoco'
 }
 
 sourceCompatibility = 1.8
 version 'unspecified'
 mainClassName = 'Main'
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
     // this logback version is the oldest one available that I could get to work and possibly incompatible

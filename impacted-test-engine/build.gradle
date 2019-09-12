@@ -1,7 +1,15 @@
 plugins {
 	id 'java-library'
 	id 'maven'
+    id 'jacoco'
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 version pluginVersion
 

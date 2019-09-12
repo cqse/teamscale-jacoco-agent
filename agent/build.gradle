@@ -8,6 +8,7 @@ plugins {
 	// so we use the shadow plugin to relocate our dependencies
 	id 'com.github.johnrengelman.shadow' version '4.0.3'
 	id 'maven'
+    id 'jacoco'
 }
 
 version appVersion
@@ -17,6 +18,13 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 ext {
     outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
 	implementation project(':teamscale-client')

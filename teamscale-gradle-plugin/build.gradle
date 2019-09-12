@@ -3,6 +3,7 @@ plugins {
 	id 'java'
 	id 'java-gradle-plugin'
 	id 'maven'
+    id 'jacoco'
 }
 
 gradlePlugin {
@@ -13,6 +14,13 @@ gradlePlugin {
 		}
 	}
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 version pluginVersion
 
