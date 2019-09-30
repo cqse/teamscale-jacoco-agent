@@ -1,8 +1,7 @@
 package com.teamscale.jacoco.agent.store.upload.azure;
 
 import com.teamscale.client.EReportFormat;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.UploaderException;
 import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -42,9 +41,9 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	private final String account;
 
 	/** Constructor. */
-	public AzureFileStorageUploadStore(TimestampedFileStore failureStore, AzureFileStorageConfig config,
-									   List<Path> additionalMetaDataFiles) throws UploadStoreException {
-		super(failureStore, config.url, additionalMetaDataFiles);
+	public AzureFileStorageUploadStore(AzureFileStorageConfig config, List<Path> additionalMetaDataFiles)
+			throws UploaderException {
+		super(config.url, additionalMetaDataFiles);
 		this.accessKey = config.accessKey;
 		this.account = getAccount();
 
@@ -52,12 +51,12 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/** Extracts and returns the account of the provided azure file storage from the URL. */
-	private String getAccount() throws UploadStoreException {
+	private String getAccount() throws UploaderException {
 		Matcher matcher = AZURE_FILE_STORAGE_HOST_PATTERN.matcher(this.uploadUrl.host());
 		if (matcher.matches()) {
 			return matcher.group(1);
 		} else {
-			throw new UploadStoreException(
+			throw new UploaderException(
 					String.format(
 							"URL is malformed. Must be in the format " +
 									"\"https://<account>.file.core.windows.net/<share>/\", but was instead: %s",
@@ -76,7 +75,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	@Override
-	protected Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException, UploadStoreException {
+	protected Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException, UploaderException {
 		String fileName = createFileName();
 		if (checkFile(fileName).isSuccessful()) {
 			logger.warn(String.format("The file %s does already exists at %s", fileName, uploadUrl));
@@ -86,14 +85,14 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/**
-	 * Makes sure that the upload url is valid and that it exists on the file storage.
-	 * If some directories do not exists, they will be created.
+	 * Makes sure that the upload url is valid and that it exists on the file storage. If some directories do not
+	 * exists, they will be created.
 	 */
-	private void validateUploadUrl() throws UploadStoreException {
+	private void validateUploadUrl() throws UploaderException {
 		List<String> pathParts = this.uploadUrl.pathSegments();
 
 		if (pathParts.size() < 2) {
-			throw new UploadStoreException(String.format(
+			throw new UploaderException(String.format(
 					"%s is too short for a file path on the storage. " +
 							"At least the share must be provided: https://<account>.file.core.windows.net/<share>/",
 					uploadUrl.url().getPath()));
@@ -102,7 +101,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 		try {
 			checkAndCreatePath(pathParts);
 		} catch (IOException e) {
-			throw new UploadStoreException(String.format(
+			throw new UploaderException(String.format(
 					"Checking the validity of %s failed. " +
 							"There is probably something wrong with the URL or a problem with the account/key: ",
 					this.uploadUrl.url().getPath()), e);
@@ -112,13 +111,13 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	/**
 	 * Checks the directory path in the store url. Creates any missing directories.
 	 */
-	private void checkAndCreatePath(List<String> pathParts) throws IOException, UploadStoreException {
+	private void checkAndCreatePath(List<String> pathParts) throws IOException, UploaderException {
 		for (int i = 2; i <= pathParts.size() - 1; i++) {
 			String directoryPath = String.format("/%s/", String.join("/", pathParts.subList(0, i)));
 			if (!checkDirectory(directoryPath).isSuccessful()) {
 				Response<ResponseBody> mkdirResponse = createDirectory(directoryPath);
 				if (!mkdirResponse.isSuccessful()) {
-					throw new UploadStoreException(
+					throw new UploaderException(
 							String.format("Creation of path '/%s' was unsuccessful", directoryPath), mkdirResponse);
 				}
 			}
@@ -131,7 +130,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/** Checks if the file with the given name exists */
-	private Response<Void> checkFile(String fileName) throws IOException, UploadStoreException {
+	private Response<Void> checkFile(String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
@@ -145,7 +144,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/** Checks if the directory given by the specified path does exist. */
-	private Response<Void> checkDirectory(String directoryPath) throws IOException, UploadStoreException {
+	private Response<Void> checkDirectory(String directoryPath) throws IOException, UploaderException {
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 
 		Map<String, String> queryParameters = new HashMap<>();
@@ -159,10 +158,10 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/**
-	 * Creates the directory specified by the given path.
-	 * The path must contain the share where it should be created on.
+	 * Creates the directory specified by the given path. The path must contain the share where it should be created
+	 * on.
 	 */
-	private Response<ResponseBody> createDirectory(String directoryPath) throws IOException, UploadStoreException {
+	private Response<ResponseBody> createDirectory(String directoryPath) throws IOException, UploaderException {
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 
 		Map<String, String> queryParameters = new HashMap<>();
@@ -176,7 +175,8 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/** Creates and fills a file with the given data and name. */
-	private Response<ResponseBody> createAndFillFile(byte[] zipFilBytes, String fileName) throws UploadStoreException, IOException {
+	private Response<ResponseBody> createAndFillFile(byte[] zipFilBytes,
+													 String fileName) throws UploaderException, IOException {
 		Response<ResponseBody> response = createFile(zipFilBytes, fileName);
 		if (response.isSuccessful()) {
 			return fillFile(zipFilBytes, fileName);
@@ -186,10 +186,10 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/**
-	 * Creates an empty file with the given name.
-	 * The size is defined by the length of the given byte array.
+	 * Creates an empty file with the given name. The size is defined by the length of the given byte array.
 	 */
-	private Response<ResponseBody> createFile(byte[] zipFileBytes, String fileName) throws IOException, UploadStoreException {
+	private Response<ResponseBody> createFile(byte[] zipFileBytes,
+											  String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
@@ -206,12 +206,12 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/**
-	 * Fills the file defined by the name with the given data.
-	 * Should be used with {@link #createFile(byte[], String)}, because the request only writes exactly the length of
-	 * the given data, so the file should be exactly as big as the data, otherwise it will be partially filled or is
-	 * not big enough.
+	 * Fills the file defined by the name with the given data. Should be used with {@link #createFile(byte[], String)},
+	 * because the request only writes exactly the length of the given data, so the file should be exactly as big as the
+	 * data, otherwise it will be partially filled or is not big enough.
 	 */
-	private Response<ResponseBody> fillFile(byte[] zipFileBytes, String fileName) throws IOException, UploadStoreException {
+	private Response<ResponseBody> fillFile(byte[] zipFileBytes,
+											String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		String range = "bytes=0-" + (zipFileBytes.length - 1);

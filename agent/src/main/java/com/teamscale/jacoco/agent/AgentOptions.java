@@ -8,13 +8,13 @@ package com.teamscale.jacoco.agent;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.IUploader;
+import com.teamscale.jacoco.agent.store.NoopUploader;
+import com.teamscale.jacoco.agent.store.UploaderException;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
-import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
+import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.util.AgentUtils;
@@ -264,7 +264,7 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws UploadStoreException {
+	public AgentBase createAgent() throws UploaderException {
 		if (useTestwiseCoverageMode()) {
 			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
@@ -273,23 +273,22 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Creates the store to use for the coverage XMLs.
+	 * Creates an uplaoder for the coverage XMLs.
 	 */
-	public IXmlStore createStore() throws UploadStoreException {
-		TimestampedFileStore fileStore = new TimestampedFileStore(outputDirectory);
+	public IUploader createUploader() throws UploaderException {
 		if (uploadUrl != null) {
-			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
+			return new HttpUploadStore(uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
-			return new TeamscaleUploadStore(fileStore, teamscaleServer);
+			return new TeamscaleUploader(teamscaleServer);
 		}
 
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
-			return new AzureFileStorageUploadStore(fileStore, azureFileStorageConfig,
+			return new AzureFileStorageUploadStore(azureFileStorageConfig,
 					additionalMetaDataFiles);
 		}
 
-		return fileStore;
+		return new NoopUploader();
 	}
 
 	/**

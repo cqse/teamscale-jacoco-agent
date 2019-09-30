@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.store.upload.http;
 
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
@@ -16,8 +15,8 @@ import java.util.List;
  */
 public class HttpUploadStore extends UploadStoreBase<IHttpUploadApi> {
 	/** Constructor. */
-	public HttpUploadStore(TimestampedFileStore failureStore, HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
-		super(failureStore, uploadUrl, additionalMetaDataFiles);
+	public HttpUploadStore(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
+		super(uploadUrl, additionalMetaDataFiles);
 	}
 
 	@Override
@@ -33,7 +32,6 @@ public class HttpUploadStore extends UploadStoreBase<IHttpUploadApi> {
 	/** {@inheritDoc} */
 	@Override
 	public String describe() {
-		return "Uploading to " + uploadUrl + " (fallback in case of network errors to: " + failureStore.describe()
-				+ ")";
+		return "Uploading to " + uploadUrl;
 	}
 }

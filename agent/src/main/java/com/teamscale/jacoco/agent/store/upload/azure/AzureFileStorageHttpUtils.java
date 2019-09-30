@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.store.upload.azure;
 
-import com.teamscale.jacoco.agent.store.UploadStoreException;
+import com.teamscale.jacoco.agent.store.UploaderException;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 
 import javax.crypto.Mac;
@@ -97,9 +97,10 @@ import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS
 	}
 
 	/** Creates the string which is needed for the authorization of an azure file storage request. */
-	/* package */ static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
+	/* package */
+	static String getAuthorizationString(EHttpMethod method, String account, String key, String path,
 										 Map<String, String> headers, Map<String, String> queryParameters)
-			throws UploadStoreException {
+			throws UploaderException {
 		String stringToSign = createSignString(method, headers, account, path, queryParameters);
 
 		try {
@@ -108,14 +109,15 @@ import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS
 			String authKey = new String(Base64.getEncoder().encode(mac.doFinal(stringToSign.getBytes("UTF-8"))));
 			return "SharedKey " + account + ":" + authKey;
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-			throw new UploadStoreException("Something is really wrong...", e);
+			throw new UploaderException("Something is really wrong...", e);
 		} catch (InvalidKeyException | IllegalArgumentException e) {
-			throw new UploadStoreException(String.format("The given access key is malformed: %s", key), e);
+			throw new UploaderException(String.format("The given access key is malformed: %s", key), e);
 		}
 	}
 
 	/** Returns the list of headers which must be present at every request */
-	/* package */ static Map<String, String> getBaseHeaders() {
+	/* package */
+	static Map<String, String> getBaseHeaders() {
 		Map<String, String> headers = new HashMap<>();
 		headers.put(X_MS_VERSION, AzureFileStorageHttpUtils.VERSION);
 		headers.put(X_MS_DATE, FORMAT.format(LocalDateTime.now()));

@@ -5,8 +5,8 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
+import com.teamscale.jacoco.agent.store.IUploader;
+import com.teamscale.jacoco.agent.store.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -43,13 +43,13 @@ public class Agent extends AgentBase {
 	private Timer timer;
 
 	/** Stores the XML files. */
-	protected final IXmlStore uploader;
+	protected final IUploader uploader;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploadStoreException {
+	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploaderException {
 		super(options);
 
-		uploader = options.createStore();
+		uploader = options.createUploader();
 		logger.info("Storage method: {}", uploader.describe());
 
 		this.outputDirectory = options.outputDirectory;
@@ -122,8 +122,8 @@ public class Agent extends AgentBase {
 	}
 
 	/**
-	 * Dumps the current execution data, converts it, writes it to the {@link #outputDirectory} and uploads it if an uploader is configured.
-	 * Logs any errors, never throws an exception.
+	 * Dumps the current execution data, converts it, writes it to the {@link #outputDirectory} and uploads it if an
+	 * uploader is configured. Logs any errors, never throws an exception.
 	 */
 	private void dumpReport() {
 		logger.debug("Starting dump");
@@ -145,17 +145,19 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		File file;
+		File coverageFile;
 		long currentTime = System.currentTimeMillis();
 		Path outputFile = this.outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			file = generator.convert(dump, outputFile.toString());
+			coverageFile = generator.convert(dump, outputFile.toString());
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
 			return;
 		}
 
-		// TODO add call to uploader if exists
+		if (coverageFile != null) {
+			uploader.upload(coverageFile);
+		}
 
 	}
 }

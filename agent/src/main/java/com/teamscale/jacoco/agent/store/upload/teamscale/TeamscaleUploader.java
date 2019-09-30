@@ -4,24 +4,21 @@ import com.teamscale.client.EReportFormat;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
-import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 /** Uploads XML Coverage to a Teamscale instance. */
-public class TeamscaleUploadStore implements IXmlStore {
+public class TeamscaleUploader implements IUploader {
 
 	/** The logger. */
 	private final Logger logger = LoggingUtils.getLogger(this);
-
-	/** The store to write failed uploads to. */
-	private final TimestampedFileStore failureStore;
 
 	/** Teamscale server details. */
 	private final TeamscaleServer teamscaleServer;
@@ -30,8 +27,7 @@ public class TeamscaleUploadStore implements IXmlStore {
 	private final ITeamscaleService api;
 
 	/** Constructor. */
-	public TeamscaleUploadStore(TimestampedFileStore failureStore, TeamscaleServer teamscaleServer) {
-		this.failureStore = failureStore;
+	public TeamscaleUploader(TeamscaleServer teamscaleServer) {
 		this.teamscaleServer = teamscaleServer;
 
 		api = TeamscaleServiceGenerator.createService(
@@ -43,17 +39,18 @@ public class TeamscaleUploadStore implements IXmlStore {
 	}
 
 	@Override
-	public void store(String xml) {
+	public void upload(File coverageFile) {
 		try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
-			if (!tryUploading(xml)) {
-				logger.warn("Storing failed upload in {}", failureStore.getOutputDirectory());
-				failureStore.store(xml);
+			if (!tryUploading(coverageFile)) {
+				logger.warn("Filed to upload coverage to Teamscale. Won't delete local file");
+			} else {
+				coverageFile.delete();
 			}
 		}
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
-	private boolean tryUploading(String xml) {
+	private boolean tryUploading(File xml) {
 		logger.debug("Uploading JaCoCo artifact to {}", teamscaleServer);
 
 		try {
@@ -74,7 +71,6 @@ public class TeamscaleUploadStore implements IXmlStore {
 
 	@Override
 	public String describe() {
-		return "Uploading to " + teamscaleServer + " (fallback in case of network errors to: " + failureStore.describe()
-				+ ")";
+		return "Uploading to " + teamscaleServer;
 	}
 }
