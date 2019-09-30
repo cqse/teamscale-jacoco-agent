@@ -63,7 +63,7 @@ public class Converter {
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			File coverageFile = generator.convert(new Dump(sessionInfo, executionDataStore), arguments.outputFile);
+			generator.convert(new Dump(sessionInfo, executionDataStore), arguments.outputFile);
 		}
 	}
 

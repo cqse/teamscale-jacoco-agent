@@ -2,6 +2,9 @@ package com.teamscale.jacoco.agent.store;
 
 import java.io.File;
 
+/**
+ * Dummy uploader that does not provide any functionality. Can be used instead of null to mimic no upload behaviour.
+ */
 public class NoopUploader implements IUploader {
 	@Override
 	public void upload(File coverageFile) {
