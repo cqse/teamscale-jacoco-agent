@@ -1,6 +1,5 @@
 package com.teamscale.report.jacoco;
 
-import com.teamscale.client.FileSystemUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ILogger;
@@ -12,8 +11,8 @@ import org.jacoco.core.data.SessionInfo;
 import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.xml.XMLFormatter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -53,11 +52,36 @@ public class JaCoCoXmlReportGenerator {
 		this.logger = logger;
 	}
 
-	/** Creates the report. */
-	public String convert(Dump dump) throws IOException {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+	/**
+	 * Creates the report and writes it to a file.
+	 *
+	 * @return The file object of for the converted report or null if it could not be created
+	 */
+	public File convert(Dump dump, String filePath) throws IOException {
+		File outputFile = createOutputFile(filePath);
+		if (outputFile == null) {
+			return null;
+		}
+		FileOutputStream output = new FileOutputStream(outputFile);
 		convertToReport(output, dump);
-		return output.toString(FileSystemUtils.UTF8_ENCODING);
+		return outputFile;
+	}
+
+	private File createOutputFile(String filePath) {
+		File outputFile = new File(filePath);
+
+		try {
+			boolean fileCreated = outputFile.createNewFile();
+			if (!fileCreated) {
+				return null;
+			}
+		} catch (IOException e) {
+			logger.error("Could not create file " + outputFile.getAbsolutePath() + ". ");
+			return null;
+		}
+
+		return outputFile;
 	}
 
 	/** Creates the report. */

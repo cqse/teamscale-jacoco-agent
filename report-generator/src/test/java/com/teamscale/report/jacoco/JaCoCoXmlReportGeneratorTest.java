@@ -65,9 +65,11 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		File classFileFolder = useTestFile(testDataFolder);
 		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
 				CollectionUtils.emptyList());
+		long currentTime = System.currentTimeMillis();
+		String outputFilePath = "test-coverage-" + currentTime + ".xml";
 		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter,
 				duplicateClassFileBehavior,
-				mock(ILogger.class)).convert(createDummyDump());
+				mock(ILogger.class)).convert(createDummyDump(), outputFilePath);
 	}
 
 }
