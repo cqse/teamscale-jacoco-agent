@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
@@ -50,7 +50,7 @@ public abstract class UploadStoreBase<T> implements IUploader {
 
 	/** Uploads the coverage zip to the server */
 	protected abstract Response<ResponseBody> uploadCoverageZip(
-			byte[] zipFileBytes) throws IOException, UploaderException;
+			File coverageFile) throws IOException, UploaderException;
 
 	@Override
 	public void upload(File coverageFile) {
@@ -65,17 +65,18 @@ public abstract class UploadStoreBase<T> implements IUploader {
 	protected boolean tryUpload(File coverageFile) {
 		logger.debug("Uploading coverage to {}", uploadUrl);
 
-		byte[] zipFileBytes;
+		File zipFile;
 		try {
-			zipFileBytes = createZipFile(""); // TODO actually zip the file without reading all of it
+			zipFile = createZipFile(coverageFile);
 		} catch (IOException e) {
 			logger.error("Failed to compile coverage zip file for upload to {}", uploadUrl, e);
 			return false;
 		}
 
 		try {
-			Response<ResponseBody> response = uploadCoverageZip(zipFileBytes);
+			Response<ResponseBody> response = uploadCoverageZip(zipFile);
 			if (response.isSuccessful()) {
+				zipFile.delete();
 				return true;
 			}
 
@@ -99,27 +100,29 @@ public abstract class UploadStoreBase<T> implements IUploader {
 	/**
 	 * Creates the zip file to upload which includes the given coverage XML and all {@link #additionalMetaDataFiles}.
 	 */
-	private byte[] createZipFile(String xml) throws IOException {
-		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-			try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
-				 OutputStreamWriter writer = new OutputStreamWriter(zipOutputStream, "UTF-8")) {
-				fillZipFile(zipOutputStream, writer, xml);
+	private File createZipFile(File coverageFile) throws IOException {
+		File zipFile = createZipFileObject(coverageFile);
+		try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile)) {
+			try (ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+				fillZipFile(zipOutputStream, coverageFile);
 			}
-			return byteArrayOutputStream.toByteArray();
+			return zipFile;
 		}
+	}
+
+	private File createZipFileObject(File coverageFile) {
+		Path parentFolder = coverageFile.getParentFile().toPath();
+		String filename = coverageFile.getName().substring(0, coverageFile.getName().length() - 4) + ".zip";
+		return new File(parentFolder.resolve(filename).toString());
 	}
 
 	/**
 	 * Fills the upload zip file with the given coverage XML and all {@link #additionalMetaDataFiles}.
 	 */
-	private void fillZipFile(ZipOutputStream zipOutputStream, OutputStreamWriter writer, String xml)
+	private void fillZipFile(ZipOutputStream zipOutputStream, File coverageFile)
 			throws IOException {
 		zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
-		writer.write(xml);
-
-		// We flush the writer, but don't close it here, because closing the writer
-		// would also close the zipOutputStream, making further writes impossible.
-		writer.flush();
+		zipOutputStream.write(FileSystemUtils.readFileBinary(coverageFile));
 
 		for (Path additionalFile : additionalMetaDataFiles) {
 			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));

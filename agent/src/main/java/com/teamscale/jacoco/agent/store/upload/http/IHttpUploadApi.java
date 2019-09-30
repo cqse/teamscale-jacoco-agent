@@ -16,6 +16,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 
+import java.io.File;
 import java.io.IOException;
 
 /** {@link Retrofit} API specification for the {@link HttpUploadStore}. */
@@ -27,10 +28,9 @@ public interface IHttpUploadApi {
 	public Call<ResponseBody> upload(@Part MultipartBody.Part uploadedFile);
 
 	/**
-	 * Convenience method to perform an {@link #upload(okhttp3.MultipartBody.Part)}
-	 * call for a coverage zip.
+	 * Convenience method to perform an {@link #upload(okhttp3.MultipartBody.Part)} call for a coverage zip.
 	 */
-	public default Response<ResponseBody> uploadCoverageZip(byte[] data) throws IOException {
+	public default Response<ResponseBody> uploadCoverageZip(File data) throws IOException {
 		RequestBody body = RequestBody.create(MediaType.parse("application/zip"), data);
 		MultipartBody.Part part = MultipartBody.Part.createFormData("file", "coverage.zip", body);
 		return upload(part).execute();

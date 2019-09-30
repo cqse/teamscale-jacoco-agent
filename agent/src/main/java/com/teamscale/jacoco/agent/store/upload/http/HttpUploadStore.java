@@ -6,6 +6,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -25,8 +26,8 @@ public class HttpUploadStore extends UploadStoreBase<IHttpUploadApi> {
 	}
 
 	@Override
-	protected Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException {
-		return api.uploadCoverageZip(zipFileBytes);
+	protected Response<ResponseBody> uploadCoverageZip(File zipFile) throws IOException {
+		return api.uploadCoverageZip(zipFile);
 	}
 
 	/** {@inheritDoc} */

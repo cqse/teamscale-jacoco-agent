@@ -9,6 +9,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -75,13 +76,13 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	@Override
-	protected Response<ResponseBody> uploadCoverageZip(byte[] zipFileBytes) throws IOException, UploaderException {
+	protected Response<ResponseBody> uploadCoverageZip(File zipFile) throws IOException, UploaderException {
 		String fileName = createFileName();
 		if (checkFile(fileName).isSuccessful()) {
 			logger.warn(String.format("The file %s does already exists at %s", fileName, uploadUrl));
 		}
 
-		return createAndFillFile(zipFileBytes, fileName);
+		return createAndFillFile(zipFile, fileName);
 	}
 
 	/**
@@ -175,11 +176,11 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/** Creates and fills a file with the given data and name. */
-	private Response<ResponseBody> createAndFillFile(byte[] zipFilBytes,
+	private Response<ResponseBody> createAndFillFile(File zipFile,
 													 String fileName) throws UploaderException, IOException {
-		Response<ResponseBody> response = createFile(zipFilBytes, fileName);
+		Response<ResponseBody> response = createFile(zipFile, fileName);
 		if (response.isSuccessful()) {
-			return fillFile(zipFilBytes, fileName);
+			return fillFile(zipFile, fileName);
 		}
 		logger.warn(String.format("Creation of file '%s' was unsuccessful.", fileName));
 		return response;
@@ -188,12 +189,12 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	/**
 	 * Creates an empty file with the given name. The size is defined by the length of the given byte array.
 	 */
-	private Response<ResponseBody> createFile(byte[] zipFileBytes,
+	private Response<ResponseBody> createFile(File zipFile,
 											  String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
-		headers.put(X_MS_CONTENT_LENGTH, zipFileBytes.length + "");
+		headers.put(X_MS_CONTENT_LENGTH, zipFile.length() + "");
 		headers.put(X_MS_TYPE, "file");
 
 		Map<String, String> queryParameters = new HashMap<>();
@@ -206,21 +207,21 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/**
-	 * Fills the file defined by the name with the given data. Should be used with {@link #createFile(byte[], String)},
+	 * Fills the file defined by the name with the given data. Should be used with {@link #createFile(File, String)},
 	 * because the request only writes exactly the length of the given data, so the file should be exactly as big as the
 	 * data, otherwise it will be partially filled or is not big enough.
 	 */
-	private Response<ResponseBody> fillFile(byte[] zipFileBytes,
+	private Response<ResponseBody> fillFile(File zipFile,
 											String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
-		String range = "bytes=0-" + (zipFileBytes.length - 1);
+		String range = "bytes=0-" + (zipFile.length() - 1);
 		String contentType = "application/octet-stream";
 
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 		headers.put(X_MS_WRITE, "update");
 		headers.put(X_MS_RANGE, range);
-		headers.put(CONTENT_LENGTH, "" + zipFileBytes.length);
+		headers.put(CONTENT_LENGTH, "" + zipFile.length());
 		headers.put(CONTENT_TYPE, contentType);
 
 		Map<String, String> queryParameters = new HashMap<>();
@@ -230,7 +231,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 				.getAuthorizationString(PUT, account, accessKey, filePath, headers, queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
-		RequestBody content = RequestBody.create(MediaType.parse(contentType), zipFileBytes);
+		RequestBody content = RequestBody.create(MediaType.parse(contentType), zipFile);
 		return api.putData(filePath, headers, queryParameters, content).execute();
 	}
 }
