@@ -1,5 +1,8 @@
 We use [semantic versioning][semver]
 
+# Next Release
+- [documentation] Configuration for SAP NetWeaver Java (>= 7.50) is now documented
+
 # 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
 - [feature] agent logs errors in case of empty coverage dumps (i.e. misconfigured agent)
