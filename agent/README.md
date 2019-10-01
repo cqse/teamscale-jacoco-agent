@@ -262,7 +262,7 @@ Prior versions of NetWeaver Java are not supported by the Teamscale JaCoCo Agent
 In order to set the JVM agent parameter, you need to use the NetWeaver Administrator to navigate to
 `Configuration` - `Infrastructure` - `Java System Properties` and add an additional JVM parameter.
 Use the search field to search for `agent`, and select the `-javaagent:<jarpath>[=<options>]` entry.
-In the `name` field, enter the first part, until the `.jar`, and provide all the options (*without* the
+In the `name` field, enter the first part, until (including) the `.jar`, and provide all the options (*without* the leading
 `=`) in the `value` field. We advise to only set the `config-file` option here, and provide all other
 options via the config file. Choose `add` and then `save`, and restart the Java server from the SAP
 Management Console.
