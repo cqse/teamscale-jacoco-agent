@@ -254,6 +254,19 @@ Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jv
 
 Register the agent by setting a `JAVA_OPTIONS` variable such that the Jetty process can see it.
 
+## Additional steps for SAP NetWeaver Java
+
+Please note that the Teamscale JaCoCo Agent requires at least Java 8, which is part of NetWeaver Java 7.50.
+Prior versions of NetWeaver Java are not supported by the Teamscale JaCoCo Agent.
+
+In order to set the JVM agent parameter, you need to use the NetWeaver Administrator to navigate to
+`Configuration` - `Infrastructure` - `Java System Properties` and add an additional JVM parameter.
+Use the search field to search for `agent`, and select the `-javaagent:<jarpath>[=<options>]` entry.
+In the `name` field, enter the first part, until the `.jar`, and provide all the options (*without* the
+`=`) in the `value` field. We advise to only set the `config-file` option here, and provide all other
+options via the config file. Choose `add` and then `save`, and restart the Java server from the SAP
+Management Console.
+
 ## Additional steps for Java Web Start
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
