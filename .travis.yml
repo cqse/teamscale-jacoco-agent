@@ -10,11 +10,16 @@ before_cache:
 after_script:
 - |
   # upload coverage to Teamscale
-  curl -L -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
-  unzip teamscale-timestamp.zip
-  timestamp=$(./teamscale-timestamp)
-  reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
-  eval "curl -kv -X POST -ubuild:$TS_BUILD_USER_ACCESS_KEY $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
+  if [ "$TRAVIS_EVENT_TYPE" = "pull_request" ]
+  then
+    echo "not uploading coverage for pull request builds"
+  else
+    curl -L -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
+    unzip teamscale-timestamp.zip
+    timestamp=$(./teamscale-timestamp)
+    reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
+    eval "curl -kv -X POST -ubuild:$TS_BUILD_USER_ACCESS_KEY $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
+  fi
 cache:
   directories:
   - "$HOME/.gradle/caches/"
