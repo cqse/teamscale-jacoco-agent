@@ -55,6 +55,9 @@ task unitTest(type: TestImpacted) {
 			}
 		}
 	}
+	if (project.hasProperty('excludeFailingTests')) {
+		exclude '**/FailingRepeatedTest*'
+	}
 }
 
 task integrationTest(type: TestImpacted) {

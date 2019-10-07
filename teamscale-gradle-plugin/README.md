@@ -15,7 +15,7 @@ buildscript {
 		maven { url 'https://share.cqse.eu/public/maven/' }
 	}
 	dependencies {
-		classpath 'com.teamscale:teamscale-gradle-plugin:0.4.13'
+		classpath 'com.teamscale:teamscale-gradle-plugin:0.4.14'
 	}
 }
 
