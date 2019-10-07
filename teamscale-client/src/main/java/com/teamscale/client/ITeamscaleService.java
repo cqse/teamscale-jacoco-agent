@@ -34,6 +34,7 @@ public interface ITeamscaleService {
 			@Part("report") RequestBody report
 	);
 
+	/** Report upload API with {@link EReportFormat}. */
 	default Call<ResponseBody> uploadExternalReport(
 			String projectName,
 			EReportFormat format,
