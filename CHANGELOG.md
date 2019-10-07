@@ -2,6 +2,8 @@ We use [semantic versioning][semver]
 
 # Next Release
 - [documentation] Configuration for SAP NetWeaver Java (>= 7.50) is now documented
+- [feature] teamscale-client accepts `String` as report format as well
+- [feature] teamscale-client allows attaching arbitrary `Interceptor`s to Teamscale service
 
 # 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
