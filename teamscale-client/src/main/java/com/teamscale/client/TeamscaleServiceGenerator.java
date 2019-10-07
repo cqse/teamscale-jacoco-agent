@@ -1,6 +1,6 @@
 package com.teamscale.client;
 
-import eu.cqse.teamscale.client.HttpUtils;
+import com.teamscale.client.HttpUtils;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.Request;
