@@ -26,20 +26,10 @@ public class TeamscaleUploadStore implements IXmlStore {
 	/** Teamscale server details. */
 	private final TeamscaleServer teamscaleServer;
 
-	/** The API which performs the upload. */
-	private final ITeamscaleService api;
-
 	/** Constructor. */
 	public TeamscaleUploadStore(TimestampedFileStore failureStore, TeamscaleServer teamscaleServer) {
 		this.failureStore = failureStore;
 		this.teamscaleServer = teamscaleServer;
-
-		api = TeamscaleServiceGenerator.createService(
-				ITeamscaleService.class,
-				teamscaleServer.url,
-				teamscaleServer.userName,
-				teamscaleServer.userAccessToken
-		);
 	}
 
 	@Override
@@ -57,6 +47,14 @@ public class TeamscaleUploadStore implements IXmlStore {
 		logger.debug("Uploading JaCoCo artifact to {}", teamscaleServer);
 
 		try {
+			// Cannot be executed in the constructor as this causes issues in WildFly server
+			// Internally this somehow interferes with the JBoss LogManager
+			ITeamscaleService api = TeamscaleServiceGenerator.createService(
+					ITeamscaleService.class,
+					teamscaleServer.url,
+					teamscaleServer.userName,
+					teamscaleServer.userAccessToken
+			);
 			api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,
