@@ -390,7 +390,7 @@ Here's an example Docker Compose file that instruments an application:
 	  app:
 		build: ./app
 		environment:
-		  JAVA_TOOL_OPTIONS: -javaagent:/agent/agent.jar=AGENTOPTIONS
+		  JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
 		expose:
 		  - '9876'
 		volumes_from:
