@@ -384,8 +384,11 @@ to check how to pass these options to your application's VM.
 
 ## Compose the images
 
-Here's an example Docker Compose file that instruments an application:
+Here are a examples Docker Compose file that instruments an application:
 
+For docker-compose version 2:
+
+	version: '2.0'
 	services:
 	  app:
 		build: ./app
@@ -397,8 +400,27 @@ Here's an example Docker Compose file that instruments an application:
 		  - service:agent:ro
 	  agent:
 		image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
-	version: '2.0'
 
+For docker-compose version 3:
+```
+  version: '3'
+  services:
+    app:
+      build: ./app
+      environment:
+        JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
+      expose:
+        - '9876'
+      volumes:
+        - agent-jar:/agent:ro
+    agent:
+      image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
+      volumes:
+        - agent-jar:/agent:ro
+
+  volumes:
+    - agent-jar:
+```
 This configures your application and the agent image:
 
 - your application mounts the volumes from the agent image, which contains the profiler binaries
