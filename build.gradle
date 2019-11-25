@@ -9,7 +9,6 @@ buildscript {
 	}
 }
 
-
 ext {
 	appVersion = '15.1.2' // Also update version in BuildVersion.kt
 	pluginVersion = '0.4.17' // Also update version in BuildVersion.kt

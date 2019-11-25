@@ -1,9 +1,17 @@
 plugins {
     id 'java-library'
     id 'maven'
+    id 'jacoco'
 }
 
 version teamscaleClientVersion
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
     api 'com.squareup.retrofit2:retrofit:2.5.0'
