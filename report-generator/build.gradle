@@ -1,9 +1,17 @@
 plugins {
 	id 'java-library'
 	id 'maven'
+    id 'jacoco'
 }
 
 version reportGeneratorVersion
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
 	implementation project(':teamscale-client')

@@ -19,7 +19,7 @@
 
 ### Contributing
 
-* Create a GitHub issue for changes
+* Create a JIRA issue for changes
 * Use pull requests. Complete the "Definition of Done" for every pull request.
 * There's a Teamscale project, please fix all findings before submitting your pull request for review. The Teamscale coding guidelines and Definition of Done apply as far as possible with the available tooling.
 
@@ -29,6 +29,10 @@ When master has accumulated changes you want to release, please perform the foll
 
 - update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g. `v8.1.0`
 - update the [build.gradle](build.gradle)'s `appVersion` accordingly
+- if you want to release a new version of the Gradle plugin:
+    - update `BuildVersion.kt`
+    - run `./gradlew deployGradlePlugin`
+- commit and push your changes
 - create a GitHub Release tag with the same version number and the text from the changleog.
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).

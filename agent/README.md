@@ -372,11 +372,73 @@ There is no `latest` tag.
 
 ## Prepare your application
 
-Make sure that your Java process is the root process in the Docker image (PID 1). Otherwise, it will not receive
-the SIGTERM signal when the Docker image is stopped and JaCoCo will not dump its coverage (i.e. coverage is lost).
-You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
-your application. For more information see [this StackOverflow answer][so-java-exec-answer].
+### Ensuring that coverage is being written on shut-down
+If you rely on coverage being written when the container is shut down (see `dump-on-exit` option which is true by default), you need 
+to make sure that the java process is stopped correctly, otherwise the coverage since the last dump is lost!  
+Docker only sends the SIGTERM signal to the process with PID 1 (the root/entrypoint process for docker)
 
+Ensuring the proper shut-down can be done in two ways:
+
+#### Make the java process the entrypoint
+You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
+your application.  
+Or if you are using a shell script to start java you can also use the `exec` command to give the java call the PID 1.
+For more information see [this StackOverflow answer][so-java-exec-answer].
+
+#### Trap shutdown signals and wait for jacoco to stop
+If you have an entrypoint script for your Docker container which does more than starting the java application,
+you can push the java application into the background and wait for it at the end of the script, as well as trapping any shut-down signal,
+pass it the java process and wait for it to finish.
+
+Here is an example script how such an entrypoint.sh might look like. For more in-depth information take a look at 
+[this article][signal-trapping]
+
+```bash
+#!/bin/sh                                                                                           
+
+# Forward SIGTERM                                                                                   
+_term() {
+  echo "Forward SIGTERM to $pid"
+  kill -TERM "$pid"
+  wait $pid
+}
+
+# Forward SIGINT
+_int() {
+  echo "Forward SIGINT to $pid"
+  kill -INT "$pid"
+  wait $pid
+}
+
+# Capture SIGTERM and SIGINT so we can forward them to the java application                                 
+trap _term TERM                                                                                     
+trap _int INT                                                                                       
+
+# Push java in the background with '&' at the end 
+java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar & 
+pid=$! # Get the PID of the most recent background command
+
+# Here: Code which should be executed after the java-app has started
+# Be careful though, because if this script receives a signal while other non-background commands 
+# are running it will not trap this signal. It will only trap it after any foreground child process is done.
+
+wait $pid # At some point we need to wait for the java process before the script ends
+trap - TERM INT
+wait $pid # Second wait necessary because the first wait will exit before the trapping of the signals
+
+# Here: Code which should be executed after the java-app is finished or has been terminated
+```
+
+**IMPORTANT**: Stopping a docker container has a 10 sec default timeout. After this time, the container will receive a SIGKILL which will end the container no matter what.
+This Signal cannot be trapped and will terminate every process immediately. It might take longer then 10 seconds to dump, write and send the coverage.
+
+If the java process is the last call in your script, then you don't need to trap the signal or push the process an the background but you can simply use `exec`.
+This will give the java process the PID 1.
+```bash
+exec java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar
+```
+
+### Setting the JVM options
 Next, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
 via `JAVA_TOOL_OPTIONS`. If your docker images starts the Java process directly, this should
 work out of the box. If you are using an application container (e.g. Tomcat), you'll have
@@ -384,21 +446,43 @@ to check how to pass these options to your application's VM.
 
 ## Compose the images
 
-Here's an example Docker Compose file that instruments an application:
+Here are a examples Docker Compose file that instruments an application:
 
+For docker-compose version 2:
+
+	version: '2.0'
 	services:
 	  app:
 		build: ./app
 		environment:
-		  JAVA_TOOL_OPTIONS: -javaagent:/agent/agent.jar=AGENTOPTIONS
+		  JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
 		expose:
 		  - '9876'
 		volumes_from:
 		  - service:agent:ro
 	  agent:
 		image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
-	version: '2.0'
 
+For docker-compose version 3:
+```
+  version: '3'
+  services:
+    app:
+      build: ./app
+      environment:
+        JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
+      expose:
+        - '9876'
+      volumes:
+        - agent-jar:/agent:ro
+    agent:
+      image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
+      volumes:
+        - agent-jar:/agent:ro
+
+  volumes:
+    - agent-jar:
+```
 This configures your application and the agent image:
 
 - your application mounts the volumes from the agent image, which contains the profiler binaries
@@ -468,3 +552,4 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
 [ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf
 [teamscale]: https://teamscale.com
+[signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html

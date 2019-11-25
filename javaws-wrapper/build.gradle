@@ -5,7 +5,15 @@ plugins {
 	id 'java'
 	id 'application'
 	id 'com.github.johnrengelman.shadow' version '4.0.3'
+    id 'jacoco'
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
 	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
