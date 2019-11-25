@@ -1,8 +1,8 @@
 package com.teamscale.client;
 
-import eu.cqse.teamscale.client.HttpUtils;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
@@ -19,21 +19,29 @@ public class TeamscaleServiceGenerator {
 	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
 	 * server and which sets the accept header to json.
 	 */
-	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken) {
+	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
+									  Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
-				okHttpBuilder -> okHttpBuilder
+				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
 		);
 		return retrofit.create(serviceClass);
 	}
 
+	private static OkHttpClient.Builder addInterceptors(OkHttpClient.Builder builder, Interceptor... interceptors) {
+		for (Interceptor interceptor : interceptors) {
+			builder.addInterceptor(interceptor);
+		}
+		return builder;
+	}
+
 	public static <S> S createServiceWithRequestLogging(Class<S> serviceClass, HttpUrl baseUrl, String username,
-														String accessToken, File file) {
+														String accessToken, File file, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
-				okHttpBuilder -> okHttpBuilder
+				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
 						.addInterceptor(new FileLoggingInterceptor(file))

@@ -13,34 +13,21 @@ package com.example.project;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.RepeatedTest;
 
-class JUnit5Test {
+class FailingRepeatedTest {
+
+	public static int i=5;
 
 	@Test
 	public void testAdd() {
 		assertEquals(3, new Calculator().add(1, 2));
 	}
 
-	@Test
-	@Tag("integration")
-	public void systemTest() {
-		Calculator cal = new Calculator();
-		assertEquals(10, cal.add(cal.mul(cal.add(4, -1), 3), 1));
+	@RepeatedTest(2)
+	public void testRepeatedTest() {
+		assertEquals(i++, new Calculator().mul(2, 3));
 	}
 
-	@Test
-	@Tag("integration")
-	public void testMain() {
-		Main.main(new String[0]);
-	}
-	
-	@ParameterizedTest
-	@ValueSource(strings = { "Hello", "JUnit" })
-	void withValueSource(String word) {
-		assertNotNull(word);
-	}
 }

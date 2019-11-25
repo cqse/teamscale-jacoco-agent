@@ -1,9 +1,15 @@
 We use [semantic versioning][semver]
 
-# Next version
+# Next Release
+- [fix] WildFly won't start with agent attached
+
+# 15.1.1
+- [documentation] Configuration for SAP NetWeaver Java (>= 7.50) is now documented
 
 # 15.1.0
 - [feature] supplying a `class-dir` option is no longer mandatory
+- [feature] agent logs errors in case of empty coverage dumps (i.e. misconfigured agent)
+- [fix] prevent NPE when trying to read manifest from Jar file
 
 # 15.0.0
 - [feature] support for git.properties to supply commit information

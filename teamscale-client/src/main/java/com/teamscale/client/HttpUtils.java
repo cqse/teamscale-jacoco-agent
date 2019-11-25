@@ -1,4 +1,4 @@
-package eu.cqse.teamscale.client;
+package com.teamscale.client;
 
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;

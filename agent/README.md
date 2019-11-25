@@ -1,14 +1,24 @@
 # Teamscale JaCoCo Agent
 
-This program provides a Java agent that can regularly dump coverage from a running application.
-The JaCoCo coverage tool is used underneath.
+This is a Java agent that allows recording coverage, similar to JaCoCo (which is in fact used underneath). It improves on JaCoCo in the following ways:
+
+- allow configuration via a .properties file
+- allow time-interval based dumping of coverage (e.g. "dump coverage every hour") instead of only at JVM shutdown
+- directly dumps XML instead of .exec files, i.e. already performs that conversion automatically
+- transfers dumped XML files either to a central location for further processing or even uploads them directly to [Teamscale][]
+- writes a log file, which makes debugging problems a bit easier
+
+## Requirements
+
+The agent might need additional memory whenever a coverage report is created. If your JVM is
+configured to only use very little memory, you might have to increase this limit in order for
+the agent to function properly. How much memory is needed depends on how much code is being
+analyzed and thus on how you configure the agent.
 
 ## Installing
 
-Unzip this zip file into any folder.
-When used as a Java agent for your Java application, coverage is dumped to the file system, via
-HTTP file uploads or directly to Teamscale in regular intervals while the application is running.
-Coverage is also transferred when the application is shut down.
+Unzip this zip file into any folder. __All files contained in the zip file are required for the agent
+to work.__
 
 Configure the agent on your application's JVM:
 
@@ -55,7 +65,7 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
-The log file is written to the agent's directory in the subdirectory `logs` by default.
+The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
 
 #### Path format
 
@@ -249,6 +259,19 @@ Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jv
 
 Register the agent by setting a `JAVA_OPTIONS` variable such that the Jetty process can see it.
 
+## Additional steps for SAP NetWeaver Java
+
+Please note that the Teamscale JaCoCo Agent requires at least Java 8, which is part of NetWeaver Java 7.50.
+Prior versions of NetWeaver Java are not supported by the Teamscale JaCoCo Agent.
+
+In order to set the JVM agent parameter, you need to use the NetWeaver Administrator to navigate to
+`Configuration` - `Infrastructure` - `Java System Properties` and add an additional JVM parameter.
+Use the search field to search for `agent`, and select the `-javaagent:<jarpath>[=<options>]` entry.
+In the `Name` field, enter the first part, until (including) the `.jar`, and provide all the options (*without* the leading
+`=`) in the `Value` field. We advise to only set the `config-file` option here, and provide all other
+options via the config file. Choose `Add` and then `Save`, and restart the Java server from the SAP
+Management Console.
+
 ## Additional steps for Java Web Start
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
@@ -349,11 +372,73 @@ There is no `latest` tag.
 
 ## Prepare your application
 
-Make sure that your Java process is the root process in the Docker image (PID 1). Otherwise, it will not receive
-the SIGTERM signal when the Docker image is stopped and JaCoCo will not dump its coverage (i.e. coverage is lost).
-You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
-your application. For more information see [this StackOverflow answer][so-java-exec-answer].
+### Ensuring that coverage is being written on shut-down
+If you rely on coverage being written when the container is shut down (see `dump-on-exit` option which is true by default), you need 
+to make sure that the java process is stopped correctly, otherwise the coverage since the last dump is lost!  
+Docker only sends the SIGTERM signal to the process with PID 1 (the root/entrypoint process for docker)
 
+Ensuring the proper shut-down can be done in two ways:
+
+#### Make the java process the entrypoint
+You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
+your application.  
+Or if you are using a shell script to start java you can also use the `exec` command to give the java call the PID 1.
+For more information see [this StackOverflow answer][so-java-exec-answer].
+
+#### Trap shutdown signals and wait for jacoco to stop
+If you have an entrypoint script for your Docker container which does more than starting the java application,
+you can push the java application into the background and wait for it at the end of the script, as well as trapping any shut-down signal,
+pass it the java process and wait for it to finish.
+
+Here is an example script how such an entrypoint.sh might look like. For more in-depth information take a look at 
+[this article][signal-trapping]
+
+```bash
+#!/bin/sh                                                                                           
+
+# Forward SIGTERM                                                                                   
+_term() {
+  echo "Forward SIGTERM to $pid"
+  kill -TERM "$pid"
+  wait $pid
+}
+
+# Forward SIGINT
+_int() {
+  echo "Forward SIGINT to $pid"
+  kill -INT "$pid"
+  wait $pid
+}
+
+# Capture SIGTERM and SIGINT so we can forward them to the java application                                 
+trap _term TERM                                                                                     
+trap _int INT                                                                                       
+
+# Push java in the background with '&' at the end 
+java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar & 
+pid=$! # Get the PID of the most recent background command
+
+# Here: Code which should be executed after the java-app has started
+# Be careful though, because if this script receives a signal while other non-background commands 
+# are running it will not trap this signal. It will only trap it after any foreground child process is done.
+
+wait $pid # At some point we need to wait for the java process before the script ends
+trap - TERM INT
+wait $pid # Second wait necessary because the first wait will exit before the trapping of the signals
+
+# Here: Code which should be executed after the java-app is finished or has been terminated
+```
+
+**IMPORTANT**: Stopping a docker container has a 10 sec default timeout. After this time, the container will receive a SIGKILL which will end the container no matter what.
+This Signal cannot be trapped and will terminate every process immediately. It might take longer then 10 seconds to dump, write and send the coverage.
+
+If the java process is the last call in your script, then you don't need to trap the signal or push the process an the background but you can simply use `exec`.
+This will give the java process the PID 1.
+```bash
+exec java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar
+```
+
+### Setting the JVM options
 Next, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
 via `JAVA_TOOL_OPTIONS`. If your docker images starts the Java process directly, this should
 work out of the box. If you are using an application container (e.g. Tomcat), you'll have
@@ -361,21 +446,43 @@ to check how to pass these options to your application's VM.
 
 ## Compose the images
 
-Here's an example Docker Compose file that instruments an application:
+Here are a examples Docker Compose file that instruments an application:
 
+For docker-compose version 2:
+
+	version: '2.0'
 	services:
 	  app:
 		build: ./app
 		environment:
-		  JAVA_TOOL_OPTIONS: -javaagent:/agent/agent.jar=AGENTOPTIONS
+		  JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
 		expose:
 		  - '9876'
 		volumes_from:
 		  - service:agent:ro
 	  agent:
 		image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
-	version: '2.0'
 
+For docker-compose version 3:
+```
+  version: '3'
+  services:
+    app:
+      build: ./app
+      environment:
+        JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
+      expose:
+        - '9876'
+      volumes:
+        - agent-jar:/agent:ro
+    agent:
+      image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
+      volumes:
+        - agent-jar:/agent:ro
+
+  volumes:
+    - agent-jar:
+```
 This configures your application and the agent image:
 
 - your application mounts the volumes from the agent image, which contains the profiler binaries
@@ -444,3 +551,5 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
 [ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf
+[teamscale]: https://teamscale.com
+[signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html

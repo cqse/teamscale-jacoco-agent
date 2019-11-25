@@ -17,7 +17,7 @@ import java.io.File
 /**
  * You must run
  * ./gradlew pluginUnderTestMetadata
- * once before running the tests in IntelliJ.
+ * each time before running the tests in IntelliJ.
  */
 class TeamscalePluginTest {
 
@@ -42,27 +42,30 @@ class TeamscalePluginTest {
     @Test
     fun `teamscale plugin can be configured`() {
         assertThat(
-            build(false, "clean", "tasks").output
+            build(false, false, "clean", "tasks").output
         ).contains("SUCCESS")
     }
 
     @Test
     fun `unit tests can be executed normally`() {
         assertThat(
-            build(true, "clean", "unitTest").output
-        ).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+            build(
+                true, false, "clean", "unitTest",
+                "-PexcludeFailingTests=true"
+            ).output
+        ).contains("SUCCESS (18 tests, 12 successes, 0 failures, 6 skipped)")
     }
 
     @Test
     fun `impacted unit tests produce coverage`() {
         val build = build(
-            true,
+            true, true,
             "clean",
             "unitTest",
             "--impacted",
             "--run-all-tests"
         )
-        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+        assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
@@ -78,14 +81,15 @@ class TeamscalePluginTest {
                 "com/example/project/JUnit5Test/withValueSource(String)",
                 ETestExecutionResult.PASSED
             )
+            .containsExecutionResult("com/example/project/FailingRepeatedTest/testRepeatedTest()", ETestExecutionResult.FAILURE)
             .containsExecutionResult("FibonacciTest/test[4]", ETestExecutionResult.PASSED)
             .containsCoverage(
                 "com/example/project/JUnit4Test/systemTest",
                 "com/example/project/Calculator.java",
                 "13,16,20-22"
             )
-            // 18 Tests because JUnit 5 parameterized tests are grouped
-            .hasSize(18)
+            // 19 Tests because JUnit 5 parameterized tests are grouped
+            .hasSize(19)
     }
 
     @Test
@@ -99,12 +103,13 @@ class TeamscalePluginTest {
         assertThat(oldReportFile).exists()
 
         val build = build(
-            true,
+            true, false,
             "unitTest",
             "--impacted",
-            "--run-all-tests"
+            "--run-all-tests",
+            "-PexcludeFailingTests=true"
         )
-        assertThat(build.output).contains("SUCCESS (19 tests, 13 successes, 0 failures, 6 skipped)")
+        assertThat(build.output).contains("SUCCESS (18 tests, 12 successes, 0 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
             File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
@@ -112,7 +117,7 @@ class TeamscalePluginTest {
         assertThat(oldReportFile).doesNotExist()
     }
 
-    private fun build(executesTask: Boolean, vararg arguments: String): BuildResult {
+    private fun build(executesTask: Boolean, expectFailure: Boolean, vararg arguments: String): BuildResult {
         val runnerArgs = arguments.toMutableList()
         val runner = GradleRunner.create()
 
@@ -136,7 +141,12 @@ class TeamscalePluginTest {
             runner.withDebug(true)
         }
 
-        val buildResult = runner.build()
+        val buildResult =
+            if (expectFailure) {
+                runner.buildAndFail()
+            } else {
+                runner.build()
+            }
 
         if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
             println(buildResult.output)
