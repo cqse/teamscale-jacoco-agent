@@ -10,8 +10,9 @@ buildscript {
 }
 
 ext {
-	appVersion = '15.1.2' // Also update version in BuildVersion.kt
-	pluginVersion = '0.4.17' // Also update version in BuildVersion.kt
+
+	appVersion = '15.1.2'
+	pluginVersion = '0.4.17'
 	reportGeneratorVersion = '1.4.2'
 	teamscaleClientVersion = '0.3.0'
 
