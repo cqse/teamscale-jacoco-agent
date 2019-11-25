@@ -19,7 +19,7 @@
 
 ### Contributing
 
-* Create a GitHub issue for changes
+* Create a JIRA issue for changes
 * Use pull requests. Complete the "Definition of Done" for every pull request.
 * There's a Teamscale project, please fix all findings before submitting your pull request for review. The Teamscale coding guidelines and Definition of Done apply as far as possible with the available tooling.
 
