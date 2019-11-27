@@ -78,17 +78,18 @@ public class AgentOptionsParser {
 	 * Parses the given command-line options.
 	 */
 	/* package */ AgentOptions parse(String optionsString) throws AgentOptionParseException {
-		if (StringUtils.isEmpty(optionsString)) {
-			throw new AgentOptionParseException(
-					"No agent options given. You must at least provide an output directory (out)");
+		if (optionsString == null) {
+			optionsString = "";
 		}
 
 		AgentOptions options = new AgentOptions();
 		options.originalOptionsString = optionsString;
 
-		String[] optionParts = optionsString.split(",");
-		for (String optionPart : optionParts) {
-			handleOption(options, optionPart);
+		if (!StringUtils.isEmpty(optionsString)) {
+			String[] optionParts = optionsString.split(",");
+			for (String optionPart : optionParts) {
+				handleOption(options, optionPart);
+			}
 		}
 
 		Validator validator = options.getValidator();
