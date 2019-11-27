@@ -548,7 +548,7 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [glassfish-asadmin]: https://docs.oracle.com/cd/E19798-01/821-1751/gepzd/index.html
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
-[git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
+[git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info
 [ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf
 [teamscale]: https://teamscale.com
 [signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html
