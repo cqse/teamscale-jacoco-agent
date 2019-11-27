@@ -17,7 +17,7 @@ public class AgentUtils {
 			// we assume that the dist zip is extracted and the agent jar not moved
 			return Paths.get(jarFileUri).getParent().getParent();
 		} catch (URISyntaxException e) {
-			return null;
+			throw new RuntimeException("Failed to obtain agent directory. This is a bug, please report it.", e);
 		}
 	}
 

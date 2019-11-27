@@ -2,6 +2,7 @@ We use [semantic versioning][semver]
 
 # Next Release
 - [fix] WildFly won't start with agent attached
+- [feature] make `out` parameter optional with sensible fallback (subdirectory `coverage` in agent installation directory)
 
 # 15.1.1
 - [documentation] Configuration for SAP NetWeaver Java (>= 7.50) is now documented

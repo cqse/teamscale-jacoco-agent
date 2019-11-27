@@ -38,4 +38,10 @@ public class AgentOptionsParserTest {
 		assertThatThrownBy(() -> parser.parseGitPropertiesJarEntry("test", gitProperties, new File("test.jar")))
 				.isInstanceOf(AgentOptionParseException.class);
 	}
+
+	@Test
+	public void notGivingAnyOptionsShouldBeOK() throws Exception {
+		parser.parse("");
+		parser.parse(null);
+	}
 }
