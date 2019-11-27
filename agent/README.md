@@ -33,8 +33,8 @@ The following options are available:
 
 ### General options
 
-- `out` (required): the path to a writable directory where the generated coverage XML files will be stored. (For details 
-  see path format section below)
+- `out` (optional): the path to a writable directory where the generated coverage XML files will be stored. (For details 
+  see path format section below). Defaults to the subdirectory `coverage` inside the agent's installation directory.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -85,7 +85,6 @@ patterns with `*`, `**` and `?`.
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
   above)
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
-  Note that you still need to specify an `out` directory where failed uploads are stored.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.

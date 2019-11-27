@@ -66,7 +66,7 @@ public class AgentOptions {
 	/**
 	 * The directory to write the XML traces to.
 	 */
-	/* package */ Path outputDirectory = null;
+	/* package */ Path outputDirectory = AgentUtils.getAgentDirectory().resolve("coverage");
 
 	/**
 	 * The URL to which to upload coverage zips.
@@ -145,7 +145,7 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Validates the options and throws an exception if they're not valid.
+	 * Validates the options and returns a validator with all validation errors.
 	 */
 	/* package */ Validator getValidator() {
 		Validator validator = new Validator();
@@ -155,7 +155,6 @@ public class AgentOptions {
 		}
 
 		validator.ensure(() -> {
-			CCSMAssert.isNotNull(outputDirectory, "You must specify an output directory");
 			FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
 		});
 
@@ -183,7 +182,7 @@ public class AgentOptions {
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
-				"If you want to upload data to an azure file storage you need to provide both " +
+				"If you want to upload data to an Azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
 		List<Boolean> configuredStores = Stream
@@ -191,7 +190,7 @@ public class AgentOptions {
 						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
 
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
-				"such as a teamscale instance, upload url or azure file storage");
+				"such as a Teamscale instance, upload URL or Azure file storage");
 
 		return validator;
 	}
