@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
+import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.slf4j.Logger;
 
@@ -20,8 +21,6 @@ import java.util.jar.JarInputStream;
 
 public class GitPropertiesLocator {
 
-	private static final Logger LOGGER = LoggingUtils.getLogger(GitPropertiesLocator.class);
-
 	/** Name of the git.properties file. */
 	private static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
@@ -29,28 +28,35 @@ public class GitPropertiesLocator {
 	private static final DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
-	private static final Executor BACKGROUND_EXECUTOR = Executors.newSingleThreadExecutor();
-	private static boolean FOUND_COMMIT_DESCRIPTOR = false;
+	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
+	private final Executor executor = Executors.newSingleThreadExecutor();
+	private boolean foundCommitDescriptor = false;
 
-	public static void searchJarFileForGitPropertiesAsync(File jarFile) {
-		if (!FOUND_COMMIT_DESCRIPTOR) {
-			BACKGROUND_EXECUTOR.execute(() -> searchJarFile(jarFile));
+	private final DelayedCommitDescriptorStore store;
+
+	public GitPropertiesLocator(DelayedCommitDescriptorStore store) {
+		this.store = store;
+	}
+
+	/*package*/ void searchJarFileForGitPropertiesAsync(File jarFile) {
+		if (!foundCommitDescriptor) {
+			executor.execute(() -> searchJarFile(jarFile));
 		}
 	}
 
-	private static void searchJarFile(File jarFile) {
+	private void searchJarFile(File jarFile) {
 		try {
 			CommitDescriptor commitDescriptor = getCommitFromGitProperties(jarFile);
 			if (commitDescriptor == null) {
-				LOGGER.debug("No git.properties file found in {}", jarFile.toString());
+				logger.debug("No git.properties file found in {}", jarFile.toString());
 			} else {
-				LOGGER.debug("Found git.properties file in {} and found commit descriptor {}", jarFile.toString(),
+				logger.debug("Found git.properties file in {} and found commit descriptor {}", jarFile.toString(),
 						commitDescriptor.toString());
-				FOUND_COMMIT_DESCRIPTOR = true;
-				// TODO (FS)
+				foundCommitDescriptor = true;
+				store.setCommitAndTriggerAsynchronousUpload(commitDescriptor);
 			}
 		} catch (IOException | InvalidGitPropertiesException e) {
-			LOGGER.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
+			logger.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
 		}
 	}
 

@@ -5,7 +5,7 @@ import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import okhttp3.MultipartBody;

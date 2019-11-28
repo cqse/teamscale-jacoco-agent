@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.store.upload.http;
 
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;

@@ -16,6 +16,11 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Set<String> seenJars = new ConcurrentSkipListSet<>();
+	private final GitPropertiesLocator locator;
+
+	public GitPropertiesLocatingTransformer(GitPropertiesLocator locator) {
+		this.locator = locator;
+	}
 
 	@Override
 	public byte[] transform(ClassLoader classLoader, String className, Class<?> aClass,
@@ -42,7 +47,7 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 			if (jarOrClassFolderUrl.getProtocol().toLowerCase().equals("file") &&
 					StringUtils.endsWithOneOf(
 							jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-				GitPropertiesLocator.searchJarFileForGitPropertiesAsync(new File(jarOrClassFolderUrl.toURI()));
+				locator.searchJarFileForGitPropertiesAsync(new File(jarOrClassFolderUrl.toURI()));
 			}
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is

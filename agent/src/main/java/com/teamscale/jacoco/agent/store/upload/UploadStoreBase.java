@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.store.upload;
 
 import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.client.HttpUtils;

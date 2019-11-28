@@ -15,6 +15,7 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -41,15 +42,16 @@ public class Agent extends AgentBase {
 	protected final IXmlStore store;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploadStoreException {
+	/*package*/ Agent(AgentOptions options,
+					  Instrumentation instrumentation) throws IllegalStateException, UploadStoreException {
 		super(options);
 
-		store = options.createStore();
+		store = options.createStore(instrumentation);
 		logger.info("Storage method: {}", store.describe());
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
-				options.duplicateClassFileBehavior(), wrap(logger));
+				options.getDuplicateClassFileBehavior(), wrap(logger));
 
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));

@@ -9,9 +9,10 @@ import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
+import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
@@ -266,27 +267,18 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws UploadStoreException {
+	public AgentBase createAgent(Instrumentation instrumentation) throws UploadStoreException {
 		if (useTestwiseCoverageMode()) {
 			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
-			return new Agent(this);
-		}
-	}
-
-	/**
-	 * Performs additional instrumentation tasks depending on the configuration.
-	 */
-	public void updateInstrumentation(Instrumentation instrumentation) {
-		if (teamscaleServer.commit == null) {
-			instrumentation.addTransformer(new GitPropertiesLocatingTransformer());
+			return new Agent(this, instrumentation);
 		}
 	}
 
 	/**
 	 * Creates the store to use for the coverage XMLs.
 	 */
-	public IXmlStore createStore() throws UploadStoreException {
+	public IXmlStore createStore(Instrumentation instrumentation) throws UploadStoreException {
 		TimestampedFileStore fileStore = new TimestampedFileStore(outputDirectory);
 		if (uploadUrl != null) {
 			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
@@ -296,8 +288,11 @@ public class AgentOptions {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
 				TimestampedFileStore cacheStore = new TimestampedFileStore(outputDirectory);
-				return new DelayedCommitDescriptorStore(commit -> new TeamscaleUploadStore(fileStore, teamscaleServer),
-						cacheStore);
+				DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
+						commit -> new TeamscaleUploadStore(fileStore, teamscaleServer), cacheStore);
+				GitPropertiesLocator locator = new GitPropertiesLocator(store);
+				instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator));
+				return store;
 			}
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
@@ -332,7 +327,7 @@ public class AgentOptions {
 	/**
 	 * @see #shouldIgnoreDuplicateClassFiles
 	 */
-	public EDuplicateClassFileBehavior duplicateClassFileBehavior() {
+	public EDuplicateClassFileBehavior getDuplicateClassFileBehavior() {
 		if (shouldIgnoreDuplicateClassFiles) {
 			return EDuplicateClassFileBehavior.WARN;
 		} else {
