@@ -1,4 +1,6 @@
-package com.teamscale.jacoco.agent.store.upload.delay;
+package com.teamscale.jacoco.agent.utils;
+
+import com.teamscale.jacoco.agent.store.upload.delay.ICachingXmlStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +8,7 @@ import java.util.stream.Stream;
 
 public class InMemoryStore implements ICachingXmlStore {
 
-	/*package*/ final List<String> xmls = new ArrayList<>();
+	public final List<String> xmls = new ArrayList<>();
 
 	@Override
 	public Stream<String> streamCachedXmls() {
