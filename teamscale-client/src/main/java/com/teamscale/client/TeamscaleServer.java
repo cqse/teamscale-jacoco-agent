@@ -49,6 +49,7 @@ public class TeamscaleServer {
 
 	@Override
 	public String toString() {
-		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at " + commit;
+		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at commit "
+				+ commit;
 	}
 }
