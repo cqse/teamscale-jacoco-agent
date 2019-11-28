@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.client.HttpUtils;
 import org.jacoco.agent.rt.RT;

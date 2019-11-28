@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.string.StringUtils;
