@@ -29,16 +29,25 @@ public class GitPropertiesLocator {
 			.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
-	private final Executor executor = Executors.newSingleThreadExecutor();
+	private final Executor executor;
 	private boolean foundCommitDescriptor = false;
 
 	private final DelayedCommitDescriptorStore store;
 
 	public GitPropertiesLocator(DelayedCommitDescriptorStore store) {
-		this.store = store;
+		this(store, Executors.newSingleThreadExecutor());
 	}
 
-	/*package*/ void searchJarFileForGitPropertiesAsync(File jarFile) {
+	/**
+	 * Visible for testing. Allows tests to control the {@link Executor} in order to test the asynchronous functionality
+	 * of this class.
+	 */
+	public GitPropertiesLocator(DelayedCommitDescriptorStore store, Executor executor) {
+		this.store = store;
+		this.executor = executor;
+	}
+
+	public void searchJarFileForGitPropertiesAsync(File jarFile) {
 		if (!foundCommitDescriptor) {
 			executor.execute(() -> searchJarFile(jarFile));
 		}

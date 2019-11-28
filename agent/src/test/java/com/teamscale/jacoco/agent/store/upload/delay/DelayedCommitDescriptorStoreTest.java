@@ -3,12 +3,9 @@ package com.teamscale.jacoco.agent.store.upload.delay;
 import com.teamscale.client.CommitDescriptor;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,28 +52,4 @@ public class DelayedCommitDescriptorStoreTest {
 		assertThat(destination.xmls).containsExactly("xml1");
 	}
 
-	private static class InMemoryStore implements ICachingXmlStore {
-
-		private final List<String> xmls = new ArrayList<>();
-
-		@Override
-		public Stream<String> streamCachedXmls() {
-			return xmls.stream();
-		}
-
-		@Override
-		public void clear() {
-			xmls.clear();
-		}
-
-		@Override
-		public void store(String xml) {
-			xmls.add(xml);
-		}
-
-		@Override
-		public String describe() {
-			return "in memory";
-		}
-	}
 }
