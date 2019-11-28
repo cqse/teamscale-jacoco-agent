@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.store.upload.delay;
 
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.utils.InMemoryStore;
+import com.teamscale.jacoco.agent.util.InMemoryStore;
 import org.junit.Test;
 
 import java.io.File;
