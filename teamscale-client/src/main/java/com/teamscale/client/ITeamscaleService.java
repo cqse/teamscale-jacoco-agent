@@ -69,6 +69,7 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
+			@Query("includeNonImpacted") boolean includeNonImpacted,
 			@Body List<ClusteredTestDetails> report
 	);
 
@@ -79,6 +80,7 @@ public interface ITeamscaleService {
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
+			@Query("includeNonImpacted") boolean includeNonImpacted,
 			@Body List<ClusteredTestDetails> report
 	);
 

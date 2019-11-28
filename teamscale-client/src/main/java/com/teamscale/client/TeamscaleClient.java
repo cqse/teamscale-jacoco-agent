@@ -44,12 +44,13 @@ public class TeamscaleClient {
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline,
 																	 CommitDescriptor endCommit,
-																	 String partition) throws IOException {
+																	 String partition,
+																	 boolean includeNonImpacted) throws IOException {
 		long startTime = System.currentTimeMillis();
 		Response<List<PrioritizableTestCluster>> impactedTestsResponse;
 		do {
 			impactedTestsResponse = getImpactedTestsOnce(testList, baseline,
-					endCommit, partition);
+					endCommit, partition, includeNonImpacted);
 			// Retry for up to one minute until the coverage uploads are processed by Teamscale
 		} while (impactedTestsResponse.code() == 412 && System.currentTimeMillis() - startTime < 60000);
 		return impactedTestsResponse;
@@ -64,14 +65,15 @@ public class TeamscaleClient {
 	private Response<List<PrioritizableTestCluster>> getImpactedTestsOnce(List<ClusteredTestDetails> testList,
 																		  Long baseline,
 																		  CommitDescriptor endCommit,
-																		  String partition) throws IOException {
+																		  String partition,
+																		  boolean includeNonImpacted) throws IOException {
 		if (baseline == null) {
 			return service
-					.getImpactedTests(projectId, endCommit, partition, testList)
+					.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, testList)
 					.execute();
 		} else {
 			return service
-					.getImpactedTests(projectId, baseline, endCommit, partition, testList)
+					.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted, testList)
 					.execute();
 		}
 	}

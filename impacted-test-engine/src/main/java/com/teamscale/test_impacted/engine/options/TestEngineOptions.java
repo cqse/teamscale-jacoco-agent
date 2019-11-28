@@ -10,7 +10,6 @@ import com.teamscale.test_impacted.engine.executor.DelegatingTestExecutor;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
-import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import okhttp3.HttpUrl;
 import org.junit.platform.engine.TestEngine;
 
@@ -75,15 +74,12 @@ public class TestEngineOptions {
 		if (!isRunImpacted()) {
 			return new DelegatingTestExecutor();
 		}
-		if (isRunAllTests()) {
-			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
-		}
 
 		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
 				serverOptions.getUserAccessToken(), serverOptions.getProject(),
 				new File(reportDirectory, "server-request.txt"));
-		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition);
-
+		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition,
+				isRunAllTests());
 		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, testsProvider);
 	}
 
