@@ -98,7 +98,7 @@ patterns with `*`, `**` and `?`.
   Teamscale's UI.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
-  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`.
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
 
   If **Git** is your VCS, you can get the commit info via
   
@@ -123,6 +123,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   section above)
 - `teamscale-git-properties-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
+  If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent 
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
