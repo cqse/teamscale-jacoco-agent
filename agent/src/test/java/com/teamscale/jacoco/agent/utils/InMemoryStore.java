@@ -11,8 +11,11 @@ import java.util.stream.Stream;
  */
 public class InMemoryStore implements ICachingXmlStore {
 
-	/** The uploaded XMLs. */
-	public final List<String> xmls = new ArrayList<>();
+	private final List<String> xmls = new ArrayList<>();
+
+	public List<String> getXmls() {
+		return xmls;
+	}
 
 	@Override
 	public Stream<String> streamCachedXmls() {

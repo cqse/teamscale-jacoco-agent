@@ -20,8 +20,8 @@ public class DelayedCommitDescriptorStoreTest {
 
 		store.store("xml1");
 
-		assertThat(cache.xmls).containsExactly("xml1");
-		assertThat(destination.xmls).isEmpty();
+		assertThat(cache.getXmls()).containsExactly("xml1");
+		assertThat(destination.getXmls()).isEmpty();
 	}
 
 	@Test
@@ -33,8 +33,8 @@ public class DelayedCommitDescriptorStoreTest {
 		store.setCommitAndTriggerAsynchronousUpload(new CommitDescriptor("branch", 1234));
 		store.store("xml1");
 
-		assertThat(cache.xmls).isEmpty();
-		assertThat(destination.xmls).containsExactly("xml1");
+		assertThat(cache.getXmls()).isEmpty();
+		assertThat(destination.getXmls()).containsExactly("xml1");
 	}
 
 	@Test
@@ -49,8 +49,8 @@ public class DelayedCommitDescriptorStoreTest {
 		executor.shutdown();
 		executor.awaitTermination(5, TimeUnit.SECONDS);
 
-		assertThat(cache.xmls).isEmpty();
-		assertThat(destination.xmls).containsExactly("xml1");
+		assertThat(cache.getXmls()).isEmpty();
+		assertThat(destination.getXmls()).containsExactly("xml1");
 	}
 
 }

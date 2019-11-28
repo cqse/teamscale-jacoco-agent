@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.options;
 
-import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.report.util.CommandLineLogger;
 import org.junit.Test;
 

@@ -12,6 +12,10 @@ import java.security.ProtectionDomain;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+/**
+ * {@link ClassFileTransformer} that doesn't change the loaded classes but searches their corresponding Jar/War/Ear/...
+ * files for a git.properties file.
+ */
 public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 
 	private final Logger logger = LoggingUtils.getLogger(this);

@@ -31,8 +31,8 @@ public class DelayedCommitDescriptorRetrievalTest {
 		storeExecutor.shutdown();
 		storeExecutor.awaitTermination(5, TimeUnit.SECONDS);
 
-		assertThat(cache.xmls).isEmpty();
-		assertThat(destination.xmls).containsExactly("xml1");
+		assertThat(cache.getXmls()).isEmpty();
+		assertThat(destination.getXmls()).containsExactly("xml1");
 	}
 
 }

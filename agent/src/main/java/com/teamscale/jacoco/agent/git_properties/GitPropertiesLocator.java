@@ -20,6 +20,10 @@ import java.util.concurrent.Executors;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+/**
+ * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
+ * e.g. to Teamscale, via a {@link DelayedCommitDescriptorStore}.
+ */
 public class GitPropertiesLocator {
 
 	/** Name of the git.properties file. */
