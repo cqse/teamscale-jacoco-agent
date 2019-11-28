@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * Fake store that simply stores XMLs in a list.
+ */
 public class InMemoryStore implements ICachingXmlStore {
 
+	/** The uploaded XMLs. */
 	public final List<String> xmls = new ArrayList<>();
 
 	@Override
