@@ -16,7 +16,7 @@ import java.util.function.Function;
  */
 public class DelayedCommitDescriptorStore implements IXmlStore {
 
-	private final Executor executor = Executors.newSingleThreadExecutor();
+	private final Executor executor;
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Function<CommitDescriptor, IXmlStore> wrappedStoreFactory;
 	private IXmlStore wrappedStore = null;
@@ -24,8 +24,18 @@ public class DelayedCommitDescriptorStore implements IXmlStore {
 
 	public DelayedCommitDescriptorStore(Function<CommitDescriptor, IXmlStore> wrappedStoreFactory,
 										ICachingXmlStore cache) {
+		this(wrappedStoreFactory, cache, Executors.newSingleThreadExecutor());
+	}
+
+	/**
+	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
+	 * class.
+	 */
+	/*package*/ DelayedCommitDescriptorStore(Function<CommitDescriptor, IXmlStore> wrappedStoreFactory,
+											 ICachingXmlStore cache, Executor executor) {
 		this.wrappedStoreFactory = wrappedStoreFactory;
 		this.cache = cache;
+		this.executor = executor;
 
 		registerShutdownHook();
 	}
