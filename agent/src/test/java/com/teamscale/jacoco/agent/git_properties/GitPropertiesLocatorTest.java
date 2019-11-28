@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.jacoco.agent.AgentOptionParseException;
 import org.junit.Test;
 
 import java.io.File;

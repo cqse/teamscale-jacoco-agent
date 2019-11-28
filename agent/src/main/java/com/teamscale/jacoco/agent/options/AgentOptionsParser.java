@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
@@ -59,8 +59,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given command-line options.
 	 */
-	/*package*/
-	static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
+	public static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
 		return new AgentOptionsParser(logger).parse(optionsString);
 	}
 

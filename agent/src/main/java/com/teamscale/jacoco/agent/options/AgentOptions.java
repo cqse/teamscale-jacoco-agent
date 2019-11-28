@@ -3,10 +3,12 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.Agent;
+import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
@@ -158,9 +160,7 @@ public class AgentOptions {
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
 
-		validator.ensure(() -> {
-			FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
-		});
+		validator.ensure(() -> FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile()));
 
 		if (loggingConfig != null) {
 			validator.ensure(() -> {

@@ -1,6 +1,9 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.report.util.CommandLineLogger;
 import org.junit.Before;
 import org.junit.Rule;

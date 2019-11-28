@@ -8,7 +8,7 @@ package com.teamscale.jacoco.agent.testimpact;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.teamscale.jacoco.agent.AgentBase;
-import com.teamscale.jacoco.agent.AgentOptions;
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import com.teamscale.report.testwise.model.TestExecution;
 import spark.Request;
