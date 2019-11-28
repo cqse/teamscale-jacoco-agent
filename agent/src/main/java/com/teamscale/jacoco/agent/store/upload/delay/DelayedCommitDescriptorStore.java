@@ -7,43 +7,45 @@ import org.slf4j.Logger;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 
 /**
- * Wraps an {@link ICommitDescriptorStore} and an {@link ICachingXmlStore} in order to delay upload to the {@link
- * ICommitDescriptorStore} until a {@link CommitDescriptor} is asynchronously made available. Until then, all XMLs are
- * stored in the {@link ICachingXmlStore}.
+ * Wraps an {@link IXmlStore} and an {@link ICachingXmlStore} in order to delay upload to the {@link IXmlStore} until a
+ * {@link CommitDescriptor} is asynchronously made available. Until then, all XMLs are stored in the {@link
+ * ICachingXmlStore}.
  */
 public class DelayedCommitDescriptorStore implements IXmlStore {
 
-	private CommitDescriptor commit = null;
 	private final Executor executor = Executors.newSingleThreadExecutor();
 	private final Logger logger = LoggingUtils.getLogger(this);
-	private final ICommitDescriptorStore wrappedStore;
+	private final Function<CommitDescriptor, IXmlStore> wrappedStoreFactory;
+	private IXmlStore wrappedStore = null;
 	private final ICachingXmlStore cache;
 
-	public DelayedCommitDescriptorStore(
-			ICommitDescriptorStore wrappedStore, ICachingXmlStore cache) {
-		this.wrappedStore = wrappedStore;
+	public DelayedCommitDescriptorStore(Function<CommitDescriptor, IXmlStore> wrappedStoreFactory,
+										ICachingXmlStore cache) {
+		this.wrappedStoreFactory = wrappedStoreFactory;
 		this.cache = cache;
-		registerShutdownHook(wrappedStore);
+
+		registerShutdownHook();
 	}
 
-	private void registerShutdownHook(ICommitDescriptorStore wrappedStore) {
+	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			if (commit == null) {
-				logger.error("The application was shut down before a commit for uploading to {} could be found." +
-						" The recorded coverage is lost.", wrappedStore.describe());
+			if (wrappedStore == null) {
+				logger.error("The application was shut down before a commit could be found." +
+						" The recorded coverage is lost.");
 			}
 		}));
 	}
 
 	@Override
 	public synchronized void store(String xml) {
-		if (commit == null) {
+		if (wrappedStore == null) {
 			logger.info("The commit to upload to has not yet been found. Caching coverage XML in {}", cache.describe());
 			cache.store(xml);
 		} else {
-			wrappedStore.store(xml, commit);
+			wrappedStore.store(xml);
 		}
 	}
 
@@ -57,19 +59,19 @@ public class DelayedCommitDescriptorStore implements IXmlStore {
 	 * should only be called once.
 	 */
 	public synchronized void setCommitAndTriggerAsynchronousUpload(CommitDescriptor commit) {
-		if (this.commit == null) {
+		if (wrappedStore == null) {
+			wrappedStore = wrappedStoreFactory.apply(commit);
 			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", commit,
 					wrappedStore.describe());
-			this.commit = commit;
 			executor.execute(this::uploadCachedXmls);
 		} else {
-			logger.error("Tried to set upload commit multiple times (old={}, new={}). This is a programming error." +
-					" Please report a bug.", this.commit, commit);
+			logger.error("Tried to set upload commit multiple times (old store: {}, new commit: {})." +
+					" This is a programming error. Please report a bug.", wrappedStore.describe(), commit);
 		}
 	}
 
 	private void uploadCachedXmls() {
-		cache.streamCachedXmls().forEach(xml -> wrappedStore.store(xml, commit));
+		cache.streamCachedXmls().forEach(xml -> wrappedStore.store(xml));
 		cache.clear();
 		logger.debug("Finished upload of cached XMLs to {}", wrappedStore.describe());
 	}
