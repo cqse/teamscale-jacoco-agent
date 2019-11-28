@@ -25,7 +25,7 @@ public abstract class AgentBase {
 	protected final JacocoRuntimeController controller;
 
 	/** The agent options. */
-	protected AgentOptions options;
+	/*package*/ AgentOptions options;
 
 	private static LoggingUtils.LoggingResources loggingResources;
 
@@ -60,6 +60,8 @@ public abstract class AgentBase {
 
 	/** Called by the actual premain method once the agent is isolated from the rest of the application. */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer());
+
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
 		try {
