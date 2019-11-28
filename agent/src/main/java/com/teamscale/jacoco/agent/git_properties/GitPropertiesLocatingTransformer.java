@@ -4,6 +4,7 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.net.URL;
 import java.security.CodeSource;
@@ -41,7 +42,7 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 			if (jarOrClassFolderUrl.getProtocol().toLowerCase().equals("file") &&
 					StringUtils.endsWithOneOf(
 							jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-				// TODO (FS) search
+				GitPropertiesLocator.searchJarFileForGitPropertiesAsync(new File(jarOrClassFolderUrl.toURI()));
 			}
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is
