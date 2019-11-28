@@ -46,7 +46,7 @@ public class DelayedCommitDescriptorStore implements IXmlStore {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			if (wrappedStore == null) {
 				logger.error("The application was shut down before a commit could be found." +
-						" The recorded coverage is lost.");
+						" The recorded coverage is probably lost.");
 			}
 		}));
 	}
@@ -66,7 +66,7 @@ public class DelayedCommitDescriptorStore implements IXmlStore {
 		if (wrappedStore != null) {
 			return wrappedStore.describe();
 		}
-		return "Temporary cache (" + cache.describe() + ")";
+		return "Temporary cache until commit is resolved: " + cache.describe();
 	}
 
 	/**
