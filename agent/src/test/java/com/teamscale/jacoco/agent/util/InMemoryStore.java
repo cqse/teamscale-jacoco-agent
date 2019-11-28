@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.utils;
+package com.teamscale.jacoco.agent.util;
 
 import com.teamscale.jacoco.agent.store.upload.delay.ICachingXmlStore;
 
