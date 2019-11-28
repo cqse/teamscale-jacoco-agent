@@ -11,8 +11,8 @@ import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
 import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
@@ -287,12 +287,7 @@ public class AgentOptions {
 			if (teamscaleServer.commit == null) {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-				TimestampedFileStore cacheStore = new TimestampedFileStore(outputDirectory);
-				DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
-						commit -> new TeamscaleUploadStore(fileStore, teamscaleServer), cacheStore);
-				GitPropertiesLocator locator = new GitPropertiesLocator(store);
-				instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator));
-				return store;
+				return createDelayedTeamscaleStore(instrumentation, fileStore);
 			}
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
@@ -303,6 +298,25 @@ public class AgentOptions {
 		}
 
 		return fileStore;
+	}
+
+	private IXmlStore createDelayedTeamscaleStore(Instrumentation instrumentation, TimestampedFileStore fileStore)
+			throws UploadStoreException {
+
+		Path cacheDirectory;
+		try {
+			cacheDirectory = Files.createTempDirectory(outputDirectory, "upload-cache");
+		} catch (IOException e) {
+			throw new UploadStoreException(
+					"Unable to create temporary cache directory within " + outputDirectory, e);
+		}
+
+		TimestampedFileStore cacheStore = new TimestampedFileStore(cacheDirectory);
+		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
+				commit -> new TeamscaleUploadStore(fileStore, teamscaleServer), cacheStore);
+		GitPropertiesLocator locator = new GitPropertiesLocator(store);
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator));
+		return store;
 	}
 
 	/**

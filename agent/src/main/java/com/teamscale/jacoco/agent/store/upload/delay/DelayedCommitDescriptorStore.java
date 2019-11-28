@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.store.upload.delay;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.store.IXmlStore;
+import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.slf4j.Logger;
 
@@ -24,7 +25,8 @@ public class DelayedCommitDescriptorStore implements IXmlStore {
 
 	public DelayedCommitDescriptorStore(Function<CommitDescriptor, IXmlStore> wrappedStoreFactory,
 										ICachingXmlStore cache) {
-		this(wrappedStoreFactory, cache, Executors.newSingleThreadExecutor());
+		this(wrappedStoreFactory, cache, Executors.newSingleThreadExecutor(
+				new DaemonThreadFactory(DelayedCommitDescriptorStore.class, "Delayed store cache upload thread")));
 	}
 
 	/**
@@ -61,7 +63,10 @@ public class DelayedCommitDescriptorStore implements IXmlStore {
 
 	@Override
 	public String describe() {
-		return "Delayed version of " + wrappedStore.describe() + " caching at " + cache.describe();
+		if (wrappedStore != null) {
+			return wrappedStore.describe();
+		}
+		return "Temporary cache (" + cache.describe() + ")";
 	}
 
 	/**

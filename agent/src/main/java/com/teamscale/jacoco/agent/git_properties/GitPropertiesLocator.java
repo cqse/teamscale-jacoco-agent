@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.git_properties;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
+import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.slf4j.Logger;
 
@@ -35,7 +36,9 @@ public class GitPropertiesLocator {
 	private final DelayedCommitDescriptorStore store;
 
 	public GitPropertiesLocator(DelayedCommitDescriptorStore store) {
-		this(store, Executors.newSingleThreadExecutor());
+		this(store, Executors
+				.newSingleThreadExecutor(
+						new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")));
 	}
 
 	/**
@@ -47,6 +50,9 @@ public class GitPropertiesLocator {
 		this.executor = executor;
 	}
 
+	/**
+	 * Asynchronously searches the given jar file for a git.properties file.
+	 */
 	public void searchJarFileForGitPropertiesAsync(File jarFile) {
 		if (!foundCommitDescriptor) {
 			executor.execute(() -> searchJarFile(jarFile));
