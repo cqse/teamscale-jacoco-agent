@@ -1,8 +1,7 @@
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.client.HttpUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
@@ -61,8 +60,6 @@ public abstract class AgentBase {
 
 	/** Called by the actual premain method once the agent is isolated from the rest of the application. */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		instrumentation.addTransformer(new GitPropertiesLocatingTransformer());
-
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
 		try {
@@ -87,6 +84,7 @@ public abstract class AgentBase {
 		logger.info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_035b120.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
+		agentOptions.updateInstrumentation(instrumentation);
 		AgentBase agent = agentOptions.createAgent();
 		agent.registerShutdownHook();
 	}

@@ -20,7 +20,10 @@ public class TeamscaleServer {
 	/** The partition to upload reports to. */
 	public String partition;
 
-	/** The corresponding code commit to which the coverage belongs. */
+	/**
+	 * The corresponding code commit to which the coverage belongs. If this is null, the Agent is supposed to
+	 * auto-detect the commit from the profiled code.
+	 */
 	public CommitDescriptor commit;
 
 	/** The commit message shown in the Teamscale UI for the coverage upload. */
@@ -32,8 +35,7 @@ public class TeamscaleServer {
 				project != null &&
 				userName != null &&
 				userAccessToken != null &&
-				partition != null &&
-				commit != null;
+				partition != null;
 	}
 
 	/** Returns whether all required fields are null. */
@@ -42,8 +44,7 @@ public class TeamscaleServer {
 				project == null &&
 				userName == null &&
 				userAccessToken == null &&
-				partition == null &&
-				commit == null;
+				partition == null;
 	}
 
 	@Override

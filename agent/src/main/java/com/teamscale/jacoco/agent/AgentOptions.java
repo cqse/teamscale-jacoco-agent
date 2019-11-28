@@ -8,11 +8,13 @@ package com.teamscale.jacoco.agent;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
+import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
@@ -28,6 +30,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
@@ -272,6 +275,15 @@ public class AgentOptions {
 	}
 
 	/**
+	 * Performs additional instrumentation tasks depending on the configuration.
+	 */
+	public void updateInstrumentation(Instrumentation instrumentation) {
+		if (teamscaleServer.commit == null) {
+			instrumentation.addTransformer(new GitPropertiesLocatingTransformer());
+		}
+	}
+
+	/**
 	 * Creates the store to use for the coverage XMLs.
 	 */
 	public IXmlStore createStore() throws UploadStoreException {
@@ -280,6 +292,13 @@ public class AgentOptions {
 			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
+			if (teamscaleServer.commit == null) {
+				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+				TimestampedFileStore cacheStore = new TimestampedFileStore(outputDirectory);
+				return new DelayedCommitDescriptorStore(commit -> new TeamscaleUploadStore(fileStore, teamscaleServer),
+						cacheStore);
+			}
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
 
