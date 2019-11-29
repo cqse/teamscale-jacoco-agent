@@ -38,8 +38,8 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 		try {
 			CodeSource codeSource = protectionDomain.getCodeSource();
 			if (codeSource == null) {
-				// unknown when this can happen, but we need to be safe and there's
-				// nothing else we can do here
+				// unknown when this can happen, we suspect when code is generated at runtime
+				// but there's nothing else we can do here in either case
 				return null;
 			}
 

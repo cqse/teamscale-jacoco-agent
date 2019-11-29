@@ -124,6 +124,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `teamscale-git-properties-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
+  This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent 
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
