@@ -10,7 +10,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.File
 import java.io.Serializable
-import java.util.function.Predicate
 
 
 /**
@@ -112,7 +111,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
 class SerializableFilter(private val includes: List<String>?, private val excludes: List<String>?) : Serializable {
 
     /** Returns a filter predicate that respects the configured wildcard include and exclude patterns. */
-    fun getPredicate(): Predicate<String>? {
+    fun getPredicate(): ClasspathWildcardIncludeFilter {
         return ClasspathWildcardIncludeFilter(
             includes?.joinToString(":") { "*$it".replace('/', '.') },
             excludes?.joinToString(":") { "*$it".replace('/', '.') }

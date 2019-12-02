@@ -1,7 +1,9 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
 import com.teamscale.report.jacoco.FilteringAnalyzer;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
+import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.internal.analysis.CachingClassAnalyzer;
 import org.jacoco.core.internal.analysis.ClassCoverageImpl;
 import org.jacoco.core.internal.analysis.StringPool;
@@ -12,7 +14,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 
 import java.io.IOException;
-import java.util.function.Predicate;
 
 /**
  * An {@link AnalyzerCache} instance processes a set of Java class/jar/war/... files and builds a {@link
@@ -22,11 +23,10 @@ import java.util.function.Predicate;
  * is a CRC64 checksum of the classfile. We process each class with {@link CachingClassAnalyzer} to fill a {@link
  * ClassCoverageLookup}.
  * <p>
- * The class basically needs to override {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])}. Since the
- * method is private we need to override and copy the implementations of all methods that call this method, which is
- * {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[], String)}. When updating we just need to make sure that
- * no additional methods have been added to {@link org.jacoco.core.analysis.Analyzer}, which call the private method
- * internally.
+ * The class basically needs to override {@link Analyzer#analyzeClass(byte[])}. Since the method is private we need to
+ * override and copy the implementations of all methods that call this method, which is {@link
+ * Analyzer#analyzeClass(byte[], String)}. When updating we just need to make sure that no additional methods have been
+ * added to {@link Analyzer}, which call the private method internally.
  */
 public class AnalyzerCache extends FilteringAnalyzer {
 
@@ -37,14 +37,15 @@ public class AnalyzerCache extends FilteringAnalyzer {
 	private final StringPool stringPool = new StringPool();
 
 	/** Creates a new analyzer filling the given cache. */
-	public AnalyzerCache(ProbesCache probesCache, Predicate<String> locationIncludeFilter, ILogger logger) {
+	public AnalyzerCache(ProbesCache probesCache, ClasspathWildcardIncludeFilter locationIncludeFilter,
+						 ILogger logger) {
 		super(null, null, locationIncludeFilter, logger);
 		this.probesCache = probesCache;
 	}
 
 	/**
-	 * Analyses the given class. Instead of the original implementation in {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])}
-	 * we don't use concrete execution data, but instead build a probe cache to speed up repeated lookups.
+	 * Analyses the given class. Instead of the original implementation in {@link Analyzer#analyzeClass(byte[])} we
+	 * don't use concrete execution data, but instead build a probe cache to speed up repeated lookups.
 	 */
 	private void analyzeClass(final byte[] source) {
 		long classId = CRC64.classId(source);
@@ -66,9 +67,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 	}
 
 	/**
-	 * @inheritDoc <p> Copy of the method from {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[], String)},
-	 * because it calls the private {@link org.jacoco.core.analysis.Analyzer#analyzeClass(byte[])} method, which we
-	 * therefore cannot override.
+	 * @inheritDoc <p> Copy of the method from {@link Analyzer#analyzeClass(byte[], String)}, because it calls the
+	 * private {@link Analyzer#analyzeClass(byte[])} method, which we therefore cannot override.
 	 */
 	@Override
 	public void analyzeClass(final byte[] buffer, final String location) throws IOException {

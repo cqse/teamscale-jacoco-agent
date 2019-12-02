@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.string.StringUtils;
 import org.slf4j.Logger;
 
@@ -21,9 +22,12 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Set<String> seenJars = new ConcurrentSkipListSet<>();
 	private final GitPropertiesLocator locator;
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
-	public GitPropertiesLocatingTransformer(GitPropertiesLocator locator) {
+	public GitPropertiesLocatingTransformer(GitPropertiesLocator locator,
+											ClasspathWildcardIncludeFilter locationIncludeFilter) {
 		this.locator = locator;
+		this.locationIncludeFilter = locationIncludeFilter;
 	}
 
 	@Override
@@ -32,6 +36,11 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 
 		if (protectionDomain == null) {
 			// happens for e.g. java.lang. We can ignore these classes
+			return null;
+		}
+
+		if (StringUtils.isEmpty(className) || !locationIncludeFilter.isIncluded(className)) {
+			// only search in jar files of included classes
 			return null;
 		}
 

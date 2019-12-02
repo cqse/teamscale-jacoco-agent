@@ -5,6 +5,7 @@ import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -20,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.
@@ -33,7 +33,7 @@ public class JaCoCoTestwiseReportGenerator {
 	private CachingExecutionDataReader executionDataReader;
 
 	/** The filter for the analyzed class files. */
-	private final Predicate<String> locationIncludeFilter;
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
 	/**
 	 * Create a new generator with a collection of class directories.
@@ -43,7 +43,7 @@ public class JaCoCoTestwiseReportGenerator {
 	 * @param logger                    The logger
 	 */
 	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives,
-										 Predicate<String> locationIncludeFilter,
+										 ClasspathWildcardIncludeFilter locationIncludeFilter,
 										 EDuplicateClassFileBehavior duplicateClassFileBehavior,
 										 ILogger logger) throws CoverageGenerationException {
 		this.locationIncludeFilter = locationIncludeFilter;

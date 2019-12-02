@@ -22,9 +22,9 @@ class ClasspathWildcardIncludeFilterTest {
 
 	@Test
 	void testMatching() {
-		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*"))
-				.rejects("/junit-jupiter-engine-5.1.0.jar@org/junit/jupiter/engine/Constants.class");
-		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*"))
-				.rejects("org/junit/platform/commons/util/ModuleUtils$ModuleReferenceScanner.class");
+		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*")
+				.isIncluded("/junit-jupiter-engine-5.1.0.jar@org/junit/jupiter/engine/Constants.class")).isFalse();
+		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*")
+				.isIncluded("org/junit/platform/commons/util/ModuleUtils$ModuleReferenceScanner.class")).isFalse();
 	}
 }
