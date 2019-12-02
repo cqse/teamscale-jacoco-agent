@@ -40,9 +40,6 @@ public class ClasspathWildcardIncludeFilter {
 
 	/**
 	 * Tests if the given file path (e.g. "/some/file/path/test.jar@my/package/Test.class" or "org/mypackage/MyClass"
-	 *
-	 * @param path
-	 * @return
 	 */
 	public boolean isIncluded(String path) {
 		String className = getClassName(path);
