@@ -3,6 +3,9 @@ We use [semantic versioning][semver]
 # Next Release
 - [fix] WildFly won't start with agent attached
 - [feature] make `out` parameter optional with sensible fallback (subdirectory `coverage` in agent installation directory)
+- [feature] if no `teamscale-commit`, `teamscale-git-properties-jar` or `teamscale-commit-manifest-jar` is configured,
+  all loaded Jar/War/Ear/... files are checked for a `git.properties` file. This allows auto-detecting a
+  `git.properties` file without any additional configuration. 
 
 # 15.1.1
 - [documentation] Configuration for SAP NetWeaver Java (>= 7.50) is now documented

@@ -3,16 +3,21 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.Agent;
+import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
+import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
+import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
 import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
 import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
@@ -28,6 +33,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
@@ -154,9 +160,7 @@ public class AgentOptions {
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
 
-		validator.ensure(() -> {
-			FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
-		});
+		validator.ensure(() -> FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile()));
 
 		if (loggingConfig != null) {
 			validator.ensure(() -> {
@@ -263,23 +267,28 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent() throws UploadStoreException {
+	public AgentBase createAgent(Instrumentation instrumentation) throws UploadStoreException {
 		if (useTestwiseCoverageMode()) {
 			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
-			return new Agent(this);
+			return new Agent(this, instrumentation);
 		}
 	}
 
 	/**
 	 * Creates the store to use for the coverage XMLs.
 	 */
-	public IXmlStore createStore() throws UploadStoreException {
+	public IXmlStore createStore(Instrumentation instrumentation) throws UploadStoreException {
 		TimestampedFileStore fileStore = new TimestampedFileStore(outputDirectory);
 		if (uploadUrl != null) {
 			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
+			if (teamscaleServer.commit == null) {
+				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+				return createDelayedTeamscaleStore(instrumentation, fileStore);
+			}
 			return new TeamscaleUploadStore(fileStore, teamscaleServer);
 		}
 
@@ -289,6 +298,25 @@ public class AgentOptions {
 		}
 
 		return fileStore;
+	}
+
+	private IXmlStore createDelayedTeamscaleStore(Instrumentation instrumentation, TimestampedFileStore fileStore)
+			throws UploadStoreException {
+
+		Path cacheDirectory;
+		try {
+			cacheDirectory = Files.createTempDirectory(outputDirectory, "upload-cache");
+		} catch (IOException e) {
+			throw new UploadStoreException(
+					"Unable to create temporary cache directory within " + outputDirectory, e);
+		}
+
+		TimestampedFileStore cacheStore = new TimestampedFileStore(cacheDirectory);
+		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
+				commit -> new TeamscaleUploadStore(fileStore, teamscaleServer), cacheStore);
+		GitPropertiesLocator locator = new GitPropertiesLocator(store);
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator));
+		return store;
 	}
 
 	/**
@@ -313,7 +341,7 @@ public class AgentOptions {
 	/**
 	 * @see #shouldIgnoreDuplicateClassFiles
 	 */
-	public EDuplicateClassFileBehavior duplicateClassFileBehavior() {
+	public EDuplicateClassFileBehavior getDuplicateClassFileBehavior() {
 		if (shouldIgnoreDuplicateClassFiles) {
 			return EDuplicateClassFileBehavior.WARN;
 		} else {

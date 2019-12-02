@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.util.Benchmark;
@@ -15,6 +16,7 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -40,16 +42,17 @@ public class Agent extends AgentBase {
 	/** Stores the XML files. */
 	protected final IXmlStore store;
 
-	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploadStoreException {
+	public Agent(AgentOptions options, Instrumentation instrumentation)
+			throws IllegalStateException, UploadStoreException {
+
 		super(options);
 
-		store = options.createStore();
+		store = options.createStore(instrumentation);
 		logger.info("Storage method: {}", store.describe());
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
-				options.duplicateClassFileBehavior(), wrap(logger));
+				options.getDuplicateClassFileBehavior(), wrap(logger));
 
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
@@ -63,7 +66,8 @@ public class Agent extends AgentBase {
 
 	@Override
 	protected void initServerEndpoints() {
-		get("/partition", (request, response) -> Optional.ofNullable(options.teamscaleServer.partition).orElse(""));
+		get("/partition", (request, response) ->
+				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 
 		post("/dump", this::handleDump);
 		post("/reset", this::handleReset);
@@ -98,7 +102,7 @@ public class Agent extends AgentBase {
 
 		logger.debug("Changing partition name to " + partition);
 		controller.setSessionId(partition);
-		options.teamscaleServer.partition = partition;
+		options.getTeamscaleServerOptions().partition = partition;
 
 		response.status(204);
 		return "";
