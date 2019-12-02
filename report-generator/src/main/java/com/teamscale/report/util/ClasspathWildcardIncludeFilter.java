@@ -38,6 +38,12 @@ public class ClasspathWildcardIncludeFilter {
 		}
 	}
 
+	/**
+	 * Tests if the given file path (e.g. "/some/file/path/test.jar@my/package/Test.class" or "org/mypackage/MyClass"
+	 *
+	 * @param path
+	 * @return
+	 */
 	public boolean isIncluded(String path) {
 		String className = getClassName(path);
 		// first check includes
@@ -60,7 +66,9 @@ public class ClasspathWildcardIncludeFilter {
 		}
 
 		String pathInsideJar = parts[parts.length - 1];
-		String pathWithoutExtension = StringUtils.removeLastPart(pathInsideJar, '.');
-		return new JavaNames().getQualifiedClassName(pathWithoutExtension);
+		if (path.toLowerCase().endsWith(".class")) {
+			pathInsideJar = StringUtils.removeLastPart(pathInsideJar, '.');
+		}
+		return new JavaNames().getQualifiedClassName(pathInsideJar);
 	}
 }
