@@ -4,6 +4,10 @@ plugins {
     id 'jacoco'
 }
 
+test {
+	useJUnitPlatform() // enable support for JUnit 5
+}
+
 jacocoTestReport {
     reports {
         xml.enabled true
