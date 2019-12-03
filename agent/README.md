@@ -383,6 +383,8 @@ Ensuring the proper shut-down can be done in two ways:
 #### Make the java process the entrypoint
 You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
 your application.  
+There is a difference between `ENTRYPOINT java ...` and `ENTRYPOINT ["java", "..."]`, see [here](https://docs.docker.com/engine/reference/builder/#entrypoint).
+The one variant without the brackets will start java with `/bin/sh -c` and it will not have the PID 1.  
 Or if you are using a shell script to start java you can also use the `exec` command to give the java call the PID 1.
 For more information see [this StackOverflow answer][so-java-exec-answer].
 
