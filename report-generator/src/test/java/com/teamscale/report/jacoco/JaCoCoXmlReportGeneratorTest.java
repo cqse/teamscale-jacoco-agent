@@ -2,10 +2,9 @@ package com.teamscale.report.jacoco;
 
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
-import com.teamscale.report.util.AntPatternIncludeFilter;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import com.teamscale.test.TestDataBase;
-import org.conqat.lib.commons.collections.CollectionUtils;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
@@ -63,8 +62,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 	private void runGenerator(String testDataFolder,
 							  EDuplicateClassFileBehavior duplicateClassFileBehavior) throws IOException {
 		File classFileFolder = useTestFile(testDataFolder);
-		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(CollectionUtils.emptyList(),
-				CollectionUtils.emptyList());
+		ClasspathWildcardIncludeFilter includeFilter = new ClasspathWildcardIncludeFilter(null, null);
 		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter,
 				duplicateClassFileBehavior,
 				mock(ILogger.class)).convert(createDummyDump());

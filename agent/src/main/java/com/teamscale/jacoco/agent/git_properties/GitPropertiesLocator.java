@@ -35,11 +35,13 @@ public class GitPropertiesLocator {
 
 	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
 	private final Executor executor;
-	private boolean foundCommitDescriptor = false;
+	private CommitDescriptor foundCommitDescriptor = null;
+	private File jarFileWithGitProperties = null;
 
 	private final DelayedCommitDescriptorStore store;
 
 	public GitPropertiesLocator(DelayedCommitDescriptorStore store) {
+		// using a single threaded executor allows this class to be lock-free
 		this(store, Executors
 				.newSingleThreadExecutor(
 						new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")));
@@ -58,9 +60,7 @@ public class GitPropertiesLocator {
 	 * Asynchronously searches the given jar file for a git.properties file.
 	 */
 	public void searchJarFileForGitPropertiesAsync(File jarFile) {
-		if (!foundCommitDescriptor) {
-			executor.execute(() -> searchJarFile(jarFile));
-		}
+		executor.execute(() -> searchJarFile(jarFile));
 	}
 
 	private void searchJarFile(File jarFile) {
@@ -68,12 +68,28 @@ public class GitPropertiesLocator {
 			CommitDescriptor commitDescriptor = getCommitFromGitProperties(jarFile);
 			if (commitDescriptor == null) {
 				logger.debug("No git.properties file found in {}", jarFile.toString());
-			} else {
-				logger.debug("Found git.properties file in {} and found commit descriptor {}", jarFile.toString(),
-						commitDescriptor.toString());
-				foundCommitDescriptor = true;
-				store.setCommitAndTriggerAsynchronousUpload(commitDescriptor);
+				return;
 			}
+
+			if (foundCommitDescriptor != null) {
+				if (!foundCommitDescriptor.equals(commitDescriptor)) {
+					logger.error("Found inconsistent git.properties files: {} contained {} while {} contained {}." +
+									" Please ensure that all git.properties files of your application are consistent." +
+									" Otherwise, you may" +
+									" be uploading to the wrong commit which will result in incorrect coverage data" +
+									" displayed in Teamscale. If you cannot fix the inconsistency, you can manually" +
+									" specify a Jar/War/Ear/... file from which to read the correct git.properties" +
+									" file with the agent's teamscale-git-properties-jar parameter.",
+							jarFileWithGitProperties, foundCommitDescriptor, jarFile, commitDescriptor);
+				}
+				return;
+			}
+
+			logger.debug("Found git.properties file in {} and found commit descriptor {}", jarFile.toString(),
+					commitDescriptor.toString());
+			foundCommitDescriptor = commitDescriptor;
+			jarFileWithGitProperties = jarFile;
+			store.setCommitAndTriggerAsynchronousUpload(commitDescriptor);
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
 		}

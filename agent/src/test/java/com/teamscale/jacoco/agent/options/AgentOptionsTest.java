@@ -109,14 +109,14 @@ public class AgentOptionsTest {
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
 				.parse("out=.,class-dir=.,includes=" + filterString);
-		return string -> agentOptions.getLocationIncludeFilter().test(string);
+		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
 				.parse("out=.,class-dir=.,excludes=" + filterString);
-		return string -> agentOptions.getLocationIncludeFilter().test(string);
+		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Tests path resolution with absolute path. */

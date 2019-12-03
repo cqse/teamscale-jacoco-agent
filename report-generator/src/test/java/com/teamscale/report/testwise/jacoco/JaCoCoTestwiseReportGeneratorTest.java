@@ -9,7 +9,7 @@ import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
-import com.teamscale.report.util.AntPatternIncludeFilter;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import com.teamscale.test.TestDataBase;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -21,7 +21,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static org.conqat.lib.commons.collections.CollectionUtils.emptyList;
 import static org.mockito.Mockito.mock;
 
 /** Tests for the {@link JaCoCoTestwiseReportGenerator} class. */
@@ -46,7 +45,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends TestDataBase {
 	/** Runs the report generator. */
 	private String runGenerator(String testDataFolder, String execFileName) throws Exception {
 		File classFileFolder = useTestFile(testDataFolder);
-		AntPatternIncludeFilter includeFilter = new AntPatternIncludeFilter(emptyList(), emptyList());
+		ClasspathWildcardIncludeFilter includeFilter = new ClasspathWildcardIncludeFilter(null, null);
 		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(
 				Collections.singletonList(classFileFolder),
 				includeFilter, EDuplicateClassFileBehavior.IGNORE,

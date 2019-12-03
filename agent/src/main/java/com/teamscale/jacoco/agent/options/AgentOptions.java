@@ -29,6 +29,7 @@ import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
+import org.jacoco.core.runtime.WildcardMatcher;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -42,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -109,12 +109,14 @@ public class AgentOptions {
 	/* package */ boolean shouldIgnoreDuplicateClassFiles = true;
 
 	/**
-	 * Include patterns to pass on to JaCoCo.
+	 * Include patterns for fully qualified class names to pass on to JaCoCo. See {@link WildcardMatcher} for the
+	 * pattern syntax. Individual patterns must be separated by ":".
 	 */
 	/* package */ String jacocoIncludes = null;
 
 	/**
-	 * Exclude patterns to pass on to JaCoCo.
+	 * Exclude patterns for fully qualified class names to pass on to JaCoCo. See {@link WildcardMatcher} for the
+	 * pattern syntax. Individual patterns must be separated by ":".
 	 */
 	/* package */ String jacocoExcludes = null;
 
@@ -315,7 +317,7 @@ public class AgentOptions {
 		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
 				commit -> new TeamscaleUploadStore(fileStore, teamscaleServer), cacheStore);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);
-		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator));
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return store;
 	}
 
@@ -386,7 +388,7 @@ public class AgentOptions {
 	 * @see #jacocoIncludes
 	 * @see #jacocoExcludes
 	 */
-	public Predicate<String> getLocationIncludeFilter() {
+	public ClasspathWildcardIncludeFilter getLocationIncludeFilter() {
 		return new ClasspathWildcardIncludeFilter(jacocoIncludes, jacocoExcludes);
 	}
 

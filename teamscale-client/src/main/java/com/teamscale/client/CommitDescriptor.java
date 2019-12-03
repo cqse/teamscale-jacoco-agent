@@ -10,8 +10,8 @@ public class CommitDescriptor implements Serializable {
 	public final String branchName;
 
 	/**
-	 * Timestamp of the commit.
-	 * The timestamp is a string here because be also want to be able to handle HEAD and 123456p1.
+	 * Timestamp of the commit. The timestamp is a string here because be also want to be able to handle HEAD and
+	 * 123456p1.
 	 */
 	public final String timestamp;
 
@@ -44,8 +44,12 @@ public class CommitDescriptor implements Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		CommitDescriptor that = (CommitDescriptor) o;
 		return Objects.equals(branchName, that.branchName) &&
 				Objects.equals(timestamp, that.timestamp);
