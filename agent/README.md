@@ -378,23 +378,39 @@ If you rely on coverage being written when the container is shut down (see `dump
 to make sure that the java process is stopped correctly, otherwise the coverage since the last dump is lost!  
 Docker only sends the SIGTERM signal to the process with PID 1 (the root/entrypoint process for docker)
 
-Ensuring the proper shut-down can be done in two ways:
+Ensuring the proper shut-down with docker can be done in two ways, depending on your setup.
 
-#### Make the java process the entrypoint
-You can do this by either using `ENTRYPOINT ["java", ...]`, `CMD exec java ...` or `CMD ["java", ...]` to start
-your application.  
-There is a difference between `ENTRYPOINT java ...` and `ENTRYPOINT ["java", "..."]`, see [here](https://docs.docker.com/engine/reference/builder/#entrypoint).
-The one variant without the brackets will start java with `/bin/sh -c` and it will not have the PID 1.  
-Or if you are using a shell script to start java you can also use the `exec` command to give the java call the PID 1.
-For more information see [this StackOverflow answer][so-java-exec-answer].
+#### Start the java process with CMD or ENTRYPOINT 
+**IMPORTANT**: If you use environment variables for the java command, for example `$JAVA_OPTS`, you need to do it without the brackets and use the [`exec`](https://www.computerhope.com/unix/bash/exec.htm) command:
+- `ENTRYPOINT exec java ... $JAVA_OPTS`
+- `CMD exec java ... $JAVA_OPTS` 
 
-#### Trap shutdown signals and wait for jacoco to stop
-If you have an entrypoint script for your Docker container which does more than starting the java application,
-you can push the java application into the background and wait for it at the end of the script, as well as trapping any shut-down signal,
-pass it the java process and wait for it to finish.
+This will start the java process inside of a shell (which will resolve the enviroment variables) and then the exec command will hand the shell process with its PID 1 to the java process.
+Using the brackets will execute the command directly without starting a shell, see the [docker documentation](https://docs.docker.com/engine/reference/builder/#entrypoint) for more details,
+as well as [this StackOverflow answer][so-java-exec-answer].  
+**NOTE**: If this is not working with `CMD` or if you are generally interested in the difference between `CMD` and `ENTRYPOINT` see [this StackOverflow answer](https://stackoverflow.com/a/39408777).
 
-Here is an example script how such an entrypoint.sh might look like. For more in-depth information take a look at 
-[this article][signal-trapping]
+
+Otherwise you can simply configure the Dockerfile to start the java process with either CMD or ENTRYPOINT as follows:
+- `CMD ["java", ...]`
+- `ENTRYPOINT ["java", ...]`
+
+
+#### Start the java process inside of a ENTRYPOINT script 
+If the java process is the last call in your script, then you can simply use `exec`.
+This will give the java process the PID 1.
+```bash
+# !/bin/sh
+# Preparations ...
+exec java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar
+```
+
+##### More complex
+If you have an entrypoint script for your Docker container which does more than a few preparations and then starting the java application,
+you can push the java application into the background and wait for it to finish, trap any shut-down signal and
+pass them the java process.
+
+Here is an example script how such an entrypoint.sh might look like. For more in-depth information take a look at [this article][signal-trapping]
 
 ```bash
 #!/bin/sh                                                                                           
@@ -422,11 +438,12 @@ java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf
 pid=$! # Get the PID of the most recent background command
 
 # Here: Code which should be executed after the java-app has started
-# Be careful though, because if this script receives a signal while other non-background commands 
-# are running it will not trap this signal. It will only trap it after any foreground child process is done.
+# Be careful with long running commands here because if this script receives a signal while other 
+# non-background commands are running it will not trap any signals until those commands are done. 
+# It will simply wait for them to finish and in case of docker it will send a SIGKILL after 
+# a 10 second time-out which will end everything directly and any coverage will be lost.
 
 wait $pid # At some point we need to wait for the java process before the script ends
-trap - TERM INT
 wait $pid # Second wait necessary because the first wait will exit before the trapping of the signals
 
 # Here: Code which should be executed after the java-app is finished or has been terminated
@@ -434,12 +451,6 @@ wait $pid # Second wait necessary because the first wait will exit before the tr
 
 **IMPORTANT**: Stopping a docker container has a 10 sec default timeout. After this time, the container will receive a SIGKILL which will end the container no matter what.
 This Signal cannot be trapped and will terminate every process immediately. It might take longer then 10 seconds to dump, write and send the coverage.
-
-If the java process is the last call in your script, then you don't need to trap the signal or push the process an the background but you can simply use `exec`.
-This will give the java process the PID 1.
-```bash
-exec java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar
-```
 
 ### Setting the JVM options
 Next, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
