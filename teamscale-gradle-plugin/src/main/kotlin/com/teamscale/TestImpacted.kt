@@ -4,6 +4,8 @@ import com.teamscale.config.TeamscaleTaskExtension
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.GradleException
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
@@ -160,10 +162,27 @@ open class TestImpacted : Test() {
         reportConfig.googleClosureCoverage.destination?.let {
             reportTask.addTestArtifactsDirs(report, it)
         }
-        reportTask.classDirs.add(classpath)
+
+        getAllDependentProjects(project).forEach { subProject ->
+            subProject.pluginManager.withPlugin("java") {
+                val sourceSets = subProject.property("sourceSets") as SourceSetContainer
+                reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
+            }
+        }
 
         setImpactedTestEngineOptions(report)
         super.executeTests()
+    }
+
+    private fun getAllDependentProjects(project: Project): Set<Project> {
+        val dependentProjects = mutableSetOf(project)
+        val projectDependencies =
+            project.configurations.getByName("runtime").allDependencies.withType(ProjectDependency::class.java)
+
+        projectDependencies.forEach {
+            dependentProjects.addAll(getAllDependentProjects(it.dependencyProject))
+        }
+        return dependentProjects
     }
 
     private fun writeEngineProperty(name: String, value: String?) {
