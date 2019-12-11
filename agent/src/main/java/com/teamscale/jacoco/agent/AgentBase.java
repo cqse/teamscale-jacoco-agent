@@ -58,7 +58,7 @@ public abstract class AgentBase {
 	protected Service service;
 
 	/** The number of times we tried to initialize {@link #service}. */
-	public int serviceInitializationCounter = 0;
+	private int serviceInitializationCounter = 0;
 
 	/** Constructor. */
 	public AgentBase(AgentOptions options, IAgent jacocoAgent) throws IllegalStateException, IOException {
