@@ -25,7 +25,7 @@ public interface ITeamscaleService {
 	@POST("p/{projectName}/external-report/")
 	Call<ResponseBody> uploadExternalReport(
 			@Path("projectName") String projectName,
-			@Query("format") EReportFormat format,
+			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
 			@Query("adjusttimestamp") boolean adjustTimestamp,
 			@Query("movetolastcommit") boolean moveToLastCommit,
@@ -33,6 +33,21 @@ public interface ITeamscaleService {
 			@Query("message") String message,
 			@Part("report") RequestBody report
 	);
+
+	/** Report upload API with {@link EReportFormat}. */
+	default Call<ResponseBody> uploadExternalReport(
+			String projectName,
+			EReportFormat format,
+			CommitDescriptor commit,
+			boolean adjustTimestamp,
+			boolean moveToLastCommit,
+			String partition,
+			String message,
+			RequestBody report
+	) {
+		return uploadExternalReport(projectName, format.name(), commit, adjustTimestamp, moveToLastCommit, partition,
+				message, report);
+	}
 
 	/** Report upload API for multiple reports at once. */
 	@Multipart
@@ -54,6 +69,7 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
+			@Query("includeNonImpacted") boolean includeNonImpacted,
 			@Body List<ClusteredTestDetails> report
 	);
 
@@ -64,12 +80,13 @@ public interface ITeamscaleService {
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
+			@Query("includeNonImpacted") boolean includeNonImpacted,
 			@Body List<ClusteredTestDetails> report
 	);
 
 	/**
-	 * Uploads the given report body to Teamscale as blocking call
-	 * with adjusttimestamp and movetolastcommit set to true.
+	 * Uploads the given report body to Teamscale as blocking call with adjusttimestamp and movetolastcommit set to
+	 * true.
 	 *
 	 * @return Returns the request body if successful, otherwise throws an IOException.
 	 */

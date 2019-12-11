@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.report.util.CommandLineLogger;
@@ -109,14 +109,14 @@ public class AgentOptionsTest {
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
 				.parse("out=.,class-dir=.,includes=" + filterString);
-		return string -> agentOptions.getLocationIncludeFilter().test(string);
+		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
 				.parse("out=.,class-dir=.,excludes=" + filterString);
-		return string -> agentOptions.getLocationIncludeFilter().test(string);
+		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Tests path resolution with absolute path. */
@@ -156,13 +156,14 @@ public class AgentOptionsTest {
 				() -> getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, "**.war"))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(
 				"Invalid path given for option option-name: " +
-				"**.war. The pattern **.war did not match any files in");
+						"**.war. The pattern **.war did not match any files in");
 	}
 
 	private void assertInputInWorkingDirectoryMatches(String workingDir, String input,
 													  String expected) throws AgentOptionParseException {
 		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
-		File actualFile = getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, input).toFile();
+		File actualFile = getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, input)
+				.toFile();
 		File expectedFile = new File(testFolder.getRoot(), expected);
 		assertThat(getNormalizedPath(actualFile)).isEqualByComparingTo(getNormalizedPath(expectedFile));
 	}

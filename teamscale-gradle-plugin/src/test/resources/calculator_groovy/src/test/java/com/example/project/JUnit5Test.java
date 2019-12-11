@@ -26,11 +26,6 @@ class JUnit5Test {
 	}
 
 	@Test
-	public void testMul() {
-		assertEquals(6, new Calculator().mul(2, 3));
-	}
-
-	@Test
 	@Tag("integration")
 	public void systemTest() {
 		Calculator cal = new Calculator();

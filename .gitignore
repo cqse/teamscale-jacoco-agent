@@ -3,6 +3,8 @@
 **/build/**
 **/out/**
 **/test-tmp/**
+
+*.swp
 **/bin/**
 **/.classpath
 **/.project

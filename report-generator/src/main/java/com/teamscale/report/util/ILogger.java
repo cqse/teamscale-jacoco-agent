@@ -16,12 +16,17 @@ public interface ILogger {
 	/** Logs at warning level. */
 	void warn(String message);
 
-	/** Logs at warning level. */
+	/** Logs at warning level. The given {@link Throwable} may be null. */
 	void warn(String message, Throwable throwable);
 
 	/** Logs at error level. */
 	void error(Throwable throwable);
 
-	/** Logs at error level. */
+	/** Logs at error level. The given {@link Throwable} may be null. */
 	void error(String message, Throwable throwable);
+
+	/** Logs at error level. */
+	default void error(String message) {
+		error(message, null);
+	}
 }

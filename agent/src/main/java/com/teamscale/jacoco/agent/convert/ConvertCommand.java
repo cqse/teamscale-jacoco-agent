@@ -56,7 +56,7 @@ public class ConvertCommand implements ICommand {
 
 	/** The directory to write the XML traces to. */
 	@Parameter(names = {"--in", "-i"}, required = true, description = "" + "The binary .exec file(s), test details and " +
-			"test executions to read")
+			"test executions to read. Can be a single file or a directory that is recursively scanned for relevant files.")
 	/* package */ List<String> inputFiles = new ArrayList<>();
 
 	/** The directory to write the XML traces to. */

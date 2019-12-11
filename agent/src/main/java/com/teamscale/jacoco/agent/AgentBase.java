@@ -1,10 +1,13 @@
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.HttpUtils;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.testimpact.IAgentService;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 
 import org.jacoco.agent.rt.IAgent;
-import eu.cqse.teamscale.client.HttpUtils;
 import okhttp3.ResponseBody;
 import spark.Request;
 import spark.Response;
@@ -41,7 +44,7 @@ public abstract class AgentBase {
 	protected final JacocoRuntimeController controller;
 
 	/** The agent options. */
-	protected AgentOptions options;
+	/*package*/ AgentOptions options;
 
 	private static LoggingUtils.LoggingResources loggingResources;
 
@@ -203,12 +206,12 @@ public abstract class AgentBase {
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 
-		HttpUtils.setShouldValidateSsl(agentOptions.validateSsl);
+		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 
 		logger.info("Starting JaCoCo's agent");
 		org.jacoco.agent.rt.internal_035b120.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
-		AgentBase agent = agentOptions.createAgent(RT.getAgent());
+		AgentBase agent = agentOptions.createAgent(instrumentation, RT.getAgent());
 		agent.registerShutdownHook();
 	}
 

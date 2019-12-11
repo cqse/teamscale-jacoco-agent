@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.store.upload.azure;
 
 import com.teamscale.client.EReportFormat;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;

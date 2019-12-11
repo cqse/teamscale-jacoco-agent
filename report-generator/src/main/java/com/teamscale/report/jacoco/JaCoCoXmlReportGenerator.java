@@ -3,6 +3,7 @@ package com.teamscale.report.jacoco;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 /** Creates an XML report from binary execution data. */
 public class JaCoCoXmlReportGenerator {
@@ -32,13 +32,20 @@ public class JaCoCoXmlReportGenerator {
 	/**
 	 * Include filter to apply to all locations during class file traversal.
 	 */
-	private final Predicate<String> locationIncludeFilter;
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
 	/** Whether to ignore non-identical duplicates of class files. */
 	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
 
-	/** Constructor. */
-	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
+	/** Part of the error message logged when validating the coverage report fails. */
+	private static final String MOST_LIKELY_CAUSE_MESSAGE = "Most likely you did not configure the agent correctly." +
+			" Please check that the includes and excludes options are set correctly so the relevant code is included." +
+			" If in doubt, first include more code and then iteratively narrow the patterns down to just the relevant code." +
+			" If you have specified the class-dir option, please make sure it points to a directory containing the" +
+			" class files/jars/wars/ears/etc. for which you are trying to measure code coverage.";
+
+	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives,
+									ClasspathWildcardIncludeFilter locationIncludeFilter,
 									EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
@@ -54,10 +61,20 @@ public class JaCoCoXmlReportGenerator {
 	}
 
 	/** Creates the report. */
-	public void convertToReport(OutputStream output, Dump dump) throws IOException {
+	private void convertToReport(OutputStream output, Dump dump) throws IOException {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
+		sanityCheck(bundleCoverage);
 		createReport(output, bundleCoverage, dump.info, mergedStore);
+	}
+
+	private void sanityCheck(IBundleCoverage coverage) {
+		if (coverage.getPackages().size() == 0 || coverage.getLineCounter().getTotalCount() == 0) {
+			logger.error("The generated coverage report is empty. " + MOST_LIKELY_CAUSE_MESSAGE);
+		} else if (coverage.getLineCounter().getCoveredCount() == 0) {
+			logger.error("The generated coverage report does not contain any covered source code lines. " +
+					MOST_LIKELY_CAUSE_MESSAGE);
+		}
 	}
 
 	/** Creates an XML report based on the given session and coverage data. */

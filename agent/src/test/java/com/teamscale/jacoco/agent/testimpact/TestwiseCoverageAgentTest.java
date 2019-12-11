@@ -21,9 +21,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
-import com.teamscale.jacoco.agent.AgentOptionParseException;
-import com.teamscale.jacoco.agent.AgentOptions;
-import com.teamscale.jacoco.agent.AgentOptionsParser;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.report.util.CommandLineLogger;
 
 /** Tests for {@link TestwiseCoverageAgent}. */

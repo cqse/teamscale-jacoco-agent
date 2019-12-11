@@ -5,7 +5,7 @@ import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.file.TimestampedFileStore;
+import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import okhttp3.MultipartBody;
@@ -26,20 +26,10 @@ public class TeamscaleUploadStore implements IXmlStore {
 	/** Teamscale server details. */
 	private final TeamscaleServer teamscaleServer;
 
-	/** The API which performs the upload. */
-	private final ITeamscaleService api;
-
 	/** Constructor. */
 	public TeamscaleUploadStore(TimestampedFileStore failureStore, TeamscaleServer teamscaleServer) {
 		this.failureStore = failureStore;
 		this.teamscaleServer = teamscaleServer;
-
-		api = TeamscaleServiceGenerator.createService(
-				ITeamscaleService.class,
-				teamscaleServer.url,
-				teamscaleServer.userName,
-				teamscaleServer.userAccessToken
-		);
 	}
 
 	@Override
@@ -57,6 +47,13 @@ public class TeamscaleUploadStore implements IXmlStore {
 		logger.debug("Uploading JaCoCo artifact to {}", teamscaleServer);
 
 		try {
+			// Cannot be executed in the constructor as this causes issues in WildFly server (See #100)
+			ITeamscaleService api = TeamscaleServiceGenerator.createService(
+					ITeamscaleService.class,
+					teamscaleServer.url,
+					teamscaleServer.userName,
+					teamscaleServer.userAccessToken
+			);
 			api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,

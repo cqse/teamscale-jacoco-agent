@@ -9,12 +9,11 @@ buildscript {
 	}
 }
 
-
 ext {
-	appVersion = '15.1.0' // Also update version in BuildVersion.kt
-	pluginVersion = '0.4.13' // Also update version in BuildVersion.kt
-	reportGeneratorVersion = '1.4.0'
-	teamscaleClientVersion = '0.2.11'
+	appVersion = '15.1.2' // Also update version in BuildVersion.kt
+	pluginVersion = '0.5.1' // Also update version in BuildVersion.kt
+	reportGeneratorVersion = '1.4.3'
+	teamscaleClientVersion = '0.3.1'
 
 	// When upgrading JaCoCo to a newer version make sure to
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static com.teamscale.report.util.ClasspathWildcardIncludeFilter.getClassName;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ClasspathWildcardIncludeFilterTest {
+public class ClasspathWildcardIncludeFilterTest {
 
 	/** Tests path to class name conversion. */
 	@Test
@@ -14,6 +14,7 @@ class ClasspathWildcardIncludeFilterTest {
 		assertThat(getClassName("file.jar@com/foo/Bar$Goo.class")).isEqualTo("com.foo.Bar.Goo");
 		assertThat(getClassName("file1.jar@goo/file2.jar@com/foo/Bar.class")).isEqualTo("com.foo.Bar");
 		assertThat(getClassName("com/foo/Bar.class")).isEqualTo("com.foo.Bar");
+		assertThat(getClassName("com/foo/Bar")).isEqualTo("com.foo.Bar");
 		assertThat(getClassName(
 				"C:\\client-daily\\client\\plugins\\com.customer.something.client_1.2.3.4.1234566778.jar@com/customer/something/SomeClass.class"))
 				.isEqualTo("com.customer.something.SomeClass");
@@ -22,9 +23,9 @@ class ClasspathWildcardIncludeFilterTest {
 
 	@Test
 	void testMatching() {
-		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*"))
-				.rejects("/junit-jupiter-engine-5.1.0.jar@org/junit/jupiter/engine/Constants.class");
-		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*"))
-				.rejects("org/junit/platform/commons/util/ModuleUtils$ModuleReferenceScanner.class");
+		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*")
+				.isIncluded("/junit-jupiter-engine-5.1.0.jar@org/junit/jupiter/engine/Constants.class")).isFalse();
+		assertThat(new ClasspathWildcardIncludeFilter(null, "org.junit.*")
+				.isIncluded("org/junit/platform/commons/util/ModuleUtils$ModuleReferenceScanner.class")).isFalse();
 	}
 }

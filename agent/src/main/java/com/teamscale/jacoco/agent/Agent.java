@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.agent.store.UploadStoreException;
 import com.teamscale.jacoco.agent.util.Benchmark;
@@ -15,6 +16,7 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -42,15 +44,15 @@ public class Agent extends AgentBase {
 	protected final IXmlStore store;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options, IAgent jacocoAgent) throws IllegalStateException, UploadStoreException, IOException {
+	public Agent(AgentOptions options, Instrumentation  instrumentation, IAgent jacocoAgent) throws IllegalStateException, UploadStoreException, IOException {
 		super(options, jacocoAgent);
 
-		store = options.createStore();
+		store = options.createStore(instrumentation);
 		logger.info("Storage method: {}", store.describe());
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
-				options.duplicateClassFileBehavior(), wrap(logger));
+				options.getDuplicateClassFileBehavior(), wrap(logger));
 
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
@@ -64,7 +66,7 @@ public class Agent extends AgentBase {
 
 	@Override
 	protected void initServerEndpoints() {
-		service.get("/partition", (request, response) -> Optional.ofNullable(options.teamscaleServer.partition).orElse(""));
+		service.get("/partition", (request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 
 		service.post("/dump", this::handleDump);
 		service.post("/reset", this::handleReset);
@@ -99,7 +101,7 @@ public class Agent extends AgentBase {
 
 		logger.debug("Changing partition name to " + partition);
 		controller.setSessionId(partition);
-		options.teamscaleServer.partition = partition;
+		options.getTeamscaleServerOptions().partition = partition;
 
 		response.status(204);
 		return "";

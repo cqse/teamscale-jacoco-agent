@@ -2,6 +2,7 @@ package com.teamscale.report.testwise.jacoco.cache;
 
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.report.JavaNames;
@@ -9,7 +10,6 @@ import org.jacoco.report.JavaNames;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
 
 /**
  * Holds {@link ClassCoverageLookup}s for all analyzed classes.
@@ -68,11 +68,11 @@ public class ProbesCache {
 	 * class file of this class has not been included in the analysis or was not covered.
 	 */
 	public FileCoverageBuilder getCoverage(ExecutionData executionData,
-										   Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
+										   ClasspathWildcardIncludeFilter locationIncludeFilter) throws CoverageGenerationException {
 		long classId = executionData.getId();
 		if (!containsClassId(classId)) {
 			String fullyQualifiedClassName = new JavaNames().getQualifiedClassName(executionData.getName());
-			if (locationIncludeFilter.test(fullyQualifiedClassName + ".class")) {
+			if (locationIncludeFilter.isIncluded(fullyQualifiedClassName + ".class")) {
 				classNotFoundLogger.log(fullyQualifiedClassName);
 			}
 			return null;
