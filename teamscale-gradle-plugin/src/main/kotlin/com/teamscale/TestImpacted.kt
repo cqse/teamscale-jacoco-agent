@@ -163,26 +163,25 @@ open class TestImpacted : Test() {
             reportTask.addTestArtifactsDirs(report, it)
         }
 
-        getAllDependentProjects(project).forEach { subProject ->
-            subProject.pluginManager.withPlugin("java") {
-                val sourceSets = subProject.property("sourceSets") as SourceSetContainer
-                reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
-            }
+        getAllDependentJavaProjects(project).forEach { subProject ->
+            val sourceSets = subProject.property("sourceSets") as SourceSetContainer
+            reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
         }
 
         setImpactedTestEngineOptions(report)
         super.executeTests()
     }
 
-    private fun getAllDependentProjects(project: Project): Set<Project> {
-        val dependentProjects = mutableSetOf(project)
-        val projectDependencies =
-            project.configurations.getByName("runtime").allDependencies.withType(ProjectDependency::class.java)
-
-        projectDependencies.forEach {
-            dependentProjects.addAll(getAllDependentProjects(it.dependencyProject))
-        }
-        return dependentProjects
+    private fun getAllDependentJavaProjects(project: Project): Set<Project> {
+        return project.configurations
+            .getByName("testRuntimeClasspath")
+            .allDependencies
+            .withType(ProjectDependency::class.java)
+            .map { it.dependencyProject }
+            .filter { it != project }
+            .filter { it.pluginManager.hasPlugin("java") }
+            .flatMap { getAllDependentJavaProjects(it) }
+            .union(listOf(project))
     }
 
     private fun writeEngineProperty(name: String, value: String?) {
