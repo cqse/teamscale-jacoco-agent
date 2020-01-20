@@ -61,6 +61,15 @@ public class JaCoCoTestwiseReportGenerator {
 		return testwiseCoverage;
 	}
 
+	/** Converts the given dump to a report. */
+	public TestwiseCoverage convert(Dump dump) {
+		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
+				.buildCoverageConsumer(locationIncludeFilter, testwiseCoverage::add);
+		dumpConsumer.accept(dump);
+		return testwiseCoverage;
+	}
+
 	/** Converts the given dumps to a report. */
 	public void convertAndConsume(File executionDataFile, Consumer<TestCoverageBuilder> consumer) throws IOException {
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
