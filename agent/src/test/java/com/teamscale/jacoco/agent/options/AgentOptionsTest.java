@@ -2,10 +2,9 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.report.util.CommandLineLogger;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,17 +17,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
 
-	@Rule
-	public TemporaryFolder testFolder = new TemporaryFolder();
+	@TempDir
+	public File testFolder;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws IOException {
-		testFolder.create();
-		testFolder.newFile("file_with_manifest1.jar");
-		testFolder.newFolder("plugins");
-		testFolder.newFolder("plugins", "inner");
-		testFolder.newFile("plugins/some_other_file.jar");
-		testFolder.newFile("plugins/file_with_manifest2.jar");
+		new File(testFolder, "file_with_manifest1.jar").createNewFile();
+		new File(testFolder, "plugins/inner").mkdirs();
+		new File(testFolder, "plugins/some_other_file.jar").createNewFile();
+		new File(testFolder, "plugins/file_with_manifest2.jar").createNewFile();
 	}
 
 	/** Tests include pattern matching. */
@@ -122,7 +119,7 @@ public class AgentOptionsTest {
 	/** Tests path resolution with absolute path. */
 	@Test
 	public void testPathResolutionForAbsolutePath() throws AgentOptionParseException {
-		assertInputInWorkingDirectoryMatches(".", testFolder.getRoot().getAbsolutePath(), "");
+		assertInputInWorkingDirectoryMatches(".", testFolder.getAbsolutePath(), "");
 	}
 
 	/** Tests path resolution with relative paths. */
@@ -144,14 +141,14 @@ public class AgentOptionsTest {
 	/** Tests path resolution with patterns and absolute paths. */
 	@Test
 	public void testPathResolutionWithPatternsAndAbsolutePaths() throws AgentOptionParseException {
-		assertInputInWorkingDirectoryMatches("plugins", testFolder.getRoot().getAbsolutePath() + "/plugins/file_*.jar",
+		assertInputInWorkingDirectoryMatches("plugins", testFolder.getAbsolutePath() + "/plugins/file_*.jar",
 				"plugins/file_with_manifest2.jar");
 	}
 
 	/** Tests path resolution with incorrect input. */
 	@Test
 	public void testPathResolutionWithPatternErrorCases() {
-		final File workingDirectory = new File(testFolder.getRoot(), ".");
+		final File workingDirectory = testFolder;
 		assertThatThrownBy(
 				() -> getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, "**.war"))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(
@@ -161,10 +158,10 @@ public class AgentOptionsTest {
 
 	private void assertInputInWorkingDirectoryMatches(String workingDir, String input,
 													  String expected) throws AgentOptionParseException {
-		final File workingDirectory = new File(testFolder.getRoot(), workingDir);
+		final File workingDirectory = new File(testFolder, workingDir);
 		File actualFile = getAgentOptionsParserWithDummyLogger().parsePath("option-name", workingDirectory, input)
 				.toFile();
-		File expectedFile = new File(testFolder.getRoot(), expected);
+		File expectedFile = new File(testFolder, expected);
 		assertThat(getNormalizedPath(actualFile)).isEqualByComparingTo(getNormalizedPath(expectedFile));
 	}
 

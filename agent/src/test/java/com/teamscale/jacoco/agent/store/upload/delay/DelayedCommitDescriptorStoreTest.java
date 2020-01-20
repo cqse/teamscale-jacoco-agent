@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.store.upload.delay;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.util.InMemoryStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

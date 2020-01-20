@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
