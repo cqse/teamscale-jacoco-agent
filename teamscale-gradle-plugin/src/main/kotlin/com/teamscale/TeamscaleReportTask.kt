@@ -50,7 +50,7 @@ open class TeamscaleReportTask : DefaultTask() {
 
     /** All directories that contain the relevant class files. */
     @InputFiles
-    val classDirs = mutableListOf<FileCollection>()
+    val classDirs = mutableSetOf<FileCollection>()
 
     /** The upload task that will be executed afterwards. */
     @Internal
