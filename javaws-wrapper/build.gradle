@@ -24,9 +24,9 @@ dependencies {
 mainClassName = 'com.teamscale.jacoco.javaws.Main'
 
 shadowJar {
-	baseName = 'teamscale-javaws-wrapper'
-	classifier = null
-	version = rootProject.appVersion
+	archiveBaseName = 'teamscale-javaws-wrapper'
+	archiveClassifier = null
+	archiveVersion = rootProject.appVersion
 }
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
@@ -41,7 +41,7 @@ startShadowScripts {
 
 distributions {
 	shadow {
-		baseName = 'javaws'
+		distributionBaseName = 'javaws'
 		contents {
 			from(readmeToPdf) {
 				into 'documentation'
