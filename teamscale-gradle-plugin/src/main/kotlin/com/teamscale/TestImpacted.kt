@@ -15,6 +15,7 @@ import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.api.tasks.testing.testng.TestNGOptions
 
 /** Task which runs the impacted tests. */
+@Suppress("MemberVisibilityCanBePrivate")
 @CacheableTask
 open class TestImpacted : Test() {
 
@@ -42,21 +43,21 @@ open class TestImpacted : Test() {
      * Reference to the configuration that should be used for this task.
      */
     @Internal
-    internal lateinit var taskExtension: TeamscaleTaskExtension
+    lateinit var taskExtension: TeamscaleTaskExtension
 
-    private val reportConfiguration
+    val reportConfiguration
         @Input
         get() = taskExtension.report
 
-    private val agentFilterConfiguration
+    val agentFilterConfiguration
         @Input
         get() = taskExtension.agent.getFilter()
 
-    private val agentJvmConfiguration
+    val agentJvmConfiguration
         @Input
         get() = taskExtension.agent.getAllAgents().map { it.getJvmArgs() }
 
-    private val serverConfiguration
+    val serverConfiguration
         @Input
         get() = taskExtension.parent.server
 
@@ -64,13 +65,13 @@ open class TestImpacted : Test() {
      * The (current) commit at which test details should be uploaded to.
      * Furthermore all changes up to including this commit are considered for test impact analysis.
      */
-    private val endCommit
+    val endCommit
         @Internal
         get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
 
 
     /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
-    private val baseline
+    val baseline
         @Input
         @Optional
         get() = taskExtension.parent.baseline
@@ -79,7 +80,7 @@ open class TestImpacted : Test() {
      * The directory to write the jacoco execution data to. Ensures that the directory
      * is cleared before executing the task by Gradle.
      */
-    private val reportOutputDir
+    val reportOutputDir
         @OutputDirectory
         get() = taskExtension.agent.destination
 
@@ -88,12 +89,12 @@ open class TestImpacted : Test() {
     lateinit var reportTask: TeamscaleReportTask
 
     @Internal
-    private var includeEngines: Set<String> = emptySet()
+    var includeEngines: Set<String> = emptySet()
 
     @Internal
-    private val junitPlatformOptions: JUnitPlatformOptions = JUnitPlatformOptions()
+    val junitPlatformOptions: JUnitPlatformOptions = JUnitPlatformOptions()
 
-    private val testEngineConfiguration: FileCollection
+    val testEngineConfiguration: FileCollection
         @InputFiles
         @Classpath
         get() = project.configurations.getByName(TeamscalePlugin.impactedTestEngineConfiguration)
@@ -163,26 +164,25 @@ open class TestImpacted : Test() {
             reportTask.addTestArtifactsDirs(report, it)
         }
 
-        getAllDependentProjects(project).forEach { subProject ->
-            subProject.pluginManager.withPlugin("java") {
-                val sourceSets = subProject.property("sourceSets") as SourceSetContainer
-                reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
-            }
+        getAllDependentJavaProjects(project).forEach { subProject ->
+            val sourceSets = subProject.property("sourceSets") as SourceSetContainer
+            reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
         }
 
         setImpactedTestEngineOptions(report)
         super.executeTests()
     }
 
-    private fun getAllDependentProjects(project: Project): Set<Project> {
-        val dependentProjects = mutableSetOf(project)
-        val projectDependencies =
-            project.configurations.getByName("runtime").allDependencies.withType(ProjectDependency::class.java)
-
-        projectDependencies.forEach {
-            dependentProjects.addAll(getAllDependentProjects(it.dependencyProject))
-        }
-        return dependentProjects
+    private fun getAllDependentJavaProjects(project: Project): Set<Project> {
+        return project.configurations
+            .getByName("testRuntimeClasspath")
+            .allDependencies
+            .withType(ProjectDependency::class.java)
+            .map { it.dependencyProject }
+            .filter { it != project }
+            .filter { it.pluginManager.hasPlugin("java") }
+            .flatMap { getAllDependentJavaProjects(it) }
+            .union(listOf(project))
     }
 
     private fun writeEngineProperty(name: String, value: String?) {

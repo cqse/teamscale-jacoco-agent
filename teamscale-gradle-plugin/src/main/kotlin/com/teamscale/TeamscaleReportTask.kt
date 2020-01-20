@@ -20,6 +20,7 @@ import org.gradle.api.tasks.*
 import java.io.File
 
 /** Task which runs the impacted tests. */
+@Suppress("MemberVisibilityCanBePrivate")
 open class TeamscaleReportTask : DefaultTask() {
 
     /**
@@ -35,18 +36,18 @@ open class TeamscaleReportTask : DefaultTask() {
     lateinit var configuration: TeamscaleTaskExtension
 
     /** Includes and excludes from jacoco which will control which classes will be profiled. */
-    private val agentFilter: SerializableFilter
+    val agentFilter: SerializableFilter
         @Input
         get() = configuration.agent.getFilter()
 
     /** Includes and excludes for js files that should be packaged into the testwise coverage report. */
-    private val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
+    val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
         @Input
         get() = configuration.getMergedReports().googleClosureCoverage.getFilter()
 
     /** Mapping from report files to artifacts that should be included in the report. */
     @Internal
-    private val reportsToArtifacts = mutableMapOf<Report, MutableList<File>>()
+    val reportsToArtifacts = mutableMapOf<Report, MutableList<File>>()
 
     /** All directories that contain the relevant class files. */
     @InputFiles

@@ -16,7 +16,7 @@ jacocoTestReport {
 tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
-	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+	implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 	implementation 'org.apache.commons:commons-lang3:3.8.1'
 	implementation 'org.apache.commons:commons-exec:1.3'
 }
@@ -24,9 +24,9 @@ dependencies {
 mainClassName = 'com.teamscale.jacoco.javaws.Main'
 
 shadowJar {
-	baseName = 'teamscale-javaws-wrapper'
-	classifier = null
-	version = rootProject.appVersion
+	archiveBaseName = 'teamscale-javaws-wrapper'
+	archiveClassifier = null
+	archiveVersion = rootProject.appVersion
 }
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
@@ -41,7 +41,7 @@ startShadowScripts {
 
 distributions {
 	shadow {
-		baseName = 'javaws'
+		distributionBaseName = 'javaws'
 		contents {
 			from(readmeToPdf) {
 				into 'documentation'

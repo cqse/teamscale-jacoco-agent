@@ -60,7 +60,7 @@ public class Main {
 
 		Validator validator = command.validate();
 		if (!validator.isValid()) {
-			handleInvalidCommandLine(jCommander, StringUtils.CR + validator.getErrorMessage());
+			handleInvalidCommandLine(jCommander, StringUtils.LINE_FEED + validator.getErrorMessage());
 		}
 
 		logger.info("Starting CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
@@ -74,7 +74,7 @@ public class Main {
 
 	/** Shows an informative error and help message. Then exits the program. */
 	private static void handleInvalidCommandLine(JCommander jCommander, String message) {
-		System.err.println("Invalid command line: " + message + StringUtils.CR);
+		System.err.println("Invalid command line: " + message + StringUtils.LINE_FEED);
 		jCommander.usage();
 		System.exit(1);
 	}
