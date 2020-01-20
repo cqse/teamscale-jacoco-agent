@@ -63,8 +63,8 @@ subprojects {
 	}
 
 	repositories {
-		ivy {
-			url 'https://share.cqse.eu/svn/artifacts/ivy'
+		maven {
+			url 'https://share.cqse.eu/svn/artifacts/maven'
 		}
 		jcenter()
 	}

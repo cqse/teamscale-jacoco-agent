@@ -16,7 +16,7 @@ jacocoTestReport {
 tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
-	implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+	implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 	implementation 'org.apache.commons:commons-lang3:3.8.1'
 	implementation 'org.apache.commons:commons-exec:1.3'
 }

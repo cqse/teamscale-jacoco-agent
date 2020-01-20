@@ -39,7 +39,7 @@ dependencies {
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
     implementation 'com.beust:jcommander:1.71'
-    implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+    implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.sparkjava:spark-core:2.7.2'
