@@ -206,8 +206,9 @@ The `testPath` parameter is a hierarchically structured identifier of the test a
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
 
 - `coverage-via-http` (optional): if set to true the coverage collected during a test is generated in process and 
-  returned as response to the the `[POST] /test/end/...` request. If set to false the coverage is stored in a 
-  binary `*.exec` file within the `out` directory. (Default is false)
+  returned as response to the the `[POST] /test/end/...` request. Be aware that this option may slow down the startup 
+  of the system under test and result in a larger memory footprint. If set to false the coverage is stored in a binary 
+  `*.exec` file within the `out` directory. (Default is false)
   
     The response format looks like this:
     ```json
