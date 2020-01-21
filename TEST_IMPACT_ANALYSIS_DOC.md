@@ -290,13 +290,13 @@ Three artifacts are needed:
      [
        {
          "uniformPath": "com/example/JUnit5Test/myFirstTest",
-         "durationMillis": 10,
+         "duration": 0.001,
          "result": "ERROR",
          "message": "<stacktrace>"
        },
        {
          "uniformPath": "com/example/JUnit4Test/testAdd",
-         "durationMillis": 15,
+         "duration": 0.015,
          "result": "PASSED"
        },
        {
@@ -307,12 +307,13 @@ Three artifacts are needed:
      ]
      ```
      
-     `result` can be one of:
+   - `result` can be one of:
      - `PASSED` Test execution was successful. 
      - `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore or @Disabled).
      - `SKIPPED` Caused by a failing assumption.
      - `FAILURE` Caused by a failing assertion.
      - `ERROR` Caused by an error during test execution (e.g. exception thrown).
+   - `duration` must be given in seconds
   - one or more coverage files with coverage per test (See agent/README -> Testwise coverage mode). 
     The files must have an `.exec` file extension.
   

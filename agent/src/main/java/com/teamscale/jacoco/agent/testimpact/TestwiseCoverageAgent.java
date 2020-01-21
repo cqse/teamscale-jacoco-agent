@@ -18,6 +18,10 @@ import spark.Response;
 import java.io.IOException;
 import java.util.Optional;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -39,7 +43,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	public TestwiseCoverageAgent(AgentOptions options,
 								 TestExecutionWriter testExecutionWriter) throws IllegalStateException, CoverageGenerationException {
 		super(options);
-		if (this.options.shouldDumpCoverageViaHttp()) {
+		if (options.shouldDumpCoverageViaHttp()) {
 			testEventHandler = new CoverageViaHttpStrategy(options, controller);
 		} else {
 			testEventHandler = new CoverageToExecFileStrategy(testExecutionWriter, controller);
@@ -60,14 +64,14 @@ public class TestwiseCoverageAgent extends AgentBase {
 		if (testId == null || testId.isEmpty()) {
 			logger.error("Test name missing in " + request.url() + "!");
 
-			response.status(400);
+			response.status(SC_BAD_REQUEST);
 			return "Test name is missing!";
 		}
 
 		logger.debug("Start test " + testId);
 
 		testEventHandler.testStart(testId);
-		response.status(204);
+		response.status(SC_NO_CONTENT);
 		return "";
 	}
 
@@ -77,18 +81,24 @@ public class TestwiseCoverageAgent extends AgentBase {
 		if (testId == null || testId.isEmpty()) {
 			logger.error("Test name missing in " + request.url() + "!");
 
-			response.status(400);
+			response.status(SC_BAD_REQUEST);
 			return "Test name is missing!";
 		}
 
 		logger.debug("End test " + testId);
 		Optional<TestExecution> testExecution = getTestExecution(testId, request.body());
 
-		testEventHandler.testEnd(testId, testExecution.orElse(null), response);
-
-		return "";
+		String body = testEventHandler.testEnd(testId, testExecution.orElse(null));
+		if (body == null) {
+			response.status(SC_NO_CONTENT);
+		} else {
+			response.type(APPLICATION_JSON.asString());
+			response.status(SC_OK);
+		}
+		return body;
 	}
 
+	/** Extracts a test execution object from the body if one is given. */
 	private Optional<TestExecution> getTestExecution(String testId, String body) {
 		if (body.isEmpty()) {
 			return Optional.empty();

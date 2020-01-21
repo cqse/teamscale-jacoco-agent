@@ -25,24 +25,25 @@ public class TestExecution implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * The uniform path of the test (method) that was executed. This is an absolute
-	 * (i.e. hierarchical) reference which identifies the test uniquely in the scope
-	 * of the Teamscale project. It may (but is not required to) correspond to the
-	 * path of some automated test case source code known to Teamscale. If the test
-	 * was parameterized, this path is expected to reflect the parameter in some
-	 * manner.
+	 * The uniform path of the test (method) that was executed. This is an absolute (i.e. hierarchical) reference which
+	 * identifies the test uniquely in the scope of the Teamscale project. It may (but is not required to) correspond to
+	 * the path of some automated test case source code known to Teamscale. If the test was parameterized, this path is
+	 * expected to reflect the parameter in some manner.
 	 */
 	private String uniformPath;
 
 	/** Duration of the execution in milliseconds. */
+	@Deprecated
 	private long durationMillis;
+
+	/** Duration of the execution in seconds. */
+	private Double duration;
 
 	/** The actual execution result state. */
 	private ETestExecutionResult result;
 
 	/**
-	 * Optional message given for test failures (normally contains a stack trace).
-	 * May be {@code null}.
+	 * Optional message given for test failures (normally contains a stack trace). May be {@code null}.
 	 */
 	private String message;
 
@@ -58,13 +59,12 @@ public class TestExecution implements Serializable {
 	}
 
 	/** @see #durationMillis */
-	public long getDurationMillis() {
-		return durationMillis;
-	}
-
-	/** @see #durationMillis */
 	public double getDurationSeconds() {
-		return durationMillis / 1000.0;
+		if (duration != null) {
+			return duration;
+		} else {
+			return durationMillis / 1000.0;
+		}
 	}
 
 	/** @see #result */

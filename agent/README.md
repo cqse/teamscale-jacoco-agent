@@ -47,10 +47,6 @@ The following options are available:
   For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
 - `out` (optional): the path to a writable directory where the generated coverage XML files will be stored. (For details 
   see path format section below). Defaults to the subdirectory `coverage` inside the agent's installation directory.
-- `class-dir` (optional): the path under which all class files of the profiled application are stored. Normally, this is inferred
-  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
-  above)
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
   section below)
@@ -78,6 +74,10 @@ patterns with `*`, `**` and `?`.
 
 ### Options for normal mode
 
+- `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
+  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
+  above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
@@ -179,9 +179,6 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
-- `coverage-via-http` (optional): if set to true the coverage collected during a test is generated in process and 
-  returned as response to the the `[POST] /test/end/...` request. If set to false the coverage is stored in a 
-  binary `*.exec` file within the `out` directory. (Default is false)
 
 The agent's REST API has the following endpoints:
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
@@ -203,10 +200,43 @@ The agent's REST API has the following endpoints:
 - `FAILURE` Caused by a failing assertion.
 - `ERROR` Caused by an error during test execution (e.g. exception thrown).
 
-(`uniformPath` and `durationMillis` is set automatically)
+(`uniformPath` and `duration` is set automatically)
   
 The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
+
+- `coverage-via-http` (optional): if set to true the coverage collected during a test is generated in process and 
+  returned as response to the the `[POST] /test/end/...` request. If set to false the coverage is stored in a 
+  binary `*.exec` file within the `out` directory. (Default is false)
+  
+    The response format looks like this:
+    ```json
+    {
+      "uniformPath": "com/example/MyTest/testSomething",
+      "duration": 0.025,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "com/example/project",
+          "files": [
+            {
+              "fileName": "Calculator.java",
+              "coveredLines": "20-24,26,27,29"
+            },
+            {
+              "fileName": "SomeOtherClass.java",
+              "coveredLines": "26-28"
+            }
+          ]
+        }
+      ]
+    }
+    ```
+  (`duration` and `result` are included when a test execution result is given in the request body)
+
+- `class-dir` (required when `coverage-via-http` is `true`): the path under which all class files of the profiled 
+  application are stored. May be a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. 
+  (For details see path format section above)
 
 ## Additional steps for WebSphere
 

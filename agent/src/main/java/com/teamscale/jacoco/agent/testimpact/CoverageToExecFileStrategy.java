@@ -4,10 +4,13 @@ import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import org.slf4j.Logger;
-import spark.Response;
 
 import java.io.IOException;
 
+/**
+ * Strategy for appending coverage into one exec file with one session per test. Execution data will be stored in a json
+ * file side-by-side with the exec file. Test executions are also appended into a single file.
+ */
 public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 
 	/** The logger. */
@@ -28,9 +31,8 @@ public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public void testEnd(String test, TestExecution testExecution,
-						Response response) throws JacocoRuntimeController.DumpException {
-		super.testEnd(test, testExecution, response);
+	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
+		super.testEnd(test, testExecution);
 		controller.dump();
 		if (testExecution != null) {
 			try {
@@ -39,6 +41,6 @@ public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 				logger.error("Failed to store test execution: " + e.getMessage(), e);
 			}
 		}
-		response.status(204);
+		return null;
 	}
 }

@@ -186,6 +186,9 @@ public class AgentOptions {
 		validator.isTrue(!useTestwiseCoverageMode() || uploadUrl == null, "'upload-url' option is " +
 				"incompatible with Testwise coverage mode!");
 
+		validator.isTrue(!useTestwiseCoverageMode() || !coverageViaHttp || !classDirectoriesOrZips.isEmpty(),
+				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
+
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
@@ -277,7 +280,8 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent(Instrumentation instrumentation) throws UploadStoreException, CoverageGenerationException {
+	public AgentBase createAgent(
+			Instrumentation instrumentation) throws UploadStoreException, CoverageGenerationException {
 		if (useTestwiseCoverageMode()) {
 			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
