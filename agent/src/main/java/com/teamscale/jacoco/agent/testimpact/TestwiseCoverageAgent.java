@@ -91,6 +91,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		String body = testEventHandler.testEnd(testId, testExecution.orElse(null));
 		if (body == null) {
 			response.status(SC_NO_CONTENT);
+			body = "";
 		} else {
 			response.type(APPLICATION_JSON.asString());
 			response.status(SC_OK);
