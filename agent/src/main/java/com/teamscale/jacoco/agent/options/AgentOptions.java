@@ -25,6 +25,7 @@ import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
+import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -141,6 +142,11 @@ public class AgentOptions {
 	/* package */ Integer httpServerPort = null;
 
 	/**
+	 * Whether coverage is written to an exec file in testwise mode or returned via HTTP.
+	 */
+	/* package */ boolean coverageViaHttp = false;
+
+	/**
 	 * The configuration necessary to upload files to an azure file storage
 	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
@@ -177,9 +183,6 @@ public class AgentOptions {
 			});
 		}
 
-		validator.isTrue(!useTestwiseCoverageMode() || uploadUrl == null, "'upload-url' option is " +
-				"incompatible with Testwise coverage mode!");
-
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
@@ -198,7 +201,35 @@ public class AgentOptions {
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
 				"such as a Teamscale instance, upload URL or Azure file storage");
 
+		appendTestwiseCoverageValidations(validator);
+
 		return validator;
+	}
+
+	private void appendTestwiseCoverageValidations(Validator validator) {
+		validator.isFalse(useTestwiseCoverageMode() && httpServerPort == null && testEnvironmentVariable == null,
+				"You use 'mode' 'TESTWISE' but did neither use 'http-server-port' nor 'test-env'! One of them is required!");
+
+		validator.isFalse(useTestwiseCoverageMode() && httpServerPort != null && testEnvironmentVariable != null,
+				"You did set both 'http-server-port' and 'test-env'! Only one of them is allowed!");
+
+		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
+				"incompatible with Testwise coverage mode!");
+
+		validator.isFalse(useTestwiseCoverageMode() && !teamscaleServer.hasAllRequiredFieldsNull(),
+				"'teamscale-' options are incompatible with Testwise coverage mode!");
+
+		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
+				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
+
+		validator.isFalse(!useTestwiseCoverageMode() && httpServerPort != null,
+				"You use 'http-server-port' but did not set 'mode' to 'TESTWISE'!");
+
+		validator.isFalse(!useTestwiseCoverageMode() && coverageViaHttp,
+				"You use 'coverage-via-http' but did not set 'mode' to 'TESTWISE'!");
+
+		validator.isFalse(!useTestwiseCoverageMode() && testEnvironmentVariable != null,
+				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
 	}
 
 	/**
@@ -213,7 +244,9 @@ public class AgentOptions {
 			builder.append(",excludes=").append(jacocoExcludes);
 		}
 
-		if (classDirectoriesOrZips.isEmpty()) {
+		// Don't dump class files in testwise mode when coverage is written to an exec file
+		boolean needsClassFiles = mode == EMode.NORMAL || coverageViaHttp;
+		if (classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
 			builder.append(",classdumpdir=").append(tempDir.toAbsolutePath().toString());
@@ -252,7 +285,7 @@ public class AgentOptions {
 
 	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
-		if (useTestwiseCoverageMode()) {
+		if (useTestwiseCoverageMode() && !coverageViaHttp) {
 			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
 			return "output=none";
@@ -269,7 +302,8 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent(Instrumentation instrumentation) throws UploadStoreException {
+	public AgentBase createAgent(
+			Instrumentation instrumentation) throws UploadStoreException, CoverageGenerationException {
 		if (useTestwiseCoverageMode()) {
 			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
@@ -400,6 +434,11 @@ public class AgentOptions {
 	/** Whether coverage should be dumped on JVM shutdown. */
 	public boolean shouldDumpOnExit() {
 		return shouldDumpOnExit;
+	}
+
+	/** Whether coverage should be dumped via http. */
+	public boolean shouldDumpCoverageViaHttp() {
+		return coverageViaHttp;
 	}
 
 	/** Describes the two possible modes the agent can be started in. */

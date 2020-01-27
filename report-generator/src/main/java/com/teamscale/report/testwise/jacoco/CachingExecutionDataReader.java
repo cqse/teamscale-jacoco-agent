@@ -97,7 +97,7 @@ class CachingExecutionDataReader {
 			if (testId.isEmpty()) {
 				// Ignore intermediate coverage that does not belong to any specific test
 				logger.debug("Found a session with empty name! This could indicate that coverage is dumped also for " +
-						"coverage in between tests or that the given test name was empty");
+						"coverage in between tests or that the given test name was empty!");
 				return;
 			}
 			try {

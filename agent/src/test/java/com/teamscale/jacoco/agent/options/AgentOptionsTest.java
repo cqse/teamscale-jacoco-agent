@@ -83,11 +83,26 @@ public class AgentOptionsTest {
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
-				"http-server-port=8081," +
-				"test-env=TEST");
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+				"http-server-port=8081");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
+	}
+
+	/** Tests the options for the Test Impact mode. */
+	@Test
+	public void testEnvironmentVariableOptions() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+				"test-env=TEST");
 		assertThat(agentOptions.getTestEnvironmentVariableName()).isEqualTo("TEST");
+	}
+
+	/** Tests the options for the Test Impact mode. */
+	@Test
+	public void testHttpServerOptionsWithCoverageViaHttp() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+				"http-server-port=8081,coverage-via-http=true");
+		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
+		assertThat(agentOptions.shouldDumpCoverageViaHttp()).isTrue();
 	}
 
 	/** Tests the options for azure file storage upload. */
