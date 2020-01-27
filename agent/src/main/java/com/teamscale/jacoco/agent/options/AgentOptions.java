@@ -208,18 +208,18 @@ public class AgentOptions {
 
 	private void appendTestwiseCoverageValidations(Validator validator) {
 		validator.isFalse(useTestwiseCoverageMode() && httpServerPort == null && testEnvironmentVariable == null,
-				"You use 'mode' 'TESTWISE' but did not neither 'http-server-port' nor 'test-env'! One of them is required!");
+				"You use 'mode' 'TESTWISE' but did neither use 'http-server-port' nor 'test-env'! One of them is required!");
 
 		validator.isFalse(useTestwiseCoverageMode() && httpServerPort != null && testEnvironmentVariable != null,
 				"You did set both 'http-server-port' and 'test-env'! Only one of them is allowed!");
 
-		validator.isTrue(!useTestwiseCoverageMode() || uploadUrl == null, "'upload-url' option is " +
+		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
 				"incompatible with Testwise coverage mode!");
 
-		validator.isTrue(!useTestwiseCoverageMode() || teamscaleServer.hasAllRequiredFieldsNull(),
+		validator.isFalse(useTestwiseCoverageMode() && !teamscaleServer.hasAllRequiredFieldsNull(),
 				"'teamscale-' options are incompatible with Testwise coverage mode!");
 
-		validator.isTrue(!useTestwiseCoverageMode() || !coverageViaHttp || !classDirectoriesOrZips.isEmpty(),
+		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
 
 		validator.isFalse(!useTestwiseCoverageMode() && httpServerPort != null,

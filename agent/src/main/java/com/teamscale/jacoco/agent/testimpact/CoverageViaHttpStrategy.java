@@ -14,9 +14,9 @@ import com.teamscale.report.testwise.model.builder.TestInfoBuilder;
 import org.slf4j.Logger;
 
 /**
- * Strategy which directly converts the collected coverage into a json object in place and returns the result to the
+ * Strategy which directly converts the collected coverage into a JSON object in place and returns the result to the
  * caller as response to the http request. If a test execution is given it is merged into the representation and
- * returned together called together with the coverage
+ * returned together with the coverage.
  */
 public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 
@@ -25,7 +25,7 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 
 	private final JaCoCoTestwiseReportGenerator testwiseReportGenerator;
 
-	private JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class)
+	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class)
 			.indent("\t");
 
 	public CoverageViaHttpStrategy(AgentOptions options,
