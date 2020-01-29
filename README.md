@@ -16,6 +16,7 @@
 
 * Import in Eclipse/IntelliJ as Gradle project
 * Command line: `./gradlew assemble`
+* Local docker build: `docker build -f agent/src/docker/Dockerfile .`
 
 ### Contributing
 
