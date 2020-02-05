@@ -13,6 +13,7 @@ public class Main {
 		port(8081);
 		get("/hello", this::hello);
 		get(":path", this::catchAll);
+		System.out.println("Sample Web App listening on Port 8081...");
 	}
 
 	private String hello(Request request, Response response) throws InterruptedException {

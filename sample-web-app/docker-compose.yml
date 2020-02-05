@@ -1,0 +1,21 @@
+version: '3'
+services:
+  app:
+    build: .
+    environment:
+      JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/usr/local/agent/docker-jacoco.config
+    ports:
+      - "8081:8081"
+      - "8123:8123"
+    volumes:
+      - agent-jar:/agent:ro
+
+  agent:
+    build:
+      context: ..
+      dockerfile: agent/src/docker/Dockerfile
+    volumes:
+      - agent-jar:/agent:ro
+
+volumes:
+  agent-jar:
