@@ -105,9 +105,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 			return "Test name is missing!";
 		}
 
-		logger.debug("End test " + testId);
-		Optional<TestExecution> testExecution = getTestExecution(testId, request.body());
+		notifyTestEnd(testId);
+		logger.debug("End test {}", testId);
 
+		Optional<TestExecution> testExecution = getTestExecution(testId, request.body());
 		String body = testEventHandler.testEnd(testId, testExecution.orElse(null));
 		if (body == null) {
 			response.status(SC_NO_CONTENT);
