@@ -30,7 +30,7 @@ import com.teamscale.report.util.CommandLineLogger;
 public class TestwiseCoverageAgentTest {
 
 	/** Minimal options string without port number */
-	private static final String OPTIONS_PREFIX = "out=,class-dir=,http-server-port=";
+	private static final String OPTIONS_PREFIX = "out=,class-dir=,mode=testwise,http-server-port=";
 
 	/** JaCoCo agent mocked, since we only test the HTTP part here. */
 	private final IAgent mock = mock(IAgent.class);
