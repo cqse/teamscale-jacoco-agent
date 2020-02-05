@@ -34,19 +34,21 @@ dependencies {
     implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
     implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
-	implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+	implementation 'ch.qos.logback:logback-core:1.2.3'
+	implementation 'ch.qos.logback:logback-classic:1.2.3'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
     implementation 'com.beust:jcommander:1.71'
-    implementation 'org.conqat:org.conqat.lib.commons:0.20160822'
+    implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.sparkjava:spark-core:2.7.2'
 
 	implementation 'com.squareup.moshi:moshi:1.8.0'
 
-    testImplementation 'junit:junit:4.12'
+	testImplementation 'junit:junit:4.12'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
     testImplementation 'org.assertj:assertj-core:3.8.0'
     testImplementation 'org.mockito:mockito-core:2.25.0'
 }
@@ -58,12 +60,12 @@ test {
 mainClassName = 'com.teamscale.jacoco.agent.Main'
 
 shadowJar {
-	baseName = 'teamscale-jacoco-agent'
-	classifier = null
+	archiveBaseName = 'teamscale-jacoco-agent'
+	archiveClassifier = null
 	// since this is used as an agent, we want it to always have the same name
 	// otherwise people have to adjust their -javaagent parameters after every
 	// update
-	version = null
+	archiveVersion = null
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
 
@@ -91,7 +93,7 @@ startShadowScripts {
 
 distributions {
 	shadow {
-		baseName = 'teamscale-jacoco-agent'
+		distributionBaseName = 'teamscale-jacoco-agent'
 		contents {
 			from(readmeToPdf) {
 				into 'documentation'

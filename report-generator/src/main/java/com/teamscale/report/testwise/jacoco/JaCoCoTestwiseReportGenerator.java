@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -59,6 +61,19 @@ public class JaCoCoTestwiseReportGenerator {
 				.buildCoverageConsumer(locationIncludeFilter, testwiseCoverage::add);
 		readAndConsumeDumps(executionDataFile, dumpConsumer);
 		return testwiseCoverage;
+	}
+
+	/** Converts the given dump to a report. */
+	public TestCoverageBuilder convert(Dump dump) {
+		List<TestCoverageBuilder> list = new ArrayList<>();
+		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
+				.buildCoverageConsumer(locationIncludeFilter, list::add);
+		dumpConsumer.accept(dump);
+		if (list.size() == 1) {
+			return list.get(0);
+		} else {
+			return null;
+		}
 	}
 
 	/** Converts the given dumps to a report. */

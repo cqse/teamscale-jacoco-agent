@@ -33,8 +33,6 @@ The following options are available:
 
 ### General options
 
-- `out` (optional): the path to a writable directory where the generated coverage XML files will be stored. (For details 
-  see path format section below). Defaults to the subdirectory `coverage` inside the agent's installation directory.
 - `includes` (recommended): include patterns for classes. Separate multiple patterns with a semicolon.
   This may speed up the profiled application and reduce the size of the output XML.
   These patterns are matched against
@@ -47,15 +45,17 @@ The following options are available:
   section.
 - `excludes` (optional): exclude patterns for classes. Same syntax as the `includes` parameter.
   For further details, please see the [JaCoCo documentation][jacoco-doc] in the "Agent" section.
+- `out` (optional): the path to a writable directory where the generated coverage XML files will be stored. (For details 
+  see path format section below). Defaults to the subdirectory `coverage` inside the agent's installation directory.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
   section below)
-- `logging-config`: path to a [logback][logback] configuration XML file (other configuration formats are not supported 
+- `logging-config` (optional): path to a [logback][logback] configuration XML file (other configuration formats are not supported 
   at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section 
   below)
-- `mode`: which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
+- `mode` (optional): which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
   
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo 
@@ -74,16 +74,16 @@ patterns with `*`, `**` and `?`.
 
 ### Options for normal mode
 
+- `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
+  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
+  above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
   setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
   See the special section on `ignore-duplicates` below.
-- `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
-  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
-  above)
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
@@ -179,7 +179,7 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
-  
+
 The agent's REST API has the following endpoints:
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
@@ -200,10 +200,44 @@ The agent's REST API has the following endpoints:
 - `FAILURE` Caused by a failing assertion.
 - `ERROR` Caused by an error during test execution (e.g. exception thrown).
 
-(`uniformPath` and `durationMillis` is set automatically)
+(`uniformPath` and `duration` is set automatically)
   
 The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
+
+- `coverage-via-http` (optional): if set to true the coverage collected during a test is generated in process and 
+  returned as response to the the `[POST] /test/end/...` request. Be aware that this option may slow down the startup 
+  of the system under test and result in a larger memory footprint. If set to false the coverage is stored in a binary 
+  `*.exec` file within the `out` directory. (Default is false)
+  
+    The response format looks like this:
+    ```json
+    {
+      "uniformPath": "com/example/MyTest/testSomething",
+      "duration": 0.025,
+      "result": "PASSED",
+      "paths": [
+        {
+          "path": "com/example/project",
+          "files": [
+            {
+              "fileName": "Calculator.java",
+              "coveredLines": "20-24,26,27,29"
+            },
+            {
+              "fileName": "SomeOtherClass.java",
+              "coveredLines": "26-28"
+            }
+          ]
+        }
+      ]
+    }
+    ```
+  (`duration` and `result` are included when a test execution result is given in the request body)
+
+- `class-dir` (required when `coverage-via-http` is `true`): the path under which all class files of the profiled 
+  application are stored. May be a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. 
+  (For details see path format section above)
 
 ## Additional steps for WebSphere
 

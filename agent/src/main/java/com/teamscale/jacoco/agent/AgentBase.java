@@ -7,6 +7,7 @@ import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.testimpact.IAgentService;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 
+import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import org.jacoco.agent.rt.IAgent;
 import okhttp3.ResponseBody;
 import spark.Request;

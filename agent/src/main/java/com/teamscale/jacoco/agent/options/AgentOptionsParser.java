@@ -332,6 +332,9 @@ public class AgentOptionsParser {
 							"Invalid port number " + value + " given for option 'http-server-port'");
 				}
 				return true;
+			case "coverage-via-http":
+				options.coverageViaHttp = Boolean.parseBoolean(value);
+				return true;
 			default:
 				return false;
 		}
