@@ -1,16 +1,16 @@
 # --- build image ---
 
-FROM openjdk:8 as build
-ADD . /src
-WORKDIR /src
-RUN ./gradlew :agent:assemble
+FROM gradle:6.1-jdk8 AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle :agent:shadowJar --no-daemon
 
 # --- production image ---
 
 FROM alpine:latest
 
 RUN mkdir -p /agent
-COPY --from=build /src/agent/build/libs/teamscale-jacoco-agent.jar /agent
+COPY --from=build /home/gradle/src/agent/build/libs/teamscale-jacoco-agent-15.2.0.jar /agent/
 
 VOLUME /agent
 
