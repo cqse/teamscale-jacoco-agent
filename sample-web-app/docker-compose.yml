@@ -1,5 +1,12 @@
 version: '3'
 services:
+  agent:
+    build:
+      context: ..
+      dockerfile: agent/src/docker/Dockerfile
+    volumes:
+      - agent-jar:/agent:ro
+
   app:
     build: .
     environment:
@@ -7,13 +14,6 @@ services:
     ports:
       - "8081:8081"
       - "8123:8123"
-    volumes:
-      - agent-jar:/agent:ro
-
-  agent:
-    build:
-      context: ..
-      dockerfile: agent/src/docker/Dockerfile
     volumes:
       - agent-jar:/agent:ro
 
