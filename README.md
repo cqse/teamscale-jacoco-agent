@@ -18,6 +18,16 @@
 * Command line: `./gradlew assemble`
 * Local docker build: `docker build -f agent/src/docker/Dockerfile .`
 
+### Debugging the Gradle plugin
+
+* increase the plugin version in `build.gradle`
+* `./gradlew iGP` will deploy your checked out version to your local m2 cache
+* then you can import this version into any other gradle project
+  by using the `mavenLocal()` repository in that project's `build.gradle`
+  and declaring a plugin dependency on the incremented version
+* to debug a build that uses the plugin, run `./gradlew` with `--no-daemon -Dorg.gradle.debug=true`.
+  The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
+
 ### Contributing
 
 * Create a JIRA issue for changes
