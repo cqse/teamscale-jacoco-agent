@@ -1,7 +1,12 @@
 # Teamscale JaCoCo Agent
 
-This program provides a Java agent that can regularly dump coverage from a running application.
-The JaCoCo coverage tool is used underneath.
+This is a Java agent that allows recording coverage, similar to JaCoCo (which is in fact used underneath). It improves on JaCoCo in the following ways:
+
+- allow configuration via a .properties file
+- allow time-interval based dumping of coverage (e.g. "dump coverage every hour") instead of only at JVM shutdown
+- directly dumps XML instead of .exec files, i.e. already performs that conversion automatically
+- transfers dumped XML files either to a central location for further processing or even uploads them directly to [Teamscale][]
+- writes a log file, which makes debugging problems a bit easier
 
 ## Requirements
 
@@ -254,6 +259,19 @@ Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jv
 
 Register the agent by setting a `JAVA_OPTIONS` variable such that the Jetty process can see it.
 
+## Additional steps for SAP NetWeaver Java
+
+Please note that the Teamscale JaCoCo Agent requires at least Java 8, which is part of NetWeaver Java 7.50.
+Prior versions of NetWeaver Java are not supported by the Teamscale JaCoCo Agent.
+
+In order to set the JVM agent parameter, you need to use the NetWeaver Administrator to navigate to
+`Configuration` - `Infrastructure` - `Java System Properties` and add an additional JVM parameter.
+Use the search field to search for `agent`, and select the `-javaagent:<jarpath>[=<options>]` entry.
+In the `Name` field, enter the first part, until (including) the `.jar`, and provide all the options (*without* the leading
+`=`) in the `Value` field. We advise to only set the `config-file` option here, and provide all other
+options via the config file. Choose `Add` and then `Save`, and restart the Java server from the SAP
+Management Console.
+
 ## Additional steps for Java Web Start
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
@@ -449,3 +467,4 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info
 [ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf
+[teamscale]: https://teamscale.com
