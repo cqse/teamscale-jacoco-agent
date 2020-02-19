@@ -5,6 +5,7 @@ import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -18,9 +19,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Creates a XML report for an execution data store. The report is grouped by session.
@@ -33,7 +35,7 @@ public class JaCoCoTestwiseReportGenerator {
 	private CachingExecutionDataReader executionDataReader;
 
 	/** The filter for the analyzed class files. */
-	private final Predicate<String> locationIncludeFilter;
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
 	/**
 	 * Create a new generator with a collection of class directories.
@@ -43,7 +45,7 @@ public class JaCoCoTestwiseReportGenerator {
 	 * @param logger                    The logger
 	 */
 	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives,
-										 Predicate<String> locationIncludeFilter,
+										 ClasspathWildcardIncludeFilter locationIncludeFilter,
 										 EDuplicateClassFileBehavior duplicateClassFileBehavior,
 										 ILogger logger) throws CoverageGenerationException {
 		this.locationIncludeFilter = locationIncludeFilter;
@@ -59,6 +61,19 @@ public class JaCoCoTestwiseReportGenerator {
 				.buildCoverageConsumer(locationIncludeFilter, testwiseCoverage::add);
 		readAndConsumeDumps(executionDataFile, dumpConsumer);
 		return testwiseCoverage;
+	}
+
+	/** Converts the given dump to a report. */
+	public TestCoverageBuilder convert(Dump dump) {
+		List<TestCoverageBuilder> list = new ArrayList<>();
+		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
+				.buildCoverageConsumer(locationIncludeFilter, list::add);
+		dumpConsumer.accept(dump);
+		if (list.size() == 1) {
+			return list.get(0);
+		} else {
+			return null;
+		}
 	}
 
 	/** Converts the given dumps to a report. */

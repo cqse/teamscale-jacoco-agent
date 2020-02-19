@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.store.IUploader;
 import com.teamscale.jacoco.agent.store.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
@@ -16,6 +17,7 @@ import spark.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
@@ -46,17 +48,18 @@ public class Agent extends AgentBase {
 	protected final IUploader uploader;
 
 	/** Constructor. */
-	/*package*/ Agent(AgentOptions options) throws IllegalStateException, UploaderException {
+	public Agent(AgentOptions options,
+					  Instrumentation instrumentation) throws IllegalStateException, UploaderException {
 		super(options);
 
-		uploader = options.createUploader();
+		uploader = options.createUploader(instrumentation);
 		logger.info("Storage method: {}", uploader.describe());
 
-		this.outputDirectory = options.outputDirectory;
+		this.outputDirectory = options.getOutputDirectory();
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
-				options.duplicateClassFileBehavior(), wrap(logger));
+				options.getDuplicateClassFileBehavior(), wrap(logger));
 
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
@@ -70,7 +73,8 @@ public class Agent extends AgentBase {
 
 	@Override
 	protected void initServerEndpoints() {
-		get("/partition", (request, response) -> Optional.ofNullable(options.teamscaleServer.partition).orElse(""));
+		get("/partition", (request, response) ->
+				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 
 		post("/dump", this::handleDump);
 		post("/reset", this::handleReset);
@@ -105,7 +109,7 @@ public class Agent extends AgentBase {
 
 		logger.debug("Changing partition name to " + partition);
 		controller.setSessionId(partition);
-		options.teamscaleServer.partition = partition;
+		options.getTeamscaleServerOptions().partition = partition;
 
 		response.status(204);
 		return "";

@@ -6,6 +6,7 @@ import com.teamscale.report.testwise.jacoco.cache.AnalyzerCache;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.jacoco.cache.ProbesCache;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -14,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +36,8 @@ class CachingExecutionDataReader {
 	/**
 	 * Analyzes the given class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	public void analyzeClassDirs(Collection<File> classesDirectories, Predicate<String> locationIncludeFilter,
+	public void analyzeClassDirs(Collection<File> classesDirectories,
+								 ClasspathWildcardIncludeFilter locationIncludeFilter,
 								 EDuplicateClassFileBehavior duplicateClassFileBehavior) throws CoverageGenerationException {
 		if (probesCache != null) {
 			return;
@@ -63,7 +64,7 @@ class CachingExecutionDataReader {
 	/**
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
-	public DumpConsumer buildCoverageConsumer(Predicate<String> locationIncludeFilter,
+	public DumpConsumer buildCoverageConsumer(ClasspathWildcardIncludeFilter locationIncludeFilter,
 											  Consumer<TestCoverageBuilder> nextConsumer) {
 		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
@@ -78,12 +79,12 @@ class CachingExecutionDataReader {
 		private final ILogger logger;
 
 		/** The location include filter to be applied on the profiled classes. */
-		private final Predicate<String> locationIncludeFilter;
+		private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
 		/** Consumer that should be called with the newly built TestCoverageBuilder. */
 		private final Consumer<TestCoverageBuilder> nextConsumer;
 
-		private DumpConsumer(ILogger logger, Predicate<String> locationIncludeFilter,
+		private DumpConsumer(ILogger logger, ClasspathWildcardIncludeFilter locationIncludeFilter,
 							 Consumer<TestCoverageBuilder> nextConsumer) {
 			this.logger = logger;
 			this.locationIncludeFilter = locationIncludeFilter;
@@ -96,7 +97,7 @@ class CachingExecutionDataReader {
 			if (testId.isEmpty()) {
 				// Ignore intermediate coverage that does not belong to any specific test
 				logger.debug("Found a session with empty name! This could indicate that coverage is dumped also for " +
-						"coverage in between tests or that the given test name was empty");
+						"coverage in between tests or that the given test name was empty!");
 				return;
 			}
 			try {
@@ -111,7 +112,7 @@ class CachingExecutionDataReader {
 		 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 		 */
 		private TestCoverageBuilder buildCoverage(String testId, ExecutionDataStore executionDataStore,
-												  Predicate<String> locationIncludeFilter) throws CoverageGenerationException {
+												  ClasspathWildcardIncludeFilter locationIncludeFilter) throws CoverageGenerationException {
 			TestCoverageBuilder testCoverage = new TestCoverageBuilder(testId);
 			for (ExecutionData executionData : executionDataStore.getContents()) {
 				testCoverage.add(probesCache.getCoverage(executionData, locationIncludeFilter));

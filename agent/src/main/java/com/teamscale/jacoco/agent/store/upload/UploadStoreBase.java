@@ -1,10 +1,10 @@
 package com.teamscale.jacoco.agent.store.upload;
 
+import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.store.IUploader;
 import com.teamscale.jacoco.agent.store.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import com.teamscale.client.HttpUtils;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -56,6 +56,8 @@ public abstract class UploadStoreBase<T> implements IUploader {
 		try (Benchmark ignored = new Benchmark("Uploading report via HTTP")) {
 			if (!tryUpload(coverageFile)) {
 				logger.warn("Failed to upload coverage. Won't delete local file");
+			} else {
+				coverageFile.delete();
 			}
 		}
 	}

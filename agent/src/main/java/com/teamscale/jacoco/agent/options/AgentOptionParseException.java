@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 /**
  * Thrown if option parsing fails.
@@ -13,14 +13,14 @@ public class AgentOptionParseException extends Exception {
 	/**
 	 * Constructor.
 	 */
-	public AgentOptionParseException(String message) {
+	/*package*/ AgentOptionParseException(String message) {
 		super(message);
 	}
 
 	/**
 	 * Constructor.
 	 */
-	public AgentOptionParseException(String message, Throwable cause) {
+	/*package*/ AgentOptionParseException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

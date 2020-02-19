@@ -3,11 +3,13 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
@@ -23,14 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Predicate;
-import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -42,13 +39,6 @@ import static java.util.stream.Collectors.toList;
  * Parses agent command line options.
  */
 public class AgentOptionsParser {
-
-	/** Name of the git.property file. */
-	private static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
-
-	/** The standard date format used by git.properties. */
-	private static final DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter
-			.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
@@ -69,8 +59,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given command-line options.
 	 */
-	/*package*/
-	static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
+	public static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
 		return new AgentOptionsParser(logger).parse(optionsString);
 	}
 
@@ -78,17 +67,18 @@ public class AgentOptionsParser {
 	 * Parses the given command-line options.
 	 */
 	/* package */ AgentOptions parse(String optionsString) throws AgentOptionParseException {
-		if (StringUtils.isEmpty(optionsString)) {
-			throw new AgentOptionParseException(
-					"No agent options given. You must at least provide an output directory (out)");
+		if (optionsString == null) {
+			optionsString = "";
 		}
 
 		AgentOptions options = new AgentOptions();
 		options.originalOptionsString = optionsString;
 
-		String[] optionParts = optionsString.split(",");
-		for (String optionPart : optionParts) {
-			handleOption(options, optionPart);
+		if (!StringUtils.isEmpty(optionsString)) {
+			String[] optionParts = optionsString.split(",");
+			for (String optionPart : optionParts) {
+				handleOption(options, optionPart);
+			}
 		}
 
 		Validator validator = options.getValidator();
@@ -251,13 +241,27 @@ public class AgentOptionsParser {
 				options.teamscaleServer.commit = getCommitFromManifest(parseFile(key, value));
 				return true;
 			case "teamscale-git-properties-jar":
-				options.teamscaleServer.commit = getCommitFromGitProperties(parseFile(key, value));
+				options.teamscaleServer.commit = parseGitProperties(key, value);
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
 			default:
 				return false;
+		}
+	}
+
+	private CommitDescriptor parseGitProperties(String key, String value) throws AgentOptionParseException {
+		File jarFile = parseFile(key, value);
+		try {
+			CommitDescriptor commitDescriptor = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
+			if (commitDescriptor == null) {
+				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
+			}
+			return commitDescriptor;
+		} catch (IOException | InvalidGitPropertiesException e) {
+			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
+					e);
 		}
 	}
 
@@ -310,62 +314,6 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar file's git.properties and builds a commit descriptor
-	 * out of it.
-	 */
-	private CommitDescriptor getCommitFromGitProperties(File jarFile) throws AgentOptionParseException {
-		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
-			return getCommitFromGitProperties(jarStream, jarFile);
-		} catch (IOException e) {
-			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
-					"descriptor from git.properties failed", e);
-		}
-	}
-
-	/** Visible for testing. */
-	/*package*/ CommitDescriptor getCommitFromGitProperties(
-			JarInputStream jarStream, File jarFile) throws IOException, AgentOptionParseException {
-		JarEntry entry = jarStream.getNextJarEntry();
-		while (entry != null) {
-			if (Paths.get(entry.getName()).getFileName().toString().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME)) {
-				Properties gitProperties = new Properties();
-				gitProperties.load(jarStream);
-				return parseGitPropertiesJarEntry(entry.getName(), gitProperties, jarFile);
-			}
-			entry = jarStream.getNextJarEntry();
-		}
-
-		throw new AgentOptionParseException(
-				"Cannot resolve commit timestamp. Could not find any file named " + GIT_PROPERTIES_FILE_NAME +
-						" in " + jarFile.getAbsolutePath());
-	}
-
-	/** Visible for testing. */
-	/*package*/  CommitDescriptor parseGitPropertiesJarEntry(
-			String entryName, Properties gitProperties, File jarFile) throws AgentOptionParseException {
-		String branch = gitProperties.getProperty("git.branch");
-		String timestamp = gitProperties.getProperty("git.commit.time");
-
-		if (StringUtils.isEmpty(branch)) {
-			throw new AgentOptionParseException(
-					"No entry or empty value for 'git.branch' in " + entryName + " in " + jarFile);
-		} else if (StringUtils.isEmpty(timestamp)) {
-			throw new AgentOptionParseException(
-					"No entry or empty value for 'git.commit.time' in " + entryName + " in " + jarFile);
-		}
-
-		try {
-			long parsedTimestamp = ZonedDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toInstant()
-					.toEpochMilli();
-			return new CommitDescriptor(branch, parsedTimestamp);
-		} catch (DateTimeParseException e) {
-			throw new AgentOptionParseException(
-					"git.commit.time value '" + timestamp + "' in " + entryName + " in " + jarFile +
-							" cannot be parsed with the pattern " + GIT_PROPERTIES_DATE_FORMAT, e);
-		}
-	}
-
-	/**
 	 * Handles all command line options prefixed with "http-server-".
 	 *
 	 * @return true if it has successfully process the given option.
@@ -383,6 +331,9 @@ public class AgentOptionsParser {
 					throw new AgentOptionParseException(
 							"Invalid port number " + value + " given for option 'http-server-port'");
 				}
+				return true;
+			case "coverage-via-http":
+				options.coverageViaHttp = Boolean.parseBoolean(value);
 				return true;
 			default:
 				return false;

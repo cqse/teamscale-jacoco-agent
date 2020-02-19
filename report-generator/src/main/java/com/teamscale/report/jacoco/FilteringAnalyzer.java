@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.report.jacoco;
 
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.ICoverageVisitor;
@@ -15,20 +16,16 @@ import java.io.InputStream;
 import java.util.function.Predicate;
 
 /**
- * {@link Analyzer} that filters the analyzed class files based on a
- * {@link Predicate}.
+ * {@link Analyzer} that filters the analyzed class files based on a {@link Predicate}.
  */
 /* package */ public class FilteringAnalyzer extends Analyzer {
 
 	/** The filter for the analyzed class files. */
-	private final Predicate<String> locationIncludeFilter;
-
-	/** The logger. */
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 	private final ILogger logger;
 
-	/** Constructor. */
 	public FilteringAnalyzer(ExecutionDataStore executionData, ICoverageVisitor coverageVisitor,
-							 Predicate<String> locationIncludeFilter, ILogger logger) {
+							 ClasspathWildcardIncludeFilter locationIncludeFilter, ILogger logger) {
 		super(executionData, coverageVisitor);
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.logger = logger;
@@ -37,7 +34,7 @@ import java.util.function.Predicate;
 	/** {@inheritDoc} */
 	@Override
 	public int analyzeAll(InputStream input, String location) throws IOException {
-		if (location.endsWith(".class") && !locationIncludeFilter.test(location)) {
+		if (location.endsWith(".class") && !locationIncludeFilter.isIncluded(location)) {
 			logger.debug("Filtering class file " + location);
 			return 0;
 		}

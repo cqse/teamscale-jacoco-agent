@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Coordinates logging of missing class files to ensure the warnings
- * are only emitted once and not for every individual test.
+ * Coordinates logging of missing class files to ensure the warnings are only emitted once and not for every individual
+ * test.
  */
 /* package */ class ClassNotFoundLogger {
 
@@ -40,7 +40,7 @@ import java.util.Set;
 
 		logger.warn(
 				"Found coverage for " + classesToBeLogged
-						.size() + " classes " + " that was not provided. Either you did not provide " +
+						.size() + " classes that were not provided. Either you did not provide " +
 						"all relevant class files or you did not adjust the include/exclude filters on the agent to exclude " +
 						"coverage from irrelevant code. The classes are:"
 		);

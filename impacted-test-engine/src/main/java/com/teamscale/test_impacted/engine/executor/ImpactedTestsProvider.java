@@ -28,11 +28,15 @@ public class ImpactedTestsProvider {
 
 	private final String partition;
 
-	public ImpactedTestsProvider(TeamscaleClient client, Long baseline, CommitDescriptor endCommit, String partition) {
+	private final boolean includeNonImpacted;
+
+	public ImpactedTestsProvider(TeamscaleClient client, Long baseline, CommitDescriptor endCommit, String partition,
+								 boolean includeNonImpacted) {
 		this.client = client;
 		this.baseline = baseline;
 		this.endCommit = endCommit;
 		this.partition = partition;
+		this.includeNonImpacted = includeNonImpacted;
 	}
 
 	/** Queries Teamscale for impacted tests. */
@@ -41,11 +45,12 @@ public class ImpactedTestsProvider {
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
 			Response<List<PrioritizableTestCluster>> response = client
-					.getImpactedTests(availableTestDetails, baseline, endCommit, partition);
+					.getImpactedTests(availableTestDetails, baseline, endCommit, partition, includeNonImpacted);
 			if (response.isSuccessful()) {
 				List<PrioritizableTestCluster> testClusters = response.body();
-				if (testClusters != null) {
+				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {
 					return testClusters;
+
 				}
 				LOGGER.error(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
 			} else {
@@ -56,5 +61,25 @@ public class ImpactedTestsProvider {
 			LOGGER.error(e, () -> "Retrieval of impacted tests failed.");
 		}
 		return null;
+	}
+
+	/**
+	 * Checks that the number of tests returned by Teamscale matches the number of available tests when running with
+	 * {@link #includeNonImpacted}.
+	 */
+	private boolean testCountIsPlausible(List<PrioritizableTestCluster> testClusters,
+										 List<ClusteredTestDetails> availableTestDetails) {
+		if (!this.includeNonImpacted) {
+			return true;
+		}
+		long returnedTests = testClusters.stream().mapToLong(g -> g.tests.size()).sum();
+		if (returnedTests == availableTestDetails.size()) {
+			return true;
+		} else {
+			LOGGER.error(
+					() -> "Retrieved " + returnedTests + " tests from Teamscale, but expected " + availableTestDetails
+							.size() + ".");
+			return false;
+		}
 	}
 }

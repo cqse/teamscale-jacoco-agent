@@ -2,6 +2,7 @@ package com.teamscale.report.jacoco;
 
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -17,7 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 /** Creates an XML report from binary execution data. */
 public class JaCoCoXmlReportGenerator {
@@ -31,7 +31,7 @@ public class JaCoCoXmlReportGenerator {
 	/**
 	 * Include filter to apply to all locations during class file traversal.
 	 */
-	private final Predicate<String> locationIncludeFilter;
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
 	/** Whether to ignore non-identical duplicates of class files. */
 	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
@@ -43,8 +43,8 @@ public class JaCoCoXmlReportGenerator {
 			" If you have specified the class-dir option, please make sure it points to a directory containing the" +
 			" class files/jars/wars/ears/etc. for which you are trying to measure code coverage.";
 
-	/** Constructor. */
-	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives, Predicate<String> locationIncludeFilter,
+	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives,
+									ClasspathWildcardIncludeFilter locationIncludeFilter,
 									EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
