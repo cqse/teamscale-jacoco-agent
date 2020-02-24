@@ -49,7 +49,7 @@ public class Agent extends AgentBase {
 
 	/** Constructor. */
 	public Agent(AgentOptions options,
-					  Instrumentation instrumentation) throws IllegalStateException, UploaderException {
+				 Instrumentation instrumentation) throws IllegalStateException, UploaderException {
 		super(options);
 
 		uploader = options.createUploader(instrumentation);
