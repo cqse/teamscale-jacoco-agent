@@ -49,11 +49,11 @@ public class AgentOptionsTest {
 	/** Interval options test. */
 	@Test
 	public void testIntervalOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.");
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(60);
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=0");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=0");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=30");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=30");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(true);
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(30);
 	}
@@ -61,7 +61,7 @@ public class AgentOptionsTest {
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
 				"teamscale-user=build," +
@@ -108,7 +108,7 @@ public class AgentOptionsTest {
 	/** Tests the options for azure file storage upload. */
 	@Test
 	public void testAzureFileStorageOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"azure-url=https://mrteamscaleshdev.file.core.windows.net/tstestshare/," +
 				"azure-key=Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
 		assertThat(agentOptions.azureFileStorageConfig.url.toString())
@@ -120,14 +120,14 @@ public class AgentOptionsTest {
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
-				.parse("out=.,class-dir=.,includes=" + filterString);
+				.parse("includes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
-				.parse("out=.,class-dir=.,excludes=" + filterString);
+				.parse("excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 

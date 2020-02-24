@@ -145,7 +145,7 @@ public class AgentOptionsParser {
 				options.validateSsl = Boolean.parseBoolean(value);
 				return true;
 			case "out":
-				options.outputDirectory = parsePath(key, value);
+				options.setParentOutputDirectory(parsePath(key, value));
 				return true;
 			case "upload-url":
 				options.uploadUrl = parseUrl(value);

@@ -73,7 +73,7 @@ public class AgentOptions {
 	/**
 	 * The directory to write the XML traces to.
 	 */
-	/* package */ Path outputDirectory = AgentUtils.getAgentDirectory().resolve("coverage");
+	private Path outputDirectory;
 
 	/**
 	 * The URL to which to upload coverage zips.
@@ -150,6 +150,10 @@ public class AgentOptions {
 	 * The configuration necessary to upload files to an azure file storage
 	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
+
+	public AgentOptions() {
+		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
+	}
 
 	/**
 	 * @see #originalOptionsString
@@ -362,6 +366,15 @@ public class AgentOptions {
 	 */
 	public Path getOutputDirectory() {
 		return outputDirectory;
+	}
+
+	/**
+	 * Sets the parent of the output directory for this run. The output directory itself will be created in this folder
+	 * is named after the current timestamp with the format yyyy-MM-dd-HH-mm-ss.SSS
+	 */
+	public void setParentOutputDirectory(Path outputDirectory) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
+		this.outputDirectory = outputDirectory.resolve(dateFormat.format(new Date()));
 	}
 
 	/**
