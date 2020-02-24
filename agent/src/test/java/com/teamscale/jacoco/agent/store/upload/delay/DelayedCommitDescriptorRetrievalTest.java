@@ -2,12 +2,9 @@ package com.teamscale.jacoco.agent.store.upload.delay;
 
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
-import com.teamscale.jacoco.agent.util.TmpUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
@@ -41,10 +38,5 @@ public class DelayedCommitDescriptorRetrievalTest {
 		assertThat(Files.list(outputPath).anyMatch(path -> path.getFileName().equals(coverageFile.toPath())))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
-	}
-
-	@AfterAll
-	static void teardown() throws IOException {
-		TmpUtils.cleanTmpFolder();
 	}
 }

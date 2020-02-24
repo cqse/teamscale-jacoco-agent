@@ -1,10 +1,11 @@
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.jacoco.agent.TestBase;
 import com.teamscale.report.util.CommandLineLogger;
 import org.junit.jupiter.api.Test;
 
 /** Tests parsing of the agent's command line options. */
-public class AgentOptionsParserTest {
+public class AgentOptionsParserTest extends TestBase {
 
 	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger());
 

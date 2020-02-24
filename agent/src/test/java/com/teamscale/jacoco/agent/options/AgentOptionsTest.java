@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.TestBase;
 import com.teamscale.report.util.CommandLineLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests the {@link AgentOptions}. */
-public class AgentOptionsTest {
+public class AgentOptionsTest extends TestBase {
 
 	@TempDir
 	public File testFolder;

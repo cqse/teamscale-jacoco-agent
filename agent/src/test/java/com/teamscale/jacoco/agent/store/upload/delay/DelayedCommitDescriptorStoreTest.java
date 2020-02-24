@@ -1,9 +1,8 @@
 package com.teamscale.jacoco.agent.store.upload.delay;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.jacoco.agent.TestBase;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
-import com.teamscale.jacoco.agent.util.TmpUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -17,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DelayedCommitDescriptorStoreTest {
+public class DelayedCommitDescriptorStoreTest extends TestBase {
 
 	@Test
 	public void shouldStoreToCacheIfCommitIsNotKnown() throws IOException {
@@ -29,7 +28,6 @@ public class DelayedCommitDescriptorStoreTest {
 
 		store.upload(coverageFile);
 
-		System.out.println(coverageFile.getName());
 		assertThat(
 				Files.list(outputPath).anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getName()))))
 				.isTrue();
@@ -47,7 +45,6 @@ public class DelayedCommitDescriptorStoreTest {
 		store.setCommitAndTriggerAsynchronousUpload(new CommitDescriptor("branch", 1234));
 		store.upload(coverageFile);
 
-		System.out.println(coverageFile.getName());
 		assertThat(
 				Files.list(outputPath).anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getName()))))
 				.isFalse();
@@ -69,16 +66,9 @@ public class DelayedCommitDescriptorStoreTest {
 		executor.shutdown();
 		executor.awaitTermination(5, TimeUnit.SECONDS);
 
-		System.out.println(coverageFile.getName());
 		assertThat(
 				Files.list(outputPath).anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getName()))))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
-	}
-
-	// TODO teardown to delete coverage files
-	@AfterAll
-	static void teardown() throws IOException {
-		TmpUtils.cleanTmpFolder();
 	}
 }

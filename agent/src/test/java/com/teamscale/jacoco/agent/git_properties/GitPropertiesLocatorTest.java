@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.jacoco.agent.TestBase;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -12,7 +13,7 @@ import java.util.jar.JarInputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class GitPropertiesLocatorTest {
+public class GitPropertiesLocatorTest extends TestBase {
 
 	private static final List<String> TEST_ARCHIVES = Arrays
 			.asList("plain-git-properties.jar", "spring-boot-git-properties.jar", "spring-boot-git-properties.war");
