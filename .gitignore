@@ -5,3 +5,5 @@
 /*/test-tmp/
 .gradletasknamecache
 **/test-tmp/**
+
+*.swp
