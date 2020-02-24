@@ -3,11 +3,13 @@ package com.teamscale.jacoco.agent.util;
 import com.teamscale.jacoco.agent.store.IUploader;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Simulates an upload by storing coverage {@link File} in a list. The "uploaded" Files can then be retrieved with
+ * {@link InMemoryUploader#getUploadedFiles()}
+ */
 public class InMemoryUploader implements IUploader {
 	List<File> coverageFiles = new ArrayList<>();
 
