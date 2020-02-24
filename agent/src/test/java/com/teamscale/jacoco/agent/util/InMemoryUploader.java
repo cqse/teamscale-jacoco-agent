@@ -11,7 +11,7 @@ import java.util.List;
  * {@link InMemoryUploader#getUploadedFiles()}
  */
 public class InMemoryUploader implements IUploader {
-	List<File> coverageFiles = new ArrayList<>();
+	private List<File> coverageFiles = new ArrayList<>();
 
 	@Override
 	public void upload(File coverageFile) {
