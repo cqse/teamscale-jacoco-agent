@@ -5,7 +5,7 @@ services:
       context: ..
       dockerfile: agent/src/docker/Dockerfile
     volumes:
-      - agent-jar:/agent:ro
+      - agent-jar:/agent:rw
 
   app:
     build: .

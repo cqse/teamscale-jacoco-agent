@@ -10,7 +10,8 @@ RUN gradle :agent:shadowJar --no-daemon
 FROM alpine:latest
 
 RUN mkdir -p /agent
-COPY --from=build /home/gradle/src/agent/build/libs/teamscale-jacoco-agent-15.2.0.jar /agent/
+#RUN cp /home/gradle/src/agent/build/libs/teamscale-jacoco-agent-15.2.0.jar /agent/
+COPY --from=build /home/gradle/src/agent/build/libs/teamscale-jacoco-agent-15.2.0.jar /agent
 
 VOLUME /agent
 
