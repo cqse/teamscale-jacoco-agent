@@ -2,7 +2,7 @@ We use [semantic versioning][semver]
 
 # Next Release
 - [feature] Added `coverage-via-http` option for testwise mode
-- [feature] Added `teamscale-revision` option for testwise mode to supply VCS revision instead of branch and timestamp
+- [feature] Added `teamscale-revision` option to supply VCS revision instead of branch and timestamp
 - [feature] Added `/revision` HTTP endpoint for testwise mode
 
 # 15.2.0

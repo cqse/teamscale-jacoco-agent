@@ -118,14 +118,6 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 	
-	/** Tests that teamscale-revision is not accepted in NORMAL mode. */
-	@Test
-	public void testRevisionIsRejectedInNormalMode() {
-		assertThatThrownBy(() -> getAgentOptionsParserWithDummyLogger().parse("mode=NORMAL," +
-				"teamscale-revision=12345")).isInstanceOf(AgentOptionParseException.class)
-			.hasMessageContaining("Direct upload to Teamscale using a revision is not yet supported");
-	}
-	
 	/** Tests the options for azure file storage upload. */
 	@Test
 	public void testAzureFileStorageOptions() throws AgentOptionParseException {

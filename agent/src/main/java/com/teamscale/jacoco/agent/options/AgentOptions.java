@@ -5,6 +5,25 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.collections.PairList;
+import org.jacoco.core.runtime.WildcardMatcher;
+import org.slf4j.Logger;
+
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.Agent;
@@ -27,25 +46,8 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.PairList;
-import org.jacoco.core.runtime.WildcardMatcher;
-import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -188,9 +190,6 @@ public class AgentOptions {
 
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
-
-		validator.isFalse(mode == EMode.NORMAL && teamscaleServer.revision != null,
-				"Direct upload to Teamscale using a revision is not yet supported!");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
