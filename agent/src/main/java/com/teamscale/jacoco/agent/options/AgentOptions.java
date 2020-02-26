@@ -189,6 +189,9 @@ public class AgentOptions {
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
+		validator.isFalse(mode == EMode.NORMAL && teamscaleServer.revision != null,
+				"Direct upload to Teamscale using a revision is not yet supported!");
+
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
 				"If you want to upload data to an Azure file storage you need to provide both " +
@@ -217,7 +220,7 @@ public class AgentOptions {
 				"incompatible with Testwise coverage mode!");
 
 		validator.isFalse(useTestwiseCoverageMode() && !teamscaleServer.hasAllRequiredFieldsNull(),
-				"'teamscale-' options are incompatible with Testwise coverage mode!");
+				"'teamscale-' options other than '-commit', '-revision' '-commit-manifest-jar', and '-git-properties-jar' are incompatible with Testwise coverage mode!");
 
 		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");

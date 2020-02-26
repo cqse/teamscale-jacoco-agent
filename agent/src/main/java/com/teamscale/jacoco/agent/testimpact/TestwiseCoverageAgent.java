@@ -7,11 +7,14 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
+
 import spark.Request;
 import spark.Response;
 
@@ -30,13 +33,17 @@ import static spark.Spark.post;
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
-	/** Path parameter placeholder used in the http requests. */
+	/** Path parameter placeholder used in the HTTP requests. */
 	private static final String TEST_ID_PARAMETER = ":testId";
 
 	/** JSON adapter for test executions. */
 	private final JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestExecution.class);
 
+	/** JSON adapter for revision information. */
+	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
+			.adapter(RevisionInfo.class);
+	
 	private final TestEventHandlerStrategyBase testEventHandler;
 
 	/** Constructor. */
@@ -53,7 +60,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	@Override
 	protected void initServerEndpoints() {
 		get("/test", (request, response) -> controller.getSessionId());
-
+		get("/revision", (request, response) -> this.getRevisionInfo());
 		post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
 		post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
 	}
@@ -116,5 +123,11 @@ public class TestwiseCoverageAgent extends AgentBase {
 			logger.error("Failed to store test execution: " + e.getMessage(), e);
 			return Optional.empty();
 		}
+	}
+	
+	/** Returns revision information for the Teamscale upload. */
+	private String getRevisionInfo() {
+		TeamscaleServer server = options.getTeamscaleServerOptions();
+		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
 	}
 }
