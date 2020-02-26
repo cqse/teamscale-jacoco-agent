@@ -10,10 +10,12 @@ import org.jacoco.agent.rt.IAgent;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
 
 import spark.Request;
@@ -52,6 +54,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private final JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestExecution.class);
 
+	/** JSON adapter for revision information. */
+	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
+			.adapter(RevisionInfo.class);
+	
 	private final TestEventHandlerStrategyBase testEventHandler;
 
 	/** Constructor. */
@@ -72,7 +78,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	@Override
 	protected void initServerEndpoints() {
 		service.get("/test", (request, response) -> controller.getSessionId());
-
+		service.get("/revision", (request, response) -> this.getRevisionInfo());
 		service.post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
 		service.post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
 	}
@@ -138,6 +144,13 @@ public class TestwiseCoverageAgent extends AgentBase {
 			return Optional.empty();
 		}
 	}
+	
+	/** Returns revision information for the Teamscale upload. */
+	private String getRevisionInfo() {
+		TeamscaleServer server = options.getTeamscaleServerOptions();
+		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
+	}
+	
 
 	/** Notifies all secondary agents about a test start event. */
 	private void notifyTestStart(String testId) {

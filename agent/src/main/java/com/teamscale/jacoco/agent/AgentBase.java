@@ -45,7 +45,7 @@ public abstract class AgentBase {
 	protected final JacocoRuntimeController controller;
 
 	/** The agent options. */
-	/*package*/ AgentOptions options;
+	protected AgentOptions options;
 
 	private static LoggingUtils.LoggingResources loggingResources;
 

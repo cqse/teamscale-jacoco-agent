@@ -26,6 +26,13 @@ public class TeamscaleServer {
 	 */
 	public CommitDescriptor commit;
 
+	/**
+	 * The corresponding code revision to which the coverage belongs. This is currently only supported for
+	 * testwise mode.
+	 */
+	public String revision;
+
+	
 	/** The commit message shown in the Teamscale UI for the coverage upload. */
 	public String message = "Agent coverage upload";
 

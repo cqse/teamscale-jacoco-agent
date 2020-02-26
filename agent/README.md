@@ -88,7 +88,7 @@ patterns with `*`, `**` and `?`.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
-- `teamscale-server-url`: the HTTP(S) URL of the teamscale instance to which coverage should be uploaded.
+- `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
@@ -111,7 +111,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used 
   instead.
   
-  If **Subversion** is your VCS and your reposiory follows the SVN convention with `trunk`, `branches`, and `tags` 
+  If **Subversion** is your VCS and your repository follows the SVN convention with `trunk`, `branches`, and `tags` 
   directories, you can get the commit info via
   
   ```bash
@@ -179,13 +179,28 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
+- `teamscale-revision` (optional): the source control revision (e.g. SVN revision or Git hash) that has been used to build 
+  the system under test. This is then surfaced via the `/revision` endpoint. For alternatives to supplying revision
+  information, see the options `teamscale-commit`, `teamscale-commit-manifest-jar`, or `teamscale-git-properties-jar` above.
+  Please note that git.properties auto-discovery is not yet supported for testwise mode.
 
 The agent's REST API has the following endpoints:
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
+- `[GET] /revision` Returns the source control revision or commit the system under test was build from. This is
+  required to upload the coverage to Teamscale at the correct point in time. The response is in json format:
+  
+```json
+{
+ "type": "COMMIT|REVISION",
+ "value": "<commit descriptor>|<revision descriptor>"
+}
+```
+  
 - `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
 - `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
   The body of the request may optionally contain the test execution result in json format:
+  
 ```json
 {
  "result": "ERROR",
