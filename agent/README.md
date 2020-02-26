@@ -193,7 +193,7 @@ The agent's REST API has the following endpoints:
 ```json
 {
  "type": "COMMIT|REVISION",
- "value": "<commit descriptor>|<revision descriptor>"
+ "value": "<branch>:<timestamp>|<revision>"
 }
 ```
   
