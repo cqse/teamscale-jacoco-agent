@@ -1,20 +1,19 @@
 package com.teamscale.jacoco.agent.options;
 
-import com.teamscale.client.TeamscaleServer;
-import com.teamscale.report.util.CommandLineLogger;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.teamscale.client.TeamscaleServer;
+import com.teamscale.report.util.CommandLineLogger;
 
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
