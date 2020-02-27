@@ -19,7 +19,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /** Base class for uploading the coverage zip to a provided url */
-public abstract class UploadStoreBase<T> implements IUploader {
+public abstract class UploaderBase<T> implements IUploader {
 
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
@@ -34,7 +34,7 @@ public abstract class UploadStoreBase<T> implements IUploader {
 	protected final T api;
 
 	/** Constructor. */
-	public UploadStoreBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
+	public UploaderBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
 		this.uploadUrl = uploadUrl;
 		this.additionalMetaDataFiles = additionalMetaDataFiles;
 

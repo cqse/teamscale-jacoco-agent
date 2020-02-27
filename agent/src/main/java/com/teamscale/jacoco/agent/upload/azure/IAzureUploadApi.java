@@ -13,7 +13,7 @@ import retrofit2.http.QueryMap;
 
 import java.util.Map;
 
-/** {@link Retrofit} API specification for the {@link AzureFileStorageUploadStore}. */
+/** {@link Retrofit} API specification for the {@link AzureFileStorageUploader}. */
 public interface IAzureUploadApi {
 
 	/** PUT call to the azure file storage without any data in the body */

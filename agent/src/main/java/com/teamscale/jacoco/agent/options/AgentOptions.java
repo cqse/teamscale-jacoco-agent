@@ -18,9 +18,9 @@ import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.NoopUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
-import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploadStore;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorStore;
-import com.teamscale.jacoco.agent.upload.http.HttpUploadStore;
+import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -323,7 +323,7 @@ public class AgentOptions {
 	 */
 	public IUploader createUploader(Instrumentation instrumentation) throws UploaderException {
 		if (uploadUrl != null) {
-			return new HttpUploadStore(uploadUrl, additionalMetaDataFiles);
+			return new HttpUploader(uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
 			if (teamscaleServer.commit == null) {
@@ -335,7 +335,7 @@ public class AgentOptions {
 		}
 
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
-			return new AzureFileStorageUploadStore(azureFileStorageConfig,
+			return new AzureFileStorageUploader(azureFileStorageConfig,
 					additionalMetaDataFiles);
 		}
 

@@ -19,7 +19,7 @@ import retrofit2.http.Part;
 import java.io.File;
 import java.io.IOException;
 
-/** {@link Retrofit} API specification for the {@link HttpUploadStore}. */
+/** {@link Retrofit} API specification for the {@link HttpUploader}. */
 public interface IHttpUploadApi {
 
 	/** The upload API call. */
