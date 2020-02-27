@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.store.upload.azure;
+package com.teamscale.jacoco.agent.upload.azure;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;

@@ -1,10 +1,10 @@
-package com.teamscale.jacoco.agent.store.upload.teamscale;
+package com.teamscale.jacoco.agent.upload.teamscale;
 
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
-import com.teamscale.jacoco.agent.store.IUploader;
+import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import okhttp3.MultipartBody;

@@ -1,8 +1,6 @@
-package com.teamscale.jacoco.agent.store.upload;
+package com.teamscale.jacoco.agent.upload;
 
 import com.teamscale.client.HttpUtils;
-import com.teamscale.jacoco.agent.store.IUploader;
-import com.teamscale.jacoco.agent.store.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import okhttp3.HttpUrl;
@@ -44,7 +42,7 @@ public abstract class UploadStoreBase<T> implements IUploader {
 		api = getApi(retrofit);
 	}
 
-	/** Returns the API for creating request to the http store */
+	/** Returns the API for creating request to the http uploader */
 	protected abstract T getApi(Retrofit retrofit);
 
 	/** Uploads the coverage zip to the server */

@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
+import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorStore;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.slf4j.Logger;

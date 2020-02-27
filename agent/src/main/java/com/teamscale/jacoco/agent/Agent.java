@@ -6,8 +6,8 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.store.IUploader;
-import com.teamscale.jacoco.agent.store.UploaderException;
+import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;

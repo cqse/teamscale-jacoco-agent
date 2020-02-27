@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.store;
+package com.teamscale.jacoco.agent.upload;
 
 import java.io.File;
 

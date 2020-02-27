@@ -1,6 +1,6 @@
-package com.teamscale.jacoco.agent.store.upload.http;
+package com.teamscale.jacoco.agent.upload.http;
 
-import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
+import com.teamscale.jacoco.agent.upload.UploadStoreBase;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Response;

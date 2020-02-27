@@ -1,8 +1,8 @@
-package com.teamscale.jacoco.agent.store.upload.azure;
+package com.teamscale.jacoco.agent.upload.azure;
 
 import com.teamscale.client.EReportFormat;
-import com.teamscale.jacoco.agent.store.UploaderException;
-import com.teamscale.jacoco.agent.store.upload.UploadStoreBase;
+import com.teamscale.jacoco.agent.upload.UploadStoreBase;
+import com.teamscale.jacoco.agent.upload.UploaderException;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -18,15 +18,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.HEAD;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.PUT;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.AUTHORIZATION;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LENGTH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_TYPE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_CONTENT_LENGTH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_RANGE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_TYPE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_WRITE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.HEAD;
+import static com.teamscale.jacoco.agent.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.PUT;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.AUTHORIZATION;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_LENGTH;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_TYPE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_CONTENT_LENGTH;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_RANGE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_TYPE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_WRITE;
 
 /** Uploads the coverage archive to a provided azure file storage. */
 public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi> {
@@ -110,7 +110,7 @@ public class AzureFileStorageUploadStore extends UploadStoreBase<IAzureUploadApi
 	}
 
 	/**
-	 * Checks the directory path in the store url. Creates any missing directories.
+	 * Checks the directory path in the azure url. Creates any missing directories.
 	 */
 	private void checkAndCreatePath(List<String> pathParts) throws IOException, UploaderException {
 		for (int i = 2; i <= pathParts.size() - 1; i++) {

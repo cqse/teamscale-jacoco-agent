@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent.store.upload.http;
+package com.teamscale.jacoco.agent.upload.http;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;

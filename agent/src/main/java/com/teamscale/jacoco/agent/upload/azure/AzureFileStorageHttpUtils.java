@@ -1,6 +1,6 @@
-package com.teamscale.jacoco.agent.store.upload.azure;
+package com.teamscale.jacoco.agent.upload.azure;
 
-import com.teamscale.jacoco.agent.store.UploaderException;
+import com.teamscale.jacoco.agent.upload.UploaderException;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 
 import javax.crypto.Mac;
@@ -20,19 +20,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_ENCODING;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LANGUAGE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_LENGTH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_MD_5;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.CONTENT_TYPE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.DATE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_MATCH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_MODIFIED_SINCE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_NONE_MATCH;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.IF_UNMODIFIED_SINCE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.RANGE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_DATE;
-import static com.teamscale.jacoco.agent.store.upload.azure.AzureHttpHeader.X_MS_VERSION;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_ENCODING;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_LANGUAGE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_LENGTH;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_MD_5;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.CONTENT_TYPE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.DATE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.IF_MATCH;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.IF_MODIFIED_SINCE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.IF_NONE_MATCH;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.IF_UNMODIFIED_SINCE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.RANGE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_DATE;
+import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_VERSION;
 
 /** Utils class for communicating with an azure file storage. */
 /* package */ class AzureFileStorageHttpUtils {

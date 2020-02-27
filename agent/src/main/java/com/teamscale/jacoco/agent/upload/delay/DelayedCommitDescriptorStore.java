@@ -1,7 +1,7 @@
-package com.teamscale.jacoco.agent.store.upload.delay;
+package com.teamscale.jacoco.agent.upload.delay;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.jacoco.agent.store.IUploader;
+import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class DelayedCommitDescriptorStore implements IUploader {
 	public DelayedCommitDescriptorStore(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
 										Path cacheDir) {
 		this(wrappedUploaderFactory, cacheDir, Executors.newSingleThreadExecutor(
-				new DaemonThreadFactory(DelayedCommitDescriptorStore.class, "Delayed store cache upload thread")));
+				new DaemonThreadFactory(DelayedCommitDescriptorStore.class, "Delayed cache upload thread")));
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class DelayedCommitDescriptorStore implements IUploader {
 					uploader.describe());
 			executor.execute(this::uploadCachedXmls);
 		} else {
-			logger.error("Tried to set upload commit multiple times (old store: {}, new commit: {})." +
+			logger.error("Tried to set upload commit multiple times (old uploader: {}, new commit: {})." +
 					" This is a programming error. Please report a bug.", uploader.describe(), commit);
 		}
 	}
