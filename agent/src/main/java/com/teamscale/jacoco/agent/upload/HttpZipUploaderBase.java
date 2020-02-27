@@ -13,13 +13,14 @@ import retrofit2.Retrofit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /** Base class for uploading the coverage zip to a provided url */
-public abstract class UploaderBase<T> implements IUploader {
+public abstract class HttpZipUploaderBase<T> implements IUploader {
 
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
@@ -34,7 +35,7 @@ public abstract class UploaderBase<T> implements IUploader {
 	protected final T api;
 
 	/** Constructor. */
-	public UploaderBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
+	public HttpZipUploaderBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
 		this.uploadUrl = uploadUrl;
 		this.additionalMetaDataFiles = additionalMetaDataFiles;
 
@@ -52,10 +53,11 @@ public abstract class UploaderBase<T> implements IUploader {
 	@Override
 	public void upload(File coverageFile) {
 		try (Benchmark ignored = new Benchmark("Uploading report via HTTP")) {
-			if (!tryUpload(coverageFile)) {
-				logger.warn("Failed to upload coverage. Won't delete local file");
-			} else {
+			if (tryUpload(coverageFile)) {
 				coverageFile.delete();
+			} else {
+				logger.warn("Failed to upload coverage from file {}. Will not retry the upload. " +
+						"Will not delete the file so you can manually upload it.", coverageFile.getAbsolutePath());
 			}
 		}
 	}
@@ -75,11 +77,10 @@ public abstract class UploaderBase<T> implements IUploader {
 		try {
 			Response<ResponseBody> response = uploadCoverageZip(zipFile);
 			if (response.isSuccessful()) {
-				zipFile.delete();
 				return true;
 			}
 
-			String errorBody = "";
+			String errorBody = "<no server response>";
 			if (response.errorBody() != null) {
 				errorBody = response.errorBody().string();
 			}
@@ -93,26 +94,24 @@ public abstract class UploaderBase<T> implements IUploader {
 		} catch (UploaderException e) {
 			logger.error("Failed to upload coverage to {}. The configuration is probably incorrect", uploadUrl, e);
 			return false;
+		} finally {
+			zipFile.delete();
 		}
 	}
 
 	/**
-	 * Creates the zip file to upload which includes the given coverage XML and all {@link #additionalMetaDataFiles}.
+	 * Creates the zip file in the system temp directory to upload which includes the given coverage XML and all {@link
+	 * #additionalMetaDataFiles}. The file is marked to be deleted on exit.
 	 */
 	private File createZipFile(File coverageFile) throws IOException {
-		File zipFile = createZipFileObject(coverageFile);
-		try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile)) {
-			try (ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
-				fillZipFile(zipOutputStream, coverageFile);
-			}
+		String coverageFileNameWithoutExtension = FileSystemUtils.getFilenameWithoutExtension(coverageFile);
+		File zipFile = Files.createTempFile(coverageFileNameWithoutExtension, ".zip").toFile();
+		zipFile.deleteOnExit();
+		try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile);
+			 ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+			fillZipFile(zipOutputStream, coverageFile);
 			return zipFile;
 		}
-	}
-
-	private File createZipFileObject(File coverageFile) {
-		Path parentFolder = coverageFile.getParentFile().toPath();
-		String filename = coverageFile.getName().substring(0, coverageFile.getName().length() - 4) + ".zip";
-		return new File(parentFolder.resolve(filename).toString());
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.upload.http;
 
-import com.teamscale.jacoco.agent.upload.UploaderBase;
+import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Uploads XMLs and metadata via HTTP multi-part form data requests.
  */
-public class HttpUploader extends UploaderBase<IHttpUploadApi> {
+public class HttpUploader extends HttpZipUploaderBase<IHttpUploadApi> {
 	/** Constructor. */
 	public HttpUploader(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
 		super(uploadUrl, additionalMetaDataFiles);

@@ -8,11 +8,11 @@ import java.io.File;
 public class NoopUploader implements IUploader {
 	@Override
 	public void upload(File coverageFile) {
-
+		// Don't delete the file here. We want to store the file permanently on disk in case no uploader is configured.
 	}
 
 	@Override
 	public String describe() {
-		return "No upload configured";
+		return "configured output directory on the local disk without upload";
 	}
 }

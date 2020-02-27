@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.upload.azure;
 
 import com.teamscale.client.EReportFormat;
-import com.teamscale.jacoco.agent.upload.UploaderBase;
+import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -29,7 +29,7 @@ import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_TYPE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_WRITE;
 
 /** Uploads the coverage archive to a provided azure file storage. */
-public class AzureFileStorageUploader extends UploaderBase<IAzureUploadApi> {
+public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> {
 
 	/** Pattern matches the host of a azure file storage */
 	private static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
