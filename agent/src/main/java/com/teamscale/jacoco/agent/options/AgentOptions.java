@@ -38,11 +38,10 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -52,6 +51,11 @@ import java.util.stream.Stream;
  * Parses agent command line options.
  */
 public class AgentOptions {
+	/**
+	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
+	 */
+	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
@@ -93,7 +97,6 @@ public class AgentOptions {
 	 * The interval in minutes for dumping XML data.
 	 */
 	/* package */ int dumpIntervalInMinutes = 60;
-
 
 	/** Whether to dump coverage when the JVM shuts down. */
 	/* package */ boolean shouldDumpOnExit = true;
@@ -298,9 +301,8 @@ public class AgentOptions {
 	}
 
 	private File getTempFile(final String prefix, final String extension) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
 		return new File(outputDirectory.toFile(),
-				prefix + "-" + dateFormat.format(new Date()) + "." + extension);
+				prefix + "-" + LocalDate.now().format(dateTimeFormatter) + "." + extension);
 	}
 
 	/**
@@ -327,7 +329,7 @@ public class AgentOptions {
 			if (teamscaleServer.commit == null) {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-				return createDelayedTeamscaleStore(instrumentation);
+				return createDelayedTeamscaleUploader(instrumentation);
 			}
 			return new TeamscaleUploader(teamscaleServer);
 		}
@@ -340,7 +342,7 @@ public class AgentOptions {
 		return new NoopUploader();
 	}
 
-	private IUploader createDelayedTeamscaleStore(Instrumentation instrumentation)
+	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation)
 			throws UploaderException {
 
 		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
@@ -373,9 +375,8 @@ public class AgentOptions {
 	 * Sets the parent of the output directory for this run. The output directory itself will be created in this folder
 	 * is named after the current timestamp with the format yyyy-MM-dd-HH-mm-ss.SSS
 	 */
-	public void setParentOutputDirectory(Path outputDirectory) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
-		this.outputDirectory = outputDirectory.resolve(dateFormat.format(new Date()));
+	public void setParentOutputDirectory(Path outputDirectoryParent) {
+		outputDirectory = outputDirectoryParent.resolve(LocalDate.now().format(dateTimeFormatter));
 	}
 
 	/**

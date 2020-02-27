@@ -53,7 +53,7 @@ public class Agent extends AgentBase {
 		super(options);
 
 		uploader = options.createUploader(instrumentation);
-		logger.info("Storage method: {}", uploader.describe());
+		logger.info("Upload method: {}", uploader.describe());
 
 		this.outputDirectory = options.getOutputDirectory();
 
@@ -151,17 +151,13 @@ public class Agent extends AgentBase {
 
 		File coverageFile;
 		long currentTime = System.currentTimeMillis();
-		Path outputFile = this.outputDirectory.resolve("jacoco-" + currentTime + ".xml");
+		Path outputFile = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			coverageFile = generator.convert(dump, outputFile.toString());
+			coverageFile = generator.convert(dump, outputFile);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
 			return;
 		}
-
-		if (coverageFile != null) {
-			uploader.upload(coverageFile);
-		}
-
+		uploader.upload(coverageFile);
 	}
 }

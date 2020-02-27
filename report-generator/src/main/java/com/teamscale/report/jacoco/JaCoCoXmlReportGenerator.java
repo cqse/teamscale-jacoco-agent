@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,27 +59,25 @@ public class JaCoCoXmlReportGenerator {
 	 *
 	 * @return The file object of for the converted report or null if it could not be created
 	 */
-	public File convert(Dump dump, String filePath) throws IOException {
+	public File convert(Dump dump, Path filePath) throws IOException {
 		File outputFile = createOutputFile(filePath);
-		if (outputFile == null) {
-			return null;
-		}
 		FileOutputStream output = new FileOutputStream(outputFile);
 		convertToReport(output, dump);
 		return outputFile;
 	}
 
-	private File createOutputFile(String filePath) {
-		File outputFile = new File(filePath);
+	private File createOutputFile(Path filePath) throws IOException {
+		File outputFile = filePath.toFile();
 
 		try {
 			boolean fileCreated = outputFile.createNewFile();
 			if (!fileCreated) {
-				return null;
+				// Clear file contents
+				new FileOutputStream(outputFile).close();
 			}
 		} catch (IOException e) {
-			logger.error("Could not create file " + outputFile.getAbsolutePath() + ". ");
-			return null;
+			// Add additional info to the IOException
+			throw new IOException("Could not create file " + outputFile.getAbsolutePath() + ". ", e);
 		}
 
 		return outputFile;

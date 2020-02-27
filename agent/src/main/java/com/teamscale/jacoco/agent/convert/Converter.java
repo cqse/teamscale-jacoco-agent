@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
@@ -63,7 +64,7 @@ public class Converter {
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			generator.convert(new Dump(sessionInfo, executionDataStore), arguments.outputFile);
+			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile));
 		}
 	}
 
