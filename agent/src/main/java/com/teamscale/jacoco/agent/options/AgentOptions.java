@@ -190,6 +190,9 @@ public class AgentOptions {
 
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
+		
+		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null, 
+				"'teamscale-revision' is incompatible with 'teamscale-commit', 'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),

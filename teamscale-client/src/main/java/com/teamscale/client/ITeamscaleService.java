@@ -28,7 +28,6 @@ public interface ITeamscaleService {
 			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision, 
-			@Query("adjusttimestamp") Boolean adjustTimestamp,
 			@Query("movetolastcommit") Boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -41,15 +40,13 @@ public interface ITeamscaleService {
 			EReportFormat format,
 			CommitDescriptor commit,
 			String revision,
-			Boolean adjustTimestamp,
 			Boolean moveToLastCommit,
 			String partition,
 			String message,
 			RequestBody report
 	) {
-		return uploadExternalReport(projectName, format.name(), commit, revision, adjustTimestamp, moveToLastCommit,
-				partition,
-				message, report);
+		return uploadExternalReport(projectName, format.name(), commit, revision, moveToLastCommit,
+				partition, message, report);
 	}
 
 	/** Report upload API for multiple reports at once. */
@@ -59,7 +56,6 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("format") EReportFormat format,
 			@Query("t") CommitDescriptor commit,
-			@Query("adjusttimestamp") boolean adjustTimestamp,
 			@Query("movetolastcommit") boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -102,12 +98,10 @@ public interface ITeamscaleService {
 			String message,
 			RequestBody report
 	) throws IOException {
-		Boolean adjustTimestamp = true;
 		Boolean moveToLastCommit = false;
 		if(revision != null) {
 			// When uploading to a revision, we don't need commit adjustment.
 			commit = null;
-			adjustTimestamp = null;
 			moveToLastCommit = null;
 		}
 		
@@ -117,7 +111,6 @@ public interface ITeamscaleService {
 					reportFormat,
 					commit,
 					revision,
-					adjustTimestamp,
 					moveToLastCommit,
 					partition,
 					message,
