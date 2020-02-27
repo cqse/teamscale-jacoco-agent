@@ -5,6 +5,25 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.collections.PairList;
+import org.jacoco.core.runtime.WildcardMatcher;
+import org.slf4j.Logger;
+
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.Agent;
@@ -27,25 +46,8 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.PairList;
-import org.jacoco.core.runtime.WildcardMatcher;
-import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -188,6 +190,9 @@ public class AgentOptions {
 
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
+		
+		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null, 
+				"'teamscale-revision' is incompatible with 'teamscale-commit', 'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
@@ -217,7 +222,7 @@ public class AgentOptions {
 				"incompatible with Testwise coverage mode!");
 
 		validator.isFalse(useTestwiseCoverageMode() && !teamscaleServer.hasAllRequiredFieldsNull(),
-				"'teamscale-' options are incompatible with Testwise coverage mode!");
+				"'teamscale-' options other than '-commit', '-revision' '-commit-manifest-jar', and '-git-properties-jar' are incompatible with Testwise coverage mode!");
 
 		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");

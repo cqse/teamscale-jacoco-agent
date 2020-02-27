@@ -1,5 +1,9 @@
 package com.teamscale.jacoco.agent.store.upload.teamscale;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
@@ -8,11 +12,9 @@ import com.teamscale.jacoco.agent.store.IXmlStore;
 import com.teamscale.jacoco.agent.store.TimestampedFileStore;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import org.slf4j.Logger;
-
-import java.io.IOException;
 
 /** Uploads XML Coverage to a Teamscale instance. */
 public class TeamscaleUploadStore implements IXmlStore {
@@ -57,6 +59,7 @@ public class TeamscaleUploadStore implements IXmlStore {
 			api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,
+					teamscaleServer.revision,
 					teamscaleServer.partition,
 					EReportFormat.JACOCO,
 					teamscaleServer.message,
