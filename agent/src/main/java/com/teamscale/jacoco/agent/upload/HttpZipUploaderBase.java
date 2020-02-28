@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.upload;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -51,19 +52,20 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 			File coverageFile) throws IOException, UploaderException;
 
 	@Override
-	public void upload(File coverageFile) {
+	public void upload(CoverageFile coverageFile) {
 		try (Benchmark ignored = new Benchmark("Uploading report via HTTP")) {
 			if (tryUpload(coverageFile)) {
 				coverageFile.delete();
 			} else {
 				logger.warn("Failed to upload coverage from file {}. Will not retry the upload. " +
-						"Will not delete the file so you can manually upload it.", coverageFile.getAbsolutePath());
+								"Will not delete the file so you can manually upload it.",
+						coverageFile.getNameWithoutExtension());
 			}
 		}
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
-	protected boolean tryUpload(File coverageFile) {
+	protected boolean tryUpload(CoverageFile coverageFile) {
 		logger.debug("Uploading coverage to {}", uploadUrl);
 
 		File zipFile;
@@ -103,9 +105,8 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	 * Creates the zip file in the system temp directory to upload which includes the given coverage XML and all {@link
 	 * #additionalMetaDataFiles}. The file is marked to be deleted on exit.
 	 */
-	private File createZipFile(File coverageFile) throws IOException {
-		String coverageFileNameWithoutExtension = FileSystemUtils.getFilenameWithoutExtension(coverageFile);
-		File zipFile = Files.createTempFile(coverageFileNameWithoutExtension, ".zip").toFile();
+	private File createZipFile(CoverageFile coverageFile) throws IOException {
+		File zipFile = Files.createTempFile(coverageFile.getNameWithoutExtension(), ".zip").toFile();
 		zipFile.deleteOnExit();
 		try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile);
 			 ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
@@ -117,10 +118,10 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	/**
 	 * Fills the upload zip file with the given coverage XML and all {@link #additionalMetaDataFiles}.
 	 */
-	private void fillZipFile(ZipOutputStream zipOutputStream, File coverageFile)
+	private void fillZipFile(ZipOutputStream zipOutputStream, CoverageFile coverageFile)
 			throws IOException {
 		zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
-		zipOutputStream.write(FileSystemUtils.readFileBinary(coverageFile));
+		coverageFile.copy(zipOutputStream);
 
 		for (Path additionalFile : additionalMetaDataFiles) {
 			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));

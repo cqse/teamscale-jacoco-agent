@@ -1,7 +1,8 @@
-package com.teamscale.jacoco.agent.store.upload.delay;
+package com.teamscale.jacoco.agent.upload.delay;
 
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
+import com.teamscale.report.jacoco.CoverageFile;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -18,8 +19,8 @@ public class DelayedCommitDescriptorRetrievalTest {
 	@Test
 	public void locatorShouldTriggerUploadOfCachedXmls() throws Exception {
 		ExecutorService storeExecutor = Executors.newSingleThreadExecutor();
-		File coverageFile = File.createTempFile("jacoco-", ".xml");
-		Path outputPath = coverageFile.getParentFile().toPath();
+		CoverageFile coverageFile = new CoverageFile(File.createTempFile("jacoco-", ".xml"));
+		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
 		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath,
@@ -35,7 +36,7 @@ public class DelayedCommitDescriptorRetrievalTest {
 		storeExecutor.shutdown();
 		storeExecutor.awaitTermination(5, TimeUnit.SECONDS);
 
-		assertThat(Files.list(outputPath).anyMatch(path -> path.getFileName().equals(coverageFile.toPath())))
+		assertThat(Files.list(outputPath).anyMatch(path -> path.getFileName().equals(coverageFile.getFile().toPath())))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
 	}

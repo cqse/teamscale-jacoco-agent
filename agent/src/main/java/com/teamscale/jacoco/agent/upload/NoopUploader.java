@@ -1,13 +1,13 @@
 package com.teamscale.jacoco.agent.upload;
 
-import java.io.File;
+import com.teamscale.report.jacoco.CoverageFile;
 
 /**
  * Dummy uploader that does not provide any functionality. Can be used instead of null to mimic no upload behaviour.
  */
 public class NoopUploader implements IUploader {
 	@Override
-	public void upload(File coverageFile) {
+	public void upload(CoverageFile coverageFile) {
 		// Don't delete the file here. We want to store the file permanently on disk in case no uploader is configured.
 	}
 

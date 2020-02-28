@@ -10,12 +10,12 @@ import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
+import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import spark.Request;
 import spark.Response;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
@@ -149,7 +149,7 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		File coverageFile;
+		CoverageFile coverageFile;
 		long currentTime = System.currentTimeMillis();
 		Path outputFile = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {

@@ -1,8 +1,9 @@
-package com.teamscale.jacoco.agent.store.upload.delay;
+package com.teamscale.jacoco.agent.upload.delay;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.TestBase;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
+import com.teamscale.report.jacoco.CoverageFile;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -20,8 +21,8 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 
 	@Test
 	public void shouldStoreToCacheIfCommitIsNotKnown() throws IOException {
-		File coverageFile = File.createTempFile("jacoco-", ".xml");
-		Path outputPath = coverageFile.getParentFile().toPath();
+		CoverageFile coverageFile = new CoverageFile(File.createTempFile("jacoco-", ".xml"));
+		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
 		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath);
@@ -29,15 +30,16 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 		store.upload(coverageFile);
 
 		assertThat(
-				Files.list(outputPath).anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getName()))))
+				Files.list(outputPath)
+						.anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getFile().getName()))))
 				.isTrue();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isFalse();
 	}
 
 	@Test
 	public void shouldStoreToDestinationIfCommitIsKnown() throws IOException {
-		File coverageFile = File.createTempFile("jacoco-", ".xml");
-		Path outputPath = coverageFile.getParentFile().toPath();
+		CoverageFile coverageFile = new CoverageFile(File.createTempFile("jacoco-", ".xml"));
+		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
 		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath);
@@ -46,15 +48,16 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 		store.upload(coverageFile);
 
 		assertThat(
-				Files.list(outputPath).anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getName()))))
+				Files.list(outputPath)
+						.anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getFile().getName()))))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
 	}
 
 	@Test
 	public void shouldAsynchronouslyStoreToDestinationOnceCommitIsKnown() throws Exception {
-		File coverageFile = File.createTempFile("jacoco-", ".xml");
-		Path outputPath = coverageFile.getParentFile().toPath();
+		CoverageFile coverageFile = new CoverageFile(File.createTempFile("jacoco-", ".xml"));
+		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
 		ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -67,7 +70,8 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 		executor.awaitTermination(5, TimeUnit.SECONDS);
 
 		assertThat(
-				Files.list(outputPath).anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getName()))))
+				Files.list(outputPath)
+						.anyMatch(path -> path.getFileName().equals(Paths.get(coverageFile.getFile().getName()))))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
 	}

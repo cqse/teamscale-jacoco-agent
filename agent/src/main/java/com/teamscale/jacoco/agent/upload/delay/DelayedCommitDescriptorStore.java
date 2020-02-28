@@ -4,9 +4,9 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.jacoco.CoverageFile;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +62,7 @@ public class DelayedCommitDescriptorStore implements IUploader {
 	}
 
 	@Override
-	public synchronized void upload(File file) {
+	public synchronized void upload(CoverageFile file) {
 		if (uploader == null) {
 			logger.info("The commit to upload to has not yet been found. Caching coverage XML in {}",
 					cacheDir.toAbsolutePath());
@@ -101,7 +101,7 @@ public class DelayedCommitDescriptorStore implements IUploader {
 				String fileName = path.getFileName().toString();
 				return fileName.startsWith("jacoco-") && fileName.endsWith(".xml");
 			});
-			xmlFilesStream.forEach(file -> uploader.upload(file.toFile()));
+			xmlFilesStream.forEach(file -> uploader.upload(new CoverageFile(file.toFile())));
 			logger.debug("Finished upload of cached XMLs to {}", uploader.describe());
 		} catch (IOException e) {
 			logger.error("Failed to list cached coverage XML files in {}", cacheDir.toAbsolutePath(), e);

@@ -7,11 +7,11 @@ import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 
 /** Uploads XML Coverage to a Teamscale instance. */
@@ -29,7 +29,7 @@ public class TeamscaleUploader implements IUploader {
 	}
 
 	@Override
-	public void upload(File coverageFile) {
+	public void upload(CoverageFile coverageFile) {
 		try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
 			if (!tryUploading(coverageFile)) {
 				logger.warn("Filed to upload coverage to Teamscale. Won't delete local file");
@@ -40,7 +40,7 @@ public class TeamscaleUploader implements IUploader {
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
-	private boolean tryUploading(File xml) {
+	private boolean tryUploading(CoverageFile coverageFile) {
 		logger.debug("Uploading JaCoCo artifact to {}", teamscaleServer);
 
 		try {
@@ -57,7 +57,7 @@ public class TeamscaleUploader implements IUploader {
 					teamscaleServer.partition,
 					EReportFormat.JACOCO,
 					teamscaleServer.message,
-					RequestBody.create(MultipartBody.FORM, xml)
+					RequestBody.create(MultipartBody.FORM, coverageFile.getFile())
 			);
 			return true;
 		} catch (IOException e) {

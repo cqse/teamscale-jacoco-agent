@@ -59,11 +59,11 @@ public class JaCoCoXmlReportGenerator {
 	 *
 	 * @return The file object of for the converted report or null if it could not be created
 	 */
-	public File convert(Dump dump, Path filePath) throws IOException {
+	public CoverageFile convert(Dump dump, Path filePath) throws IOException {
 		File outputFile = createOutputFile(filePath);
 		FileOutputStream output = new FileOutputStream(outputFile);
 		convertToReport(output, dump);
-		return outputFile;
+		return new CoverageFile(outputFile);
 	}
 
 	private File createOutputFile(Path filePath) throws IOException {

@@ -39,6 +39,7 @@ import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -302,7 +303,7 @@ public class AgentOptions {
 
 	private File getTempFile(final String prefix, final String extension) {
 		return new File(outputDirectory.toFile(),
-				prefix + "-" + LocalDate.now().format(dateTimeFormatter) + "." + extension);
+				prefix + "-" + LocalDateTime.now().format(dateTimeFormatter) + "." + extension);
 	}
 
 	/**
@@ -376,7 +377,7 @@ public class AgentOptions {
 	 * is named after the current timestamp with the format yyyy-MM-dd-HH-mm-ss.SSS
 	 */
 	public void setParentOutputDirectory(Path outputDirectoryParent) {
-		outputDirectory = outputDirectoryParent.resolve(LocalDate.now().format(dateTimeFormatter));
+		outputDirectory = outputDirectoryParent.resolve(LocalDateTime.now().format(dateTimeFormatter));
 	}
 
 	/**

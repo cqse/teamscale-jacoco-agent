@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.util;
 
-import com.teamscale.jacoco.agent.store.IUploader;
+import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.report.jacoco.CoverageFile;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,10 +12,10 @@ import java.util.List;
  * {@link InMemoryUploader#getUploadedFiles()}
  */
 public class InMemoryUploader implements IUploader {
-	private final List<File> coverageFiles = new ArrayList<>();
+	private final List<CoverageFile> coverageFiles = new ArrayList<>();
 
 	@Override
-	public void upload(File coverageFile) {
+	public void upload(CoverageFile coverageFile) {
 		coverageFiles.add(coverageFile);
 		coverageFile.delete();
 	}
@@ -24,7 +25,7 @@ public class InMemoryUploader implements IUploader {
 		return "in memory uploader";
 	}
 
-	public List<File> getUploadedFiles() {
+	public List<CoverageFile> getUploadedFiles() {
 		return coverageFiles;
 	}
 }
