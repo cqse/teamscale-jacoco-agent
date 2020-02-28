@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -70,14 +72,15 @@ public class JaCoCoXmlReportGenerator {
 		File outputFile = filePath.toFile();
 
 		try {
-			boolean fileCreated = outputFile.createNewFile();
-			if (!fileCreated) {
-				// Clear file contents
-				new FileOutputStream(outputFile).close();
-			}
+			Files.createFile(outputFile.toPath());
+		} catch (FileAlreadyExistsException e) {
+			// Clear file contents
+			new FileOutputStream(outputFile).close();
 		} catch (IOException e) {
 			// Add additional info to the IOException
-			throw new IOException("Could not create file " + outputFile.getAbsolutePath() + ". ", e);
+			throw new IOException("Could not create temporary coverage file" + outputFile.getAbsolutePath() + ". " +
+					"This is used to cache the coverage file on disk before uploading it to its final destination. " +
+					"This coverage is lost. Please fix the underlying issue to avoid losing coverage.", e);
 		}
 
 		return outputFile;

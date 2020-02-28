@@ -38,6 +38,8 @@ public class TeamscaleUploader implements IUploader {
 				logger.warn("Failed to upload coverage to Teamscale. Won't delete local file {}",
 						coverageFile.getAbsolutePath());
 			}
+		} catch (IOException e) {
+			logger.warn("Could not delete file {} after upload", coverageFile.getAbsolutePath());
 		}
 	}
 

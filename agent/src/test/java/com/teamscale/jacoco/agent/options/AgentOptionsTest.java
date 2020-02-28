@@ -1,8 +1,9 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.TeamscaleServer;
-import com.teamscale.jacoco.agent.TestBase;
+import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests the {@link AgentOptions}. */
-public class AgentOptionsTest extends TestBase {
+public class AgentOptionsTest {
 
 	@TempDir
 	public File testFolder;
@@ -188,5 +189,13 @@ public class AgentOptionsTest extends TestBase {
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
 		return new AgentOptionsParser(new CommandLineLogger());
+	}
+
+	/**
+	 * Delete created coverage folders
+	 */
+	@AfterAll
+	public static void teardown() throws IOException {
+		TestUtils.cleanAgentCoverageDirectory();
 	}
 }

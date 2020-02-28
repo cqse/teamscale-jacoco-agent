@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -37,6 +39,13 @@ public class CoverageFile {
 	}
 
 	/**
+	 * Get the {@link java.io.File} representing the parent direcotry of the coverage file
+	 */
+	public Path getParentDirectoryPath() {
+		return coverageFile.getParentFile().toPath();
+	}
+
+	/**
 	 * Get the absolute path of the underlying {@link java.io.File}. Do only use it for logging purposes and especially
 	 * don't use it to read the entire file into memory.
 	 */
@@ -46,11 +55,9 @@ public class CoverageFile {
 
 	/**
 	 * Delete the coverage file from disk
-	 *
-	 * @return whether the operation was successful or not
 	 */
-	public boolean delete() {
-		return coverageFile.delete();
+	public void delete() throws IOException {
+		Files.delete(coverageFile.toPath());
 	}
 
 	/**

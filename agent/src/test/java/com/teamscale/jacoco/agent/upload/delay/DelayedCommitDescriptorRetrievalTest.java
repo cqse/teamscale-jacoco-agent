@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +21,7 @@ public class DelayedCommitDescriptorRetrievalTest {
 	public void locatorShouldTriggerUploadOfCachedXmls() throws Exception {
 		ExecutorService storeExecutor = Executors.newSingleThreadExecutor();
 		CoverageFile coverageFile = new CoverageFile(File.createTempFile("jacoco-", ".xml"));
-		Path outputPath = coverageFile.getFile().getParentFile().toPath();
+		Path outputPath = coverageFile.getParentDirectoryPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath,
@@ -36,7 +37,8 @@ public class DelayedCommitDescriptorRetrievalTest {
 		storeExecutor.shutdown();
 		storeExecutor.awaitTermination(5, TimeUnit.SECONDS);
 
-		assertThat(Files.list(outputPath).anyMatch(path -> path.getFileName().equals(coverageFile.getFile().toPath())))
+		assertThat(Files.list(outputPath)
+				.anyMatch(path -> path.equals(Paths.get(coverageFile.getAbsolutePath()))))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
 	}

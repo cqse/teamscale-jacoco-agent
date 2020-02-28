@@ -15,7 +15,7 @@ import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.IUploader;
-import com.teamscale.jacoco.agent.upload.NoopUploader;
+import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
@@ -340,7 +340,7 @@ public class AgentOptions {
 					additionalMetaDataFiles);
 		}
 
-		return new NoopUploader();
+		return new LocalDiskUploader();
 	}
 
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation)

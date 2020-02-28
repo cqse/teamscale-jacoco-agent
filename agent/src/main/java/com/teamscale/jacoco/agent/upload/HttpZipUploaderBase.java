@@ -61,6 +61,8 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 								"Will not delete the file so you can manually upload it.",
 						coverageFile.getAbsolutePath());
 			}
+		} catch (IOException e) {
+			logger.warn("Could not delete file {} after upload", coverageFile.getAbsolutePath());
 		}
 	}
 

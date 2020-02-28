@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,7 +68,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		String outputFilePath = "test-coverage-" + currentTime + ".xml";
 		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter,
 				duplicateClassFileBehavior,
-				mock(ILogger.class)).convert(createDummyDump(), outputFilePath);
+				mock(ILogger.class)).convert(createDummyDump(), Paths.get(outputFilePath));
 	}
 
 }

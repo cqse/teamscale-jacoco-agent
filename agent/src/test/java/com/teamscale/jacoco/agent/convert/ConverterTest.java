@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.convert;
 
-import com.teamscale.jacoco.agent.TestBase;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.test.ManagedTestData;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,7 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Basic smoke test for the converter. */
-public class ConverterTest extends TestBase {
+public class ConverterTest {
 
 	private ManagedTestData managedTestData = new ManagedTestData(getClass());
 
