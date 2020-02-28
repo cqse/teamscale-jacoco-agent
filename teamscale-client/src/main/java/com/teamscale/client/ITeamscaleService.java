@@ -1,5 +1,8 @@
 package com.teamscale.client;
 
+import java.io.IOException;
+import java.util.List;
+
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -14,9 +17,6 @@ import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
-import java.io.IOException;
-import java.util.List;
-
 /** {@link Retrofit} API specification for Teamscale. */
 public interface ITeamscaleService {
 
@@ -27,8 +27,8 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
-			@Query("adjusttimestamp") boolean adjustTimestamp,
-			@Query("movetolastcommit") boolean moveToLastCommit,
+			@Query("revision") String revision, 
+			@Query("movetolastcommit") Boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
 			@Part("report") RequestBody report
@@ -39,14 +39,14 @@ public interface ITeamscaleService {
 			String projectName,
 			EReportFormat format,
 			CommitDescriptor commit,
-			boolean adjustTimestamp,
-			boolean moveToLastCommit,
+			String revision,
+			Boolean moveToLastCommit,
 			String partition,
 			String message,
 			RequestBody report
 	) {
-		return uploadExternalReport(projectName, format.name(), commit, adjustTimestamp, moveToLastCommit, partition,
-				message, report);
+		return uploadExternalReport(projectName, format.name(), commit, revision, moveToLastCommit,
+				partition, message, report);
 	}
 
 	/** Report upload API for multiple reports at once. */
@@ -56,7 +56,6 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("format") EReportFormat format,
 			@Query("t") CommitDescriptor commit,
-			@Query("adjusttimestamp") boolean adjustTimestamp,
 			@Query("movetolastcommit") boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -85,26 +84,34 @@ public interface ITeamscaleService {
 	);
 
 	/**
-	 * Uploads the given report body to Teamscale as blocking call with adjusttimestamp and movetolastcommit set to
-	 * true.
+	 * Uploads the given report body to Teamscale as blocking call with adjusttimestamp 
+	 * set to true and and movetolastcommit set to false.
 	 *
 	 * @return Returns the request body if successful, otherwise throws an IOException.
 	 */
 	default String uploadReport(
 			String projectName,
 			CommitDescriptor commit,
+			String revision,
 			String partition,
 			EReportFormat reportFormat,
 			String message,
 			RequestBody report
 	) throws IOException {
+		Boolean moveToLastCommit = false;
+		if(revision != null) {
+			// When uploading to a revision, we don't need commit adjustment.
+			commit = null;
+			moveToLastCommit = null;
+		}
+		
 		try {
 			Response<ResponseBody> response = uploadExternalReport(
 					projectName,
 					reportFormat,
 					commit,
-					true,
-					false,
+					revision,
+					moveToLastCommit,
 					partition,
 					message,
 					report

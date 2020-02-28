@@ -58,6 +58,7 @@ public class TeamscaleUploader implements IUploader {
 			api.uploadReport(
 					teamscaleServer.project,
 					teamscaleServer.commit,
+					teamscaleServer.revision,
 					teamscaleServer.partition,
 					EReportFormat.JACOCO,
 					teamscaleServer.message,

@@ -246,6 +246,9 @@ public class AgentOptionsParser {
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
+			case "teamscale-revision":
+				options.teamscaleServer.revision = value;
+				return true;
 			default:
 				return false;
 		}

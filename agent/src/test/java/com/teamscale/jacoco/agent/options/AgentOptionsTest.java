@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
@@ -105,6 +107,40 @@ public class AgentOptionsTest {
 				"http-server-port=8081,coverage-via-http=true");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 		assertThat(agentOptions.shouldDumpCoverageViaHttp()).isTrue();
+	}
+
+	/** Tests that supplying both revision and commit info is forbidden. */
+	@Test
+	public void testBothRevisionAndCommitSupplied() throws URISyntaxException {
+		String message = "'teamscale-revision' is incompatible with 'teamscale-commit', "
+				+ "'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.";
+
+		File jar = new File(getClass().getResource("manifest-and-git-properties.jar").toURI());
+
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-revision=1234,teamscale-commit=master:1000"))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-revision=1234,teamscale-commit-manifest-jar=" + jar.getAbsolutePath()))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-revision=1234,teamscale-git-properties-jar=" + jar.getAbsolutePath()))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+	}
+
+	/** Tests that supplying version info is supported in Testwise mode. */
+	@Test
+	public void testVersionInfosInTestwiseMode() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+				"http-server-port=8081,teamscale-revision=1234");
+		assertThat(agentOptions.getTeamscaleServerOptions().revision).isEqualTo("1234");
+
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+				"http-server-port=8081,teamscale-commit=branch:1234");
+		assertThat(agentOptions.getTeamscaleServerOptions().commit).isEqualTo(CommitDescriptor.parse("branch:1234"));
 	}
 
 	/** Tests the options for azure file storage upload. */
