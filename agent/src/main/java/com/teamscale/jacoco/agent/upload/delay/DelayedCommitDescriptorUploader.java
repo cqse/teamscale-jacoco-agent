@@ -19,26 +19,26 @@ import java.util.stream.Stream;
  * Wraps an {@link IUploader} and in order to delay upload  until a {@link CommitDescriptor} is asynchronously made
  * available.
  */
-public class DelayedCommitDescriptorStore implements IUploader {
+public class DelayedCommitDescriptorUploader implements IUploader {
 
 	private final Executor executor;
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Function<CommitDescriptor, IUploader> wrappedUploaderFactory;
-	private IUploader uploader = null;
+	private IUploader wrappedUploader = null;
 	private Path cacheDir;
 
-	public DelayedCommitDescriptorStore(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
-										Path cacheDir) {
+	public DelayedCommitDescriptorUploader(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
+										   Path cacheDir) {
 		this(wrappedUploaderFactory, cacheDir, Executors.newSingleThreadExecutor(
-				new DaemonThreadFactory(DelayedCommitDescriptorStore.class, "Delayed cache upload thread")));
+				new DaemonThreadFactory(DelayedCommitDescriptorUploader.class, "Delayed cache upload thread")));
 	}
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
 	 * class.
 	 */
-	/*package*/ DelayedCommitDescriptorStore(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
-											 Path cacheDir, Executor executor) {
+	/*package*/ DelayedCommitDescriptorUploader(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
+												Path cacheDir, Executor executor) {
 		this.wrappedUploaderFactory = wrappedUploaderFactory;
 		this.cacheDir = cacheDir;
 		this.executor = executor;
@@ -48,7 +48,7 @@ public class DelayedCommitDescriptorStore implements IUploader {
 
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			if (uploader == null) {
+			if (wrappedUploader == null) {
 				logger.error("The application was shut down before a commit could be found. The recorded coverage" +
 								" is still cached in {} but will not be automatically processed. You configured the" +
 								" agent to auto-detect the commit to which the recorded coverage should be uploaded to" +
@@ -63,18 +63,18 @@ public class DelayedCommitDescriptorStore implements IUploader {
 
 	@Override
 	public synchronized void upload(CoverageFile file) {
-		if (uploader == null) {
+		if (wrappedUploader == null) {
 			logger.info("The commit to upload to has not yet been found. Caching coverage XML in {}",
 					cacheDir.toAbsolutePath());
 		} else {
-			uploader.upload(file);
+			wrappedUploader.upload(file);
 		}
 	}
 
 	@Override
 	public String describe() {
-		if (uploader != null) {
-			return uploader.describe();
+		if (wrappedUploader != null) {
+			return wrappedUploader.describe();
 		}
 		return "Temporary cache until commit is resolved: " + cacheDir.toAbsolutePath();
 	}
@@ -84,14 +84,14 @@ public class DelayedCommitDescriptorStore implements IUploader {
 	 * should only be called once.
 	 */
 	public synchronized void setCommitAndTriggerAsynchronousUpload(CommitDescriptor commit) {
-		if (uploader == null) {
-			uploader = wrappedUploaderFactory.apply(commit);
+		if (wrappedUploader == null) {
+			wrappedUploader = wrappedUploaderFactory.apply(commit);
 			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", commit,
-					uploader.describe());
+					wrappedUploader.describe());
 			executor.execute(this::uploadCachedXmls);
 		} else {
 			logger.error("Tried to set upload commit multiple times (old uploader: {}, new commit: {})." +
-					" This is a programming error. Please report a bug.", uploader.describe(), commit);
+					" This is a programming error. Please report a bug.", wrappedUploader.describe(), commit);
 		}
 	}
 
@@ -101,8 +101,8 @@ public class DelayedCommitDescriptorStore implements IUploader {
 				String fileName = path.getFileName().toString();
 				return fileName.startsWith("jacoco-") && fileName.endsWith(".xml");
 			});
-			xmlFilesStream.forEach(file -> uploader.upload(new CoverageFile(file.toFile())));
-			logger.debug("Finished upload of cached XMLs to {}", uploader.describe());
+			xmlFilesStream.forEach(path -> wrappedUploader.upload(new CoverageFile(path.toFile())));
+			logger.debug("Finished upload of cached XMLs to {}", wrappedUploader.describe());
 		} catch (IOException e) {
 			logger.error("Failed to list cached coverage XML files in {}", cacheDir.toAbsolutePath(), e);
 		}

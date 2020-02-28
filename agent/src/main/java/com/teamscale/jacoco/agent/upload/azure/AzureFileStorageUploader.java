@@ -182,7 +182,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		if (response.isSuccessful()) {
 			return fillFile(zipFile, fileName);
 		}
-		logger.warn(String.format("Creation of file '%s' was unsuccessful.", fileName));
+		logger.error(String.format("Creation of file '%s' was unsuccessful.", fileName));
 		return response;
 	}
 

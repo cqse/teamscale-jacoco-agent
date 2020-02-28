@@ -12,6 +12,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 /** Uploads XML Coverage to a Teamscale instance. */
@@ -31,10 +32,11 @@ public class TeamscaleUploader implements IUploader {
 	@Override
 	public void upload(CoverageFile coverageFile) {
 		try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
-			if (!tryUploading(coverageFile)) {
-				logger.warn("Filed to upload coverage to Teamscale. Won't delete local file");
-			} else {
+			if (tryUploading(coverageFile)) {
 				coverageFile.delete();
+			} else {
+				logger.warn("Failed to upload coverage to Teamscale. Won't delete local file {}",
+						coverageFile.getAbsolutePath());
 			}
 		}
 	}
@@ -57,7 +59,7 @@ public class TeamscaleUploader implements IUploader {
 					teamscaleServer.partition,
 					EReportFormat.JACOCO,
 					teamscaleServer.message,
-					RequestBody.create(MultipartBody.FORM, coverageFile.getFile())
+					RequestBody.create(MultipartBody.FORM, new File(coverageFile.getAbsolutePath()))
 			);
 			return true;
 		} catch (IOException e) {

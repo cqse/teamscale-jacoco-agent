@@ -23,7 +23,7 @@ public class DelayedCommitDescriptorRetrievalTest {
 		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
-		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath,
+		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath,
 				storeExecutor);
 
 		ExecutorService locatorExecutor = Executors.newSingleThreadExecutor();

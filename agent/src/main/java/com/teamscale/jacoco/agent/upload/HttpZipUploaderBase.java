@@ -59,7 +59,7 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 			} else {
 				logger.warn("Failed to upload coverage from file {}. Will not retry the upload. " +
 								"Will not delete the file so you can manually upload it.",
-						coverageFile.getNameWithoutExtension());
+						coverageFile.getAbsolutePath());
 			}
 		}
 	}

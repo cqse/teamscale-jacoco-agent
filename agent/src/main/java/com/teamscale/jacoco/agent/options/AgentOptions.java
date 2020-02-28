@@ -19,7 +19,7 @@ import com.teamscale.jacoco.agent.upload.NoopUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
-import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorStore;
+import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
@@ -346,7 +346,7 @@ public class AgentOptions {
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation)
 			throws UploaderException {
 
-		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
+		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
 				commit -> new TeamscaleUploader(teamscaleServer), outputDirectory);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));

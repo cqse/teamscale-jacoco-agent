@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DelayedCommitDescriptorStoreTest extends TestBase {
+public class DelayedCommitDescriptorUploaderTest extends TestBase {
 
 	@Test
 	public void shouldStoreToCacheIfCommitIsNotKnown() throws IOException {
@@ -25,7 +25,7 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
-		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath);
+		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath);
 
 		store.upload(coverageFile);
 
@@ -42,7 +42,7 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 		Path outputPath = coverageFile.getFile().getParentFile().toPath();
 
 		InMemoryUploader destination = new InMemoryUploader();
-		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath);
+		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath);
 
 		store.setCommitAndTriggerAsynchronousUpload(new CommitDescriptor("branch", 1234));
 		store.upload(coverageFile);
@@ -61,7 +61,7 @@ public class DelayedCommitDescriptorStoreTest extends TestBase {
 
 		InMemoryUploader destination = new InMemoryUploader();
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(commit -> destination, outputPath,
+		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath,
 				executor);
 
 		store.upload(coverageFile);

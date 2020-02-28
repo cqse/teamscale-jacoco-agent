@@ -10,8 +10,8 @@ import java.util.Objects;
 
 /**
  * Represents a coverage file on disk. The main purpose is to avoid reading the entire file into memory as this
- * dramatically increases the memory footprint of the JVM which might run out of memory because of this. Therefore
- * please avoid using the {@link CoverageFile#getFile()} method to read the entire file
+ * dramatically increases the memory footprint of the JVM which might run out of memory because of this. Therefore,
+ * please avoid using the {@link CoverageFile#getAbsolutePath()} method to read the entire file
  */
 public class CoverageFile {
 	private File coverageFile;
@@ -37,19 +37,20 @@ public class CoverageFile {
 	}
 
 	/**
+	 * Get the absolute path of the underlying {@link java.io.File}. Do only use it for logging purposes and especially
+	 * don't use it to read the entire file into memory.
+	 */
+	public String getAbsolutePath() {
+		return coverageFile.getAbsolutePath();
+	}
+
+	/**
 	 * Delete the coverage file from disk
 	 *
 	 * @return whether the operation was successful or not
 	 */
 	public boolean delete() {
 		return coverageFile.delete();
-	}
-
-	/**
-	 * Returns the underlying {@link java.io.File} object. Make sure to avoid reading all of it into memory!
-	 */
-	public File getFile() {
-		return coverageFile;
 	}
 
 	/**
