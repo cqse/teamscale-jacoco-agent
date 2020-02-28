@@ -55,7 +55,7 @@ public class AgentOptions {
 	/**
 	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
 	 */
-	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
 
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -306,7 +306,7 @@ public class AgentOptions {
 
 	private File getTempFile(final String prefix, final String extension) {
 		return new File(outputDirectory.toFile(),
-				prefix + "-" + LocalDateTime.now().format(dateTimeFormatter) + "." + extension);
+				prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension);
 	}
 
 	/**
@@ -380,7 +380,7 @@ public class AgentOptions {
 	 * is named after the current timestamp with the format yyyy-MM-dd-HH-mm-ss.SSS
 	 */
 	public void setParentOutputDirectory(Path outputDirectoryParent) {
-		outputDirectory = outputDirectoryParent.resolve(LocalDateTime.now().format(dateTimeFormatter));
+		outputDirectory = outputDirectoryParent.resolve(LocalDateTime.now().format(DATE_TIME_FORMATTER));
 	}
 
 	/**

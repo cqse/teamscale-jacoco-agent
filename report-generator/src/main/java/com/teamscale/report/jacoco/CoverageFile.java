@@ -65,8 +65,12 @@ public class CoverageFile {
 	 */
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		CoverageFile that = (CoverageFile) o;
 		return coverageFile.equals(that.coverageFile);
 	}
