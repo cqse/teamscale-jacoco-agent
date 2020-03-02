@@ -8,11 +8,8 @@ import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 
 /** Uploads XML Coverage to a Teamscale instance. */
