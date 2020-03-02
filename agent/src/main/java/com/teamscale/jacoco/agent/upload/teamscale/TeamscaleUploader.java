@@ -33,13 +33,23 @@ public class TeamscaleUploader implements IUploader {
 	public void upload(CoverageFile coverageFile) {
 		try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
 			if (tryUploading(coverageFile)) {
-				coverageFile.delete();
+				deleteCoverageFile(coverageFile);
 			} else {
-				logger.warn("Failed to upload coverage to Teamscale. Won't delete local file {}",
-						coverageFile.getAbsolutePath());
+				logger.warn("Failed to upload coverage to Teamscale. " +
+								"Won't delete local file {} so you can upload it youself manually.",
+						coverageFile);
 			}
+		}
+	}
+
+	private void deleteCoverageFile(CoverageFile coverageFile) {
+		try {
+			coverageFile.delete();
 		} catch (IOException e) {
-			logger.warn("Could not delete file {} after upload", coverageFile.getAbsolutePath());
+			logger.warn(
+					"The upload to Teamscale was successful, but the file {} will be left on disk. " +
+							"You can delete it yourself anytime - it is no longer needed.",
+					coverageFile, e);
 		}
 	}
 
@@ -62,7 +72,7 @@ public class TeamscaleUploader implements IUploader {
 					teamscaleServer.partition,
 					EReportFormat.JACOCO,
 					teamscaleServer.message,
-					RequestBody.create(MultipartBody.FORM, new File(coverageFile.getAbsolutePath()))
+					coverageFile.createFormRequestBody()
 			);
 			return true;
 		} catch (IOException e) {

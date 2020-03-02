@@ -77,7 +77,6 @@ public class JaCoCoXmlReportGenerator {
 			// Clear file contents
 			new FileOutputStream(outputFile).close();
 		} catch (IOException e) {
-			// Add additional info to the IOException
 			throw new IOException("Could not create temporary coverage file" + outputFile.getAbsolutePath() + ". " +
 					"This is used to cache the coverage file on disk before uploading it to its final destination. " +
 					"This coverage is lost. Please fix the underlying issue to avoid losing coverage.", e);

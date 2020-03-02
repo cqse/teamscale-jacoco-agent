@@ -13,6 +13,6 @@ public class LocalDiskUploader implements IUploader {
 
 	@Override
 	public String describe() {
-		return "configured output directory on the local disk without upload";
+		return "configured output directory on the local disk";
 	}
 }

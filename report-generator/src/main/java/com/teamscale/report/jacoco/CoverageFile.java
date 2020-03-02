@@ -1,5 +1,7 @@
 package com.teamscale.report.jacoco;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
@@ -7,13 +9,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Objects;
 
 /**
  * Represents a coverage file on disk. The main purpose is to avoid reading the entire file into memory as this
- * dramatically increases the memory footprint of the JVM which might run out of memory because of this. Therefore,
- * please avoid using the {@link CoverageFile#getAbsolutePath()} method to read the entire file
+ * dramatically increases the memory footprint of the JVM which might run out of memory because of this.
  */
 public class CoverageFile {
 	private File coverageFile;
@@ -38,26 +38,19 @@ public class CoverageFile {
 		return FileSystemUtils.getFilenameWithoutExtension(coverageFile);
 	}
 
-	/**
-	 * Get the {@link java.io.File} representing the parent direcotry of the coverage file
-	 */
-	public Path getParentDirectoryPath() {
-		return coverageFile.getParentFile().toPath();
-	}
-
-	/**
-	 * Get the absolute path of the underlying {@link java.io.File}. Do only use it for logging purposes and especially
-	 * don't use it to read the entire file into memory.
-	 */
-	public String getAbsolutePath() {
-		return coverageFile.getAbsolutePath();
-	}
 
 	/**
 	 * Delete the coverage file from disk
 	 */
 	public void delete() throws IOException {
 		Files.delete(coverageFile.toPath());
+	}
+
+	/**
+	 * Create a {@link okhttp3.MultipartBody} form body with the contents of the coverage file.
+	 */
+	public RequestBody createFormRequestBody() {
+		return RequestBody.create(MultipartBody.FORM, new File(coverageFile.getAbsolutePath()));
 	}
 
 	/**
@@ -81,5 +74,13 @@ public class CoverageFile {
 	@Override
 	public int hashCode() {
 		return Objects.hash(coverageFile);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return coverageFile.getAbsolutePath();
 	}
 }

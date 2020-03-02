@@ -4,11 +4,12 @@ import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
 import com.teamscale.report.jacoco.CoverageFile;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DelayedCommitDescriptorRetrievalTest {
 
 	@Test
-	public void locatorShouldTriggerUploadOfCachedXmls() throws Exception {
+	public void locatorShouldTriggerUploadOfCachedXmls(@TempDir Path outputPath) throws Exception {
 		ExecutorService storeExecutor = Executors.newSingleThreadExecutor();
-		CoverageFile coverageFile = new CoverageFile(File.createTempFile("jacoco-", ".xml"));
-		Path outputPath = coverageFile.getParentDirectoryPath();
+		Path coverageFilePath = outputPath
+				.resolve(String.format("jacoco-%d.xml", ZonedDateTime.now().toInstant().toEpochMilli()));
+		CoverageFile coverageFile = new CoverageFile(Files.createFile(coverageFilePath).toFile());
 
 		InMemoryUploader destination = new InMemoryUploader();
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath,
@@ -38,7 +40,7 @@ public class DelayedCommitDescriptorRetrievalTest {
 		storeExecutor.awaitTermination(5, TimeUnit.SECONDS);
 
 		assertThat(Files.list(outputPath)
-				.anyMatch(path -> path.equals(Paths.get(coverageFile.getAbsolutePath()))))
+				.anyMatch(path -> path.equals(coverageFilePath)))
 				.isFalse();
 		assertThat(destination.getUploadedFiles().contains(coverageFile)).isTrue();
 	}
