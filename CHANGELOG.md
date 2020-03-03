@@ -4,6 +4,7 @@ We use [semantic versioning][semver]
 - [feature] Added `coverage-via-http` option for testwise mode
 - [feature] Added `teamscale-revision` option to supply VCS revision instead of branch and timestamp
 - [feature] Added `/revision` HTTP endpoint for testwise mode
+- [bug] `--run-all-tests` doesn't run any tests at all
 - [bug] test-wise coverage report incorrect for classes in default package
 
 # 15.2.0
