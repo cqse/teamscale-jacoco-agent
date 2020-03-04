@@ -13,11 +13,8 @@ import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.xml.XMLFormatter;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -62,35 +59,17 @@ public class JaCoCoXmlReportGenerator {
 	 * @return The file object of for the converted report or null if it could not be created
 	 */
 	public CoverageFile convert(Dump dump, Path filePath) throws IOException {
-		File outputFile = createOutputFile(filePath);
-		FileOutputStream output = new FileOutputStream(outputFile);
-		convertToReport(output, dump);
-		return new CoverageFile(outputFile);
-	}
-
-	private File createOutputFile(Path filePath) throws IOException {
-		File outputFile = filePath.toFile();
-
-		try {
-			Files.createFile(outputFile.toPath());
-		} catch (FileAlreadyExistsException e) {
-			// Clear file contents
-			new FileOutputStream(outputFile).close();
-		} catch (IOException e) {
-			throw new IOException("Could not create temporary coverage file" + outputFile.getAbsolutePath() + ". " +
-					"This is used to cache the coverage file on disk before uploading it to its final destination. " +
-					"This coverage is lost. Please fix the underlying issue to avoid losing coverage.", e);
-		}
-
-		return outputFile;
+		CoverageFile coverageFile = new CoverageFile(filePath.toFile());
+		convertToReport(coverageFile, dump);
+		return coverageFile;
 	}
 
 	/** Creates the report. */
-	private void convertToReport(OutputStream output, Dump dump) throws IOException {
+	private void convertToReport(CoverageFile coverageFile, Dump dump) throws IOException {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
 		sanityCheck(bundleCoverage);
-		createReport(output, bundleCoverage, dump.info, mergedStore);
+		createReport(coverageFile.getOutputStream(), bundleCoverage, dump.info, mergedStore);
 	}
 
 	private void sanityCheck(IBundleCoverage coverage) {

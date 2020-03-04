@@ -151,9 +151,9 @@ public class Agent extends AgentBase {
 
 		CoverageFile coverageFile;
 		long currentTime = System.currentTimeMillis();
-		Path outputFile = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
+		Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			coverageFile = generator.convert(dump, outputFile);
+			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
 			return;

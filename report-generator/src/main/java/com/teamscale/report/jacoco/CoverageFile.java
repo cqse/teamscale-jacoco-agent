@@ -6,6 +6,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -38,7 +39,6 @@ public class CoverageFile {
 		return FileSystemUtils.getFilenameWithoutExtension(coverageFile);
 	}
 
-
 	/**
 	 * Delete the coverage file from disk
 	 */
@@ -51,6 +51,22 @@ public class CoverageFile {
 	 */
 	public RequestBody createFormRequestBody() {
 		return RequestBody.create(MultipartBody.FORM, new File(coverageFile.getAbsolutePath()));
+	}
+
+	/**
+	 * Get the {@link java.io.OutputStream} in order to write to the coverage file.
+	 *
+	 * @throws IOException If the file did not exist yet and could not be created
+	 */
+	public OutputStream getOutputStream() throws IOException {
+		try {
+			return new FileOutputStream(coverageFile);
+		} catch (IOException e) {
+			throw new IOException("Could not create temporary coverage file" + this + ". " +
+					"This is used to cache the coverage file on disk before uploading it to its final destination. " +
+					"This coverage is lost. Please fix the underlying issue to avoid losing coverage.", e);
+		}
+
 	}
 
 	/**
