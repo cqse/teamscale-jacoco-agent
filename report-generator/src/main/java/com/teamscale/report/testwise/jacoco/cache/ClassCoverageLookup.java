@@ -90,7 +90,11 @@ public class ClassCoverageLookup {
 			return null;
 		}
 
-		String packageName = StringUtils.removeLastPart(className, '/');
+		// we model the default package as the empty string
+		String packageName = "";
+		if (className.contains("/")) {
+			packageName = StringUtils.removeLastPart(className, '/');
+		}
 		final FileCoverageBuilder fileCoverage = new FileCoverageBuilder(packageName, sourceFileName);
 		fillFileCoverage(fileCoverage, executedProbes, logger);
 

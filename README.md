@@ -28,6 +28,9 @@
   * declaring a plugin dependency on the incremented version of the teamscale plugin
 * to debug a build that uses the plugin, run `./gradlew` with `--no-daemon -Dorg.gradle.debug=true`.
   The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
+* to debug the impacted test engine during a build, run `./gradlew` with `--no-daemon --debug-jvm` and wait for the test phase to start.
+  The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
+* These two debug flags can also be combined. The build will then pause twice
 
 ### Contributing
 

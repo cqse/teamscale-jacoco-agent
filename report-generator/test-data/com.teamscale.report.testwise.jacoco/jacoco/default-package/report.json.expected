@@ -1,0 +1,40 @@
+{
+	"tests": [
+		{
+			"duration": 0.026,
+			"content": "content",
+			"paths": [
+				{
+					"files": [
+						{
+							"coveredLines": "1,8",
+							"fileName": "Calculator.java"
+						}
+					],
+					"path": ""
+				}
+			],
+			"result": "PASSED",
+			"sourcePath": "/path/to/source",
+			"uniformPath": "CalculatorTest/testMinus()"
+		},
+		{
+			"duration": 0.024,
+			"content": "content",
+			"paths": [
+				{
+					"files": [
+						{
+							"coveredLines": "1,4",
+							"fileName": "Calculator.java"
+						}
+					],
+					"path": ""
+				}
+			],
+			"result": "PASSED",
+			"sourcePath": "/path/to/source",
+			"uniformPath": "CalculatorTest/testSum()"
+		}
+	]
+}

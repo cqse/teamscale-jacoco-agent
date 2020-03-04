@@ -5,6 +5,8 @@ We use [semantic versioning][semver]
 - [feature] Added `teamscale-revision` option to supply VCS revision instead of branch and timestamp
 - [feature] Added `/revision` HTTP endpoint for testwise mode
 - [fix] Significantly reduced memory footprint
+- [fix] `--run-all-tests` doesn't run any tests at all
+- [fix] test-wise coverage report incorrect for classes in default package
 
 # 15.2.0
 - [fix] WildFly won't start with agent attached
