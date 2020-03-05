@@ -10,10 +10,10 @@ buildscript {
 }
 
 ext {
-	appVersion = '15.2.0' // Also update version in BuildVersion.kt
-	pluginVersion = '0.5.4' // Also update version in BuildVersion.kt
-	reportGeneratorVersion = '1.4.5'
-	teamscaleClientVersion = '0.3.2'
+	appVersion = '15.3.0' // Also update version in BuildVersion.kt
+	pluginVersion = '0.5.5' // Also update version in BuildVersion.kt
+	reportGeneratorVersion = '1.4.6'
+	teamscaleClientVersion = '0.3.3'
 
 	// When upgrading JaCoCo to a newer version make sure to
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
@@ -23,7 +23,7 @@ ext {
 
 	// For deploying Jars you have to configure SSH keys locally and on the CQSE share server.
 	// 1. Generate a new key using ssh-keygen or use the existing key at ~/.ssh/id_rsa(.pub)
-	// 2. Tell Timo Pawelka to copy your public key ~/.ssh/id_rsa to ext1 at ssh authorized_keys
+	// 2. Ask Timo Pawelka to add your public key to the authorized_keys file for the CQSE file share (ext1)
 	// 3. Add the server keys to your known hosts: ssh-keyscan -p 2222 ext1.cqse.eu >> ~/.ssh/known_hosts
 	//   - Simple "ssh ext1.cqse.eu" won't work because you need the rsa version of the server key for the SSH library
 	//     used by the gradle-ssh-plugin to work
