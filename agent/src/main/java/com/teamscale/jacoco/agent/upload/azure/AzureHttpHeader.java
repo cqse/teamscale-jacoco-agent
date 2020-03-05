@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.store.upload.azure;
+package com.teamscale.jacoco.agent.upload.azure;
 
 /** Constants for the names of HTTP header used in a request to an Azure file storage. */
 /* package */ class AzureHttpHeader {
@@ -18,15 +18,14 @@ package com.teamscale.jacoco.agent.store.upload.azure;
 	/* package */ static final String X_MS_VERSION = "x-ms-version";
 
 	/**
-	 * Defines the type of write operation on a file. Can either be 'Update' or 'Clear'.
-	 * For 'Update' the 'Range' and 'Content-Length' headers must match, for 'Clear', 'Content-Length' must be set
-	 * to 0.
+	 * Defines the type of write operation on a file. Can either be 'Update' or 'Clear'. For 'Update' the 'Range' and
+	 * 'Content-Length' headers must match, for 'Clear', 'Content-Length' must be set to 0.
 	 */
 	/* package */ static final String X_MS_WRITE = "x-ms-write";
 
 	/**
-	 * Defines the authorization and must contain the account name and signature.
-	 * Must be given in the following format: Authorization="[SharedKey|SharedKeyLite] <AccountName>:<Signature>"
+	 * Defines the authorization and must contain the account name and signature. Must be given in the following format:
+	 * Authorization="[SharedKey|SharedKeyLite] <AccountName>:<Signature>"
 	 */
 	/* package */ static final String AUTHORIZATION = "Authorization";
 
@@ -55,9 +54,8 @@ package com.teamscale.jacoco.agent.store.upload.azure;
 	/* package */ static final String IF_MODIFIED_SINCE = "If-Modified-Since";
 
 	/**
-	 * Only perform the action if the client supplied entity matches the same entity on the server.
-	 * This is mainly for methods like PUT to only update a resource if it has not been modified
-	 * since the user last updated it.
+	 * Only perform the action if the client supplied entity matches the same entity on the server. This is mainly for
+	 * methods like PUT to only update a resource if it has not been modified since the user last updated it.
 	 */
 	/* package */ static final String IF_MATCH = "If-Match";
 
@@ -65,8 +63,8 @@ package com.teamscale.jacoco.agent.store.upload.azure;
 	/* package */ static final String IF_NONE_MATCH = "If-None-Match";
 
 	/**
-	 * Specifies the range of bytes to be written. Both the start and end of the range must be specified.
-	 * Must be given in the following format: "bytes=startByte-endByte"
+	 * Specifies the range of bytes to be written. Both the start and end of the range must be specified. Must be given
+	 * in the following format: "bytes=startByte-endByte"
 	 */
 	/* package */ static final String RANGE = "Range";
 }

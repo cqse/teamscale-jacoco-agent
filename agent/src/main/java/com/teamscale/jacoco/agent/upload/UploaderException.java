@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.store;
+package com.teamscale.jacoco.agent.upload;
 
 import okhttp3.ResponseBody;
 import retrofit2.Response;
@@ -6,22 +6,22 @@ import retrofit2.Response;
 import java.io.IOException;
 
 /**
- * Exception thrown from an upload store. Either during the upload or in the validation process.
+ * Exception thrown from an uploader. Either during the upload or in the validation process.
  */
-public class UploadStoreException extends Exception {
+public class UploaderException extends Exception {
 
 	/** Constructor */
-	public UploadStoreException(String message, Exception e) {
+	public UploaderException(String message, Exception e) {
 		super(message, e);
 	}
 
 	/** Constructor */
-	public UploadStoreException(String message) {
+	public UploaderException(String message) {
 		super(message);
 	}
 
 	/** Constructor */
-	public UploadStoreException(String message, Response<ResponseBody> response) {
+	public UploaderException(String message, Response<ResponseBody> response) {
 		super(createResponseMessage(message, response));
 	}
 

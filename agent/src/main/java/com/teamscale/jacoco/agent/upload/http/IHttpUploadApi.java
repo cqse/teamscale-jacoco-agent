@@ -3,7 +3,7 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent.store.upload.http;
+package com.teamscale.jacoco.agent.upload.http;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -16,9 +16,10 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 
+import java.io.File;
 import java.io.IOException;
 
-/** {@link Retrofit} API specification for the {@link HttpUploadStore}. */
+/** {@link Retrofit} API specification for the {@link HttpUploader}. */
 public interface IHttpUploadApi {
 
 	/** The upload API call. */
@@ -27,10 +28,9 @@ public interface IHttpUploadApi {
 	public Call<ResponseBody> upload(@Part MultipartBody.Part uploadedFile);
 
 	/**
-	 * Convenience method to perform an {@link #upload(okhttp3.MultipartBody.Part)}
-	 * call for a coverage zip.
+	 * Convenience method to perform an {@link #upload(okhttp3.MultipartBody.Part)} call for a coverage zip.
 	 */
-	public default Response<ResponseBody> uploadCoverageZip(byte[] data) throws IOException {
+	public default Response<ResponseBody> uploadCoverageZip(File data) throws IOException {
 		RequestBody body = RequestBody.create(MediaType.parse("application/zip"), data);
 		MultipartBody.Part part = MultipartBody.Part.createFormData("file", "coverage.zip", body);
 		return upload(part).execute();

@@ -1,7 +1,13 @@
 package com.teamscale.jacoco.agent.options;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.util.TestUtils;
+import com.teamscale.report.util.CommandLineLogger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,13 +15,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.TeamscaleServer;
-import com.teamscale.report.util.CommandLineLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
@@ -52,11 +53,11 @@ public class AgentOptionsTest {
 	/** Interval options test. */
 	@Test
 	public void testIntervalOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.");
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(60);
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=0");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=0");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.,interval=30");
+		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=30");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(true);
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(30);
 	}
@@ -64,7 +65,7 @@ public class AgentOptionsTest {
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
 				"teamscale-user=build," +
@@ -113,9 +114,9 @@ public class AgentOptionsTest {
 	public void testBothRevisionAndCommitSupplied() throws URISyntaxException {
 		String message = "'teamscale-revision' is incompatible with 'teamscale-commit', "
 				+ "'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.";
-		
+
 		File jar = new File(getClass().getResource("manifest-and-git-properties.jar").toURI());
-		
+
 		assertThatThrownBy(
 				() -> getAgentOptionsParserWithDummyLogger().parse(
 						"teamscale-revision=1234,teamscale-commit=master:1000"))
@@ -128,8 +129,8 @@ public class AgentOptionsTest {
 				() -> getAgentOptionsParserWithDummyLogger().parse(
 						"teamscale-revision=1234,teamscale-git-properties-jar=" + jar.getAbsolutePath()))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
-	}	
-	
+	}
+
 	/** Tests that supplying version info is supported in Testwise mode. */
 	@Test
 	public void testVersionInfosInTestwiseMode() throws AgentOptionParseException {
@@ -141,11 +142,11 @@ public class AgentOptionsTest {
 				"http-server-port=8081,teamscale-commit=branch:1234");
 		assertThat(agentOptions.getTeamscaleServerOptions().commit).isEqualTo(CommitDescriptor.parse("branch:1234"));
 	}
-	
+
 	/** Tests the options for azure file storage upload. */
 	@Test
 	public void testAzureFileStorageOptions() throws AgentOptionParseException {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("out=.,class-dir=.," +
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"azure-url=https://mrteamscaleshdev.file.core.windows.net/tstestshare/," +
 				"azure-key=Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
 		assertThat(agentOptions.azureFileStorageConfig.url.toString())
@@ -157,14 +158,14 @@ public class AgentOptionsTest {
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
-				.parse("out=.,class-dir=.,includes=" + filterString);
+				.parse("includes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
-				.parse("out=.,class-dir=.,excludes=" + filterString);
+				.parse("excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
@@ -224,5 +225,13 @@ public class AgentOptionsTest {
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
 		return new AgentOptionsParser(new CommandLineLogger());
+	}
+
+	/**
+	 * Delete created coverage folders
+	 */
+	@AfterAll
+	public static void teardown() throws IOException {
+		TestUtils.cleanAgentCoverageDirectory();
 	}
 }

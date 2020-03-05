@@ -1,15 +1,15 @@
 plugins {
 	id 'java-library'
 	id 'maven'
-    id 'jacoco'
+	id 'jacoco'
 }
 
 version reportGeneratorVersion
 
 jacocoTestReport {
-    reports {
-        xml.enabled true
-    }
+	reports {
+		xml.enabled true
+	}
 }
 tasks.test.finalizedBy(jacocoTestReport)
 
@@ -19,6 +19,8 @@ dependencies {
 	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+
+	implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 
 	implementation 'com.squareup.moshi:moshi:1.8.0'
 

@@ -17,7 +17,7 @@ import static spark.Spark.stop;
  * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
  * JacocoRuntimeController}.
  * <p>
- * Subclasses must handle dumping into the store.
+ * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
 public abstract class AgentBase {
 

@@ -8,7 +8,7 @@ plugins {
 	// so we use the shadow plugin to relocate our dependencies
 	id 'com.github.johnrengelman.shadow' version '4.0.3'
 	id 'maven'
-    id 'jacoco'
+	id 'jacoco'
 }
 
 version appVersion
@@ -16,13 +16,13 @@ version appVersion
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 ext {
-    outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
+	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 }
 
 jacocoTestReport {
-    reports {
-        xml.enabled true
-    }
+	reports {
+		xml.enabled true
+	}
 }
 tasks.test.finalizedBy(jacocoTestReport)
 
@@ -30,26 +30,26 @@ dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 
-    implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-    implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
+	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
 	implementation 'ch.qos.logback:logback-core:1.2.3'
 	implementation 'ch.qos.logback:logback-classic:1.2.3'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
-    implementation 'com.beust:jcommander:1.71'
-    implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
+	implementation 'com.beust:jcommander:1.71'
+	implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.sparkjava:spark-core:2.7.2'
+	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+	implementation 'com.sparkjava:spark-core:2.7.2'
 
 	implementation 'com.squareup.moshi:moshi:1.8.0'
 
 	testImplementation 'junit:junit:4.12'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
-    testImplementation 'org.assertj:assertj-core:3.8.0'
+	testImplementation 'org.assertj:assertj-core:3.8.0'
 }
 
 test {
@@ -87,7 +87,7 @@ task relocateShadowJar(type: ConfigureShadowRelocation) {
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 startShadowScripts {
-    applicationName = 'convert'
+	applicationName = 'convert'
 }
 
 distributions {
@@ -113,11 +113,11 @@ tasks.named('shadowDistZip').configure {
 }
 
 processResources {
-    filesMatching('**/app.properties') {
-        filter {
-            it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
-        }
-    }
+	filesMatching('**/app.properties') {
+		filter {
+			it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
+		}
+	}
 }
 
 install {

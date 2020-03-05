@@ -1,6 +1,5 @@
 package com.teamscale.report.jacoco;
 
-import com.teamscale.client.FileSystemUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
@@ -13,10 +12,10 @@ import org.jacoco.core.data.SessionInfo;
 import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.xml.XMLFormatter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,19 +52,24 @@ public class JaCoCoXmlReportGenerator {
 		this.logger = logger;
 	}
 
-	/** Creates the report. */
-	public String convert(Dump dump) throws IOException {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		convertToReport(output, dump);
-		return output.toString(FileSystemUtils.UTF8_ENCODING);
+
+	/**
+	 * Creates the report and writes it to a file.
+	 *
+	 * @return The file object of for the converted report or null if it could not be created
+	 */
+	public CoverageFile convert(Dump dump, Path filePath) throws IOException {
+		CoverageFile coverageFile = new CoverageFile(filePath.toFile());
+		convertToReport(coverageFile, dump);
+		return coverageFile;
 	}
 
 	/** Creates the report. */
-	private void convertToReport(OutputStream output, Dump dump) throws IOException {
+	private void convertToReport(CoverageFile coverageFile, Dump dump) throws IOException {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
 		sanityCheck(bundleCoverage);
-		createReport(output, bundleCoverage, dump.info, mergedStore);
+		createReport(coverageFile.getOutputStream(), bundleCoverage, dump.info, mergedStore);
 	}
 
 	private void sanityCheck(IBundleCoverage coverage) {
