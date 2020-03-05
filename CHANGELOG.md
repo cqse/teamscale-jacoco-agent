@@ -4,6 +4,7 @@ We use [semantic versioning][semver]
 - [feature] Added `coverage-via-http` option for testwise mode
 - [feature] Added `teamscale-revision` option to supply VCS revision instead of branch and timestamp
 - [feature] Added `/revision` HTTP endpoint for testwise mode
+- [feature] Updated JaCoCo to 0.8.5
 - [fix] Significantly reduced memory footprint
 - [fix] `--run-all-tests` doesn't run any tests at all
 - [fix] test-wise coverage report incorrect for classes in default package
