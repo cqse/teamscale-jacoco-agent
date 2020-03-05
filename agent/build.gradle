@@ -59,12 +59,12 @@ test {
 mainClassName = 'com.teamscale.jacoco.agent.Main'
 
 shadowJar {
-	archiveBaseName = 'teamscale-jacoco-agent'
-	archiveClassifier = null
+	baseName = 'teamscale-jacoco-agent'
+	classifier = null
 	// since this is used as an agent, we want it to always have the same name
 	// otherwise people have to adjust their -javaagent parameters after every
 	// update
-	archiveVersion = null
+	version = null
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
 
