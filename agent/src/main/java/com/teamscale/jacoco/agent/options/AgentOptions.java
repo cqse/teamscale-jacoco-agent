@@ -350,7 +350,10 @@ public class AgentOptions {
 			throws UploaderException {
 
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
-				commit -> new TeamscaleUploader(teamscaleServer), outputDirectory);
+				commit -> {
+					teamscaleServer.commit = commit;
+					return new TeamscaleUploader(teamscaleServer);
+				}, outputDirectory);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return store;
