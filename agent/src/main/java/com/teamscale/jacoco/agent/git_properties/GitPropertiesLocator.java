@@ -150,6 +150,7 @@ public class GitPropertiesLocator {
 		try {
 			long parsedTimestamp = ZonedDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toInstant()
 					.toEpochMilli();
+			branch = StringUtils.stripPrefix(branch, "origin/");
 			return new CommitDescriptor(branch, parsedTimestamp);
 		} catch (DateTimeParseException e) {
 			throw new InvalidGitPropertiesException(
