@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next Release
+- [fix] `git.properties` commit was not used for upload
 
 # 15.3.0
 - [feature] Added `coverage-via-http` option for testwise mode
