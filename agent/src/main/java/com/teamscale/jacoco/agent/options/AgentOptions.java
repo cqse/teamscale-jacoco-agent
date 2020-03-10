@@ -346,9 +346,7 @@ public class AgentOptions {
 		return new LocalDiskUploader();
 	}
 
-	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation)
-			throws UploaderException {
-
+	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
 				commit -> {
 					teamscaleServer.commit = commit;
