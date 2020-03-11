@@ -92,6 +92,13 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 
+	/** Tests the options http-server-port option for normal mode. */
+	@Test
+	public void testHttpServerOptionsForNormalMode() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("http-server-port=8081");
+		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
+	}
+
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testEnvironmentVariableOptions() throws AgentOptionParseException {
