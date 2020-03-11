@@ -3,6 +3,7 @@ We use [semantic versioning][semver]
 # Next Release
 - [fix] `git.properties` commit was not used for upload
 - [feature] Upload ignored `origin/` prefix in `git.properties`'s branch name
+- [fix] `http-server-port` option does not pass validation in normal mode
 - [fix] Executable spring boot jar produces no coverage
 
 # 15.3.0
