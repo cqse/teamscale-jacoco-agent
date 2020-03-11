@@ -1,9 +1,11 @@
 .gradle/
+.gradletasknamecache
 **/build/**
 **/out/**
-/*/bin/
-/*/test-tmp/
-.gradletasknamecache
 **/test-tmp/**
 
 *.swp
+**/bin/**
+**/.classpath
+**/.project
+**/.settings/**

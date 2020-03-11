@@ -5,6 +5,27 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.collections.PairList;
+import org.jacoco.agent.rt.IAgent;
+import org.jacoco.core.runtime.WildcardMatcher;
+import org.slf4j.Logger;
+
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.Agent;
@@ -27,26 +48,8 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.PairList;
-import org.jacoco.core.runtime.WildcardMatcher;
-import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -311,11 +314,11 @@ public class AgentOptions {
 	 * the HTTP server is used.
 	 */
 	public AgentBase createAgent(
-			Instrumentation instrumentation) throws UploaderException, CoverageGenerationException {
+			Instrumentation instrumentation, IAgent agent) throws UploaderException, IOException, IllegalStateException, CoverageGenerationException {
 		if (useTestwiseCoverageMode()) {
-			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
+			return new TestwiseCoverageAgent(this, agent, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
-			return new Agent(this, instrumentation);
+			return new Agent(this, instrumentation, agent);
 		}
 	}
 

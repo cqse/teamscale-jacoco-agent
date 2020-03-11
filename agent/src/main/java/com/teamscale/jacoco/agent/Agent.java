@@ -5,6 +5,16 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
+
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Optional;
+
+import org.jacoco.agent.rt.IAgent;
+
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
@@ -13,18 +23,10 @@ import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
+
 import spark.Request;
 import spark.Response;
 
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Optional;
-
-import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
-import static spark.Spark.get;
-import static spark.Spark.post;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
@@ -48,9 +50,8 @@ public class Agent extends AgentBase {
 	protected final IUploader uploader;
 
 	/** Constructor. */
-	public Agent(AgentOptions options,
-				 Instrumentation instrumentation) throws IllegalStateException, UploaderException {
-		super(options);
+	public Agent(AgentOptions options, Instrumentation  instrumentation, IAgent jacocoAgent) throws IllegalStateException, UploaderException, IOException {
+		super(options, jacocoAgent);
 
 		uploader = options.createUploader(instrumentation);
 		logger.info("Upload method: {}", uploader.describe());
@@ -73,12 +74,11 @@ public class Agent extends AgentBase {
 
 	@Override
 	protected void initServerEndpoints() {
-		get("/partition", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
+		service.get("/partition", (request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 
-		post("/dump", this::handleDump);
-		post("/reset", this::handleReset);
-		post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
+		service.post("/dump", this::handleDump);
+		service.post("/reset", this::handleReset);
+		service.post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
 	}
 
 	/** Handles dumping a XML coverage report for coverage collected until now. */
