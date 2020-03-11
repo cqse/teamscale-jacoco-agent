@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next Release
+- [fix] Delete empty coverage directories
 
 # 15.3.0
 - [feature] Added `coverage-via-http` option for testwise mode
