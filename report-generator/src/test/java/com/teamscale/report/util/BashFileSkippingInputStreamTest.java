@@ -14,7 +14,18 @@ class BashFileSkippingInputStreamTest {
 
 	@Test
 	void testBashFileJar() throws IOException {
-		InputStream inputStream = getClass().getResourceAsStream("spring-boot-executable-example.jar");
+		ArrayList<String> filesInJar = getEntriesFromJarFile("spring-boot-executable-example.jar");
+		assertThat(filesInJar).hasSize(110);
+	}
+
+	@Test
+	void testNormalJar() throws IOException {
+		ArrayList<String> filesInJar = getEntriesFromJarFile("normal.jar");
+		assertThat(filesInJar).hasSize(284);
+	}
+
+	private ArrayList<String> getEntriesFromJarFile(String resourceName) throws IOException {
+		InputStream inputStream = getClass().getResourceAsStream(resourceName);
 		BashFileSkippingInputStream bashFileSkippingInputStream = new BashFileSkippingInputStream(inputStream);
 		JarInputStream jarInputStream = new JarInputStream(bashFileSkippingInputStream);
 		JarEntry entry;
@@ -22,6 +33,6 @@ class BashFileSkippingInputStreamTest {
 		while ((entry = jarInputStream.getNextJarEntry()) != null) {
 			filesInJar.add(entry.getName());
 		}
-		assertThat(filesInJar).hasSize(110);
+		return filesInJar;
 	}
 }
