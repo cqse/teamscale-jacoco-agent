@@ -24,7 +24,7 @@ public class TiaAgent {
 	}
 
 	public TestRun startTestRun(List<ClusteredTestDetails> availableTests,
-								long baseline) throws AgentHttpRequestFailedException {
+								Long baseline) throws AgentHttpRequestFailedException {
 		List<PrioritizableTestCluster> clusters = handleRequestError(
 				api.testRunStarted(includeNonImpactedTests, baseline, availableTests), "Failed to start the test run");
 		return new TestRun(api, clusters);

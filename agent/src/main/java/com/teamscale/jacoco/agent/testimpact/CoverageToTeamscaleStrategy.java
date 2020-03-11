@@ -43,6 +43,13 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 									   JacocoRuntimeController controller) throws CoverageGenerationException {
 		super(controller);
 		this.agentOptions = agentOptions;
+
+		if (agentOptions.getTeamscaleServerOptions().commit == null) {
+			throw new RuntimeException("You must provide a commit via the agent's options." +
+					" Auto-detecting the git.properties does not work since we need the commit before any code" +
+					" has been profiled in order to obtain the prioritized test cases from TIA.");
+		}
+
 		client = agentOptions.createTeamscaleClient();
 		testwiseReportGenerator = new JaCoCoTestwiseReportGenerator(
 				agentOptions.getClassDirectoriesOrZips(),
@@ -67,9 +74,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
 	@Override
 	public String testRunStart(List<ClusteredTestDetails> availableTests,
-							   boolean includeNonImpactedTests, long baseline) throws IOException {
+							   boolean includeNonImpactedTests, Long baseline) throws IOException {
 		Response<List<PrioritizableTestCluster>> impactedTestsResponse = client
-				// TODO (FS) git properties? does that work? nothing has been profiled yet
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
 		if (impactedTestsResponse.isSuccessful()) {

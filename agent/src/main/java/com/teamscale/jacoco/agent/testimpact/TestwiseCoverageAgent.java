@@ -80,7 +80,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("includeNonImpacted"));
 
 		String baselineParameter = request.params("baseline");
-		long baseline = -1; // TODO (FS) sensible default?
+		Long baseline = null;
 		if (baselineParameter != null) {
 			try {
 				baseline = Long.parseLong(baselineParameter);

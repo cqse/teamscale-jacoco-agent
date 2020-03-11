@@ -46,7 +46,7 @@ public abstract class TestEventHandlerStrategyBase {
 	}
 
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
-							   long baseline) throws IOException {
+							   Long baseline) throws IOException {
 		return null;
 	}
 

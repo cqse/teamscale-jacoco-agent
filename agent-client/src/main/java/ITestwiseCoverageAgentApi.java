@@ -32,7 +32,7 @@ public interface ITestwiseCoverageAgentApi {
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("includeNonImpacted") boolean includeNonImpacted,
-			@Query("baseline") long baseline,
+			@Query("baseline") Long baseline,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
