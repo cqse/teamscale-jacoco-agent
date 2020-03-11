@@ -1,16 +1,16 @@
 package com.teamscale.client;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** Helper class to interact with Teamscale. */
 public class TeamscaleClient {
@@ -92,5 +92,12 @@ public class TeamscaleClient {
 		if (!response.isSuccessful()) {
 			throw new IOException(response.errorBody().string());
 		}
+	}
+
+	/** Uploads one in-memory report to Teamscale. */
+	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
+							 String partition, String message) throws IOException {
+		RequestBody requestBody = RequestBody.create(MultipartBody.FORM, report);
+		service.uploadReport(projectId, commitDescriptor, null, partition, reportFormat, message, requestBody);
 	}
 }

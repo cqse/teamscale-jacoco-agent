@@ -23,18 +23,22 @@ public interface ITestwiseCoverageAgentApi {
 
 	/** Test finished. */
 	@POST("test/end/{testUniformPath}")
-	Call<ResponseBody> testFinished(@Path("testUniformPath") String testUniformPath);
+	Call<ResponseBody> testFinished(
+			@Path("testUniformPath") String testUniformPath,
+			@Body TestExecution testExecution
+	);
 
 	/** Test run started. Reports available tests and returns the list of prioritized test cases to execute. */
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("includeNonImpacted") boolean includeNonImpacted,
+			@Query("baseline") long baseline,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
 	/** Test run finished. Generate report and upload to Teamscale. */
 	@POST("testrun/end")
-	Call<ResponseBody> testRunFinished(@Body List<TestExecution> testExecutions);
+	Call<ResponseBody> testRunFinished();
 
 	/**
 	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the

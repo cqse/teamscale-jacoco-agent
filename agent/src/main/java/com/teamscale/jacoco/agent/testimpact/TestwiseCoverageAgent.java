@@ -7,6 +7,8 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
+import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
@@ -14,14 +16,15 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
-
 import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
@@ -43,7 +46,11 @@ public class TestwiseCoverageAgent extends AgentBase {
 	/** JSON adapter for revision information. */
 	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
 			.adapter(RevisionInfo.class);
-	
+
+	/** JSON adapter for test details. */
+	private final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsAdapter = new Moshi.Builder().build()
+			.adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
+
 	private final TestEventHandlerStrategyBase testEventHandler;
 
 	/** Constructor. */
@@ -52,6 +59,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 		super(options);
 		if (options.shouldDumpCoverageViaHttp()) {
 			testEventHandler = new CoverageViaHttpStrategy(options, controller);
+		} else if (options.shouldUploadTestWiseCoverageToTeamscale()) {
+			testEventHandler = new CoverageToTeamscaleStrategy(options, controller);
 		} else {
 			testEventHandler = new CoverageToExecFileStrategy(testExecutionWriter, controller);
 		}
@@ -63,6 +72,57 @@ public class TestwiseCoverageAgent extends AgentBase {
 		get("/revision", (request, response) -> this.getRevisionInfo());
 		post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
 		post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
+		post("/testrun/start", this::handleTestRunStart);
+		post("/testrun/end", this::handleTestRunEnd);
+	}
+
+	private String handleTestRunStart(Request request, Response response) {
+		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("includeNonImpacted"));
+
+		String baselineParameter = request.params("baseline");
+		long baseline = -1; // TODO (FS) sensible default?
+		if (baselineParameter != null) {
+			try {
+				baseline = Long.parseLong(baselineParameter);
+			} catch (NumberFormatException e) {
+				logger.error("Invalid value for parameter 'baseline'", e);
+				response.status(SC_BAD_REQUEST);
+				return "Invalid value for parameter 'baseline': " + e.getMessage();
+			}
+		}
+
+		String bodyString = request.body();
+		List<ClusteredTestDetails> availableTests;
+		try {
+			availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
+		} catch (IOException e) {
+			logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
+			response.status(SC_BAD_REQUEST);
+			return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
+		}
+
+		try {
+			String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);
+			response.type(APPLICATION_JSON.asString());
+			return responseBody;
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			response.status(SC_INTERNAL_SERVER_ERROR);
+			return e.getMessage();
+		}
+	}
+
+	private String handleTestRunEnd(Request request, Response response) {
+		try {
+			testEventHandler.testRunEnd();
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			response.status(SC_INTERNAL_SERVER_ERROR);
+			return e.getMessage();
+		}
+
+		response.status(SC_NO_CONTENT);
+		return "";
 	}
 
 	/** Handles the start of a new test case by setting the session ID. */
@@ -124,7 +184,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 			return Optional.empty();
 		}
 	}
-	
+
 	/** Returns revision information for the Teamscale upload. */
 	private String getRevisionInfo() {
 		TeamscaleServer server = options.getTeamscaleServerOptions();

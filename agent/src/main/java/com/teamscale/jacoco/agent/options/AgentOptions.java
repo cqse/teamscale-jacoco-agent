@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.Agent;
 import com.teamscale.jacoco.agent.AgentBase;
@@ -150,6 +151,11 @@ public class AgentOptions {
 	 * Whether coverage is written to an exec file in testwise mode or returned via HTTP.
 	 */
 	/* package */ boolean coverageViaHttp = false;
+
+	/**
+	 * Whether coverage is uploaded to Teamscale after all tests are finished.
+	 */
+	/* package */ boolean coverageToTeamscale = false;
 
 	/**
 	 * The configuration necessary to upload files to an azure file storage
@@ -322,6 +328,15 @@ public class AgentOptions {
 		}
 	}
 
+	// TODO (FS) reuse for teamscale uploader
+	public TeamscaleClient createTeamscaleClient() {
+		if (teamscaleServer.hasAllRequiredFieldsSet()) {
+			return new TeamscaleClient(teamscaleServer.url.toString(), teamscaleServer.userName,
+					teamscaleServer.userAccessToken, teamscaleServer.project);
+		}
+		return null;
+	}
+
 	/**
 	 * Creates an uplaoder for the coverage XMLs.
 	 */
@@ -456,6 +471,11 @@ public class AgentOptions {
 	/** Whether coverage should be dumped via http. */
 	public boolean shouldDumpCoverageViaHttp() {
 		return coverageViaHttp;
+	}
+
+	/** Whether test-wise coverage should be uploaded to Teamscale after all tests are finished. */
+	public boolean shouldUploadTestWiseCoverageToTeamscale() {
+		return coverageToTeamscale && teamscaleServer.hasAllRequiredFieldsSet();
 	}
 
 	/** Describes the two possible modes the agent can be started in. */

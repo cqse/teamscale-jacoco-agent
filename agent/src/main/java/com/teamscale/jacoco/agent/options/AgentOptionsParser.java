@@ -249,6 +249,9 @@ public class AgentOptionsParser {
 			case "teamscale-revision":
 				options.teamscaleServer.revision = value;
 				return true;
+			case "teamscale-testwise-upload":
+				options.coverageToTeamscale = Boolean.parseBoolean(value);
+				return true;
 			default:
 				return false;
 		}

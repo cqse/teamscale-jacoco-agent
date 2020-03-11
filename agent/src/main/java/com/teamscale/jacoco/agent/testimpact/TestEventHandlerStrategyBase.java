@@ -1,7 +1,11 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.report.testwise.model.TestExecution;
+
+import java.io.IOException;
+import java.util.List;
 
 /** Base class for strategies to handle test start and end events. */
 public abstract class TestEventHandlerStrategyBase {
@@ -39,5 +43,14 @@ public abstract class TestEventHandlerStrategyBase {
 			testExecution.setDurationMillis(endTimestamp - startTimestamp);
 		}
 		return null;
+	}
+
+	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
+							   long baseline) throws IOException {
+		return null;
+	}
+
+	public void testRunEnd() throws IOException {
+		// base implementation does nothing
 	}
 }

@@ -11,7 +11,6 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TiaAgent {
@@ -24,9 +23,10 @@ public class TiaAgent {
 		api = ITestwiseCoverageAgentApi.createService(url);
 	}
 
-	public TestRun startTestRun(List<ClusteredTestDetails> availableTests) throws AgentHttpRequestFailedException {
+	public TestRun startTestRun(List<ClusteredTestDetails> availableTests,
+								long baseline) throws AgentHttpRequestFailedException {
 		List<PrioritizableTestCluster> clusters = handleRequestError(
-				api.testRunStarted(includeNonImpactedTests, availableTests), "Failed to start the test run");
+				api.testRunStarted(includeNonImpactedTests, baseline, availableTests), "Failed to start the test run");
 		return new TestRun(api, clusters);
 	}
 
@@ -67,12 +67,16 @@ public class TiaAgent {
 	public static class TestRun {
 
 		private final ITestwiseCoverageAgentApi api;
-		private final List<PrioritizableTestCluster> testsToRun;
+		private final List<PrioritizableTestCluster> prioritizedTests;
 
 		private TestRun(ITestwiseCoverageAgentApi api,
-						List<PrioritizableTestCluster> testsToRun) {
+						List<PrioritizableTestCluster> prioritizedTests) {
 			this.api = api;
-			this.testsToRun = testsToRun;
+			this.prioritizedTests = prioritizedTests;
+		}
+
+		public List<PrioritizableTestCluster> getPrioritizedTests() {
+			return prioritizedTests;
 		}
 
 		@FunctionalInterface
@@ -90,43 +94,53 @@ public class TiaAgent {
 			}
 		}
 
-		public void runPrioritizedTests(TestRunner runner) throws AgentHttpRequestFailedException {
-			List<TestExecution> executions = new ArrayList<>();
+		public RunningTest startTest(PrioritizableTest test) throws AgentHttpRequestFailedException {
+			handleRequestError(api.testStarted(test.uniformPath),
+					"Failed to start coverage recording for test case " + test.uniformPath);
+			return new RunningTest(test, api);
+		}
 
-			for (PrioritizableTestCluster cluster : testsToRun) {
-				for (PrioritizableTest test : cluster.tests) {
-					executions.add(runTest(runner, test));
-				}
-			}
-
-			handleRequestError(api.testRunFinished(executions),
+		public void endTestRun() throws AgentHttpRequestFailedException {
+			handleRequestError(api.testRunFinished(),
 					"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 		}
 
-		private TestExecution runTest(TestRunner runner, PrioritizableTest test) {
-			long startTime = System.currentTimeMillis();
-			TestExecution execution;
+	}
 
-			try {
-				handleRequestError(api.testStarted(test.uniformPath),
-						"Failed to start coverage recording for test case " + test.uniformPath);
-				TestResultWithMessage result = runner.run(test);
-				long endTime = System.currentTimeMillis();
 
-				handleRequestError(api.testFinished(test.uniformPath),
-						"Failed to end coverage recording for test case " + test.uniformPath +
-								". Coverage recording is most likely still running for that test case");
-				execution = new TestExecution(test.uniformPath, endTime - startTime, result.result, result.message);
-			} catch (Exception e) {
-				long endTime = System.currentTimeMillis();
-				StringWriter writer = new StringWriter();
-				try (PrintWriter printWriter = new PrintWriter(writer)) {
-					e.printStackTrace(printWriter);
-				}
-				execution = new TestExecution(test.uniformPath, endTime - startTime,
-						ETestExecutionResult.ERROR, writer.toString());
+	public static class RunningTest {
+
+		private final PrioritizableTest test;
+		private final ITestwiseCoverageAgentApi api;
+		private final long startTime = System.currentTimeMillis();
+
+		public RunningTest(PrioritizableTest test, ITestwiseCoverageAgentApi api) {
+			this.test = test;
+			this.api = api;
+		}
+
+		public void endTestWithException(Throwable throwable) throws AgentHttpRequestFailedException {
+			long endTime = System.currentTimeMillis();
+
+			StringWriter writer = new StringWriter();
+			try (PrintWriter printWriter = new PrintWriter(writer)) {
+				throwable.printStackTrace(printWriter);
 			}
-			return execution;
+			TestExecution execution = new TestExecution(test.uniformPath, endTime - startTime,
+					ETestExecutionResult.ERROR, throwable.getMessage() + "\n" + writer.toString());
+
+			handleRequestError(api.testFinished(test.uniformPath, execution),
+					"Failed to end coverage recording for test case " + test.uniformPath +
+							". Coverage for that test case is most likely lost.");
+		}
+
+		public void endTestNormally(TestRun.TestResultWithMessage result) throws AgentHttpRequestFailedException {
+			long endTime = System.currentTimeMillis();
+			TestExecution execution = new TestExecution(test.uniformPath, endTime - startTime, result.result,
+					result.message);
+			handleRequestError(api.testFinished(test.uniformPath, execution),
+					"Failed to end coverage recording for test case " + test.uniformPath +
+							". Coverage for that test case is most likely lost.");
 		}
 
 	}
