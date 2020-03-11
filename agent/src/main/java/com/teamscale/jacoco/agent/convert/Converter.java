@@ -16,7 +16,6 @@ import com.teamscale.report.testwise.model.factory.TestInfoFactory;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
@@ -64,8 +64,7 @@ public class Converter {
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			String xml = generator.convert(new Dump(sessionInfo, executionDataStore));
-			FileSystemUtils.writeFileUTF8(arguments.getOutputFile(), xml);
+			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile));
 		}
 	}
 

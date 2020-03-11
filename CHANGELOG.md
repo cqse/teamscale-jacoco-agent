@@ -1,7 +1,21 @@
 We use [semantic versioning][semver]
 
 # Next Release
-- [feature] `coverage-via-http` option for testwise mode
+
+# 15.4.0
+- [fix] `git.properties` commit was not used for upload
+- [feature] Upload ignored `origin/` prefix in `git.properties`'s branch name
+- [fix] `http-server-port` option does not pass validation in normal mode
+- [fix] Executable spring boot jar produces no coverage
+
+# 15.3.0
+- [feature] Added `coverage-via-http` option for testwise mode
+- [feature] Added `teamscale-revision` option to supply VCS revision instead of branch and timestamp
+- [feature] Added `/revision` HTTP endpoint for testwise mode
+- [feature] Updated JaCoCo to 0.8.5
+- [fix] Significantly reduced memory footprint
+- [fix] `--run-all-tests` doesn't run any tests at all
+- [fix] test-wise coverage report incorrect for classes in default package
 
 # 15.2.0
 - [fix] WildFly won't start with agent attached

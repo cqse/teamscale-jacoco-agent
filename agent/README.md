@@ -96,6 +96,8 @@ patterns with `*`, `**` and `?`.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string 
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in 
   Teamscale's UI.
+- `teamscale-revision`: the source control revision (e.g. SVN revision or Git hash) that has been used to build 
+  the system under test. Teamscale uses this to map the coverage to the corresponding source code.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
@@ -179,21 +181,22 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
-- `teamscale-revision` (optional): the source control revision (e.g. SVN revision or Git hash) that has been used to build 
-  the system under test. This is then surfaced via the `/revision` endpoint. For alternatives to supplying revision
-  information, see the options `teamscale-commit`, `teamscale-commit-manifest-jar`, or `teamscale-git-properties-jar` above.
-  Please note that git.properties auto-discovery is not yet supported for testwise mode.
 
 The agent's REST API has the following endpoints:
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
   not started yet.
 - `[GET] /revision` Returns the source control revision or commit the system under test was build from. This is
-  required to upload the coverage to Teamscale at the correct point in time. The response is in json format:
+  required to upload the coverage to Teamscale at the correct point in time. The information can be supplied using
+  any of the options `teamscale-revision`, `teamscale-commit`, `teamscale-commit-manifest-jar`, or 
+  `teamscale-git-properties-jar` above. Please note that git.properties auto-discovery is not yet supported for 
+  testwise mode.
+  
+  The response is in json format:
   
 ```json
 {
  "type": "COMMIT|REVISION",
- "value": "<commit descriptor>|<revision descriptor>"
+ "value": "<branch>:<timestamp>|<revision>"
 }
 ```
   

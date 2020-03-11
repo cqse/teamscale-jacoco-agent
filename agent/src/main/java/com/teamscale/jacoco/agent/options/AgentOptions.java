@@ -5,6 +5,27 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.conqat.lib.commons.assertion.CCSMAssert;
+import org.conqat.lib.commons.collections.PairList;
+import org.jacoco.agent.rt.IAgent;
+import org.jacoco.core.runtime.WildcardMatcher;
+import org.slf4j.Logger;
+
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.Agent;
@@ -12,46 +33,33 @@ import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.TimestampedFileStore;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageConfig;
-import com.teamscale.jacoco.agent.store.upload.azure.AzureFileStorageUploadStore;
-import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
-import com.teamscale.jacoco.agent.store.upload.http.HttpUploadStore;
-import com.teamscale.jacoco.agent.store.upload.teamscale.TeamscaleUploadStore;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
+import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
+import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
+import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
+import com.teamscale.jacoco.agent.upload.http.HttpUploader;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.PairList;
-import org.jacoco.agent.rt.IAgent;
-import org.jacoco.core.runtime.WildcardMatcher;
-import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.instrument.Instrumentation;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
  */
 public class AgentOptions {
+	/**
+	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
+	 */
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
@@ -74,7 +82,7 @@ public class AgentOptions {
 	/**
 	 * The directory to write the XML traces to.
 	 */
-	/* package */ Path outputDirectory = AgentUtils.getAgentDirectory().resolve("coverage");
+	private Path outputDirectory;
 
 	/**
 	 * The URL to which to upload coverage zips.
@@ -93,7 +101,6 @@ public class AgentOptions {
 	 * The interval in minutes for dumping XML data.
 	 */
 	/* package */ int dumpIntervalInMinutes = 60;
-
 
 	/** Whether to dump coverage when the JVM shuts down. */
 	/* package */ boolean shouldDumpOnExit = true;
@@ -152,6 +159,10 @@ public class AgentOptions {
 	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
 
+	public AgentOptions() {
+		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
+	}
+
 	/**
 	 * @see #originalOptionsString
 	 */
@@ -190,8 +201,8 @@ public class AgentOptions {
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
-		validator.isFalse(mode == EMode.NORMAL && teamscaleServer.revision != null,
-				"Direct upload to Teamscale using a revision is not yet supported!");
+		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
+				"'teamscale-revision' is incompatible with 'teamscale-commit', 'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
@@ -225,9 +236,6 @@ public class AgentOptions {
 
 		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
-
-		validator.isFalse(!useTestwiseCoverageMode() && httpServerPort != null,
-				"You use 'http-server-port' but did not set 'mode' to 'TESTWISE'!");
 
 		validator.isFalse(!useTestwiseCoverageMode() && coverageViaHttp,
 				"You use 'coverage-via-http' but did not set 'mode' to 'TESTWISE'!");
@@ -297,9 +305,8 @@ public class AgentOptions {
 	}
 
 	private File getTempFile(final String prefix, final String extension) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss.SSS");
 		return new File(outputDirectory.toFile(),
-				prefix + "-" + dateFormat.format(new Date()) + "." + extension);
+				prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension);
 	}
 
 	/**
@@ -307,7 +314,7 @@ public class AgentOptions {
 	 * the HTTP server is used.
 	 */
 	public AgentBase createAgent(
-			Instrumentation instrumentation, IAgent agent) throws UploadStoreException, CoverageGenerationException, IOException {
+			Instrumentation instrumentation, IAgent agent) throws UploaderException, IOException, IllegalStateException, CoverageGenerationException {
 		if (useTestwiseCoverageMode()) {
 			return new TestwiseCoverageAgent(this, agent, new TestExecutionWriter(getTempFile("test-execution", "json")));
 		} else {
@@ -316,44 +323,35 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Creates the store to use for the coverage XMLs.
+	 * Creates an uplaoder for the coverage XMLs.
 	 */
-	public IXmlStore createStore(Instrumentation instrumentation) throws UploadStoreException {
-		TimestampedFileStore fileStore = new TimestampedFileStore(outputDirectory);
+	public IUploader createUploader(Instrumentation instrumentation) throws UploaderException {
 		if (uploadUrl != null) {
-			return new HttpUploadStore(fileStore, uploadUrl, additionalMetaDataFiles);
+			return new HttpUploader(uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
 			if (teamscaleServer.commit == null) {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-				return createDelayedTeamscaleStore(instrumentation, fileStore);
+				return createDelayedTeamscaleUploader(instrumentation);
 			}
-			return new TeamscaleUploadStore(fileStore, teamscaleServer);
+			return new TeamscaleUploader(teamscaleServer);
 		}
 
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
-			return new AzureFileStorageUploadStore(fileStore, azureFileStorageConfig,
+			return new AzureFileStorageUploader(azureFileStorageConfig,
 					additionalMetaDataFiles);
 		}
 
-		return fileStore;
+		return new LocalDiskUploader();
 	}
 
-	private IXmlStore createDelayedTeamscaleStore(Instrumentation instrumentation, TimestampedFileStore fileStore)
-			throws UploadStoreException {
-
-		Path cacheDirectory;
-		try {
-			cacheDirectory = Files.createTempDirectory(outputDirectory, "upload-cache");
-		} catch (IOException e) {
-			throw new UploadStoreException(
-					"Unable to create temporary cache directory within " + outputDirectory, e);
-		}
-
-		TimestampedFileStore cacheStore = new TimestampedFileStore(cacheDirectory);
-		DelayedCommitDescriptorStore store = new DelayedCommitDescriptorStore(
-				commit -> new TeamscaleUploadStore(fileStore, teamscaleServer), cacheStore);
+	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
+		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
+				commit -> {
+					teamscaleServer.commit = commit;
+					return new TeamscaleUploader(teamscaleServer);
+				}, outputDirectory);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return store;
@@ -369,6 +367,21 @@ public class AgentOptions {
 	/** @see #teamscaleServer */
 	public TeamscaleServer getTeamscaleServerOptions() {
 		return teamscaleServer;
+	}
+
+	/**
+	 * Get the directory to which the coverage files are written to
+	 */
+	public Path getOutputDirectory() {
+		return outputDirectory;
+	}
+
+	/**
+	 * Sets the parent of the output directory for this run. The output directory itself will be created in this folder
+	 * is named after the current timestamp with the format yyyy-MM-dd-HH-mm-ss.SSS
+	 */
+	public void setParentOutputDirectory(Path outputDirectoryParent) {
+		outputDirectory = outputDirectoryParent.resolve(LocalDateTime.now().format(DATE_TIME_FORMATTER));
 	}
 
 	/**

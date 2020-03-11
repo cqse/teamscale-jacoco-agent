@@ -1,16 +1,16 @@
 package com.teamscale.client;
 
-import okhttp3.HttpUrl;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 
 /** Helper class to interact with Teamscale. */
 public class TeamscaleClient {
@@ -87,7 +87,7 @@ public class TeamscaleClient {
 		}).collect(Collectors.toList());
 
 		Response<ResponseBody> response = service
-				.uploadExternalReports(projectId, reportFormat, commitDescriptor, true, true, partition, message,
+				.uploadExternalReports(projectId, reportFormat, commitDescriptor, true, partition, message,
 						partList).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException(response.errorBody().string());

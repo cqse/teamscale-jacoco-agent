@@ -1,5 +1,13 @@
 package com.teamscale.jacoco.agent;
 
+import static spark.Spark.port;
+import static spark.Spark.stop;
+
+import java.lang.instrument.Instrumentation;
+
+import org.jacoco.agent.rt.RT;
+import org.slf4j.Logger;
+
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -28,7 +36,7 @@ import java.util.Map;
  * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
  * JacocoRuntimeController}.
  * <p>
- * Subclasses must handle dumping into the store.
+ * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
 public abstract class AgentBase {
 
@@ -210,7 +218,7 @@ public abstract class AgentBase {
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 
 		logger.info("Starting JaCoCo's agent");
-		org.jacoco.agent.rt.internal_035b120.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
+		org.jacoco.agent.rt.internal_43f5073.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
 
 		AgentBase agent = agentOptions.createAgent(instrumentation, RT.getAgent());
 		agent.registerShutdownHook();

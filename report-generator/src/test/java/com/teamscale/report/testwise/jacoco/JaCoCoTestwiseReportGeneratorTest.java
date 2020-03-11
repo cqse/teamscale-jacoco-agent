@@ -26,24 +26,28 @@ import static org.mockito.Mockito.mock;
 /** Tests for the {@link JaCoCoTestwiseReportGenerator} class. */
 public class JaCoCoTestwiseReportGeneratorTest extends TestDataBase {
 
-	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
 	@Test
 	void testSmokeTestTestwiseReportGeneration() throws Exception {
-		String report = runGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
+		String report = runReportGenerator("jacoco/cqddl/classes.zip", "jacoco/cqddl/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/cqddl/report.json.expected"));
 		JSONAssert.assertEquals(expected, report, JSONCompareMode.STRICT);
 	}
 
-	/** Tests that the {@link JaCoCoTestwiseReportGenerator} produces the expected output. */
 	@Test
 	void testSampleTestwiseReportGeneration() throws Exception {
-		String report = runGenerator("jacoco/sample/classes.zip", "jacoco/sample/coverage.exec");
+		String report = runReportGenerator("jacoco/sample/classes.zip", "jacoco/sample/coverage.exec");
 		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/sample/report.json.expected"));
 		JSONAssert.assertEquals(expected, report, JSONCompareMode.STRICT);
 	}
 
-	/** Runs the report generator. */
-	private String runGenerator(String testDataFolder, String execFileName) throws Exception {
+	@Test
+	void defaultPackageIsHandledAsEmptyPath() throws Exception {
+		String report = runReportGenerator("jacoco/default-package/classes.zip", "jacoco/default-package/coverage.exec");
+		String expected = FileSystemUtils.readFileUTF8(useTestFile("jacoco/default-package/report.json.expected"));
+		JSONAssert.assertEquals(expected, report, JSONCompareMode.STRICT);
+	}
+
+	private String runReportGenerator(String testDataFolder, String execFileName) throws Exception {
 		File classFileFolder = useTestFile(testDataFolder);
 		ClasspathWildcardIncludeFilter includeFilter = new ClasspathWildcardIncludeFilter(null, null);
 		TestwiseCoverage testwiseCoverage = new JaCoCoTestwiseReportGenerator(

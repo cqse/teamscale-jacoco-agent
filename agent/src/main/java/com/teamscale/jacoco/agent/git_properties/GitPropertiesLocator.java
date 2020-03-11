@@ -2,9 +2,10 @@ package com.teamscale.jacoco.agent.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.store.upload.delay.DelayedCommitDescriptorStore;
+import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -22,7 +23,7 @@ import java.util.jar.JarInputStream;
 
 /**
  * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
- * e.g. to Teamscale, via a {@link DelayedCommitDescriptorStore}.
+ * e.g. to Teamscale, via a {@link DelayedCommitDescriptorUploader}.
  */
 public class GitPropertiesLocator {
 
@@ -38,9 +39,9 @@ public class GitPropertiesLocator {
 	private CommitDescriptor foundCommitDescriptor = null;
 	private File jarFileWithGitProperties = null;
 
-	private final DelayedCommitDescriptorStore store;
+	private final DelayedCommitDescriptorUploader store;
 
-	public GitPropertiesLocator(DelayedCommitDescriptorStore store) {
+	public GitPropertiesLocator(DelayedCommitDescriptorUploader store) {
 		// using a single threaded executor allows this class to be lock-free
 		this(store, Executors
 				.newSingleThreadExecutor(
@@ -51,7 +52,7 @@ public class GitPropertiesLocator {
 	 * Visible for testing. Allows tests to control the {@link Executor} in order to test the asynchronous functionality
 	 * of this class.
 	 */
-	public GitPropertiesLocator(DelayedCommitDescriptorStore store, Executor executor) {
+	public GitPropertiesLocator(DelayedCommitDescriptorUploader store, Executor executor) {
 		this.store = store;
 		this.executor = executor;
 	}
@@ -104,7 +105,7 @@ public class GitPropertiesLocator {
 	 */
 	public static CommitDescriptor getCommitFromGitProperties(
 			File jarFile) throws IOException, InvalidGitPropertiesException {
-		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+		try (JarInputStream jarStream = new JarInputStream(new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
 			return getCommitFromGitProperties(jarStream, jarFile);
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
@@ -150,6 +151,7 @@ public class GitPropertiesLocator {
 		try {
 			long parsedTimestamp = ZonedDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toInstant()
 					.toEpochMilli();
+			branch = StringUtils.stripPrefix(branch, "origin/");
 			return new CommitDescriptor(branch, parsedTimestamp);
 		} catch (DateTimeParseException e) {
 			throw new InvalidGitPropertiesException(

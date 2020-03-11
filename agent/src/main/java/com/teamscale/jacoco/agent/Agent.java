@@ -5,24 +5,27 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.store.IXmlStore;
-import com.teamscale.jacoco.agent.store.UploadStoreException;
-import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.util.Timer;
-import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
-import com.teamscale.report.jacoco.dump.Dump;
-import spark.Request;
-import spark.Response;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Optional;
 
 import org.jacoco.agent.rt.IAgent;
 
-import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.Timer;
+import com.teamscale.report.jacoco.CoverageFile;
+import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import com.teamscale.report.jacoco.dump.Dump;
+
+import spark.Request;
+import spark.Response;
 
 
 /**
@@ -34,6 +37,9 @@ public class Agent extends AgentBase {
 	/** Path parameter placeholder used in the http requests. */
 	private static final String PARTITION_PARAMETER = ":partition";
 
+	/** Path to write the converted coverage files to. **/
+	private final Path outputDirectory;
+
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
 
@@ -41,14 +47,16 @@ public class Agent extends AgentBase {
 	private Timer timer;
 
 	/** Stores the XML files. */
-	protected final IXmlStore store;
+	protected final IUploader uploader;
 
 	/** Constructor. */
-	public Agent(AgentOptions options, Instrumentation  instrumentation, IAgent jacocoAgent) throws IllegalStateException, UploadStoreException, IOException {
+	public Agent(AgentOptions options, Instrumentation  instrumentation, IAgent jacocoAgent) throws IllegalStateException, UploaderException, IOException {
 		super(options, jacocoAgent);
 
-		store = options.createStore(instrumentation);
-		logger.info("Storage method: {}", store.describe());
+		uploader = options.createUploader(instrumentation);
+		logger.info("Upload method: {}", uploader.describe());
+
+		this.outputDirectory = options.getOutputDirectory();
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
@@ -118,8 +126,8 @@ public class Agent extends AgentBase {
 	}
 
 	/**
-	 * Dumps the current execution data, converts it and writes it to the {@link #store}. Logs any errors, never throws
-	 * an exception.
+	 * Dumps the current execution data, converts it, writes it to the {@link #outputDirectory} and uploads it if an
+	 * uploader is configured. Logs any errors, never throws an exception.
 	 */
 	private void dumpReport() {
 		logger.debug("Starting dump");
@@ -141,14 +149,15 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		String xml;
+		CoverageFile coverageFile;
+		long currentTime = System.currentTimeMillis();
+		Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			xml = generator.convert(dump);
+			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
 			return;
 		}
-
-		store.store(xml);
+		uploader.upload(coverageFile);
 	}
 }
