@@ -234,9 +234,6 @@ public class AgentOptions {
 		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
 
-		validator.isFalse(!useTestwiseCoverageMode() && httpServerPort != null,
-				"You use 'http-server-port' but did not set 'mode' to 'TESTWISE'!");
-
 		validator.isFalse(!useTestwiseCoverageMode() && coverageViaHttp,
 				"You use 'coverage-via-http' but did not set 'mode' to 'TESTWISE'!");
 
@@ -346,11 +343,12 @@ public class AgentOptions {
 		return new LocalDiskUploader();
 	}
 
-	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation)
-			throws UploaderException {
-
+	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
-				commit -> new TeamscaleUploader(teamscaleServer), outputDirectory);
+				commit -> {
+					teamscaleServer.commit = commit;
+					return new TeamscaleUploader(teamscaleServer);
+				}, outputDirectory);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return store;

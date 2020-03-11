@@ -76,6 +76,20 @@ public class StringUtils {
 	}
 
 	/**
+	 * Remove prefix from a string.
+	 *
+	 * @param string the string
+	 * @param prefix the prefix
+	 * @return the string without the prefix or the original string if it does not start with the prefix.
+	 */
+	public static String stripPrefix(String string, String prefix) {
+		if (string.startsWith(prefix)) {
+			return string.substring(prefix.length());
+		}
+		return string;
+	}
+
+	/**
 	 * Remove suffix from a string.
 	 *
 	 * @param string the string

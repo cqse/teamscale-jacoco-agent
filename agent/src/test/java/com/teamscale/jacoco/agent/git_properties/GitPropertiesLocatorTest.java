@@ -37,4 +37,14 @@ public class GitPropertiesLocatorTest {
 				() -> GitPropertiesLocator.parseGitPropertiesJarEntry("test", gitProperties, new File("test.jar")))
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
+
+	@Test
+	public void testGitPropertiesWithOrigin() throws InvalidGitPropertiesException {
+		Properties gitProperties = new Properties();
+		gitProperties.put("git.commit.time", "2020-01-01T00:00:00+0000");
+		gitProperties.put("git.branch", "origin/master");
+		CommitDescriptor commitDescriptor = GitPropertiesLocator
+				.parseGitPropertiesJarEntry("test", gitProperties, new File("test.jar"));
+		assertThat(commitDescriptor.branchName).isEqualTo("master");
+	}
 }
