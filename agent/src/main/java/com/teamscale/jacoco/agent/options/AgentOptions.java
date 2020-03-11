@@ -338,7 +338,7 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Creates an uplaoder for the coverage XMLs.
+	 * Creates an uploader for the coverage XMLs.
 	 */
 	public IUploader createUploader(Instrumentation instrumentation) throws UploaderException {
 		if (uploadUrl != null) {
