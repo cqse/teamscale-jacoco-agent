@@ -1,3 +1,5 @@
+package com.teamscale.tia;
+
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.TestExecution;
