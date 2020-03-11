@@ -15,3 +15,5 @@ include ':teamscale-gradle-plugin'
 include ':teamscale-client'
 include ':sample-app'
 include ':impacted-test-engine'
+include 'agent-client'
+
