@@ -35,9 +35,6 @@ public class Agent extends AgentBase {
 	/** Path parameter placeholder used in the http requests. */
 	private static final String PARTITION_PARAMETER = ":partition";
 
-	/** Path to write the converted coverage files to. **/
-	private final Path outputDirectory;
-
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
 
@@ -54,8 +51,6 @@ public class Agent extends AgentBase {
 
 		uploader = options.createUploader(instrumentation);
 		logger.info("Upload method: {}", uploader.describe());
-
-		this.outputDirectory = options.getOutputDirectory();
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
@@ -126,8 +121,8 @@ public class Agent extends AgentBase {
 	}
 
 	/**
-	 * Dumps the current execution data, converts it, writes it to the {@link #outputDirectory} and uploads it if an
-	 * uploader is configured. Logs any errors, never throws an exception.
+	 * Dumps the current execution data, converts it, writes it to the output directory defined in {@link #options} and
+	 * uploads it if an uploader is configured. Logs any errors, never throws an exception.
 	 */
 	private void dumpReport() {
 		logger.debug("Starting dump");
@@ -151,7 +146,7 @@ public class Agent extends AgentBase {
 
 		CoverageFile coverageFile;
 		long currentTime = System.currentTimeMillis();
-		Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
+		Path outputPath = options.getOutputDirectory().resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
