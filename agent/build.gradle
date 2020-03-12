@@ -82,6 +82,9 @@ shadowJar {
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
 	target = tasks.shadowJar
+	onlyIf {
+		!project.hasProperty("debug")
+	}
 }
 
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
