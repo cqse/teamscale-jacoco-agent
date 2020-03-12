@@ -1,7 +1,6 @@
 We use [semantic versioning][semver]
 
 # Next Release
-- [fix] Debuggable run config for IntelliJ
 
 # 15.4.0
 - [fix] `git.properties` commit was not used for upload
