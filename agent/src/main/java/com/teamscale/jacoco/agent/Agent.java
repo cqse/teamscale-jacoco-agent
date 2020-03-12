@@ -13,6 +13,7 @@ import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import spark.Request;
 import spark.Response;
 
@@ -118,6 +119,15 @@ public class Agent extends AgentBase {
 		if (options.shouldDumpOnExit()) {
 			dumpReport();
 		}
+
+		try {
+			com.teamscale.jacoco.agent.util.FileSystemUtils.deleteDirectoryIfEmpty(options.getOutputDirectory());
+		} catch (IOException e) {
+			logger.info("Could not delete emtpy output directory {}. " +
+							"This directory was created inside the configured output directory to be able to " +
+							"distinguish between different runs of the profiled JVM. You may delete it manually.",
+					options.getOutputDirectory(), e);
+		}
 	}
 
 	/**
@@ -147,7 +157,9 @@ public class Agent extends AgentBase {
 		CoverageFile coverageFile;
 		long currentTime = System.currentTimeMillis();
 		Path outputPath = options.getOutputDirectory().resolve("jacoco-" + currentTime + ".xml");
+
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
+			FileSystemUtils.ensureParentDirectoryExists(outputPath.toFile());
 			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
