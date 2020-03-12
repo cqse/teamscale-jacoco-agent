@@ -9,7 +9,6 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.util.FileSystemUtils;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -123,14 +122,6 @@ public class Agent extends AgentBase {
 		}
 		if (options.shouldDumpOnExit()) {
 			dumpReport();
-		}
-		try {
-			FileSystemUtils.deleteDirectoryIfEmpty(outputDirectory);
-		} catch (IOException e) {
-			logger.info("Could not delete emtpy output directory {}. " +
-							"This directory was created inside the configured output directory to be able to " +
-							"distinguish between different runs of the profiled JVM. You may delete it manually.",
-					outputDirectory, e);
 		}
 	}
 

@@ -1,18 +1,19 @@
 package com.teamscale.jacoco.agent;
 
-import static spark.Spark.port;
-import static spark.Spark.stop;
-
-import java.lang.instrument.Instrumentation;
-
-import org.jacoco.agent.rt.RT;
-import org.slf4j.Logger;
-
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
+import com.teamscale.jacoco.agent.util.FileSystemUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import org.jacoco.agent.rt.RT;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.lang.instrument.Instrumentation;
+
+import static spark.Spark.port;
+import static spark.Spark.stop;
 
 /**
  * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
@@ -100,10 +101,26 @@ public abstract class AgentBase {
 			if (options.getHttpServerPort() != null) {
 				stop();
 			}
-			prepareShutdown();
+			prepareShutdownAndCleanupOutputFolder();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
 			loggingResources.close();
 		}));
+	}
+
+	/**
+	 * Calls {@link #prepareShutdown()} of inheriting classes and deletes empty output directories and
+	 */
+	private void prepareShutdownAndCleanupOutputFolder() {
+		prepareShutdown();
+
+		try {
+			FileSystemUtils.deleteDirectoryIfEmpty(options.getOutputDirectory());
+		} catch (IOException e) {
+			logger.info("Could not delete emtpy output directory {}. " +
+							"This directory was created inside the configured output directory to be able to " +
+							"distinguish between different runs of the profiled JVM. You may delete it manually.",
+					options.getOutputDirectory(), e);
+		}
 	}
 
 	/** Called when the shutdown hook is triggered. */
