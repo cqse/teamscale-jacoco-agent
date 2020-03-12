@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.PrioritizableTestCluster;
@@ -31,6 +32,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestwiseCoverageReport.class);
+	private final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClustersJsonAdapter = new Moshi.Builder()
+			.build().adapter(Types.newParameterizedType(List.class, PrioritizableTestCluster.class));
 
 	private final AgentOptions agentOptions;
 	private final JaCoCoTestwiseReportGenerator testwiseReportGenerator;
@@ -75,26 +78,20 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	@Override
 	public String testRunStart(List<ClusteredTestDetails> availableTests,
 							   boolean includeNonImpactedTests, Long baseline) throws IOException {
-		Response<List<PrioritizableTestCluster>> impactedTestsResponse = client
+		Response<List<PrioritizableTestCluster>> response = client
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
-		if (impactedTestsResponse.isSuccessful()) {
-			ResponseBody rawBody = impactedTestsResponse.raw().body();
-			if (rawBody == null) {
-				throw new IOException("Request to Teamscale to get impacted tests failed." +
-						" Teamscale did not return a response body. This is a Teamscale bug, please report it.");
-			}
-
-			return rawBody.string();
+		if (response.isSuccessful()) {
+			return prioritizableTestClustersJsonAdapter.toJson(response.body());
 		} else {
-			ResponseBody errorBody = impactedTestsResponse.errorBody();
+			ResponseBody errorBody = response.errorBody();
 			String responseBody = "<no response body provided>";
 			if (errorBody != null) {
 				responseBody = errorBody.string();
 			}
 			throw new IOException(
-					"Request to Teamscale to get impacted tests failed with HTTP status " + impactedTestsResponse
-							.code() + " " + impactedTestsResponse.message() + ". Response body: " + responseBody);
+					"Request to Teamscale to get impacted tests failed with HTTP status " + response
+							.code() + " " + response.message() + ". Response body: " + responseBody);
 		}
 	}
 

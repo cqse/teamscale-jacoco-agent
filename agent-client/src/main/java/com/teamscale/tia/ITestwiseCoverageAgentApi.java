@@ -7,6 +7,7 @@ import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -41,6 +42,7 @@ public interface ITestwiseCoverageAgentApi {
 	/** Test run finished. Generate report and upload to Teamscale. */
 	@POST("testrun/end")
 	Call<ResponseBody> testRunFinished();
+	// TODO (FS) rename to tia-client?
 
 	/**
 	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
@@ -49,6 +51,7 @@ public interface ITestwiseCoverageAgentApi {
 	static ITestwiseCoverageAgentApi createService(HttpUrl baseUrl) {
 		Retrofit retrofit = new Retrofit.Builder()
 				.baseUrl(baseUrl)
+				.addConverterFactory(MoshiConverterFactory.create())
 				.build();
 		return retrofit.create(ITestwiseCoverageAgentApi.class);
 	}
