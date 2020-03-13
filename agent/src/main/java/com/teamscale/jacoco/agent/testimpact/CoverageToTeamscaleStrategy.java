@@ -16,6 +16,7 @@ import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
@@ -82,7 +85,9 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
 		if (response.isSuccessful()) {
-			return prioritizableTestClustersJsonAdapter.toJson(response.body());
+			String json = prioritizableTestClustersJsonAdapter.toJson(response.body());
+			logger.debug("Teamscale suggested these tests: {}", json);
+			return json;
 		} else {
 			ResponseBody errorBody = response.errorBody();
 			String responseBody = "<no response body provided>";
@@ -97,6 +102,11 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
 	@Override
 	public void testRunEnd() throws IOException {
+		logger.debug("Creating coverage for available tests `{}`, test executions `{}` and coverage for `{}`",
+				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
+				testExecutions.stream().map(TestExecution::getUniformPath).collect(toList()),
+				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
+
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
 				// TODO (FS) should these be the available tests or the executed impacted tests?
 				.createFrom(new ArrayList<>(availableTests), testwiseCoverage.getTests(), testExecutions);
