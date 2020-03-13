@@ -20,6 +20,8 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +30,7 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
+import static spark.Spark.exception;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -74,9 +77,22 @@ public class TestwiseCoverageAgent extends AgentBase {
 		post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
 		post("/testrun/start", this::handleTestRunStart);
 		post("/testrun/end", this::handleTestRunEnd);
+		exception(Exception.class, this::handleThrowable);
 	}
 
-	private String handleTestRunStart(Request request, Response response) {
+	private void handleThrowable(Exception exception, Request request, Response response) {
+		logger.error("Request failed with an exception", exception);
+
+		response.status(SC_INTERNAL_SERVER_ERROR);
+		StringWriter stringWriter = new StringWriter();
+		try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+			exception.printStackTrace(printWriter);
+		}
+		response.body("Request failed with an exception in the agent: " + exception.getMessage() + "\n" + stringWriter
+				.toString());
+	}
+
+	private String handleTestRunStart(Request request, Response response) throws IOException {
 		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("includeNonImpacted"));
 
 		String baselineParameter = request.params("baseline");
@@ -101,26 +117,13 @@ public class TestwiseCoverageAgent extends AgentBase {
 			return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
 		}
 
-		try {
-			String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);
-			response.type(APPLICATION_JSON.asString());
-			return responseBody;
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			response.status(SC_INTERNAL_SERVER_ERROR);
-			return e.getMessage();
-		}
+		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);
+		response.type(APPLICATION_JSON.asString());
+		return responseBody;
 	}
 
-	private String handleTestRunEnd(Request request, Response response) {
-		try {
-			testEventHandler.testRunEnd();
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			response.status(SC_INTERNAL_SERVER_ERROR);
-			return e.getMessage();
-		}
-
+	private String handleTestRunEnd(Request request, Response response) throws IOException {
+		testEventHandler.testRunEnd();
 		response.status(SC_NO_CONTENT);
 		return "";
 	}
