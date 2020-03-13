@@ -81,6 +81,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	@Override
 	public String testRunStart(List<ClusteredTestDetails> availableTests,
 							   boolean includeNonImpactedTests, Long baseline) throws IOException {
+		this.availableTests = availableTests;
+		
 		Response<List<PrioritizableTestCluster>> response = client
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
@@ -114,10 +116,6 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 		String json = testwiseCoverageReportJsonAdapter.toJson(report);
 		client.uploadReport(EReportFormat.TESTWISE_COVERAGE, json, agentOptions.getTeamscaleServerOptions().commit,
 				agentOptions.getTeamscaleServerOptions().partition, agentOptions.getTeamscaleServerOptions().message);
-	}
-
-	public void setAvailableTests(List<ClusteredTestDetails> availableTests) {
-		this.availableTests = availableTests;
 	}
 
 }
