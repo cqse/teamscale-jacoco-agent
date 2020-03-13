@@ -42,7 +42,6 @@ public interface ITestwiseCoverageAgentApi {
 	/** Test run finished. Generate report and upload to Teamscale. */
 	@POST("testrun/end")
 	Call<ResponseBody> testRunFinished();
-	// TODO (FS) rename to tia-client?
 
 	/**
 	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
