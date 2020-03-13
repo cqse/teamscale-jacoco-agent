@@ -242,6 +242,7 @@ public class AgentOptions {
 		validator.isFalse(!useTestwiseCoverageMode() && httpServerPort != null,
 				"You use 'http-server-port' but did not set 'mode' to 'TESTWISE'!");
 
+		// TODO (FS) additional option checks
 		validator.isFalse(!useTestwiseCoverageMode() && coverageViaHttp,
 				"You use 'coverage-via-http' but did not set 'mode' to 'TESTWISE'!");
 
@@ -302,7 +303,7 @@ public class AgentOptions {
 
 	/** Sets output to none for normal mode and destination file in testwise coverage mode */
 	private String getModeSpecificOptions() {
-		if (useTestwiseCoverageMode() && !coverageViaHttp) {
+		if (useTestwiseCoverageMode() && !coverageViaHttp && !coverageToTeamscale) {
 			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
 			return "output=none";
