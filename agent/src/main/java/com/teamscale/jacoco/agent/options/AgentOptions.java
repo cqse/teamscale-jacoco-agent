@@ -262,7 +262,7 @@ public class AgentOptions {
 		}
 
 		// Don't dump class files in testwise mode when coverage is written to an exec file
-		boolean needsClassFiles = mode == EMode.NORMAL || coverageViaHttp;
+		boolean needsClassFiles = mode == EMode.NORMAL || coverageViaHttp || coverageToTeamscale;
 		if (classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
