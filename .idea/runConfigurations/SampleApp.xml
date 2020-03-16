@@ -5,7 +5,7 @@
     <option name="VM_PARAMETERS" value="-javaagent:agent/build/libs/teamscale-jacoco-agent.jar=config-file=sample-debugging-app/jacocoagent.properties" />
     <method v="2">
       <option name="Make" enabled="true" />
-      <option name="Gradle.BeforeRunTask" enabled="true" tasks="shadowJar" externalProjectPath="$PROJECT_DIR$/agent" vmOptions="" scriptParameters="-Pdebug=true --rerun-tasks" />
+      <option name="Gradle.BeforeRunTask" enabled="true" tasks="shadowJar" externalProjectPath="$PROJECT_DIR$/agent" vmOptions="" scriptParameters="-Pdebug=true" />
     </method>
   </configuration>
 </component>
