@@ -59,6 +59,9 @@ test {
 mainClassName = 'com.teamscale.jacoco.agent.Main'
 
 shadowJar {
+	// Needed as a workaround for https://github.com/johnrengelman/shadow/issues/521
+	inputs.property("debug", project.hasProperty("debug"))
+
 	baseName = 'teamscale-jacoco-agent'
 	classifier = null
 	// since this is used as an agent, we want it to always have the same name
@@ -82,6 +85,9 @@ shadowJar {
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
 	target = tasks.shadowJar
+	onlyIf {
+		!project.hasProperty("debug")
+	}
 }
 
 tasks.shadowJar.dependsOn tasks.relocateShadowJar

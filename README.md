@@ -18,6 +18,10 @@
 * Command line: `./gradlew assemble`
 * Local docker build: `docker build -f agent/src/docker/Dockerfile .`
 
+### Debug locally
+For IntelliJ, there is a run config `SampleApp` which profiles the included `sample-debugging-app` and can be used to debug the agent. This run config omits relocating packages in the shadow jar because with relocating, the package names in the jar would not match with the ones IntelliJ knows from the code and so debugging would not work. 
+The agent is configured in the config file `sample-debugging-app/jacocoagent.properties`. By default, no upload is configured but the file includes all required options to upload to Teamscale, they are just commented out. Feel free to adapt it to your needs.
+
 ### Debugging the Gradle plugin
 
 * increase the plugin version in `build.gradle` and in `BuildVersion.kt`
