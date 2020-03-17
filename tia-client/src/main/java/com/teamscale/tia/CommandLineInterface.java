@@ -76,11 +76,6 @@ public class CommandLineInterface {
 	}
 
 	private void endTest() throws Exception {
-		Long duration = parseAndRemoveLongParameter("duration");
-		if (duration == null) {
-			duration = 0L;
-		}
-
 		if (arguments.size() < 2) {
 			throw new RuntimeException("You must provide the uniform path of the test that is about to be started" +
 					" as the first argument of the endTest command and the test result as the second.");
@@ -90,7 +85,8 @@ public class CommandLineInterface {
 
 		String message = readStdin();
 
-		TestExecution execution = new TestExecution(uniformPath, duration, result, message);
+		// the agent already records test duration, so we can simply provide a dummy value here
+		TestExecution execution = new TestExecution(uniformPath, 0L, result, message);
 		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");

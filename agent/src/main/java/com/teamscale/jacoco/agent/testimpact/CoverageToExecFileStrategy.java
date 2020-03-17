@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import org.slf4j.Logger;
@@ -13,21 +14,15 @@ import java.io.IOException;
  */
 public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 
-	/** The logger. */
-	protected final Logger logger = LoggingUtils.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Helper for writing test executions to disk. */
 	private final TestExecutionWriter testExecutionWriter;
 
-	public CoverageToExecFileStrategy(TestExecutionWriter testExecutionWriter,
-									  JacocoRuntimeController controller) {
-		super(controller);
+	public CoverageToExecFileStrategy(TestExecutionWriter testExecutionWriter, JacocoRuntimeController controller,
+									  AgentOptions agentOptions) {
+		super(agentOptions, controller);
 		this.testExecutionWriter = testExecutionWriter;
-	}
-
-	@Override
-	public void testStart(String test) {
-		super.testStart(test);
 	}
 
 	@Override

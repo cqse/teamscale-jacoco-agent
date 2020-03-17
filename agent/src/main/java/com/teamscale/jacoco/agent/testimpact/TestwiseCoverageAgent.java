@@ -63,9 +63,9 @@ public class TestwiseCoverageAgent extends AgentBase {
 		if (options.shouldDumpCoverageViaHttp()) {
 			testEventHandler = new CoverageViaHttpStrategy(options, controller);
 		} else if (options.shouldUploadTestWiseCoverageToTeamscale()) {
-			testEventHandler = new CoverageToTeamscaleStrategy(options, controller);
+			testEventHandler = new CoverageToTeamscaleStrategy(controller, options);
 		} else {
-			testEventHandler = new CoverageToExecFileStrategy(testExecutionWriter, controller);
+			testEventHandler = new CoverageToExecFileStrategy(testExecutionWriter, controller, options);
 		}
 	}
 

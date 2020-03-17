@@ -23,7 +23,7 @@ public class TestwiseCoverageReportBuilder {
 	 * merged.
 	 */
 	public static TestwiseCoverageReport createFrom(
-			Collection<TestDetails> testDetailsList,
+			Collection<? extends TestDetails> testDetailsList,
 			Collection<TestCoverageBuilder> testCoverage,
 			Collection<TestExecution> testExecutions
 	) {

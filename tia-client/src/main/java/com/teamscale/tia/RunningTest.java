@@ -17,7 +17,6 @@ public class RunningTest {
 
 	private final PrioritizableTest test;
 	private final ITestwiseCoverageAgentApi api;
-	private final long startTime = System.currentTimeMillis();
 
 	public RunningTest(PrioritizableTest test, ITestwiseCoverageAgentApi api) {
 		this.test = test;
@@ -36,13 +35,13 @@ public class RunningTest {
 	 *                                         informing the coverage agent about further test start and end events.
 	 */
 	public void endTestWithTestRunnerException(Throwable throwable) throws AgentHttpRequestFailedException {
-		long endTime = System.currentTimeMillis();
-
 		StringWriter writer = new StringWriter();
 		try (PrintWriter printWriter = new PrintWriter(writer)) {
 			throwable.printStackTrace(printWriter);
 		}
-		TestExecution execution = new TestExecution(test.uniformPath, endTime - startTime,
+
+		// the agent already records test duration, so we can simply provide a dummy value here
+		TestExecution execution = new TestExecution(test.uniformPath, 0L,
 				ETestExecutionResult.ERROR, throwable.getMessage() + "\n" + writer.toString());
 
 		AgentCommunicationUtils.handleRequestError(api.testFinished(test.uniformPath, execution),
@@ -61,8 +60,8 @@ public class RunningTest {
 	 *                                         informing the coverage agent about further test start and end events.
 	 */
 	public void endTestNormally(TestRun.TestResultWithMessage result) throws AgentHttpRequestFailedException {
-		long endTime = System.currentTimeMillis();
-		TestExecution execution = new TestExecution(test.uniformPath, endTime - startTime, result.result,
+		// the agent already records test duration, so we can simply provide a dummy value here
+		TestExecution execution = new TestExecution(test.uniformPath, 0L, result.result,
 				result.message);
 		AgentCommunicationUtils.handleRequestError(api.testFinished(test.uniformPath, execution),
 				"Failed to end coverage recording for test case " + test.uniformPath +

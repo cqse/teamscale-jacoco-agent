@@ -28,19 +28,14 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class)
 			.indent("\t");
 
-	public CoverageViaHttpStrategy(AgentOptions options,
+	public CoverageViaHttpStrategy(AgentOptions agentOptions,
 								   JacocoRuntimeController controller) throws CoverageGenerationException {
-		super(controller);
+		super(agentOptions, controller);
 		testwiseReportGenerator = new JaCoCoTestwiseReportGenerator(
-				options.getClassDirectoriesOrZips(),
-				options.getLocationIncludeFilter(),
-				options.getDuplicateClassFileBehavior(),
+				agentOptions.getClassDirectoriesOrZips(),
+				agentOptions.getLocationIncludeFilter(),
+				agentOptions.getDuplicateClassFileBehavior(),
 				LoggingUtils.wrap(logger));
-	}
-
-	@Override
-	public void testStart(String test) {
-		super.testStart(test);
 	}
 
 	@Override
