@@ -69,9 +69,16 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
 	@Override
 	public void testRunEnd() throws IOException {
+		List<String> executionUniformPaths = testExecutions.stream().map(execution -> {
+			if (execution == null) {
+				return null;
+			} else {
+				return execution.getUniformPath();
+			}
+		}).collect(toList());
 		logger.debug("Creating coverage for available tests `{}`, test executions `{}` and coverage for `{}`",
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
-				testExecutions.stream().map(TestExecution::getUniformPath).collect(toList()),
+				executionUniformPaths,
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
 
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder

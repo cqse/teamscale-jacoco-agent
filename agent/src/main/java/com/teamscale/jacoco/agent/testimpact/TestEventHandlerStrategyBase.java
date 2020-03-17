@@ -55,15 +55,18 @@ public abstract class TestEventHandlerStrategyBase {
 	 * Called when the test with the given name finished.
 	 *
 	 * @param test          Uniform path of the test
-	 * @param testExecution A test execution object holding the test result and error message. May be null if non is
+	 * @param testExecution A test execution object holding the test result and error message. May be null if none is
 	 *                      given in the request.
 	 * @return The body of the response. <code>null</code> indicates "204 No content". Non-null results will be treated
-	 * as json response.
+	 * as a json response.
 	 */
 	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
-		if (testExecution != null && startTimestamp != -1) {
-			long endTimestamp = System.currentTimeMillis();
-			testExecution.setDurationMillis(endTimestamp - startTimestamp);
+		if (testExecution != null) {
+			testExecution.setUniformPath(test);
+			if (startTimestamp != -1) {
+				long endTimestamp = System.currentTimeMillis();
+				testExecution.setDurationMillis(endTimestamp - startTimestamp);
+			}
 		}
 		return null;
 	}
