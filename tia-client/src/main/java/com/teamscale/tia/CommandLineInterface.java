@@ -11,6 +11,7 @@ import okhttp3.HttpUrl;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,10 +23,16 @@ import static java.util.stream.Collectors.joining;
  */
 public class CommandLineInterface {
 
-	private static final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsJsonAdapter =
+	public static class InvalidCommandLineException extends RuntimeException {
+		public InvalidCommandLineException(String message) {
+			super(message);
+		}
+	}
+
+	private final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsJsonAdapter =
 			new Moshi.Builder().build().adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
 
-	private static final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClusterJsonAdapter =
+	private final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClusterJsonAdapter =
 			new Moshi.Builder().build().adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
 
 	private final List<String> arguments;
@@ -35,7 +42,7 @@ public class CommandLineInterface {
 	public CommandLineInterface(String[] arguments) {
 		this.arguments = new ArrayList<>(Arrays.asList(arguments));
 		if (arguments.length < 2) {
-			throw new RuntimeException(
+			throw new InvalidCommandLineException(
 					"You must provide at least two arguments: the agent's URL and the command to execute");
 		}
 
@@ -45,6 +52,7 @@ public class CommandLineInterface {
 		command = this.arguments.remove(0);
 	}
 
+	/** Entry point. */
 	public static void main(String[] arguments) throws Exception {
 		new CommandLineInterface(arguments).runCommand();
 	}
@@ -64,7 +72,7 @@ public class CommandLineInterface {
 				endTestRun();
 				break;
 			default:
-				throw new RuntimeException(
+				throw new InvalidCommandLineException(
 						"Unknown command '" + command + "'. Should be one of startTestRun, startTest, endTest," +
 								" endTestRun");
 		}
@@ -77,8 +85,9 @@ public class CommandLineInterface {
 
 	private void endTest() throws Exception {
 		if (arguments.size() < 2) {
-			throw new RuntimeException("You must provide the uniform path of the test that is about to be started" +
-					" as the first argument of the endTest command and the test result as the second.");
+			throw new InvalidCommandLineException(
+					"You must provide the uniform path of the test that is about to be started" +
+							" as the first argument of the endTest command and the test result as the second.");
 		}
 		String uniformPath = arguments.remove(0);
 		ETestExecutionResult result = ETestExecutionResult.valueOf(arguments.remove(0).toUpperCase());
@@ -94,8 +103,9 @@ public class CommandLineInterface {
 
 	private void startTest() throws Exception {
 		if (arguments.size() < 1) {
-			throw new RuntimeException("You must provide the uniform path of the test that is about to be started" +
-					" as the first argument of the startTest command");
+			throw new InvalidCommandLineException(
+					"You must provide the uniform path of the test that is about to be started" +
+							" as the first argument of the startTest command");
 		}
 		String uniformPath = arguments.remove(0);
 		AgentCommunicationUtils.handleRequestError(api.testStarted(uniformPath),
@@ -116,7 +126,8 @@ public class CommandLineInterface {
 	}
 
 	private String readStdin() {
-		return new BufferedReader(new InputStreamReader(System.in)).lines().collect(joining("\n"));
+		return new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8)).lines()
+				.collect(joining("\n"));
 	}
 
 	private Long parseAndRemoveLongParameter(String name) {

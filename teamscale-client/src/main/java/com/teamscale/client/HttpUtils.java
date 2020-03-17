@@ -119,6 +119,9 @@ public class HttpUtils {
 
 	}
 
+	/**
+	 * Returns the error body of the given response or a replacement string in case it is null.
+	 */
 	public static <T> String getErrorBodyStringSafe(Response<T> response) throws IOException {
 		ResponseBody errorBody = response.errorBody();
 		if (errorBody == null) {

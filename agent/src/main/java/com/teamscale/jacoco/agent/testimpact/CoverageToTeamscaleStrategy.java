@@ -58,6 +58,13 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
+	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
+							   Long baseline) throws IOException {
+		this.availableTests = availableTests;
+		return super.testRunStart(availableTests, includeNonImpactedTests, baseline);
+	}
+
+	@Override
 	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
 		super.testEnd(test, testExecution);
 
