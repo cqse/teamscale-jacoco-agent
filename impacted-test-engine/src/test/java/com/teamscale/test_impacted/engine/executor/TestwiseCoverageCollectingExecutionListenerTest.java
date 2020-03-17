@@ -2,13 +2,12 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
+import com.teamscale.tia.ITestwiseCoverageAgentApi;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
-import org.mockito.Mockito;
 import retrofit2.Call;
 
 import java.util.List;
@@ -20,6 +19,8 @@ import static com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor.t
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.platform.engine.TestExecutionResult.successful;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -39,6 +40,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 
 	private final UniqueId rootId = UniqueId.forEngine("dummy");
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void testInteractionWithListenersAndCoverageApi() {
 		UniqueId testClassId = rootId.append("TEST_CONTAINER", "MyClass");
@@ -61,8 +63,8 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		when(resolver.getUniformPath(regularSkippedTestCase))
 				.thenReturn(Optional.of("MyClass/regularSkippedTestCase()"));
 		when(resolver.getClusterId(regularSkippedTestCase)).thenReturn(Optional.of("MyClass"));
-		when(mockApi.testStarted(Mockito.anyString())).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(Mockito.anyString())).thenReturn(mock(Call.class));
+		when(mockApi.testStarted(anyString())).thenReturn(mock(Call.class));
+		when(mockApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
 
 		// Start engine and class.
 		executionListener.executionStarted(testRoot);
@@ -75,7 +77,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(mockApi).testStarted("MyClass/impactedTestCase()");
 		verify(executionListenerMock).executionStarted(impactedTestCase);
 		executionListener.executionFinished(impactedTestCase, successful());
-		verify(mockApi).testFinished("MyClass/impactedTestCase()");
+		verify(mockApi).testFinished("MyClass/impactedTestCase()", any());
 		verify(executionListenerMock).executionFinished(impactedTestCase, successful());
 
 		// Non impacted test case is skipped.
@@ -98,15 +100,12 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		List<TestExecution> testExecutions = executionListener.getTestExecutions();
 
 		assertThat(testExecutions).hasSize(2);
-		assertThat(testExecutions).allSatisfy(testExecution -> {
-			assertThat(testExecution.getUniformPath()).isNotEqualTo("MyClass/nonImpactedTestCase()");
-		});
-		assertThat(testExecutions).anySatisfy(testExecution -> {
-			assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/impactedTestCase()");
-		});
-		assertThat(testExecutions).anySatisfy(testExecution -> {
-			assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/regularSkippedTestCase()");
-		});
+		assertThat(testExecutions).allSatisfy(testExecution ->
+				assertThat(testExecution.getUniformPath()).isNotEqualTo("MyClass/nonImpactedTestCase()"));
+		assertThat(testExecutions).anySatisfy(testExecution ->
+				assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/impactedTestCase()"));
+		assertThat(testExecutions).anySatisfy(testExecution ->
+				assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/regularSkippedTestCase()"));
 	}
 
 	@Test

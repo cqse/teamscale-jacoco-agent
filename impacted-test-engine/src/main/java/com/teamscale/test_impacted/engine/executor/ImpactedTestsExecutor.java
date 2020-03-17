@@ -2,8 +2,8 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
+import com.teamscale.tia.ITestwiseCoverageAgentApi;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;

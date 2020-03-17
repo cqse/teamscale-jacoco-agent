@@ -15,8 +15,6 @@ import retrofit2.http.Query;
 
 import java.util.List;
 
-// TODO (FS) resolve duplication with impacted test engine
-
 /** {@link Retrofit} API specification for the JaCoCo agent in test-wise coverage mode. */
 public interface ITestwiseCoverageAgentApi {
 
