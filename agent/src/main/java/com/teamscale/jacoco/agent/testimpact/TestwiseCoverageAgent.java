@@ -81,8 +81,11 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	private void handleThrowable(Exception exception, Request request, Response response) {
-		logger.error("Request failed with an exception", exception);
+		logger.error("Request to {} failed with an exception", request.pathInfo(), exception);
 
+		// we want to print stack traces to make it easier to debug problems in the agent. Otherwise, end users
+		// only see "500 - Internal server error". This is especially cumbersome when talking to the agent through
+		// the TIA Java library
 		response.status(SC_INTERNAL_SERVER_ERROR);
 		StringWriter stringWriter = new StringWriter();
 		try (PrintWriter printWriter = new PrintWriter(stringWriter)) {

@@ -17,7 +17,7 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.List;
 
-/** Base class for strategies to handle test start and end events. */
+/** Base class for strategies to handle test events. */
 public abstract class TestEventHandlerStrategyBase {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -26,7 +26,7 @@ public abstract class TestEventHandlerStrategyBase {
 	protected final JacocoRuntimeController controller;
 
 	/** The timestamp at which the /test/start endpoint has been called last time. */
-	private long startTimestamp;
+	private long startTimestamp = -1;
 
 	/** The options the user has configured for the agent. */
 	protected final AgentOptions agentOptions;
@@ -61,13 +61,22 @@ public abstract class TestEventHandlerStrategyBase {
 	 * as json response.
 	 */
 	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
-		if (testExecution != null) {
+		if (testExecution != null && startTimestamp != -1) {
 			long endTimestamp = System.currentTimeMillis();
 			testExecution.setDurationMillis(endTimestamp - startTimestamp);
 		}
 		return null;
 	}
 
+	/**
+	 * Retrieves impacted tests from Teamscale, if a {@link #teamscaleClient} has been configured.
+	 *
+	 * @param availableTests          List of all available tests that could be run.
+	 * @param includeNonImpactedTests If this is true, only performs prioritization, no selection.
+	 * @param baseline                Optional baseline for the considered changes.
+	 * @throws IOException                   if the request to Teamscale failed.
+	 * @throws UnsupportedOperationException if the user did not properly configure the {@link #teamscaleClient}.
+	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
 							   Long baseline) throws IOException {
 		if (teamscaleClient == null) {
@@ -95,7 +104,12 @@ public abstract class TestEventHandlerStrategyBase {
 		}
 	}
 
+	/**
+	 * Signals that the test run has ended. Strategies that support this can upload a report via the {@link
+	 * #teamscaleClient} here.
+	 */
 	public void testRunEnd() throws IOException {
-		// base implementation does nothing
+		throw new UnsupportedOperationException("You configured the agent in a mode that does not support uploading " +
+				"reports to Teamscale. Please configure 'teamscale-testwise-upload'.");
 	}
 }
