@@ -45,7 +45,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 		super(agentOptions, controller);
 
 		if (agentOptions.getTeamscaleServerOptions().commit == null) {
-			throw new RuntimeException("You must provide a commit via the agent's options." +
+			throw new UnsupportedOperationException("You must provide a commit via the agent's options." +
 					" Auto-detecting the git.properties does not work since we need the commit before any code" +
 					" has been profiled in order to obtain the prioritized test cases from the TIA.");
 		}

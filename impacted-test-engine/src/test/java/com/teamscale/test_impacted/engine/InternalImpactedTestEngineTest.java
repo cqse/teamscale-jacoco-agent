@@ -150,8 +150,8 @@ class InternalImpactedTestEngineTest {
 		when(impactedTestsProvider.getImpactedTestsFromTeamscale(any())).thenReturn(
 				createList(
 						ImpactedTestsSetup.FirstTestClassDiscovery.getImpactedTestClusters(),
-						ImpactedTestsSetup.IgnoredTestClassDiscovery.getImpactedTestClsuters(),
-						ImpactedTestsSetup.SecondTestClassDiscovery.getImpactedTestClsuters()));
+						ImpactedTestsSetup.IgnoredTestClassDiscovery.getImpactedTestClusters(),
+						ImpactedTestsSetup.SecondTestClassDiscovery.getImpactedTestClusters()));
 
 		internalImpactedTestEngine.execute(executionRequest);
 
@@ -271,7 +271,7 @@ class InternalImpactedTestEngineTest {
 			private static final TestDescriptor ignoredTestClass = testContainer(ignoredTestClassId, impactedTestCase2);
 			private static final TestDescriptor testEngineRoot = testContainer(engineRootId, ignoredTestClass);
 
-			private static List<PrioritizableTestCluster> getImpactedTestClsuters() {
+			private static List<PrioritizableTestCluster> getImpactedTestClusters() {
 				return singletonList(new PrioritizableTestCluster("IgnoredTestClass",
 						singletonList(new PrioritizableTest("IgnoredTestClass/impactedTestCase2()"))));
 			}
@@ -289,7 +289,7 @@ class InternalImpactedTestEngineTest {
 			private static final TestDescriptor testEngineRoot = testContainer(engineRootId, secondTestClass);
 
 
-			private static List<PrioritizableTestCluster> getImpactedTestClsuters() {
+			private static List<PrioritizableTestCluster> getImpactedTestClusters() {
 				return singletonList(new PrioritizableTestCluster("SecondTestClass",
 						asList(new PrioritizableTest("SecondTestClass/impactedTestCase3()"),
 								new PrioritizableTest("SecondTestClass/skippedImpactedTestCaseId()"))));

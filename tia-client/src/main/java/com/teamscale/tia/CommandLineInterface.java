@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.joining;
  */
 public class CommandLineInterface {
 
-	public static class InvalidCommandLineException extends RuntimeException {
+	private static class InvalidCommandLineException extends RuntimeException {
 		public InvalidCommandLineException(String message) {
 			super(message);
 		}
