@@ -6,10 +6,23 @@ import retrofit2.Response;
 
 import java.io.IOException;
 
-public class AgentCommunicationUtils {
+/**
+ * Utilities for performing requests to the agent.
+ */
+class AgentCommunicationUtils {
 
-	static <T> T handleRequestError(Call<T> request,
-									String errorMessage) throws AgentHttpRequestFailedException {
+	/**
+	 * Performs the given request and handles common errors (e.g. network failures, internal exceptions in the agent).
+	 * In case of network problems, retries the request once.
+	 */
+	static <T> T handleRequestError(Call<T> request, String errorMessage)
+			throws AgentHttpRequestFailedException {
+		return handleRequestError(request, errorMessage, true);
+	}
+
+	private static <T> T handleRequestError(Call<T> request, String errorMessage, boolean retryOnce)
+			throws AgentHttpRequestFailedException {
+
 		try {
 			Response<T> response = request.execute();
 			if (response.isSuccessful()) {
@@ -25,8 +38,20 @@ public class AgentCommunicationUtils {
 					errorMessage + ". The agent responded with HTTP status " + response.code() + " " + response
 							.message() + ". Response body: " + bodyString);
 		} catch (IOException e) {
-			throw new AgentHttpRequestFailedException(
-					errorMessage + ". This is probably a temporary network problem.", e);
+			if (!retryOnce) {
+				throw new AgentHttpRequestFailedException(
+						errorMessage + ". I already retried this request and it failed twice (see the suppressed" +
+								" exception for details of the first failure). This is probably a network problem" +
+								" that you should address.", e);
+			}
+
+			// retry once on network problems
+			try {
+				return handleRequestError(request, errorMessage, false);
+			} catch (Throwable t) {
+				t.addSuppressed(e);
+				throw t;
+			}
 		}
 	}
 

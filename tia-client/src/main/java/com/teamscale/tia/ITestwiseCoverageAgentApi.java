@@ -17,7 +17,7 @@ import java.util.List;
 
 // TODO (FS) resolve duplication with impacted test engine
 
-/** {@link Retrofit} API specification for the JaCoCo agent in testwise coverage mode. */
+/** {@link Retrofit} API specification for the JaCoCo agent in test-wise coverage mode. */
 public interface ITestwiseCoverageAgentApi {
 
 	/** Test start. */
@@ -31,7 +31,7 @@ public interface ITestwiseCoverageAgentApi {
 			@Body TestExecution testExecution
 	);
 
-	/** Test run started. Reports available tests and returns the list of prioritized test cases to execute. */
+	/** Test run started. Returns the list of TIA-selected and -prioritized test cases to execute. */
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("includeNonImpacted") boolean includeNonImpacted,
@@ -39,13 +39,13 @@ public interface ITestwiseCoverageAgentApi {
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
-	/** Test run finished. Generate report and upload to Teamscale. */
+	/** Test run finished. Generate test-wise coverage report and upload to Teamscale. */
 	@POST("testrun/end")
 	Call<ResponseBody> testRunFinished();
 
 	/**
-	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
-	 * server and which sets the accept header to json.
+	 * Generates a {@link Retrofit} instance for this service, which uses basic auth to authenticate against the server
+	 * and which sets the Accept header to JSON.
 	 */
 	static ITestwiseCoverageAgentApi createService(HttpUrl baseUrl) {
 		Retrofit retrofit = new Retrofit.Builder()

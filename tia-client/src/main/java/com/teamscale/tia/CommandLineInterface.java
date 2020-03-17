@@ -11,33 +11,38 @@ import okhttp3.HttpUrl;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 
+/**
+ * Simple command-line interface to expose the {@link TiaAgent} to non-Java test runners.
+ */
 public class CommandLineInterface {
 
 	private static final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsJsonAdapter =
 			new Moshi.Builder().build().adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
+
 	private static final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClusterJsonAdapter =
 			new Moshi.Builder().build().adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
 
-	private final String[] arguments;
+	private final List<String> arguments;
 	private final String command;
 	private final ITestwiseCoverageAgentApi api;
 
 	public CommandLineInterface(String[] arguments) {
-		this.arguments = arguments;
+		this.arguments = new ArrayList<>(Arrays.asList(arguments));
 		if (arguments.length < 2) {
 			throw new RuntimeException(
 					"You must provide at least two arguments: the agent's URL and the command to execute");
 		}
 
-		HttpUrl url = HttpUrl.parse(arguments[0]);
+		HttpUrl url = HttpUrl.parse(this.arguments.remove(0));
 		api = ITestwiseCoverageAgentApi.createService(url);
 
-		command = arguments[1];
+		command = this.arguments.remove(0);
 	}
 
 	public static void main(String[] arguments) throws Exception {
@@ -58,6 +63,10 @@ public class CommandLineInterface {
 			case "endTestRun":
 				endTestRun();
 				break;
+			default:
+				throw new RuntimeException(
+						"Unknown command '" + command + "'. Should be one of startTestRun, startTest, endTest," +
+								" endTestRun");
 		}
 	}
 
@@ -67,17 +76,17 @@ public class CommandLineInterface {
 	}
 
 	private void endTest() throws Exception {
-		if (arguments.length < 4) {
-			throw new RuntimeException("You must provide the uniform path of the test that is about to be started" +
-					" as the first argument of the startTest command and the test result as the second.");
-		}
-		String uniformPath = arguments[2];
-		ETestExecutionResult result = ETestExecutionResult.valueOf(arguments[3]);
-
-		Long duration = getLongParameter("duration");
+		Long duration = parseAndRemoveLongParameter("duration");
 		if (duration == null) {
 			duration = 0L;
 		}
+
+		if (arguments.size() < 2) {
+			throw new RuntimeException("You must provide the uniform path of the test that is about to be started" +
+					" as the first argument of the endTest command and the test result as the second.");
+		}
+		String uniformPath = arguments.remove(0);
+		ETestExecutionResult result = ETestExecutionResult.valueOf(arguments.remove(0).toUpperCase());
 
 		String message = readStdin();
 
@@ -88,18 +97,19 @@ public class CommandLineInterface {
 	}
 
 	private void startTest() throws Exception {
-		if (arguments.length < 3) {
+		if (arguments.size() < 1) {
 			throw new RuntimeException("You must provide the uniform path of the test that is about to be started" +
 					" as the first argument of the startTest command");
 		}
-		String uniformPath = arguments[2];
+		String uniformPath = arguments.remove(0);
 		AgentCommunicationUtils.handleRequestError(api.testStarted(uniformPath),
-				"Failed to start coverage recording for test case " + uniformPath);
+				"Failed to start coverage recording for test case " + uniformPath +
+						". Coverage for that test case is lost.");
 	}
 
 	private void startTestRun() throws Exception {
-		boolean includeNonImpacted = isSwitchPresent("includeNonImpacted");
-		Long baseline = getLongParameter("baseline");
+		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("includeNonImpacted");
+		Long baseline = parseAndRemoveLongParameter("baseline");
 
 		String json = readStdin();
 		List<ClusteredTestDetails> availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
@@ -113,17 +123,24 @@ public class CommandLineInterface {
 		return new BufferedReader(new InputStreamReader(System.in)).lines().collect(joining("\n"));
 	}
 
-	private Long getLongParameter(String name) {
-		return Stream.of(arguments)
-				.filter(argument -> argument.startsWith("--" + name + "="))
-				.map(argument -> argument.substring(name.length() + 3))
-				.map(Long::parseLong)
-				.findFirst()
-				.orElse(null);
+	private Long parseAndRemoveLongParameter(String name) {
+		for (int i = 0; i < arguments.size(); i++) {
+			if (arguments.get(i).startsWith("--" + name + "=")) {
+				String argument = arguments.remove(i);
+				return Long.parseLong(argument.substring(name.length() + 3));
+			}
+		}
+		return null;
 	}
 
-	private boolean isSwitchPresent(String name) {
-		return Stream.of(arguments).anyMatch(argument -> argument.equals("--" + name));
+	private boolean parseAndRemoveBooleanSwitch(String name) {
+		for (int i = 0; i < arguments.size(); i++) {
+			if (arguments.get(i).equals("--" + name)) {
+				arguments.remove(i);
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
