@@ -227,7 +227,7 @@ public class AgentOptions {
 	private void appendTestwiseCoverageValidations(Validator validator) {
 		validator.isFalse(
 				useTestwiseCoverageMode() && httpServerPort == null && testEnvironmentVariable == null && !coverageToTeamscale,
-				"You use 'mode' 'TESTWISE' but did neither use 'http-server-port' nor 'test-env' nor" +
+				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor 'test-env' nor" +
 						" 'teamscale-testwise-upload'! One of them is required!");
 
 		validator.isFalse(useTestwiseCoverageMode() && httpServerPort != null && testEnvironmentVariable != null,
@@ -242,9 +242,15 @@ public class AgentOptions {
 		validator.isFalse(!useTestwiseCoverageMode() && httpServerPort != null,
 				"You use 'http-server-port' but did not set 'mode' to 'TESTWISE'!");
 
-		// TODO (FS) additional option checks
+		validator.isFalse(coverageToTeamscale && !teamscaleServer.hasAllRequiredFieldsSet(),
+				"You use 'teamscale-testwise-upload' but did not set all required 'teamscale-' fields to facilitate" +
+						" a connection to Teamscale!");
+
 		validator.isFalse(!useTestwiseCoverageMode() && coverageViaHttp,
 				"You use 'coverage-via-http' but did not set 'mode' to 'TESTWISE'!");
+
+		validator.isFalse(!useTestwiseCoverageMode() && coverageToTeamscale,
+				"You use 'teamscale-testwise-upload' but did not set 'mode' to 'TESTWISE'!");
 
 		validator.isFalse(!useTestwiseCoverageMode() && testEnvironmentVariable != null,
 				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
@@ -301,7 +307,10 @@ public class AgentOptions {
 		}
 	}
 
-	/** Sets output to none for normal mode and destination file in testwise coverage mode */
+	/**
+	 * Sets destination file in default testwise coverage mode and output to none for normal mode and other test-wise
+	 * coverage modes.
+	 */
 	private String getModeSpecificOptions() {
 		if (useTestwiseCoverageMode() && !coverageViaHttp && !coverageToTeamscale) {
 			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();

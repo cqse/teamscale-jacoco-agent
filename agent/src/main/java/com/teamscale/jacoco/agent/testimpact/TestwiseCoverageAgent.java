@@ -60,6 +60,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	public TestwiseCoverageAgent(AgentOptions options,
 								 TestExecutionWriter testExecutionWriter) throws IllegalStateException, CoverageGenerationException {
 		super(options);
+
 		if (options.shouldDumpCoverageViaHttp()) {
 			testEventHandler = new CoverageViaHttpStrategy(options, controller);
 		} else if (options.shouldUploadTestWiseCoverageToTeamscale()) {
