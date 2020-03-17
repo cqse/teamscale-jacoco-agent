@@ -337,7 +337,10 @@ public class AgentOptions {
 		}
 	}
 
-	// TODO (FS) reuse for teamscale uploader
+	/**
+	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a
+	 * Teamscale connection.
+	 */
 	public TeamscaleClient createTeamscaleClient() {
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
 			return new TeamscaleClient(teamscaleServer.url.toString(), teamscaleServer.userName,

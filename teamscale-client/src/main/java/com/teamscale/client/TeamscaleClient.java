@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class TeamscaleClient {
 
 	/** Teamscale service implementation. */
-	private final ITeamscaleService service;
+	public final ITeamscaleService service;
 
 	/** The project ID within Teamscale. */
 	private final String projectId;
@@ -90,7 +90,7 @@ public class TeamscaleClient {
 				.uploadExternalReports(projectId, reportFormat, commitDescriptor, true, partition, message,
 						partList).execute();
 		if (!response.isSuccessful()) {
-			throw new IOException(response.errorBody().string());
+			throw new IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response));
 		}
 	}
 

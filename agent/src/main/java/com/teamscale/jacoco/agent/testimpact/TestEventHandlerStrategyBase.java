@@ -4,13 +4,13 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.HttpUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.model.TestExecution;
-import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import retrofit2.Response;
 
@@ -96,11 +96,7 @@ public abstract class TestEventHandlerStrategyBase {
 			logger.debug("Teamscale suggested these tests: {}", json);
 			return json;
 		} else {
-			ResponseBody errorBody = response.errorBody();
-			String responseBody = "<no response body provided>";
-			if (errorBody != null) {
-				responseBody = errorBody.string();
-			}
+			String responseBody = HttpUtils.getErrorBodyStringSafe(response);
 			throw new IOException(
 					"Request to Teamscale to get impacted tests failed with HTTP status " + response.code() +
 							" " + response.message() + ". Response body: " + responseBody);

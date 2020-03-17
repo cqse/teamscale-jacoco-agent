@@ -1,6 +1,6 @@
 package com.teamscale.tia;
 
-import okhttp3.ResponseBody;
+import com.teamscale.client.HttpUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -29,11 +29,7 @@ class AgentCommunicationUtils {
 				return response.body();
 			}
 
-			ResponseBody errorBody = response.errorBody();
-			String bodyString = "<no response body sent>";
-			if (errorBody != null) {
-				bodyString = errorBody.string();
-			}
+			String bodyString = HttpUtils.getErrorBodyStringSafe(response);
 			throw new AgentHttpRequestFailedException(
 					errorMessage + ". The agent responded with HTTP status " + response.code() + " " + response
 							.message() + ". Response body: " + bodyString);

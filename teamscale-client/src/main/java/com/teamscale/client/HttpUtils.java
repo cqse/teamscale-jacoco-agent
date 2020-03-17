@@ -1,8 +1,10 @@
 package com.teamscale.client;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import javax.net.ssl.SSLContext;
@@ -10,6 +12,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -39,8 +42,8 @@ public class HttpUtils {
 	}
 
 	/**
-	 * Creates a new {@link Retrofit} with proper defaults. The instance and the corresponding {@link OkHttpClient}
-	 * can be customized with the given action.
+	 * Creates a new {@link Retrofit} with proper defaults. The instance and the corresponding {@link OkHttpClient} can
+	 * be customized with the given action.
 	 */
 	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction,
 										  Consumer<OkHttpClient.Builder> okHttpBuilderAction) {
@@ -89,8 +92,7 @@ public class HttpUtils {
 	}
 
 	/**
-	 * A simple implementation of {@link X509TrustManager} that simple trusts every
-	 * certificate.
+	 * A simple implementation of {@link X509TrustManager} that simple trusts every certificate.
 	 */
 	public static class TrustAllCertificatesManager implements X509TrustManager {
 
@@ -115,6 +117,14 @@ public class HttpUtils {
 			// Nothing to do
 		}
 
+	}
+
+	public static <T> String getErrorBodyStringSafe(Response<T> response) throws IOException {
+		ResponseBody errorBody = response.errorBody();
+		if (errorBody == null) {
+			return "<no response body provided>";
+		}
+		return errorBody.string();
 	}
 
 
