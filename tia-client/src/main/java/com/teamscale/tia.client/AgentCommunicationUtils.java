@@ -1,4 +1,4 @@
-package com.teamscale.tia;
+package com.teamscale.tia.client;
 
 import com.teamscale.client.HttpUtils;
 import retrofit2.Call;

@@ -1,4 +1,4 @@
-package com.teamscale.tia;
+package com.teamscale.tia.client;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;

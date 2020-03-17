@@ -9,7 +9,7 @@ import com.teamscale.test_impacted.engine.executor.DelegatingTestExecutor;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
-import com.teamscale.tia.ITestwiseCoverageAgentApi;
+import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import okhttp3.HttpUrl;
 import org.junit.platform.engine.TestEngine;
 

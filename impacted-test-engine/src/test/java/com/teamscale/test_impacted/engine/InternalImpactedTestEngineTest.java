@@ -6,7 +6,7 @@ import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver;
-import com.teamscale.tia.ITestwiseCoverageAgentApi;
+import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

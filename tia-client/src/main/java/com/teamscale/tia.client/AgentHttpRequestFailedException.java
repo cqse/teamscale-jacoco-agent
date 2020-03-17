@@ -1,4 +1,4 @@
-package com.teamscale.tia;
+package com.teamscale.tia.client;
 
 /**
  * Thrown if communicating with the agent via HTTP fails. The underlying reason can be either a network problem or an

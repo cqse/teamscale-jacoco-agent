@@ -1,4 +1,4 @@
-package com.teamscale.tia;
+package com.teamscale.tia.client;
 
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
