@@ -5,6 +5,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -104,7 +105,8 @@ public class GitPropertiesLocator {
 	 */
 	public static CommitDescriptor getCommitFromGitProperties(
 			File jarFile) throws IOException, InvalidGitPropertiesException {
-		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+		try (JarInputStream jarStream = new JarInputStream(
+				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
 			return getCommitFromGitProperties(jarStream, jarFile);
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +

@@ -10,6 +10,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
@@ -298,7 +299,8 @@ public class AgentOptionsParser {
 	 * of it.
 	 */
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
-		try (JarInputStream jarStream = new JarInputStream(new FileInputStream(jarFile))) {
+		try (JarInputStream jarStream = new JarInputStream(
+				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
 			Manifest manifest = jarStream.getManifest();
 			if (manifest == null) {
 				throw new AgentOptionParseException(
