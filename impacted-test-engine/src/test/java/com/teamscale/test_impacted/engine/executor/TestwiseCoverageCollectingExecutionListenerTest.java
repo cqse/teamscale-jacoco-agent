@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.platform.engine.TestExecutionResult.successful;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -77,7 +78,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(mockApi).testStarted("MyClass/impactedTestCase()");
 		verify(executionListenerMock).executionStarted(impactedTestCase);
 		executionListener.executionFinished(impactedTestCase, successful());
-		verify(mockApi).testFinished("MyClass/impactedTestCase()", any());
+		verify(mockApi).testFinished(eq("MyClass/impactedTestCase()"), any());
 		verify(executionListenerMock).executionFinished(impactedTestCase, successful());
 
 		// Non impacted test case is skipped.
