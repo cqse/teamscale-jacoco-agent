@@ -63,6 +63,9 @@ public class TestwiseCoverageReportBuilder {
 		return testInfoBuilder;
 	}
 
+	/**
+	 * Removes parameterized test arguments from the given uniform path.
+	 */
 	public static String stripParameterizedTestArguments(String uniformPath) {
 		return uniformPath.replaceFirst("(.*\\))\\[.*]", "$1");
 	}
