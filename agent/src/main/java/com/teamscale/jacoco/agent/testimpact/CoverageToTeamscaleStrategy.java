@@ -88,6 +88,12 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				executionUniformPaths,
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
 
+		if (availableTests.isEmpty() && !testExecutions.isEmpty()) {
+			throw new UnsupportedOperationException("You did not provide a list of available tests via the" +
+					" /testrun/start method. Thus, no test-wise coverage report can be generated. Please always" +
+					" call /testrun/start before /tesrun/end.");
+		}
+
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
 				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
 

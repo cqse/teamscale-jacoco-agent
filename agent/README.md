@@ -208,7 +208,8 @@ The agent's REST API has the following endpoints:
   
 - `[POST] /testrun/start` If you configured a connection to Teamscale via the `teamscale-` options, this will fetch
   impacted tests from Teamscale and return them in the response body. The format is the same as returned by Teamscale
-  itself.
+  itself. You must provide a list of all available test cases in the body of the request. These will also be used to
+  generate the test-wise coverage report in `[POST] /testrun/end`.
 - `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled 
   `teamscale-testwise-upload`, this will upload a test-wise coverage report to Teamscale.
 - `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
