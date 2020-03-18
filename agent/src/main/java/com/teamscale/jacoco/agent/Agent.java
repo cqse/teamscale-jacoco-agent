@@ -13,6 +13,7 @@ import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import spark.Request;
 import spark.Response;
 
@@ -35,9 +36,6 @@ public class Agent extends AgentBase {
 	/** Path parameter placeholder used in the http requests. */
 	private static final String PARTITION_PARAMETER = ":partition";
 
-	/** Path to write the converted coverage files to. **/
-	private final Path outputDirectory;
-
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
 
@@ -54,8 +52,6 @@ public class Agent extends AgentBase {
 
 		uploader = options.createUploader(instrumentation);
 		logger.info("Upload method: {}", uploader.describe());
-
-		this.outputDirectory = options.getOutputDirectory();
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
@@ -123,11 +119,20 @@ public class Agent extends AgentBase {
 		if (options.shouldDumpOnExit()) {
 			dumpReport();
 		}
+
+		try {
+			com.teamscale.jacoco.agent.util.FileSystemUtils.deleteDirectoryIfEmpty(options.getOutputDirectory());
+		} catch (IOException e) {
+			logger.info("Could not delete emtpy output directory {}. " +
+							"This directory was created inside the configured output directory to be able to " +
+							"distinguish between different runs of the profiled JVM. You may delete it manually.",
+					options.getOutputDirectory(), e);
+		}
 	}
 
 	/**
-	 * Dumps the current execution data, converts it, writes it to the {@link #outputDirectory} and uploads it if an
-	 * uploader is configured. Logs any errors, never throws an exception.
+	 * Dumps the current execution data, converts it, writes it to the output directory defined in {@link #options} and
+	 * uploads it if an uploader is configured. Logs any errors, never throws an exception.
 	 */
 	private void dumpReport() {
 		logger.debug("Starting dump");
@@ -151,8 +156,10 @@ public class Agent extends AgentBase {
 
 		CoverageFile coverageFile;
 		long currentTime = System.currentTimeMillis();
-		Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
+		Path outputPath = options.getOutputDirectory().resolve("jacoco-" + currentTime + ".xml");
+
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
+			FileSystemUtils.ensureParentDirectoryExists(outputPath.toFile());
 			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
