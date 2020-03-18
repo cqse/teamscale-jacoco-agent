@@ -10,8 +10,11 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.jacoco.dump.Dump;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -44,11 +47,14 @@ public class CoverageToTeamscaleStrategyTest {
 	@Mock
 	private TeamscaleClient client;
 
+	@Mock
+	private JaCoCoTestwiseReportGenerator reportGenerator;
+
 	@Test
 	public void mustRunTestStartBeforeTestEnd() throws Exception {
 		AgentOptions options = mockOptions();
 		JacocoRuntimeController controller = mockController();
-		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options);
+		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		strategy.testStart("mytest");
 		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
@@ -62,9 +68,15 @@ public class CoverageToTeamscaleStrategyTest {
 						Collections.singletonList(new PrioritizableTest("mytest"))));
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
 
+		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
+		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
+		fileCoverageBuilder.addLineRange(1, 4);
+		testCoverageBuilder.add(fileCoverageBuilder);
+		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+
 		AgentOptions options = mockOptions();
 		JacocoRuntimeController controller = mockController();
-		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options);
+		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		strategy.testRunStart(
 				Collections.singletonList(new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
@@ -74,7 +86,7 @@ public class CoverageToTeamscaleStrategyTest {
 		strategy.testRunEnd();
 
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				eq("{\"tests\":[{\"content\":\"content\",\"duration\":0.0,\"paths\":[],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}"),
+				eq("{\"tests\":[{\"content\":\"content\",\"duration\":0.0,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}"),
 				any(), any(), any());
 	}
 

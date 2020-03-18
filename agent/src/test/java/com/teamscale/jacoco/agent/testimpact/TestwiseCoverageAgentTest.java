@@ -8,7 +8,11 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.report.jacoco.dump.Dump;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
+import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
@@ -44,6 +48,9 @@ public class TestwiseCoverageAgentTest {
 	@Mock
 	private TeamscaleClient client;
 
+	@Mock
+	private JaCoCoTestwiseReportGenerator reportGenerator;
+
 	@Test
 	public void testAccessViaTiaClientAndReportUploadToTeamscale() throws Exception {
 		List<ClusteredTestDetails> availableTests = Arrays
@@ -55,7 +62,13 @@ public class TestwiseCoverageAgentTest {
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
-		new TestwiseCoverageAgent(mockOptions(), null);
+		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("test2");
+		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
+		fileCoverageBuilder.addLineRange(1, 4);
+		testCoverageBuilder.add(fileCoverageBuilder);
+		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+
+		new TestwiseCoverageAgent(mockOptions(), null, reportGenerator);
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:54321"));
 
@@ -70,7 +83,7 @@ public class TestwiseCoverageAgentTest {
 
 		testRun.endTestRun();
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
+				matches("\\Q{\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
 				any(), any(), any());
 	}
 

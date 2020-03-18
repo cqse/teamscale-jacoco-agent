@@ -26,7 +26,7 @@ import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
-import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -323,14 +323,18 @@ public class AgentOptions {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent(
-			Instrumentation instrumentation) throws UploaderException, CoverageGenerationException {
+	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException {
 		if (useTestwiseCoverageMode()) {
-			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")));
+			JaCoCoTestwiseReportGenerator reportGenerator = new JaCoCoTestwiseReportGenerator(
+					getClassDirectoriesOrZips(), getLocationIncludeFilter(),
+					getDuplicateClassFileBehavior(), LoggingUtils.wrap(logger));
+			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")),
+					reportGenerator);
 		} else {
 			return new Agent(this, instrumentation);
 		}
 	}
+
 
 	/**
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a

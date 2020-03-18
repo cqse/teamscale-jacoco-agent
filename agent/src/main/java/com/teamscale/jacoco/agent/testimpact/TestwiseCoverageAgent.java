@@ -13,6 +13,7 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
@@ -56,17 +57,16 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 	private final TestEventHandlerStrategyBase testEventHandler;
 
-	/** Constructor. */
-	public TestwiseCoverageAgent(AgentOptions options,
-								 TestExecutionWriter testExecutionWriter) throws IllegalStateException, CoverageGenerationException {
+	public TestwiseCoverageAgent(AgentOptions options, TestExecutionWriter testExecutionWriter,
+								 JaCoCoTestwiseReportGenerator reportGenerator) throws IllegalStateException {
 		super(options);
 
 		if (options.shouldDumpCoverageViaHttp()) {
-			testEventHandler = new CoverageViaHttpStrategy(options, controller);
+			testEventHandler = new CoverageViaHttpStrategy(controller, options, reportGenerator);
 		} else if (options.shouldUploadTestWiseCoverageToTeamscale()) {
-			testEventHandler = new CoverageToTeamscaleStrategy(controller, options);
+			testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 		} else {
-			testEventHandler = new CoverageToExecFileStrategy(testExecutionWriter, controller, options);
+			testEventHandler = new CoverageToExecFileStrategy(controller, options, testExecutionWriter);
 		}
 	}
 
@@ -150,7 +150,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	/** Handles the end of a test case by resetting the session ID. */
-	private String handleTestEnd(Request request, Response response) throws DumpException {
+	private String handleTestEnd(Request request, Response response) throws DumpException, CoverageGenerationException {
 		String testId = request.params(TEST_ID_PARAMETER);
 		if (testId == null || testId.isEmpty()) {
 			logger.error("Test name missing in " + request.url() + "!");

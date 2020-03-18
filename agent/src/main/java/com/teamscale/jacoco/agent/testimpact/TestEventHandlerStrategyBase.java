@@ -10,6 +10,7 @@ import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import org.slf4j.Logger;
 import retrofit2.Response;
@@ -37,6 +38,7 @@ public abstract class TestEventHandlerStrategyBase {
 	private final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClustersJsonAdapter = new Moshi.Builder()
 			.build().adapter(Types.newParameterizedType(List.class, PrioritizableTestCluster.class));
 
+
 	protected TestEventHandlerStrategyBase(AgentOptions agentOptions, JacocoRuntimeController controller) {
 		this.controller = controller;
 		this.agentOptions = agentOptions;
@@ -60,7 +62,8 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @return The body of the response. <code>null</code> indicates "204 No content". Non-null results will be treated
 	 * as a json response.
 	 */
-	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
+	public String testEnd(String test,
+						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		if (testExecution != null) {
 			testExecution.setUniformPath(test);
 			if (startTimestamp != -1) {

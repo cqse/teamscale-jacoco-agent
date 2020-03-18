@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.testimpact;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import org.slf4j.Logger;
 
@@ -19,14 +20,15 @@ public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 	/** Helper for writing test executions to disk. */
 	private final TestExecutionWriter testExecutionWriter;
 
-	public CoverageToExecFileStrategy(TestExecutionWriter testExecutionWriter, JacocoRuntimeController controller,
-									  AgentOptions agentOptions) {
+	public CoverageToExecFileStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
+									  TestExecutionWriter testExecutionWriter) {
 		super(agentOptions, controller);
 		this.testExecutionWriter = testExecutionWriter;
 	}
 
 	@Override
-	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
+	public String testEnd(String test,
+						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
 		controller.dump();
 		if (testExecution != null) {

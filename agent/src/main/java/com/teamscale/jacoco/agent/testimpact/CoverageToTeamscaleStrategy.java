@@ -34,27 +34,21 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestwiseCoverageReport.class);
 
-	private final JaCoCoTestwiseReportGenerator testwiseReportGenerator;
 	private final TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
 	private final List<TestExecution> testExecutions = new ArrayList<>();
 	private List<ClusteredTestDetails> availableTests = new ArrayList<>();
+	private final JaCoCoTestwiseReportGenerator reportGenerator;
 
-	public CoverageToTeamscaleStrategy(JacocoRuntimeController controller, AgentOptions agentOptions)
-			throws CoverageGenerationException {
-
+	public CoverageToTeamscaleStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
+									   JaCoCoTestwiseReportGenerator reportGenerator) {
 		super(agentOptions, controller);
+		this.reportGenerator = reportGenerator;
 
 		if (agentOptions.getTeamscaleServerOptions().commit == null) {
 			throw new UnsupportedOperationException("You must provide a commit via the agent's options." +
 					" Auto-detecting the git.properties does not work since we need the commit before any code" +
 					" has been profiled in order to obtain the prioritized test cases from the TIA.");
 		}
-
-		testwiseReportGenerator = new JaCoCoTestwiseReportGenerator(
-				agentOptions.getClassDirectoriesOrZips(),
-				agentOptions.getLocationIncludeFilter(),
-				agentOptions.getDuplicateClassFileBehavior(),
-				LoggingUtils.wrap(logger));
 	}
 
 	@Override
@@ -65,12 +59,13 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
+	public String testEnd(String test,
+						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
 
 		testExecutions.add(testExecution);
 		Dump dump = controller.dumpAndReset();
-		testwiseCoverage.add(testwiseReportGenerator.convert(dump));
+		testwiseCoverage.add(reportGenerator.convert(dump));
 		return null;
 	}
 

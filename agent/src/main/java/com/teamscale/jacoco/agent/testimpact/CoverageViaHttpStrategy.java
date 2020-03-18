@@ -23,27 +23,24 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
 
-	private final JaCoCoTestwiseReportGenerator testwiseReportGenerator;
-
 	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class)
 			.indent("\t");
+	private final JaCoCoTestwiseReportGenerator reportGenerator;
 
-	public CoverageViaHttpStrategy(AgentOptions agentOptions,
-								   JacocoRuntimeController controller) throws CoverageGenerationException {
+	public CoverageViaHttpStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
+								   JaCoCoTestwiseReportGenerator reportGenerator) {
 		super(agentOptions, controller);
-		testwiseReportGenerator = new JaCoCoTestwiseReportGenerator(
-				agentOptions.getClassDirectoriesOrZips(),
-				agentOptions.getLocationIncludeFilter(),
-				agentOptions.getDuplicateClassFileBehavior(),
-				LoggingUtils.wrap(logger));
+		this.reportGenerator = reportGenerator;
 	}
 
 	@Override
-	public String testEnd(String test, TestExecution testExecution) throws JacocoRuntimeController.DumpException {
+	public String testEnd(String test, TestExecution testExecution)
+			throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
+
 		TestInfoBuilder builder = new TestInfoBuilder(test);
 		Dump dump = controller.dumpAndReset();
-		builder.setCoverage(this.testwiseReportGenerator.convert(dump));
+		builder.setCoverage(reportGenerator.convert(dump));
 		if (testExecution != null) {
 			builder.setExecution(testExecution);
 		}
