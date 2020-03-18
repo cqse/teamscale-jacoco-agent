@@ -183,8 +183,6 @@ public class AgentOptions {
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
 
-		validator.ensure(() -> FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile()));
-
 		if (loggingConfig != null) {
 			validator.ensure(() -> {
 				CCSMAssert.isTrue(Files.exists(loggingConfig),
