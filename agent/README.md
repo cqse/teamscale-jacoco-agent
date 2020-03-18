@@ -224,8 +224,8 @@ The agent's REST API has the following endpoints:
   
 - `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled 
   `teamscale-testwise-upload`, this will upload a test-wise coverage report to Teamscale.
-- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
-- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
+- `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
+- `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
   The body of the request may optionally contain the test execution result in json format:
   
 ```json
@@ -244,7 +244,7 @@ The agent's REST API has the following endpoints:
 
 (`uniformPath` and `duration` is set automatically)
   
-The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
+The `uniformPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
 
 #### Test-wise coverage modes
