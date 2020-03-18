@@ -2,6 +2,7 @@ We use [semantic versioning][semver]
 
 # Next Release
 - [fix] Delete empty coverage directories
+- [fix] Don't upload empty coverage reports
 
 # 15.4.0
 - [fix] `git.properties` commit was not used for upload
