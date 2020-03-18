@@ -51,24 +51,50 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		runGenerator("different-duplicate-classes", EDuplicateClassFileBehavior.IGNORE);
 	}
 
+	@Test
+	void testEmptyCoverageFileThrowsException() throws IOException {
+		assertThatThrownBy(() -> runGenerator("empty-report-handling", EDuplicateClassFileBehavior.IGNORE,
+				new ClasspathWildcardIncludeFilter("some.package.*", null), false))
+				.isExactlyInstanceOf(EmptyReportException.class);
+	}
+
+	@Test
+	void testNonEmptyCoverageFileDoesNotThrowException() throws IOException, EmptyReportException {
+		runGenerator("empty-report-handling", EDuplicateClassFileBehavior.IGNORE,
+				new ClasspathWildcardIncludeFilter("*", null), false);
+	}
+
+	@Test
+	void testDisableEmptyCoverageException() throws IOException, EmptyReportException {
+		// Should not throw EmptyReportException if we pass true for writingEmptyReports
+		runGenerator("empty-report-handling", EDuplicateClassFileBehavior.IGNORE,
+				new ClasspathWildcardIncludeFilter("some.package.*", null), true);
+	}
+
 	/** Creates a dummy dump. */
 	private static Dump createDummyDump() {
 		ExecutionDataStore store = new ExecutionDataStore();
-		store.put(new ExecutionData(123, "TestClass", new boolean[]{true, true, true}));
+		store.put(new ExecutionData(6270089523198553326L, "TestClass", new boolean[]{true, true, true}));
 		SessionInfo info = new SessionInfo("session-id", 124L, 125L);
 		return new Dump(info, store);
 	}
 
 	/** Runs the report generator. */
 	private void runGenerator(String testDataFolder,
-							  EDuplicateClassFileBehavior duplicateClassFileBehavior) throws IOException {
+							  EDuplicateClassFileBehavior duplicateClassFileBehavior) throws Exception, EmptyReportException {
+		runGenerator(testDataFolder, duplicateClassFileBehavior, new ClasspathWildcardIncludeFilter(null, null), true);
+	}
+
+	private void runGenerator(String testDataFolder,
+							  EDuplicateClassFileBehavior duplicateClassFileBehavior,
+							  ClasspathWildcardIncludeFilter filter,
+							  boolean writeEmptyReportFiles) throws IOException, EmptyReportException {
 		File classFileFolder = useTestFile(testDataFolder);
-		ClasspathWildcardIncludeFilter includeFilter = new ClasspathWildcardIncludeFilter(null, null);
 		long currentTime = System.currentTimeMillis();
 		String outputFilePath = "test-coverage-" + currentTime + ".xml";
-		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), includeFilter,
+		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), filter,
 				duplicateClassFileBehavior,
-				mock(ILogger.class)).convert(createDummyDump(), Paths.get(outputFilePath));
+				mock(ILogger.class)).convert(createDummyDump(), Paths.get(outputFilePath), writeEmptyReportFiles);
 	}
 
 }

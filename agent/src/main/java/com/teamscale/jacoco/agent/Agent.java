@@ -11,6 +11,7 @@ import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
+import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import spark.Request;
@@ -153,8 +154,8 @@ public class Agent extends AgentBase {
 		long currentTime = System.currentTimeMillis();
 		Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			coverageFile = generator.convert(dump, outputPath);
-		} catch (IOException e) {
+			coverageFile = generator.convert(dump, outputPath, false);
+		} catch (IOException | EmptyReportException e) {
 			logger.error("Converting binary dump to XML failed", e);
 			return;
 		}

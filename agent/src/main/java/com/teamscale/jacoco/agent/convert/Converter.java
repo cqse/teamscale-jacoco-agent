@@ -5,6 +5,7 @@ import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.ReportUtils;
+import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.ETestArtifactFormat;
@@ -64,7 +65,9 @@ public class Converter {
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
-			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile));
+			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile), true);
+		} catch (EmptyReportException e) {
+			logger.error("EmptyReportException thrown, this should never happen while using the converter tool.");
 		}
 	}
 
