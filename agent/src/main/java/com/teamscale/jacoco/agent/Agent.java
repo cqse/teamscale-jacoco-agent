@@ -155,8 +155,11 @@ public class Agent extends AgentBase {
 		Path outputPath = outputDirectory.resolve("jacoco-" + currentTime + ".xml");
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			coverageFile = generator.convert(dump, outputPath, false);
-		} catch (IOException | EmptyReportException e) {
+		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
+			return;
+		} catch (EmptyReportException e) {
+			logger.warn("No coverage was collected. Please check the exception message for more details.", e);
 			return;
 		}
 		uploader.upload(coverageFile);
