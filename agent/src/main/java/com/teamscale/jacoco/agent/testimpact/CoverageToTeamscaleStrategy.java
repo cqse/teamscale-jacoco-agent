@@ -59,6 +59,17 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
+	public void testStart(String uniformPath) {
+		super.testStart(uniformPath);
+
+		if (availableTests.stream().noneMatch(test -> test.uniformPath.equals(uniformPath))) {
+			// ensure that we can at least generate a report for the tests that were actually run,
+			// even if the caller did not provide a list of tests up-front in testRunStart
+			availableTests.add(new ClusteredTestDetails(uniformPath, uniformPath, null, null));
+		}
+	}
+
+	@Override
 	public String testEnd(String test,
 						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
@@ -82,12 +93,6 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
 				executionUniformPaths,
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
-
-		if (availableTests.isEmpty() && !testExecutions.isEmpty()) {
-			throw new UnsupportedOperationException("You did not provide a list of available tests via the" +
-					" /testrun/start method. Thus, no test-wise coverage report can be generated. Please always" +
-					" call /testrun/start before /testrun/end.");
-		}
 
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
 				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
