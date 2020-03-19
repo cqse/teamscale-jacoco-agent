@@ -166,7 +166,7 @@ public class Agent extends AgentBase {
 			logger.error("Converting binary dump to XML failed", e);
 			return;
 		} catch (EmptyReportException e) {
-			logger.warn("No coverage was collected. Please check the exception message for more details.", e);
+			logger.warn("No coverage was collected.", e);
 			return;
 		}
 		uploader.upload(coverageFile);
