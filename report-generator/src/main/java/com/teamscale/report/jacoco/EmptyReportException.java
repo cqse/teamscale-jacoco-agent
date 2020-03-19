@@ -5,7 +5,7 @@ package com.teamscale.report.jacoco;
  */
 public class EmptyReportException extends Exception {
 
-	public EmptyReportException(String s) {
-		super(s);
+	public EmptyReportException(String message) {
+		super(message);
 	}
 }
