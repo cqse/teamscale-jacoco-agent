@@ -114,7 +114,7 @@ public class CommandLineInterface {
 	}
 
 	private void startTestRun() throws Exception {
-		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("includeNonImpacted");
+		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("include-non-impacted");
 		Long baseline = parseAndRemoveLongParameter("baseline");
 
 		String json = readStdin();

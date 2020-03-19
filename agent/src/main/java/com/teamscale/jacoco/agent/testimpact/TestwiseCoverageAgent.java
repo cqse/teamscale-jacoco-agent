@@ -101,7 +101,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	private String handleTestRunStart(Request request, Response response) throws IOException {
-		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("includeNonImpacted"));
+		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("include-non-impacted"));
 
 		String baselineParameter = request.params("baseline");
 		Long baseline = null;

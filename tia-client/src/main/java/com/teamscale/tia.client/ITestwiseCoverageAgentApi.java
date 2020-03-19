@@ -32,7 +32,7 @@ public interface ITestwiseCoverageAgentApi {
 	/** Test run started. Returns the list of TIA-selected and -prioritized test cases to execute. */
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
-			@Query("includeNonImpacted") boolean includeNonImpacted,
+			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("baseline") Long baseline,
 			@Body List<ClusteredTestDetails> availableTests
 	);
