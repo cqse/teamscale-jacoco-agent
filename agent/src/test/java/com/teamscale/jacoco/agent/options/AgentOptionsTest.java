@@ -24,6 +24,7 @@ public class AgentOptionsTest {
 	@TempDir
 	public File testFolder;
 
+	@SuppressWarnings("ResultOfMethodCallIgnored")
 	@BeforeEach
 	public void setUp() throws IOException {
 		new File(testFolder, "file_with_manifest1.jar").createNewFile();
@@ -113,7 +114,7 @@ public class AgentOptionsTest {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,coverage-via-http=true");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
-		assertThat(agentOptions.shouldDumpCoverageViaHttp()).isTrue();
+		assertThat(agentOptions.getTestWiseCoverageMode()).isEqualTo(ETestWiseCoverageMode.HTTP);
 	}
 
 	/** Tests that supplying both revision and commit info is forbidden. */

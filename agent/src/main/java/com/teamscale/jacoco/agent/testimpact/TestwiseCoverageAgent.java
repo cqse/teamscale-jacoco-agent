@@ -61,12 +61,16 @@ public class TestwiseCoverageAgent extends AgentBase {
 								 JaCoCoTestwiseReportGenerator reportGenerator) throws IllegalStateException {
 		super(options);
 
-		if (options.shouldDumpCoverageViaHttp()) {
-			testEventHandler = new CoverageViaHttpStrategy(controller, options, reportGenerator);
-		} else if (options.shouldUploadTestWiseCoverageToTeamscale()) {
-			testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
-		} else {
-			testEventHandler = new CoverageToExecFileStrategy(controller, options, testExecutionWriter);
+		switch (options.getTestWiseCoverageMode()) {
+			case TEAMSCALE_REPORT:
+				testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
+				break;
+			case HTTP:
+				testEventHandler = new CoverageViaHttpStrategy(controller, options, reportGenerator);
+				break;
+			default:
+				testEventHandler = new CoverageToExecFileStrategy(controller, options, testExecutionWriter);
+				break;
 		}
 	}
 

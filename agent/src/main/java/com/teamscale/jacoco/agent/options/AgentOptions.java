@@ -148,14 +148,10 @@ public class AgentOptions {
 	/* package */ Integer httpServerPort = null;
 
 	/**
-	 * Whether coverage is written to an exec file in testwise mode or returned via HTTP.
+	 * How test-wise coverage should be stored handled in test-wise mode.
 	 */
-	/* package */ boolean coverageViaHttp = false;
+	/* package */ ETestWiseCoverageMode testWiseCoverageMode = ETestWiseCoverageMode.EXEC_FILE;
 
-	/**
-	 * Whether coverage is uploaded to Teamscale after all tests are finished.
-	 */
-	/* package */ boolean coverageToTeamscale = false;
 
 	/**
 	 * The configuration necessary to upload files to an azure file storage
@@ -224,9 +220,9 @@ public class AgentOptions {
 
 	private void appendTestwiseCoverageValidations(Validator validator) {
 		validator.isFalse(
-				useTestwiseCoverageMode() && httpServerPort == null && testEnvironmentVariable == null && !coverageToTeamscale,
-				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor 'test-env' nor" +
-						" 'teamscale-testwise-upload'! One of them is required!");
+				useTestwiseCoverageMode() && httpServerPort == null && testEnvironmentVariable == null,
+				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor 'test-env'!" +
+						" One of them is required!");
 
 		validator.isFalse(useTestwiseCoverageMode() && httpServerPort != null && testEnvironmentVariable != null,
 				"You did set both 'http-server-port' and 'test-env'! Only one of them is allowed!");
@@ -234,18 +230,14 @@ public class AgentOptions {
 		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
 				"incompatible with Testwise coverage mode!");
 
-		validator.isFalse(useTestwiseCoverageMode() && coverageViaHttp && classDirectoriesOrZips.isEmpty(),
+		validator.isFalse(useTestwiseCoverageMode() && testWiseCoverageMode == ETestWiseCoverageMode.HTTP
+						&& classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
 
-		validator.isFalse(coverageToTeamscale && !teamscaleServer.hasAllRequiredFieldsSet(),
+		validator.isFalse(testWiseCoverageMode == ETestWiseCoverageMode.TEAMSCALE_REPORT
+						&& !teamscaleServer.hasAllRequiredFieldsSet(),
 				"You use 'teamscale-testwise-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
-
-		validator.isFalse(!useTestwiseCoverageMode() && coverageViaHttp,
-				"You use 'coverage-via-http' but did not set 'mode' to 'TESTWISE'!");
-
-		validator.isFalse(!useTestwiseCoverageMode() && coverageToTeamscale,
-				"You use 'teamscale-testwise-upload' but did not set 'mode' to 'TESTWISE'!");
 
 		validator.isFalse(!useTestwiseCoverageMode() && testEnvironmentVariable != null,
 				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
@@ -264,7 +256,7 @@ public class AgentOptions {
 		}
 
 		// Don't dump class files in testwise mode when coverage is written to an exec file
-		boolean needsClassFiles = mode == EMode.NORMAL || coverageViaHttp || coverageToTeamscale;
+		boolean needsClassFiles = mode == EMode.NORMAL || testWiseCoverageMode != ETestWiseCoverageMode.EXEC_FILE;
 		if (classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
@@ -303,13 +295,14 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Sets destination file in default testwise coverage mode and output to none for normal mode and other test-wise
-	 * coverage modes.
+	 * Returns additional options for JaCoCo depending on the selected {@link #mode} and {@link #testWiseCoverageMode}.
 	 */
 	private String getModeSpecificOptions() {
-		if (useTestwiseCoverageMode() && !coverageViaHttp && !coverageToTeamscale) {
+		if (useTestwiseCoverageMode() && testWiseCoverageMode == ETestWiseCoverageMode.EXEC_FILE) {
+			// when writing to a .exec file, we can instruct JaCoCo to do so directly
 			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
+			// otherwise we don't need JaCoCo to perform any output of the .exec information
 			return "output=none";
 		}
 	}
@@ -479,29 +472,8 @@ public class AgentOptions {
 		return shouldDumpOnExit;
 	}
 
-	/** Whether coverage should be dumped via http. */
-	public boolean shouldDumpCoverageViaHttp() {
-		return coverageViaHttp;
+	public ETestWiseCoverageMode getTestWiseCoverageMode() {
+		return testWiseCoverageMode;
 	}
 
-	/** Whether test-wise coverage should be uploaded to Teamscale after all tests are finished. */
-	public boolean shouldUploadTestWiseCoverageToTeamscale() {
-		return coverageToTeamscale && teamscaleServer.hasAllRequiredFieldsSet();
-	}
-
-	/** Describes the two possible modes the agent can be started in. */
-	public enum EMode {
-
-		/**
-		 * The default mode which produces JaCoCo XML coverage files on exit, in a defined interval or when triggered
-		 * via an HTTP endpoint. Each dump produces a new file containing the all collected coverage.
-		 */
-		NORMAL,
-
-		/**
-		 * Testwise coverage mode in which the agent only dumps when triggered via an HTTP endpoint. Coverage is written
-		 * as exec and appended into a single file.
-		 */
-		TESTWISE
-	}
 }

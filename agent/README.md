@@ -216,8 +216,8 @@ The agent's REST API has the following endpoints:
     {
       "clusterId": "<ID of the cluster the test belongs to>",
       "uniformPath": "<Unique name of the test case>",
-      "sourcePath": "<Path to the source of the test>",
-      "content": "<Value to detect changes to the test, e.g. hash code, revision, ...>"
+      "sourcePath": "<Optional: Path to the source of the test>",
+      "content": "<Optional: Value to detect changes to the test, e.g. hash code, revision, ...>"
     }
 ]
 ```
