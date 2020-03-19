@@ -31,10 +31,10 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,14 +51,25 @@ public class CoverageToTeamscaleStrategyTest {
 	private JaCoCoTestwiseReportGenerator reportGenerator;
 
 	@Test
-	public void mustRunTestStartBeforeTestEnd() throws Exception {
+	public void shouldRecordCoverageForTestsEvenIfNotProvidedAsAvailableTest() throws Exception {
 		AgentOptions options = mockOptions();
 		JacocoRuntimeController controller = mockController();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
+		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
+		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
+		fileCoverageBuilder.addLineRange(1, 4);
+		testCoverageBuilder.add(fileCoverageBuilder);
+		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+
+		// we skip testRunStart and don't provide any available tests
 		strategy.testStart("mytest");
 		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
-		assertThrows(UnsupportedOperationException.class, strategy::testRunEnd);
+		strategy.testRunEnd();
+
+		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
+				matches("\\Q{\"tests\":[{\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
+				any(), any(), any());
 	}
 
 	@Test
@@ -86,7 +97,7 @@ public class CoverageToTeamscaleStrategyTest {
 		strategy.testRunEnd();
 
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				eq("{\"tests\":[{\"content\":\"content\",\"duration\":0.0,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}"),
+				matches("\\Q{\"tests\":[{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
 				any(), any(), any());
 	}
 
