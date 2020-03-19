@@ -1,6 +1,5 @@
 package com.teamscale.tia.client;
 
-import com.teamscale.client.PrioritizableTest;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 
@@ -15,11 +14,11 @@ import java.io.StringWriter;
 @SuppressWarnings("unused")
 public class RunningTest {
 
-	private final PrioritizableTest test;
+	private final String uniformPath;
 	private final ITestwiseCoverageAgentApi api;
 
-	public RunningTest(PrioritizableTest test, ITestwiseCoverageAgentApi api) {
-		this.test = test;
+	public RunningTest(String uniformPath, ITestwiseCoverageAgentApi api) {
+		this.uniformPath = uniformPath;
 		this.api = api;
 	}
 
@@ -41,11 +40,11 @@ public class RunningTest {
 		}
 
 		// the agent already records test duration, so we can simply provide a dummy value here
-		TestExecution execution = new TestExecution(test.uniformPath, 0L,
+		TestExecution execution = new TestExecution(uniformPath, 0L,
 				ETestExecutionResult.ERROR, throwable.getMessage() + "\n" + writer.toString());
 
-		AgentCommunicationUtils.handleRequestError(api.testFinished(test.uniformPath, execution),
-				"Failed to end coverage recording for test case " + test.uniformPath +
+		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
+				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}
 
@@ -61,10 +60,10 @@ public class RunningTest {
 	 */
 	public void endTestNormally(TestRun.TestResultWithMessage result) throws AgentHttpRequestFailedException {
 		// the agent already records test duration, so we can simply provide a dummy value here
-		TestExecution execution = new TestExecution(test.uniformPath, 0L, result.result,
+		TestExecution execution = new TestExecution(uniformPath, 0L, result.result,
 				result.message);
-		AgentCommunicationUtils.handleRequestError(api.testFinished(test.uniformPath, execution),
-				"Failed to end coverage recording for test case " + test.uniformPath +
+		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
+				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}
 

@@ -16,5 +16,5 @@ include ':teamscale-client'
 include ':sample-app'
 include ':impacted-test-engine'
 include ':tia-client'
-include 'sample-debugging-app'
+include ':sample-debugging-app'
 

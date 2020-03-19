@@ -5,6 +5,7 @@ import com.teamscale.client.PrioritizableTestCluster;
 import okhttp3.HttpUrl;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,6 +44,15 @@ public class TiaAgent {
 	 */
 	public TestRun startTestRun(List<ClusteredTestDetails> availableTests) throws AgentHttpRequestFailedException {
 		return startTestRun(availableTests, null);
+	}
+
+
+	/**
+	 * Starts a test run but does not ask Teamscale to prioritize and select any test cases. Use this when you only want
+	 * to record test-wise coverage and don't care about TIA's test selection and prioritization.
+	 */
+	public TestRun startTestRun() {
+		return new TestRun(api, Collections.emptyList());
 	}
 
 	/**
