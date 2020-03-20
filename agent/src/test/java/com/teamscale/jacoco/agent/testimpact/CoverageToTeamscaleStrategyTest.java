@@ -15,19 +15,15 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
-import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Response;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,10 +35,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class CoverageToTeamscaleStrategyTest {
-
-	@Rule
-	public MockitoRule mockRule = MockitoJUnit.rule();
 
 	@Mock
 	private TeamscaleClient client;
@@ -50,10 +44,14 @@ public class CoverageToTeamscaleStrategyTest {
 	@Mock
 	private JaCoCoTestwiseReportGenerator reportGenerator;
 
+	@Mock
+	private JacocoRuntimeController controller;
+
 	@Test
 	public void shouldRecordCoverageForTestsEvenIfNotProvidedAsAvailableTest() throws Exception {
+		when(controller.dumpAndReset()).thenReturn(new Dump(new SessionInfo("mytest", 0, 0), new ExecutionDataStore()));
+
 		AgentOptions options = mockOptions();
-		JacocoRuntimeController controller = mockController();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
@@ -80,7 +78,6 @@ public class CoverageToTeamscaleStrategyTest {
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
 
 		AgentOptions options = mockOptions();
-		JacocoRuntimeController controller = mockController();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		// should retry and thus not throw an exception
@@ -89,13 +86,7 @@ public class CoverageToTeamscaleStrategyTest {
 				null);
 	}
 
-	private JacocoRuntimeController mockController() throws JacocoRuntimeController.DumpException {
-		JacocoRuntimeController controller = mock(JacocoRuntimeController.class);
-		when(controller.dumpAndReset()).thenReturn(new Dump(new SessionInfo("mytest", 0, 0), new ExecutionDataStore()));
-		return controller;
-	}
-
-	private AgentOptions mockOptions() throws URISyntaxException {
+	private AgentOptions mockOptions() {
 		AgentOptions options = mock(AgentOptions.class);
 
 		TeamscaleServer server = new TeamscaleServer();
@@ -105,11 +96,6 @@ public class CoverageToTeamscaleStrategyTest {
 		server.userAccessToken = "token";
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
-
-		when(options.getLocationIncludeFilter()).thenReturn(new ClasspathWildcardIncludeFilter("**", ""));
-		// must have at least one class file or the report generator will throw an exception
-		when(options.getClassDirectoriesOrZips()).thenReturn(Collections.singletonList(
-				new File(getClass().getResource("Main.class").toURI())));
 
 		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;

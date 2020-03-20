@@ -14,20 +14,16 @@ import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
-import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Response;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -41,10 +37,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class TestwiseCoverageAgentTest {
-
-	@Rule
-	public MockitoRule mockRule = MockitoJUnit.rule();
 
 	@Mock
 	private TeamscaleClient client;
@@ -88,7 +82,7 @@ public class TestwiseCoverageAgentTest {
 				any(), any(), any());
 	}
 
-	private AgentOptions mockOptions() throws URISyntaxException {
+	private AgentOptions mockOptions() {
 		AgentOptions options = mock(AgentOptions.class);
 
 		TeamscaleServer server = new TeamscaleServer();
@@ -100,11 +94,6 @@ public class TestwiseCoverageAgentTest {
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 		when(options.getHttpServerPort()).thenReturn(54321);
 		when(options.getTestWiseCoverageMode()).thenReturn(ETestWiseCoverageMode.TEAMSCALE_REPORT);
-
-		when(options.getLocationIncludeFilter()).thenReturn(new ClasspathWildcardIncludeFilter("**", ""));
-		// must have at least one class file or the report generator will throw an exception
-		when(options.getClassDirectoriesOrZips()).thenReturn(Collections.singletonList(
-				new File(getClass().getResource("Main.class").toURI())));
 
 		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;
