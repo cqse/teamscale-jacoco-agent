@@ -7,3 +7,4 @@
 **/test-tmp/**
 
 *.swp
+report-generator/test-coverage-*.xml
