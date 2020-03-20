@@ -73,32 +73,20 @@ public class CoverageToTeamscaleStrategyTest {
 	}
 
 	@Test
-	public void testValidCallSequence() throws Exception {
+	public void shouldRetryFailedRequestsOnce() throws Exception {
 		List<PrioritizableTestCluster> clusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("mytest"))));
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
-
 		AgentOptions options = mockOptions();
 		JacocoRuntimeController controller = mockController();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
+		// should retry and thus not throw an exception
 		strategy.testRunStart(
 				Collections.singletonList(new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
 				null);
-		strategy.testStart("mytest");
-		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
-		strategy.testRunEnd();
-
-		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"tests\":[{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
-				any(), any(), any());
 	}
 
 	private JacocoRuntimeController mockController() throws JacocoRuntimeController.DumpException {

@@ -79,7 +79,7 @@ public class CommandLineInterface {
 	}
 
 	private void endTestRun() throws Exception {
-		AgentCommunicationUtils.handleRequestError(api.testRunFinished(),
+		AgentCommunicationUtils.handleRequestError(api::testRunFinished,
 				"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 	}
 
@@ -96,7 +96,7 @@ public class CommandLineInterface {
 
 		// the agent already records test duration, so we can simply provide a dummy value here
 		TestExecution execution = new TestExecution(uniformPath, 0L, result, message);
-		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
+		AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}
@@ -108,7 +108,7 @@ public class CommandLineInterface {
 							" as the first argument of the startTest command");
 		}
 		String uniformPath = arguments.remove(0);
-		AgentCommunicationUtils.handleRequestError(api.testStarted(uniformPath),
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(uniformPath),
 				"Failed to start coverage recording for test case " + uniformPath +
 						". Coverage for that test case is lost.");
 	}
@@ -120,7 +120,7 @@ public class CommandLineInterface {
 		String json = readStdin();
 		List<ClusteredTestDetails> availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
 
-		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
+		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(() ->
 				api.testRunStarted(includeNonImpacted, baseline, availableTests), "Failed to start the test run");
 		System.out.println(prioritizableTestClusterJsonAdapter.toJson(clusters));
 	}

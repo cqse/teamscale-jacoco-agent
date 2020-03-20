@@ -62,7 +62,7 @@ public class TestRun {
 	 *                                         start and end events.
 	 */
 	public RunningTest startTest(PrioritizableTest test) throws AgentHttpRequestFailedException {
-		AgentCommunicationUtils.handleRequestError(api.testStarted(test.uniformPath),
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(test.uniformPath),
 				"Failed to start coverage recording for test case " + test.uniformPath);
 		return new RunningTest(test, api);
 	}
@@ -77,7 +77,7 @@ public class TestRun {
 	 *                                         this problem appropriately.
 	 */
 	public void endTestRun() throws AgentHttpRequestFailedException {
-		AgentCommunicationUtils.handleRequestError(api.testRunFinished(),
+		AgentCommunicationUtils.handleRequestError(api::testRunFinished,
 				"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 	}
 
