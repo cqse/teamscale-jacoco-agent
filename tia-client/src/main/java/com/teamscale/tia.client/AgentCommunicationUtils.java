@@ -5,6 +5,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * Utilities for performing requests to the agent.
@@ -15,16 +16,16 @@ class AgentCommunicationUtils {
 	 * Performs the given request and handles common errors (e.g. network failures, internal exceptions in the agent).
 	 * In case of network problems, retries the request once.
 	 */
-	static <T> T handleRequestError(Call<T> request, String errorMessage)
+	static <T> T handleRequestError(Supplier<Call<T>> requestFactory, String errorMessage)
 			throws AgentHttpRequestFailedException {
-		return handleRequestError(request, errorMessage, true);
+		return handleRequestError(requestFactory, errorMessage, true);
 	}
 
-	private static <T> T handleRequestError(Call<T> request, String errorMessage, boolean retryOnce)
+	private static <T> T handleRequestError(Supplier<Call<T>> requestFactory, String errorMessage, boolean retryOnce)
 			throws AgentHttpRequestFailedException {
 
 		try {
-			Response<T> response = request.execute();
+			Response<T> response = requestFactory.get().execute();
 			if (response.isSuccessful()) {
 				return response.body();
 			}
@@ -43,7 +44,7 @@ class AgentCommunicationUtils {
 
 			// retry once on network problems
 			try {
-				return handleRequestError(request, errorMessage, false);
+				return handleRequestError(requestFactory, errorMessage, false);
 			} catch (Throwable t) {
 				t.addSuppressed(e);
 				throw t;

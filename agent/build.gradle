@@ -46,16 +46,18 @@ dependencies {
 
 	implementation 'com.squareup.moshi:moshi:1.8.0'
 
-	testImplementation 'junit:junit:4.12'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
 	testImplementation 'org.assertj:assertj-core:3.8.0'
 	testImplementation 'org.mockito:mockito-core:2.19.0'
+	testImplementation 'org.mockito:mockito-junit-jupiter:2.19.0'
 	testImplementation project(':tia-client')
+	testImplementation 'com.squareup.retrofit2:converter-moshi:2.4.0'
 }
 
 test {
 	testLogging.exceptionFormat "full"
+	useJUnitPlatform()
 }
 
 mainClassName = 'com.teamscale.jacoco.agent.Main'

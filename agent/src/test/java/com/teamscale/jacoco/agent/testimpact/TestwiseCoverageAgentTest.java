@@ -18,16 +18,21 @@ import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
+import retrofit2.Call;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.moshi.MoshiConverterFactory;
+import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,16 +43,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class TestwiseCoverageAgentTest {
-
-	@Rule
-	public MockitoRule mockRule = MockitoJUnit.rule();
 
 	@Mock
 	private TeamscaleClient client;
 
 	@Mock
 	private JaCoCoTestwiseReportGenerator reportGenerator;
+
+	/**
+	 * Ensures that each test case gets it's own port number, so each tested instance of the agent runs it's REST API on
+	 * a separate port.
+	 */
+	private static final AtomicInteger PORT_COUNTER = new AtomicInteger(54321);
 
 	@Test
 	public void testAccessViaTiaClientAndReportUploadToTeamscale() throws Exception {
@@ -66,9 +75,10 @@ public class TestwiseCoverageAgentTest {
 		testCoverageBuilder.add(fileCoverageBuilder);
 		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
 
-		new TestwiseCoverageAgent(mockOptions(), null, reportGenerator);
+		int port = PORT_COUNTER.incrementAndGet();
+		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
 
-		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:54321"));
+		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
 
 		TestRun testRun = agent.startTestRun(availableTests);
 		assertThat(testRun.getPrioritizedTests()).hasSize(1);
@@ -85,7 +95,43 @@ public class TestwiseCoverageAgentTest {
 				any(), any(), any());
 	}
 
-	private AgentOptions mockOptions() {
+	private interface ITestwiseCoverageAgentApiWithoutBody {
+
+		/**
+		 * Version of testrun/start that doesn't have a body. This can't be triggered via the Java TIA client but is a
+		 * supported version of the API for other clients.
+		 */
+		@POST("testrun/start")
+		Call<List<PrioritizableTestCluster>> testRunStarted(
+				@Query("include-non-impacted") boolean includeNonImpacted,
+				@Query("baseline") Long baseline
+		);
+	}
+
+	@Test
+	public void shouldHandleMissingRequestBodyForTestrunStartGracefully() throws Exception {
+		List<PrioritizableTestCluster> impactedClusters = Collections
+				.singletonList(new PrioritizableTestCluster("cluster",
+						Collections.singletonList(new PrioritizableTest("test2"))));
+		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean()))
+				.thenReturn(Response.success(impactedClusters));
+
+		int port = PORT_COUNTER.incrementAndGet();
+		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
+
+		ITestwiseCoverageAgentApiWithoutBody api = new Retrofit.Builder()
+				.addConverterFactory(MoshiConverterFactory.create())
+				.baseUrl("http://localhost:" + port)
+				.build().create(ITestwiseCoverageAgentApiWithoutBody.class);
+		Response<List<PrioritizableTestCluster>> response = api.testRunStarted(false, null).execute();
+
+		assertThat(response.isSuccessful()).describedAs(response.toString()).isTrue();
+		List<PrioritizableTestCluster> tests = response.body();
+		assertThat(tests).isNotNull().hasSize(1);
+		assertThat(tests.get(0).tests).hasSize(1);
+	}
+
+	private AgentOptions mockOptions(int port) {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
 
@@ -96,9 +142,10 @@ public class TestwiseCoverageAgentTest {
 		server.userAccessToken = "token";
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
-		when(options.getHttpServerPort()).thenReturn(54321);
+		when(options.getHttpServerPort()).thenReturn(port);
 		when(options.getTestWiseCoverageMode()).thenReturn(ETestWiseCoverageMode.TEAMSCALE_REPORT);
 
+		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;
 	}
 

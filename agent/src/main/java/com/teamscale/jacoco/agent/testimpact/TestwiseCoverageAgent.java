@@ -9,6 +9,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
@@ -19,10 +20,12 @@ import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
 import spark.Request;
 import spark.Response;
+import spark.Service;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,9 +34,6 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
-import static spark.Spark.exception;
-import static spark.Spark.get;
-import static spark.Spark.post;
 
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens for test events.
@@ -75,14 +75,14 @@ public class TestwiseCoverageAgent extends AgentBase {
 	}
 
 	@Override
-	protected void initServerEndpoints() {
-		get("/test", (request, response) -> controller.getSessionId());
-		get("/revision", (request, response) -> this.getRevisionInfo());
-		post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
-		post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
-		post("/testrun/start", this::handleTestRunStart);
-		post("/testrun/end", this::handleTestRunEnd);
-		exception(Exception.class, this::handleThrowable);
+	protected void initServerEndpoints(Service spark) {
+		spark.get("/test", (request, response) -> controller.getSessionId());
+		spark.get("/revision", (request, response) -> this.getRevisionInfo());
+		spark.post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
+		spark.post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
+		spark.post("/testrun/start", this::handleTestRunStart);
+		spark.post("/testrun/end", this::handleTestRunEnd);
+		spark.exception(Exception.class, this::handleThrowable);
 	}
 
 	private void handleThrowable(Exception exception, Request request, Response response) {
@@ -116,13 +116,15 @@ public class TestwiseCoverageAgent extends AgentBase {
 		}
 
 		String bodyString = request.body();
-		List<ClusteredTestDetails> availableTests;
-		try {
-			availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
-		} catch (IOException e) {
-			logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
-			response.status(SC_BAD_REQUEST);
-			return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
+		List<ClusteredTestDetails> availableTests = Collections.emptyList();
+		if (!StringUtils.isEmpty(bodyString)) {
+			try {
+				availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
+			} catch (IOException e) {
+				logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
+				response.status(SC_BAD_REQUEST);
+				return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
+			}
 		}
 
 		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);

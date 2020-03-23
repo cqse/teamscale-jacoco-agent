@@ -43,7 +43,7 @@ public class RunningTest {
 		TestExecution execution = new TestExecution(uniformPath, 0L,
 				ETestExecutionResult.ERROR, throwable.getMessage() + "\n" + writer.toString());
 
-		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
+		AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}
@@ -62,7 +62,7 @@ public class RunningTest {
 		// the agent already records test duration, so we can simply provide a dummy value here
 		TestExecution execution = new TestExecution(uniformPath, 0L, result.result,
 				result.message);
-		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
+		AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}

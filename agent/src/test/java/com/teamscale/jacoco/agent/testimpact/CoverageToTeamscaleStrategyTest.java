@@ -18,11 +18,10 @@ import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import okhttp3.HttpUrl;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Response;
 
 import java.util.Collections;
@@ -36,10 +35,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class CoverageToTeamscaleStrategyTest {
-
-	@Rule
-	public MockitoRule mockRule = MockitoJUnit.rule();
 
 	@Mock
 	private TeamscaleClient client;
@@ -47,10 +44,14 @@ public class CoverageToTeamscaleStrategyTest {
 	@Mock
 	private JaCoCoTestwiseReportGenerator reportGenerator;
 
+	@Mock
+	private JacocoRuntimeController controller;
+
 	@Test
 	public void shouldRecordCoverageForTestsEvenIfNotProvidedAsAvailableTest() throws Exception {
+		when(controller.dumpAndReset()).thenReturn(new Dump(new SessionInfo("mytest", 0, 0), new ExecutionDataStore()));
+
 		AgentOptions options = mockOptions();
-		JacocoRuntimeController controller = mockController();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
@@ -116,6 +117,7 @@ public class CoverageToTeamscaleStrategyTest {
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 
+		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;
 	}
 

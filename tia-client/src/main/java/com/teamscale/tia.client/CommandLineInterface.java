@@ -5,6 +5,7 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import okhttp3.HttpUrl;
@@ -14,6 +15,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
@@ -79,7 +81,7 @@ public class CommandLineInterface {
 	}
 
 	private void endTestRun() throws Exception {
-		AgentCommunicationUtils.handleRequestError(api.testRunFinished(),
+		AgentCommunicationUtils.handleRequestError(api::testRunFinished,
 				"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 	}
 
@@ -96,7 +98,7 @@ public class CommandLineInterface {
 
 		// the agent already records test duration, so we can simply provide a dummy value here
 		TestExecution execution = new TestExecution(uniformPath, 0L, result, message);
-		AgentCommunicationUtils.handleRequestError(api.testFinished(uniformPath, execution),
+		AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}
@@ -108,7 +110,7 @@ public class CommandLineInterface {
 							" as the first argument of the startTest command");
 		}
 		String uniformPath = arguments.remove(0);
-		AgentCommunicationUtils.handleRequestError(api.testStarted(uniformPath),
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(uniformPath),
 				"Failed to start coverage recording for test case " + uniformPath +
 						". Coverage for that test case is lost.");
 	}
@@ -116,13 +118,20 @@ public class CommandLineInterface {
 	private void startTestRun() throws Exception {
 		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("include-non-impacted");
 		Long baseline = parseAndRemoveLongParameter("baseline");
+		List<ClusteredTestDetails> availableTests = parseAvailableTestsFromStdin();
 
-		String json = readStdin();
-		List<ClusteredTestDetails> availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
-
-		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
+		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(() ->
 				api.testRunStarted(includeNonImpacted, baseline, availableTests), "Failed to start the test run");
 		System.out.println(prioritizableTestClusterJsonAdapter.toJson(clusters));
+	}
+
+	private List<ClusteredTestDetails> parseAvailableTestsFromStdin() throws java.io.IOException {
+		String json = readStdin();
+		List<ClusteredTestDetails> availableTests = Collections.emptyList();
+		if (!StringUtils.isEmpty(json)) {
+			availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
+		}
+		return availableTests;
 	}
 
 	private String readStdin() {

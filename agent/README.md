@@ -208,19 +208,26 @@ The agent's REST API has the following endpoints:
   
 - `[POST] /testrun/start` If you configured a connection to Teamscale via the `teamscale-` options, this will fetch
   impacted tests from Teamscale and return them in the response body. The format is the same as returned by Teamscale
-  itself. You must provide a list of all available test cases in the body of the request. These will also be used to
+  itself. You may optionally provide a list of all available test cases in the body of the request. These will also be used to
   generate the test-wise coverage report in `[POST] /testrun/end`. The format of the request body is:
   
-```json
-[
-    {
-      "clusterId": "<ID of the cluster the test belongs to>",
-      "uniformPath": "<Unique name of the test case>",
-      "sourcePath": "<Optional: Path to the source of the test>",
-      "content": "<Optional: Value to detect changes to the test, e.g. hash code, revision, ...>"
-    }
-]
-```
+  ```json
+    [
+        {
+          "clusterId": "<ID of the cluster the test belongs to>",
+          "uniformPath": "<Unique name of the test case>",
+          "sourcePath": "<Optional: Path to the source of the test>",
+          "content": "<Optional: Value to detect changes to the test, e.g. hash code, revision, ...>"
+        }
+    ]
+  ```
+  
+  Additionally, you may pass the following optional URL query parameters:
+  
+  - `include-non-impacted`: If this is `true`, will not perform test-selection, only test-prioritization.
+  - `baseline`: UNIX timestamp in milliseconds to indicate the time since which changes should be considered.
+    If not given, the time since the last uploaded test-wise coverage report is used (i.e. the last time you
+    ran the TIA).
   
 - `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled 
   `teamscale-testwise-upload`, this will upload a test-wise coverage report to Teamscale.
