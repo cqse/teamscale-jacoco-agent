@@ -15,7 +15,7 @@ jacocoTestReport {
 }
 tasks.test.finalizedBy(jacocoTestReport)
 
-version pluginVersion
+version appVersion
 
 repositories {
 	mavenCentral()
