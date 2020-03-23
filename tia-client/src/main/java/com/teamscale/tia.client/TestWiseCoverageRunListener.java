@@ -38,9 +38,28 @@ public class TestWiseCoverageRunListener extends RunListener {
 		testRun = agent.startTestRun();
 	}
 
+	@FunctionalInterface
+	private interface Action {
+		/** Runs the action, throwing exceptions if it fails. */
+		void run() throws Exception;
+	}
+
+	/**
+	 * We mustn't throw exceptions out of the {@link RunListener} interface methods or Maven will treat the test as
+	 * failed. And we don't have access to the Maven logger, so we just log to stderr.
+	 */
+	private void handleErrors(Action action) {
+		try {
+			action.run();
+		} catch (Throwable t) {
+			System.err.println("Encountered an error while recording test-wise coverage:");
+			t.printStackTrace(System.err);
+		}
+	}
+
 	@Override
-	public void testStarted(Description description) throws Exception {
-		runningTest = testRun.startTest(getUniformPath(description));
+	public void testStarted(Description description) {
+		handleErrors(() -> runningTest = testRun.startTest(getUniformPath(description)));
 	}
 
 	private String getUniformPath(Description description) {
@@ -52,39 +71,39 @@ public class TestWiseCoverageRunListener extends RunListener {
 	}
 
 	@Override
-	public void testFinished(Description description) throws Exception {
-		if (runningTest != null) {
-			runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, null));
-			runningTest = null;
-		}
+	public void testFinished(Description description) {
+		handleErrors(() -> {
+			if (runningTest != null) {
+				runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, null));
+				runningTest = null;
+			}
+		});
 	}
 
 	@Override
-	public void testFailure(Failure failure) throws Exception {
-		if (runningTest != null) {
-			runningTest.endTestNormally(
-					new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, failure.getTrace()));
-			runningTest = null;
-		}
+	public void testFailure(Failure failure) {
+		handleErrors(() -> {
+			if (runningTest != null) {
+				runningTest.endTestNormally(
+						new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, failure.getTrace()));
+				runningTest = null;
+			}
+		});
 	}
 
 	@Override
 	public void testAssumptionFailure(Failure failure) {
-		if (runningTest != null) {
-			try {
+		handleErrors(() -> {
+			if (runningTest != null) {
 				runningTest.endTestNormally(
 						new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, failure.getTrace()));
 				runningTest = null;
-			} catch (AgentHttpRequestFailedException e) {
-				// we need to rethrow as a runtime exception since the interface does not allow exceptions here,
-				// unlike the other listener methods
-				throw new RuntimeException(e);
 			}
-		}
+		});
 	}
 
 	@Override
-	public void testRunFinished(Result result) throws Exception {
-		testRun.endTestRun();
+	public void testRunFinished(Result result) {
+		handleErrors(testRun::endTestRun);
 	}
 }
