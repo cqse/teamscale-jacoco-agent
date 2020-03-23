@@ -116,12 +116,6 @@ public class TestwiseCoverageAgentTest {
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("test2");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
-
 		int port = PORT_COUNTER.incrementAndGet();
 		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
 

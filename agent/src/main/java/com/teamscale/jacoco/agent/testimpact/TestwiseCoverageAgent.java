@@ -9,6 +9,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
@@ -24,6 +25,7 @@ import spark.Service;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -114,13 +116,15 @@ public class TestwiseCoverageAgent extends AgentBase {
 		}
 
 		String bodyString = request.body();
-		List<ClusteredTestDetails> availableTests;
-		try {
-			availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
-		} catch (IOException e) {
-			logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
-			response.status(SC_BAD_REQUEST);
-			return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
+		List<ClusteredTestDetails> availableTests = Collections.emptyList();
+		if (!StringUtils.isEmpty(bodyString)) {
+			try {
+				availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
+			} catch (IOException e) {
+				logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
+				response.status(SC_BAD_REQUEST);
+				return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
+			}
 		}
 
 		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);

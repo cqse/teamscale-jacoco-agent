@@ -5,6 +5,7 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import okhttp3.HttpUrl;
@@ -14,6 +15,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
@@ -116,13 +118,20 @@ public class CommandLineInterface {
 	private void startTestRun() throws Exception {
 		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("include-non-impacted");
 		Long baseline = parseAndRemoveLongParameter("baseline");
-
-		String json = readStdin();
-		List<ClusteredTestDetails> availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
+		List<ClusteredTestDetails> availableTests = parseAvailableTestsFromStdin();
 
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(() ->
 				api.testRunStarted(includeNonImpacted, baseline, availableTests), "Failed to start the test run");
 		System.out.println(prioritizableTestClusterJsonAdapter.toJson(clusters));
+	}
+
+	private List<ClusteredTestDetails> parseAvailableTestsFromStdin() throws java.io.IOException {
+		String json = readStdin();
+		List<ClusteredTestDetails> availableTests = Collections.emptyList();
+		if (!StringUtils.isEmpty(json)) {
+			availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
+		}
+		return availableTests;
 	}
 
 	private String readStdin() {
