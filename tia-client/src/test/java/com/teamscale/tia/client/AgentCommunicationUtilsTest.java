@@ -4,7 +4,6 @@ import okhttp3.ResponseBody;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.SocketPolicy;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import retrofit2.Call;
 import retrofit2.Retrofit;

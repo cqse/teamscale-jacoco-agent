@@ -52,6 +52,7 @@ dependencies {
 	testImplementation 'org.mockito:mockito-core:2.19.0'
 	testImplementation 'org.mockito:mockito-junit-jupiter:2.19.0'
 	testImplementation project(':tia-client')
+	testImplementation 'com.squareup.retrofit2:converter-moshi:2.4.0'
 }
 
 test {

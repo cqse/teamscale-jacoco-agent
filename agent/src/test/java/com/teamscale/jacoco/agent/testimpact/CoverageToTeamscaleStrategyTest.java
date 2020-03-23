@@ -1,10 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
-import com.teamscale.client.PrioritizableTest;
-import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
@@ -22,13 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import retrofit2.Response;
-
-import java.util.Collections;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.mock;
@@ -68,22 +60,6 @@ public class CoverageToTeamscaleStrategyTest {
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"tests\":[{\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
 				any(), any(), any());
-	}
-
-	@Test
-	public void shouldRetryFailedRequestsOnce() throws Exception {
-		List<PrioritizableTestCluster> clusters = Collections
-				.singletonList(new PrioritizableTestCluster("cluster",
-						Collections.singletonList(new PrioritizableTest("mytest"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
-
-		AgentOptions options = mockOptions();
-		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
-
-		// should retry and thus not throw an exception
-		strategy.testRunStart(
-				Collections.singletonList(new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
-				null);
 	}
 
 	private AgentOptions mockOptions() {

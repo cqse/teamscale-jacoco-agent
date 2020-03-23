@@ -16,6 +16,7 @@ import com.teamscale.report.jacoco.dump.Dump;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import spark.Request;
 import spark.Response;
+import spark.Service;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -24,8 +25,6 @@ import java.time.Duration;
 import java.util.Optional;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
-import static spark.Spark.get;
-import static spark.Spark.post;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
@@ -68,13 +67,12 @@ public class Agent extends AgentBase {
 	}
 
 	@Override
-	protected void initServerEndpoints() {
-		get("/partition", (request, response) ->
+	protected void initServerEndpoints(Service spark) {
+		spark.get("/partition", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
-
-		post("/dump", this::handleDump);
-		post("/reset", this::handleReset);
-		post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
+		spark.post("/dump", this::handleDump);
+		spark.post("/reset", this::handleReset);
+		spark.post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
 	}
 
 	/** Handles dumping a XML coverage report for coverage collected until now. */
@@ -123,7 +121,7 @@ public class Agent extends AgentBase {
 		try {
 			com.teamscale.jacoco.agent.util.FileSystemUtils.deleteDirectoryIfEmpty(options.getOutputDirectory());
 		} catch (IOException e) {
-			logger.info("Could not delete emtpy output directory {}. " +
+			logger.info("Could not delete empty output directory {}. " +
 							"This directory was created inside the configured output directory to be able to " +
 							"distinguish between different runs of the profiled JVM. You may delete it manually.",
 					options.getOutputDirectory(), e);
@@ -158,7 +156,7 @@ public class Agent extends AgentBase {
 		long currentTime = System.currentTimeMillis();
 		Path outputPath = options.getOutputDirectory().resolve("jacoco-" + currentTime + ".xml");
 
-		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
+		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
 			FileSystemUtils.ensureParentDirectoryExists(outputPath.toFile());
 			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
