@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class AgentCommunicationUtilsTest {
 
 	private interface ITestService {
+
+		/** Test request. */
 		@GET("request")
 		Call<ResponseBody> testRequest();
 	}
