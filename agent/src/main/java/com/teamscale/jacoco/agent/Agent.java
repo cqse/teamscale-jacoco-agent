@@ -159,7 +159,7 @@ public class Agent extends AgentBase {
 
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
 			FileSystemUtils.ensureParentDirectoryExists(outputPath.toFile());
-			coverageFile = generator.convert(dump, outputPath, false);
+			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
 			return;

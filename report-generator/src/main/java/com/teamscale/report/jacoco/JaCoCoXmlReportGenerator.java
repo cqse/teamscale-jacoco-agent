@@ -58,19 +58,17 @@ public class JaCoCoXmlReportGenerator {
 	 *
 	 * @return The file object of for the converted report or null if it could not be created
 	 */
-	public CoverageFile convert(Dump dump, Path filePath, boolean writeEmptyReportFiles) throws IOException, EmptyReportException {
+	public CoverageFile convert(Dump dump, Path filePath) throws IOException, EmptyReportException {
 		CoverageFile coverageFile = new CoverageFile(filePath.toFile());
-		convertToReport(coverageFile, dump, writeEmptyReportFiles);
+		convertToReport(coverageFile, dump);
 		return coverageFile;
 	}
 
 	/** Creates the report. */
-	private void convertToReport(CoverageFile coverageFile, Dump dump, boolean writeEmptyReportFiles) throws IOException, EmptyReportException {
+	private void convertToReport(CoverageFile coverageFile, Dump dump) throws IOException, EmptyReportException {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
-		if (!writeEmptyReportFiles) {
-			checkForEmptyReport(bundleCoverage);
-		}
+		checkForEmptyReport(bundleCoverage);
 		createReport(coverageFile.getOutputStream(), bundleCoverage, dump.info, mergedStore);
 	}
 
@@ -79,8 +77,9 @@ public class JaCoCoXmlReportGenerator {
 			throw new EmptyReportException("The generated coverage report is empty. " + MOST_LIKELY_CAUSE_MESSAGE);
 		}
 		if (coverage.getLineCounter().getCoveredCount() == 0) {
-			throw new EmptyReportException("The generated coverage report does not contain any covered source code lines. " +
-					MOST_LIKELY_CAUSE_MESSAGE);
+			throw new EmptyReportException(
+					"The generated coverage report does not contain any covered source code lines. " +
+							MOST_LIKELY_CAUSE_MESSAGE);
 		}
 	}
 
