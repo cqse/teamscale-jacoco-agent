@@ -23,7 +23,7 @@ public class TestwiseCoverageReportBuilder {
 	 * merged.
 	 */
 	public static TestwiseCoverageReport createFrom(
-			Collection<TestDetails> testDetailsList,
+			Collection<? extends TestDetails> testDetailsList,
 			Collection<TestCoverageBuilder> testCoverage,
 			Collection<TestExecution> testExecutions
 	) {
@@ -63,6 +63,9 @@ public class TestwiseCoverageReportBuilder {
 		return testInfoBuilder;
 	}
 
+	/**
+	 * Removes parameterized test arguments from the given uniform path.
+	 */
 	public static String stripParameterizedTestArguments(String uniformPath) {
 		return uniformPath.replaceFirst("(.*\\))\\[.*]", "$1");
 	}

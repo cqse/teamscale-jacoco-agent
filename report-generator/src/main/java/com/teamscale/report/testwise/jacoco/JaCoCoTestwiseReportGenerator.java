@@ -47,15 +47,14 @@ public class JaCoCoTestwiseReportGenerator {
 	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives,
 										 ClasspathWildcardIncludeFilter locationIncludeFilter,
 										 EDuplicateClassFileBehavior duplicateClassFileBehavior,
-										 ILogger logger) throws CoverageGenerationException {
+										 ILogger logger) {
 		this.locationIncludeFilter = locationIncludeFilter;
-		this.executionDataReader = new CachingExecutionDataReader(logger);
-		this.executionDataReader
-				.analyzeClassDirs(codeDirectoriesOrArchives, locationIncludeFilter, duplicateClassFileBehavior);
+		this.executionDataReader = new CachingExecutionDataReader(logger, codeDirectoriesOrArchives,
+				locationIncludeFilter, duplicateClassFileBehavior);
 	}
 
 	/** Converts the given dumps to a report. */
-	public TestwiseCoverage convert(File executionDataFile) throws IOException {
+	public TestwiseCoverage convert(File executionDataFile) throws IOException, CoverageGenerationException {
 		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
 				.buildCoverageConsumer(locationIncludeFilter, testwiseCoverage::add);
@@ -64,7 +63,7 @@ public class JaCoCoTestwiseReportGenerator {
 	}
 
 	/** Converts the given dump to a report. */
-	public TestCoverageBuilder convert(Dump dump) {
+	public TestCoverageBuilder convert(Dump dump) throws CoverageGenerationException {
 		List<TestCoverageBuilder> list = new ArrayList<>();
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
 				.buildCoverageConsumer(locationIncludeFilter, list::add);
@@ -77,7 +76,8 @@ public class JaCoCoTestwiseReportGenerator {
 	}
 
 	/** Converts the given dumps to a report. */
-	public void convertAndConsume(File executionDataFile, Consumer<TestCoverageBuilder> consumer) throws IOException {
+	public void convertAndConsume(File executionDataFile,
+								  Consumer<TestCoverageBuilder> consumer) throws IOException, CoverageGenerationException {
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
 				.buildCoverageConsumer(locationIncludeFilter, consumer);
 		readAndConsumeDumps(executionDataFile, dumpConsumer);

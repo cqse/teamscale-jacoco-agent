@@ -135,7 +135,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
   even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
   You might need to make your self-signed certificates available to the agent via a keystore. See
-  [the Teamscale userguide's section on that topic][ts-userguide] for how to do that.
+  [the Teamscale userguide's section on that topic][ts-userguide-keystore] for how to do that.
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
   https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case 
   that the given
@@ -181,6 +181,12 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
+- `class-dir` (required when `coverage-via-http` or `teamscale-testwise-upload` is `true`):
+  the path under which all class files of the profiled 
+  application are stored. May be a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. 
+  (For details see path format section above)
+  
+#### REST API
 
 The agent's REST API has the following endpoints:
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was 
@@ -200,14 +206,39 @@ The agent's REST API has the following endpoints:
 }
 ```
   
-- `[POST] /test/start/{testPath}` Signals to the agent that the test with the given testPath is about to start.
-- `[POST] /test/end/{testPath}` Signals to the agent that the test with the given testPath has just finished.
+- `[POST] /testrun/start` If you configured a connection to Teamscale via the `teamscale-` options, this will fetch
+  impacted tests from Teamscale and return them in the response body. The format is the same as returned by Teamscale
+  itself. You may optionally provide a list of all available test cases in the body of the request. These will also be used to
+  generate the test-wise coverage report in `[POST] /testrun/end`. The format of the request body is:
+  
+  ```json
+    [
+        {
+          "clusterId": "<ID of the cluster the test belongs to>",
+          "uniformPath": "<Unique name of the test case>",
+          "sourcePath": "<Optional: Path to the source of the test>",
+          "content": "<Optional: Value to detect changes to the test, e.g. hash code, revision, ...>"
+        }
+    ]
+  ```
+  
+  Additionally, you may pass the following optional URL query parameters:
+  
+  - `include-non-impacted`: If this is `true`, will not perform test-selection, only test-prioritization.
+  - `baseline`: UNIX timestamp in milliseconds to indicate the time since which changes should be considered.
+    If not given, the time since the last uploaded test-wise coverage report is used (i.e. the last time you
+    ran the TIA).
+  
+- `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled 
+  `teamscale-testwise-upload`, this will upload a test-wise coverage report to Teamscale.
+- `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
+- `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
   The body of the request may optionally contain the test execution result in json format:
   
 ```json
 {
- "result": "ERROR",
- "message": "<stacktrace>|<ignore reason>"
+  "result": "ERROR",
+  "message": "<stacktrace>|<ignore reason>"
 }
 ```
 
@@ -220,13 +251,16 @@ The agent's REST API has the following endpoints:
 
 (`uniformPath` and `duration` is set automatically)
   
-The `testPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
+The `uniformPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
 
-- `coverage-via-http` (optional): if set to true the coverage collected during a test is generated in process and 
-  returned as response to the the `[POST] /test/end/...` request. Be aware that this option may slow down the startup 
-  of the system under test and result in a larger memory footprint. If set to false the coverage is stored in a binary 
-  `*.exec` file within the `out` directory. (Default is false)
+#### Test-wise coverage modes
+
+You can run the test-wise agent in three different modes:
+
+- `coverage-via-http`: if set to true the coverage collected during a test is generated in-process and 
+  returned as response to the `[POST] /test/end/...` request. Be aware that this option may slow down the startup 
+  of the system under test and result in a larger memory footprint.
   
     The response format looks like this:
     ```json
@@ -252,10 +286,15 @@ E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com
     }
     ```
   (`duration` and `result` are included when a test execution result is given in the request body)
-
-- `class-dir` (required when `coverage-via-http` is `true`): the path under which all class files of the profiled 
-  application are stored. May be a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. 
-  (For details see path format section above)
+  
+- `teamscale-testwise-upload`: if `true`, the agent will buffer all test-wise coverage and test execution data in-memory
+  and upload the test-wise report to Teamscale when the `POST /testrun/end` REST endpoint is called.
+  Be aware that this option may slow down the startup 
+  of the system under test and result in a larger memory footprint.
+  
+- Neither of the above: The coverage is stored in a binary `*.exec` file within the `out` directory.
+  This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert all
+  `*.exec` files and upload a test-wise coverage report to Teamscale.
 
 ## Additional steps for WebSphere
 
@@ -616,6 +655,6 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info
-[ts-userguide]: https://www.cqse.eu/download/teamscale/userguide.pdf
+[ts-userguide-keystore]: https://docs.teamscale.com/howto/configuring-https/#creating-a-keystore
 [teamscale]: https://teamscale.com
 [signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html

@@ -24,6 +24,7 @@ repositories {
 dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
+	implementation project(':tia-client')
 
 	compileOnly group: 'org.junit.platform', name: 'junit-platform-engine', version: '1.4.0'
 	compileOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: '1.4.0'

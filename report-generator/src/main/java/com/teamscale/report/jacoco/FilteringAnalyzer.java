@@ -51,14 +51,12 @@ import java.util.zip.ZipInputStream;
 	private IOException analyzerError(final String location,
 									  final Exception cause) {
 		final IOException ex = new IOException(
-				String.format("Error while analyzing %s.", location));
-		ex.initCause(cause);
+				String.format("Error while analyzing %s.", location), cause);
 		return ex;
 	}
 
 	/**
-	 * Copied from Analyzer.analyzeZip renamed to analyzeJar and
-	 * added wrapping BashFileSkippingInputStream.
+	 * Copied from Analyzer.analyzeZip renamed to analyzeJar and added wrapping BashFileSkippingInputStream.
 	 */
 	private int analyzeJar(final InputStream input, final String location)
 			throws IOException {

@@ -20,8 +20,8 @@ public class BashFileSkippingInputStream extends FilterInputStream {
 	}
 
 	/**
-	 * Reads the stream until the zip file header "50 4B 03 04" is found or EOF is reached.
-	 * After calling the method the read pointer points to the first byte of the zip file header.
+	 * Reads the stream until the zip file header "50 4B 03 04" is found or EOF is reached. After calling the method the
+	 * read pointer points to the first byte of the zip file header.
 	 */
 	private void consumeUntilZipHeader() throws IOException {
 		byte[] buffer = new byte[8192];
