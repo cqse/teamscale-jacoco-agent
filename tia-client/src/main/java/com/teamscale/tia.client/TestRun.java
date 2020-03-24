@@ -1,6 +1,5 @@
 package com.teamscale.tia.client;
 
-import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 
@@ -11,7 +10,7 @@ import java.util.List;
  * end events and upload test-wise coverage to Teamscale.
  * <p>
  * The caller of this class should retrieve the tests to execute from {@link #getPrioritizedTests()}, run them (in the
- * given order if possible) and report test start and end events via {@link #startTest(PrioritizableTest)}.
+ * given order if possible) and report test start and end events via {@link #startTest(String)} )}.
  * <p>
  * After having run all tests, call {@link #endTestRun()} to create a test-wise coverage report and upload it to
  * Teamscale.
@@ -61,10 +60,10 @@ public class TestRun {
 	 *                                         execution and continue informing the coverage agent about further test
 	 *                                         start and end events.
 	 */
-	public RunningTest startTest(PrioritizableTest test) throws AgentHttpRequestFailedException {
-		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(test.uniformPath),
-				"Failed to start coverage recording for test case " + test.uniformPath);
-		return new RunningTest(test, api);
+	public RunningTest startTest(String uniformPath) throws AgentHttpRequestFailedException {
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(uniformPath),
+				"Failed to start coverage recording for test case " + uniformPath);
+		return new RunningTest(uniformPath, api);
 	}
 
 	/**

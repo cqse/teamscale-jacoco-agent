@@ -15,7 +15,7 @@ jacocoTestReport {
 }
 tasks.test.finalizedBy(jacocoTestReport)
 
-version pluginVersion
+version appVersion
 
 repositories {
 	mavenCentral()
@@ -31,6 +31,7 @@ dependencies {
 	api project(':teamscale-client')
 	api project(':report-generator')
 	api 'com.squareup.retrofit2:retrofit:2.5.0'
+	api 'junit:junit:4.13'
 	implementation 'com.squareup.retrofit2:converter-moshi:2.5.0'
 
 	testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.13.2'
