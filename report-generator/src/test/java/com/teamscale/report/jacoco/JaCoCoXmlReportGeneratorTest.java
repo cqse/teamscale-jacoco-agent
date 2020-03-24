@@ -26,13 +26,21 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 	/** Ensures that the normal case runs without exceptions. */
 	@Test
 	void testNormalCaseThrowsNoException() throws Exception {
-		runGenerator("no-duplicates", EDuplicateClassFileBehavior.FAIL);
+		try {
+			runGenerator("no-duplicates", EDuplicateClassFileBehavior.FAIL);
+		} catch (EmptyReportException e) {
+			// We don't care about empty reports here
+		}
 	}
 
 	/** Ensures that two identical duplicate classes do not cause problems. */
 	@Test
 	void testIdenticalClassesShouldNotThrowException() throws Exception {
-		runGenerator("identical-duplicate-classes", EDuplicateClassFileBehavior.FAIL);
+		try {
+			runGenerator("identical-duplicate-classes", EDuplicateClassFileBehavior.FAIL);
+		} catch (EmptyReportException e) {
+			// We don't care about empty reports here
+		}
 	}
 
 	/**
@@ -50,7 +58,11 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 	 */
 	@Test
 	void testDifferentClassesWithTheSameNameShouldNotThrowExceptionIfFlagIsSet() throws Exception {
-		runGenerator("different-duplicate-classes", EDuplicateClassFileBehavior.IGNORE);
+		try {
+			runGenerator("different-duplicate-classes", EDuplicateClassFileBehavior.IGNORE);
+		} catch (EmptyReportException e) {
+			// We don't care about empty reports here
+		}
 	}
 
 	@Test
