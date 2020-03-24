@@ -105,7 +105,8 @@ public class GitPropertiesLocator {
 	 */
 	public static CommitDescriptor getCommitFromGitProperties(
 			File jarFile) throws IOException, InvalidGitPropertiesException {
-		try (JarInputStream jarStream = new JarInputStream(new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
+		try (JarInputStream jarStream = new JarInputStream(
+				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
 			return getCommitFromGitProperties(jarStream, jarFile);
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +

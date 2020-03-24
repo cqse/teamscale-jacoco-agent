@@ -1,6 +1,9 @@
 We use [semantic versioning][semver]
 
 # Next Release
+
+# 15.5.0
+- [feature] add TIA client library for integrating TIA in your custom test framework
 - [fix] Delete empty coverage directories
 - [fix] Don't upload empty coverage reports
 

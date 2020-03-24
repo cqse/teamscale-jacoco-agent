@@ -167,7 +167,7 @@ public class AgentOptionsParser {
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
 			case "mode":
-				options.mode = AgentOptions.EMode.valueOf(value.toUpperCase());
+				options.mode = EMode.valueOf(value.toUpperCase());
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
@@ -249,6 +249,11 @@ public class AgentOptionsParser {
 				return true;
 			case "teamscale-revision":
 				options.teamscaleServer.revision = value;
+				return true;
+			case "teamscale-testwise-upload":
+				if (Boolean.parseBoolean(value)) {
+					options.testWiseCoverageMode = ETestWiseCoverageMode.TEAMSCALE_REPORT;
+				}
 				return true;
 			default:
 				return false;
@@ -338,7 +343,9 @@ public class AgentOptionsParser {
 				}
 				return true;
 			case "coverage-via-http":
-				options.coverageViaHttp = Boolean.parseBoolean(value);
+				if (Boolean.parseBoolean(value)) {
+					options.testWiseCoverageMode = ETestWiseCoverageMode.HTTP;
+				}
 				return true;
 			default:
 				return false;

@@ -7,11 +7,9 @@ import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
+import spark.Service;
 
 import java.lang.instrument.Instrumentation;
-
-import static spark.Spark.port;
-import static spark.Spark.stop;
 
 /**
  * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
@@ -31,6 +29,8 @@ public abstract class AgentBase {
 	protected AgentOptions options;
 
 	private static LoggingUtils.LoggingResources loggingResources;
+
+	private final Service spark = Service.ignite();
 
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
@@ -53,13 +53,15 @@ public abstract class AgentBase {
 	 */
 	private void initServer() {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
-		port(options.getHttpServerPort());
+		spark.port(options.getHttpServerPort());
 
-		initServerEndpoints();
+		initServerEndpoints(spark);
+		// this is needed during our tests which will try to access the API directly after creating an agent
+		spark.awaitInitialization();
 	}
 
 	/** Adds the endpoints that are available in the implemented mode. */
-	protected abstract void initServerEndpoints();
+	protected abstract void initServerEndpoints(Service spark);
 
 	/** Called by the actual premain method once the agent is isolated from the rest of the application. */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
@@ -97,7 +99,7 @@ public abstract class AgentBase {
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			if (options.getHttpServerPort() != null) {
-				stop();
+				spark.stop();
 			}
 			prepareShutdown();
 			logger.info("CQSE JaCoCo agent successfully shut down.");

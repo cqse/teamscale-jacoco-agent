@@ -2,11 +2,11 @@ package com.teamscale.test_impacted.engine;
 
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver;
+import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -66,13 +66,14 @@ class InternalImpactedTestEngineTest {
 		return new InternalImpactedTestEngine(testEngineRegistry, testExecutor, testDataWriter);
 	}
 
+	@SuppressWarnings("unchecked")
 	@BeforeEach
 	void setupTestEngineAndCoverageAgent() {
 		when(testEngineRegistry.getTestEngine(any())).thenReturn(testEngine);
 		when(testEngineRegistry.iterator()).thenReturn(singletonList(testEngine).iterator());
 		when(testEngine.getId()).thenReturn("junit-jupiter");
 		when(testwiseCoverageAgentApi.testStarted(anyString())).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testFinished(anyString())).thenReturn(mock(Call.class));
+		when(testwiseCoverageAgentApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
 	}
 
 	@SafeVarargs
@@ -148,9 +149,9 @@ class InternalImpactedTestEngineTest {
 		when(executionRequest.getRootTestDescriptor()).thenReturn(impactedTestEngineDescriptor);
 		when(impactedTestsProvider.getImpactedTestsFromTeamscale(any())).thenReturn(
 				createList(
-						ImpactedTestsSetup.FirstTestClassDiscovery.getImpactedTestClsuters(),
-						ImpactedTestsSetup.IgnoredTestClassDiscovery.getImpactedTestClsuters(),
-						ImpactedTestsSetup.SecondTestClassDiscovery.getImpactedTestClsuters()));
+						ImpactedTestsSetup.FirstTestClassDiscovery.getImpactedTestClusters(),
+						ImpactedTestsSetup.IgnoredTestClassDiscovery.getImpactedTestClusters(),
+						ImpactedTestsSetup.SecondTestClassDiscovery.getImpactedTestClusters()));
 
 		internalImpactedTestEngine.execute(executionRequest);
 
@@ -255,7 +256,7 @@ class InternalImpactedTestEngineTest {
 			private static final TestDescriptor firstTestClass = testContainer(firstTestClassId, impactedTestCase1);
 			private static final TestDescriptor testEngineRoot = testContainer(engineRootId, firstTestClass);
 
-			private static List<PrioritizableTestCluster> getImpactedTestClsuters() {
+			private static List<PrioritizableTestCluster> getImpactedTestClusters() {
 				return singletonList(new PrioritizableTestCluster("FirstTestClass",
 						singletonList(new PrioritizableTest("FirstTestClass/impactedTestCase1()"))));
 			}
@@ -270,7 +271,7 @@ class InternalImpactedTestEngineTest {
 			private static final TestDescriptor ignoredTestClass = testContainer(ignoredTestClassId, impactedTestCase2);
 			private static final TestDescriptor testEngineRoot = testContainer(engineRootId, ignoredTestClass);
 
-			private static List<PrioritizableTestCluster> getImpactedTestClsuters() {
+			private static List<PrioritizableTestCluster> getImpactedTestClusters() {
 				return singletonList(new PrioritizableTestCluster("IgnoredTestClass",
 						singletonList(new PrioritizableTest("IgnoredTestClass/impactedTestCase2()"))));
 			}
@@ -288,7 +289,7 @@ class InternalImpactedTestEngineTest {
 			private static final TestDescriptor testEngineRoot = testContainer(engineRootId, secondTestClass);
 
 
-			private static List<PrioritizableTestCluster> getImpactedTestClsuters() {
+			private static List<PrioritizableTestCluster> getImpactedTestClusters() {
 				return singletonList(new PrioritizableTestCluster("SecondTestClass",
 						asList(new PrioritizableTest("SecondTestClass/impactedTestCase3()"),
 								new PrioritizableTest("SecondTestClass/skippedImpactedTestCaseId()"))));

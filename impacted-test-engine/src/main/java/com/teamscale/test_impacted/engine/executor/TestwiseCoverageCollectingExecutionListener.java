@@ -2,9 +2,9 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.test_impacted.controllers.ITestwiseCoverageAgentApi;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
+import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -156,7 +156,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private void endTest(String testUniformPath) {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testFinished(testUniformPath).execute();
+				apiService.testFinished(testUniformPath, null).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
@@ -181,6 +181,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	}
 
 	/** Extracts the stacktrace from the given {@link Throwable} into a string or returns null if no throwable is given. */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private String getStacktrace(Optional<Throwable> throwable) {
 		if (!throwable.isPresent()) {
 			return null;

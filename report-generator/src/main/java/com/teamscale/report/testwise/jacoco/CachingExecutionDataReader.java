@@ -22,23 +22,25 @@ import java.util.stream.Collectors;
  */
 class CachingExecutionDataReader {
 
-	/** The logger. */
 	private final ILogger logger;
-
-	/** Constructor. */
-	public CachingExecutionDataReader(ILogger logger) {
-		this.logger = logger;
-	}
-
-	/** Cached probes. */
+	private final Collection<File> classesDirectories;
+	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
+	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
 	private ProbesCache probesCache;
 
+	public CachingExecutionDataReader(ILogger logger, Collection<File> classesDirectories,
+									  ClasspathWildcardIncludeFilter locationIncludeFilter,
+									  EDuplicateClassFileBehavior duplicateClassFileBehavior) {
+		this.logger = logger;
+		this.classesDirectories = classesDirectories;
+		this.locationIncludeFilter = locationIncludeFilter;
+		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
+	}
+
 	/**
-	 * Analyzes the given class/jar/war/... files and creates a lookup of which probes belong to which method.
+	 * Analyzes the class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	public void analyzeClassDirs(Collection<File> classesDirectories,
-								 ClasspathWildcardIncludeFilter locationIncludeFilter,
-								 EDuplicateClassFileBehavior duplicateClassFileBehavior) throws CoverageGenerationException {
+	private void analyzeClassDirs() throws CoverageGenerationException {
 		if (probesCache != null) {
 			return;
 		}
@@ -65,7 +67,8 @@ class CachingExecutionDataReader {
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
 	public DumpConsumer buildCoverageConsumer(ClasspathWildcardIncludeFilter locationIncludeFilter,
-											  Consumer<TestCoverageBuilder> nextConsumer) {
+											  Consumer<TestCoverageBuilder> nextConsumer) throws CoverageGenerationException {
+		analyzeClassDirs();
 		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
 

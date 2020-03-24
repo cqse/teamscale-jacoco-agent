@@ -23,9 +23,9 @@ public class FileCoverageBuilder {
 	private final SortedIntList coveredLines = new SortedIntList();
 
 	/** Constructor. */
-	public FileCoverageBuilder(String path, String file) {
+	public FileCoverageBuilder(String path, String fileName) {
 		this.path = path;
-		this.fileName = file;
+		this.fileName = fileName;
 	}
 
 	/** @see #fileName */
