@@ -111,7 +111,8 @@ task installGradlePlugin(dependsOn: [
 		':impacted-test-engine:install',
 		':report-generator:install',
 		':teamscale-gradle-plugin:install',
-		':teamscale-client:install'
+		':teamscale-client:install',
+		':tia-client:install'
 ])
 
 // Installs the plugin to your local maven repository without the agent
@@ -119,7 +120,8 @@ task iGP(dependsOn: [
 		':impacted-test-engine:install',
 		':report-generator:install',
 		':teamscale-gradle-plugin:install',
-		':teamscale-client:install'
+		':teamscale-client:install',
+		':tia-client:install'
 ])
 
 // Deploys the plugin to the public share
@@ -128,7 +130,8 @@ task deployGradlePlugin(dependsOn: [
 		':impacted-test-engine:uploadArchives',
 		':report-generator:uploadArchives',
 		':teamscale-gradle-plugin:uploadArchives',
-		':teamscale-client:uploadArchives'
+		':teamscale-client:uploadArchives',
+		':tia-client:uploadArchives'
 ])
 
 // Deploys the plugin to the public share without the agent
@@ -136,5 +139,6 @@ task dGP(dependsOn: [
 		':impacted-test-engine:uploadArchives',
 		':report-generator:uploadArchives',
 		':teamscale-gradle-plugin:uploadArchives',
-		':teamscale-client:uploadArchives'
+		':teamscale-client:uploadArchives',
+		':tia-client:uploadArchives'
 ])
