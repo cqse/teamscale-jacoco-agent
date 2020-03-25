@@ -1,8 +1,8 @@
 package com.teamscale.report.jacoco;
 
+import com.teamscale.client.FileSystemUtils;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
