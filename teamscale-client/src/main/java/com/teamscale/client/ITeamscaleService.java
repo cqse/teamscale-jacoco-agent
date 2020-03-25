@@ -1,8 +1,5 @@
 package com.teamscale.client;
 
-import java.io.IOException;
-import java.util.List;
-
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -16,6 +13,9 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+
+import java.io.IOException;
+import java.util.List;
 
 /** {@link Retrofit} API specification for Teamscale. */
 public interface ITeamscaleService {
@@ -119,17 +119,15 @@ public interface ITeamscaleService {
 
 			ResponseBody body = response.body();
 			if (response.isSuccessful()) {
+				if (body == null) {
+					return "";
+				}
 				return body.string();
 			}
 
-			String bodyString;
-			if (body == null) {
-				bodyString = "<no body>";
-			} else {
-				bodyString = body.string();
-			}
+			String errorBody = HttpUtils.getErrorBodyStringSafe(response);
 			throw new IOException(
-					"Request failed with error code " + response.code() + ". Response body:\n" + bodyString);
+					"Request failed with error code " + response.code() + ". Response body: " + errorBody);
 		} catch (IOException e) {
 			throw new IOException("Failed to upload report. " + e.getMessage(), e);
 		}
