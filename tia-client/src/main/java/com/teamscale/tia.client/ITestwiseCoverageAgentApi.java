@@ -28,7 +28,6 @@ public interface ITestwiseCoverageAgentApi {
 			@Path("testUniformPath") String testUniformPath
 	);
 
-
 	/** Test finished. */
 	@POST("test/end/{testUniformPath}")
 	Call<ResponseBody> testFinished(
