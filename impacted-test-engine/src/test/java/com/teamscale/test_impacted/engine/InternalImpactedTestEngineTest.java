@@ -73,7 +73,7 @@ class InternalImpactedTestEngineTest {
 		when(testEngineRegistry.iterator()).thenReturn(singletonList(testEngine).iterator());
 		when(testEngine.getId()).thenReturn("junit-jupiter");
 		when(testwiseCoverageAgentApi.testStarted(anyString())).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
+		when(testwiseCoverageAgentApi.testFinished(anyString())).thenReturn(mock(Call.class));
 	}
 
 	@SafeVarargs

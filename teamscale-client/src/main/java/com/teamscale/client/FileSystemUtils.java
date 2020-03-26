@@ -19,6 +19,8 @@ package com.teamscale.client;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,5 +119,43 @@ public class FileSystemUtils {
 		return path.replace(File.separatorChar, UNIX_SEPARATOR);
 	}
 
+	/**
+	 * Copy an input stream to an output stream. This does <em>not</em> close the
+	 * streams.
+	 *
+	 * @param input
+	 *            input stream
+	 * @param output
+	 *            output stream
+	 * @return number of bytes copied
+	 * @throws IOException
+	 *             if an IO exception occurs.
+	 */
+	public static int copy(InputStream input, OutputStream output) throws IOException {
+		byte[] buffer = new byte[1024];
+		int size = 0;
+		int len;
+		while ((len = input.read(buffer)) > 0) {
+			output.write(buffer, 0, len);
+			size += len;
+		}
+		return size;
+	}
+
+	/**
+	 * Returns the name of the given file without extension. Example:
+	 * '/home/joe/data.dat' -> 'data'.
+	 */
+	public static String getFilenameWithoutExtension(File file) {
+		return getFilenameWithoutExtension(file.getName());
+	}
+
+	/**
+	 * Returns the name of the given file without extension. Example: 'data.dat' ->
+	 * 'data'.
+	 */
+	public static String getFilenameWithoutExtension(String fileName) {
+		return StringUtils.removeLastPart(fileName, '.');
+	}
 
 }

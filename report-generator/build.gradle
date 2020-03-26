@@ -20,8 +20,6 @@ dependencies {
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
-
 	implementation 'com.squareup.moshi:moshi:1.8.0'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
@@ -30,6 +28,7 @@ dependencies {
 	testImplementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 	testImplementation 'org.assertj:assertj-core:3.8.0'
 	testImplementation 'org.mockito:mockito-core:2.19.0'
+	testImplementation 'org.conqat:org.conqat.lib.commons:0.20190410'
 }
 
 test {

@@ -25,6 +25,12 @@ public interface ITestwiseCoverageAgentApi {
 	/** Test finished. */
 	@POST("test/end/{testUniformPath}")
 	Call<ResponseBody> testFinished(
+			@Path("testUniformPath") String testUniformPath
+	);
+
+	/** Test finished. */
+	@POST("test/end/{testUniformPath}")
+	Call<ResponseBody> testFinished(
 			@Path("testUniformPath") String testUniformPath,
 			@Body TestExecution testExecution
 	);
