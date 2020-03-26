@@ -40,7 +40,7 @@ public class SystemTest {
 			assertThat(report.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
 			assertThat(report.tests).extracting(SystemTest::getCoverageString)
-					.containsExactlyInAnyOrder("SystemUnderTest.java:3,10", "SystemUnderTest.java:3,6");
+					.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
 		});
 	}
 
