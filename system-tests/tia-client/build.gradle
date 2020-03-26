@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id 'jacoco'
+    // we do not enable code coverage recording for the system tests as we already need our agent attached
+    // it would conflict with JaCoCo's
 }
 
 sourceCompatibility = 1.8
