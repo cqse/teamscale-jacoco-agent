@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
+/** Simulates a custom test framework that doesn't rely on JUnit. */
 public class CustomTestFramework {
 
 	private final Map<String, Runnable> allTests = new HashMap<>();
@@ -35,6 +36,7 @@ public class CustomTestFramework {
 		});
 	}
 
+	/** Talks to the TIA agent and runs all impacted tests. Also uploads a coverage report at the end. */
 	public void runTestsWithTia() throws AgentHttpRequestFailedException {
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + agentPort));
 		TestRun testRun = agent.startTestRun(
@@ -44,7 +46,7 @@ public class CustomTestFramework {
 		for (PrioritizableTestCluster cluster : testRun.getPrioritizedTests()) {
 			for (PrioritizableTest test : cluster.tests) {
 				Runnable runnable = allTests.get(test.uniformPath);
-				RunningTest runningTest = testRun.startTest(test);
+				RunningTest runningTest = testRun.startTest(test.uniformPath);
 				try {
 					runnable.run();
 					runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, ""));

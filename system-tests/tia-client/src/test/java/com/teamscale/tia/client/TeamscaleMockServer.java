@@ -29,6 +29,10 @@ import static spark.Spark.port;
 import static spark.Spark.post;
 import static spark.Spark.put;
 
+/**
+ * Mocks a Teamscale server: returns predetermined impacted tests and stores all uploaded {@link
+ * TestwiseCoverageReport}s so test can run assertions on them.
+ */
 public class TeamscaleMockServer {
 
 	private final JsonAdapter<List<PrioritizableTestCluster>> testClusterJsonAdapter = new Moshi.Builder().build()
@@ -36,6 +40,7 @@ public class TeamscaleMockServer {
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestwiseCoverageReport.class);
 
+	/** All {@link TestwiseCoverageReport}s uploaded to this Teamscale instance. */
 	public final List<TestwiseCoverageReport> uploadedReports = new ArrayList<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final List<String> impactedTests;
