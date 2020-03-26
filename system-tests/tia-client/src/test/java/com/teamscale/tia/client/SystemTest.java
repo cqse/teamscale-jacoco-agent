@@ -1,9 +1,15 @@
 package com.teamscale.tia.client;
 
+import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestInfo;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.junit.jupiter.api.Test;
 import testframework.CustomTestFramework;
 
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
  * Runs the custom test framework from src/main with our agent attached (the agent is configured in this project's
@@ -24,18 +30,24 @@ public class SystemTest {
 		CustomTestFramework customTestFramework = new CustomTestFramework(agentPort);
 		customTestFramework.runTestsWithTia();
 
-		assertThat(teamscaleMockServer.uploadedReports).containsExactly(
-				"{\"tests\":[" +
-						// testBar
-						"{\"message\":\"Incorrect return value for bar\",\"paths\":[" +
-						"{\"files\":[{\"coveredLines\":\"3,10\",\"fileName\":\"SystemUnderTest.java\"}]," +
-						"\"path\":\"systemundertest\"}]," +
-						"\"result\":\"FAILURE\",\"sourcePath\":\"testBar\",\"uniformPath\":\"testBar\"}," +
-						// testFoo
-						"{\"message\":\"\",\"paths\":[" +
-						"{\"files\":[{\"coveredLines\":\"3,6\",\"fileName\":\"SystemUnderTest.java\"}]," +
-						"\"path\":\"systemundertest\"}]," +
-						"\"result\":\"PASSED\",\"sourcePath\":\"testFoo\",\"uniformPath\":\"testFoo\"}]}");
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+
+		TestwiseCoverageReport report = teamscaleMockServer.uploadedReports.get(0);
+		assertThat(report.tests).hasSize(2);
+		assertAll(() -> {
+			assertThat(report.tests).extracting(test -> test.uniformPath)
+					.containsExactlyInAnyOrder("testBar", "testFoo");
+			assertThat(report.tests).extracting(test -> test.result)
+					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
+			assertThat(report.tests).extracting(SystemTest::getCoverageString)
+					.containsExactlyInAnyOrder("SystemUnderTest.java:3,10", "SystemUnderTest.java:3,6");
+		});
+	}
+
+	private static String getCoverageString(TestInfo info) {
+		return info.paths.stream().flatMap(path -> path.getFiles().stream())
+				.map(file -> file.fileName + ":" + file.coveredLines).collect(
+						Collectors.joining(";"));
 	}
 
 }
