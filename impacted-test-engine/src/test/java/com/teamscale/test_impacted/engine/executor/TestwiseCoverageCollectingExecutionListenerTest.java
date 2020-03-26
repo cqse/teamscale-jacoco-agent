@@ -65,7 +65,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 				.thenReturn(Optional.of("MyClass/regularSkippedTestCase()"));
 		when(resolver.getClusterId(regularSkippedTestCase)).thenReturn(Optional.of("MyClass"));
 		when(mockApi.testStarted(anyString())).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
+		when(mockApi.testFinished(anyString())).thenReturn(mock(Call.class));
 
 		// Start engine and class.
 		executionListener.executionStarted(testRoot);
@@ -78,7 +78,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(mockApi).testStarted("MyClass/impactedTestCase()");
 		verify(executionListenerMock).executionStarted(impactedTestCase);
 		executionListener.executionFinished(impactedTestCase, successful());
-		verify(mockApi).testFinished(eq("MyClass/impactedTestCase()"), any());
+		verify(mockApi).testFinished(eq("MyClass/impactedTestCase()"));
 		verify(executionListenerMock).executionFinished(impactedTestCase, successful());
 
 		// Non impacted test case is skipped.

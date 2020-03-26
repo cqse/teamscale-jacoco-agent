@@ -156,7 +156,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private void endTest(String testUniformPath) {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testFinished(testUniformPath, null).execute();
+				apiService.testFinished(testUniformPath).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");

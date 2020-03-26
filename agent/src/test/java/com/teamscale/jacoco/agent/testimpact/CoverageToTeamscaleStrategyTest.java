@@ -1,7 +1,10 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
+import com.teamscale.client.PrioritizableTest;
+import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
@@ -19,8 +22,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import retrofit2.Response;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.mock;
@@ -62,8 +70,44 @@ public class CoverageToTeamscaleStrategyTest {
 				any(), any(), any());
 	}
 
+	@Test
+	public void testValidCallSequence() throws Exception {
+		List<PrioritizableTestCluster> clusters = Collections
+				.singletonList(new PrioritizableTestCluster("cluster",
+						Collections.singletonList(new PrioritizableTest("mytest"))));
+		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
+
+		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
+		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
+		fileCoverageBuilder.addLineRange(1, 4);
+		testCoverageBuilder.add(fileCoverageBuilder);
+		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+
+		AgentOptions options = mockOptions();
+		JacocoRuntimeController controller = mockController();
+		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
+
+		strategy.testRunStart(
+				Collections.singletonList(new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
+				null);
+		strategy.testStart("mytest");
+		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
+		strategy.testRunEnd();
+
+		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
+				matches("\\Q{\"tests\":[{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
+				any(), any(), any());
+	}
+
+	private JacocoRuntimeController mockController() throws JacocoRuntimeController.DumpException {
+		JacocoRuntimeController controller = mock(JacocoRuntimeController.class);
+		when(controller.dumpAndReset()).thenReturn(new Dump(new SessionInfo("mytest", 0, 0), new ExecutionDataStore()));
+		return controller;
+	}
+
 	private AgentOptions mockOptions() {
 		AgentOptions options = mock(AgentOptions.class);
+		when(options.createTeamscaleClient()).thenReturn(client);
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");

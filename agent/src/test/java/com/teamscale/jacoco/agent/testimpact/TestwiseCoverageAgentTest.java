@@ -86,7 +86,7 @@ public class TestwiseCoverageAgentTest {
 		PrioritizableTest test = testRun.getPrioritizedTests().get(0).tests.get(0);
 		assertThat(test.uniformPath).isEqualTo("test2");
 
-		RunningTest runningTest = testRun.startTest(test);
+		RunningTest runningTest = testRun.startTest(test.uniformPath);
 		runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
 		testRun.endTestRun();
@@ -133,6 +133,7 @@ public class TestwiseCoverageAgentTest {
 
 	private AgentOptions mockOptions(int port) {
 		AgentOptions options = mock(AgentOptions.class);
+		when(options.createTeamscaleClient()).thenReturn(client);
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");
