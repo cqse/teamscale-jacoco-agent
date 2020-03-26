@@ -1,7 +1,6 @@
 package com.teamscale.tia.client;
 
 import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.report.testwise.model.ETestExecutionResult;
 
 import java.util.List;
 
@@ -15,7 +14,6 @@ import java.util.List;
  * After having run all tests, call {@link #endTestRun()} to create a test-wise coverage report and upload it to
  * Teamscale.
  */
-@SuppressWarnings("unused")
 public class TestRun {
 
 	private final ITestwiseCoverageAgentApi api;
@@ -29,23 +27,6 @@ public class TestRun {
 
 	public List<PrioritizableTestCluster> getPrioritizedTests() {
 		return prioritizedTests;
-	}
-
-	/**
-	 * Represents the result of running a single test.
-	 */
-	public static class TestResultWithMessage {
-
-		/** Whether the test succeeded or failed. */
-		public final ETestExecutionResult result;
-
-		/** An optional message, e.g. a stack trace in case of test failures. */
-		public final String message;
-
-		public TestResultWithMessage(ETestExecutionResult result, String message) {
-			this.result = result;
-			this.message = message;
-		}
 	}
 
 	/**
@@ -69,6 +50,9 @@ public class TestRun {
 	/**
 	 * Informs the test-wise coverage agent that the caller has finished running all tests and instructs it to upload
 	 * the recorded test-wise coverage to Teamscale.
+	 * <p>
+	 * If you only want to record the test-wise coverage and test execution data but not upload it to Teamscale, you may
+	 * simply not call this method.
 	 *
 	 * @throws AgentHttpRequestFailedException if communicating with the agent fails or in case of internal errors. This
 	 *                                         method already retries the request once, so this is likely a terminal

@@ -24,6 +24,9 @@ test {
             "includes=*systemundertest.*"
 }
 
+// we need the agent shadow jar in order to be able to attach the agent during the tests
+tasks.test.dependsOn(project(':agent').tasks.shadowJar)
+
 dependencies {
     implementation project(':tia-client')
 

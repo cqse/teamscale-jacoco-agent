@@ -3,7 +3,6 @@ package testframework;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.tia.client.AgentHttpRequestFailedException;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
@@ -49,10 +48,9 @@ public class CustomTestFramework {
 				RunningTest runningTest = testRun.startTest(test.uniformPath);
 				try {
 					runnable.run();
-					runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, ""));
+					runningTest.endTestSuccessfully();
 				} catch (Throwable t) {
-					runningTest.endTestNormally(
-							new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, t.getMessage()));
+					runningTest.endTestWithException(t);
 				}
 			}
 		}

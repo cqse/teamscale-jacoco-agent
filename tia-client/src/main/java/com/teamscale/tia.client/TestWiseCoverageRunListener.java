@@ -74,7 +74,7 @@ public class TestWiseCoverageRunListener extends RunListener {
 	public void testFinished(Description description) {
 		handleErrors(() -> {
 			if (runningTest != null) {
-				runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, null));
+				runningTest.endTestSuccessfully();
 				runningTest = null;
 			}
 		});
@@ -84,8 +84,7 @@ public class TestWiseCoverageRunListener extends RunListener {
 	public void testFailure(Failure failure) {
 		handleErrors(() -> {
 			if (runningTest != null) {
-				runningTest.endTestNormally(
-						new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, failure.getTrace()));
+				runningTest.endTest(ETestExecutionResult.FAILURE, failure.getTrace());
 				runningTest = null;
 			}
 		});
@@ -95,8 +94,7 @@ public class TestWiseCoverageRunListener extends RunListener {
 	public void testAssumptionFailure(Failure failure) {
 		handleErrors(() -> {
 			if (runningTest != null) {
-				runningTest.endTestNormally(
-						new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, failure.getTrace()));
+				runningTest.endTestWithException(failure.getException());
 				runningTest = null;
 			}
 		});

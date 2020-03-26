@@ -16,7 +16,6 @@ import java.util.List;
  * <p>
  * The caller of this class is responsible for actually executing the tests.
  */
-@SuppressWarnings("unused")
 public class TiaAgent {
 
 	private final boolean includeNonImpactedTests;

@@ -11,7 +11,6 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ETestWiseCoverageMode;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.tia.client.RunningTest;
@@ -87,7 +86,7 @@ public class TestwiseCoverageAgentTest {
 		assertThat(test.uniformPath).isEqualTo("test2");
 
 		RunningTest runningTest = testRun.startTest(test.uniformPath);
-		runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
+		runningTest.endTestSuccessfully("message");
 
 		testRun.endTestRun();
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
