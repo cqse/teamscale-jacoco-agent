@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    // we do not enable code coverage recording for the system tests as we already need our agent attached
+    // it would conflict with JaCoCo's
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    testLogging.exceptionFormat "full"
+    useJUnitPlatform()
+
+    /** These ports must match what is configured in the SystemTest class. */
+    def fakeTeamscalePort = 65432
+    def agentPort = 65433
+    def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
+    jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,teamscale-testwise-upload=true," +
+            "teamscale-server-url=http://localhost:$fakeTeamscalePort,teamscale-user=fake,teamscale-access-token=fake," +
+            "teamscale-project=p,teamscale-partition=part,mode=testwise,teamscale-commit=master:12345," +
+            "includes=*systemundertest.*"
+}
+
+dependencies {
+    implementation project(':tia-client')
+
+    testImplementation 'com.sparkjava:spark-core:2.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+    testImplementation 'org.assertj:assertj-core:3.8.0'
+    testImplementation 'com.squareup.moshi:moshi:1.8.0'
+}
