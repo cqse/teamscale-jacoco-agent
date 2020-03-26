@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.stream.Collectors;
 
 /**
  * Helper class for writing a list of test executions to a file. This class ensures that we never have to hold all test
