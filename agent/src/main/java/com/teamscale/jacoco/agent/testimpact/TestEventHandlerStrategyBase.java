@@ -47,7 +47,7 @@ public abstract class TestEventHandlerStrategyBase {
 
 	/** Called when test test with the given name is about to start. */
 	public void testStart(String test) {
-		// Dump and reset coverage so that we only record coverage that belongs to this particular test case.
+		// Reset coverage so that we only record coverage that belongs to this particular test case.
 		controller.reset();
 		controller.setSessionId(test);
 		startTimestamp = System.currentTimeMillis();
