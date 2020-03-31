@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next Release
+- [fix] Prevent "out of memory" in small JVMs: Don't cache test executions in memory 
 - [breaking change] `--ignore-duplicates` and `-d` option in convert tool have been replaced with `--duplicates` option
 
 # 15.5.0
