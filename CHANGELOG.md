@@ -1,6 +1,7 @@
 We use [semantic versioning][semver]
 
 # Next Release
+- [breaking change] `--ignore-duplicates` and `-d` option in convert tool have been replaced with `--duplicates` option
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework

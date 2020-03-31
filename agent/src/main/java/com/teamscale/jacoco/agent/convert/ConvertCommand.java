@@ -10,6 +10,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -65,10 +66,11 @@ public class ConvertCommand implements ICommand {
 	/* package */ String outputFile = "";
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	@Parameter(names = {"--ignore-duplicates", "-d"}, required = false, arity = 1, description = ""
+	@Parameter(names = {"--duplicates", "-d"}, arity = 1, description = ""
 			+ "Whether to ignore duplicate, non-identical class files."
-			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
-	/* package */ boolean shouldIgnoreDuplicateClassFiles = false;
+			+ " This is discouraged and may result in incorrect coverage files. Defaults to FAIL. " +
+			"Options are FAIL, WARN and IGNORE.")
+	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.FAIL;
 
 	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
@@ -125,14 +127,14 @@ public class ConvertCommand implements ICommand {
 		return splitAfter;
 	}
 
-	/** @see #shouldIgnoreDuplicateClassFiles */
-	public boolean shouldIgnoreDuplicateClassFiles() {
-		return shouldIgnoreDuplicateClassFiles;
+	/** @see #duplicateClassFileBehavior */
+	public EDuplicateClassFileBehavior getDuplicateClassFileBehavior() {
+		return duplicateClassFileBehavior;
 	}
 
-	/** @see #shouldIgnoreDuplicateClassFiles */
-	public void setShouldIgnoreDuplicateClassFiles(boolean shouldIgnoreDuplicateClassFiles) {
-		this.shouldIgnoreDuplicateClassFiles = shouldIgnoreDuplicateClassFiles;
+	/** @see #duplicateClassFileBehavior */
+	public void setDuplicateClassFileBehavior(EDuplicateClassFileBehavior duplicateClassFileBehavior) {
+		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 	}
 
 	/** Makes sure the arguments are valid. */
