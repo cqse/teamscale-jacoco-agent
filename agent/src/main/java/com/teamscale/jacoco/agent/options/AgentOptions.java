@@ -113,7 +113,7 @@ public class AgentOptions {
 	/**
 	 * Whether to ignore duplicate, non-identical class files.
 	 */
-	/* package */ boolean shouldIgnoreDuplicateClassFiles = true;
+	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
 
 	/**
 	 * Include patterns for fully qualified class names to pass on to JaCoCo. See {@link WildcardMatcher} for the
@@ -411,14 +411,10 @@ public class AgentOptions {
 	}
 
 	/**
-	 * @see #shouldIgnoreDuplicateClassFiles
+	 * @see #duplicateClassFileBehavior
 	 */
 	public EDuplicateClassFileBehavior getDuplicateClassFileBehavior() {
-		if (shouldIgnoreDuplicateClassFiles) {
-			return EDuplicateClassFileBehavior.WARN;
-		} else {
-			return EDuplicateClassFileBehavior.FAIL;
-		}
+		return duplicateClassFileBehavior;
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */

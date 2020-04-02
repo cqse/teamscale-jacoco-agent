@@ -10,6 +10,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -35,7 +36,7 @@ public class ConvertCommand implements ICommand {
 	/**
 	 * Wildcard include patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = {"--filter", "-f"}, description = ""
+	@Parameter(names = {"--includes"}, description = ""
 			+ "Wildcard include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
@@ -46,7 +47,7 @@ public class ConvertCommand implements ICommand {
 	/**
 	 * Wildcard exclude patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = {"--exclude", "-e"}, description = ""
+	@Parameter(names = {"--excludes", "-e"}, description = ""
 			+ "Wildcard exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
@@ -65,10 +66,11 @@ public class ConvertCommand implements ICommand {
 	/* package */ String outputFile = "";
 
 	/** Whether to ignore duplicate, non-identical class files. */
-	@Parameter(names = {"--ignore-duplicates", "-d"}, required = false, arity = 1, description = ""
+	@Parameter(names = {"--duplicates", "-d"}, arity = 1, description = ""
 			+ "Whether to ignore duplicate, non-identical class files."
-			+ " This is discouraged and may result in incorrect coverage files. Defaults to false.")
-	/* package */ boolean shouldIgnoreDuplicateClassFiles = false;
+			+ " This is discouraged and may result in incorrect coverage files. Defaults to WARN. " +
+			"Options are FAIL, WARN and IGNORE.")
+	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
 
 	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
@@ -95,19 +97,9 @@ public class ConvertCommand implements ICommand {
 		return locationIncludeFilters;
 	}
 
-	/** @see #locationIncludeFilters */
-	public void setLocationIncludeFilters(List<String> locationIncludeFilters) {
-		this.locationIncludeFilters = locationIncludeFilters;
-	}
-
 	/** @see #locationExcludeFilters */
 	public List<String> getLocationExcludeFilters() {
 		return locationExcludeFilters;
-	}
-
-	/** @see #locationExcludeFilters */
-	public void setLocationExcludeFilters(List<String> locationExcludeFilters) {
-		this.locationExcludeFilters = locationExcludeFilters;
 	}
 
 	/** @see #inputFiles */
@@ -125,14 +117,9 @@ public class ConvertCommand implements ICommand {
 		return splitAfter;
 	}
 
-	/** @see #shouldIgnoreDuplicateClassFiles */
-	public boolean shouldIgnoreDuplicateClassFiles() {
-		return shouldIgnoreDuplicateClassFiles;
-	}
-
-	/** @see #shouldIgnoreDuplicateClassFiles */
-	public void setShouldIgnoreDuplicateClassFiles(boolean shouldIgnoreDuplicateClassFiles) {
-		this.shouldIgnoreDuplicateClassFiles = shouldIgnoreDuplicateClassFiles;
+	/** @see #duplicateClassFileBehavior */
+	public EDuplicateClassFileBehavior getDuplicateClassFileBehavior() {
+		return duplicateClassFileBehavior;
 	}
 
 	/** Makes sure the arguments are valid. */

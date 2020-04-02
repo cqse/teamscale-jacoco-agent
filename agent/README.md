@@ -81,9 +81,9 @@ patterns with `*`, `**` and `?`.
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
-- `ignore-duplicates`: forces JaCoCo to ignore duplicate class files. This is the default to make the initial
-  setup of the tool as easy as possible. However, this should be disabled for productive use if possible.
-  See the special section on `ignore-duplicates` below.
+- `duplicates`: defines how JaCoCo handles duplicate class files. This is by default set to `WARN` to make the initial
+  setup of the tool as easy as possible. However, this should be set to `FAIL` for productive use if possible. In special 
+  cases you can also set it to `IGNORE` to print no warnings. See the special section on `duplicates` below.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
@@ -430,7 +430,7 @@ jar {
 ./gradlew jar -Dbranch=master
 ```
 
-## `ignore-duplicates`
+## `duplicates`
 
 The underlying JaCoCo coverage instrumentation tooling relies on fully qualified class names
 to uniquely identify classes. However, in practice, applications are often deployed with

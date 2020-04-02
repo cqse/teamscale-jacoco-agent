@@ -3,7 +3,6 @@ package com.teamscale.jacoco.agent.convert;
 import com.teamscale.client.TestDetails;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
@@ -53,14 +52,8 @@ public class Converter {
 		ExecutionDataStore executionDataStore = loader.getExecutionDataStore();
 
 		Logger logger = LoggingUtils.getLogger(this);
-		EDuplicateClassFileBehavior duplicateClassFileBehavior;
-		if (arguments.shouldIgnoreDuplicateClassFiles()) {
-			duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
-		} else {
-			duplicateClassFileBehavior = EDuplicateClassFileBehavior.FAIL;
-		}
 		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				getWildcardIncludeExcludeFilter(), duplicateClassFileBehavior,
+				getWildcardIncludeExcludeFilter(), arguments.getDuplicateClassFileBehavior(),
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
@@ -82,7 +75,7 @@ public class Converter {
 		JaCoCoTestwiseReportGenerator generator = new JaCoCoTestwiseReportGenerator(
 				arguments.getClassDirectoriesOrZips(),
 				getWildcardIncludeExcludeFilter(),
-				EDuplicateClassFileBehavior.WARN,
+				arguments.getDuplicateClassFileBehavior(),
 				logger
 		);
 
