@@ -10,6 +10,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
@@ -161,8 +162,8 @@ public class AgentOptionsParser {
 					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
 				}
 				return true;
-			case "ignore-duplicates":
-				options.shouldIgnoreDuplicateClassFiles = Boolean.parseBoolean(value);
+			case "duplicates":
+				options.duplicateClassFileBehavior = EDuplicateClassFileBehavior.valueOf(value.toUpperCase());
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;

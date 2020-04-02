@@ -68,9 +68,9 @@ public class ConvertCommand implements ICommand {
 	/** Whether to ignore duplicate, non-identical class files. */
 	@Parameter(names = {"--duplicates", "-d"}, arity = 1, description = ""
 			+ "Whether to ignore duplicate, non-identical class files."
-			+ " This is discouraged and may result in incorrect coverage files. Defaults to FAIL. " +
+			+ " This is discouraged and may result in incorrect coverage files. Defaults to WARN. " +
 			"Options are FAIL, WARN and IGNORE.")
-	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.FAIL;
+	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
 
 	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
