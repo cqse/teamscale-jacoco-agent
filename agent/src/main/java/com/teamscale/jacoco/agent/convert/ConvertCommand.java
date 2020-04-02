@@ -36,7 +36,7 @@ public class ConvertCommand implements ICommand {
 	/**
 	 * Wildcard include patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = {"--filter", "-f"}, description = ""
+	@Parameter(names = {"--includes"}, description = ""
 			+ "Wildcard include patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
@@ -47,7 +47,7 @@ public class ConvertCommand implements ICommand {
 	/**
 	 * Wildcard exclude patterns to apply during JaCoCo's traversal of class files.
 	 */
-	@Parameter(names = {"--exclude", "-e"}, description = ""
+	@Parameter(names = {"--excludes", "-e"}, description = ""
 			+ "Wildcard exclude patterns to apply to all found class file locations during JaCoCo's traversal of class files."
 			+ " Note that zip contents are separated from zip files with @ and that you can filter only"
 			+ " class files, not intermediate folders/zips. Use with great care as missing class files"
@@ -97,19 +97,9 @@ public class ConvertCommand implements ICommand {
 		return locationIncludeFilters;
 	}
 
-	/** @see #locationIncludeFilters */
-	public void setLocationIncludeFilters(List<String> locationIncludeFilters) {
-		this.locationIncludeFilters = locationIncludeFilters;
-	}
-
 	/** @see #locationExcludeFilters */
 	public List<String> getLocationExcludeFilters() {
 		return locationExcludeFilters;
-	}
-
-	/** @see #locationExcludeFilters */
-	public void setLocationExcludeFilters(List<String> locationExcludeFilters) {
-		this.locationExcludeFilters = locationExcludeFilters;
 	}
 
 	/** @see #inputFiles */
@@ -130,11 +120,6 @@ public class ConvertCommand implements ICommand {
 	/** @see #duplicateClassFileBehavior */
 	public EDuplicateClassFileBehavior getDuplicateClassFileBehavior() {
 		return duplicateClassFileBehavior;
-	}
-
-	/** @see #duplicateClassFileBehavior */
-	public void setDuplicateClassFileBehavior(EDuplicateClassFileBehavior duplicateClassFileBehavior) {
-		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 	}
 
 	/** Makes sure the arguments are valid. */
