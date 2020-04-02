@@ -83,7 +83,7 @@ patterns with `*`, `**` and `?`.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `duplicates`: defines how JaCoCo handles duplicate class files. This is by default set to WARN to make the initial
   setup of the tool as easy as possible. However, this should be set to FAIL for productive use if possible. In special 
-  cases you can also set it to IGNORE to print no warnings in such cases. See the special section on `duplicates` below.
+  cases you can also set it to `IGNORE` to print no warnings. See the special section on `duplicates` below.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
