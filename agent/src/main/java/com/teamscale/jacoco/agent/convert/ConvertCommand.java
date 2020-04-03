@@ -20,6 +20,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,8 +92,8 @@ public class ConvertCommand implements ICommand {
 			return ClasspathUtils
 					.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
 							classDirectoriesOrZips);
-		} catch (AgentOptionParseException e) {
-			throw new RuntimeException(e);
+		} catch (IOException | AgentOptionParseException e) {
+			throw new IllegalArgumentException(e);
 		}
 	}
 
