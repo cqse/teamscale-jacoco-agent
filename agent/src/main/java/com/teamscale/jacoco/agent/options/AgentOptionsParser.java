@@ -10,6 +10,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.util.ClasspathUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
@@ -23,13 +24,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import java.util.stream.Collectors;
 
 /**
  * Parses agent command line options.
@@ -168,7 +166,7 @@ public class AgentOptionsParser {
 				return true;
 			case "class-dir":
 				List<String> list = splitMultiOptionValue(value);
-				options.classDirectoriesOrZips = resolveClasspathTextFiles(key, filePatternResolver, list);
+				options.classDirectoriesOrZips = resolveClasspathTextFiles(key, list);
 				return true;
 			default:
 				return false;
@@ -176,22 +174,12 @@ public class AgentOptionsParser {
 	}
 
 	/** Replaces all txt files in the given list with the file names written in the txt file separated by new lines. */
-	public static List<File> resolveClasspathTextFiles(String key, FilePatternResolver filePatternResolver,
-													   List<String> classDirectoriesOrZips) throws AgentOptionParseException {
-		List<File> classDirectoriesOrZipFiles = CollectionUtils
-				.mapWithException(classDirectoriesOrZips, file -> filePatternResolver.parseFile(key, file));
-		Map<Boolean, List<File>> filesByType = classDirectoriesOrZipFiles.stream()
-				.collect(Collectors.partitioningBy(fileName -> fileName.getName().endsWith(".txt")));
-		List<File> classJarOrDirFiles = new ArrayList<>(filesByType.get(false));
-		for (File txtFile : filesByType.get(true)) {
-			try {
-				classJarOrDirFiles.addAll(CollectionUtils.mapWithException(FileSystemUtils.readLinesUTF8(txtFile),
-						file -> filePatternResolver.parseFile(key, file)));
-			} catch (IOException e) {
-				throw new AgentOptionParseException("Failed to resolve classpath entries in " + txtFile, e);
-			}
+	public List<File> resolveClasspathTextFiles(String key, List<String> list) throws AgentOptionParseException {
+		try {
+			return ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver, list);
+		} catch (IOException e) {
+			throw new AgentOptionParseException(e.getMessage(), e);
 		}
-		return classJarOrDirFiles;
 	}
 
 	/**

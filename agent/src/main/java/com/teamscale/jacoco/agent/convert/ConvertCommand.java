@@ -11,8 +11,8 @@ import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
+import com.teamscale.jacoco.agent.util.ClasspathUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -88,7 +88,7 @@ public class ConvertCommand implements ICommand {
 	/** @see #classDirectoriesOrZips */
 	public List<File> getClassDirectoriesOrZips() {
 		try {
-			return AgentOptionsParser
+			return ClasspathUtils
 					.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
 							classDirectoriesOrZips);
 		} catch (AgentOptionParseException e) {
