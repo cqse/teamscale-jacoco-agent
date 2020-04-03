@@ -10,15 +10,21 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.AgentOptionsParser;
+import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.EDuplicateClassFileBehavior;
+import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -28,9 +34,9 @@ import java.util.stream.Collectors;
 public class ConvertCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
-	@Parameter(names = {"--classDir", "--jar", "-c"}, required = true, description = ""
+	@Parameter(names = {"--class-dir", "--jar", "-c"}, required = true, description = ""
 			+ "The directories or zip/ear/jar/war/... files that contain the compiled Java classes being profiled."
-			+ " Searches recursively, including inside zips.")
+			+ " Searches recursively, including inside zips. You may also supply a *.txt file with one path per line.")
 	/* package */ List<String> classDirectoriesOrZips = new ArrayList<>();
 
 	/**
@@ -84,12 +90,11 @@ public class ConvertCommand implements ICommand {
 
 	/** @see #classDirectoriesOrZips */
 	public List<File> getClassDirectoriesOrZips() {
-		return CollectionUtils.map(classDirectoriesOrZips, File::new);
-	}
-
-	/** @see #classDirectoriesOrZips */
-	public void setClassDirectoriesOrZips(List<String> classDirectoriesOrZips) {
-		this.classDirectoriesOrZips = classDirectoriesOrZips;
+		try {
+			return AgentOptionsParser.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()), classDirectoriesOrZips);
+		} catch (AgentOptionParseException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/** @see #locationIncludeFilters */

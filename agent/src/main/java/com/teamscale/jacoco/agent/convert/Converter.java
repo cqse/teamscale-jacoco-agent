@@ -96,8 +96,8 @@ public class Converter {
 
 	private ClasspathWildcardIncludeFilter getWildcardIncludeExcludeFilter() {
 		return new ClasspathWildcardIncludeFilter(
-				String.join(":", arguments.locationIncludeFilters),
-				String.join(":", arguments.locationExcludeFilters));
+				String.join(":", arguments.getLocationIncludeFilters()),
+				String.join(":", arguments.getLocationExcludeFilters()));
 	}
 
 }

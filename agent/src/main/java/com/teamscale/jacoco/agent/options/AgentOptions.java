@@ -11,6 +11,7 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.Agent;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.convert.ConvertCommand;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
