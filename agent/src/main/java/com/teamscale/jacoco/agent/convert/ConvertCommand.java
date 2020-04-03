@@ -16,15 +16,12 @@ import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -91,7 +88,9 @@ public class ConvertCommand implements ICommand {
 	/** @see #classDirectoriesOrZips */
 	public List<File> getClassDirectoriesOrZips() {
 		try {
-			return AgentOptionsParser.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()), classDirectoriesOrZips);
+			return AgentOptionsParser
+					.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
+							classDirectoriesOrZips);
 		} catch (AgentOptionParseException e) {
 			throw new RuntimeException(e);
 		}
