@@ -19,7 +19,6 @@ ext {
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.java.
 	jacocoVersion = '0.8.5'
-	log4jVersion = '2.8.2'
 
 	// For deploying Jars you have to configure SSH keys locally and on the CQSE share server.
 	// 1. Generate a new key using ssh-keygen or use the existing key at ~/.ssh/id_rsa(.pub)
