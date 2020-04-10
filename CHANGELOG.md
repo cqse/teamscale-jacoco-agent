@@ -1,10 +1,15 @@
-We use [semantic versioning][semver]
+We use [semantic versioning](http://semver.org/):
+
+- MAJOR version when you make incompatible API changes,
+- MINOR version when you add functionality in a backwards compatible manner, and
+- PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
 - [fix] Prevent "out of memory" in small JVMs: Don't cache test executions in memory
 - [breaking change] `--ignore-duplicates` (and `-d` option in convert tool) have been replaced with `--duplicates` option
 - [breaking change] `--filter` option in convert tool has been renamed to `--includes`
 - [breaking change] `--exclude` option in convert tool has been renamed to `--excludes`
+- [fix] lower default timeout for http requests and remove retry logic for impacted tests request
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework
@@ -180,6 +185,3 @@ _This version was never checked in, thus there is no tag for it in the Git_
 # 1.4.0
 
 - [feature] added `-d` switch to ignore non-identical, duplicate class files during report generation
-
-
-[semver]: http://semver.org/
