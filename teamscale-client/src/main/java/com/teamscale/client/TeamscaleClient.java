@@ -46,27 +46,6 @@ public class TeamscaleClient {
 																	 CommitDescriptor endCommit,
 																	 String partition,
 																	 boolean includeNonImpacted) throws IOException {
-		long startTime = System.currentTimeMillis();
-		Response<List<PrioritizableTestCluster>> impactedTestsResponse;
-		do {
-			impactedTestsResponse = getImpactedTestsOnce(testList, baseline,
-					endCommit, partition, includeNonImpacted);
-			// Retry for up to one minute until the coverage uploads are processed by Teamscale
-		} while (impactedTestsResponse.code() == 412 && System.currentTimeMillis() - startTime < 60000);
-		return impactedTestsResponse;
-	}
-
-	/**
-	 * Tries to retrieve the impacted tests from Teamscale.
-	 *
-	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the
-	 * given commit.
-	 */
-	private Response<List<PrioritizableTestCluster>> getImpactedTestsOnce(List<ClusteredTestDetails> testList,
-																		  Long baseline,
-																		  CommitDescriptor endCommit,
-																		  String partition,
-																		  boolean includeNonImpacted) throws IOException {
 		if (baseline == null) {
 			return service
 					.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, testList)
