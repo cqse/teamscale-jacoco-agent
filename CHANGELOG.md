@@ -11,7 +11,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] `--exclude` option in convert tool has been renamed to `--excludes`
 - [fix] lower default timeout for http requests and remove retry logic for impacted tests request
 - [breaking change] `--classDir` option in convert tool has been renamed to `--class-dir`
-- [feature] `--class-dir` option allows to pass in a *.txt file with the class directories/jars
+- [feature] `--class-dir` option allows to pass in a `.txt` file with the class file directories/jars separated by newlines
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework

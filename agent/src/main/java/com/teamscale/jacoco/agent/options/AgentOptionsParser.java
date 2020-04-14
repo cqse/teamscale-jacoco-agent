@@ -10,7 +10,6 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
-import com.teamscale.jacoco.agent.util.ClasspathUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
@@ -37,7 +36,6 @@ public class AgentOptionsParser {
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
-	/** Logger. */
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
 
@@ -166,19 +164,11 @@ public class AgentOptionsParser {
 				return true;
 			case "class-dir":
 				List<String> list = splitMultiOptionValue(value);
-				options.classDirectoriesOrZips = resolveClasspathTextFiles(key, list);
+				options.classDirectoriesOrZips = ClasspathUtils
+						.resolveClasspathTextFiles(key, filePatternResolver, list);
 				return true;
 			default:
 				return false;
-		}
-	}
-
-	/** Replaces all txt files in the given list with the file names written in the txt file separated by new lines. */
-	public List<File> resolveClasspathTextFiles(String key, List<String> list) throws AgentOptionParseException {
-		try {
-			return ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver, list);
-		} catch (IOException e) {
-			throw new AgentOptionParseException(e.getMessage(), e);
 		}
 	}
 

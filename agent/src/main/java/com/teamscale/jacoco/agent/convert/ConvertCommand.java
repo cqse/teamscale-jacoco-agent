@@ -12,7 +12,7 @@ import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
-import com.teamscale.jacoco.agent.util.ClasspathUtils;
+import com.teamscale.jacoco.agent.options.ClasspathUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -87,14 +87,10 @@ public class ConvertCommand implements ICommand {
 	private int splitAfter = 5000;
 
 	/** @see #classDirectoriesOrZips */
-	public List<File> getClassDirectoriesOrZips() {
-		try {
-			return ClasspathUtils
-					.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
-							classDirectoriesOrZips);
-		} catch (IOException | AgentOptionParseException e) {
-			throw new IllegalArgumentException(e);
-		}
+	public List<File> getClassDirectoriesOrZips() throws AgentOptionParseException, IOException {
+		return ClasspathUtils
+				.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
+						classDirectoriesOrZips);
 	}
 
 	/** @see #locationIncludeFilters */
@@ -129,7 +125,7 @@ public class ConvertCommand implements ICommand {
 
 	/** Makes sure the arguments are valid. */
 	@Override
-	public Validator validate() {
+	public Validator validate() throws AgentOptionParseException, IOException {
 		Validator validator = new Validator();
 
 		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
