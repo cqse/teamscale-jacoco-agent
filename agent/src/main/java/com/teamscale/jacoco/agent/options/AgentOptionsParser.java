@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.client.AntPatternUtils;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
@@ -15,27 +16,21 @@ import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
-import org.conqat.lib.commons.collections.Pair;
-import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 /**
  * Parses agent command line options.
@@ -44,12 +39,6 @@ public class AgentOptionsParser {
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
-
-	/** Stand-in for the question mark operator. */
-	private static final String QUESTION_REPLACEMENT = "!@";
-
-	/** Stand-in for the asterisk operator. */
-	private static final String ASTERISK_REPLACEMENT = "#@";
 
 	/** Logger. */
 	private final ILogger logger;
@@ -382,78 +371,37 @@ public class AgentOptionsParser {
 		}
 	}
 
-	/** Parses the value as a ant pattern to a file or directory. */
-	private Path parseFileFromPattern(File workingDirectory, String optionName,
-									  String value) throws AgentOptionParseException {
-		Pair<String, String> baseDirAndPattern = splitIntoBaseDirAndPattern(value);
-		String baseDir = baseDirAndPattern.getFirst();
-		String pattern = baseDirAndPattern.getSecond();
-
-		File workingDir = workingDirectory.getAbsoluteFile();
-		Path basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath();
-
-		Pattern pathMatcher = AntPatternUtils.convertPattern(pattern, false);
-		Predicate<Path> filter = path -> pathMatcher
-				.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
-
-		List<Path> matchingPaths;
-		try {
-			matchingPaths = Files.walk(basePath).filter(filter).sorted().collect(toList());
-		} catch (IOException e) {
-			throw new AgentOptionParseException(
-					"Could not recursively list files in directory " + basePath + " in order to resolve pattern " + pattern + " given for option " + optionName,
-					e);
-		}
-
-		if (matchingPaths.isEmpty()) {
-			throw new AgentOptionParseException(
-					"Invalid path given for option " + optionName + ": " + value + ". The pattern " + pattern +
-							" did not match any files in " + basePath.toAbsolutePath());
-		} else if (matchingPaths.size() > 1) {
-			logger.warn(
-					"Multiple files match the pattern " + pattern + " in " + basePath
-							.toString() + " for option " + optionName + "! " +
-							"The first one is used, but consider to adjust the " +
-							"pattern to match only one file. Candidates are: " + matchingPaths.stream()
-							.map(basePath::relativize).map(Path::toString).collect(joining(", ")));
-		}
-		Path path = matchingPaths.get(0).normalize();
-		logger.info("Using file " + path + " for option " + optionName);
-
-		return path;
-	}
-
-	/**
-	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
-	 * placeholders, and a pattern suffix. We need to replace the pattern characters with stand-ins, because ? and * are
-	 * not allowed as path characters on windows.
-	 */
-	private Pair<String, String> splitIntoBaseDirAndPattern(String value) {
-		String pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT);
-		Path pathWithPattern = Paths.get(pathWithArtificialPattern);
-		Path baseDir = pathWithPattern;
-		while (isPathWithArtificialPattern(baseDir.toString())) {
-			baseDir = baseDir.getParent();
-			if (baseDir == null) {
-				return new Pair<>("", value);
-			}
-		}
-		String pattern = baseDir.relativize(pathWithPattern).toString().replace(QUESTION_REPLACEMENT, "?")
-				.replace(ASTERISK_REPLACEMENT, "*");
-		return new Pair<>(baseDir.toString(), pattern);
-	}
-
 	/** Returns whether the given path contains ant pattern characters (?,*). */
 	private static boolean isPathWithPattern(String path) {
 		return path.contains("?") || path.contains("*");
 	}
 
-	/**
-	 * Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link
-	 * #ASTERISK_REPLACEMENT}).
-	 */
-	private static boolean isPathWithArtificialPattern(String path) {
-		return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT);
+	/** Parses the value as a ant pattern to a file or directory. */
+	private Path parseFileFromPattern(File workingDirectory, String optionName,
+									  String value) throws AgentOptionParseException {
+		List<Path> matchingPaths;
+		try {
+			matchingPaths = AntPatternUtils.resolvePattern(workingDirectory, value);
+		} catch (IOException e) {
+			throw new AgentOptionParseException(
+					"Failed to resolve pattern " + value + " given for option " + optionName, e);
+		}
+
+		if (matchingPaths.isEmpty()) {
+			throw new AgentOptionParseException(
+					"Invalid path given for option " + optionName + ": " + value + ". The pattern " + value +
+							" did not match any files");
+		} else if (matchingPaths.size() > 1) {
+			logger.warn(
+					"Multiple files match the pattern " + value + " for option " + optionName + "! " +
+							"The first one is used, but consider to adjust the " +
+							"pattern to match only one file. Candidates are: " +
+							matchingPaths.stream().map(Path::toString).collect(joining(", ")));
+		}
+		Path path = matchingPaths.get(0).normalize();
+		logger.info("Using file " + path + " for option " + optionName);
+
+		return path;
 	}
 
 	/**

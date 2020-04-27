@@ -16,8 +16,17 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.client;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Utility methods for dealing with Ant pattern as defined at http://ant.apache.org/manual/dirtasks.html#patterns
@@ -26,6 +35,12 @@ import java.util.regex.PatternSyntaxException;
  * names without dot).
  */
 public class AntPatternUtils {
+
+	/** Stand-in for the question mark operator. */
+	private static final String QUESTION_REPLACEMENT = "!@";
+
+	/** Stand-in for the asterisk operator. */
+	private static final String ASTERISK_REPLACEMENT = "#@";
 
 	/** Converts an ANT pattern to a regex pattern. */
 	public static Pattern convertPattern(String antPattern, boolean caseSensitive) throws PatternSyntaxException {
@@ -50,6 +65,54 @@ public class AntPatternUtils {
 		}
 
 		return compileRegex(patternBuilder.toString(), antPattern, caseSensitive);
+	}
+
+
+	/**
+	 * Locates all {@link Path}s that match the given pattern. If the pattern is relative, resolves it against the given
+	 * working directory.
+	 */
+	public static List<Path> resolvePattern(File workingDirectory, String pattern) throws IOException {
+		String[] baseDirAndPattern = splitIntoBaseDirAndPattern(pattern);
+		String baseDir = baseDirAndPattern[0];
+		String relativePattern = baseDirAndPattern[1];
+
+		File workingDir = workingDirectory.getAbsoluteFile();
+		Path basePath = workingDir.toPath().resolve(baseDir).normalize().toAbsolutePath();
+
+		Pattern pathMatcher = AntPatternUtils.convertPattern(relativePattern, false);
+		Predicate<Path> filter = path -> pathMatcher
+				.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
+
+		return Files.walk(basePath).filter(filter).sorted().collect(toList());
+	}
+
+	/**
+	 * Splits the path into a base dir, a the directory-prefix of the path that does not contain any ? or *
+	 * placeholders, and a pattern suffix. We need to replace the pattern characters with stand-ins, because ? and * are
+	 * not allowed as path characters on windows.
+	 */
+	private static String[] splitIntoBaseDirAndPattern(String value) {
+		String pathWithArtificialPattern = value.replace("?", QUESTION_REPLACEMENT).replace("*", ASTERISK_REPLACEMENT);
+		Path pathWithPattern = Paths.get(pathWithArtificialPattern);
+		Path baseDir = pathWithPattern;
+		while (isPathWithArtificialPattern(baseDir.toString())) {
+			baseDir = baseDir.getParent();
+			if (baseDir == null) {
+				return new String[]{"", value};
+			}
+		}
+		String pattern = baseDir.relativize(pathWithPattern).toString().replace(QUESTION_REPLACEMENT, "?")
+				.replace(ASTERISK_REPLACEMENT, "*");
+		return new String[]{baseDir.toString(), pattern};
+	}
+
+	/**
+	 * Returns whether the given path contains artificial pattern characters ({@link #QUESTION_REPLACEMENT}, {@link
+	 * #ASTERISK_REPLACEMENT}).
+	 */
+	private static boolean isPathWithArtificialPattern(String path) {
+		return path.contains(QUESTION_REPLACEMENT) || path.contains(ASTERISK_REPLACEMENT);
 	}
 
 	/** Compiles the given regex. */
