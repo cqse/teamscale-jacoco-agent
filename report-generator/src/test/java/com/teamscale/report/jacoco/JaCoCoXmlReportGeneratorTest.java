@@ -68,7 +68,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 	@Test
 	void testNonShrinking() throws Exception {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		runGenerator("no-duplicates", EDuplicateClassFileBehavior.FAIL, true).copy(stream);
+		runGenerator("no-duplicates", EDuplicateClassFileBehavior.FAIL, false).copy(stream);
 		
 		assertThat(stream.toString(StandardCharsets.UTF_8.name())).contains("<class");
 	}
