@@ -61,7 +61,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		runGenerator("no-duplicates", EDuplicateClassFileBehavior.FAIL, true).copy(stream);
 		
-		assertThat(stream.toString(StandardCharsets.UTF_8)).doesNotContain("<class");
+		assertThat(stream.toString(StandardCharsets.UTF_8.name())).doesNotContain("<class");
 	}
 	
 	/** Ensures that uncovered classes are contained in the report if flag is not set. */
@@ -70,7 +70,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		runGenerator("no-duplicates", EDuplicateClassFileBehavior.FAIL, true).copy(stream);
 		
-		assertThat(stream.toString(StandardCharsets.UTF_8)).contains("<class");
+		assertThat(stream.toString(StandardCharsets.UTF_8.name())).contains("<class");
 	}
 
 	
