@@ -69,7 +69,9 @@ public class JaCoCoXmlReportGenerator {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
 		sanityCheck(bundleCoverage);
-		createReport(coverageFile.getOutputStream(), bundleCoverage, dump.info, mergedStore);
+		try(OutputStream outputStream = coverageFile.getOutputStream()) {
+			createReport(outputStream, bundleCoverage, dump.info, mergedStore);
+		}
 	}
 
 	private void sanityCheck(IBundleCoverage coverage) {
