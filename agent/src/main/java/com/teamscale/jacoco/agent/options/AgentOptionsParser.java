@@ -164,6 +164,8 @@ public class AgentOptionsParser {
 				return true;
 			case "duplicates":
 				options.duplicateClassFileBehavior = EDuplicateClassFileBehavior.valueOf(value.toUpperCase());
+			case "ignore-uncovered-classes":
+				options.removeUncoveredClasses = Boolean.parseBoolean(value);
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;

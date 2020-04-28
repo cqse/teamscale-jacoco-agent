@@ -36,6 +36,9 @@ public class JaCoCoXmlReportGenerator {
 	/** Whether to ignore non-identical duplicates of class files. */
 	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
 
+	/** Whether to remove uncovered classes from the report. */
+	private final boolean removeUncoveredClasses;
+	
 	/** Part of the error message logged when validating the coverage report fails. */
 	private static final String MOST_LIKELY_CAUSE_MESSAGE = "Most likely you did not configure the agent correctly." +
 			" Please check that the includes and excludes options are set correctly so the relevant code is included." +
@@ -45,10 +48,11 @@ public class JaCoCoXmlReportGenerator {
 
 	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives,
 									ClasspathWildcardIncludeFilter locationIncludeFilter,
-									EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) {
+									EDuplicateClassFileBehavior duplicateClassFileBehavior, boolean removeUncoveredClasses, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 		this.locationIncludeFilter = locationIncludeFilter;
+		this.removeUncoveredClasses = removeUncoveredClasses;
 		this.logger = logger;
 	}
 
@@ -97,11 +101,8 @@ public class JaCoCoXmlReportGenerator {
 	 * report with the coverage in the given store.
 	 */
 	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionDataStore store) throws IOException {
-		CoverageBuilder coverageBuilder = new CoverageBuilder();
-		if (duplicateClassFileBehavior != EDuplicateClassFileBehavior.FAIL) {
-			coverageBuilder = new DuplicateIgnoringCoverageBuilder(this.logger,
-					duplicateClassFileBehavior == EDuplicateClassFileBehavior.WARN);
-		}
+		CoverageBuilder coverageBuilder = new TeamscaleCoverageBuilder(this.logger,
+				duplicateClassFileBehavior, removeUncoveredClasses);
 
 		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);
 

@@ -154,6 +154,11 @@ public class AgentOptions {
 
 
 	/**
+	 * Whether classes without coverage should be skipped from the XML report.
+	 */
+	/* package */ boolean removeUncoveredClasses = false;
+	
+	/**
 	 * The configuration necessary to upload files to an azure file storage
 	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
@@ -472,4 +477,7 @@ public class AgentOptions {
 		return testWiseCoverageMode;
 	}
 
+	public boolean shouldRemoveUncoveredClasses() {
+		return removeUncoveredClasses;
+	}
 }

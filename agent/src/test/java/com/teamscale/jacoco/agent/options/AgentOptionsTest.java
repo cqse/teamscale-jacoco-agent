@@ -4,6 +4,7 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,7 +117,21 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 		assertThat(agentOptions.getTestWiseCoverageMode()).isEqualTo(ETestWiseCoverageMode.HTTP);
 	}
+	
+	/** Tests the options for the Test Impact mode. */
+	@Test
+	public void testIgnoreUncoveredClasses() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("ignore-uncovered-classes=true");
+		assertThat(agentOptions.shouldRemoveUncoveredClasses()).isEqualTo(true);
+	}
 
+	/** Tests the options for the Test Impact mode. */
+	@Test
+	public void testIgnoreUncoveredClassesDefault() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		assertThat(agentOptions.shouldRemoveUncoveredClasses()).isEqualTo(false);
+	}
+	
 	/** Tests that supplying both revision and commit info is forbidden. */
 	@Test
 	public void testBothRevisionAndCommitSupplied() throws URISyntaxException {

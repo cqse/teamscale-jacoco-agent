@@ -15,6 +15,7 @@ import com.teamscale.report.testwise.model.factory.TestInfoFactory;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
+
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
@@ -53,7 +54,7 @@ public class Converter {
 
 		Logger logger = LoggingUtils.getLogger(this);
 		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				getWildcardIncludeExcludeFilter(), arguments.getDuplicateClassFileBehavior(),
+				getWildcardIncludeExcludeFilter(), arguments.getDuplicateClassFileBehavior(), arguments.shouldIgnoreUncoveredClasses,
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {

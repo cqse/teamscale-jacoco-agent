@@ -11,6 +11,7 @@ import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.report.EDuplicateClassFileBehavior;
+
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -72,6 +73,12 @@ public class ConvertCommand implements ICommand {
 			"Options are FAIL, WARN and IGNORE.")
 	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
 
+	/** Whether to ignore uncovered class files. */
+	@Parameter(names = {"--ignore-uncovered-classes", "-s"}, required = false, arity = 1, description = ""
+			+ "Whether to ignore uncovered classes."
+			+ " These classes will not be part of the XML report at all, making it considerably smaller in some cases. Defaults to false.")
+	/* package */ boolean shouldIgnoreUncoveredClasses = false;
+	
 	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
 			"coverage or jacoco coverage should be generated.")
