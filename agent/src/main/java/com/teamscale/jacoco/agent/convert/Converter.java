@@ -4,6 +4,7 @@ import com.teamscale.client.TestDetails;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.ReportUtils;
+import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.ETestArtifactFormat;
@@ -58,6 +59,8 @@ public class Converter {
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile));
+		} catch (EmptyReportException e) {
+			logger.warn("Converted report was emtpy.", e);
 		}
 	}
 
