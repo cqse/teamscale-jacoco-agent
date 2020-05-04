@@ -10,6 +10,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] `--filter` option in convert tool has been renamed to `--includes`
 - [breaking change] `--exclude` option in convert tool has been renamed to `--excludes`
 - [fix] lower default timeout for http requests and remove retry logic for impacted tests request
+- [fix] converter produces duplicate test entries for testwise coverage
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework
