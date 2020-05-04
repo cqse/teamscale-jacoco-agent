@@ -57,7 +57,6 @@ public class ConverterTest {
 		new Converter(arguments).runTestwiseCoverageReportGeneration();
 
 		String json = FileSystemUtils.readFileUTF8(new File(tempDir, "testwise-coverage-1.json"));
-		System.err.println(json);
 		assertThat(json).
 				contains(
 						"\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]\"")
@@ -68,9 +67,8 @@ public class ConverterTest {
 				.contains("\"result\": \"PASSED\"").contains("\"duration\": 1234").contains("\"coveredLines\": \"33,46-47");
 	}
 
-	public void copyResourceTo(File inputDir, String name) throws URISyntaxException, IOException {
+	private void copyResourceTo(File inputDir, String name) throws URISyntaxException, IOException {
 		File execFile = new File(getClass().getResource(name).toURI());
 		Files.copy(execFile.toPath(), new File(inputDir, name).toPath());
 	}
-
 }
