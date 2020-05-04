@@ -45,6 +45,7 @@ public class ConverterTest {
 		inputDir.mkdir();
 		copyResourceTo(inputDir, "coverage-testwise.exec");
 		copyResourceTo(inputDir, "test-list.json");
+		copyResourceTo(inputDir, "test-execution.json");
 		File classFile = new File(getClass().getResource("classes.zip").toURI());
 		File outputFile = new File(tempDir, "testwise-coverage.json");
 
@@ -64,7 +65,7 @@ public class ConverterTest {
 						"\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]\"")
 				.contains("\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]\"")
 				.contains("\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]\"")
-		.contains("\"result\": \"PASSED\"").contains("\"duration\": 1234").contains("\"coveredLines\": \"33,46-47");
+				.contains("\"result\": \"PASSED\"").contains("\"duration\": 1234").contains("\"coveredLines\": \"33,46-47");
 	}
 
 	public void copyResourceTo(File inputDir, String name) throws URISyntaxException, IOException {
