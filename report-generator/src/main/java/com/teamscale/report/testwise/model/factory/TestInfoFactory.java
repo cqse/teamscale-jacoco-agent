@@ -65,11 +65,20 @@ public class TestInfoFactory {
 	public List<TestInfo> createTestInfosWithoutCoverage() {
 		ArrayList<TestInfo> results = new ArrayList<>();
 		for (TestDetails testDetails : testDetailsMap.values()) {
-			if (uniformPathsWithCoverage.contains(testDetails.uniformPath)) {
+			if (!uniformPathsWithCoverage.contains(testDetails.uniformPath)) {
 				TestInfoBuilder testInfo = new TestInfoBuilder(testDetails.uniformPath);
 				testInfo.setDetails(testDetails);
 				testInfo.setExecution(testExecutionsMap.get(testDetails.uniformPath));
 				results.add(testInfo.build());
+				uniformPathsWithCoverage.add(testDetails.uniformPath);
+			}
+		}
+		for (TestExecution testExecution : testExecutionsMap.values()) {
+			if (!uniformPathsWithCoverage.contains(testExecution.getUniformPath())) {
+				TestInfoBuilder testInfo = new TestInfoBuilder(testExecution.getUniformPath());
+				testInfo.setExecution(testExecution);
+				results.add(testInfo.build());
+				uniformPathsWithCoverage.add(testExecution.getUniformPath());
 			}
 		}
 		return results;
