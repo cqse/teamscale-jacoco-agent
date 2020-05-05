@@ -13,7 +13,7 @@ import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
-import okhttp3.HttpUrl;
+
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.AntPatternUtils;
@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -165,7 +167,7 @@ public class AgentOptionsParser {
 			case "duplicates":
 				options.duplicateClassFileBehavior = EDuplicateClassFileBehavior.valueOf(value.toUpperCase());
 			case "ignore-uncovered-classes":
-				options.removeUncoveredClasses = Boolean.parseBoolean(value);
+				options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;

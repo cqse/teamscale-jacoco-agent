@@ -21,19 +21,19 @@ import org.jacoco.core.analysis.ICounter;
 	/** How to behave if duplicate class files are encountered. */
 	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
 
-	/** Whether to remove uncovered classes from the report. */
-	private final boolean removeUncoveredClasses;
+	/** Whether to ignore uncovered classes (i.e. leave them out of the report). */
+	private final boolean ignoreUncoveredClasses;
 
 	TeamscaleCoverageBuilder(ILogger logger, EDuplicateClassFileBehavior duplicateClassFileBehavior, boolean removeUncoveredClasses) {
 		this.logger = logger;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
-		this.removeUncoveredClasses = removeUncoveredClasses;
+		this.ignoreUncoveredClasses = removeUncoveredClasses;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public void visitCoverage(IClassCoverage coverage) {
-		if(removeUncoveredClasses && coverage.getClassCounter().getStatus() == ICounter.NOT_COVERED) {
+		if(ignoreUncoveredClasses && coverage.getClassCounter().getStatus() == ICounter.NOT_COVERED) {
 			return;
 		}
 		

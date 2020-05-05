@@ -18,6 +18,8 @@ import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
@@ -118,18 +120,18 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getTestWiseCoverageMode()).isEqualTo(ETestWiseCoverageMode.HTTP);
 	}
 	
-	/** Tests the options for the Test Impact mode. */
+	/** Tests setting ignore-uncovered-classes works. */
 	@Test
 	public void testIgnoreUncoveredClasses() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("ignore-uncovered-classes=true");
-		assertThat(agentOptions.shouldRemoveUncoveredClasses()).isEqualTo(true);
+		assertTrue(agentOptions.shouldIgnoreUncoveredClasses());
 	}
 
-	/** Tests the options for the Test Impact mode. */
+	/** Tests default for ignore-uncovered-classes is false. */
 	@Test
 	public void testIgnoreUncoveredClassesDefault() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
-		assertThat(agentOptions.shouldRemoveUncoveredClasses()).isEqualTo(false);
+		assertFalse(agentOptions.shouldIgnoreUncoveredClasses());
 	}
 	
 	/** Tests that supplying both revision and commit info is forbidden. */
