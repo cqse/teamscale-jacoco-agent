@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 /**
  * Encapsulates all command line options for the convert command for parsing with {@link JCommander}.
  */
-@Parameters(commandNames = "convert", commandDescription = "Converts a binary .exec coverage file to XML.")
+@Parameters(commandNames = "convert", commandDescription = "Converts a binary .exec coverage file to XML. " +
+		"Note that the XML report will only contain source file coverage information, but no class coverage.")
 public class ConvertCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
@@ -74,7 +75,7 @@ public class ConvertCommand implements ICommand {
 	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
 
 	/** Whether to ignore uncovered class files. */
-	@Parameter(names = {"--ignore-uncovered-classes", "-s"}, required = false, arity = 1, description = ""
+	@Parameter(names = {"--ignore-uncovered-classes"}, required = false, arity = 1, description = ""
 			+ "Whether to ignore uncovered classes."
 			+ " These classes will not be part of the XML report at all, making it considerably smaller in some cases. Defaults to false.")
 	/* package */ boolean shouldIgnoreUncoveredClasses = false;

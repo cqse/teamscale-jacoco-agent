@@ -9,10 +9,18 @@ import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ILogger;
 
 import org.jacoco.core.analysis.CoverageBuilder;
+import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
+import org.jacoco.core.internal.analysis.BundleCoverageImpl;
 
-/** Modified {@link CoverageBuilder} can ignore non-identical duplicate classes or classes without coverage. */
+import java.util.Collections;
+
+/**
+ * Modified {@link CoverageBuilder} can ignore non-identical duplicate classes or classes without coverage.
+ * In addition, Coverage returned via {@link #getBundle(String)} will only return source file coverage,
+ * because Teamscale does not need class coverage anyway. This reduces XML size by approximately half.
+ */
 /* package */class TeamscaleCoverageBuilder extends CoverageBuilder {
 
 	/** The logger. */
@@ -28,6 +36,12 @@ import org.jacoco.core.analysis.ICounter;
 		this.logger = logger;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 		this.ignoreUncoveredClasses = removeUncoveredClasses;
+	}
+
+	/** Just returns source file coverage, because Teamscale does not need class coverage. */
+	@Override
+	public IBundleCoverage getBundle(final String name) {
+		return new BundleCoverageImpl(name, Collections.emptyList(), getSourceFiles());
 	}
 
 	/** {@inheritDoc} */
