@@ -206,7 +206,7 @@ public class AgentOptions {
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
-				"'teamscale-revision' is incompatible with 'teamscale-commit', 'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.");
+				"'teamscale-revision' is incompatible with 'teamscale-commit' and 'teamscale-commit-manifest-jar'.");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
@@ -374,8 +374,8 @@ public class AgentOptions {
 
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
-				commit -> {
-					teamscaleServer.commit = commit;
+				revision -> {
+					teamscaleServer.revision = revision;
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);

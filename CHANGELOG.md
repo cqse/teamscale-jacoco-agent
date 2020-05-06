@@ -11,6 +11,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] `--exclude` option in convert tool has been renamed to `--excludes`
 - [fix] Remove retry logic for impacted tests request
 - [fix] Resolve possible memory leak during report generation
+- [feature] Use git.commit.id from git.properties instead of branch and timestamp
 - [breaking change] Reduce XML report size by only including source file coverage, no class coverage
 - [feature] New option `--ignore-uncovered-classes` to further reduce size of XML reports
 

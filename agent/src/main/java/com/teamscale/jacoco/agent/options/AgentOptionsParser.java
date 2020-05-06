@@ -247,7 +247,7 @@ public class AgentOptionsParser {
 				options.teamscaleServer.commit = getCommitFromManifest(parseFile(key, value));
 				return true;
 			case "teamscale-git-properties-jar":
-				options.teamscaleServer.commit = parseGitProperties(key, value);
+				options.teamscaleServer.revision = parseGitProperties(key, value);
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
@@ -265,14 +265,14 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private CommitDescriptor parseGitProperties(String key, String value) throws AgentOptionParseException {
+	private String parseGitProperties(String key, String value) throws AgentOptionParseException {
 		File jarFile = parseFile(key, value);
 		try {
-			CommitDescriptor commitDescriptor = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
-			if (commitDescriptor == null) {
+			String commit = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
+			if (commit == null) {
 				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
 			}
-			return commitDescriptor;
+			return commit;
 		} catch (IOException | InvalidGitPropertiesException e) {
 			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
 					e);
