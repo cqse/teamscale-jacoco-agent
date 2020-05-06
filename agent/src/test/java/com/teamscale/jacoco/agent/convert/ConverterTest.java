@@ -30,7 +30,7 @@ public class ConverterTest {
 
 		String xml = FileSystemUtils.readFileUTF8(outputFile);
 		System.err.println(xml);
-		assertThat(xml).isNotEmpty().contains("<class").contains("<counter").contains("TestClass");
+		assertThat(xml).isNotEmpty().contains("<package").contains("<sourcefile").contains("<counter").contains("TestClass");
 	}
 
 }

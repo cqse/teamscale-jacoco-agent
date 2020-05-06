@@ -4,6 +4,7 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /** Tests the {@link AgentOptions}. */
 public class AgentOptionsTest {
@@ -116,7 +119,21 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 		assertThat(agentOptions.getTestWiseCoverageMode()).isEqualTo(ETestWiseCoverageMode.HTTP);
 	}
+	
+	/** Tests setting ignore-uncovered-classes works. */
+	@Test
+	public void testIgnoreUncoveredClasses() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("ignore-uncovered-classes=true");
+		assertTrue(agentOptions.shouldIgnoreUncoveredClasses());
+	}
 
+	/** Tests default for ignore-uncovered-classes is false. */
+	@Test
+	public void testIgnoreUncoveredClassesDefault() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		assertFalse(agentOptions.shouldIgnoreUncoveredClasses());
+	}
+	
 	/** Tests that supplying both revision and commit info is forbidden. */
 	@Test
 	public void testBothRevisionAndCommitSupplied() throws URISyntaxException {
