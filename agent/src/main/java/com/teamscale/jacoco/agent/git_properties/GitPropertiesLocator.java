@@ -12,9 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -36,7 +34,7 @@ public class GitPropertiesLocator {
 
 	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
 	private final Executor executor;
-	private CommitDescriptor foundCommitDescriptor = null;
+	private String foundRevision = null;
 	private File jarFileWithGitProperties = null;
 
 	private final DelayedCommitDescriptorUploader store;
@@ -66,44 +64,44 @@ public class GitPropertiesLocator {
 
 	private void searchJarFile(File jarFile) {
 		try {
-			CommitDescriptor commitDescriptor = getCommitFromGitProperties(jarFile);
-			if (commitDescriptor == null) {
+			String revision = getCommitFromGitProperties(jarFile);
+			if (revision == null) {
 				logger.debug("No git.properties file found in {}", jarFile.toString());
 				return;
 			}
 
-			if (foundCommitDescriptor != null) {
-				if (!foundCommitDescriptor.equals(commitDescriptor)) {
-					logger.error("Found inconsistent git.properties files: {} contained {} while {} contained {}." +
+			if (foundRevision != null) {
+				if (!foundRevision.equals(revision)) {
+					logger.error("Found inconsistent git.properties files: {} contained SHA1 {} while {} contained {}." +
 									" Please ensure that all git.properties files of your application are consistent." +
 									" Otherwise, you may" +
 									" be uploading to the wrong commit which will result in incorrect coverage data" +
 									" displayed in Teamscale. If you cannot fix the inconsistency, you can manually" +
 									" specify a Jar/War/Ear/... file from which to read the correct git.properties" +
 									" file with the agent's teamscale-git-properties-jar parameter.",
-							jarFileWithGitProperties, foundCommitDescriptor, jarFile, commitDescriptor);
+							jarFileWithGitProperties, foundRevision, jarFile, revision);
 				}
 				return;
 			}
 
 			logger.debug("Found git.properties file in {} and found commit descriptor {}", jarFile.toString(),
-					commitDescriptor.toString());
-			foundCommitDescriptor = commitDescriptor;
+					revision);
+			foundRevision = revision;
 			jarFileWithGitProperties = jarFile;
-			store.setCommitAndTriggerAsynchronousUpload(commitDescriptor);
+			store.setCommitAndTriggerAsynchronousUpload(revision);
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
 		}
 	}
 
 	/**
-	 * Reads branch and timestamp entries from the given jar file's git.properties and builds a commit descriptor out of
+	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of
 	 * it. If no git.properties file can be found, returns null.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static CommitDescriptor getCommitFromGitProperties(
+	public static String getCommitFromGitProperties(
 			File jarFile) throws IOException, InvalidGitPropertiesException {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
@@ -116,7 +114,7 @@ public class GitPropertiesLocator {
 
 	/** Visible for testing. */
 	/*package*/
-	static CommitDescriptor getCommitFromGitProperties(
+	static String getCommitFromGitProperties(
 			JarInputStream jarStream, File jarFile) throws IOException, InvalidGitPropertiesException {
 		JarEntry entry = jarStream.getNextJarEntry();
 		while (entry != null) {
@@ -133,31 +131,16 @@ public class GitPropertiesLocator {
 
 	/** Visible for testing. */
 	/*package*/
-	static CommitDescriptor parseGitPropertiesJarEntry(
+	static String parseGitPropertiesJarEntry(
 			String entryName, Properties gitProperties, File jarFile) throws InvalidGitPropertiesException {
-		String branch = gitProperties.getProperty("git.branch");
-		String timestamp = gitProperties.getProperty("git.commit.time");
-
-		if (StringUtils.isEmpty(branch)) {
+		String revision = gitProperties.getProperty("git.commit.id");
+		if (StringUtils.isEmpty(revision)) {
 			throw new InvalidGitPropertiesException(
-					"No entry or empty value for 'git.branch' in " + entryName + " in " + jarFile + "." +
+					"No entry or empty value for 'git.commit.id' in " + entryName + " in " + jarFile + "." +
 							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties.toString()
 			);
-		} else if (StringUtils.isEmpty(timestamp)) {
-			throw new InvalidGitPropertiesException(
-					"No entry or empty value for 'git.commit.time' in " + entryName + " in " + jarFile +
-							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties.toString());
 		}
 
-		try {
-			long parsedTimestamp = ZonedDateTime.parse(timestamp, GIT_PROPERTIES_DATE_FORMAT).toInstant()
-					.toEpochMilli();
-			branch = StringUtils.stripPrefix(branch, "origin/");
-			return new CommitDescriptor(branch, parsedTimestamp);
-		} catch (DateTimeParseException e) {
-			throw new InvalidGitPropertiesException(
-					"git.commit.time value '" + timestamp + "' in " + entryName + " in " + jarFile +
-							" is malformed: it cannot be parsed with the pattern " + GIT_PROPERTIES_DATE_FORMAT, e);
-		}
+		return revision;
 	}
 }

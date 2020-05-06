@@ -120,8 +120,8 @@ public class AgentOptionsTest {
 	/** Tests that supplying both revision and commit info is forbidden. */
 	@Test
 	public void testBothRevisionAndCommitSupplied() throws URISyntaxException {
-		String message = "'teamscale-revision' is incompatible with 'teamscale-commit', "
-				+ "'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.";
+		String message = "'teamscale-revision' is incompatible with 'teamscale-commit' and "
+				+ "'teamscale-commit-manifest-jar'.";
 
 		File jar = new File(getClass().getResource("manifest-and-git-properties.jar").toURI());
 
@@ -132,10 +132,6 @@ public class AgentOptionsTest {
 		assertThatThrownBy(
 				() -> getAgentOptionsParserWithDummyLogger().parse(
 						"teamscale-revision=1234,teamscale-commit-manifest-jar=" + jar.getAbsolutePath()))
-				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
-		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
-						"teamscale-revision=1234,teamscale-git-properties-jar=" + jar.getAbsolutePath()))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 	}
 

@@ -23,11 +23,11 @@ public class DelayedCommitDescriptorUploader implements IUploader {
 
 	private final Executor executor;
 	private final Logger logger = LoggingUtils.getLogger(this);
-	private final Function<CommitDescriptor, IUploader> wrappedUploaderFactory;
+	private final Function<String, IUploader> wrappedUploaderFactory;
 	private IUploader wrappedUploader = null;
-	private Path cacheDir;
+	private final Path cacheDir;
 
-	public DelayedCommitDescriptorUploader(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
+	public DelayedCommitDescriptorUploader(Function<String, IUploader> wrappedUploaderFactory,
 										   Path cacheDir) {
 		this(wrappedUploaderFactory, cacheDir, Executors.newSingleThreadExecutor(
 				new DaemonThreadFactory(DelayedCommitDescriptorUploader.class, "Delayed cache upload thread")));
@@ -37,7 +37,7 @@ public class DelayedCommitDescriptorUploader implements IUploader {
 	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
 	 * class.
 	 */
-	/*package*/ DelayedCommitDescriptorUploader(Function<CommitDescriptor, IUploader> wrappedUploaderFactory,
+	/*package*/ DelayedCommitDescriptorUploader(Function<String, IUploader> wrappedUploaderFactory,
 												Path cacheDir, Executor executor) {
 		this.wrappedUploaderFactory = wrappedUploaderFactory;
 		this.cacheDir = cacheDir;
@@ -83,7 +83,7 @@ public class DelayedCommitDescriptorUploader implements IUploader {
 	 * Sets the commit to upload the XMLs to and asynchronously triggers the upload of all cached XMLs. This method
 	 * should only be called once.
 	 */
-	public synchronized void setCommitAndTriggerAsynchronousUpload(CommitDescriptor commit) {
+	public synchronized void setCommitAndTriggerAsynchronousUpload(String commit) {
 		if (wrappedUploader == null) {
 			wrappedUploader = wrappedUploaderFactory.apply(commit);
 			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", commit,
