@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.upload.delay;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
 import com.teamscale.report.jacoco.CoverageFile;
 import org.junit.jupiter.api.Test;
@@ -44,7 +43,7 @@ public class DelayedCommitDescriptorUploaderTest {
 		InMemoryUploader destination = new InMemoryUploader();
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath);
 
-		store.setCommitAndTriggerAsynchronousUpload(new CommitDescriptor("branch", 1234));
+		store.setCommitAndTriggerAsynchronousUpload("a2afb54566aaa");
 		store.upload(coverageFile);
 
 		assertThat(Files.list(outputPath).collect(Collectors.toList()))
@@ -64,7 +63,7 @@ public class DelayedCommitDescriptorUploaderTest {
 				executor);
 
 		store.upload(coverageFile);
-		store.setCommitAndTriggerAsynchronousUpload(new CommitDescriptor("branch", 1234));
+		store.setCommitAndTriggerAsynchronousUpload("a2afb54566aaa");
 		executor.shutdown();
 		executor.awaitTermination(5, TimeUnit.SECONDS);
 
