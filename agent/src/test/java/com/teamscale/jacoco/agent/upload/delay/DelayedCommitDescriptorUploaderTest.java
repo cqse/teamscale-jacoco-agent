@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.upload.delay;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
 import com.teamscale.report.jacoco.CoverageFile;
 import org.junit.jupiter.api.Test;

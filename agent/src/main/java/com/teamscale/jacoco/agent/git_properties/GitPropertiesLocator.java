@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.git_properties;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
@@ -12,7 +11,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -27,10 +25,6 @@ public class GitPropertiesLocator {
 
 	/** Name of the git.properties file. */
 	private static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
-
-	/** The standard date format used by git.properties. */
-	private static final DateTimeFormatter GIT_PROPERTIES_DATE_FORMAT = DateTimeFormatter
-			.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
 	private final Executor executor;
@@ -72,7 +66,8 @@ public class GitPropertiesLocator {
 
 			if (foundRevision != null) {
 				if (!foundRevision.equals(revision)) {
-					logger.error("Found inconsistent git.properties files: {} contained SHA1 {} while {} contained {}." +
+					logger.error(
+							"Found inconsistent git.properties files: {} contained SHA1 {} while {} contained {}." +
 									" Please ensure that all git.properties files of your application are consistent." +
 									" Otherwise, you may" +
 									" be uploading to the wrong commit which will result in incorrect coverage data" +
@@ -95,8 +90,8 @@ public class GitPropertiesLocator {
 	}
 
 	/**
-	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of
-	 * it. If no git.properties file can be found, returns null.
+	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
+	 * git.properties file can be found, returns null.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
