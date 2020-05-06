@@ -61,9 +61,9 @@ public class HttpUtils {
 	 * Sets sensible defaults for the {@link OkHttpClient}.
 	 */
 	private static void setDefaults(OkHttpClient.Builder builder) {
-		builder.connectTimeout(20, TimeUnit.SECONDS);
-		builder.readTimeout(20, TimeUnit.SECONDS);
-		builder.writeTimeout(20, TimeUnit.SECONDS);
+		builder.connectTimeout(60, TimeUnit.SECONDS);
+		builder.readTimeout(60, TimeUnit.SECONDS);
+		builder.writeTimeout(60, TimeUnit.SECONDS);
 	}
 
 	/**

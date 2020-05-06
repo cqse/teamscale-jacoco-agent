@@ -4,6 +4,7 @@ import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
+
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -73,7 +74,9 @@ public class JaCoCoXmlReportGenerator {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
 		checkForEmptyReport(bundleCoverage);
-		createReport(coverageFile.getOutputStream(), bundleCoverage, dump.info, mergedStore);
+		try(OutputStream outputStream = coverageFile.getOutputStream()) {
+			createReport(outputStream, bundleCoverage, dump.info, mergedStore);
+		}
 	}
 
 	private void checkForEmptyReport(IBundleCoverage coverage) throws EmptyReportException {
