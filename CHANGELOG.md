@@ -15,6 +15,7 @@ We use [semantic versioning](http://semver.org/):
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework
 - [fix] Delete empty coverage directories
+- [fix] Don't upload empty coverage reports
 
 # 15.4.0
 - [fix] `git.properties` commit was not used for upload
