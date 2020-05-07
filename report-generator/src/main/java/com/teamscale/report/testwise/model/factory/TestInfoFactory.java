@@ -75,7 +75,9 @@ public class TestInfoFactory {
 		}
 		for (TestExecution testExecution : testExecutionsMap.values()) {
 			if (!processedTestUniformPaths.contains(testExecution.getUniformPath())) {
-				System.err.println("No coverage found found for " + testExecution.getUniformPath());
+				System.err.println("Test " + testExecution.getUniformPath() + " was executed but no coverage was found. " +
+						"Please make sure that you did provide all relevant exec files and that the test IDs passed to " +
+						"the agent match the ones from the provided test execution list.");
 				processedTestUniformPaths.add(testExecution.getUniformPath());
 			}
 		}
