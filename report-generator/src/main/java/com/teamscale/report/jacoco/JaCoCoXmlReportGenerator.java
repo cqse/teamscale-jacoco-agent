@@ -4,6 +4,7 @@ import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
+
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -36,6 +37,9 @@ public class JaCoCoXmlReportGenerator {
 	/** Whether to ignore non-identical duplicates of class files. */
 	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
 
+	/** Whether to remove uncovered classes from the report. */
+	private final boolean ignoreUncoveredClasses;
+	
 	/** Part of the error message logged when validating the coverage report fails. */
 	private static final String MOST_LIKELY_CAUSE_MESSAGE = "Most likely you did not configure the agent correctly." +
 			" Please check that the includes and excludes options are set correctly so the relevant code is included." +
@@ -45,10 +49,11 @@ public class JaCoCoXmlReportGenerator {
 
 	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives,
 									ClasspathWildcardIncludeFilter locationIncludeFilter,
-									EDuplicateClassFileBehavior duplicateClassFileBehavior, ILogger logger) {
+									EDuplicateClassFileBehavior duplicateClassFileBehavior, boolean ignoreUncoveredClasses, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 		this.locationIncludeFilter = locationIncludeFilter;
+		this.ignoreUncoveredClasses = ignoreUncoveredClasses;
 		this.logger = logger;
 	}
 
@@ -69,7 +74,9 @@ public class JaCoCoXmlReportGenerator {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
 		checkForEmptyReport(bundleCoverage);
-		createReport(coverageFile.getOutputStream(), bundleCoverage, dump.info, mergedStore);
+		try(OutputStream outputStream = coverageFile.getOutputStream()) {
+			createReport(outputStream, bundleCoverage, dump.info, mergedStore);
+		}
 	}
 
 	private void checkForEmptyReport(IBundleCoverage coverage) throws EmptyReportException {
@@ -99,11 +106,8 @@ public class JaCoCoXmlReportGenerator {
 	 * report with the coverage in the given store.
 	 */
 	private IBundleCoverage analyzeStructureAndAnnotateCoverage(ExecutionDataStore store) throws IOException {
-		CoverageBuilder coverageBuilder = new CoverageBuilder();
-		if (duplicateClassFileBehavior != EDuplicateClassFileBehavior.FAIL) {
-			coverageBuilder = new DuplicateIgnoringCoverageBuilder(this.logger,
-					duplicateClassFileBehavior == EDuplicateClassFileBehavior.WARN);
-		}
+		CoverageBuilder coverageBuilder = new TeamscaleCoverageBuilder(this.logger,
+				duplicateClassFileBehavior, ignoreUncoveredClasses);
 
 		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);
 

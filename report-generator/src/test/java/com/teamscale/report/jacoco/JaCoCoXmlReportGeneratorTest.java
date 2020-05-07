@@ -11,12 +11,15 @@ import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.internal.data.CRC64;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
@@ -78,7 +81,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 	void testEmptyCoverageFileThrowsException() throws IOException {
 		String testFolderName = "empty-report-handling";
 		long classId = calculateClassId(testFolderName, "TestClass.class");
-		assertThatThrownBy(() -> runGenerator(testFolderName, EDuplicateClassFileBehavior.IGNORE,
+		assertThatThrownBy(() -> runGenerator(testFolderName, EDuplicateClassFileBehavior.IGNORE, false,
 				new ClasspathWildcardIncludeFilter("some.package.*", null), createDummyDump(classId)))
 				.isExactlyInstanceOf(EmptyReportException.class);
 	}
@@ -87,8 +90,39 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 	void testNonEmptyCoverageFileDoesNotThrowException() throws IOException, EmptyReportException {
 		String testFolderName = "empty-report-handling";
 		long classId = calculateClassId(testFolderName, "TestClass.class");
-		runGenerator(testFolderName, EDuplicateClassFileBehavior.IGNORE,
+		runGenerator(testFolderName, EDuplicateClassFileBehavior.IGNORE, false,
 				new ClasspathWildcardIncludeFilter("*", null), createDummyDump(classId));
+	}
+	
+	/** Ensures that uncovered classes are removed from the report if ignore-uncovered-classes is set. */
+	@Test
+	void testShrinking() throws Exception {
+		String testFolderName = "ignore-uncovered-classes";
+		long classId = calculateClassId(testFolderName, "TestClass.class");
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+		runGenerator(testFolderName, EDuplicateClassFileBehavior.FAIL, true,
+				new ClasspathWildcardIncludeFilter("*", null),
+				createDummyDump(classId)).copy(stream);
+
+		String xmlString = stream.toString(StandardCharsets.UTF_8.name());
+		assertThat(xmlString).contains("TestClass");
+		assertThat(xmlString).doesNotContain("TestClassTwo");
+	}
+	
+	/** Ensures that uncovered classes are contained in the report if ignore-uncovered-classes is not set. */
+	@Test
+	void testNonShrinking() throws Exception {
+		String testFolderName = "ignore-uncovered-classes";
+		long classId = calculateClassId(testFolderName, "TestClass.class");
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+		runGenerator(testFolderName, EDuplicateClassFileBehavior.FAIL, false,
+				new ClasspathWildcardIncludeFilter("*", null),
+				createDummyDump(classId)).copy(stream);
+
+		String xmlString = stream.toString(StandardCharsets.UTF_8.name());
+		assertThat(xmlString).contains("TestClassTwo");
 	}
 
 	/**
@@ -104,9 +138,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		return new Dump(info, store);
 	}
 
-	/**
-	 * Creates a dummy dump with an arbitrary class ID.
-	 */
+	/** Creates a dummy dump with an arbitrary class ID. */
 	private static Dump createDummyDump() {
 		return createDummyDump(123);
 	}
@@ -116,23 +148,22 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		return CRC64.classId(Files.readAllBytes(classFile.toPath()));
 	}
 
-	/** Runs the report generator. */
-	private void runGenerator(String testDataFolder,
+	/** Runs the report generator with default values and without ignoring uncovered classes. */
+	private CoverageFile runGenerator(String testDataFolder,
 							  EDuplicateClassFileBehavior duplicateClassFileBehavior) throws Exception, EmptyReportException {
-		runGenerator(testDataFolder, duplicateClassFileBehavior, new ClasspathWildcardIncludeFilter(null, null),
+		return runGenerator(testDataFolder, duplicateClassFileBehavior, false, new ClasspathWildcardIncludeFilter(null, null),
 				createDummyDump());
 	}
 
-	private void runGenerator(String testDataFolder,
-							  EDuplicateClassFileBehavior duplicateClassFileBehavior,
+	private CoverageFile runGenerator(String testDataFolder,
+							  EDuplicateClassFileBehavior duplicateClassFileBehavior, boolean ignoreUncoveredClasses,
 							  ClasspathWildcardIncludeFilter filter,
 							  Dump dump) throws IOException, EmptyReportException {
 		File classFileFolder = useTestFile(testDataFolder);
 		long currentTime = System.currentTimeMillis();
 		String outputFilePath = "test-coverage-" + currentTime + ".xml";
-		new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), filter,
-				duplicateClassFileBehavior,
+		return new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), filter,
+				duplicateClassFileBehavior, ignoreUncoveredClasses,
 				mock(ILogger.class)).convert(dump, Paths.get(outputFilePath));
 	}
-
 }

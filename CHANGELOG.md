@@ -1,7 +1,7 @@
 We use [semantic versioning](http://semver.org/):
 
 - MAJOR version when you make incompatible API changes,
-- MINOR version when you add functionality in a backwards compatible manner, and
+- MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
@@ -9,7 +9,11 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] `--ignore-duplicates` (and `-d` option in convert tool) have been replaced with `--duplicates` option
 - [breaking change] `--filter` option in convert tool has been renamed to `--includes`
 - [breaking change] `--exclude` option in convert tool has been renamed to `--excludes`
-- [fix] lower default timeout for http requests and remove retry logic for impacted tests request
+- [fix] Remove retry logic for impacted tests request
+- [fix] Resolve possible memory leak during report generation
+- [feature] Use git.commit.id from git.properties instead of branch and timestamp
+- [breaking change] Reduce XML report size by only including source file coverage, no class coverage
+- [feature] New option `--ignore-uncovered-classes` to further reduce size of XML reports
 - [fix] converter produces duplicate test entries for testwise coverage
 
 # 15.5.0
