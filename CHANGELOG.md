@@ -14,6 +14,7 @@ We use [semantic versioning](http://semver.org/):
 - [feature] Use git.commit.id from git.properties instead of branch and timestamp
 - [breaking change] Reduce XML report size by only including source file coverage, no class coverage
 - [feature] New option `--ignore-uncovered-classes` to further reduce size of XML reports
+- [fix] converter produces duplicate test entries for testwise coverage
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework
