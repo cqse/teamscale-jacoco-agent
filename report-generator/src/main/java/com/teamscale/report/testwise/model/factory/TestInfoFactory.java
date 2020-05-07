@@ -27,7 +27,7 @@ public class TestInfoFactory {
 	private Map<String, TestExecution> testExecutionsMap = new HashMap<>();
 
 	/** Holds all uniform paths for tests that have been written to the outputFile. */
-	private final Set<String> uniformPathsWithCoverage = new HashSet<>();
+	private final Set<String> processedTestUniformPaths = new HashSet<>();
 
 	public TestInfoFactory(List<TestDetails> testDetails, List<TestExecution> testExecutions) {
 		for (TestDetails testDetail : testDetails) {
@@ -44,7 +44,7 @@ public class TestInfoFactory {
 	 */
 	public TestInfo createFor(TestCoverageBuilder testCoverageBuilder) {
 		String resolvedUniformPath = resolveUniformPath(testCoverageBuilder.getUniformPath());
-		uniformPathsWithCoverage.add(resolvedUniformPath);
+		processedTestUniformPaths.add(resolvedUniformPath);
 
 		TestInfoBuilder container = new TestInfoBuilder(resolvedUniformPath);
 		container.setCoverage(testCoverageBuilder);
@@ -65,20 +65,18 @@ public class TestInfoFactory {
 	public List<TestInfo> createTestInfosWithoutCoverage() {
 		ArrayList<TestInfo> results = new ArrayList<>();
 		for (TestDetails testDetails : testDetailsMap.values()) {
-			if (!uniformPathsWithCoverage.contains(testDetails.uniformPath)) {
+			if (!processedTestUniformPaths.contains(testDetails.uniformPath)) {
 				TestInfoBuilder testInfo = new TestInfoBuilder(testDetails.uniformPath);
 				testInfo.setDetails(testDetails);
 				testInfo.setExecution(testExecutionsMap.get(testDetails.uniformPath));
 				results.add(testInfo.build());
-				uniformPathsWithCoverage.add(testDetails.uniformPath);
+				processedTestUniformPaths.add(testDetails.uniformPath);
 			}
 		}
 		for (TestExecution testExecution : testExecutionsMap.values()) {
-			if (!uniformPathsWithCoverage.contains(testExecution.getUniformPath())) {
-				TestInfoBuilder testInfo = new TestInfoBuilder(testExecution.getUniformPath());
-				testInfo.setExecution(testExecution);
-				results.add(testInfo.build());
-				uniformPathsWithCoverage.add(testExecution.getUniformPath());
+			if (!processedTestUniformPaths.contains(testExecution.getUniformPath())) {
+				System.err.println("No coverage found found for " + testExecution.getUniformPath());
+				processedTestUniformPaths.add(testExecution.getUniformPath());
 			}
 		}
 		return results;

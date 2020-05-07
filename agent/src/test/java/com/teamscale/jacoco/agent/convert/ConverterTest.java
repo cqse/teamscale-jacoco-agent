@@ -43,9 +43,9 @@ public class ConverterTest {
 	public void testTestwiseCoverageSmokeTest(@TempDir File tempDir) throws Exception {
 		File inputDir = new File(tempDir, "input");
 		inputDir.mkdir();
-		copyResourceTo(inputDir, "coverage-testwise.exec");
-		copyResourceTo(inputDir, "test-list.json");
-		copyResourceTo(inputDir, "test-execution.json");
+		copyResourceTo("coverage-testwise.exec", inputDir);
+		copyResourceTo("test-list.json", inputDir);
+		copyResourceTo("test-execution.json", inputDir);
 		File classFile = new File(getClass().getResource("classes.zip").toURI());
 		File outputFile = new File(tempDir, "testwise-coverage.json");
 
@@ -67,8 +67,8 @@ public class ConverterTest {
 				.contains("\"result\": \"PASSED\"").contains("\"duration\": 1234").contains("\"coveredLines\": \"33,46-47");
 	}
 
-	private void copyResourceTo(File inputDir, String name) throws URISyntaxException, IOException {
+	private void copyResourceTo(String name, File targetDir) throws URISyntaxException, IOException {
 		File execFile = new File(getClass().getResource(name).toURI());
-		Files.copy(execFile.toPath(), new File(inputDir, name).toPath());
+		Files.copy(execFile.toPath(), new File(targetDir, name).toPath());
 	}
 }
