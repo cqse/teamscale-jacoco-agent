@@ -13,7 +13,7 @@ import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
-import okhttp3.HttpUrl;
+
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -150,6 +152,8 @@ public class AgentOptionsParser {
 				return true;
 			case "duplicates":
 				options.duplicateClassFileBehavior = EDuplicateClassFileBehavior.valueOf(value.toUpperCase());
+			case "ignore-uncovered-classes":
+				options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
@@ -230,7 +234,7 @@ public class AgentOptionsParser {
 				options.teamscaleServer.commit = getCommitFromManifest(filePatternResolver.parseFile(key, value));
 				return true;
 			case "teamscale-git-properties-jar":
-				options.teamscaleServer.commit = parseGitProperties(key, value);
+				options.teamscaleServer.revision = parseGitProperties(key, value);
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
@@ -248,14 +252,14 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private CommitDescriptor parseGitProperties(String key, String value) throws AgentOptionParseException {
+	private String parseGitProperties(String key, String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parseFile(key, value);
 		try {
-			CommitDescriptor commitDescriptor = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
-			if (commitDescriptor == null) {
+			String commit = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
+			if (commit == null) {
 				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
 			}
-			return commitDescriptor;
+			return commit;
 		} catch (IOException | InvalidGitPropertiesException e) {
 			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
 					e);

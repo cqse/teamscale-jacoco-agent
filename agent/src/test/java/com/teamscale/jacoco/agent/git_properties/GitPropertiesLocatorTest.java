@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.git_properties;
 
-import com.teamscale.client.CommitDescriptor;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -21,10 +20,9 @@ public class GitPropertiesLocatorTest {
 	public void testReadingGitPropertiesFromArchive() throws Exception {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(getClass().getResourceAsStream(archiveName));
-			CommitDescriptor commitDescriptor = GitPropertiesLocator
+			String commit = GitPropertiesLocator
 					.getCommitFromGitProperties(jarInputStream, new File("test.jar"));
-			assertThat(commitDescriptor).isNotNull();
-			assertThat(commitDescriptor.toString()).isEqualTo("master:1564065275000");
+			assertThat(commit).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
 		}
 	}
 
@@ -38,13 +36,4 @@ public class GitPropertiesLocatorTest {
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
 
-	@Test
-	public void testGitPropertiesWithOrigin() throws InvalidGitPropertiesException {
-		Properties gitProperties = new Properties();
-		gitProperties.put("git.commit.time", "2020-01-01T00:00:00+0000");
-		gitProperties.put("git.branch", "origin/master");
-		CommitDescriptor commitDescriptor = GitPropertiesLocator
-				.parseGitPropertiesJarEntry("test", gitProperties, new File("test.jar"));
-		assertThat(commitDescriptor.branchName).isEqualTo("master");
-	}
 }

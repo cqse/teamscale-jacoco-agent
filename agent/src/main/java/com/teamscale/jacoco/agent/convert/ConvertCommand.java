@@ -11,8 +11,8 @@ import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.ClasspathUtils;
+import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 /**
  * Encapsulates all command line options for the convert command for parsing with {@link JCommander}.
  */
-@Parameters(commandNames = "convert", commandDescription = "Converts a binary .exec coverage file to XML.")
+@Parameters(commandNames = "convert", commandDescription = "Converts a binary .exec coverage file to XML. " +
+		"Note that the XML report will only contain source file coverage information, but no class coverage.")
 public class ConvertCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
@@ -75,6 +76,12 @@ public class ConvertCommand implements ICommand {
 			+ " This is discouraged and may result in incorrect coverage files. Defaults to WARN. " +
 			"Options are FAIL, WARN and IGNORE.")
 	/* package */ EDuplicateClassFileBehavior duplicateClassFileBehavior = EDuplicateClassFileBehavior.WARN;
+
+	/** Whether to ignore uncovered class files. */
+	@Parameter(names = {"--ignore-uncovered-classes"}, required = false, arity = 1, description = ""
+			+ "Whether to ignore uncovered classes."
+			+ " These classes will not be part of the XML report at all, making it considerably smaller in some cases. Defaults to false.")
+	/* package */ boolean shouldIgnoreUncoveredClasses = false;
 
 	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +

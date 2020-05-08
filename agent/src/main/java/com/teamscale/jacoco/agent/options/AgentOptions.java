@@ -28,7 +28,7 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
+
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -148,11 +150,16 @@ public class AgentOptions {
 	/* package */ Integer httpServerPort = null;
 
 	/**
-	 * How test-wise coverage should be stored handled in test-wise mode.
+	 * How test-wise coverage should be handled in test-wise mode.
 	 */
 	/* package */ ETestWiseCoverageMode testWiseCoverageMode = ETestWiseCoverageMode.EXEC_FILE;
 
 
+	/**
+	 * Whether classes without coverage should be skipped from the XML report.
+	 */
+	/* package */ boolean ignoreUncoveredClasses = false;
+	
 	/**
 	 * The configuration necessary to upload files to an azure file storage
 	 */
@@ -199,7 +206,7 @@ public class AgentOptions {
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
-				"'teamscale-revision' is incompatible with 'teamscale-commit', 'teamscale-commit-manifest-jar', or 'teamscale-git-properties-jar'.");
+				"'teamscale-revision' is incompatible with 'teamscale-commit' and 'teamscale-commit-manifest-jar'.");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
@@ -367,8 +374,8 @@ public class AgentOptions {
 
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
-				commit -> {
-					teamscaleServer.commit = commit;
+				revision -> {
+					teamscaleServer.revision = revision;
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 		GitPropertiesLocator locator = new GitPropertiesLocator(store);
@@ -468,8 +475,13 @@ public class AgentOptions {
 		return shouldDumpOnExit;
 	}
 
+	/** @see AgentOptions#testWiseCoverageMode */
 	public ETestWiseCoverageMode getTestWiseCoverageMode() {
 		return testWiseCoverageMode;
 	}
 
+	/** @see #ignoreUncoveredClasses */
+	public boolean shouldIgnoreUncoveredClasses() {
+		return ignoreUncoveredClasses;
+	}
 }

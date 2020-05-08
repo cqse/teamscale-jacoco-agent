@@ -11,6 +11,7 @@ import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
+import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -54,7 +55,7 @@ public class Agent extends AgentBase {
 
 		generator = new JaCoCoXmlReportGenerator(options.getClassDirectoriesOrZips(),
 				options.getLocationIncludeFilter(),
-				options.getDuplicateClassFileBehavior(), wrap(logger));
+				options.getDuplicateClassFileBehavior(), options.shouldIgnoreUncoveredClasses(), wrap(logger));
 
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
@@ -161,6 +162,9 @@ public class Agent extends AgentBase {
 			coverageFile = generator.convert(dump, outputPath);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
+			return;
+		} catch (EmptyReportException e) {
+			logger.warn("No coverage was collected.", e);
 			return;
 		}
 		uploader.upload(coverageFile);

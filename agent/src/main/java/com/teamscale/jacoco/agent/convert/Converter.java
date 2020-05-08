@@ -5,6 +5,7 @@ import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.ReportUtils;
+import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.ETestArtifactFormat;
@@ -16,6 +17,7 @@ import com.teamscale.report.testwise.model.factory.TestInfoFactory;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
+
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
@@ -54,11 +56,13 @@ public class Converter {
 
 		Logger logger = LoggingUtils.getLogger(this);
 		JaCoCoXmlReportGenerator generator = new JaCoCoXmlReportGenerator(arguments.getClassDirectoriesOrZips(),
-				getWildcardIncludeExcludeFilter(), arguments.getDuplicateClassFileBehavior(),
+				getWildcardIncludeExcludeFilter(), arguments.getDuplicateClassFileBehavior(), arguments.shouldIgnoreUncoveredClasses,
 				wrap(logger));
 
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile));
+		} catch (EmptyReportException e) {
+			logger.warn("Converted report was emtpy.", e);
 		}
 	}
 

@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 /** Utilities for generating reports. */
 public class ReportUtils {
 
@@ -83,8 +81,21 @@ public class ReportUtils {
 
 	/** Recursively lists all files of the given artifact type. */
 	public static List<File> listFiles(ETestArtifactFormat format, List<File> directoriesOrFiles) {
-		return directoriesOrFiles.stream().flatMap(directory -> FileSystemUtils.listFilesRecursively(directory,
-				pathname -> pathname.isFile() && pathname.getName().startsWith(format.filePrefix) && FileSystemUtils
-						.getFileExtension(pathname).equalsIgnoreCase(format.extension)).stream()).collect(toList());
+		List<File> filesWithSpecifiedArtifactType = new ArrayList<>();
+		for (File directoryOrFile : directoriesOrFiles) {
+			if (directoryOrFile.isDirectory()) {
+				filesWithSpecifiedArtifactType.addAll(FileSystemUtils
+						.listFilesRecursively(directoryOrFile, file -> fileIsOfArtifactFormat(file, format)));
+			} else if (fileIsOfArtifactFormat(directoryOrFile, format)) {
+				filesWithSpecifiedArtifactType.add(directoryOrFile);
+			}
+		}
+		return filesWithSpecifiedArtifactType;
+	}
+
+	private static boolean fileIsOfArtifactFormat(File file, ETestArtifactFormat format) {
+		return file.isFile() &&
+				file.getName().startsWith(format.filePrefix) &&
+				FileSystemUtils.getFileExtension(file).equalsIgnoreCase(format.extension);
 	}
 }

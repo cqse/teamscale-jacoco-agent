@@ -1,0 +1,10 @@
+[
+  {
+    "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]"
+  },
+  {
+    "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]",
+    "duration": 1234,
+    "result": "PASSED"
+  }
+]
