@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 16.0.0
 - [fix] Prevent "out of memory" in small JVMs: Don't cache test executions in memory
 - [breaking change] `--ignore-duplicates` (and `-d` option in convert tool) have been replaced with `--duplicates` option
 - [breaking change] `--filter` option in convert tool has been renamed to `--includes`
