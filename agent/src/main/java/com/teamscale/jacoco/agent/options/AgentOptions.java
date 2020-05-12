@@ -356,7 +356,7 @@ public class AgentOptions {
 			return new HttpUploader(uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
-			if (teamscaleServer.commit == null) {
+			if (!teamscaleServer.hasCommitOrRevision()) {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
 				return createDelayedTeamscaleUploader(instrumentation);

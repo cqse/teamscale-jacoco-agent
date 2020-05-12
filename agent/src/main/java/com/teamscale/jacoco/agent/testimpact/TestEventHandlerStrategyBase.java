@@ -90,7 +90,11 @@ public abstract class TestEventHandlerStrategyBase {
 					" Thus, you cannot use the agent to retrieve impacted tests via the testrun/start REST endpoint." +
 					" Please use the 'teamscale-' agent parameters to configure a Teamscale connection.");
 		}
-
+		if (agentOptions.getTeamscaleServerOptions().commit == null) {
+			throw new UnsupportedOperationException("You did not provide a 'teamscale-commit' or " +
+					"'teamscale-commit-manifest-jar'. 'teamscale-revision' is not sufficient to retrieve impacted " +
+					"tests.");
+		}
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
