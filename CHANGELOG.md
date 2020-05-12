@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 16.0.1
 - [fix] revision is ignored during validation for automatic upload to Teamscale
 
 # 16.0.0
