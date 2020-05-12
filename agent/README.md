@@ -92,7 +92,7 @@ patterns with `*`, `**` and `?`.
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
-- `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
+- `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.

@@ -28,7 +28,7 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-
+import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
@@ -49,17 +49,29 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import okhttp3.HttpUrl;
-
 /**
  * Parses agent command line options.
  */
 public class AgentOptions {
+
+
 	/**
 	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
 	 */
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
+
+	/** Option name that allows to specify to which branch coverage should be uploaded to (branch:timestamp). */
+	public static final String TEAMSCALE_COMMIT_OPTION = "teamscale-commit";
+
+	/** Option name that allows to specify a git commit hash to which coverage should be uploaded to. */
+	public static final String TEAMSCALE_REVISION_OPTION = "teamscale-revision";
+
+	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
+	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
+
+	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
+	public static final String TEAMSCALE_GIT_PROPERTIES_JAR_OPTION = "teamscale-git-properties-jar";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
@@ -159,7 +171,7 @@ public class AgentOptions {
 	 * Whether classes without coverage should be skipped from the XML report.
 	 */
 	/* package */ boolean ignoreUncoveredClasses = false;
-	
+
 	/**
 	 * The configuration necessary to upload files to an azure file storage
 	 */
@@ -206,7 +218,8 @@ public class AgentOptions {
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
-				"'teamscale-revision' is incompatible with 'teamscale-commit' and 'teamscale-commit-manifest-jar'.");
+				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
+						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
@@ -356,7 +369,7 @@ public class AgentOptions {
 			return new HttpUploader(uploadUrl, additionalMetaDataFiles);
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
-			if (teamscaleServer.commit == null) {
+			if (!teamscaleServer.hasCommitOrRevision()) {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
 				return createDelayedTeamscaleUploader(instrumentation);

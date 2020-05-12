@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] revision is ignored during validation for automatic upload to Teamscale
 
 # 16.0.0
 - [fix] Prevent "out of memory" in small JVMs: Don't cache test executions in memory
