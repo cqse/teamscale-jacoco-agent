@@ -61,8 +61,10 @@ public class TeamscaleServer {
 
 	@Override
 	public String toString() {
-		String at = "revision " + revision;
-		if (commit != null) {
+		String at;
+		if (revision != null) {
+			at = "revision " + revision;
+		} else {
 			at = "commit " + commit;
 		}
 		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at " + at;
