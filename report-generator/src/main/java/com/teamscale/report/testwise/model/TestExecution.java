@@ -101,4 +101,15 @@ public class TestExecution implements Serializable {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
+	@Override
+	public String toString() {
+		return "TestExecution{" +
+				"uniformPath='" + uniformPath + '\'' +
+				", durationMillis=" + durationMillis +
+				", duration=" + duration +
+				", result=" + result +
+				", message='" + message + '\'' +
+				'}';
+	}
 }

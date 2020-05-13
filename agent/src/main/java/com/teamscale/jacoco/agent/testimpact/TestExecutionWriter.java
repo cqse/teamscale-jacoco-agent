@@ -2,7 +2,9 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.model.TestExecution;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.nio.charset.StandardCharsets;
  */
 public class TestExecutionWriter {
 
+	private final Logger logger = LoggingUtils.getLogger(this);
+
 	private final JsonAdapter<TestExecution> testExecutionAdapter = new Moshi.Builder().build()
 			.adapter(TestExecution.class);
 
@@ -24,6 +28,7 @@ public class TestExecutionWriter {
 
 	public TestExecutionWriter(File testExecutionFile) {
 		this.testExecutionFile = testExecutionFile;
+		logger.debug("Writing test executions to {}", testExecutionFile);
 	}
 
 	/** Appends the given {@link TestExecution} to the test execution list file. */

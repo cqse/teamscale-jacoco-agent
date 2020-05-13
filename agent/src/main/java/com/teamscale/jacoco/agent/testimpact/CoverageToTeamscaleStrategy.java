@@ -93,7 +93,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				return execution.getUniformPath();
 			}
 		}).collect(toList());
-		logger.debug("Creating coverage for available tests `{}`, test executions `{}` and coverage for `{}`",
+		logger.debug("Creating testwise coverage for available tests `{}`, test executions `{}` and coverage for `{}`",
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
 				executionUniformPaths,
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
