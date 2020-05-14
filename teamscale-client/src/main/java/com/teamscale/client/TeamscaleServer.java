@@ -27,12 +27,12 @@ public class TeamscaleServer {
 	public CommitDescriptor commit;
 
 	/**
-	 * The corresponding code revision to which the coverage belongs. This is currently only supported for
-	 * testwise mode.
+	 * The corresponding code revision to which the coverage belongs. This is currently only supported for testwise
+	 * mode.
 	 */
 	public String revision;
 
-	
+
 	/** The commit message shown in the Teamscale UI for the coverage upload. */
 	public String message = "Agent coverage upload";
 
@@ -54,9 +54,19 @@ public class TeamscaleServer {
 				partition == null;
 	}
 
+	/** Returns whether either a commit or revision has been set. */
+	public boolean hasCommitOrRevision() {
+		return commit != null || revision != null;
+	}
+
 	@Override
 	public String toString() {
-		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at commit "
-				+ commit;
+		String at;
+		if (revision != null) {
+			at = "revision " + revision;
+		} else {
+			at = "commit " + commit;
+		}
+		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at " + at;
 	}
 }

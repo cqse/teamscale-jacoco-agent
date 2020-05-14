@@ -227,20 +227,20 @@ public class AgentOptionsParser {
 			case "teamscale-partition":
 				options.teamscaleServer.partition = value;
 				return true;
-			case "teamscale-commit":
+			case AgentOptions.TEAMSCALE_COMMIT_OPTION:
 				options.teamscaleServer.commit = parseCommit(value);
 				return true;
-			case "teamscale-commit-manifest-jar":
+			case AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
 				options.teamscaleServer.commit = getCommitFromManifest(
 						filePatternResolver.parsePath(key, value).toFile());
 				return true;
-			case "teamscale-git-properties-jar":
+			case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
 				options.teamscaleServer.revision = parseGitProperties(key, value);
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
 				return true;
-			case "teamscale-revision":
+			case AgentOptions.TEAMSCALE_REVISION_OPTION:
 				options.teamscaleServer.revision = value;
 				return true;
 			case "teamscale-testwise-upload":

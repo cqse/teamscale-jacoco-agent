@@ -75,8 +75,8 @@ public class TeamscaleClient {
 
 	/** Uploads one in-memory report to Teamscale. */
 	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
-							 String partition, String message) throws IOException {
+							 String revision, String partition, String message) throws IOException {
 		RequestBody requestBody = RequestBody.create(MultipartBody.FORM, report);
-		service.uploadReport(projectId, commitDescriptor, null, partition, reportFormat, message, requestBody);
+		service.uploadReport(projectId, commitDescriptor, revision, partition, reportFormat, message, requestBody);
 	}
 }
