@@ -36,17 +36,6 @@ public class FilePatternResolver {
 	}
 
 	/**
-	 * Interprets the given pattern as an Ant pattern and resolves it to one existing {@link File}. If the given path is
-	 * relative, it is resolved relative to the current working directory. If more than one file matches the pattern,
-	 * one of the matching files is used without any guarantees as to which. The selection is, however, guaranteed to be
-	 * deterministic, i.e. if you run the pattern twice and get the same set of files, the same file will be picked each
-	 * time.
-	 */
-	public File parseFile(String optionName, String pattern) throws AgentOptionParseException {
-		return parsePath(optionName, new File("."), pattern).toFile();
-	}
-
-	/**
 	 * Interprets the given pattern as an Ant pattern and resolves it to one existing {@link Path}. If the given path is
 	 * relative, it is resolved relative to the current working directory. If more than one file matches the pattern,
 	 * one of the matching files is used without any guarantees as to which. The selection is, however, guaranteed to be
@@ -54,7 +43,7 @@ public class FilePatternResolver {
 	 * time.
 	 */
 	public Path parsePath(String optionName, String pattern) throws AgentOptionParseException {
-		return parsePath(optionName, new File("."), pattern);
+		return parsePath(optionName, pattern, new File("."));
 	}
 
 	/**
@@ -62,10 +51,20 @@ public class FilePatternResolver {
 	 * given path is relative, it is resolved relative to the current working directory.
 	 */
 	public List<File> resolveToMultipleFiles(String optionName, String pattern) throws AgentOptionParseException {
-		File workingDirectory = new File(".");
+		return resolveToMultipleFiles(optionName, pattern, new File("."));
+	}
+
+	/**
+	 * Interprets the given pattern as an Ant pattern and resolves it to one or multiple existing {@link File}s. If the
+	 * given path is relative, it is resolved relative to the current working directory.
+	 * <p>
+	 * Visible for testing only.
+	 */
+	/* package */ List<File> resolveToMultipleFiles(String optionName, String pattern,
+													File workingDirectory) throws AgentOptionParseException {
 		if (isPathWithPattern(pattern)) {
 			return CollectionUtils
-					.map(parseFileFromPattern(workingDirectory, optionName, pattern).getAllMatchingPaths(),
+					.map(parseFileFromPattern(optionName, pattern, workingDirectory).getAllMatchingPaths(),
 							Path::toFile);
 		}
 		try {
@@ -82,10 +81,10 @@ public class FilePatternResolver {
 	 * deterministic, i.e. if you run the pattern twice and get the same set of files, the same file will be picked each
 	 * time.
 	 */
-	/* package */ Path parsePath(String optionName, File workingDirectory,
-								 String pattern) throws AgentOptionParseException {
+	/* package */ Path parsePath(String optionName, String pattern,
+								 File workingDirectory) throws AgentOptionParseException {
 		if (isPathWithPattern(pattern)) {
-			return parseFileFromPattern(workingDirectory, optionName, pattern).getSinglePath();
+			return parseFileFromPattern(optionName, pattern, workingDirectory).getSinglePath();
 		}
 		try {
 			return workingDirectory.toPath().resolve(Paths.get(pattern));
@@ -94,11 +93,11 @@ public class FilePatternResolver {
 		}
 	}
 
-	/** Parses the pattern as a Ant pattern to a file or directory. */
-	private FilePatternResolverRun parseFileFromPattern(File workingDirectory, String optionName,
-														String pattern) throws AgentOptionParseException {
-		return new FilePatternResolverRun(logger, workingDirectory, optionName,
-				pattern).resolve();
+	/** Parses the pattern as a Ant pattern to one or multiple files or directories. */
+	private FilePatternResolverRun parseFileFromPattern(String optionName,
+														String pattern,
+														File workingDirectory) throws AgentOptionParseException {
+		return new FilePatternResolverRun(logger, optionName, pattern, workingDirectory).resolve();
 	}
 
 	/** Returns whether the given path contains Ant pattern characters (?,*). */
@@ -123,11 +122,12 @@ public class FilePatternResolver {
 		private List<Path> matchingPaths;
 		private final ILogger logger;
 
-		private FilePatternResolverRun(ILogger logger, File workingDirectory, String optionName, String pattern) {
+		private FilePatternResolverRun(ILogger logger, String optionName, String pattern, File workingDirectory) {
 			this.logger = logger;
-			this.workingDirectory = workingDirectory.getAbsoluteFile();
 			this.optionName = optionName;
 			this.pattern = pattern;
+			this.workingDirectory = workingDirectory.getAbsoluteFile();
+			splitIntoBasePathAndPattern(pattern);
 		}
 
 		/**
@@ -135,8 +135,6 @@ public class FilePatternResolver {
 		 * #getAllMatchingPaths()}.
 		 */
 		private FilePatternResolverRun resolve() throws AgentOptionParseException {
-			splitIntoBasePathAndPattern(pattern);
-
 			Pattern pathRegex = AntPatternUtils.convertPattern(suffixPattern, false);
 			Predicate<Path> filter = path -> pathRegex
 					.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
@@ -181,7 +179,7 @@ public class FilePatternResolver {
 		private Path getSinglePath() throws AgentOptionParseException {
 			if (this.matchingPaths.isEmpty()) {
 				throw new AgentOptionParseException(
-						"Invalid path given for option " + optionName + ": " + this.suffixPattern + ". The pattern " + this.suffixPattern +
+						"Invalid path given for option " + optionName + ": " + this.pattern + ". The pattern " + this.suffixPattern +
 								" did not match any files in " + this.basePath.toAbsolutePath());
 			} else if (this.matchingPaths.size() > 1) {
 				logger.warn(

@@ -119,7 +119,7 @@ public class AgentOptionsParser {
 									   String value) throws AgentOptionParseException {
 		switch (key) {
 			case "config-file":
-				readConfigFromFile(options, filePatternResolver.parseFile(key, value));
+				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
 				return true;
 			case "logging-config":
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
@@ -231,7 +231,8 @@ public class AgentOptionsParser {
 				options.teamscaleServer.commit = parseCommit(value);
 				return true;
 			case "teamscale-commit-manifest-jar":
-				options.teamscaleServer.commit = getCommitFromManifest(filePatternResolver.parseFile(key, value));
+				options.teamscaleServer.commit = getCommitFromManifest(
+						filePatternResolver.parsePath(key, value).toFile());
 				return true;
 			case "teamscale-git-properties-jar":
 				options.teamscaleServer.revision = parseGitProperties(key, value);
@@ -253,7 +254,7 @@ public class AgentOptionsParser {
 	}
 
 	private String parseGitProperties(String key, String value) throws AgentOptionParseException {
-		File jarFile = filePatternResolver.parseFile(key, value);
+		File jarFile = filePatternResolver.parsePath(key, value).toFile();
 		try {
 			String commit = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
 			if (commit == null) {

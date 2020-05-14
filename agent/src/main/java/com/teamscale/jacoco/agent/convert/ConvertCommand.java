@@ -20,7 +20,6 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -94,7 +93,7 @@ public class ConvertCommand implements ICommand {
 	private int splitAfter = 5000;
 
 	/** @see #classDirectoriesOrZips */
-	public List<File> getClassDirectoriesOrZips() throws AgentOptionParseException, IOException {
+	public List<File> getClassDirectoriesOrZips() throws AgentOptionParseException {
 		return ClasspathUtils
 				.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
 						classDirectoriesOrZips);
@@ -132,12 +131,14 @@ public class ConvertCommand implements ICommand {
 
 	/** Makes sure the arguments are valid. */
 	@Override
-	public Validator validate() throws AgentOptionParseException, IOException {
+	public Validator validate() {
 		Validator validator = new Validator();
 
-		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
+		List<File> classDirectoriesOrZips = new ArrayList<>();
+		validator.ensure(() -> classDirectoriesOrZips.addAll(getClassDirectoriesOrZips()));
+		validator.isFalse(classDirectoriesOrZips.isEmpty(),
 				"You must specify at least one directory or zip that contains class files");
-		for (File path : getClassDirectoriesOrZips()) {
+		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}
