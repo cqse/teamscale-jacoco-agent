@@ -29,11 +29,13 @@ public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 	@Override
 	public String testEnd(String test,
 						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
+		logger.debug("Test {} ended with execution {}. Writing exec file and test execution", test, testExecution);
 		super.testEnd(test, testExecution);
 		controller.dump();
 		if (testExecution != null) {
 			try {
 				testExecutionWriter.append(testExecution);
+				logger.debug("Successfully wrote test execution for {}", test);
 			} catch (IOException e) {
 				logger.error("Failed to store test execution: " + e.getMessage(), e);
 			}
