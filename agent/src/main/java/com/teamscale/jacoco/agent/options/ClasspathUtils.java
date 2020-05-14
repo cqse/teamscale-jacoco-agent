@@ -30,17 +30,17 @@ public class ClasspathUtils {
 
 	private static List<File> resolveClassPathEntries(String key, FilePatternResolver filePatternResolver,
 													  File txtFile) throws AgentOptionParseException {
+		List<String> filePaths;
 		try {
-			List<String> filePaths = FileSystemUtils.readLinesUTF8(txtFile);
-			List<File> resolvedFiles = new ArrayList<>();
-			for (String filePath : filePaths) {
-				resolvedFiles.addAll(filePatternResolver.resolveToMultipleFiles(key, filePath));
-			}
-			return resolvedFiles;
+			filePaths = FileSystemUtils.readLinesUTF8(txtFile);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Failed to resolve class path entries from the text files provided " +
-					"in the `" + key + "` option. Please ensure that any text files provided in this option contain " +
-					"properly formatted classpath patterns and each entry is separated by a newline.", e);
+			throw new AgentOptionParseException("Failed read class path entries from the provided " + txtFile +
+					" in the `" + key + "` option.", e);
 		}
+		List<File> resolvedFiles = new ArrayList<>();
+		for (String filePath : filePaths) {
+			resolvedFiles.addAll(filePatternResolver.resolveToMultipleFiles(key, filePath));
+		}
+		return resolvedFiles;
 	}
 }
