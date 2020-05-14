@@ -10,10 +10,12 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.ClasspathUtils;
+import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.EDuplicateClassFileBehavior;
-
+import com.teamscale.report.util.CommandLineLogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
-import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
@@ -30,9 +32,9 @@ import java.util.stream.Collectors;
 public class ConvertCommand implements ICommand {
 
 	/** The directories and/or zips that contain all class files being profiled. */
-	@Parameter(names = {"--classDir", "--jar", "-c"}, required = true, description = ""
+	@Parameter(names = {"--class-dir", "--jar", "-c"}, required = true, description = ""
 			+ "The directories or zip/ear/jar/war/... files that contain the compiled Java classes being profiled."
-			+ " Searches recursively, including inside zips.")
+			+ " Searches recursively, including inside zips. You may also supply a *.txt file with one path per line.")
 	/* package */ List<String> classDirectoriesOrZips = new ArrayList<>();
 
 	/**
@@ -79,7 +81,7 @@ public class ConvertCommand implements ICommand {
 			+ "Whether to ignore uncovered classes."
 			+ " These classes will not be part of the XML report at all, making it considerably smaller in some cases. Defaults to false.")
 	/* package */ boolean shouldIgnoreUncoveredClasses = false;
-	
+
 	/** Whether testwise coverage or jacoco coverage should be generated. */
 	@Parameter(names = {"--testwise-coverage", "-t"}, required = false, arity = 0, description = "Whether testwise " +
 			"coverage or jacoco coverage should be generated.")
@@ -91,13 +93,10 @@ public class ConvertCommand implements ICommand {
 	private int splitAfter = 5000;
 
 	/** @see #classDirectoriesOrZips */
-	public List<File> getClassDirectoriesOrZips() {
-		return CollectionUtils.map(classDirectoriesOrZips, File::new);
-	}
-
-	/** @see #classDirectoriesOrZips */
-	public void setClassDirectoriesOrZips(List<String> classDirectoriesOrZips) {
-		this.classDirectoriesOrZips = classDirectoriesOrZips;
+	public List<File> getClassDirectoriesOrZips() throws AgentOptionParseException {
+		return ClasspathUtils
+				.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
+						classDirectoriesOrZips);
 	}
 
 	/** @see #locationIncludeFilters */
@@ -135,9 +134,11 @@ public class ConvertCommand implements ICommand {
 	public Validator validate() {
 		Validator validator = new Validator();
 
-		validator.isFalse(getClassDirectoriesOrZips().isEmpty(),
+		List<File> classDirectoriesOrZips = new ArrayList<>();
+		validator.ensure(() -> classDirectoriesOrZips.addAll(getClassDirectoriesOrZips()));
+		validator.isFalse(classDirectoriesOrZips.isEmpty(),
 				"You must specify at least one directory or zip that contains class files");
-		for (File path : getClassDirectoriesOrZips()) {
+		for (File path : classDirectoriesOrZips) {
 			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
 			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
 		}

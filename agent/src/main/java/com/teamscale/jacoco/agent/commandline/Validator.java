@@ -32,13 +32,13 @@ public class Validator {
 	 * Interface for a validation routine that throws an exception when it fails.
 	 */
 	@FunctionalInterface
-	public static interface ExceptionBasedValidation {
+	public interface ExceptionBasedValidation {
 
 		/**
 		 * Throws an {@link Exception} or {@link AssertionError} if the validation
 		 * fails.
 		 */
-		public void validate() throws Exception, AssertionError;
+		void validate() throws Exception, AssertionError;
 
 	}
 

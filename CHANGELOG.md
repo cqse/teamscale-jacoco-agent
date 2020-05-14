@@ -20,6 +20,8 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] Reduce XML report size by only including source file coverage, no class coverage
 - [feature] New option `--ignore-uncovered-classes` to further reduce size of XML reports
 - [fix] converter produces duplicate test entries for testwise coverage
+- [breaking change] `--classDir` option in convert tool has been renamed to `--class-dir`
+- [feature] `--class-dir` option allows to pass in a `.txt` file with the class file directories/jars separated by newlines
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework
