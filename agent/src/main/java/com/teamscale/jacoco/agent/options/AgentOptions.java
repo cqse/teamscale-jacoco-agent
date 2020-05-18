@@ -24,15 +24,14 @@ import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-
+import com.teamscale.report.util.ILogger;
+import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
-import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,8 +48,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import okhttp3.HttpUrl;
-
 /**
  * Parses agent command line options.
  */
@@ -61,7 +58,7 @@ public class AgentOptions {
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
 
-	private final Logger logger = LoggingUtils.getLogger(this);
+	private final ILogger logger;
 
 	/**
 	 * The original options passed to the agent.
@@ -165,7 +162,8 @@ public class AgentOptions {
 	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
 
-	public AgentOptions() {
+	public AgentOptions(ILogger logger) {
+		this.logger = logger;
 		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
 	}
 
@@ -327,14 +325,13 @@ public class AgentOptions {
 		if (useTestwiseCoverageMode()) {
 			JaCoCoTestwiseReportGenerator reportGenerator = new JaCoCoTestwiseReportGenerator(
 					getClassDirectoriesOrZips(), getLocationIncludeFilter(),
-					getDuplicateClassFileBehavior(), LoggingUtils.wrap(logger));
+					getDuplicateClassFileBehavior(), logger);
 			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")),
 					reportGenerator);
 		} else {
 			return new Agent(this, instrumentation);
 		}
 	}
-
 
 	/**
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a
