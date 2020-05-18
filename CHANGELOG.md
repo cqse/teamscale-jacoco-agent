@@ -5,6 +5,11 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 16.0.1
+- [fix] revision is ignored during validation for automatic upload to Teamscale
+
+# 16.0.0
 - [fix] Prevent "out of memory" in small JVMs: Don't cache test executions in memory
 - [breaking change] `--ignore-duplicates` (and `-d` option in convert tool) have been replaced with `--duplicates` option
 - [breaking change] `--filter` option in convert tool has been renamed to `--includes`
@@ -14,6 +19,9 @@ We use [semantic versioning](http://semver.org/):
 - [feature] Use git.commit.id from git.properties instead of branch and timestamp
 - [breaking change] Reduce XML report size by only including source file coverage, no class coverage
 - [feature] New option `--ignore-uncovered-classes` to further reduce size of XML reports
+- [fix] converter produces duplicate test entries for testwise coverage
+- [breaking change] `--classDir` option in convert tool has been renamed to `--class-dir`
+- [feature] `--class-dir` option allows to pass in a `.txt` file with the class file directories/jars separated by newlines
 
 # 15.5.0
 - [feature] add TIA client library for integrating TIA in your custom test framework

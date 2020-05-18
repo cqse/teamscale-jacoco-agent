@@ -92,7 +92,7 @@ public class TestwiseCoverageAgentTest {
 		testRun.endTestRun();
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
-				any(), any(), any());
+				any(), any(), any(), any());
 	}
 
 	private interface ITestwiseCoverageAgentApiWithoutBody {

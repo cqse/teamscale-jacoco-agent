@@ -76,8 +76,8 @@ patterns with `*`, `**` and `?`.
 
 - `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
   by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. (For details see path format section 
-  above)
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. You may also supply one or more `.txt` 
+  files with classpath entries separated by newlines (For details see path format section above)
 - `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
@@ -92,7 +92,7 @@ patterns with `*`, `**` and `?`.
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
-- `teamscale-project`: the project ID within Teamscale to which the coverage belongs.
+- `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.

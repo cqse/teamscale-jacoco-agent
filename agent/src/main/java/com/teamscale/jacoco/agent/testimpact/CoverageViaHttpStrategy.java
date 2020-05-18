@@ -20,8 +20,7 @@ import org.slf4j.Logger;
  */
 public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 
-	/** The logger. */
-	protected final Logger logger = LoggingUtils.getLogger(this);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class)
 			.indent("\t");
@@ -45,6 +44,8 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 			builder.setExecution(testExecution);
 		}
 		TestInfo testInfo = builder.build();
-		return testInfoJsonAdapter.toJson(testInfo);
+		String testInfoJson = testInfoJsonAdapter.toJson(testInfo);
+		logger.debug("Generated test info {}", testInfoJson);
+		return testInfoJson;
 	}
 }

@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.convert;
 
 import com.teamscale.client.TestDetails;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.ReportUtils;
@@ -41,7 +42,7 @@ public class Converter {
 	}
 
 	/** Converts one .exec binary coverage file to XML. */
-	public void runJaCoCoReportGeneration() throws IOException {
+	public void runJaCoCoReportGeneration() throws IOException, AgentOptionParseException {
 		List<File> jacocoExecutionDataList = ReportUtils
 				.listFiles(ETestArtifactFormat.JACOCO, arguments.getInputFiles());
 
@@ -66,7 +67,7 @@ public class Converter {
 	}
 
 	/** Converts one .exec binary coverage file, test details and test execution files to JSON testwise coverage. */
-	public void runTestwiseCoverageReportGeneration() throws IOException, CoverageGenerationException {
+	public void runTestwiseCoverageReportGeneration() throws IOException, CoverageGenerationException, AgentOptionParseException {
 		List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST,
 				TestDetails[].class, arguments.getInputFiles());
 		List<TestExecution> testExecutions = ReportUtils.readObjects(ETestArtifactFormat.TEST_EXECUTION,
@@ -100,8 +101,8 @@ public class Converter {
 
 	private ClasspathWildcardIncludeFilter getWildcardIncludeExcludeFilter() {
 		return new ClasspathWildcardIncludeFilter(
-				String.join(":", arguments.locationIncludeFilters),
-				String.join(":", arguments.locationExcludeFilters));
+				String.join(":", arguments.getLocationIncludeFilters()),
+				String.join(":", arguments.getLocationExcludeFilters()));
 	}
 
 }

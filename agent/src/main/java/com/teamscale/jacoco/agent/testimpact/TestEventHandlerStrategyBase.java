@@ -47,6 +47,7 @@ public abstract class TestEventHandlerStrategyBase {
 
 	/** Called when test test with the given name is about to start. */
 	public void testStart(String test) {
+		logger.debug("Test {} started", test);
 		// Reset coverage so that we only record coverage that belongs to this particular test case.
 		controller.reset();
 		controller.setSessionId(test);
@@ -71,6 +72,7 @@ public abstract class TestEventHandlerStrategyBase {
 				testExecution.setDurationMillis(endTimestamp - startTimestamp);
 			}
 		}
+		logger.debug("Test {} ended with test execution {}", test, testExecution);
 		return null;
 	}
 
@@ -85,12 +87,19 @@ public abstract class TestEventHandlerStrategyBase {
 	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
 							   Long baseline) throws IOException {
+		logger.debug("Test run started with {} available tests. baseline = {}, includeNonImpactedTests = {}",
+				availableTests.size(), baseline, includeNonImpactedTests);
 		if (teamscaleClient == null) {
 			throw new UnsupportedOperationException("You did not configure a connection to Teamscale in the agent." +
 					" Thus, you cannot use the agent to retrieve impacted tests via the testrun/start REST endpoint." +
 					" Please use the 'teamscale-' agent parameters to configure a Teamscale connection.");
 		}
-
+		if (agentOptions.getTeamscaleServerOptions().commit == null) {
+			throw new UnsupportedOperationException(
+					"You did not provide a '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' or '" +
+							AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
+							AgentOptions.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
+		}
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);

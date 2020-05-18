@@ -11,6 +11,9 @@
       <item index="6" class="java.lang.String" itemvalue="org.gradle.api.tasks.TaskAction" />
       <item index="7" class="java.lang.String" itemvalue="org.gradle.api.tasks.options.Option" />
     </list>
+    <writeAnnotations>
+      <writeAnnotation name="org.junit.jupiter.api.io.TempDir" />
+    </writeAnnotations>
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK" />
