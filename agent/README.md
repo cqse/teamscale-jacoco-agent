@@ -78,7 +78,7 @@ patterns with `*`, `**` and `?`.
   by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
   a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. You may also supply one or more `.txt` 
   files with classpath entries separated by newlines (For details see path format section above)
-- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 60). If set to 
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 180, i.e. 3 hours). If set to 
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `duplicates`: defines how JaCoCo handles duplicate class files. This is by default set to `WARN` to make the initial
