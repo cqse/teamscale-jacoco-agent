@@ -3,15 +3,14 @@
 FROM gradle:6.1-jdk8 AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN gradle :agent:shadowJar --no-daemon
+RUN gradle :agent:assemble --no-daemon
 
 # --- production image ---
 
 FROM alpine:latest
 
 RUN mkdir -p /agent
-#RUN cp /home/gradle/src/agent/build/libs/teamscale-jacoco-agent-15.2.0.jar /agent/
-COPY --from=build /home/gradle/src/agent/build/libs/teamscale-jacoco-agent-15.2.0.jar /agent
+COPY --from=build /home/gradle/src/agent/build/libs/teamscale-jacoco-agent.jar /agent
 
 VOLUME /agent
 
