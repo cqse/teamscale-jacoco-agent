@@ -15,4 +15,4 @@ COPY --from=build /src/agent/build/libs/teamscale-jacoco-agent.jar /agent
 VOLUME /agent
 
 # make the image do nothing when started
-CMD /bin/sh -c "trap ':' TERM INT; sleep 3600 & wait"
+CMD exec /bin/sh -c "trap : TERM INT; sleep infinity & wait"
