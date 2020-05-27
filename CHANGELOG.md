@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
+- [fix] Docker image did not react to SIGTERM
 
 # 16.0.1
 - [fix] revision is ignored during validation for automatic upload to Teamscale
