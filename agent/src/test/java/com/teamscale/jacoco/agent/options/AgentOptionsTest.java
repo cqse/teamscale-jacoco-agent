@@ -57,7 +57,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testIntervalOptions() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
-		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(60);
+		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(480);
 		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=0");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
 		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=30");
