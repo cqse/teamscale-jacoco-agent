@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [breaking change] default for `--interval` changed from 60 to 480 minutes
 - [fix] Docker image did not react to SIGTERM
 
 # 16.0.1

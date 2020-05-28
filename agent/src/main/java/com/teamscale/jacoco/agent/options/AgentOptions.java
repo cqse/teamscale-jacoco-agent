@@ -112,7 +112,7 @@ public class AgentOptions {
 	/**
 	 * The interval in minutes for dumping XML data.
 	 */
-	/* package */ int dumpIntervalInMinutes = 60;
+	/* package */ int dumpIntervalInMinutes = 480;
 
 	/** Whether to dump coverage when the JVM shuts down. */
 	/* package */ boolean shouldDumpOnExit = true;
