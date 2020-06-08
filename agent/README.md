@@ -648,6 +648,10 @@ Set an appropriate logback logging configuration XML. See the agent options desc
 
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
 
+# Commit not found error despite including a git.properties file in the jar/war/...
+When using  application servers, the `git.properties` file in your jar/war/... might not be detected automatically which results in an error message indicating that the commit was not found yet.
+To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
+
 
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306
 [so-duplicates]: https://stackoverflow.com/questions/11673356/jacoco-cant-add-different-class-with-same-name-org-hamcrest-basedescription
