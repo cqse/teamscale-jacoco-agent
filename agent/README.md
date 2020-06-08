@@ -648,8 +648,8 @@ Set an appropriate logback logging configuration XML. See the agent options desc
 
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
 
-# Commit not found error despite including a git.properties file in the jar/war/...
-When using  application servers, the `git.properties` file in your jar/war/... might not be detected automatically which results in an error message indicating that the commit was not found yet.
+# "The application was shut down before a commit could be found" error despite including a git.properties file in your jar/war/...
+When using  application servers, the `git.properties` file in your jar/war/... might not be detected automatically which results in an "The application was shut down before a commit could be found" error.
 To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
 
 
