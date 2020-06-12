@@ -52,17 +52,25 @@ public class RunningTest {
 						"Failed to end coverage recording for test case " + uniformPath +
 								". Coverage for that test case is most likely lost.");
 
+		if (!StringUtils.isBlank(readBodyStringNullSafe(body))) {
+			throw new AgentConfigurationMismatch("The agent seems to be configured to return test coverage via" +
+					" HTTP to the tia-client (agent option `coverage-via-http`) but you did not instruct the" +
+					" tia-client to handle this. Please either reconfigure the agent or call" +
+					" #endTestAndRetrieveCoverage() instead of this method and handle the returned coverage." +
+					" As it is currently configured, the agent will not store or process the recorded coverage" +
+					" in any way other than sending it to the tia-client via HTTP so it is lost permanently.");
+		}
+	}
+
+	private String readBodyStringNullSafe(ResponseBody body) throws AgentHttpRequestFailedException {
+		if (body == null) {
+			return null;
+		}
+
 		try {
-			if (!StringUtils.isBlank(body.string())) {
-				throw new AgentConfigurationMismatch("The agent seems to be configured to return test coverage via" +
-						" HTTP to the tia-client (agent option `coverage-via-http`) but you did not instruct the" +
-						" tia-client to handle this. Please either reconfigure the agent or call" +
-						" #endTestAndRetrieveCoverage() instead of this method and handle the returned coverage." +
-						" As it is currently configured, the agent will not store or process the recorded coverage" +
-						" in any way other than sending it to the tia-client via HTTP so it is lost permanently.");
-			}
+			return body.string();
 		} catch (IOException e) {
-			throw new AgentHttpRequestFailedException("Unable to read response body string", e);
+			throw new AgentHttpRequestFailedException("Unable to read agent HTTP response body string", e);
 		}
 	}
 
@@ -90,13 +98,7 @@ public class RunningTest {
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 
-		String json;
-		try {
-			json = body.string();
-		} catch (IOException e) {
-			throw new AgentHttpRequestFailedException("Unable to read response body string", e);
-		}
-
+		String json = readBodyStringNullSafe(body);
 		if (StringUtils.isBlank(json)) {
 			throw new AgentConfigurationMismatch("You asked the tia-client to retrieve this test's coverage via HTTP" +
 					" but the agent is not configured for this. Please reconfigure the agent to use `coverage-via-http`.");
