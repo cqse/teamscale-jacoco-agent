@@ -13,7 +13,7 @@ import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
-
+import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
-import okhttp3.HttpUrl;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Parses agent command line options.
@@ -98,13 +98,20 @@ public class AgentOptionsParser {
 		if (key.startsWith("jacoco-")) {
 			options.additionalJacocoOptions.add(key.substring(7), value);
 			return;
-		} else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
+		}
+		if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
 			return;
-		} else if (handleHttpServerOptions(options, key, value)) {
+		}
+		if (handleTiaOptions(options, key, value)) {
 			return;
-		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
+		}
+		if (handleHttpServerOptions(options, key, value)) {
 			return;
-		} else if (handleAgentOptions(options, key, value)) {
+		}
+		if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
+			return;
+		}
+		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
@@ -151,14 +158,16 @@ public class AgentOptionsParser {
 				}
 				return true;
 			case "duplicates":
-				options.duplicateClassFileBehavior = EDuplicateClassFileBehavior.valueOf(value.toUpperCase());
+				options.duplicateClassFileBehavior =parseEnumValue(key, value, EDuplicateClassFileBehavior.class);
+				return true;
 			case "ignore-uncovered-classes":
 				options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
+				return true;
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
 			case "mode":
-				options.mode = EMode.valueOf(value.toUpperCase());
+				options.mode = parseEnumValue(key, value, EMode.class);
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
@@ -173,6 +182,17 @@ public class AgentOptionsParser {
 				return true;
 			default:
 				return false;
+		}
+	}
+
+	private <T extends Enum<T>> T parseEnumValue(String key, String value,
+												 Class<T> enumClass) throws AgentOptionParseException {
+		try {
+			return Enum.valueOf(enumClass, value.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			String validValues = Arrays.stream(enumClass.getEnumConstants()).map(T::name).collect(joining(", "));
+			throw new AgentOptionParseException("Invalid value for option `" + key + "`. Valid values: " + validValues,
+					e);
 		}
 	}
 
@@ -203,7 +223,7 @@ public class AgentOptionsParser {
 	/**
 	 * Handles all command line options prefixed with "teamscale-".
 	 *
-	 * @return true if it has successfully process the given option.
+	 * @return true if it has successfully processed the given option.
 	 */
 	private boolean handleTeamscaleOptions(AgentOptions options, String key,
 										   String value) throws AgentOptionParseException {
@@ -243,10 +263,21 @@ public class AgentOptionsParser {
 			case AgentOptions.TEAMSCALE_REVISION_OPTION:
 				options.teamscaleServer.revision = value;
 				return true;
-			case "teamscale-testwise-upload":
-				if (Boolean.parseBoolean(value)) {
-					options.testWiseCoverageMode = ETestWiseCoverageMode.TEAMSCALE_REPORT;
-				}
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Handles all TIA-related command line option.
+	 *
+	 * @return true if it has successfully processed the given option.
+	 */
+	private boolean handleTiaOptions(AgentOptions options, String key,
+									 String value) throws AgentOptionParseException {
+		switch (key) {
+			case "tia-mode":
+				options.testWiseCoverageMode = parseEnumValue(key, value, ETestWiseCoverageMode.class);
 				return true;
 			default:
 				return false;

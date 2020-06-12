@@ -53,8 +53,6 @@ import java.util.stream.Stream;
  * Parses agent command line options.
  */
 public class AgentOptions {
-
-
 	/**
 	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
 	 */
