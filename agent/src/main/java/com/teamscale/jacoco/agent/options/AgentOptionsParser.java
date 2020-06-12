@@ -178,10 +178,11 @@ public class AgentOptionsParser {
 		}
 	}
 
+	/** Parses the given value as an enum constant case-insensitively and converts "-" to "_". */
 	private <T extends Enum<T>> T parseEnumValue(String key, String value,
 												 Class<T> enumClass) throws AgentOptionParseException {
 		try {
-			return Enum.valueOf(enumClass, value.toUpperCase());
+			return Enum.valueOf(enumClass, value.toUpperCase().replaceAll("-", "_"));
 		} catch (IllegalArgumentException e) {
 			String validValues = Arrays.stream(enumClass.getEnumConstants()).map(T::name).collect(joining(", "));
 			throw new AgentOptionParseException("Invalid value for option `" + key + "`. Valid values: " + validValues,

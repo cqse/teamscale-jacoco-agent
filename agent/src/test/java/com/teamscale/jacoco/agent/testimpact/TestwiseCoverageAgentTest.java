@@ -143,7 +143,7 @@ public class TestwiseCoverageAgentTest {
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 		when(options.getHttpServerPort()).thenReturn(port);
-		when(options.getTestWiseCoverageMode()).thenReturn(ETestWiseCoverageMode.TEAMSCALE_REPORT);
+		when(options.getTestWiseCoverageMode()).thenReturn(ETestWiseCoverageMode.TEAMSCALE_UPLOAD);
 
 		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;

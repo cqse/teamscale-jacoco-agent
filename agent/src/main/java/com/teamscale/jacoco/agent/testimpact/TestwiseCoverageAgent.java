@@ -62,7 +62,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		super(options);
 
 		switch (options.getTestWiseCoverageMode()) {
-			case TEAMSCALE_REPORT:
+			case TEAMSCALE_UPLOAD:
 				testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 				break;
 			case HTTP:
@@ -125,6 +125,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 				response.status(SC_BAD_REQUEST);
 				return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
 			}
+		}
+
+		if (availableTests == null) {
+			availableTests = Collections.emptyList();
 		}
 
 		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);

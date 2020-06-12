@@ -252,7 +252,7 @@ public class AgentOptions {
 						&& classDirectoriesOrZips.isEmpty(),
 				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
 
-		validator.isFalse(testWiseCoverageMode == ETestWiseCoverageMode.TEAMSCALE_REPORT
+		validator.isFalse(testWiseCoverageMode == ETestWiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.hasAllRequiredFieldsSet(),
 				"You use 'teamscale-testwise-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
