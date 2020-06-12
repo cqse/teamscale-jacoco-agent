@@ -18,6 +18,12 @@ import java.io.IOException;
 @SuppressWarnings("unused")
 public class RunningTest {
 
+	private static class AgentConfigurationMismatch extends RuntimeException {
+		private AgentConfigurationMismatch(String message) {
+			super(message);
+		}
+	}
+
 	private final String uniformPath;
 	private final ITestwiseCoverageAgentApi api;
 	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class);
@@ -41,9 +47,23 @@ public class RunningTest {
 		// the agent already records test duration, so we can simply provide a dummy value here
 		TestExecution execution = new TestExecution(uniformPath, 0L, result.result,
 				result.message);
-		AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
-				"Failed to end coverage recording for test case " + uniformPath +
-						". Coverage for that test case is most likely lost.");
+		ResponseBody body = AgentCommunicationUtils
+				.handleRequestError(() -> api.testFinished(uniformPath, execution),
+						"Failed to end coverage recording for test case " + uniformPath +
+								". Coverage for that test case is most likely lost.");
+
+		try {
+			if (!StringUtils.isBlank(body.string())) {
+				throw new AgentConfigurationMismatch("The agent seems to be configured to return test coverage via" +
+						" HTTP to the tia-client (agent option `coverage-via-http`) but you did not instruct the" +
+						" tia-client to handle this. Please either reconfigure the agent or call" +
+						" #endTestAndRetrieveCoverage() instead of this method and handle the returned coverage." +
+						" As it is currently configured, the agent will not store or process the recorded coverage" +
+						" in any way other than sending it to the tia-client via HTTP so it is lost permanently.");
+			}
+		} catch (IOException e) {
+			throw new AgentHttpRequestFailedException("Unable to read response body string", e);
+		}
 	}
 
 	/**
@@ -78,8 +98,8 @@ public class RunningTest {
 		}
 
 		if (StringUtils.isBlank(json)) {
-			throw new RuntimeException("You asked the tia-client to retrieve this test's coverage via HTTP but the" +
-					" agent is not configured for this. Please reconfigure the agent to use `coverage-via-http`.");
+			throw new AgentConfigurationMismatch("You asked the tia-client to retrieve this test's coverage via HTTP" +
+					" but the agent is not configured for this. Please reconfigure the agent to use `coverage-via-http`.");
 		}
 
 		try {
