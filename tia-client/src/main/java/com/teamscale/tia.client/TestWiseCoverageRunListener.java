@@ -51,9 +51,9 @@ public class TestWiseCoverageRunListener extends RunListener {
 	private void handleErrors(Action action) {
 		try {
 			action.run();
-		} catch (Throwable t) {
+		} catch (Exception e) {
 			System.err.println("Encountered an error while recording test-wise coverage:");
-			t.printStackTrace(System.err);
+			e.printStackTrace(System.err);
 		}
 	}
 
