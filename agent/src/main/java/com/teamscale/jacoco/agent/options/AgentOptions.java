@@ -150,7 +150,7 @@ public class AgentOptions {
 	/* package */ TeamscaleServer teamscaleServer = new TeamscaleServer();
 
 	/**
-	 * The name of the environment variable that holds the test uniform path.
+	 * The name of the environment variable that holds the test uniform path for TIA mode.
 	 */
 	/* package */ String testEnvironmentVariable = null;
 

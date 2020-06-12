@@ -2,7 +2,6 @@ package com.teamscale.tia.client;
 
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestInfo;
 
 import java.util.List;
 
