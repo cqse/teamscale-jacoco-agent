@@ -18,7 +18,7 @@ test {
     def fakeTeamscalePort = 65432
     def agentPort = 65433
     def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
-    jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,teamscale-testwise-upload=true," +
+    jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,tia-mode=teamscale-upload," +
             "teamscale-server-url=http://localhost:$fakeTeamscalePort,teamscale-user=fake,teamscale-access-token=fake," +
             "teamscale-project=p,teamscale-partition=part,mode=testwise,teamscale-commit=master:12345," +
             "includes=*systemundertest.*"
@@ -33,3 +33,5 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.8.0'
     testImplementation 'com.squareup.moshi:moshi:1.8.0'
 }
+
+tasks.test.dependsOn(project(':agent').tasks.shadowJar)

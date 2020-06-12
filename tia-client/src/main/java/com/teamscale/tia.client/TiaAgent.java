@@ -52,7 +52,7 @@ public class TiaAgent {
 	 * to record test-wise coverage and don't care about TIA's test selection and prioritization.
 	 */
 	public TestRun startTestRun() {
-		return new TestRun(api, Collections.emptyList());
+		return new TestRun(api, null);
 	}
 
 	/**

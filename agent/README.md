@@ -184,7 +184,7 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
-- `class-dir` (required when `coverage-via-http` or `teamscale-testwise-upload` is `true`):
+- `class-dir` (required when `tia-mode` is set to either `http` or `teamscale-upload`):
   the path under which all class files of the profiled 
   application are stored. May be a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. 
   (For details see path format section above)

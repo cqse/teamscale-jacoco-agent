@@ -27,6 +27,10 @@ public class TestRun {
 	}
 
 	public List<PrioritizableTestCluster> getPrioritizedTests() {
+		if (prioritizedTests == null) {
+			throw new IllegalStateException("You did not ask the TiaAgent to fetch prioritized tests. Please provide" +
+					" test details to TiaAgent#startTestRun()");
+		}
 		return prioritizedTests;
 	}
 
@@ -66,8 +70,9 @@ public class TestRun {
 	}
 
 	/**
-	 * Informs the testwise coverage agent that the caller has finished running all tests. Depending on the agent's
-	 * configuration, it will optionally generate a testwise coverage report and optionally upload it to Teamscale.
+	 * Informs the testwise coverage agent that the caller has finished running all tests and should upload coverage
+	 * to Teamscale. Only call this if you configured the agent to upload coverage to Teamscale
+	 * (`tia-mode=teamscale-upload`). Otherwise, this method will fail.
 	 *
 	 * @throws AgentHttpRequestFailedException if communicating with the agent fails or in case of internal errors. This
 	 *                                         method already retries the request once, so this is likely a terminal

@@ -248,13 +248,9 @@ public class AgentOptions {
 		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
 				"incompatible with Testwise coverage mode!");
 
-		validator.isFalse(useTestwiseCoverageMode() && testWiseCoverageMode == ETestWiseCoverageMode.HTTP
-						&& classDirectoriesOrZips.isEmpty(),
-				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
-
 		validator.isFalse(testWiseCoverageMode == ETestWiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.hasAllRequiredFieldsSet(),
-				"You use 'teamscale-testwise-upload' but did not set all required 'teamscale-' fields to facilitate" +
+				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
 
 		validator.isFalse(!useTestwiseCoverageMode() && testEnvironmentVariable != null,

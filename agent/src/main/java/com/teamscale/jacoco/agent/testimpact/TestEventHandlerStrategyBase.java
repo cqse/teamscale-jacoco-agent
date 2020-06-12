@@ -121,6 +121,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 */
 	public void testRunEnd() throws IOException {
 		throw new UnsupportedOperationException("You configured the agent in a mode that does not support uploading " +
-				"reports to Teamscale. Please configure 'teamscale-testwise-upload'.");
+				"reports to Teamscale. Please configure 'tia-mode=teamscale-upload' or simply don't call" +
+				"POST /testrun/end.");
 	}
 }

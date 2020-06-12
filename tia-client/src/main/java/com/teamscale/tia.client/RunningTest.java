@@ -54,7 +54,7 @@ public class RunningTest {
 
 		if (!StringUtils.isBlank(readBodyStringNullSafe(body))) {
 			throw new AgentConfigurationMismatch("The agent seems to be configured to return test coverage via" +
-					" HTTP to the tia-client (agent option `coverage-via-http`) but you did not instruct the" +
+					" HTTP to the tia-client (agent option `tia-mode=http`) but you did not instruct the" +
 					" tia-client to handle this. Please either reconfigure the agent or call" +
 					" #endTestAndRetrieveCoverage() instead of this method and handle the returned coverage." +
 					" As it is currently configured, the agent will not store or process the recorded coverage" +
@@ -82,7 +82,7 @@ public class RunningTest {
 	 * <p>
 	 * This method assumes that the agent is configured to return each test's coverage data via HTTP. It will receive
 	 * and parse the data. If the agent is configured differently, this method will throw a terminal {@link
-	 * RuntimeException}. In this case, you must reconfigure the agent with the `coverage-via-http` option enabled.
+	 * RuntimeException}. In this case, you must reconfigure the agent with the `tia-mode=http` option enabled.
 	 *
 	 * @throws AgentHttpRequestFailedException if communicating with the agent fails or in case of internal errors. This
 	 *                                         method already retries the request once, so this is likely a terminal
@@ -101,7 +101,7 @@ public class RunningTest {
 		String json = readBodyStringNullSafe(body);
 		if (StringUtils.isBlank(json)) {
 			throw new AgentConfigurationMismatch("You asked the tia-client to retrieve this test's coverage via HTTP" +
-					" but the agent is not configured for this. Please reconfigure the agent to use `coverage-via-http`.");
+					" but the agent is not configured for this. Please reconfigure the agent to use `tia-mode=http`.");
 		}
 
 		try {
