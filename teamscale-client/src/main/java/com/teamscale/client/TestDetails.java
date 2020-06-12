@@ -18,8 +18,9 @@ public class TestDetails {
 	public final String sourcePath;
 
 	/**
-	 * Some kind of content to tell whether the test specification has changed. Can be revision number or
-	 * hash over the specification or similar.
+	 * Some kind of content to tell whether the test specification has changed. Can be revision number or hash over the
+	 * specification or similar. You can include e.g. a hash of each test's test data so that whenever the test data
+	 * changes, the corresponding test is re-run.
 	 */
 	public final String content;
 
