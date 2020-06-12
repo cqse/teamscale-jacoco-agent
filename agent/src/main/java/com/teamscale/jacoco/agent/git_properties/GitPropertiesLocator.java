@@ -21,23 +21,18 @@ import java.util.jar.JarInputStream;
  * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
  * e.g. to Teamscale, via a {@link DelayedCommitDescriptorUploader}.
  */
-public class GitPropertiesLocator {
+public class GitPropertiesLocator extends AysncInfoFileLocator {
 
 	/** Name of the git.properties file. */
 	private static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
 	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
-	private final Executor executor;
+
 	private String foundRevision = null;
 	private File jarFileWithGitProperties = null;
 
-	private final DelayedCommitDescriptorUploader store;
-
 	public GitPropertiesLocator(DelayedCommitDescriptorUploader store) {
-		// using a single threaded executor allows this class to be lock-free
-		this(store, Executors
-				.newSingleThreadExecutor(
-						new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")));
+		super(store);
 	}
 
 	/**
@@ -45,18 +40,18 @@ public class GitPropertiesLocator {
 	 * of this class.
 	 */
 	public GitPropertiesLocator(DelayedCommitDescriptorUploader store, Executor executor) {
-		this.store = store;
-		this.executor = executor;
+		super(store, executor);
 	}
 
 	/**
 	 * Asynchronously searches the given jar file for a git.properties file.
 	 */
-	public void searchJarFileForGitPropertiesAsync(File jarFile) {
+	public void searchJarFileAsync(File jarFile) {
 		executor.execute(() -> searchJarFile(jarFile));
 	}
 
-	private void searchJarFile(File jarFile) {
+	@Override
+	protected void searchJarFile(File jarFile) {
 		try {
 			String revision = getCommitFromGitProperties(jarFile);
 			if (revision == null) {

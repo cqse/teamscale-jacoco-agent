@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * Wraps an {@link IUploader} and in order to delay upload until a {@link CommitDescriptor} is asynchronously made
  * available.
  */
-public class DelayedCommitDescriptorUploader implements IUploader {
+public class DelayedNwdiUploader extends DelayedCommitDescriptorUploader {
 
 	private final Executor executor;
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -27,18 +27,18 @@ public class DelayedCommitDescriptorUploader implements IUploader {
 	private IUploader wrappedUploader = null;
 	private final Path cacheDir;
 
-	public DelayedCommitDescriptorUploader(Function<String, IUploader> wrappedUploaderFactory,
-										   Path cacheDir) {
+	public DelayedNwdiUploader(Function<String, IUploader> wrappedUploaderFactory,
+							   Path cacheDir) {
 		this(wrappedUploaderFactory, cacheDir, Executors.newSingleThreadExecutor(
-				new DaemonThreadFactory(DelayedCommitDescriptorUploader.class, "Delayed cache upload thread")));
+				new DaemonThreadFactory(DelayedNwdiUploader.class, "Delayed cache upload thread")));
 	}
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
 	 * class.
 	 */
-	/*package*/ DelayedCommitDescriptorUploader(Function<String, IUploader> wrappedUploaderFactory,
-												Path cacheDir, Executor executor) {
+	/*package*/ DelayedNwdiUploader(Function<String, IUploader> wrappedUploaderFactory,
+									Path cacheDir, Executor executor) {
 		this.wrappedUploaderFactory = wrappedUploaderFactory;
 		this.cacheDir = cacheDir;
 		this.executor = executor;

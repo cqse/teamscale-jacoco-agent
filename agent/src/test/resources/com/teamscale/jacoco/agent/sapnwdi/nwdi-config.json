@@ -1,0 +1,17 @@
+{
+  "teamscaleUrl": "http://foo/",
+  "teamscaleUser": "user",
+  "teamscaleApiKey": "apiKey",
+  "teamscalePartition": "Staging 1",
+  "applications": [
+    {
+      "name": "TestProject",
+      "markerClass": "com.teamscale.test.Foo",
+      "teamscaleProject": "testproject"
+    }, {
+      "name": "TestProjectTwo",
+      "markerClass": "com.teamscale.test2.Bar",
+      "teamscaleProject": "testproject2"
+    }
+  ]
+}
