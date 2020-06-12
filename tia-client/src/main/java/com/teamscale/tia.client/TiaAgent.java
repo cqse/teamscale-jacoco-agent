@@ -5,7 +5,6 @@ import com.teamscale.client.PrioritizableTestCluster;
 import okhttp3.HttpUrl;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,7 +15,6 @@ import java.util.List;
  * <p>
  * The caller of this class is responsible for actually executing the tests.
  */
-@SuppressWarnings("unused")
 public class TiaAgent {
 
 	private final boolean includeNonImpactedTests;
@@ -42,7 +40,8 @@ public class TiaAgent {
 	 *                                         this case and not communicate further with the agent. You should visibly
 	 *                                         report this problem so it can be fixed.
 	 */
-	public TestRun startTestRun(List<ClusteredTestDetails> availableTests) throws AgentHttpRequestFailedException {
+	public TestRunWithSuggestions startTestRun(
+			List<ClusteredTestDetails> availableTests) throws AgentHttpRequestFailedException {
 		return startTestRun(availableTests, null);
 	}
 
@@ -52,7 +51,7 @@ public class TiaAgent {
 	 * to record test-wise coverage and don't care about TIA's test selection and prioritization.
 	 */
 	public TestRun startTestRun() {
-		return new TestRun(api, null);
+		return new TestRun(api);
 	}
 
 	/**
@@ -62,13 +61,13 @@ public class TiaAgent {
 	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
 	 *                                         occurs. You should simply fall back to running all tests in this case.
 	 */
-	public TestRun startTestRun(List<ClusteredTestDetails> availableTests,
-								Instant baseline) throws AgentHttpRequestFailedException {
+	public TestRunWithSuggestions startTestRun(List<ClusteredTestDetails> availableTests,
+											   Instant baseline) throws AgentHttpRequestFailedException {
 		Long baselineTimestamp = calculateBaselineTimestamp(baseline);
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
 				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp, availableTests),
 				"Failed to start the test run");
-		return new TestRun(api, clusters);
+		return new TestRunWithSuggestions(api, clusters);
 	}
 
 	private Long calculateBaselineTimestamp(Instant baseline) {

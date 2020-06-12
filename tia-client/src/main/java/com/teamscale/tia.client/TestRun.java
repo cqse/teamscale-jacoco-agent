@@ -1,37 +1,20 @@
 package com.teamscale.tia.client;
 
-import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 
-import java.util.List;
-
 /**
- * Represents a run of prioritized and selected tests as reported by the TIA. Use this class to report test start and
- * end events and upload testwise coverage to Teamscale.
- * <p>
- * The caller of this class should retrieve the tests to execute from {@link #getPrioritizedTests()}, run them (in the
- * given order if possible) and report test start and end events via {@link #startTest(String)} )}.
+ * Use this class to report test start and end events and upload testwise coverage to Teamscale.
  * <p>
  * After having run all tests, call {@link #endTestRun()} to create a testwise coverage report and upload it to
- * Teamscale.
+ * Teamscale. This requires that you configured the agent to upload coverage to Teamscale
+ * (`tia-mode=teamscale-upload`).
  */
 public class TestRun {
 
 	private final ITestwiseCoverageAgentApi api;
-	private final List<PrioritizableTestCluster> prioritizedTests;
 
-	TestRun(ITestwiseCoverageAgentApi api,
-			List<PrioritizableTestCluster> prioritizedTests) {
+	TestRun(ITestwiseCoverageAgentApi api) {
 		this.api = api;
-		this.prioritizedTests = prioritizedTests;
-	}
-
-	public List<PrioritizableTestCluster> getPrioritizedTests() {
-		if (prioritizedTests == null) {
-			throw new IllegalStateException("You did not ask the TiaAgent to fetch prioritized tests. Please provide" +
-					" test details to TiaAgent#startTestRun()");
-		}
-		return prioritizedTests;
 	}
 
 	/**
@@ -70,9 +53,9 @@ public class TestRun {
 	}
 
 	/**
-	 * Informs the testwise coverage agent that the caller has finished running all tests and should upload coverage
-	 * to Teamscale. Only call this if you configured the agent to upload coverage to Teamscale
-	 * (`tia-mode=teamscale-upload`). Otherwise, this method will fail.
+	 * Informs the testwise coverage agent that the caller has finished running all tests and should upload coverage to
+	 * Teamscale. Only call this if you configured the agent to upload coverage to Teamscale
+	 * (`tia-mode=teamscale-upload`). Otherwise, this method will throw an exception.
 	 *
 	 * @throws AgentHttpRequestFailedException if communicating with the agent fails or in case of internal errors. This
 	 *                                         method already retries the request once, so this is likely a terminal
