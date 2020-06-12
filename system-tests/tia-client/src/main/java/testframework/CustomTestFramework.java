@@ -7,6 +7,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.tia.client.AgentHttpRequestFailedException;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
+import com.teamscale.tia.client.TestRunWithSuggestions;
 import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
 import systemundertest.SystemUnderTest;
@@ -39,9 +40,9 @@ public class CustomTestFramework {
 	/** Talks to the TIA agent and runs all impacted tests. Also uploads a coverage report at the end. */
 	public void runTestsWithTia() throws AgentHttpRequestFailedException {
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + agentPort));
-		TestRun testRun = agent.startTestRun(
-				allTests.keySet().stream().map(name -> new ClusteredTestDetails(name, name, null, null)).collect(
-						toList()));
+		TestRunWithSuggestions testRun = agent.startTestRun(
+				allTests.keySet().stream().map(name -> new ClusteredTestDetails(name, name, null, null))
+						.collect(toList()));
 
 		for (PrioritizableTestCluster cluster : testRun.getPrioritizedTests()) {
 			for (PrioritizableTest test : cluster.tests) {
