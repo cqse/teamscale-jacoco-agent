@@ -2,6 +2,7 @@ package com.teamscale.tia.client;
 
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestInfo;
 
 import java.util.List;
 
@@ -66,14 +67,13 @@ public class TestRun {
 	}
 
 	/**
-	 * Informs the testwise coverage agent that the caller has finished running all tests.
-	 * Depending on the agent's configuration, it will optionally generate a testwise coverage report and optionally
-	 * upload it to Teamscale.
+	 * Informs the testwise coverage agent that the caller has finished running all tests. Depending on the agent's
+	 * configuration, it will optionally generate a testwise coverage report and optionally upload it to Teamscale.
 	 *
 	 * @throws AgentHttpRequestFailedException if communicating with the agent fails or in case of internal errors. This
 	 *                                         method already retries the request once, so this is likely a terminal
-	 *                                         failure. The recorded coverage is likely lost. The caller should log
-	 *                                         this problem appropriately.
+	 *                                         failure. The recorded coverage is likely lost. The caller should log this
+	 *                                         problem appropriately.
 	 */
 	public void endTestRun() throws AgentHttpRequestFailedException {
 		AgentCommunicationUtils.handleRequestError(api::testRunFinished,

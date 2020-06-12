@@ -49,9 +49,9 @@ public class CustomTestFramework {
 				RunningTest runningTest = testRun.startTest(test.uniformPath);
 				try {
 					runnable.run();
-					runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, ""));
+					runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, ""));
 				} catch (Throwable t) {
-					runningTest.endTestNormally(
+					runningTest.endTest(
 							new TestRun.TestResultWithMessage(ETestExecutionResult.FAILURE, t.getMessage()));
 				}
 			}

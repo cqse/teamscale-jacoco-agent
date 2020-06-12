@@ -87,7 +87,7 @@ public class TestwiseCoverageAgentTest {
 		assertThat(test.uniformPath).isEqualTo("test2");
 
 		RunningTest runningTest = testRun.startTest(test.uniformPath);
-		runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
+		runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
 		testRun.endTestRun();
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
