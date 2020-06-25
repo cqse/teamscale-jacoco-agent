@@ -20,22 +20,3 @@ task iGP(dependsOn: [
 		':teamscale-client:publishToMavenLocal',
 		':tia-client:publishToMavenLocal'
 ])
-
-// Deploys the plugin to the public share
-task deployGradlePlugin(dependsOn: [
-		':agent:uploadShadow',
-		':impacted-test-engine:uploadArchives',
-		':report-generator:uploadArchives',
-		':teamscale-gradle-plugin:uploadArchives',
-		':teamscale-client:uploadArchives',
-		':tia-client:uploadArchives'
-])
-
-// Deploys the plugin to the public share without the agent
-task dGP(dependsOn: [
-		':impacted-test-engine:uploadArchives',
-		':report-generator:uploadArchives',
-		':teamscale-gradle-plugin:uploadArchives',
-		':teamscale-client:uploadArchives',
-		':tia-client:uploadArchives'
-])
