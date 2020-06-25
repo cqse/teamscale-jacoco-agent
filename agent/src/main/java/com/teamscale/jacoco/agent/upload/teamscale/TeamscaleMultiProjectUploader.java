@@ -65,16 +65,20 @@ public class TeamscaleMultiProjectUploader implements IUploader {
 			);
 
 			for(NwdiConfiguration.NwdiApplication app : configuration.getApplications()) {
-				api.uploadReport(
-						app.getTeamscaleProject(),
-						null, // TODO retrieve Teamscale commit
-						null,
-						configuration.getTeamscalePartition(),
-						EReportFormat.JACOCO,
-						configuration.getTeamscaleMessage(),
-						coverageFile.createFormRequestBody()
-				);
+				// TODO Move try-catch here to upload to all projects
+				if(app.getFoundTimestamp() != null) {
+					api.uploadReport(
+							app.getTeamscaleProject(),
+							app.getFoundTimestamp(),
+							null,
+							configuration.getTeamscalePartition(),
+							EReportFormat.JACOCO,
+							configuration.getTeamscaleMessage(),
+							coverageFile.createFormRequestBody()
+					);
 				}
+			}
+			// TODO only return true if all were successful?
 			return true;
 		} catch (Exception e) {
 			logger.error("Failed to upload coverage to {}", configuration.getTeamscaleUrl(), e);

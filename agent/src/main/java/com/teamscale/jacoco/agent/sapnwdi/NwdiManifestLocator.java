@@ -109,6 +109,7 @@ public class NwdiManifestLocator extends AysncInfoFileLocator {
 			if (StringUtils.isEmpty(timestamp)) {
 				throw new NwdiManifestException("No entry 'Implementation-Version' in MANIFEST");
 			}
+			// TODO Transform Timestamp from yyyyMMddHHmmss to Teamscale format
 			return new CommitDescriptor("master", timestamp);
 
 	}

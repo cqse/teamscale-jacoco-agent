@@ -21,6 +21,8 @@ import java.util.stream.Stream;
  */
 public class DelayedNwdiUploader extends DelayedCommitDescriptorUploader {
 
+	// TODO Most probably not needed at all - delete?
+
 	private final Executor executor;
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Function<String, IUploader> wrappedUploaderFactory;
