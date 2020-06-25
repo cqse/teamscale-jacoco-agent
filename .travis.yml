@@ -7,6 +7,12 @@ before_cache:
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 - rm -fr $HOME/.gradle/caches/*/fileHashes/
 - rm -fr $HOME/.gradle/caches/jars-3/*/buildSrc.jar
+cache:
+  directories:
+    - "$HOME/.gradle/caches/"
+    - "$HOME/.gradle/wrapper/"
+before_install:
+  - openssl aes-256-cbc -K $encrypted_2afbb999f001_key -iv $encrypted_2afbb999f001_iv -in gradle.properties.enc -out gradle.properties -d
 after_script:
 - |
   # upload coverage to Teamscale
@@ -20,18 +26,20 @@ after_script:
     reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
     eval "curl -kv -X POST -ubuild:$TS_BUILD_USER_ACCESS_KEY $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
   fi
-cache:
-  directories:
-  - "$HOME/.gradle/caches/"
-  - "$HOME/.gradle/wrapper/"
 deploy:
-  provider: releases
-  api_key:
-    secure: iP2O3E7KrVlnw6E0acQ1iz2JEAwzAtMDUXbls14OlrZOz3Sc1Ti1UlF87F8FWaxpTGd2DnMue06XyO4XyTV4ijohWskxDL0BVOgKjqPtjLLB5rIxpVEW7BVM3jUc0gn7xAz2Ds2GI5gqDXBo7o5dGTB34KtaQYNjVejNOt3XfkKvcNSw+cHL9LU/lq0yAFmrKPkxDeUWmm8QmYzuXoGW/KiRcuNWe29Lg0bDoZ2j3DeA5qi8OyeZCa6I9t5rBhzDZa3RsA2XzsuxYGFHNL+jmZbQA62XAq6iP+g+JdpDojgWbzN7E/kbOS1MQcRoKX+3IyHKoOJbAS/nO439kg7s3qagJV+VkWRt2VrgkzWWn1vTUzE0u+NfadPhjtNiy0emNsqowGFdOiDVko0/OckQHDR1s9sxPt2akXcQJ82wPzg78ULdh+hJb/mr8SHcuxD5enV2mxRvxsRBMEJsluMOwg5q5k+EJkA0JOy5ZFF82z2+bA3nlma+Jcx6ymJBqez8SooYEekG7wR2lBHaQ17TamX5SI86k1yGK6hOSiHwmT8Fq50ZRF9kGcz2VR3Rp9WjcA6SN3Vs/t3pBxQUe/HDXzhW0U+aCxNLXmN+XG8IKdeNev0E5UDg1c1P2KVxap+gPxfQetBLuOfPl0KPGZ++bm/ZBkaQ5W2wxCwrUs8uuLQ=
-  skip_cleanup: true
-  file:
+  - provider: releases
+    api_key:
+      secure: iP2O3E7KrVlnw6E0acQ1iz2JEAwzAtMDUXbls14OlrZOz3Sc1Ti1UlF87F8FWaxpTGd2DnMue06XyO4XyTV4ijohWskxDL0BVOgKjqPtjLLB5rIxpVEW7BVM3jUc0gn7xAz2Ds2GI5gqDXBo7o5dGTB34KtaQYNjVejNOt3XfkKvcNSw+cHL9LU/lq0yAFmrKPkxDeUWmm8QmYzuXoGW/KiRcuNWe29Lg0bDoZ2j3DeA5qi8OyeZCa6I9t5rBhzDZa3RsA2XzsuxYGFHNL+jmZbQA62XAq6iP+g+JdpDojgWbzN7E/kbOS1MQcRoKX+3IyHKoOJbAS/nO439kg7s3qagJV+VkWRt2VrgkzWWn1vTUzE0u+NfadPhjtNiy0emNsqowGFdOiDVko0/OckQHDR1s9sxPt2akXcQJ82wPzg78ULdh+hJb/mr8SHcuxD5enV2mxRvxsRBMEJsluMOwg5q5k+EJkA0JOy5ZFF82z2+bA3nlma+Jcx6ymJBqez8SooYEekG7wR2lBHaQ17TamX5SI86k1yGK6hOSiHwmT8Fq50ZRF9kGcz2VR3Rp9WjcA6SN3Vs/t3pBxQUe/HDXzhW0U+aCxNLXmN+XG8IKdeNev0E5UDg1c1P2KVxap+gPxfQetBLuOfPl0KPGZ++bm/ZBkaQ5W2wxCwrUs8uuLQ=
+    skip_cleanup: true
+    file:
     - agent/build/distributions/teamscale-jacoco-agent.zip
     - javaws-wrapper/build/distributions/javaws.zip
-  on:
-    repo: cqse/teamscale-jacoco-agent
-    tags: true
+    on:
+      repo: cqse/teamscale-jacoco-agent
+      tags: true
+  - provider: script
+    script: bash ./gradlew publish
+    on:
+      repo: cqse/teamscale-jacoco-agent
+      tags: true
+

@@ -1,20 +1,13 @@
 plugins {
-	id 'java'
+	id 'com.teamscale.java-convention'
 	id 'application'
-	id 'jacoco'
+	id 'com.teamscale.coverage'
 	id "com.gorylenko.gradle-git-properties" version "2.2.0"
 }
 
 sourceCompatibility = 1.8
 version 'unspecified'
 mainClassName = 'Main'
-
-jacocoTestReport {
-	reports {
-		xml.enabled true
-	}
-}
-tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
 	// this logback version is the oldest one available that I could get to work and possibly incompatible

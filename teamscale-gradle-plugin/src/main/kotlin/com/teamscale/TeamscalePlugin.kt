@@ -54,9 +54,7 @@ open class TeamscalePlugin : Plugin<Project> {
             throw GradleException("The teamscale plugin requires Gradle version 4.6 or higher")
         }
 
-        project.repositories.maven {
-            it.setUrl("https://share.cqse.eu/public/maven/")
-        }
+        project.repositories.mavenCentral()
 
         // Add impacted tests executor to a custom configuration that will later be used to
         // create the classpath for the TestImpacted created by this plugin.
