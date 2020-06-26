@@ -23,7 +23,6 @@ dependencies {
 	implementation 'com.squareup.retrofit2:converter-moshi:2.5.0'
 }
 
-
 processResources {
 	inputs.property("version", version)
 	filesMatching('**/plugin.properties') {
@@ -37,6 +36,6 @@ test {
 	dependsOn ':agent:publishToMavenLocal'
 	dependsOn ':impacted-test-engine:publishToMavenLocal'
 	dependsOn ':teamscale-client:publishToMavenLocal'
-	dependsOn ':tia-client:publishToMavenLocal'
+//	dependsOn ':tia-client:publishToMavenLocal'
 	dependsOn ':report-generator:publishToMavenLocal'
 }
