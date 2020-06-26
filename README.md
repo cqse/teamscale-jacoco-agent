@@ -26,7 +26,7 @@ If you get an `IllegalStateException: Cannot process instrumented class com/exam
 ### Debugging the Gradle plugin
 
 * increase the plugin version in `build.gradle` and in `BuildVersion.kt`
-* `./gradlew iGP` will deploy your checked out version to your local m2 cache
+* `./gradlew publishToMavenLocal` will deploy your checked out version to your local m2 cache
 * then you can import this version into any other gradle project by
   * replacing the `share.cqse.eu` repository with the `mavenLocal()` repository in the `buildscript` section of the project's `build.gradle`
   * adding `repositories { mavenLocal(); mavenCentral() }` to the body of the `build.gradle`
@@ -35,7 +35,7 @@ If you get an `IllegalStateException: Cannot process instrumented class com/exam
   The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
 * to debug the impacted test engine during a build, run `./gradlew` with `--no-daemon --debug-jvm` and wait for the test phase to start.
   The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
-* These two debug flags can also be combined. The build will then pause twice
+* These two debug flags can also be combined. The build will then pause twice.
 
 ### Contributing
 
