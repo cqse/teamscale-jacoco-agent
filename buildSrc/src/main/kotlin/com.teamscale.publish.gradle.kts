@@ -31,6 +31,8 @@ publishing {
             pluginManager.withPlugin("com.github.johnrengelman.shadow") {
                 val shadowExtension = extensions.getByName<ShadowExtension>("shadow")
                 shadowExtension.component(publication)
+                artifact(tasks["sourcesJar"])
+                artifact(tasks["javadocJar"])
             }
         }
     }
