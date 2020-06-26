@@ -51,9 +51,9 @@ When master has accumulated changes you want to release, please perform the foll
 - update the [build.gradle](build.gradle)'s `appVersion` accordingly
 - if you want to release a new version of the Gradle plugin:
     - update `BuildVersion.kt`
-    - run `./gradlew deployGradlePlugin`
 - commit and push your changes
-- create a GitHub Release tag with the same version number and the text from the changleog.
+- create a GitHub Release tag with the same version number and the text from the changelog.
+- After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
 
@@ -64,5 +64,5 @@ Only use GitHub releases in production. This ensures that we always know which c
 ### Compiling for a different JaCoCo version
 
 * change `ext.jacocoVersion` in the build script
-* `gradlew dist`
+* `./gradlew dist`
 * **Do not commit unless you are upgrading to a newer version!**
