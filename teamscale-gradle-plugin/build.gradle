@@ -36,6 +36,6 @@ test {
 	dependsOn ':agent:publishToMavenLocal'
 	dependsOn ':impacted-test-engine:publishToMavenLocal'
 	dependsOn ':teamscale-client:publishToMavenLocal'
-//	dependsOn ':tia-client:publishToMavenLocal'
+	dependsOn ':tia-client:publishToMavenLocal'
 	dependsOn ':report-generator:publishToMavenLocal'
 }
