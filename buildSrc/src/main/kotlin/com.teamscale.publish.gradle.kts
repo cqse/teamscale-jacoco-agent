@@ -53,5 +53,9 @@ publishing {
 }
 
 signing {
+    setRequired({
+        // Do not require signine for deployment to maven local
+        gradle.taskGraph.hasTask("publish")
+    })
     sign(publishing.publications["maven"])
 }
