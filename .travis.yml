@@ -26,7 +26,7 @@ after_script:
 after_success:
   - >
     ./gradlew publish
-    -Psigning.secretKeyRingFile=.gnupg/secring.gpg
+    -Psigning.secretKeyRingFile=$TRAVIS_BUILD_DIR/.gnupg/secring.gpg
     -Psigning.password=$MAVEN_CENTRAL_GPG
     -Psigning.keyId=4FB80B8E
     -PsonatypeUsername=cqse-build-guild
