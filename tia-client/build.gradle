@@ -5,7 +5,10 @@ plugins {
 	id 'com.teamscale.publish'
 }
 
-version appVersion
+publishAs {
+	readableName = "Teamscale TIA Client"
+	description = "Library and CLI to simplify integration of TIA into custom build frameworks"
+}
 
 jar {
 	manifest {

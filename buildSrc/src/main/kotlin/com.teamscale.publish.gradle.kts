@@ -37,10 +37,10 @@ publishing {
 
     repositories {
         maven {
-            if (System.getenv()["TRAVIS_TAG"].isNullOrBlank()) {
-                setUrl("https://oss.sonatype.org/content/repositories/snapshots")
-            } else {
+            if (VersionUtils.isTaggedRelease()) {
                 setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            } else {
+                setUrl("https://oss.sonatype.org/content/repositories/snapshots")
             }
             if (project.hasProperty("sonatypeUsername") && project.hasProperty("sonatypePassword")) {
                 credentials {

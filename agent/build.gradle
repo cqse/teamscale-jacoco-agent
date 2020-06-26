@@ -17,8 +17,6 @@ publishAs {
 	description = "JVM profiler that simplifies various aspects around recording and uploading test coverage"
 }
 
-version appVersion
-
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 ext {

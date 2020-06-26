@@ -33,10 +33,7 @@ open class TeamscalePlugin : Plugin<Project> {
     }
 
     /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
-    private var pluginVersion = BuildVersion.buildVersion
-
-    /** The version of the teamscale jacoco agent.  */
-    private var agentVersion = BuildVersion.agentVersion
+    private var pluginVersion = BuildVersion.pluginVersion
 
     /** Reference to the teamscale upload task */
     private lateinit var teamscaleUploadTask: TeamscaleUploadTask
@@ -67,7 +64,7 @@ open class TeamscalePlugin : Plugin<Project> {
         // to generate testwise coverage if enabled.
         project.configurations.maybeCreate(teamscaleJaCoCoAgentConfiguration)
             .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$agentVersion"))
+                dependencies.add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$pluginVersion"))
             }
 
         teamscaleUploadTask =

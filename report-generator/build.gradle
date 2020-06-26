@@ -10,8 +10,6 @@ publishAs {
 	description = "Utilities for generating JaCoCo and Testwise Coverage reports"
 }
 
-version reportGeneratorVersion
-
 dependencies {
 	implementation project(':teamscale-client')
 	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
