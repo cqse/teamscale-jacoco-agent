@@ -12,6 +12,12 @@ publishAs {
 
 version pluginVersion
 
+test {
+	useJUnitPlatform {
+		excludeEngines('teamscale-test-impacted')
+	}
+}
+
 dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
