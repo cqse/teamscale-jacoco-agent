@@ -31,6 +31,8 @@ after_success:
     -Psigning.keyId=4FB80B8E
     -PsonatypeUsername=cqse-build-guild
     -PsonatypePassword=$SONATYPE_PW
+    -Porg.gradle.internal.http.connectionTimeout=60
+    -Porg.gradle.internal.http.socketTimeout=60
 deploy:
   - provider: releases
     api_key:
