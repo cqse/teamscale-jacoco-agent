@@ -34,6 +34,22 @@ publishing {
             }
         }
     }
+
+    repositories {
+        maven {
+            if (System.getenv()["TRAVIS_TAG"].isNullOrBlank()) {
+                setUrl("https://oss.sonatype.org/content/repositories/snapshots")
+            } else {
+                setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+            }
+            if (project.hasProperty("sonatypeUsername") && project.hasProperty("sonatypePassword")) {
+                credentials {
+                    username = project.property("sonatypeUsername") as String
+                    password = project.property("sonatypePassword") as String
+                }
+            }
+        }
+    }
 }
 
 signing {
