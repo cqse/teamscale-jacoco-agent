@@ -1,11 +1,9 @@
 package com.teamscale.jacoco.agent.upload.http;
 
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
-import com.teamscale.jacoco.agent.util.Benchmark;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 import java.io.File;
 import java.io.IOException;

@@ -10,7 +10,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 
 /** Helper class for generating a teamscale compatible service. */
 public class TeamscaleServiceGenerator {

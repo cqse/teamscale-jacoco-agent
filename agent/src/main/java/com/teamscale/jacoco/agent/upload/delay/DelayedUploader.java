@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.upload.delay;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;

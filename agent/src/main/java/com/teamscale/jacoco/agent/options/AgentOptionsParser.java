@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarInputStream;
@@ -102,7 +101,8 @@ public class AgentOptionsParser {
 			return;
 		} else if (handleHttpServerOptions(options, key, value)) {
 			return;
-		} else if (key.startsWith("artifactory-") && handleArtifactoryOptions(options, key, value)) {
+		} else if (key.startsWith("artifactory-") && ArtifactoryConfig
+				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
 			return;
 		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
 			return;
@@ -270,41 +270,6 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Handles all command-line options prefixed with 'artifactory-'
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleArtifactoryOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException {
-		switch (key) {
-			case "artifactory-url":
-				options.artifactoryConfig.url = parseUrl(value);
-				if (options.artifactoryConfig.url == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'artifactory-url'");
-				}
-				return true;
-			case "artifactory-user":
-				options.artifactoryConfig.user = value;
-				return true;
-			case "artifactory-password":
-				options.artifactoryConfig.password = value;
-				return true;
-			case "artifactory-zip-path":
-				options.artifactoryConfig.zipPath = StringUtils.stripSuffix(value, "/");
-				return true;
-			case "artifactory-git-properties-jar":
-				options.artifactoryConfig.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
-						options.artifactoryConfig.gitPropertiesCommitTimeFormat, key, value);
-				return true;
-			case "artifactory-git-properties-commit-date-format":
-				options.artifactoryConfig.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
 	 * Handles all command-line options prefixed with 'azure-'
 	 *
 	 * @return true if it has successfully process the given option.
@@ -386,7 +351,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given value as a URL or returns <code>null</code> if that fails.
 	 */
-	private static HttpUrl parseUrl(String value) {
+	public static HttpUrl parseUrl(String value) {
 		// default to HTTP if no scheme is given
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			value = "http://" + value;

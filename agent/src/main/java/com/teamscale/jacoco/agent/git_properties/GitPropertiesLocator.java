@@ -144,6 +144,7 @@ public class GitPropertiesLocator<T> {
 		return null;
 	}
 
+	/** Returns a value from a git properties file. */
 	public static String getGitPropertiesValue(
 			Properties gitProperties, String key, String entryName, File jarFile) throws InvalidGitPropertiesException {
 		String revision = gitProperties.getProperty(key);

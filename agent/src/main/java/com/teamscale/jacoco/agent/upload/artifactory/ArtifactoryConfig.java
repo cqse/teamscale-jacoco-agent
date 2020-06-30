@@ -1,9 +1,11 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.Pair;
@@ -34,6 +36,43 @@ public class ArtifactoryConfig {
 
 	/** The git time formatter, defaults to git.properties plugin default value. */
 	public DateTimeFormatter gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+
+	/**
+	 * Handles all command-line options prefixed with 'artifactory-'
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	public static boolean handleArtifactoryOptions(ArtifactoryConfig options,
+												   FilePatternResolver filePatternResolver,
+												   String key, String value)
+			throws AgentOptionParseException {
+		switch (key) {
+			case "artifactory-url":
+				options.url = AgentOptionsParser.parseUrl(value);
+				if (options.url == null) {
+					throw new AgentOptionParseException("Invalid URL given for option 'artifactory-url'");
+				}
+				return true;
+			case "artifactory-user":
+				options.user = value;
+				return true;
+			case "artifactory-password":
+				options.password = value;
+				return true;
+			case "artifactory-zip-path":
+				options.zipPath = StringUtils.stripSuffix(value, "/");
+				return true;
+			case "artifactory-git-properties-jar":
+				options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
+						options.gitPropertiesCommitTimeFormat, key, value);
+				return true;
+			case "artifactory-git-properties-commit-date-format":
+				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
+				return true;
+			default:
+				return false;
+		}
+	}
 
 	/** Checks if none of the required fields is null. */
 	public boolean hasAllRequiredFieldsSet() {
