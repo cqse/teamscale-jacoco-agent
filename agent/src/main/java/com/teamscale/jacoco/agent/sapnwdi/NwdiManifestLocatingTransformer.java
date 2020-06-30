@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.sapnwdi;
 
-import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.string.StringUtils;
@@ -50,7 +49,6 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 			return null;
 		}
 
-		// TODO Check whether this is too restrictive
 		if(!this.markerClasses.contains(className)) {
 			// only kick off search if the marker class was found.
 			return null;
@@ -72,8 +70,7 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 			if (jarOrClassFolderUrl.getProtocol().toLowerCase().equals("file") &&
 					StringUtils.endsWithOneOf(
 							jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-				// we do this asynchronously so that we don't unnecessarily block JVM startup
-				locator.searchJarFileAsync(new File(jarOrClassFolderUrl.toURI()));
+				locator.searchJarFile(new File(jarOrClassFolderUrl.toURI()), className);
 			}
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is

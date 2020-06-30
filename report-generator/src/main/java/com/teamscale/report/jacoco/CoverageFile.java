@@ -17,10 +17,17 @@ import java.util.Objects;
  * dramatically increases the memory footprint of the JVM which might run out of memory because of this.
  */
 public class CoverageFile {
-	private File coverageFile;
+
+	private final File coverageFile;
+	private int referenceCounter = 0;
 
 	public CoverageFile(File coverageFile) {
 		this.coverageFile = coverageFile;
+	}
+
+	public CoverageFile acquireReference() {
+		referenceCounter++;
+		return this;
 	}
 
 	/**
@@ -43,7 +50,10 @@ public class CoverageFile {
 	 * Delete the coverage file from disk
 	 */
 	public void delete() throws IOException {
-		Files.delete(coverageFile.toPath());
+		referenceCounter--;
+		if (referenceCounter <= 0) {
+			Files.delete(coverageFile.toPath());
+		}
 	}
 
 	/**

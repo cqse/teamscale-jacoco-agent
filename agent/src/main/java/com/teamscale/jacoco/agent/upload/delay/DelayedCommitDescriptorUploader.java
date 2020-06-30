@@ -83,15 +83,15 @@ public class DelayedCommitDescriptorUploader implements IUploader {
 	 * Sets the commit to upload the XMLs to and asynchronously triggers the upload of all cached XMLs. This method
 	 * should only be called once.
 	 */
-	public synchronized void setCommitAndTriggerAsynchronousUpload(String commit) {
+	public synchronized void setCommitAndTriggerAsynchronousUpload(String revision) {
 		if (wrappedUploader == null) {
-			wrappedUploader = wrappedUploaderFactory.apply(commit);
-			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", commit,
+			wrappedUploader = wrappedUploaderFactory.apply(revision);
+			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", revision,
 					wrappedUploader.describe());
 			executor.execute(this::uploadCachedXmls);
 		} else {
 			logger.error("Tried to set upload commit multiple times (old uploader: {}, new commit: {})." +
-					" This is a programming error. Please report a bug.", wrappedUploader.describe(), commit);
+					" This is a programming error. Please report a bug.", wrappedUploader.describe(), revision);
 		}
 	}
 

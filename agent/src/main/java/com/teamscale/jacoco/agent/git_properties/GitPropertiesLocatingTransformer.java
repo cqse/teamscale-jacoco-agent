@@ -61,7 +61,7 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 					StringUtils.endsWithOneOf(
 							jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
 				// we do this asynchronously so that we don't unnecessarily block JVM startup
-				locator.searchJarFileAsync(new File(jarOrClassFolderUrl.toURI()));
+				locator.searchJarFileForGitPropertiesAsync(new File(jarOrClassFolderUrl.toURI()));
 			}
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is

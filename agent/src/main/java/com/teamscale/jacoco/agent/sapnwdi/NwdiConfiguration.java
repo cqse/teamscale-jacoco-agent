@@ -50,7 +50,6 @@ public class NwdiConfiguration {
 		private String teamscaleProject;
 
 		private CommitDescriptor foundTimestamp;
-		private String foundJarFile;
 
 		public String getName() {
 			return name;
@@ -68,13 +67,8 @@ public class NwdiConfiguration {
 			return foundTimestamp;
 		}
 
-		public String getFoundJarFile() {
-			return foundJarFile;
-		}
-
-		public void setFoundTimestamp(CommitDescriptor foundTimestamp, String foundJarFile) {
+		public void setFoundTimestamp(CommitDescriptor foundTimestamp) {
 			this.foundTimestamp = foundTimestamp;
-			this.foundJarFile = foundJarFile;
 		}
 
 		/** Checks if none of the required fields is null or empty. */

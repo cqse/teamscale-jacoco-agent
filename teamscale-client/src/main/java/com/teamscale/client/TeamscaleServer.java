@@ -69,4 +69,15 @@ public class TeamscaleServer {
 		}
 		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at " + at;
 	}
+
+	public TeamscaleServer withProject(String teamscaleProject, CommitDescriptor commitDescriptor) {
+		TeamscaleServer tsApplication = new TeamscaleServer();
+		tsApplication.url = url;
+		tsApplication.userName = userName;
+		tsApplication.userAccessToken = userAccessToken;
+		tsApplication.partition = partition;
+		tsApplication.project = teamscaleProject;
+		tsApplication.commit = commitDescriptor;
+		return tsApplication;
+	}
 }

@@ -26,7 +26,6 @@ import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedNwdiUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
-import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -389,8 +388,8 @@ public class AgentOptions {
 			return new TeamscaleUploader(teamscaleServer);
 		}
 
-		if(sapNetWeaverJavaConfig != null && sapNetWeaverJavaConfig.hasAllRequiredFieldsSet()) {
-			logger.info("NWDI configufation detected. The Agent will try and" +
+		if (sapNetWeaverJavaConfig != null && sapNetWeaverJavaConfig.hasAllRequiredFieldsSet()) {
+			logger.info("NWDI configuration detected. The Agent will try and" +
 					" auto-detect commit information by searching all profiled Jar/War/Ear/... files.");
 			return createNwdiTeamscaleUploader(instrumentation);
 		}
@@ -416,13 +415,12 @@ public class AgentOptions {
 
 	private IUploader createNwdiTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedNwdiUploader store = new DelayedNwdiUploader(
-				// TODO how to handle multiple?
-				commit -> {
-					teamscaleServer.revision = revision;
-					return new TeamscaleMultiProjectUploader(sapNetWeaverJavaConfig);
-				}, outputDirectory);
+				(commit, application) -> new TeamscaleUploader(
+						teamscaleServer.withProject(application.getTeamscaleProject(),
+								application.getFoundTimestamp())));
 		NwdiManifestLocator locator = new NwdiManifestLocator(store, sapNetWeaverJavaConfig);
-		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(locator, getLocationIncludeFilter(), sapNetWeaverJavaConfig.getApplications()));
+		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(locator, getLocationIncludeFilter(),
+				sapNetWeaverJavaConfig.getApplications()));
 		return store;
 	}
 
