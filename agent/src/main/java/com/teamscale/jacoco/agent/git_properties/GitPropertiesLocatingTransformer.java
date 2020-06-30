@@ -21,10 +21,10 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Set<String> seenJars = new ConcurrentSkipListSet<>();
-	private final GitPropertiesLocator locator;
+	private final GitPropertiesLocator<?> locator;
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
-	public GitPropertiesLocatingTransformer(GitPropertiesLocator locator,
+	public GitPropertiesLocatingTransformer(GitPropertiesLocator<?> locator,
 											ClasspathWildcardIncludeFilter locationIncludeFilter) {
 		this.locator = locator;
 		this.locationIncludeFilter = locationIncludeFilter;
@@ -46,9 +46,10 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 
 		try {
 			CodeSource codeSource = protectionDomain.getCodeSource();
-			if (codeSource == null) {
+			if (codeSource == null || codeSource.getLocation() == null) {
 				// unknown when this can happen, we suspect when code is generated at runtime
-				// but there's nothing else we can do here in either case
+				// but there's nothing else we can do here in either case.
+				// codeSource.getLocation() is null e.g. when executing Pixelitor with Java14 for class sun/reflect/misc/Trampoline
 				return null;
 			}
 

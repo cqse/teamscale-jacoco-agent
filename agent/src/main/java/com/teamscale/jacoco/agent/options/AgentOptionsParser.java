@@ -10,10 +10,11 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
-
+import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
@@ -23,12 +24,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-
-import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -101,6 +101,8 @@ public class AgentOptionsParser {
 		} else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
 			return;
 		} else if (handleHttpServerOptions(options, key, value)) {
+			return;
+		} else if (key.startsWith("artifactory-") && handleArtifactoryOptions(options, key, value)) {
 			return;
 		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
 			return;
@@ -235,7 +237,7 @@ public class AgentOptionsParser {
 						filePatternResolver.parsePath(key, value).toFile());
 				return true;
 			case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
-				options.teamscaleServer.revision = parseGitProperties(key, value);
+				options.teamscaleServer.revision = getCommitFromGitProperties(key, value);
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
@@ -253,8 +255,8 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private String parseGitProperties(String key, String value) throws AgentOptionParseException {
-		File jarFile = filePatternResolver.parsePath(key, value).toFile();
+	private String getCommitFromGitProperties(String optionName, String value) throws AgentOptionParseException {
+		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
 			String commit = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
 			if (commit == null) {
@@ -264,6 +266,41 @@ public class AgentOptionsParser {
 		} catch (IOException | InvalidGitPropertiesException e) {
 			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
 					e);
+		}
+	}
+
+	/**
+	 * Handles all command-line options prefixed with 'artifactory-'
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	private boolean handleArtifactoryOptions(AgentOptions options, String key, String value)
+			throws AgentOptionParseException {
+		switch (key) {
+			case "artifactory-url":
+				options.artifactoryConfig.url = parseUrl(value);
+				if (options.artifactoryConfig.url == null) {
+					throw new AgentOptionParseException("Invalid URL given for option 'artifactory-url'");
+				}
+				return true;
+			case "artifactory-user":
+				options.artifactoryConfig.user = value;
+				return true;
+			case "artifactory-password":
+				options.artifactoryConfig.password = value;
+				return true;
+			case "artifactory-zip-path":
+				options.artifactoryConfig.zipPath = StringUtils.stripSuffix(value, "/");
+				return true;
+			case "artifactory-git-properties-jar":
+				options.artifactoryConfig.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
+						options.artifactoryConfig.gitPropertiesCommitTimeFormat, key, value);
+				return true;
+			case "artifactory-git-properties-commit-date-format":
+				options.artifactoryConfig.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
+				return true;
+			default:
+				return false;
 		}
 	}
 

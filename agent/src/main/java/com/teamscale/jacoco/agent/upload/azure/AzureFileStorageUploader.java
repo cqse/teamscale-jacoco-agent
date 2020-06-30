@@ -44,7 +44,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	/** Constructor. */
 	public AzureFileStorageUploader(AzureFileStorageConfig config, List<Path> additionalMetaDataFiles)
 			throws UploaderException {
-		super(config.url, additionalMetaDataFiles);
+		super(config.url, additionalMetaDataFiles, IAzureUploadApi.class);
 		this.accessKey = config.accessKey;
 		this.account = getAccount();
 
@@ -68,11 +68,6 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	@Override
 	public String describe() {
 		return String.format("Uploading coverage to the Azure File Storage at %s", this.uploadUrl);
-	}
-
-	@Override
-	protected IAzureUploadApi getApi(Retrofit retrofit) {
-		return retrofit.create(IAzureUploadApi.class);
 	}
 
 	@Override
@@ -141,7 +136,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 				.getAuthorizationString(HEAD, account, accessKey, filePath, headers, queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
-		return api.head(filePath, headers, queryParameters).execute();
+		return getApi().head(filePath, headers, queryParameters).execute();
 	}
 
 	/** Checks if the directory given by the specified path does exist. */
@@ -155,7 +150,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 				.getAuthorizationString(HEAD, account, accessKey, directoryPath, headers, queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
-		return api.head(directoryPath, headers, queryParameters).execute();
+		return getApi().head(directoryPath, headers, queryParameters).execute();
 	}
 
 	/**
@@ -172,7 +167,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 				.getAuthorizationString(PUT, account, accessKey, directoryPath, headers, queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
-		return api.put(directoryPath, headers, queryParameters).execute();
+		return getApi().put(directoryPath, headers, queryParameters).execute();
 	}
 
 	/** Creates and fills a file with the given data and name. */
@@ -203,7 +198,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 				.getAuthorizationString(PUT, account, accessKey, filePath, headers, queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
-		return api.put(filePath, headers, queryParameters).execute();
+		return getApi().put(filePath, headers, queryParameters).execute();
 	}
 
 	/**
@@ -232,6 +227,6 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 
 		headers.put(AUTHORIZATION, auth);
 		RequestBody content = RequestBody.create(MediaType.parse(contentType), zipFile);
-		return api.putData(filePath, headers, queryParameters, content).execute();
+		return getApi().putData(filePath, headers, queryParameters, content).execute();
 	}
 }

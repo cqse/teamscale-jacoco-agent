@@ -39,6 +39,11 @@ public class CoverageFile {
 		return FileSystemUtils.getFilenameWithoutExtension(coverageFile);
 	}
 
+	/** Get the filename of the coverage file. */
+	public String getName() {
+		return coverageFile.getName();
+	}
+
 	/**
 	 * Delete the coverage file from disk
 	 */

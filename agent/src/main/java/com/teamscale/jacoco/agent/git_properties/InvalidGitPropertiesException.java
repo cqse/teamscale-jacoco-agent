@@ -8,7 +8,8 @@ public class InvalidGitPropertiesException extends Exception {
 		super(s, throwable);
 	}
 
-	/*package*/ InvalidGitPropertiesException(String s) {
+	/*package*/
+	public InvalidGitPropertiesException(String s) {
 		super(s);
 	}
 }

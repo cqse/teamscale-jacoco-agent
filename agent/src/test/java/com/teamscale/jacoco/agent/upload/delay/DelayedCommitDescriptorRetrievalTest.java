@@ -26,11 +26,11 @@ public class DelayedCommitDescriptorRetrievalTest {
 		CoverageFile coverageFile = new CoverageFile(Files.createFile(coverageFilePath).toFile());
 
 		InMemoryUploader destination = new InMemoryUploader();
-		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath,
+		DelayedUploader<String> store = new DelayedUploader<>(commit -> destination, outputPath,
 				storeExecutor);
 
 		ExecutorService locatorExecutor = Executors.newSingleThreadExecutor();
-		GitPropertiesLocator locator = new GitPropertiesLocator(store, locatorExecutor);
+		GitPropertiesLocator<String> locator = new GitPropertiesLocator<>(store, GitPropertiesLocator::getCommitFromGitProperties, locatorExecutor);
 
 		store.upload(coverageFile);
 		locator.searchJarFileForGitPropertiesAsync(new File(getClass().getResource("git-properties.jar").toURI()));

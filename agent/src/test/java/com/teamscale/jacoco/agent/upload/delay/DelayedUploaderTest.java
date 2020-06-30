@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DelayedCommitDescriptorUploaderTest {
+public class DelayedUploaderTest {
 
 	@Test
 	public void shouldStoreToCacheIfCommitIsNotKnown(@TempDir Path outputPath) throws IOException {
@@ -25,7 +25,7 @@ public class DelayedCommitDescriptorUploaderTest {
 		CoverageFile coverageFile = new CoverageFile(Files.createFile(coverageFilePath).toFile());
 
 		InMemoryUploader destination = new InMemoryUploader();
-		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath);
+		DelayedUploader<?> store = new DelayedUploader<>(commit -> destination, outputPath);
 
 		store.upload(coverageFile);
 
@@ -41,7 +41,7 @@ public class DelayedCommitDescriptorUploaderTest {
 		CoverageFile coverageFile = new CoverageFile(Files.createFile(coverageFilePath).toFile());
 
 		InMemoryUploader destination = new InMemoryUploader();
-		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath);
+		DelayedUploader<String> store = new DelayedUploader<>(commit -> destination, outputPath);
 
 		store.setCommitAndTriggerAsynchronousUpload("a2afb54566aaa");
 		store.upload(coverageFile);
@@ -59,7 +59,7 @@ public class DelayedCommitDescriptorUploaderTest {
 
 		InMemoryUploader destination = new InMemoryUploader();
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(commit -> destination, outputPath,
+		DelayedUploader<String> store = new DelayedUploader<>(commit -> destination, outputPath,
 				executor);
 
 		store.upload(coverageFile);

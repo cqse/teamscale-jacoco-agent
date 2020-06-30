@@ -18,9 +18,11 @@ import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
-import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
+import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
@@ -175,6 +177,11 @@ public class AgentOptions {
 	/**
 	 * The configuration necessary to upload files to an azure file storage
 	 */
+	/* package */ ArtifactoryConfig artifactoryConfig = new ArtifactoryConfig();
+
+	/**
+	 * The configuration necessary to upload files to an azure file storage
+	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
 
 	public AgentOptions() {
@@ -221,13 +228,19 @@ public class AgentOptions {
 				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
+		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
+						.hasAllRequiredFieldsNull()),
+				"If you want to upload data to Artifactory you need to provide " +
+						"'artifactory-url', 'artifactory-user' and 'artifactory-password' ");
+
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
 				"If you want to upload data to an Azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
 		List<Boolean> configuredStores = Stream
-				.of(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
+				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
+						teamscaleServer.hasAllRequiredFieldsSet(),
 						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
 
 		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
@@ -377,6 +390,16 @@ public class AgentOptions {
 			return new TeamscaleUploader(teamscaleServer);
 		}
 
+		if (artifactoryConfig.hasAllRequiredFieldsSet()) {
+			if (!artifactoryConfig.hasCommitInfo()) {
+				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+				return createDelayedArtifactoryUploader(instrumentation);
+			}
+			return new ArtifactoryUploader(artifactoryConfig,
+					additionalMetaDataFiles);
+		}
+
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
 			return new AzureFileStorageUploader(azureFileStorageConfig,
 					additionalMetaDataFiles);
@@ -386,14 +409,28 @@ public class AgentOptions {
 	}
 
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
-		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
+		DelayedUploader<String> uploader = new DelayedUploader<>(
 				revision -> {
 					teamscaleServer.revision = revision;
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
-		GitPropertiesLocator locator = new GitPropertiesLocator(store);
+		GitPropertiesLocator<?> locator = new GitPropertiesLocator<>(uploader,
+				GitPropertiesLocator::getCommitFromGitProperties);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
-		return store;
+		return uploader;
+	}
+
+	private IUploader createDelayedArtifactoryUploader(Instrumentation instrumentation) {
+		DelayedUploader<ArtifactoryConfig.CommitInfo> uploader = new DelayedUploader<>(
+				commitInfo -> {
+					artifactoryConfig.commitInfo = commitInfo;
+					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles);
+				}, outputDirectory);
+		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
+				jar -> ArtifactoryConfig.parseGitProperties(
+						jar, artifactoryConfig.gitPropertiesCommitTimeFormat));
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
+		return uploader;
 	}
 
 	/**
