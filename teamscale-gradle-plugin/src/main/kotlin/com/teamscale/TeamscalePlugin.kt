@@ -33,7 +33,7 @@ open class TeamscalePlugin : Plugin<Project> {
     }
 
     /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
-    private var pluginVersion = BuildVersion.pluginVersion
+    private val pluginVersion = BuildVersion.pluginVersion
 
     /** Reference to the teamscale upload task */
     private lateinit var teamscaleUploadTask: TeamscaleUploadTask
