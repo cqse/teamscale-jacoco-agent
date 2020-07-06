@@ -53,7 +53,7 @@ When master has accumulated changes you want to release, please perform the foll
     - update `BuildVersion.kt`
 - commit and push your changes
 - create a GitHub Release tag with the same version number and the text from the changelog.
-- After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository
+- After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository.
   The credential are stored in the `teamscale.kdbx` keystore.
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
