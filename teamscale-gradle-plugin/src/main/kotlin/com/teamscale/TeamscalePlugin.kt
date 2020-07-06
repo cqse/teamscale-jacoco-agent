@@ -33,10 +33,7 @@ open class TeamscalePlugin : Plugin<Project> {
     }
 
     /** The version of the teamscale gradle plugin and impacted-tests-executor.  */
-    private var pluginVersion = BuildVersion.buildVersion
-
-    /** The version of the teamscale jacoco agent.  */
-    private var agentVersion = BuildVersion.agentVersion
+    private val pluginVersion = BuildVersion.pluginVersion
 
     /** Reference to the teamscale upload task */
     private lateinit var teamscaleUploadTask: TeamscaleUploadTask
@@ -54,9 +51,7 @@ open class TeamscalePlugin : Plugin<Project> {
             throw GradleException("The teamscale plugin requires Gradle version 4.6 or higher")
         }
 
-        project.repositories.maven {
-            it.setUrl("https://share.cqse.eu/public/maven/")
-        }
+        project.repositories.mavenCentral()
 
         // Add impacted tests executor to a custom configuration that will later be used to
         // create the classpath for the TestImpacted created by this plugin.
@@ -69,7 +64,7 @@ open class TeamscalePlugin : Plugin<Project> {
         // to generate testwise coverage if enabled.
         project.configurations.maybeCreate(teamscaleJaCoCoAgentConfiguration)
             .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$agentVersion"))
+                dependencies.add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$pluginVersion"))
             }
 
         teamscaleUploadTask =

@@ -1,0 +1,42 @@
+import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.publish.maven.MavenPom
+import org.gradle.api.publish.maven.MavenPublication
+
+open class PublicationInfoExtension(objects: ObjectFactory, val project: Project) {
+    val artifactId: Property<String> = objects.property(String::class.java)
+    val readableName: Property<String> = objects.property(String::class.java)
+    val description: Property<String> = objects.property(String::class.java)
+
+    fun applyTo(mavenPublication: MavenPublication) {
+        project.afterEvaluate {
+            mavenPublication.artifactId = artifactId.get()
+        }
+        mavenPublication.pom.configureGeneralPomInfo(this)
+    }
+}
+
+fun MavenPom.configureGeneralPomInfo(publicationInfo: PublicationInfoExtension) {
+    this.name.set(publicationInfo.readableName)
+    this.description.set(publicationInfo.description)
+    this.url.set("https://github.com/cqse/teamscale-jacoco-agent/")
+    licenses {
+        license {
+            name.set("The Apache License, Version 2.0")
+            url.set("https://spdx.org/licenses/Apache-2.0")
+        }
+    }
+    developers {
+        developer {
+            id.set("cqse")
+            name.set("CQSE GmbH")
+            email.set("support@cqse.eu")
+        }
+    }
+    scm {
+        connection.set("scm:git:https://github.com/cqse/teamscale-jacoco-agent.git")
+        developerConnection.set("scm:git:https://github.com/cqse/teamscale-jacoco-agent.git")
+        url.set("https://github.com/cqse/teamscale-jacoco-agent/")
+    }
+}
