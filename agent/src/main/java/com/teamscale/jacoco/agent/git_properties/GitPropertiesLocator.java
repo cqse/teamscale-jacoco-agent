@@ -107,7 +107,7 @@ public class GitPropertiesLocator<T> {
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static String getCommitFromGitProperties(File jarFile) throws IOException, InvalidGitPropertiesException {
+	public static String getRevisionFromGitProperties(File jarFile) throws IOException, InvalidGitPropertiesException {
 		Pair<String, Properties> entryWithProperties = findGitPropertiesInJar(jarFile);
 		if (entryWithProperties == null) {
 			return null;

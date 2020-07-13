@@ -29,8 +29,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	@Override
 	protected void configureOkHttp(OkHttpClient.Builder builder) {
 		super.configureOkHttp(builder);
-		builder
-				.addInterceptor(HttpUtils.getBasicAuthInterceptor(artifactoryConfig.user, artifactoryConfig.password));
+		builder.addInterceptor(HttpUtils.getBasicAuthInterceptor(artifactoryConfig.user, artifactoryConfig.password));
 	}
 
 	@Override

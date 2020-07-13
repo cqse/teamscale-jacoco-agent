@@ -41,7 +41,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -229,12 +228,12 @@ public class AgentOptions {
 				"If you want to upload data to an Azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
-		List<Boolean> configuredStores = Stream
+		long configuredStores = Stream
 				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
 						teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
+						uploadUrl != null).filter(x -> x).count();
 
-		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
+		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
 				"such as a Teamscale instance, upload URL or Azure file storage");
 
 		appendTestwiseCoverageValidations(validator);
@@ -320,7 +319,7 @@ public class AgentOptions {
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 		GitPropertiesLocator<?> locator = new GitPropertiesLocator<>(uploader,
-				GitPropertiesLocator::getCommitFromGitProperties);
+				GitPropertiesLocator::getRevisionFromGitProperties);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}

@@ -13,7 +13,6 @@ public class AgentOptionParseException extends Exception {
 	/**
 	 * Constructor.
 	 */
-	/*package*/
 	public AgentOptionParseException(String message) {
 		super(message);
 	}
@@ -21,7 +20,6 @@ public class AgentOptionParseException extends Exception {
 	/**
 	 * Constructor.
 	 */
-	/*package*/
 	public AgentOptionParseException(String message, Throwable cause) {
 		super(message, cause);
 	}

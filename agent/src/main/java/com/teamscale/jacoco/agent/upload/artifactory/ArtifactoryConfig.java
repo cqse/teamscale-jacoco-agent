@@ -97,7 +97,7 @@ public class ArtifactoryConfig {
 		try {
 			CommitInfo commitInfo = parseGitProperties(jarFile, gitPropertiesCommitTimeFormat);
 			if (commitInfo == null) {
-				throw new InvalidGitPropertiesException(
+				throw new AgentOptionParseException(
 						"Could not locate a git.properties file in " + jarFile.toString());
 			}
 			return commitInfo;

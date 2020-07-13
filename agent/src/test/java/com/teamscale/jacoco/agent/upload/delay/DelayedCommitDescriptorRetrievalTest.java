@@ -30,7 +30,8 @@ public class DelayedCommitDescriptorRetrievalTest {
 				storeExecutor);
 
 		ExecutorService locatorExecutor = Executors.newSingleThreadExecutor();
-		GitPropertiesLocator<String> locator = new GitPropertiesLocator<>(store, GitPropertiesLocator::getCommitFromGitProperties, locatorExecutor);
+		GitPropertiesLocator<String> locator = new GitPropertiesLocator<>(store,
+				GitPropertiesLocator::getRevisionFromGitProperties, locatorExecutor);
 
 		store.upload(coverageFile);
 		locator.searchJarFileForGitPropertiesAsync(new File(getClass().getResource("git-properties.jar").toURI()));
