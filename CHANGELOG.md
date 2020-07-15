@@ -8,6 +8,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
 - [fix] Docker image did not react to SIGTERM
 - [feature] All artifacts are now also available on Maven Central
+- [fix] `test-env` option was ignored
 
 # 16.0.1
 - [fix] revision is ignored during validation for automatic upload to Teamscale
