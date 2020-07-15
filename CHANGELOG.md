@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
+- [feature] Support for uploading XML reports to artifactory
 - [fix] Docker image did not react to SIGTERM
 
 # 16.0.1
