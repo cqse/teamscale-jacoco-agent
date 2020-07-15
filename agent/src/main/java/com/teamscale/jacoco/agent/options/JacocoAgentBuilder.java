@@ -104,8 +104,13 @@ public class JacocoAgentBuilder {
 	String getModeSpecificOptions() {
 		if (agentOptions
 				.useTestwiseCoverageMode() && agentOptions.testWiseCoverageMode == ETestWiseCoverageMode.EXEC_FILE) {
+			String sessionId = "";
+			if (agentOptions.testEnvironmentVariable != null) {
+				sessionId = System.getenv(agentOptions.testEnvironmentVariable);
+			}
 			// when writing to a .exec file, we can instruct JaCoCo to do so directly
-			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
+			return "sessionid=" + sessionId + ",destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
+
 		} else {
 			// otherwise we don't need JaCoCo to perform any output of the .exec information
 			return "output=none";

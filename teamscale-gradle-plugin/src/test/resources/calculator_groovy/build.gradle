@@ -2,7 +2,6 @@ buildscript {
 	repositories {
 		mavenCentral()
 		mavenLocal()
-		maven { url 'https://share.cqse.eu/public/maven/' }
 	}
 }
 
@@ -19,7 +18,6 @@ ext.junitVintageVersion = '5.4.0'
 ext.junitPlatformVersion = '1.4.0'
 ext.junitJupiterVersion = '5.4.0'
 ext.log4jVersion = '2.9.0'
-
 
 teamscale {
 	server {
@@ -73,7 +71,6 @@ repositories {
 	mavenCentral()
 	jcenter()
 	mavenLocal()
-	maven { url 'https://share.cqse.eu/public/maven/' }
 }
 
 dependencies {
