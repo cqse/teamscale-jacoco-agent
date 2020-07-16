@@ -8,25 +8,22 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
-import com.teamscale.jacoco.agent.Agent;
-import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
-import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
-import com.teamscale.jacoco.agent.upload.delay.DelayedCommitDescriptorUploader;
+import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
-import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
@@ -35,7 +32,6 @@ import org.jacoco.core.runtime.WildcardMatcher;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,22 +39,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Parses agent command line options.
  */
 public class AgentOptions {
-
-
 	/**
 	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
 	 */
-	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
+	/* package */ static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
 
 	/** Option name that allows to specify to which branch coverage should be uploaded to (branch:timestamp). */
@@ -175,6 +167,11 @@ public class AgentOptions {
 	/**
 	 * The configuration necessary to upload files to an azure file storage
 	 */
+	/* package */ ArtifactoryConfig artifactoryConfig = new ArtifactoryConfig();
+
+	/**
+	 * The configuration necessary to upload files to an azure file storage
+	 */
 	/* package */ AzureFileStorageConfig azureFileStorageConfig = new AzureFileStorageConfig();
 
 	public AgentOptions() {
@@ -221,16 +218,22 @@ public class AgentOptions {
 				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
+		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
+						.hasAllRequiredFieldsNull()),
+				"If you want to upload data to Artifactory you need to provide " +
+						"'artifactory-url', 'artifactory-user' and 'artifactory-password' ");
+
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
 				"If you want to upload data to an Azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
-		List<Boolean> configuredStores = Stream
-				.of(azureFileStorageConfig.hasAllRequiredFieldsSet(), teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null).filter(x -> x).collect(Collectors.toList());
+		long configuredStores = Stream
+				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
+						teamscaleServer.hasAllRequiredFieldsSet(),
+						uploadUrl != null).filter(x -> x).count();
 
-		validator.isTrue(configuredStores.size() <= 1, "You cannot configure multiple upload stores, " +
+		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
 				"such as a Teamscale instance, upload URL or Azure file storage");
 
 		appendTestwiseCoverageValidations(validator);
@@ -264,96 +267,6 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Returns the options to pass to the JaCoCo agent.
-	 */
-	public String createJacocoAgentOptions() throws AgentOptionParseException {
-		StringBuilder builder = new StringBuilder(getModeSpecificOptions());
-		if (jacocoIncludes != null) {
-			builder.append(",includes=").append(jacocoIncludes);
-		}
-		if (jacocoExcludes != null) {
-			builder.append(",excludes=").append(jacocoExcludes);
-		}
-
-		// Don't dump class files in testwise mode when coverage is written to an exec file
-		boolean needsClassFiles = mode == EMode.NORMAL || testWiseCoverageMode != ETestWiseCoverageMode.EXEC_FILE;
-		if (classDirectoriesOrZips.isEmpty() && needsClassFiles) {
-			Path tempDir = createTemporaryDumpDirectory();
-			tempDir.toFile().deleteOnExit();
-			builder.append(",classdumpdir=").append(tempDir.toAbsolutePath().toString());
-
-			classDirectoriesOrZips = Collections.singletonList(tempDir.toFile());
-		}
-
-		additionalJacocoOptions.forEach((key, value) -> builder.append(",").append(key).append("=").append(value));
-
-		return builder.toString();
-	}
-
-	private Path createTemporaryDumpDirectory() throws AgentOptionParseException {
-		try {
-			return Files.createTempDirectory("jacoco-class-dump");
-		} catch (IOException e) {
-			logger.warn("Unable to create temporary directory in default location. Trying in output directory.");
-		}
-
-		try {
-			return Files.createTempDirectory(outputDirectory, "jacoco-class-dump");
-		} catch (IOException e) {
-			logger.warn("Unable to create temporary directory in output directory. Trying in agent's directory.");
-		}
-
-		Path agentDirectory = AgentUtils.getAgentDirectory();
-		if (agentDirectory == null) {
-			throw new AgentOptionParseException("Could not resolve directory that contains the agent");
-		}
-		try {
-			return Files.createTempDirectory(agentDirectory, "jacoco-class-dump");
-		} catch (IOException e) {
-			throw new AgentOptionParseException("Unable to create a temporary directory anywhere", e);
-		}
-	}
-
-	/**
-	 * Returns additional options for JaCoCo depending on the selected {@link #mode} and {@link #testWiseCoverageMode}.
-	 */
-	private String getModeSpecificOptions() {
-		if (useTestwiseCoverageMode() && testWiseCoverageMode == ETestWiseCoverageMode.EXEC_FILE) {
-			String sessionId = "";
-			if (testEnvironmentVariable != null) {
-				sessionId = System.getenv(testEnvironmentVariable);
-			}
-			// when writing to a .exec file, we can instruct JaCoCo to do so directly
-			return "sessionid=" + sessionId + ",destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
-		} else {
-			// otherwise we don't need JaCoCo to perform any output of the .exec information
-			return "output=none";
-		}
-	}
-
-	private File getTempFile(final String prefix, final String extension) {
-		return new File(outputDirectory.toFile(),
-				prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension);
-	}
-
-	/**
-	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
-	 * the HTTP server is used.
-	 */
-	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException {
-		if (useTestwiseCoverageMode()) {
-			JaCoCoTestwiseReportGenerator reportGenerator = new JaCoCoTestwiseReportGenerator(
-					getClassDirectoriesOrZips(), getLocationIncludeFilter(),
-					getDuplicateClassFileBehavior(), LoggingUtils.wrap(logger));
-			return new TestwiseCoverageAgent(this, new TestExecutionWriter(getTempFile("test-execution", "json")),
-					reportGenerator);
-		} else {
-			return new Agent(this, instrumentation);
-		}
-	}
-
-
-	/**
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a
 	 * Teamscale connection.
 	 */
@@ -381,6 +294,16 @@ public class AgentOptions {
 			return new TeamscaleUploader(teamscaleServer);
 		}
 
+		if (artifactoryConfig.hasAllRequiredFieldsSet()) {
+			if (!artifactoryConfig.hasCommitInfo()) {
+				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+				return createDelayedArtifactoryUploader(instrumentation);
+			}
+			return new ArtifactoryUploader(artifactoryConfig,
+					additionalMetaDataFiles);
+		}
+
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
 			return new AzureFileStorageUploader(azureFileStorageConfig,
 					additionalMetaDataFiles);
@@ -390,14 +313,28 @@ public class AgentOptions {
 	}
 
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
-		DelayedCommitDescriptorUploader store = new DelayedCommitDescriptorUploader(
+		DelayedUploader<String> uploader = new DelayedUploader<>(
 				revision -> {
 					teamscaleServer.revision = revision;
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
-		GitPropertiesLocator locator = new GitPropertiesLocator(store);
+		GitPropertiesLocator<?> locator = new GitPropertiesLocator<>(uploader,
+				GitPropertiesLocator::getRevisionFromGitProperties);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
-		return store;
+		return uploader;
+	}
+
+	private IUploader createDelayedArtifactoryUploader(Instrumentation instrumentation) {
+		DelayedUploader<ArtifactoryConfig.CommitInfo> uploader = new DelayedUploader<>(
+				commitInfo -> {
+					artifactoryConfig.commitInfo = commitInfo;
+					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles);
+				}, outputDirectory);
+		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
+				jar -> ArtifactoryConfig.parseGitProperties(
+						jar, artifactoryConfig.gitPropertiesCommitTimeFormat));
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
+		return uploader;
 	}
 
 	/**
@@ -442,7 +379,7 @@ public class AgentOptions {
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */
-	private boolean useTestwiseCoverageMode() {
+	/* package */ boolean useTestwiseCoverageMode() {
 		return mode == EMode.TESTWISE;
 	}
 

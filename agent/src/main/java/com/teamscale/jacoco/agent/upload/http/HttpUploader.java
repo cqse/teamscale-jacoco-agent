@@ -4,7 +4,6 @@ import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,17 +16,12 @@ import java.util.List;
 public class HttpUploader extends HttpZipUploaderBase<IHttpUploadApi> {
 	/** Constructor. */
 	public HttpUploader(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
-		super(uploadUrl, additionalMetaDataFiles);
-	}
-
-	@Override
-	protected IHttpUploadApi getApi(Retrofit retrofit) {
-		return retrofit.create(IHttpUploadApi.class);
+		super(uploadUrl, additionalMetaDataFiles, IHttpUploadApi.class);
 	}
 
 	@Override
 	protected Response<ResponseBody> uploadCoverageZip(File zipFile) throws IOException {
-		return api.uploadCoverageZip(zipFile);
+		return getApi().uploadCoverageZip(zipFile);
 	}
 
 	/** {@inheritDoc} */

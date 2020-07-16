@@ -10,7 +10,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 
 /** Helper class for generating a teamscale compatible service. */
 public class TeamscaleServiceGenerator {
@@ -24,7 +23,7 @@ public class TeamscaleServiceGenerator {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, accessToken))
+						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
 		);
 		return retrofit.create(serviceClass);
@@ -42,7 +41,7 @@ public class TeamscaleServiceGenerator {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(TeamscaleServiceGenerator.getBasicAuthInterceptor(username, accessToken))
+						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
 						.addInterceptor(new FileLoggingInterceptor(file))
 		);
@@ -60,19 +59,6 @@ public class TeamscaleServiceGenerator {
 			Request newRequest = chain.request().newBuilder().header("Accept", "application/json").build();
 			return chain.proceed(newRequest);
 		}
-	}
-
-	/**
-	 * Returns an interceptor, which adds a basic auth header to a request.
-	 */
-	private static Interceptor getBasicAuthInterceptor(String username, String password) {
-		String credentials = username + ":" + password;
-		String basic = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-
-		return chain -> {
-			Request newRequest = chain.request().newBuilder().header("Authorization", basic).build();
-			return chain.proceed(newRequest);
-		};
 	}
 
 }
