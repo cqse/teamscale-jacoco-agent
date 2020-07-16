@@ -49,8 +49,6 @@ When master has accumulated changes you want to release, please perform the foll
 
 - update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g. `v8.1.0`
 - update the [build.gradle](build.gradle)'s `appVersion` accordingly
-- if you want to release a new version of the Gradle plugin:
-    - update `BuildVersion.kt`
 - commit and push your changes
 - create a GitHub Release tag with the same version number and the text from the changelog.
 - After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository.

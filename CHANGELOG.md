@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 17.0.0
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
 - [feature] Support for uploading XML reports to artifactory
 - [fix] Docker image did not react to SIGTERM
