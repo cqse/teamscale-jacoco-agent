@@ -2,8 +2,8 @@ package com.teamscale.jacoco.agent.upload.artifactory;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;

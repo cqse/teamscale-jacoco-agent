@@ -1,8 +1,9 @@
-package com.teamscale.jacoco.agent.sapnwdi;
+package com.teamscale.jacoco.agent.commit_resolution.sapnwdi;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.upload.delay.DelayedSapNwdiMultiUploader;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.slf4j.Logger;

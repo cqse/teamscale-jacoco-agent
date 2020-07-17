@@ -8,10 +8,11 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
-import com.teamscale.jacoco.agent.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
@@ -105,7 +106,9 @@ public class AgentOptionsParser {
 		} else if (key.startsWith("artifactory-") && ArtifactoryConfig
 				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
 			return;
-		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
+		} else if (key.startsWith("azure-") && AzureFileStorageConfig
+				.handleAzureFileStorageOptions(options.azureFileStorageConfig, key,
+				value)) {
 			return;
 		} else if (handleAgentOptions(options, key, value)) {
 			return;
@@ -274,28 +277,6 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Handles all command-line options prefixed with 'azure-'
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleAzureFileStorageOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException {
-		switch (key) {
-			case "azure-url":
-				options.azureFileStorageConfig.url = parseUrl(value);
-				if (options.azureFileStorageConfig.url == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
-				}
-				return true;
-			case "azure-key":
-				options.azureFileStorageConfig.accessKey = value;
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
 	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and builds a commit descriptor out
 	 * of it.
 	 */
@@ -366,7 +347,6 @@ public class AgentOptionsParser {
 
 		return HttpUrl.parse(value);
 	}
-
 
 	/**
 	 * Parses the the string representation of a commit to a  {@link CommitDescriptor} object.

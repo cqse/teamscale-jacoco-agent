@@ -1,5 +1,6 @@
-package com.teamscale.jacoco.agent.sapnwdi;
+package com.teamscale.jacoco.agent.commit_resolution.sapnwdi;
 
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.string.StringUtils;

@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.git_properties;
+package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 import org.conqat.lib.commons.collections.Pair;
 import org.junit.jupiter.api.Test;

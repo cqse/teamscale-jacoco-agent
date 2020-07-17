@@ -1,7 +1,6 @@
-package com.teamscale.jacoco.agent.upload.delay;
+package com.teamscale.jacoco.agent.options.sapnwdi;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.jacoco.agent.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
@@ -63,6 +62,7 @@ public class DelayedSapNwdiMultiUploader implements IUploader {
 		return "Temporary stand-in until commit is resolved";
 	}
 
+	/** Sets the commit info detected for the application. */
 	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplications.SapNwdiApplication application) {
 		IUploader uploader = uploaderFactory.apply(commit, application);
 		uploaders.put(application, uploader);

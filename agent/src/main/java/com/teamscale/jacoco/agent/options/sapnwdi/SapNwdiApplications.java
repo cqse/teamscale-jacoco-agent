@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.sapnwdi;
+package com.teamscale.jacoco.agent.options.sapnwdi;
 
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 
