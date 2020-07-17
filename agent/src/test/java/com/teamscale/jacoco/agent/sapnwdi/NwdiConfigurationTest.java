@@ -15,7 +15,7 @@ public class NwdiConfigurationTest {
 
 	@Test
 	public void testValidNwdiConfiguration() throws Exception {
-		NwdiConfiguration configuration = readConfig("nwdi-config.json");
+		SapNwdiApplications configuration = readConfig("nwdi-config.json");
 
 		assertThat(configuration).isNotNull();
 		assertThat(configuration.hasAllRequiredFieldsSet()).isTrue();
@@ -26,25 +26,26 @@ public class NwdiConfigurationTest {
 
 	@Test
 	public void testMissingValues() throws Exception {
-		NwdiConfiguration configuration = readConfig("nwdi-missing-api.json");
+		SapNwdiApplications configuration = readConfig("nwdi-missing-api.json");
 		assertThat(configuration.hasAllRequiredFieldsSet()).isFalse();
 	}
 
 	@Test
 	public void testMissingApps() throws Exception {
-		NwdiConfiguration configuration = readConfig("nwdi-missing-apps.json");
+		SapNwdiApplications configuration = readConfig("nwdi-missing-apps.json");
 		assertThat(configuration.hasAllRequiredFieldsSet()).isFalse();
 	}
 
 	@Test
 	public void testMissingAppData() throws Exception {
-		NwdiConfiguration configuration = readConfig("nwdi-missing-app-data.json");
+		SapNwdiApplications configuration = readConfig("nwdi-missing-app-data.json");
 		assertThat(configuration.hasAllRequiredFieldsSet()).isFalse();
 	}
 
 	/** Returns the contents of the given config file. */
-	private NwdiConfiguration readConfig(String name) throws Exception {
-		JsonAdapter<NwdiConfiguration> jsonAdapter = new Moshi.Builder().add(new HttpUrlAdapter()).build().adapter(NwdiConfiguration.class);
+	private SapNwdiApplications readConfig(String name) throws Exception {
+		JsonAdapter<SapNwdiApplications> jsonAdapter = new Moshi.Builder().add(new HttpUrlAdapter()).build().adapter(
+				SapNwdiApplications.class);
 		return jsonAdapter.fromJson(FileSystemUtils.readFile(new File(getClass().getResource(name).toURI())));
 	}
 }

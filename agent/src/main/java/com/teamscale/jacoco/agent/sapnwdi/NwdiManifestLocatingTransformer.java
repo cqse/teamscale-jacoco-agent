@@ -29,10 +29,11 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 
 	public NwdiManifestLocatingTransformer(NwdiManifestLocator locator,
 										   ClasspathWildcardIncludeFilter locationIncludeFilter,
-										   Collection<NwdiConfiguration.NwdiApplication> apps) {
+										   Collection<SapNwdiApplications.NwdiApplication> apps) {
 		this.locator = locator;
 		this.locationIncludeFilter = locationIncludeFilter;
-		this.markerClasses = apps.stream().map(NwdiConfiguration.NwdiApplication::getMarkerClass).collect(Collectors.toSet());
+		this.markerClasses = apps.stream().map(SapNwdiApplications.NwdiApplication::getMarkerClass)
+				.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -49,7 +50,7 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 			return null;
 		}
 
-		if(!this.markerClasses.contains(className)) {
+		if (!this.markerClasses.contains(className)) {
 			// only kick off search if the marker class was found.
 			return null;
 		}

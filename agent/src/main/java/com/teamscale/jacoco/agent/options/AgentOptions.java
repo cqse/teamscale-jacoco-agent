@@ -11,11 +11,9 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.sapnwdi.NwdiConfiguration;
+import com.teamscale.jacoco.agent.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.sapnwdi.NwdiManifestLocatingTransformer;
 import com.teamscale.jacoco.agent.sapnwdi.NwdiManifestLocator;
-import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
-import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
@@ -23,8 +21,8 @@ import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
+import com.teamscale.jacoco.agent.upload.delay.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
-import com.teamscale.jacoco.agent.upload.delay.DelayedNwdiUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
@@ -182,7 +180,7 @@ public class AgentOptions {
 	/**
 	 * The configuration necessary when used in an SAP NetWeaver Java environment.
 	 */
-	/* package */ NwdiConfiguration sapNetWeaverJavaConfig = null;
+	/* package */ SapNwdiApplications sapNetWeaverJavaApplications = null;
 
 	public AgentOptions() {
 		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
@@ -241,12 +239,12 @@ public class AgentOptions {
 		long configuredStores = Stream
 				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
 						teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null, sapNetWeaverJavaConfig != null).filter(x -> x).count();
+						uploadUrl != null, sapNetWeaverJavaApplications != null).filter(x -> x).count();
 
 		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
 				"such as a Teamscale instance, upload URL, Azure file storage, or SAP NWDI configuration");
 
-		validator.isTrue(sapNetWeaverJavaConfig == null || sapNetWeaverJavaConfig.hasAllRequiredFieldsSet(),
+		validator.isTrue(sapNetWeaverJavaApplications == null || (sapNetWeaverJavaApplications.hasAllRequiredFieldsSet() && teamscaleServer.hasAllRequiredFieldsSet()),
 				"You provided an SAP NWDI config file, which does not contain all required values.");
 
 		appendTestwiseCoverageValidations(validator);
@@ -317,7 +315,7 @@ public class AgentOptions {
 					additionalMetaDataFiles);
 		}
 
-		if (sapNetWeaverJavaConfig != null && sapNetWeaverJavaConfig.hasAllRequiredFieldsSet()) {
+		if (sapNetWeaverJavaApplications != null && sapNetWeaverJavaApplications.hasAllRequiredFieldsSet()) {
 			logger.info("NWDI configuration detected. The Agent will try and" +
 					" auto-detect commit information by searching all profiled Jar/War/Ear/... files.");
 			return createNwdiTeamscaleUploader(instrumentation);
@@ -357,13 +355,12 @@ public class AgentOptions {
 	}
 
 	private IUploader createNwdiTeamscaleUploader(Instrumentation instrumentation) {
-		DelayedNwdiUploader store = new DelayedNwdiUploader(
+		DelayedSapNwdiMultiUploader store = new DelayedSapNwdiMultiUploader(
 				(commit, application) -> new TeamscaleUploader(
-						teamscaleServer.withProject(application.getTeamscaleProject(),
-								application.getFoundTimestamp())));
-		NwdiManifestLocator locator = new NwdiManifestLocator(store, sapNetWeaverJavaConfig);
+						teamscaleServer.withProject(application.getTeamscaleProject(), commit)));
+		NwdiManifestLocator locator = new NwdiManifestLocator(store, sapNetWeaverJavaApplications);
 		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(locator, getLocationIncludeFilter(),
-				sapNetWeaverJavaConfig.getApplications()));
+				sapNetWeaverJavaApplications.getApplications()));
 		return store;
 	}
 

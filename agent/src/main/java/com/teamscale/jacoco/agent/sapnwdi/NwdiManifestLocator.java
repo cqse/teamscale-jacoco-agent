@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.sapnwdi;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.upload.delay.DelayedNwdiUploader;
+import com.teamscale.jacoco.agent.upload.delay.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import java.util.jar.Manifest;
 
 /**
  * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
- * e.g. to Teamscale, via a {@link DelayedNwdiUploader}. This will only start uploading if a marker class for each
+ * e.g. to Teamscale, via a {@link DelayedSapNwdiMultiUploader}. This will only start uploading if a marker class for each
  * configured application has been loaded.
  */
 public class NwdiManifestLocator {
@@ -29,10 +29,10 @@ public class NwdiManifestLocator {
 
 	private final Logger logger = LoggingUtils.getLogger(getClass());
 
-	private final DelayedNwdiUploader store;
-	private final NwdiConfiguration config;
+	private final DelayedSapNwdiMultiUploader store;
+	private final SapNwdiApplications config;
 
-	public NwdiManifestLocator(DelayedNwdiUploader store, NwdiConfiguration config) {
+	public NwdiManifestLocator(DelayedSapNwdiMultiUploader store, SapNwdiApplications config) {
 		this.store = store;
 		this.config = config;
 	}
@@ -44,7 +44,7 @@ public class NwdiManifestLocator {
 			logger.debug("Found MANIFEST.MF file in {} and found commit descriptor {}", jarFile.toString(),
 					commit);
 
-			for (NwdiConfiguration.NwdiApplication application : config.getApplications()) {
+			for (SapNwdiApplications.NwdiApplication application : config.getApplications()) {
 				if (application.getMarkerClass().equals(markerClass)) {
 					store.setCommitForApplication(commit, application);
 				}

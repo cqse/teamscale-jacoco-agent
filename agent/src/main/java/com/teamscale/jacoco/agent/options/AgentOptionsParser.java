@@ -5,15 +5,12 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.Moshi;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
-import com.teamscale.jacoco.agent.sapnwdi.NwdiConfiguration;
+import com.teamscale.jacoco.agent.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
@@ -26,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -178,8 +174,8 @@ public class AgentOptionsParser {
 				options.classDirectoriesOrZips = ClasspathUtils
 						.resolveClasspathTextFiles(key, filePatternResolver, list);
 				return true;
-			case "nwdi-config-file":
-				readNwdiConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
+			case "sap-nwdi-applications":
+				options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
 				return true;
 			default:
 				return false;
@@ -352,23 +348,6 @@ public class AgentOptionsParser {
 				return true;
 			default:
 				return false;
-		}
-	}
-
-	/**
-	 * Reads an SAP NetWeaver Java configuration from the given JSON file.
-	 */
-	private void readNwdiConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
-		try {
-			JsonAdapter<NwdiConfiguration> jsonAdapter = new Moshi.Builder().build().adapter(NwdiConfiguration.class);
-			String json = FileSystemUtils.readFile(configFile, StandardCharsets.UTF_8);
-			options.sapNetWeaverJavaConfig = jsonAdapter.fromJson(json);
-		} catch (FileNotFoundException e) {
-			throw new AgentOptionParseException(
-					"File " + configFile.getAbsolutePath() + " given for option 'nwdi-config-file' not found", e);
-		} catch (IOException | JsonDataException e) {
-			throw new AgentOptionParseException(
-					"An error occurred while reading the config file " + configFile.getAbsolutePath(), e);
 		}
 	}
 
