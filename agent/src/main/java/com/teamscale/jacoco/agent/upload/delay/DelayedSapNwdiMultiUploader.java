@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 public class DelayedSapNwdiMultiUploader implements IUploader {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
-	private final BiFunction<CommitDescriptor, SapNwdiApplications.NwdiApplication, IUploader> uploaderFactory;
-	private final Map<SapNwdiApplications.NwdiApplication, IUploader> uploaders = new HashMap<>();
+	private final BiFunction<CommitDescriptor, SapNwdiApplications.SapNwdiApplication, IUploader> uploaderFactory;
+	private final Map<SapNwdiApplications.SapNwdiApplication, IUploader> uploaders = new HashMap<>();
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
 	 * class.
 	 */
 	public DelayedSapNwdiMultiUploader(
-			BiFunction<CommitDescriptor, SapNwdiApplications.NwdiApplication, IUploader> uploaderFactory) {
+			BiFunction<CommitDescriptor, SapNwdiApplications.SapNwdiApplication, IUploader> uploaderFactory) {
 		this.uploaderFactory = uploaderFactory;
 		registerShutdownHook();
 	}
@@ -63,7 +63,7 @@ public class DelayedSapNwdiMultiUploader implements IUploader {
 		return "Temporary stand-in until commit is resolved";
 	}
 
-	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplications.NwdiApplication application) {
+	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplications.SapNwdiApplication application) {
 		IUploader uploader = uploaderFactory.apply(commit, application);
 		uploaders.put(application, uploader);
 	}

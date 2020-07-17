@@ -11,6 +11,7 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
@@ -25,15 +26,15 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 	private final Set<String> seenJars = new ConcurrentSkipListSet<>();
 	private final NwdiManifestLocator locator;
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
-	private final Set<String> markerClasses;
+	private final Map<String, SapNwdiApplications.SapNwdiApplication> markerClassesToApplications;
 
 	public NwdiManifestLocatingTransformer(NwdiManifestLocator locator,
 										   ClasspathWildcardIncludeFilter locationIncludeFilter,
-										   Collection<SapNwdiApplications.NwdiApplication> apps) {
+										   Collection<SapNwdiApplications.SapNwdiApplication> apps) {
 		this.locator = locator;
 		this.locationIncludeFilter = locationIncludeFilter;
-		this.markerClasses = apps.stream().map(SapNwdiApplications.NwdiApplication::getMarkerClass)
-				.collect(Collectors.toSet());
+		this.markerClassesToApplications = apps.stream().collect(
+				Collectors.toMap(SapNwdiApplications.SapNwdiApplication::getMarkerClass, application -> application));
 	}
 
 	@Override
@@ -50,7 +51,7 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 			return null;
 		}
 
-		if (!this.markerClasses.contains(className)) {
+		if (!this.markerClassesToApplications.containsKey(className)) {
 			// only kick off search if the marker class was found.
 			return null;
 		}
@@ -71,7 +72,7 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 			if (jarOrClassFolderUrl.getProtocol().toLowerCase().equals("file") &&
 					StringUtils.endsWithOneOf(
 							jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-				locator.searchJarFile(new File(jarOrClassFolderUrl.toURI()), className);
+				locator.searchJarFile(new File(jarOrClassFolderUrl.toURI()), markerClassesToApplications.get(className));
 			}
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is

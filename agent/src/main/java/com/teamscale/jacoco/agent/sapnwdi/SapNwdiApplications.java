@@ -9,9 +9,11 @@ import java.util.Objects;
 /** Container for SAP application definitions. */
 public class SapNwdiApplications {
 
-	private final List<NwdiApplication> applications = new ArrayList<>();
+	/** A list of applications that can potentially be deployed in the SAP NWDI and should be uploaded to Teamscale. */
+	private final List<SapNwdiApplication> applications = new ArrayList<>();
 
-	public List<NwdiApplication> getApplications() {
+	/** @see #applications */
+	public List<SapNwdiApplication> getApplications() {
 		return applications;
 	}
 
@@ -20,14 +22,18 @@ public class SapNwdiApplications {
 		return !applications.isEmpty();
 	}
 
+	/** Parses an application definition string e.g. "com.package.MyClass:projectId,com.company.Main:project". */
 	public static SapNwdiApplications parseApplications(String applications) throws AgentOptionParseException {
 		SapNwdiApplications nwdiConfiguration = new SapNwdiApplications();
 		String[] markerClassAndProjectPairs = applications.split(",");
 		for (String markerClassAndProjectPair : markerClassAndProjectPairs) {
+			if (markerClassAndProjectPair.trim().isEmpty()) {
+				throw new AgentOptionParseException("Application definition is expected not to be empty.");
+			}
 			String[] markerClassAndProject = markerClassAndProjectPair.split(":");
 			if (markerClassAndProject.length != 2) {
 				throw new AgentOptionParseException(
-						"Application definition " + markerClassAndProjectPair + " is expected to contain exactly one colon.");
+						"Application definition " + markerClassAndProjectPair + " is expected to contain a marker class and project separated by a colon.");
 			}
 			String markerClass = markerClassAndProject[0].trim();
 			if (markerClass.isEmpty()) {
@@ -38,26 +44,35 @@ public class SapNwdiApplications {
 				throw new AgentOptionParseException(
 						"Teamscale project is not given for " + markerClassAndProjectPair + "!");
 			}
-			NwdiApplication nwdiApplication = new NwdiApplication(markerClass, teamscaleProject);
+			SapNwdiApplication nwdiApplication = new SapNwdiApplication(markerClass, teamscaleProject);
 			nwdiConfiguration.applications.add(nwdiApplication);
 		}
 		return nwdiConfiguration;
 	}
 
-	public static class NwdiApplication {
+	/**
+	 * An SAP application that is identified by a {@link #markerClass} and refers to a
+	 * corresponding teamscale project.
+	 */
+	public static class SapNwdiApplication {
 
-		private final String markerClass;
-		private final String teamscaleProject;
+		/** A fully qualified class name that is used to match a jar file to this application. */
+		public final String markerClass;
 
-		public NwdiApplication(String markerClass, String teamscaleProject) {
+		/** The teamscale project to which coverage should be uploaded. */
+		public final String teamscaleProject;
+
+		public SapNwdiApplication(String markerClass, String teamscaleProject) {
 			this.markerClass = markerClass;
 			this.teamscaleProject = teamscaleProject;
 		}
 
+		/** @see #markerClass */
 		public String getMarkerClass() {
 			return markerClass;
 		}
 
+		/** @see #teamscaleProject */
 		public String getTeamscaleProject() {
 			return teamscaleProject;
 		}
@@ -70,7 +85,7 @@ public class SapNwdiApplications {
 			if (o == null || getClass() != o.getClass()) {
 				return false;
 			}
-			NwdiApplication that = (NwdiApplication) o;
+			SapNwdiApplication that = (SapNwdiApplication) o;
 			return markerClass.equals(that.markerClass) && teamscaleProject.equals(that.teamscaleProject);
 		}
 

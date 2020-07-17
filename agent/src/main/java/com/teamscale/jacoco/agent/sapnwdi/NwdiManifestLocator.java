@@ -30,26 +30,19 @@ public class NwdiManifestLocator {
 	private final Logger logger = LoggingUtils.getLogger(getClass());
 
 	private final DelayedSapNwdiMultiUploader store;
-	private final SapNwdiApplications config;
 
-	public NwdiManifestLocator(DelayedSapNwdiMultiUploader store, SapNwdiApplications config) {
+	public NwdiManifestLocator(DelayedSapNwdiMultiUploader store) {
 		this.store = store;
-		this.config = config;
 	}
 
-	protected void searchJarFile(File jarFile, String markerClass) {
+	/** Searches the jar file of the given application for a commit timestamp in the jar's manifest. */
+	protected void searchJarFile(File jarFile, SapNwdiApplications.SapNwdiApplication application) {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
 			CommitDescriptor commit = getCommitFromManifest(jarStream, jarFile);
 			logger.debug("Found MANIFEST.MF file in {} and found commit descriptor {}", jarFile.toString(),
 					commit);
-
-			for (SapNwdiApplications.NwdiApplication application : config.getApplications()) {
-				if (application.getMarkerClass().equals(markerClass)) {
-					store.setCommitForApplication(commit, application);
-				}
-			}
-
+			store.setCommitForApplication(commit, application);
 		} catch (IOException | NwdiManifestException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
 		}

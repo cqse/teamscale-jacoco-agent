@@ -70,6 +70,7 @@ public class TeamscaleServer {
 		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at " + at;
 	}
 
+	/** Creates a copy of the {@link TeamscaleServer} configuration, but with the given project and commit set. */
 	public TeamscaleServer withProject(String teamscaleProject, CommitDescriptor commitDescriptor) {
 		TeamscaleServer tsApplication = new TeamscaleServer();
 		tsApplication.url = url;

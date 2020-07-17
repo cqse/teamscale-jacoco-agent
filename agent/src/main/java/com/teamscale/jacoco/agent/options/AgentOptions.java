@@ -358,7 +358,7 @@ public class AgentOptions {
 		DelayedSapNwdiMultiUploader store = new DelayedSapNwdiMultiUploader(
 				(commit, application) -> new TeamscaleUploader(
 						teamscaleServer.withProject(application.getTeamscaleProject(), commit)));
-		NwdiManifestLocator locator = new NwdiManifestLocator(store, sapNetWeaverJavaApplications);
+		NwdiManifestLocator locator = new NwdiManifestLocator(store);
 		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(locator, getLocationIncludeFilter(),
 				sapNetWeaverJavaApplications.getApplications()));
 		return store;

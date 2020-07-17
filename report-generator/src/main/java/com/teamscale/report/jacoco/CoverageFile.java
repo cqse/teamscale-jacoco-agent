@@ -25,6 +25,10 @@ public class CoverageFile {
 		this.coverageFile = coverageFile;
 	}
 
+	/**
+	 * Marks the file as being used by an additional uploader. This ensures that the file is not deleted until all users
+	 * have signed via {@link #delete()} that they no longer intend to access the file.
+	 */
 	public CoverageFile acquireReference() {
 		referenceCounter++;
 		return this;
