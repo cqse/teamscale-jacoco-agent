@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.upload.delay;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -16,29 +15,29 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * Wraps an {@link IUploader} and in order to delay upload until a {@link CommitDescriptor} is asynchronously made
- * available.
+ * Wraps an {@link IUploader} and in order to delay upload until a all information describing a commit is
+ * asynchronously made available.
  */
-public class DelayedCommitDescriptorUploader implements IUploader {
+public class DelayedUploader<T> implements IUploader {
 
 	private final Executor executor;
 	private final Logger logger = LoggingUtils.getLogger(this);
-	private final Function<String, IUploader> wrappedUploaderFactory;
+	private final Function<T, IUploader> wrappedUploaderFactory;
 	private IUploader wrappedUploader = null;
 	private final Path cacheDir;
 
-	public DelayedCommitDescriptorUploader(Function<String, IUploader> wrappedUploaderFactory,
-										   Path cacheDir) {
+	public DelayedUploader(Function<T, IUploader> wrappedUploaderFactory,
+						   Path cacheDir) {
 		this(wrappedUploaderFactory, cacheDir, Executors.newSingleThreadExecutor(
-				new DaemonThreadFactory(DelayedCommitDescriptorUploader.class, "Delayed cache upload thread")));
+				new DaemonThreadFactory(DelayedUploader.class, "Delayed cache upload thread")));
 	}
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
 	 * class.
 	 */
-	/*package*/ DelayedCommitDescriptorUploader(Function<String, IUploader> wrappedUploaderFactory,
-												Path cacheDir, Executor executor) {
+	/*package*/ DelayedUploader(Function<T, IUploader> wrappedUploaderFactory,
+								Path cacheDir, Executor executor) {
 		this.wrappedUploaderFactory = wrappedUploaderFactory;
 		this.cacheDir = cacheDir;
 		this.executor = executor;
@@ -83,20 +82,24 @@ public class DelayedCommitDescriptorUploader implements IUploader {
 	 * Sets the commit to upload the XMLs to and asynchronously triggers the upload of all cached XMLs. This method
 	 * should only be called once.
 	 */
-	public synchronized void setCommitAndTriggerAsynchronousUpload(String revision) {
+	public synchronized void setCommitAndTriggerAsynchronousUpload(T information) {
 		if (wrappedUploader == null) {
-			wrappedUploader = wrappedUploaderFactory.apply(revision);
-			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", revision,
+			wrappedUploader = wrappedUploaderFactory.apply(information);
+			logger.info("Commit to upload to has been found: {}. Uploading any cached XMLs now to {}", information,
 					wrappedUploader.describe());
 			executor.execute(this::uploadCachedXmls);
 		} else {
 			logger.error("Tried to set upload commit multiple times (old uploader: {}, new commit: {})." +
-					" This is a programming error. Please report a bug.", wrappedUploader.describe(), revision);
+					" This is a programming error. Please report a bug.", wrappedUploader.describe(), information);
 		}
 	}
 
 	private void uploadCachedXmls() {
 		try {
+			if (!Files.isDirectory(cacheDir)) {
+				// Found data before XML was dumped
+				return;
+			}
 			Stream<Path> xmlFilesStream = Files.list(cacheDir).filter(path -> {
 				String fileName = path.getFileName().toString();
 				return fileName.startsWith("jacoco-") && fileName.endsWith(".xml");

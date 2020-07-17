@@ -2,8 +2,6 @@ package com.teamscale.jacoco.agent.sapnwdi;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.git_properties.AysncInfoFileLocator;
-import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedNwdiUploader;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.BashFileSkippingInputStream;
@@ -12,12 +10,9 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Properties;
-import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 

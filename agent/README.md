@@ -153,6 +153,18 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
+ - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
+    The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
+ - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
+ - `artifactory-password` (required for artifactory): The password of the user.
+ - `artifactory-zip-path` (optional): The path within the stored ZIP file where the reports are stored.
+    Default is to store at root level.
+    This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options. 
+ - `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
+    If not specified, Git commit information is extracted from the first found `git.properties` file.
+    See `teamscale-git-properties-jar` for details. 
+ - `artifactory-git-properties-commit-date-format` (optional):
+    The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 
 ## Options for testwise mode
 
@@ -455,147 +467,7 @@ information.
 
 # Docker
 
-The agent is available as a Docker image if you would like to profile an application that is running inside a
-Docker image.
-
-You'll need this image in addition to your application's image:
-
-- Teamscale JaCoCo agent: [cqse/teamscale-jacoco-agent](https://hub.docker.com/r/cqse/teamscale-jacoco-agent/)
-
-The agent image has the same versioning scheme as the agent itself: `AGENTVERSION-jacoco-JACOCOVERSION`.
-There is no `latest` tag.
-
-## Prepare your application
-
-### Ensuring that coverage is being written on shut-down
-If you rely on coverage being written when the container is shut down (see `dump-on-exit` option which is true by default), you need 
-to make sure that the java process is stopped correctly, otherwise the coverage since the last dump is lost!  
-Docker only sends the SIGTERM signal to the process with PID 1 (the root/entrypoint process for docker)
-
-Ensuring the proper shut-down with docker can be done in two ways, depending on your setup.
-
-#### Start the java process with CMD or ENTRYPOINT 
-**IMPORTANT**: If you use environment variables for the java command, for example `$JAVA_OPTS`, you need to do it without the brackets and use the [`exec`](https://www.computerhope.com/unix/bash/exec.htm) command:
-- `ENTRYPOINT exec java ... $JAVA_OPTS`
-- `CMD exec java ... $JAVA_OPTS` 
-
-This will start the java process inside of a shell (which will resolve the enviroment variables) and then the exec command will hand the shell process with its PID 1 to the java process.
-Using the brackets will execute the command directly without starting a shell, see the [docker documentation](https://docs.docker.com/engine/reference/builder/#entrypoint) for more details,
-as well as [this StackOverflow answer][so-java-exec-answer].  
-**NOTE**: If this is not working with `CMD` or if you are generally interested in the difference between `CMD` and `ENTRYPOINT` see [this StackOverflow answer](https://stackoverflow.com/a/39408777).
-
-
-Otherwise you can simply configure the Dockerfile to start the java process with either CMD or ENTRYPOINT as follows:
-- `CMD ["java", ...]`
-- `ENTRYPOINT ["java", ...]`
-
-
-#### Start the java process inside of a ENTRYPOINT script 
-If the java process is the last call in your script, then you can simply use `exec`.
-This will give the java process the PID 1.
-```bash
-# !/bin/sh
-# Preparations ...
-exec java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar
-```
-
-##### More complex
-If you have an entrypoint script for your Docker container which does more than a few preparations and then starting the java application,
-you can push the java application into the background and wait for it to finish, trap any shut-down signal and
-pass them the java process.
-
-Here is an example script how such an entrypoint.sh might look like. For more in-depth information take a look at [this article][signal-trapping]
-
-```bash
-#!/bin/sh                                                                                           
-
-# Forward SIGTERM                                                                                   
-_term() {
-  echo "Forward SIGTERM to $pid"
-  kill -TERM "$pid"
-  wait $pid
-}
-
-# Forward SIGINT
-_int() {
-  echo "Forward SIGINT to $pid"
-  kill -INT "$pid"
-  wait $pid
-}
-
-# Capture SIGTERM and SIGINT so we can forward them to the java application                                 
-trap _term TERM                                                                                     
-trap _int INT                                                                                       
-
-# Push java in the background with '&' at the end 
-java -javaagent:/agent/teamscale-jacoco-agent.jar=config-file=/agent/jacoco.conf -jar /app/app.jar & 
-pid=$! # Get the PID of the most recent background command
-
-# Here: Code which should be executed after the java-app has started
-# Be careful with long running commands here because if this script receives a signal while other 
-# non-background commands are running it will not trap any signals until those commands are done. 
-# It will simply wait for them to finish and in case of docker it will send a SIGKILL after 
-# a 10 second time-out which will end everything directly and any coverage will be lost.
-
-wait $pid # At some point we need to wait for the java process before the script ends
-wait $pid # Second wait necessary because the first wait will exit before the trapping of the signals
-
-# Here: Code which should be executed after the java-app is finished or has been terminated
-```
-
-**IMPORTANT**: Stopping a docker container has a 10 sec default timeout. After this time, the container will receive a SIGKILL which will end the container no matter what.
-This Signal cannot be trapped and will terminate every process immediately. It might take longer then 10 seconds to dump, write and send the coverage.
-
-### Setting the JVM options
-Next, make sure your Java process can somehow pick up the Java agent VM parameters, e.g.
-via `JAVA_TOOL_OPTIONS`. If your docker images starts the Java process directly, this should
-work out of the box. If you are using an application container (e.g. Tomcat), you'll have
-to check how to pass these options to your application's VM.
-
-## Compose the images
-
-Here are a examples Docker Compose file that instruments an application:
-
-For docker-compose version 2:
-
-	version: '2.0'
-	services:
-	  app:
-		build: ./app
-		environment:
-		  JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
-		expose:
-		  - '9876'
-		volumes_from:
-		  - service:agent:ro
-	  agent:
-		image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
-
-For docker-compose version 3:
-```
-  version: '3'
-  services:
-    app:
-      build: ./app
-      environment:
-        JAVA_TOOL_OPTIONS: -javaagent:/agent/teamscale-jacoco-agent.jar=AGENTOPTIONS
-      expose:
-        - '9876'
-      volumes:
-        - agent-jar:/agent:ro
-    agent:
-      image: cqse/teamscale-jacoco-agent:5.0.0-jacoco-0.7.9
-      volumes:
-        - agent-jar:/agent:ro
-
-  volumes:
-    - agent-jar:
-```
-This configures your application and the agent image:
-
-- your application mounts the volumes from the agent image, which contains the profiler binaries
-- your application enables the profiler via `JAVA_TOOL_OPTIONS`. `AGENTOPTIONS` are the agent options as
-  discussed in this guide's section on the agent above
+If you'd like to set up the agent for Docker, please refer to [our guide on Java with Docker profiling](https://docs.teamscale.com/howto/recording-test-coverage-for-java-with-docker)
 
 # One-time conversion of .exec files to .xml
 
@@ -647,6 +519,10 @@ Set an appropriate logback logging configuration XML. See the agent options desc
 ## How to see which files/folders are filtered due to the `includes` and `excludes` parameters
 
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
+
+## Error: "The application was shut down before a commit could be found", despite including a git.properties file in your jar/war/...
+When using  application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which results in an "The application was shut down before a commit could be found" error.
+To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
 
 
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306

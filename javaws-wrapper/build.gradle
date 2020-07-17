@@ -1,22 +1,16 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 plugins {
+	id 'com.teamscale.java-convention'
 	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
 	id 'java'
 	id 'application'
-	id 'com.github.johnrengelman.shadow' version '4.0.3'
-    id 'jacoco'
+	id 'com.github.johnrengelman.shadow'
+	id 'com.teamscale.coverage'
 }
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-    }
-}
-tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
-	implementation 'org.conqat:org.conqat.lib.commons:0.20190410'
+	implementation 'com.teamscale:teamscale-lib-commons:6.0.1'
 	implementation 'org.apache.commons:commons-lang3:3.8.1'
 	implementation 'org.apache.commons:commons-exec:1.3'
 }

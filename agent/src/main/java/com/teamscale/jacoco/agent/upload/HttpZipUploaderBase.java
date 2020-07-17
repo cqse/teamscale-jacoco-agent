@@ -5,6 +5,7 @@ import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
@@ -32,20 +33,33 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	/** Additional files to include in the uploaded zip. */
 	protected final List<Path> additionalMetaDataFiles;
 
+	/** The API class. */
+	private final Class<T> apiClass;
+
 	/** The API which performs the upload */
-	protected final T api;
+	private T api;
 
 	/** Constructor. */
-	public HttpZipUploaderBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles) {
+	public HttpZipUploaderBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles, Class<T> apiClass) {
 		this.uploadUrl = uploadUrl;
 		this.additionalMetaDataFiles = additionalMetaDataFiles;
+		this.apiClass = apiClass;
+	}
 
-		Retrofit retrofit = HttpUtils.createRetrofit(retrofitBuilder -> retrofitBuilder.baseUrl(uploadUrl));
-		api = getApi(retrofit);
+	/** Template method to configure the OkHttp Client. */
+	protected void configureOkHttp(OkHttpClient.Builder builder) {
 	}
 
 	/** Returns the API for creating request to the http uploader */
-	protected abstract T getApi(Retrofit retrofit);
+	protected T getApi() {
+		if (api == null) {
+			Retrofit retrofit = HttpUtils
+					.createRetrofit(retrofitBuilder -> retrofitBuilder.baseUrl(uploadUrl), this::configureOkHttp);
+			api = retrofit.create(apiClass);
+		}
+
+		return api;
+	}
 
 	/** Uploads the coverage zip to the server */
 	protected abstract Response<ResponseBody> uploadCoverageZip(
@@ -122,12 +136,16 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	 */
 	private void fillZipFile(ZipOutputStream zipOutputStream, CoverageFile coverageFile)
 			throws IOException {
-		zipOutputStream.putNextEntry(new ZipEntry("coverage.xml"));
+		zipOutputStream.putNextEntry(new ZipEntry(getZipEntryCoverageFileName(coverageFile)));
 		coverageFile.copy(zipOutputStream);
 
 		for (Path additionalFile : additionalMetaDataFiles) {
 			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));
 			zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()));
 		}
+	}
+
+	protected String getZipEntryCoverageFileName(CoverageFile coverageFile) {
+		return "coverage.xml";
 	}
 }
