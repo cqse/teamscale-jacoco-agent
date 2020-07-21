@@ -70,7 +70,7 @@ public class AgentOptions {
 	 * The default excludes applied to JaCoCo. These are packages that should never be profiled. Excluding them makes
 	 * debugging traces easier and reduces trace size and warnings about unmatched classes in Teamscale.
 	 */
-	public static final String DEFAULT_EXCLUDES = "shadow.**";
+	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
