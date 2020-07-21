@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,14 @@ public class AgentOptionsParserTest {
 	@Test
 	public void notGivingAnyOptionsShouldBeOK() throws Exception {
 		parser.parse("");
+		parser.parse(null);
+	}
+
+	@Test
+	public void mustPreserveDefaultExcludes() throws Exception {
+		Assertions.assertThat(parser.parse("").jacocoExcludes).isEqualTo(AgentOptions.DEFAULT_EXCLUDES);
+		Assertions.assertThat(parser.parse("excludes=**foo**").jacocoExcludes)
+				.isEqualTo("**foo**:" + AgentOptions.DEFAULT_EXCLUDES);
 		parser.parse(null);
 	}
 

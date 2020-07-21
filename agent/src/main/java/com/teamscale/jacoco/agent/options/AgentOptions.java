@@ -47,6 +47,7 @@ import java.util.stream.Stream;
  * Parses agent command line options.
  */
 public class AgentOptions {
+
 	/**
 	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
 	 */
@@ -64,6 +65,12 @@ public class AgentOptions {
 
 	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
 	public static final String TEAMSCALE_GIT_PROPERTIES_JAR_OPTION = "teamscale-git-properties-jar";
+
+	/**
+	 * The default excludes applied to JaCoCo. These are packages that should never be profiled. Excluding them makes
+	 * debugging traces easier and reduces trace size and warnings about unmatched classes in Teamscale.
+	 */
+	public static final String DEFAULT_EXCLUDES = "shadow.**";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
@@ -131,7 +138,7 @@ public class AgentOptions {
 	 * Exclude patterns for fully qualified class names to pass on to JaCoCo. See {@link WildcardMatcher} for the
 	 * pattern syntax. Individual patterns must be separated by ":".
 	 */
-	/* package */ String jacocoExcludes = null;
+	/* package */ String jacocoExcludes = DEFAULT_EXCLUDES;
 
 	/**
 	 * Additional user-provided options to pass to JaCoCo.

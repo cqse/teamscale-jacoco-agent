@@ -166,7 +166,7 @@ public class AgentOptionsParser {
 				options.jacocoIncludes = value.replaceAll(";", ":");
 				return true;
 			case "excludes":
-				options.jacocoExcludes = value.replaceAll(";", ":");
+				options.jacocoExcludes = value.replaceAll(";", ":") + ":" + AgentOptions.DEFAULT_EXCLUDES;
 				return true;
 			case "class-dir":
 				List<String> list = splitMultiOptionValue(value);
