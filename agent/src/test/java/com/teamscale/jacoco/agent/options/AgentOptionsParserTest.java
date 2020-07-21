@@ -24,7 +24,6 @@ public class AgentOptionsParserTest {
 		Assertions.assertThat(parser.parse("").jacocoExcludes).isEqualTo(AgentOptions.DEFAULT_EXCLUDES);
 		Assertions.assertThat(parser.parse("excludes=**foo**").jacocoExcludes)
 				.isEqualTo("**foo**:" + AgentOptions.DEFAULT_EXCLUDES);
-		parser.parse(null);
 	}
 
 	/**
