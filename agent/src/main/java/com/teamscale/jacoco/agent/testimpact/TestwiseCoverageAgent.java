@@ -18,6 +18,7 @@ import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -25,7 +26,6 @@ import spark.Service;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -116,7 +116,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		}
 
 		String bodyString = request.body();
-		List<ClusteredTestDetails> availableTests = Collections.emptyList();
+		List<ClusteredTestDetails> availableTests = null;
 		if (!StringUtils.isEmpty(bodyString)) {
 			try {
 				availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
@@ -127,8 +127,11 @@ public class TestwiseCoverageAgent extends AgentBase {
 			}
 		}
 
-		if (availableTests == null) {
-			availableTests = Collections.emptyList();
+		if (CollectionUtils.isNullOrEmpty(availableTests)) {
+			// the TIA service will reject requests with an empty test list as there is nothing to prioritize.
+			// the more sensible thing to do is to send no test list, in which case the service will simply prioritize
+			// all tests currently known to Teamscale. This is a sensible fallback behaviour
+			availableTests = null;
 		}
 
 		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);

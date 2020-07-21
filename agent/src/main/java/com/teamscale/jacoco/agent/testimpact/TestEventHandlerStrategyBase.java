@@ -87,8 +87,12 @@ public abstract class TestEventHandlerStrategyBase {
 	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
 							   Long baseline) throws IOException {
+		int availableTestCount = 0;
+		if (availableTests != null) {
+			availableTestCount = availableTests.size();
+		}
 		logger.debug("Test run started with {} available tests. baseline = {}, includeNonImpactedTests = {}",
-				availableTests.size(), baseline, includeNonImpactedTests);
+				availableTestCount, baseline, includeNonImpactedTests);
 		if (teamscaleClient == null) {
 			throw new UnsupportedOperationException("You did not configure a connection to Teamscale in the agent." +
 					" Thus, you cannot use the agent to retrieve impacted tests via the testrun/start REST endpoint." +

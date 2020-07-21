@@ -34,6 +34,10 @@ public class TiaAgent {
 	 * considers all changes since the last time that test-wise coverage was uploaded. In most situations this is the
 	 * intended behaviour.
 	 *
+	 * @param availableTests A list of all available tests. This is used to determine, which tests need to be run e.g.
+	 *                       because they are completely new or changed since the last run. If you provide an empty
+	 *                       list, Teamscale will simply prioritize all tests it currently knows about and assume these
+	 *                       are unchanged.
 	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
 	 *                                         occurs. This method already retries the request once, so this is likely a
 	 *                                         terminal failure. You should simply fall back to running all tests in
