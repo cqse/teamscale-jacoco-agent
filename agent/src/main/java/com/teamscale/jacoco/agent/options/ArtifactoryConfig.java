@@ -1,12 +1,9 @@
-package com.teamscale.jacoco.agent.upload.artifactory;
+package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.options.AgentOptionsParser;
-import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.Pair;
 
