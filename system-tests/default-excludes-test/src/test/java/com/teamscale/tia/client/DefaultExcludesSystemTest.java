@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DefaultExcludesSystemTest {
 
 	private interface AgentService {
+		/** Dumps coverage */
 		@POST("/dump")
 		Call<Void> dump();
 	}
