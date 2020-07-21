@@ -30,7 +30,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 import static java.util.stream.Collectors.joining;
-import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -354,7 +353,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given value as a URL.
 	 */
-	private static HttpUrl parseUrl(String key, String value) throws AgentOptionParseException {
+	public static HttpUrl parseUrl(String key, String value) throws AgentOptionParseException {
 		// default to HTTP if no scheme is given
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			value = "http://" + value;

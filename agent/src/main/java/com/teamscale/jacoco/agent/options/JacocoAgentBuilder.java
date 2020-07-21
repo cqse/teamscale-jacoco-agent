@@ -41,7 +41,7 @@ public class JacocoAgentBuilder {
 		}
 
 		// Don't dump class files in testwise mode when coverage is written to an exec file
-		boolean needsClassFiles = agentOptions.mode == EMode.NORMAL || agentOptions.testWiseCoverageMode != ETestWiseCoverageMode.EXEC_FILE;
+		boolean needsClassFiles = agentOptions.mode == EMode.NORMAL || agentOptions.testwiseCoverageMode != ETestwiseCoverageMode.EXEC_FILE;
 		if (agentOptions.classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
@@ -99,11 +99,11 @@ public class JacocoAgentBuilder {
 
 	/**
 	 * Returns additional options for JaCoCo depending on the selected {@link AgentOptions#mode} and {@link
-	 * AgentOptions#testWiseCoverageMode}.
+	 * AgentOptions#testwiseCoverageMode}.
 	 */
 	String getModeSpecificOptions() {
 		if (agentOptions
-				.useTestwiseCoverageMode() && agentOptions.testWiseCoverageMode == ETestWiseCoverageMode.EXEC_FILE) {
+				.useTestwiseCoverageMode() && agentOptions.testwiseCoverageMode == ETestwiseCoverageMode.EXEC_FILE) {
 			String sessionId = "";
 			if (agentOptions.testEnvironmentVariable != null) {
 				sessionId = System.getenv(agentOptions.testEnvironmentVariable);

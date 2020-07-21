@@ -48,10 +48,7 @@ public class ArtifactoryConfig {
 			throws AgentOptionParseException {
 		switch (key) {
 			case "artifactory-url":
-				options.url = AgentOptionsParser.parseUrl(value);
-				if (options.url == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'artifactory-url'");
-				}
+				options.url = AgentOptionsParser.parseUrl(key, value);
 				return true;
 			case "artifactory-user":
 				options.user = value;
