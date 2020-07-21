@@ -1,6 +1,8 @@
 package com.teamscale.client;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -130,5 +133,17 @@ public class HttpUtils {
 		return errorBody.string();
 	}
 
+	/**
+	 * Returns an interceptor, which adds a basic auth header to a request.
+	 */
+	public static Interceptor getBasicAuthInterceptor(String username, String password) {
+		String credentials = username + ":" + password;
+		String basic = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+
+		return chain -> {
+			Request newRequest = chain.request().newBuilder().header("Authorization", basic).build();
+			return chain.proceed(newRequest);
+		};
+	}
 
 }

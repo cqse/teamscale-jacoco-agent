@@ -1,6 +1,6 @@
 branch=master
 eclipse.preferences.version=1
-prefixMappings=<list>\n  <com.teamscale.ide.client.PrefixMapping>\n    <projectId>cqse-jacoco-profiler</projectId>\n    <localPrefix></localPrefix>\n    <teamscalePrefix></teamscalePrefix>\n  </com.teamscale.ide.client.PrefixMapping>\n</list>
+prefixMappings=<list>\n  <com.teamscale.ide.client.PrefixMapping>\n    <projectId>teamscale-jacoco-agent</projectId>\n    <localPrefix></localPrefix>\n    <teamscalePrefix></teamscalePrefix>\n  </com.teamscale.ide.client.PrefixMapping>\n</list>
 teamscaleEnabled=true
-teamscaleProject=cqse-jacoco-profiler
+teamscaleProject=teamscale-jacoco-agent
 teamscaleServer=CQSE-BUILD

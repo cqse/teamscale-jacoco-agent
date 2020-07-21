@@ -4,6 +4,7 @@ import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
+import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
@@ -87,9 +88,11 @@ public abstract class AgentBase {
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 
 		logger.info("Starting JaCoCo's agent");
-		org.jacoco.agent.rt.internal_43f5073.PreMain.premain(agentOptions.createJacocoAgentOptions(), instrumentation);
+		JacocoAgentBuilder agentBuilder = new JacocoAgentBuilder(agentOptions);
+		org.jacoco.agent.rt.internal_43f5073.PreMain
+				.premain(agentBuilder.createJacocoAgentOptions(), instrumentation);
 
-		AgentBase agent = agentOptions.createAgent(instrumentation);
+		AgentBase agent = agentBuilder.createAgent(instrumentation);
 		agent.registerShutdownHook();
 	}
 

@@ -153,6 +153,18 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
+ - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
+    The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
+ - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
+ - `artifactory-password` (required for artifactory): The password of the user.
+ - `artifactory-zip-path` (optional): The path within the stored ZIP file where the reports are stored.
+    Default is to store at root level.
+    This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options. 
+ - `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
+    If not specified, Git commit information is extracted from the first found `git.properties` file.
+    See `teamscale-git-properties-jar` for details. 
+ - `artifactory-git-properties-commit-date-format` (optional):
+    The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 
 ## Options for testwise mode
 

@@ -5,10 +5,15 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
-- [breaking change] default for `--interval` changed from 60 to 480 minutes
-- [fix] Docker image did not react to SIGTERM
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
 - [breaking change] _tia-client_: changed Java API
+
+# 17.0.0
+- [breaking change] default for `--interval` changed from 60 to 480 minutes
+- [feature] Support for uploading XML reports to artifactory
+- [fix] Docker image did not react to SIGTERM
+- [feature] All artifacts are now also available on Maven Central
+- [fix] `test-env` option was ignored
 
 # 16.0.1
 - [fix] revision is ignored during validation for automatic upload to Teamscale

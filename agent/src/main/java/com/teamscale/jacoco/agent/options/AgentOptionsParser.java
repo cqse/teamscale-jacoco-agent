@@ -10,6 +10,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
@@ -29,6 +30,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 import static java.util.stream.Collectors.joining;
+import okhttp3.HttpUrl;
 
 /**
  * Parses agent command line options.
@@ -103,6 +105,9 @@ public class AgentOptionsParser {
 			return;
 		}
 		if (handleTiaOptions(options, key, value)) {
+			return;
+		} else if (key.startsWith("artifactory-") && ArtifactoryConfig
+				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
 			return;
 		}
 		if (handleAzureFileStorageOptions(options, key, value)) {
@@ -245,7 +250,7 @@ public class AgentOptionsParser {
 						filePatternResolver.parsePath(key, value).toFile());
 				return true;
 			case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
-				options.teamscaleServer.revision = parseGitProperties(key, value);
+				options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
 				return true;
 			case "teamscale-message":
 				options.teamscaleServer.message = value;
@@ -277,14 +282,14 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private String parseGitProperties(String key, String value) throws AgentOptionParseException {
-		File jarFile = filePatternResolver.parsePath(key, value).toFile();
+	private String getRevisionFromGitProperties(String optionName, String value) throws AgentOptionParseException {
+		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			String commit = GitPropertiesLocator.getCommitFromGitProperties(jarFile);
-			if (commit == null) {
+			String revision = GitPropertiesLocator.getRevisionFromGitProperties(jarFile);
+			if (revision == null) {
 				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
 			}
-			return commit;
+			return revision;
 		} catch (IOException | InvalidGitPropertiesException e) {
 			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
 					e);

@@ -1,39 +1,17 @@
 plugins {
+    id 'com.teamscale.java-convention'
     id 'java-library'
-    id 'maven'
-    id 'jacoco'
+    id 'com.teamscale.coverage'
+    id 'com.teamscale.publish'
 }
 
-version teamscaleClientVersion
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-    }
+publishAs {
+    readableName = "Teamscale Upload Client"
+    description = "A tiny service client that only supports Teamscale's the external upload interface and impacted-tests service."
 }
-tasks.test.finalizedBy(jacocoTestReport)
 
 dependencies {
     api 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'org.slf4j:slf4j-api:1.7.26'
-
     implementation 'com.squareup.retrofit2:converter-moshi:2.5.0'
-
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.assertj:assertj-core:3.8.0'
-    testImplementation 'org.mockito:mockito-core:2.19.0'
-}
-
-// At the moment we are stuck with the old maven plugin until support for private key
-// files is added or we add a dedicated user with a password to our server.
-// https://github.com/gradle/gradle/issues/1263
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            configuration = configurations.deployerJars
-            repository(url: cqseMavenRepositoryUrl) {
-                authentication(userName: cqseMavenRepositoryUser, privateKey: cqseMavenRepositoryPrivateKey)
-            }
-        }
-    }
 }

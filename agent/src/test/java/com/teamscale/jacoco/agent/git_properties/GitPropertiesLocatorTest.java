@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.git_properties;
 
+import org.conqat.lib.commons.collections.Pair;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -20,9 +21,13 @@ public class GitPropertiesLocatorTest {
 	public void testReadingGitPropertiesFromArchive() throws Exception {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(getClass().getResourceAsStream(archiveName));
-			String commit = GitPropertiesLocator
-					.getCommitFromGitProperties(jarInputStream, new File("test.jar"));
-			assertThat(commit).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
+			Pair<String, Properties> commit = GitPropertiesLocator
+					.findGitPropertiesInJar(jarInputStream);
+			assertThat(commit).isNotNull();
+			String rev = GitPropertiesLocator
+					.getGitPropertiesValue(commit.getSecond(), GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_ID, "test",
+							new File("test.jar"));
+			assertThat(rev).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
 		}
 	}
 
@@ -32,7 +37,7 @@ public class GitPropertiesLocatorTest {
 		gitProperties.put("git.commit.time", "123ab");
 		gitProperties.put("git.branch", "master");
 		assertThatThrownBy(
-				() -> GitPropertiesLocator.parseGitPropertiesJarEntry("test", gitProperties, new File("test.jar")))
+				() -> GitPropertiesLocator.getGitPropertiesValue(gitProperties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_ID, "test", new File("test.jar")))
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
 

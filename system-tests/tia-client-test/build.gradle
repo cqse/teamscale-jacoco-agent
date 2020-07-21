@@ -1,19 +1,10 @@
 plugins {
-    id 'java'
+    id 'com.teamscale.java-convention'
     // we do not enable code coverage recording for the system tests as we already need our agent attached
     // it would conflict with JaCoCo's
 }
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
 test {
-    testLogging.exceptionFormat "full"
-    useJUnitPlatform()
-
     /** These ports must match what is configured in the SystemTest class. */
     def fakeTeamscalePort = 65432
     def agentPort = 65433

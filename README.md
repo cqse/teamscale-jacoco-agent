@@ -26,7 +26,7 @@ If you get an `IllegalStateException: Cannot process instrumented class com/exam
 ### Debugging the Gradle plugin
 
 * increase the plugin version in `build.gradle` and in `BuildVersion.kt`
-* `./gradlew iGP` will deploy your checked out version to your local m2 cache
+* `./gradlew publishToMavenLocal` will deploy your checked out version to your local m2 cache
 * then you can import this version into any other gradle project by
   * replacing the `share.cqse.eu` repository with the `mavenLocal()` repository in the `buildscript` section of the project's `build.gradle`
   * adding `repositories { mavenLocal(); mavenCentral() }` to the body of the `build.gradle`
@@ -35,7 +35,7 @@ If you get an `IllegalStateException: Cannot process instrumented class com/exam
   The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
 * to debug the impacted test engine during a build, run `./gradlew` with `--no-daemon --debug-jvm` and wait for the test phase to start.
   The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
-* These two debug flags can also be combined. The build will then pause twice
+* These two debug flags can also be combined. The build will then pause twice.
 
 ### Contributing
 
@@ -49,11 +49,10 @@ When master has accumulated changes you want to release, please perform the foll
 
 - update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g. `v8.1.0`
 - update the [build.gradle](build.gradle)'s `appVersion` accordingly
-- if you want to release a new version of the Gradle plugin:
-    - update `BuildVersion.kt`
-    - run `./gradlew deployGradlePlugin`
 - commit and push your changes
-- create a GitHub Release tag with the same version number and the text from the changleog.
+- create a GitHub Release tag with the same version number and the text from the changelog.
+- After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository.
+  The credential are stored in the `teamscale.kdbx` keystore.
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
 
@@ -64,6 +63,6 @@ Only use GitHub releases in production. This ensures that we always know which c
 ### Compiling for a different JaCoCo version
 
 * change `ext.jacocoVersion` in the build script
-* `gradlew dist`
+* `./gradlew dist`
 * **Do not commit unless you are upgrading to a newer version!**
 
