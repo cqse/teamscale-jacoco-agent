@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] always exclude common libraries from profiling to shrink coverage files
 
 # 17.0.0
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
