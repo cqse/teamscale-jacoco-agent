@@ -160,9 +160,9 @@ public class AgentOptions {
 	/* package */ Integer httpServerPort = null;
 
 	/**
-	 * How test-wise coverage should be handled in test-wise mode.
+	 * How testwise coverage should be handled in test-wise mode.
 	 */
-	/* package */ ETestWiseCoverageMode testWiseCoverageMode = ETestWiseCoverageMode.EXEC_FILE;
+	/* package */ ETestwiseCoverageMode testwiseCoverageMode = ETestwiseCoverageMode.EXEC_FILE;
 
 
 	/**
@@ -248,7 +248,7 @@ public class AgentOptions {
 		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
 				"incompatible with Testwise coverage mode!");
 
-		validator.isFalse(testWiseCoverageMode == ETestWiseCoverageMode.TEAMSCALE_UPLOAD
+		validator.isFalse(testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.hasAllRequiredFieldsSet(),
 				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
@@ -270,7 +270,7 @@ public class AgentOptions {
 		}
 
 		// Don't dump class files in testwise mode when coverage is written to an exec file
-		boolean needsClassFiles = mode == EMode.NORMAL || testWiseCoverageMode != ETestWiseCoverageMode.EXEC_FILE;
+		boolean needsClassFiles = mode == EMode.NORMAL || testwiseCoverageMode != ETestwiseCoverageMode.EXEC_FILE;
 		if (classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
@@ -309,10 +309,10 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Returns additional options for JaCoCo depending on the selected {@link #mode} and {@link #testWiseCoverageMode}.
+	 * Returns additional options for JaCoCo depending on the selected {@link #mode} and {@link #testwiseCoverageMode}.
 	 */
 	private String getModeSpecificOptions() {
-		if (useTestwiseCoverageMode() && testWiseCoverageMode == ETestWiseCoverageMode.EXEC_FILE) {
+		if (useTestwiseCoverageMode() && testwiseCoverageMode == ETestwiseCoverageMode.EXEC_FILE) {
 			// when writing to a .exec file, we can instruct JaCoCo to do so directly
 			return "sessionid=,destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
 		} else {
@@ -482,9 +482,9 @@ public class AgentOptions {
 		return shouldDumpOnExit;
 	}
 
-	/** @see AgentOptions#testWiseCoverageMode */
-	public ETestWiseCoverageMode getTestWiseCoverageMode() {
-		return testWiseCoverageMode;
+	/** @see AgentOptions#testwiseCoverageMode */
+	public ETestwiseCoverageMode getTestwiseCoverageMode() {
+		return testwiseCoverageMode;
 	}
 
 	/** @see #ignoreUncoveredClasses */

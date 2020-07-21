@@ -267,7 +267,7 @@ public class AgentOptionsParser {
 									 String value) throws AgentOptionParseException {
 		switch (key) {
 			case "tia-mode":
-				options.testWiseCoverageMode = parseEnumValue(key, value, ETestWiseCoverageMode.class);
+				options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
 				return true;
 			case "test-env":
 				options.testEnvironmentVariable = value;

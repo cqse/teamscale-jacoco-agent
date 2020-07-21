@@ -8,7 +8,7 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.options.ETestWiseCoverageMode;
+import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
@@ -144,7 +144,7 @@ public class TestwiseCoverageAgentTest {
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 		when(options.getHttpServerPort()).thenReturn(port);
-		when(options.getTestWiseCoverageMode()).thenReturn(ETestWiseCoverageMode.TEAMSCALE_UPLOAD);
+		when(options.getTestwiseCoverageMode()).thenReturn(ETestwiseCoverageMode.TEAMSCALE_UPLOAD);
 
 		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;

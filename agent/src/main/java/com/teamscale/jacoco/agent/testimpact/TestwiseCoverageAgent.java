@@ -61,7 +61,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 								 JaCoCoTestwiseReportGenerator reportGenerator) throws IllegalStateException {
 		super(options);
 
-		switch (options.getTestWiseCoverageMode()) {
+		switch (options.getTestwiseCoverageMode()) {
 			case TEAMSCALE_UPLOAD:
 				testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 				break;

@@ -115,7 +115,7 @@ public class AgentOptionsTest {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,tia-mode=http");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
-		assertThat(agentOptions.getTestWiseCoverageMode()).isEqualTo(ETestWiseCoverageMode.HTTP);
+		assertThat(agentOptions.getTestwiseCoverageMode()).isEqualTo(ETestwiseCoverageMode.HTTP);
 	}
 
 	/** Tests setting ignore-uncovered-classes works. */
@@ -136,7 +136,7 @@ public class AgentOptionsTest {
 	@Test
 	public void shouldAllowMinusForEnumConstants() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("tia-mode=exec-file");
-		assertThat(agentOptions.getTestWiseCoverageMode()).isEqualTo(ETestWiseCoverageMode.EXEC_FILE);
+		assertThat(agentOptions.getTestwiseCoverageMode()).isEqualTo(ETestwiseCoverageMode.EXEC_FILE);
 	}
 
 	/** Tests that supplying both revision and commit info is forbidden. */

@@ -8,7 +8,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
 - [fix] Docker image did not react to SIGTERM
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
-- [breaking change] changed Java API of tia-client
+- [breaking change] _tia-client_: changed Java API
 
 # 16.0.1
 - [fix] revision is ignored during validation for automatic upload to Teamscale
