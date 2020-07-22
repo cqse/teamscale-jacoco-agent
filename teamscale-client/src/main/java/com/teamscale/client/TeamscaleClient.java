@@ -39,21 +39,27 @@ public class TeamscaleClient {
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
-	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the
-	 * given commit.
+	 * @return A list of test clusters to execute.
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline,
 																	 CommitDescriptor endCommit,
 																	 String partition,
 																	 boolean includeNonImpacted) throws IOException {
 		if (baseline == null) {
-			return service
-					.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, testList)
-					.execute();
+			if (testList == null) {
+				return service.getImpactedTests(projectId, endCommit, partition, includeNonImpacted).execute();
+			} else {
+				return service.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, testList)
+						.execute();
+			}
 		} else {
-			return service
-					.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted, testList)
-					.execute();
+			if (testList == null) {
+				return service.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted)
+						.execute();
+			} else {
+				return service.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted, testList)
+						.execute();
+			}
 		}
 	}
 

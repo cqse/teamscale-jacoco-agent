@@ -7,6 +7,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -69,7 +70,7 @@ public interface ITeamscaleService {
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
 			@Query("includeNonImpacted") boolean includeNonImpacted,
-			@Body List<ClusteredTestDetails> report
+			@Body List<ClusteredTestDetails> availableTests
 	);
 
 	/** Test Impact API. */
@@ -80,7 +81,26 @@ public interface ITeamscaleService {
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
 			@Query("includeNonImpacted") boolean includeNonImpacted,
-			@Body List<ClusteredTestDetails> report
+			@Body List<ClusteredTestDetails> availableTests
+	);
+
+	/** Test Impact API. */
+	@GET("p/{projectName}/test-impact")
+	Call<List<PrioritizableTestCluster>> getImpactedTests(
+			@Path("projectName") String projectName,
+			@Query("end") CommitDescriptor end,
+			@Query("partitions") String partition,
+			@Query("includeNonImpacted") boolean includeNonImpacted
+	);
+
+	/** Test Impact API. */
+	@GET("p/{projectName}/test-impact")
+	Call<List<PrioritizableTestCluster>> getImpactedTests(
+			@Path("projectName") String projectName,
+			@Query("baseline") long baseline,
+			@Query("end") CommitDescriptor end,
+			@Query("partitions") String partition,
+			@Query("includeNonImpacted") boolean includeNonImpacted
 	);
 
 	/**

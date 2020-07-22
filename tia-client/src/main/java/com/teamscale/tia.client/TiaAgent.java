@@ -32,12 +32,15 @@ public class TiaAgent {
 	/**
 	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
 	 * considers all changes since the last time that test-wise coverage was uploaded. In most situations this is the
-	 * intended behaviour.
+	 * optimal behaviour.
 	 *
-	 * @param availableTests A list of all available tests. This is used to determine, which tests need to be run e.g.
+	 * @param availableTests A list of all available tests. This is used to determine which tests need to be run, e.g.
 	 *                       because they are completely new or changed since the last run. If you provide an empty
-	 *                       list, Teamscale will simply prioritize all tests it currently knows about and assume these
-	 *                       are unchanged.
+	 *                       list, no tests will be selected. If you provide null, Teamscale will perform the selection
+	 *                       and prioritization based on the tests it currently knows about. In this case, it will not
+	 *                       automatically include changed or new tests in the selection (since it doesn't know about
+	 *                       these changes) and it may return deleted tests (since it doesn't know about the deletions).
+	 *                       Thus, it is recommended that you always include an accurate list of all available tests.
 	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
 	 *                                         occurs. This method already retries the request once, so this is likely a
 	 *                                         terminal failure. You should simply fall back to running all tests in
@@ -59,9 +62,17 @@ public class TiaAgent {
 	}
 
 	/**
-	 * Runs the TIA to determine which of the given available tests should be run and in which order.
+	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
+	 * considers all changes since the given baseline timestamp.
 	 *
-	 * @param baseline Considers all changes since this date.
+	 * @param availableTests A list of all available tests. This is used to determine which tests need to be run, e.g.
+	 *                       because they are completely new or changed since the last run. If you provide an empty
+	 *                       list, no tests will be selected. If you provide null, Teamscale will perform the selection
+	 *                       and prioritization based on the tests it currently knows about. In this case, it will not
+	 *                       automatically include changed or new tests in the selection (since it doesn't know about
+	 *                       these changes) and it may return deleted tests (since it doesn't know about the deletions).
+	 *                       Thus, it is recommended that you always include an accurate list of all available tests.
+	 * @param baseline       Consider all code changes since this date when calculating the impacted tests.
 	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
 	 *                                         occurs. You should simply fall back to running all tests in this case.
 	 */

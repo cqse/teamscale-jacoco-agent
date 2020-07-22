@@ -79,7 +79,8 @@ public abstract class TestEventHandlerStrategyBase {
 	/**
 	 * Retrieves impacted tests from Teamscale, if a {@link #teamscaleClient} has been configured.
 	 *
-	 * @param availableTests          List of all available tests that could be run.
+	 * @param availableTests          List of all available tests that could be run or null if the user does not want to
+	 *                                provide one.
 	 * @param includeNonImpactedTests If this is true, only performs prioritization, no selection.
 	 * @param baseline                Optional baseline for the considered changes.
 	 * @throws IOException                   if the request to Teamscale failed.

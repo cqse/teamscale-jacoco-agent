@@ -18,7 +18,6 @@ import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
-import org.conqat.lib.commons.collections.CollectionUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -116,22 +115,23 @@ public class TestwiseCoverageAgent extends AgentBase {
 		}
 
 		String bodyString = request.body();
-		List<ClusteredTestDetails> availableTests = null;
-		if (!StringUtils.isEmpty(bodyString)) {
+		List<ClusteredTestDetails> availableTests;
+		if (StringUtils.isEmpty(bodyString)) {
+			// we explicitly allow omitting the request body. This indicates that the user doesn't want to provide
+			// available tests and that Teamscale should simply use all tests it currently knows about.
+			// This corresponds to the GET endpoint of the TIA service.
+			availableTests = null;
+		} else {
 			try {
-				availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
+				// we explicitly allow passing null. This indicates that the user doesn't want to provide
+				// available tests and that Teamscale should simply use all tests it currently knows about.
+				// This corresponds to the GET endpoint of the TIA service.
+				availableTests = clusteredTestDetailsAdapter.nullSafe().fromJson(bodyString);
 			} catch (IOException e) {
 				logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
 				response.status(SC_BAD_REQUEST);
 				return "Invalid request body. Expected a JSON list of ClusteredTestDetails: " + e.getMessage();
 			}
-		}
-
-		if (CollectionUtils.isNullOrEmpty(availableTests)) {
-			// the TIA service will reject requests with an empty test list as there is nothing to prioritize.
-			// the more sensible thing to do is to send no test list, in which case the service will simply prioritize
-			// all tests currently known to Teamscale. This is a sensible fallback behaviour
-			availableTests = null;
 		}
 
 		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);
