@@ -38,7 +38,7 @@ public class CustomTestFramework {
 	/** Talks to the TIA agent and runs all impacted tests. Also uploads a coverage report at the end. */
 	public void runTestsWithTia() throws AgentHttpRequestFailedException {
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + agentPort));
-		TestRun testRun = agent.startTestRun();
+		TestRun testRun = agent.startTestRunWithoutTestSelection();
 
 		for (String uniformPath : allTests.keySet()) {
 			Runnable runnable = allTests.get(uniformPath);

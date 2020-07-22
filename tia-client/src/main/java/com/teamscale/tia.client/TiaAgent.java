@@ -30,6 +30,14 @@ public class TiaAgent {
 	}
 
 	/**
+	 * Starts a test run but does not ask Teamscale to prioritize and select any test cases. Use this when you only want
+	 * to record test-wise coverage and don't care about TIA's test selection and prioritization.
+	 */
+	public TestRun startTestRunWithoutTestSelection() {
+		return new TestRun(api);
+	}
+
+	/**
 	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
 	 * considers all changes since the last time that test-wise coverage was uploaded. In most situations this is the
 	 * optimal behaviour.
@@ -49,16 +57,33 @@ public class TiaAgent {
 	 */
 	public TestRunWithSuggestions startTestRun(
 			List<ClusteredTestDetails> availableTests) throws AgentHttpRequestFailedException {
-		return startTestRun(availableTests, null);
+		if (availableTests == null) {
+			throw new IllegalArgumentException("availableTests must not be null. If you cannot provide a list of" +
+					" available tests, please use startTestRunAssumingUnchangedTests instead - but please be aware" +
+					" that this method of using the TIA cannot take into account changes in the tests themselves.");
+		}
+		return startTestRunWithSuggestions(availableTests, null);
 	}
 
-
 	/**
-	 * Starts a test run but does not ask Teamscale to prioritize and select any test cases. Use this when you only want
-	 * to record test-wise coverage and don't care about TIA's test selection and prioritization.
+	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
+	 * considers all changes since the last time that test-wise coverage was uploaded. In most situations this is the
+	 * optimal behaviour.
+	 * <p>
+	 * Using this method, Teamscale will perform the selection and prioritization based on the tests it currently knows
+	 * about. In this case, it will not automatically include changed or new tests in the selection (since it doesn't
+	 * know about these changes) and it may return deleted tests (since it doesn't know about the deletions).
+	 * <p>
+	 * Thus, it is recommended that, if possible, you use {@link #startTestRun(List)} instead.
+	 *
+	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
+	 *                                         occurs. This method already retries the request once, so this is likely a
+	 *                                         terminal failure. You should simply fall back to running all tests in
+	 *                                         this case and not communicate further with the agent. You should visibly
+	 *                                         report this problem so it can be fixed.
 	 */
-	public TestRun startTestRun() {
-		return new TestRun(api);
+	public TestRunWithSuggestions startTestRunAssumingUnchangedTests() throws AgentHttpRequestFailedException {
+		return startTestRunWithSuggestions(null, null);
 	}
 
 	/**
@@ -78,6 +103,37 @@ public class TiaAgent {
 	 */
 	public TestRunWithSuggestions startTestRun(List<ClusteredTestDetails> availableTests,
 											   Instant baseline) throws AgentHttpRequestFailedException {
+		if (availableTests == null) {
+			throw new IllegalArgumentException("availableTests must not be null. If you cannot provide a list of" +
+					" available tests, please use startTestRunAssumingUnchangedTests instead - but please be aware" +
+					" that this method of using the TIA cannot take into account changes in the tests themselves.");
+		}
+		return startTestRunWithSuggestions(availableTests, baseline);
+	}
+
+	/**
+	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
+	 * considers all changes since the given baseline timestamp.
+	 * <p>
+	 * Using this method, Teamscale will perform the selection and prioritization based on the tests it currently knows
+	 * about. In this case, it will not automatically include changed or new tests in the selection (since it doesn't
+	 * know about these changes) and it may return deleted tests (since it doesn't know about the deletions).
+	 * <p>
+	 * Thus, it is recommended that, if possible, you use {@link #startTestRun(List, Instant)} instead.
+	 *
+	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
+	 *                                         occurs. This method already retries the request once, so this is likely a
+	 *                                         terminal failure. You should simply fall back to running all tests in
+	 *                                         this case and not communicate further with the agent. You should visibly
+	 *                                         report this problem so it can be fixed.
+	 */
+	public TestRunWithSuggestions startTestRunAssumingUnchangedTests(
+			Instant baseline) throws AgentHttpRequestFailedException {
+		return startTestRunWithSuggestions(null, baseline);
+	}
+
+	private TestRunWithSuggestions startTestRunWithSuggestions(List<ClusteredTestDetails> availableTests,
+															   Instant baseline) throws AgentHttpRequestFailedException {
 		Long baselineTimestamp = calculateBaselineTimestamp(baseline);
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
 				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp, availableTests),

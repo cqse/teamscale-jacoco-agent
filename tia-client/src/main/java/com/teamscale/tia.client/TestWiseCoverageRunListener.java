@@ -35,7 +35,7 @@ public class TestWiseCoverageRunListener extends RunListener {
 		}
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get(agentUrl));
-		testRun = agent.startTestRun();
+		testRun = agent.startTestRunWithoutTestSelection();
 	}
 
 	@FunctionalInterface
