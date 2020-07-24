@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  * <p>
  * This ensures that our tia-client library doesn't break unexpectedly.
  */
-public class SystemTest {
+public class TiaClientSystemTest {
 
 	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
 	private final int fakeTeamscalePort = 65432;
@@ -39,7 +39,7 @@ public class SystemTest {
 					.containsExactlyInAnyOrder("testBar", "testFoo");
 			assertThat(report.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
-			assertThat(report.tests).extracting(SystemTest::getCoverageString)
+			assertThat(report.tests).extracting(TiaClientSystemTest::getCoverageString)
 					.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
 		});
 	}

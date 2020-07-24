@@ -196,7 +196,7 @@ finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events 
   (Recommended port is 8123)
-- `class-dir` (required when `coverage-via-http` or `teamscale-testwise-upload` is `true`):
+- `class-dir` (required when `tia-mode` is set to either `http` or `teamscale-upload`):
   the path under which all class files of the profiled 
   application are stored. May be a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. 
   (For details see path format section above)
@@ -224,7 +224,7 @@ The agent's REST API has the following endpoints:
 - `[POST] /testrun/start` If you configured a connection to Teamscale via the `teamscale-` options, this will fetch
   impacted tests from Teamscale and return them in the response body. The format is the same as returned by Teamscale
   itself. You may optionally provide a list of all available test cases in the body of the request. These will also be used to
-  generate the test-wise coverage report in `[POST] /testrun/end`. The format of the request body is:
+  generate the testwise coverage report in `[POST] /testrun/end`. The format of the request body is:
   
   ```json
     [
@@ -241,11 +241,11 @@ The agent's REST API has the following endpoints:
   
   - `include-non-impacted`: If this is `true`, will not perform test-selection, only test-prioritization.
   - `baseline`: UNIX timestamp in milliseconds to indicate the time since which changes should be considered.
-    If not given, the time since the last uploaded test-wise coverage report is used (i.e. the last time you
+    If not given, the time since the last uploaded testwise coverage report is used (i.e. the last time you
     ran the TIA).
   
 - `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled 
-  `teamscale-testwise-upload`, this will upload a test-wise coverage report to Teamscale.
+  `teamscale-testwise-upload`, this will upload a testwise coverage report to Teamscale.
 - `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
 - `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
   The body of the request may optionally contain the test execution result in json format:
@@ -269,13 +269,21 @@ The agent's REST API has the following endpoints:
 The `uniformPath` parameter is a hierarchically structured identifier of the test and must be url encoded.
 E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com%2Fexample%2FMyTest%2FtestSomething`.
 
-#### Test-wise coverage modes
+#### Testwise coverage modes
 
-You can run the test-wise agent in three different modes:
+You can run the testwise agent in three different modes, configured via the option `tia-mode`:
+  
+- `exec-file` (default): The agent stores the coverage in a binary `*.exec` file within the `out` directory.
+  This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert all `*.exec` files and upload a testwise coverage report to Teamscale or in situations where the agent must consume as little memory and CPU as possible and thus cannot convert the execution data to a report as required by the other options.
+  It is, however, less convenient as you have to convert the `*.exec` files yourself.
+  
+- `teamscale-upload`: the agent will buffer all testwise coverage and test execution data in-memory and upload the testwise report to Teamscale once you call the `POST /testrun/end` REST endpoint.
+  This option is the most convenient of the different modes as the agent handles all aspects of report generation and the upload to Teamscale for you.
+  This mode may slow down the startup of the system under test and result in a larger memory footprint than the `exec-file` mode.
 
-- `coverage-via-http`: if set to true the coverage collected during a test is generated in-process and 
-  returned as response to the `[POST] /test/end/...` request. Be aware that this option may slow down the startup 
-  of the system under test and result in a larger memory footprint.
+- `http`: the agent converts the coverage collected during a test in-process and returns it as a JSON in the response to the `[POST] /test/end/...` request.
+  This allows the caller to handle merging coverage of multiple tests into one testwise coverage report, e.g. in situations where more than one agent is running at the same time (e.g. profiling across multiple microservices.)
+  This option may slow down the startup of the system under test and result in a larger memory footprint than the `exec-file` mode.
   
     The response format looks like this:
     ```json
@@ -300,16 +308,7 @@ You can run the test-wise agent in three different modes:
       ]
     }
     ```
-  (`duration` and `result` are included when a test execution result is given in the request body)
-  
-- `teamscale-testwise-upload`: if `true`, the agent will buffer all test-wise coverage and test execution data in-memory
-  and upload the test-wise report to Teamscale when the `POST /testrun/end` REST endpoint is called.
-  Be aware that this option may slow down the startup 
-  of the system under test and result in a larger memory footprint.
-  
-- Neither of the above: The coverage is stored in a binary `*.exec` file within the `out` directory.
-  This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert all
-  `*.exec` files and upload a test-wise coverage report to Teamscale.
+  (`duration` and `result` are included if you provided a test execution result in the request body)
 
 ## Additional steps for WebSphere
 

@@ -32,6 +32,6 @@ public enum ETestExecutionResult {
 	/** Caused by a failing assertion. */
 	FAILURE,
 
-	/** Caused by an error during test execution (e.g. exception thrown). */
+	/** Caused by an error during test execution (e.g. exception thrown in the test runner code, not the test itself). */
 	ERROR
 }

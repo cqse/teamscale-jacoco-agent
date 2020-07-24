@@ -65,3 +65,4 @@ Only use GitHub releases in production. This ensures that we always know which c
 * change `ext.jacocoVersion` in the build script
 * `./gradlew dist`
 * **Do not commit unless you are upgrading to a newer version!**
+

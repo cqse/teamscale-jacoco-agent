@@ -10,7 +10,6 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
-import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
@@ -28,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Parses agent command line options.
@@ -97,25 +98,29 @@ public class AgentOptionsParser {
 		if (key.startsWith("jacoco-")) {
 			options.additionalJacocoOptions.add(key.substring(7), value);
 			return;
-		} else if (key.startsWith("teamscale-") && handleTeamscaleOptions(options, key, value)) {
+		}
+		if (handleTeamscaleOptions(options, key, value)) {
 			return;
-		} else if (handleHttpServerOptions(options, key, value)) {
+		}
+		if (handleTiaOptions(options, key, value)) {
 			return;
 		} else if (key.startsWith("artifactory-") && ArtifactoryConfig
 				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
 			return;
-		} else if (key.startsWith("azure-") && handleAzureFileStorageOptions(options, key, value)) {
+		}
+		if (handleAzureFileStorageOptions(options, key, value)) {
 			return;
-		} else if (handleAgentOptions(options, key, value)) {
+		}
+		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
 	}
 
 	/**
-	 * Handles all command line options for the agent without special prefix.
+	 * Handles all common command line options for the agent.
 	 *
-	 * @return true if it has successfully process the given option.
+	 * @return true if it has successfully processed the given option.
 	 */
 	private boolean handleAgentOptions(AgentOptions options, String key,
 									   String value) throws AgentOptionParseException {
@@ -127,11 +132,7 @@ public class AgentOptionsParser {
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
 				return true;
 			case "interval":
-				try {
-					options.dumpIntervalInMinutes = Integer.parseInt(value);
-				} catch (NumberFormatException e) {
-					throw new AgentOptionParseException("Non-numeric value given for option 'interval'");
-				}
+				options.dumpIntervalInMinutes = parseInt(key, value);
 				return true;
 			case "validate-ssl":
 				options.validateSsl = Boolean.parseBoolean(value);
@@ -140,10 +141,7 @@ public class AgentOptionsParser {
 				options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
 				return true;
 			case "upload-url":
-				options.uploadUrl = parseUrl(value);
-				if (options.uploadUrl == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-url'");
-				}
+				options.uploadUrl = parseUrl(key, value);
 				return true;
 			case "upload-metadata":
 				try {
@@ -153,14 +151,16 @@ public class AgentOptionsParser {
 				}
 				return true;
 			case "duplicates":
-				options.duplicateClassFileBehavior = EDuplicateClassFileBehavior.valueOf(value.toUpperCase());
+				options.duplicateClassFileBehavior = parseEnumValue(key, value, EDuplicateClassFileBehavior.class);
+				return true;
 			case "ignore-uncovered-classes":
 				options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
+				return true;
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
 			case "mode":
-				options.mode = EMode.valueOf(value.toUpperCase());
+				options.mode = parseEnumValue(key, value, EMode.class);
 				return true;
 			case "includes":
 				options.jacocoIncludes = value.replaceAll(";", ":");
@@ -173,8 +173,23 @@ public class AgentOptionsParser {
 				options.classDirectoriesOrZips = ClasspathUtils
 						.resolveClasspathTextFiles(key, filePatternResolver, list);
 				return true;
+			case "http-server-port":
+				options.httpServerPort = parseInt(key, value);
+				return true;
 			default:
 				return false;
+		}
+	}
+
+	/** Parses the given value as an enum constant case-insensitively and converts "-" to "_". */
+	private <T extends Enum<T>> T parseEnumValue(String key, String value,
+												 Class<T> enumClass) throws AgentOptionParseException {
+		try {
+			return Enum.valueOf(enumClass, value.toUpperCase().replaceAll("-", "_"));
+		} catch (IllegalArgumentException e) {
+			String validValues = Arrays.stream(enumClass.getEnumConstants()).map(T::name).collect(joining(", "));
+			throw new AgentOptionParseException("Invalid value for option `" + key + "`. Valid values: " + validValues,
+					e);
 		}
 	}
 
@@ -205,17 +220,13 @@ public class AgentOptionsParser {
 	/**
 	 * Handles all command line options prefixed with "teamscale-".
 	 *
-	 * @return true if it has successfully process the given option.
+	 * @return true if it has successfully processed the given option.
 	 */
 	private boolean handleTeamscaleOptions(AgentOptions options, String key,
 										   String value) throws AgentOptionParseException {
 		switch (key) {
 			case "teamscale-server-url":
-				options.teamscaleServer.url = parseUrl(value);
-				if (options.teamscaleServer.url == null) {
-					throw new AgentOptionParseException(
-							"Invalid URL " + value + " given for option 'teamscale-server-url'");
-				}
+				options.teamscaleServer.url = parseUrl(key, value);
 				return true;
 			case "teamscale-project":
 				options.teamscaleServer.project = value;
@@ -245,10 +256,24 @@ public class AgentOptionsParser {
 			case AgentOptions.TEAMSCALE_REVISION_OPTION:
 				options.teamscaleServer.revision = value;
 				return true;
-			case "teamscale-testwise-upload":
-				if (Boolean.parseBoolean(value)) {
-					options.testWiseCoverageMode = ETestWiseCoverageMode.TEAMSCALE_REPORT;
-				}
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Handles all TIA-related command line option.
+	 *
+	 * @return true if it has successfully processed the given option.
+	 */
+	private boolean handleTiaOptions(AgentOptions options, String key,
+									 String value) throws AgentOptionParseException {
+		switch (key) {
+			case "tia-mode":
+				options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
+				return true;
+			case "test-env":
+				options.testEnvironmentVariable = value;
 				return true;
 			default:
 				return false;
@@ -278,10 +303,7 @@ public class AgentOptionsParser {
 			throws AgentOptionParseException {
 		switch (key) {
 			case "azure-url":
-				options.azureFileStorageConfig.url = parseUrl(value);
-				if (options.azureFileStorageConfig.url == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
-				}
+				options.azureFileStorageConfig.url = parseUrl(key, value);
 				return true;
 			case "azure-key":
 				options.azureFileStorageConfig.accessKey = value;
@@ -318,40 +340,19 @@ public class AgentOptionsParser {
 		}
 	}
 
-	/**
-	 * Handles all command line options prefixed with "http-server-".
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleHttpServerOptions(AgentOptions options, String key,
-											String value) throws AgentOptionParseException {
-		switch (key) {
-			case "test-env":
-				options.testEnvironmentVariable = value;
-				return true;
-			case "http-server-port":
-				try {
-					options.httpServerPort = Integer.parseInt(value);
-				} catch (NumberFormatException e) {
-					throw new AgentOptionParseException(
-							"Invalid port number " + value + " given for option 'http-server-port'");
-				}
-				return true;
-			case "coverage-via-http":
-				if (Boolean.parseBoolean(value)) {
-					options.testWiseCoverageMode = ETestWiseCoverageMode.HTTP;
-				}
-				return true;
-			default:
-				return false;
+	private int parseInt(String key, String value) throws AgentOptionParseException {
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			throw new AgentOptionParseException("Invalid non-numeric value for option `" + key + "`: " + value);
 		}
 	}
 
 
 	/**
-	 * Parses the given value as a URL or returns <code>null</code> if that fails.
+	 * Parses the given value as a URL.
 	 */
-	public static HttpUrl parseUrl(String value) {
+	public static HttpUrl parseUrl(String key, String value) throws AgentOptionParseException {
 		// default to HTTP if no scheme is given
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			value = "http://" + value;
@@ -361,7 +362,11 @@ public class AgentOptionsParser {
 			value += "/";
 		}
 
-		return HttpUrl.parse(value);
+		HttpUrl url = HttpUrl.parse(value);
+		if (url == null) {
+			throw new AgentOptionParseException("Invalid URL given for option '" + key + "'");
+		}
+		return url;
 	}
 
 

@@ -79,7 +79,8 @@ public abstract class TestEventHandlerStrategyBase {
 	/**
 	 * Retrieves impacted tests from Teamscale, if a {@link #teamscaleClient} has been configured.
 	 *
-	 * @param availableTests          List of all available tests that could be run.
+	 * @param availableTests          List of all available tests that could be run or null if the user does not want to
+	 *                                provide one.
 	 * @param includeNonImpactedTests If this is true, only performs prioritization, no selection.
 	 * @param baseline                Optional baseline for the considered changes.
 	 * @throws IOException                   if the request to Teamscale failed.
@@ -87,8 +88,12 @@ public abstract class TestEventHandlerStrategyBase {
 	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
 							   Long baseline) throws IOException {
+		int availableTestCount = 0;
+		if (availableTests != null) {
+			availableTestCount = availableTests.size();
+		}
 		logger.debug("Test run started with {} available tests. baseline = {}, includeNonImpactedTests = {}",
-				availableTests.size(), baseline, includeNonImpactedTests);
+				availableTestCount, baseline, includeNonImpactedTests);
 		if (teamscaleClient == null) {
 			throw new UnsupportedOperationException("You did not configure a connection to Teamscale in the agent." +
 					" Thus, you cannot use the agent to retrieve impacted tests via the testrun/start REST endpoint." +
@@ -100,6 +105,7 @@ public abstract class TestEventHandlerStrategyBase {
 							AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
 							AgentOptions.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
 		}
+
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
@@ -121,6 +127,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 */
 	public void testRunEnd() throws IOException {
 		throw new UnsupportedOperationException("You configured the agent in a mode that does not support uploading " +
-				"reports to Teamscale. Please configure 'teamscale-testwise-upload'.");
+				"reports to Teamscale. Please configure 'tia-mode=teamscale-upload' or simply don't call" +
+				"POST /testrun/end.");
 	}
 }
