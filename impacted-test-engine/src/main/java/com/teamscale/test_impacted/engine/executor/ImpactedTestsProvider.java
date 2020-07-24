@@ -13,7 +13,7 @@ import java.util.List;
 
 
 /**
- * Class for retrieving the impacted {@link PrioritizableTestCluster}s corresponding to {@link ClusteredTestDetails}s
+ * Class for retrieving the impacted {@link PrioritizableTestCluster}s corresponding to {@link ClusteredTestDetails}
  * available for test execution.
  */
 public class ImpactedTestsProvider {

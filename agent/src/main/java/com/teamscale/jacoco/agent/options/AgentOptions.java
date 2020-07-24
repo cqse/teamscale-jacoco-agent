@@ -17,7 +17,6 @@ import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiManifestLocator;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
-import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
@@ -51,6 +50,7 @@ import java.util.stream.Stream;
  * Parses agent command line options.
  */
 public class AgentOptions {
+
 	/**
 	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
 	 */
@@ -68,6 +68,12 @@ public class AgentOptions {
 
 	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
 	public static final String TEAMSCALE_GIT_PROPERTIES_JAR_OPTION = "teamscale-git-properties-jar";
+
+	/**
+	 * The default excludes applied to JaCoCo. These are packages that should never be profiled. Excluding them makes
+	 * debugging traces easier and reduces trace size and warnings about unmatched classes in Teamscale.
+	 */
+	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
@@ -135,7 +141,7 @@ public class AgentOptions {
 	 * Exclude patterns for fully qualified class names to pass on to JaCoCo. See {@link WildcardMatcher} for the
 	 * pattern syntax. Individual patterns must be separated by ":".
 	 */
-	/* package */ String jacocoExcludes = null;
+	/* package */ String jacocoExcludes = DEFAULT_EXCLUDES;
 
 	/**
 	 * Additional user-provided options to pass to JaCoCo.
@@ -148,7 +154,7 @@ public class AgentOptions {
 	/* package */ TeamscaleServer teamscaleServer = new TeamscaleServer();
 
 	/**
-	 * The name of the environment variable that holds the test uniform path.
+	 * The name of the environment variable that holds the test uniform path for TIA mode.
 	 */
 	/* package */ String testEnvironmentVariable = null;
 
@@ -158,9 +164,9 @@ public class AgentOptions {
 	/* package */ Integer httpServerPort = null;
 
 	/**
-	 * How test-wise coverage should be handled in test-wise mode.
+	 * How testwise coverage should be handled in test-wise mode.
 	 */
-	/* package */ ETestWiseCoverageMode testWiseCoverageMode = ETestWiseCoverageMode.EXEC_FILE;
+	/* package */ ETestwiseCoverageMode testwiseCoverageMode = ETestwiseCoverageMode.EXEC_FILE;
 
 	/**
 	 * Whether classes without coverage should be skipped from the XML report.
@@ -264,18 +270,15 @@ public class AgentOptions {
 		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
 				"incompatible with Testwise coverage mode!");
 
-		validator.isFalse(useTestwiseCoverageMode() && testWiseCoverageMode == ETestWiseCoverageMode.HTTP
-						&& classDirectoriesOrZips.isEmpty(),
-				"You use 'coverage-via-http' but did not provide any class files via 'class-dir'!");
-
-		validator.isFalse(testWiseCoverageMode == ETestWiseCoverageMode.TEAMSCALE_REPORT
+		validator.isFalse(testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.hasAllRequiredFieldsSet(),
-				"You use 'teamscale-testwise-upload' but did not set all required 'teamscale-' fields to facilitate" +
+				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
 
 		validator.isFalse(!useTestwiseCoverageMode() && testEnvironmentVariable != null,
 				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
 	}
+
 
 	/**
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a
@@ -456,9 +459,9 @@ public class AgentOptions {
 		return shouldDumpOnExit;
 	}
 
-	/** @see AgentOptions#testWiseCoverageMode */
-	public ETestWiseCoverageMode getTestWiseCoverageMode() {
-		return testWiseCoverageMode;
+	/** @see AgentOptions#testwiseCoverageMode */
+	public ETestwiseCoverageMode getTestwiseCoverageMode() {
+		return testwiseCoverageMode;
 	}
 
 	/** @see #ignoreUncoveredClasses */

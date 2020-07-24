@@ -8,7 +8,7 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.options.ETestWiseCoverageMode;
+import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
@@ -16,6 +16,7 @@ import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
+import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
 import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
@@ -80,14 +81,14 @@ public class TestwiseCoverageAgentTest {
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
 
-		TestRun testRun = agent.startTestRun(availableTests);
-		assertThat(testRun.getPrioritizedTests()).hasSize(1);
-		assertThat(testRun.getPrioritizedTests().get(0).tests).hasSize(1);
-		PrioritizableTest test = testRun.getPrioritizedTests().get(0).tests.get(0);
+		TestRunWithClusteredSuggestions testRun = agent.startTestRun(availableTests);
+		assertThat(testRun.getPrioritizedClusters()).hasSize(1);
+		assertThat(testRun.getPrioritizedClusters().get(0).tests).hasSize(1);
+		PrioritizableTest test = testRun.getPrioritizedClusters().get(0).tests.get(0);
 		assertThat(test.uniformPath).isEqualTo("test2");
 
 		RunningTest runningTest = testRun.startTest(test.uniformPath);
-		runningTest.endTestNormally(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
+		runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
 		testRun.endTestRun();
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
@@ -143,7 +144,7 @@ public class TestwiseCoverageAgentTest {
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 		when(options.getHttpServerPort()).thenReturn(port);
-		when(options.getTestWiseCoverageMode()).thenReturn(ETestWiseCoverageMode.TEAMSCALE_REPORT);
+		when(options.getTestwiseCoverageMode()).thenReturn(ETestwiseCoverageMode.TEAMSCALE_UPLOAD);
 
 		when(options.createTeamscaleClient()).thenReturn(client);
 		return options;

@@ -25,7 +25,6 @@ import spark.Service;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,8 +60,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 								 JaCoCoTestwiseReportGenerator reportGenerator) throws IllegalStateException {
 		super(options);
 
-		switch (options.getTestWiseCoverageMode()) {
-			case TEAMSCALE_REPORT:
+		switch (options.getTestwiseCoverageMode()) {
+			case TEAMSCALE_UPLOAD:
 				testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 				break;
 			case HTTP:
@@ -116,10 +115,18 @@ public class TestwiseCoverageAgent extends AgentBase {
 		}
 
 		String bodyString = request.body();
-		List<ClusteredTestDetails> availableTests = Collections.emptyList();
-		if (!StringUtils.isEmpty(bodyString)) {
+		List<ClusteredTestDetails> availableTests;
+		if (StringUtils.isEmpty(bodyString)) {
+			// we explicitly allow omitting the request body. This indicates that the user doesn't want to provide
+			// available tests and that Teamscale should simply use all tests it currently knows about.
+			// This corresponds to the GET endpoint of the TIA service.
+			availableTests = null;
+		} else {
 			try {
-				availableTests = clusteredTestDetailsAdapter.fromJson(bodyString);
+				// we explicitly allow passing null. This indicates that the user doesn't want to provide
+				// available tests and that Teamscale should simply use all tests it currently knows about.
+				// This corresponds to the GET endpoint of the TIA service.
+				availableTests = clusteredTestDetailsAdapter.nullSafe().fromJson(bodyString);
 			} catch (IOException e) {
 				logger.error("Invalid request body. Expected a JSON list of ClusteredTestDetails", e);
 				response.status(SC_BAD_REQUEST);

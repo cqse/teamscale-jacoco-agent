@@ -9,6 +9,7 @@ import retrofit2.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,21 +40,44 @@ public class TeamscaleClient {
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
-	 * @return A list of external IDs to execute or null in case Teamscale did not find a test details upload for the
-	 * given commit.
+	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
+	 * all prioritized tests.
 	 */
-	public Response<List<PrioritizableTestCluster>> getImpactedTests(List<ClusteredTestDetails> testList, Long baseline,
-																	 CommitDescriptor endCommit,
-																	 String partition,
-																	 boolean includeNonImpacted) throws IOException {
+	public Response<List<PrioritizableTestCluster>> getImpactedTests(
+			List<ClusteredTestDetails> availableTests, Long baseline,
+			CommitDescriptor endCommit,
+			String partition,
+			boolean includeNonImpacted) throws IOException {
+
 		if (baseline == null) {
-			return service
-					.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, testList)
-					.execute();
+			if (availableTests == null) {
+				return wrapInCluster(
+						service.getImpactedTests(projectId, endCommit, partition, includeNonImpacted).execute());
+			} else {
+				return service.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, availableTests)
+						.execute();
+			}
 		} else {
-			return service
-					.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted, testList)
-					.execute();
+			if (availableTests == null) {
+				return wrapInCluster(
+						service.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted)
+								.execute());
+			} else {
+				return service
+						.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted, availableTests)
+						.execute();
+			}
+		}
+	}
+
+	private static Response<List<PrioritizableTestCluster>> wrapInCluster(
+			Response<List<PrioritizableTest>> testListResponse) {
+		if (testListResponse.isSuccessful()) {
+			return Response.success(
+					Collections.singletonList(new PrioritizableTestCluster("dummy", testListResponse.body())),
+					testListResponse.raw());
+		} else {
+			return Response.error(testListResponse.errorBody(), testListResponse.raw());
 		}
 	}
 

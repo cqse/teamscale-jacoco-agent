@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.upload.artifactory;
 
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.StringUtils;
+import com.teamscale.jacoco.agent.options.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.OkHttpClient;

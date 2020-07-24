@@ -32,10 +32,7 @@ public class AzureFileStorageConfig {
 			throws AgentOptionParseException {
 		switch (key) {
 			case "azure-url":
-				azureFileStorageConfig.url = AgentOptionsParser.parseUrl(value);
-				if (azureFileStorageConfig.url == null) {
-					throw new AgentOptionParseException("Invalid URL given for option 'upload-azure-url'");
-				}
+				azureFileStorageConfig.url = AgentOptionsParser.parseUrl(key, value);
 				return true;
 			case "azure-key":
 				azureFileStorageConfig.accessKey = value;

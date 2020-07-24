@@ -5,6 +5,9 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
+- [breaking change] _tia-client_: changed Java API
+- [feature] always exclude common libraries from profiling to shrink coverage files
 
 # 17.0.0
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
