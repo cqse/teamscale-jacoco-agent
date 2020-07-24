@@ -5,11 +5,9 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.string.StringUtils;
 import org.slf4j.Logger;
-import sun.net.www.ParseUtil;
 
 import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -78,31 +76,5 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 			logger.error("Failed to process class {} in search of git.properties", className, e);
 		}
 		return null;
-	}
-
-
-	/* get the specs for a given url out of the cache, and compute and
-	 * cache them if they're not there.
-	 * java.net.JarURLConnection.parseSpecs
-	 */
-	private void parseSpecs(URL url) throws MalformedURLException {
-		String spec = url.getFile();
-
-		int separator = spec.indexOf("!/");
-		/*
-		 * REMIND: we don't handle nested JAR URLs
-		 */
-		if (separator == -1) {
-			throw new MalformedURLException("no !/ found in url spec:" + spec);
-		}
-
-		URL jarFileURL = new URL(spec.substring(0, separator++));
-		String entryName = null;
-
-		/* if ! is the last letter of the innerURL, entryName is null */
-		if (++separator != spec.length()) {
-			entryName = spec.substring(separator, spec.length());
-			entryName = ParseUtil.decode (entryName);
-		}
 	}
 }
