@@ -16,7 +16,7 @@ import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
-import com.teamscale.tia.client.TestRunWithSuggestions;
+import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
 import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
@@ -81,10 +81,10 @@ public class TestwiseCoverageAgentTest {
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
 
-		TestRunWithSuggestions testRun = agent.startTestRun(availableTests);
-		assertThat(testRun.getPrioritizedTests()).hasSize(1);
-		assertThat(testRun.getPrioritizedTests().get(0).tests).hasSize(1);
-		PrioritizableTest test = testRun.getPrioritizedTests().get(0).tests.get(0);
+		TestRunWithClusteredSuggestions testRun = agent.startTestRun(availableTests);
+		assertThat(testRun.getPrioritizedClusters()).hasSize(1);
+		assertThat(testRun.getPrioritizedClusters().get(0).tests).hasSize(1);
+		PrioritizableTest test = testRun.getPrioritizedClusters().get(0).tests.get(0);
 		assertThat(test.uniformPath).isEqualTo("test2");
 
 		RunningTest runningTest = testRun.startTest(test.uniformPath);

@@ -28,7 +28,7 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
-			@Query("revision") String revision, 
+			@Query("revision") String revision,
 			@Query("movetolastcommit") Boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -63,7 +63,7 @@ public interface ITeamscaleService {
 			@Part List<MultipartBody.Part> report
 	);
 
-	/** Test Impact API. */
+	/** Retrieve clustered impacted tests based on the given available tests. */
 	@PUT("p/{projectName}/test-impact")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
@@ -73,7 +73,7 @@ public interface ITeamscaleService {
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
-	/** Test Impact API. */
+	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
 	@PUT("p/{projectName}/test-impact")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
@@ -84,18 +84,18 @@ public interface ITeamscaleService {
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
-	/** Test Impact API. */
+	/** Retrieve unclustered impacted tests based on all tests known to Teamscale. */
 	@GET("p/{projectName}/test-impact")
-	Call<List<PrioritizableTestCluster>> getImpactedTests(
+	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
 			@Query("includeNonImpacted") boolean includeNonImpacted
 	);
 
-	/** Test Impact API. */
+	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
 	@GET("p/{projectName}/test-impact")
-	Call<List<PrioritizableTestCluster>> getImpactedTests(
+	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
@@ -104,8 +104,8 @@ public interface ITeamscaleService {
 	);
 
 	/**
-	 * Uploads the given report body to Teamscale as blocking call with adjusttimestamp 
-	 * set to true and and movetolastcommit set to false.
+	 * Uploads the given report body to Teamscale as blocking call with adjusttimestamp set to true and and
+	 * movetolastcommit set to false.
 	 *
 	 * @return Returns the request body if successful, otherwise throws an IOException.
 	 */
@@ -119,12 +119,12 @@ public interface ITeamscaleService {
 			RequestBody report
 	) throws IOException {
 		Boolean moveToLastCommit = false;
-		if(revision != null) {
+		if (revision != null) {
 			// When uploading to a revision, we don't need commit adjustment.
 			commit = null;
 			moveToLastCommit = null;
 		}
-		
+
 		try {
 			Response<ResponseBody> response = uploadExternalReport(
 					projectName,

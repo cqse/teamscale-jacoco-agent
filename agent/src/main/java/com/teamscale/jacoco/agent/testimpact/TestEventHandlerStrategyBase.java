@@ -105,6 +105,7 @@ public abstract class TestEventHandlerStrategyBase {
 							AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
 							AgentOptions.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
 		}
+
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);

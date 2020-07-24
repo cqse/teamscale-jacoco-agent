@@ -35,7 +35,11 @@ public interface ITestwiseCoverageAgentApi {
 			@Body TestExecution testExecution
 	);
 
-	/** Test run started. Returns the list of TIA-selected and -prioritized test cases to execute. */
+	/**
+	 * Test run started. Returns the list of TIA-selected and -prioritized test clusters to execute. If the given
+	 * available tests are null, returns a single dummy cluster with all prioritized tests that Teamscale currently
+	 * knows about.
+	 */
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("include-non-impacted") boolean includeNonImpacted,
