@@ -64,6 +64,7 @@ public class DelayedSapNwdiMultiUploader implements IUploader {
 
 	/** Sets the commit info detected for the application. */
 	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplications.SapNwdiApplication application) {
+		logger.info("Found commit for " + application.markerClass + ": " + commit);
 		IUploader uploader = uploaderFactory.apply(commit, application);
 		uploaders.put(application, uploader);
 	}

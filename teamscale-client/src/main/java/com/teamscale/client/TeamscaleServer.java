@@ -38,8 +38,13 @@ public class TeamscaleServer {
 
 	/** Returns if all required fields are non-null. */
 	public boolean hasAllRequiredFieldsSet() {
+		return project != null &&
+				hasAllRequiredFieldsSetExceptProject();
+	}
+
+	/** Returns if all required fields are non-null. */
+	public boolean hasAllRequiredFieldsSetExceptProject() {
 		return url != null &&
-				project != null &&
 				userName != null &&
 				userAccessToken != null &&
 				partition != null;

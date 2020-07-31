@@ -11,16 +11,15 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiManifestLocatingTransformer;
-import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiManifestLocator;
+import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
-import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
@@ -225,7 +224,8 @@ public class AgentOptions {
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
-		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSet(),
+		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer
+						.hasAllRequiredFieldsSet() || sapNetWeaverJavaApplications != null,
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
@@ -244,14 +244,20 @@ public class AgentOptions {
 
 		long configuredStores = Stream
 				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
-						teamscaleServer.hasAllRequiredFieldsSet(),
-						uploadUrl != null, sapNetWeaverJavaApplications != null).filter(x -> x).count();
+						teamscaleServer.hasAllRequiredFieldsSet(), uploadUrl != null).filter(x -> x).count();
 
 		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
-				"such as a Teamscale instance, upload URL, Azure file storage, or SAP NWDI configuration");
+				"such as a Teamscale instance, upload URL, Azure file storage or artifactory");
 
-		validator.isTrue(sapNetWeaverJavaApplications == null || (sapNetWeaverJavaApplications.hasAllRequiredFieldsSet() && teamscaleServer.hasAllRequiredFieldsSet()),
-				"You provided an SAP NWDI config file, which does not contain all required values.");
+		validator.isTrue(sapNetWeaverJavaApplications == null || sapNetWeaverJavaApplications.hasAllRequiredFieldsSet(),
+				"You provided an SAP NWDI applications config, but it is empty.");
+
+		validator.isTrue(sapNetWeaverJavaApplications == null || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
+				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete.");
+
+		validator.isTrue(sapNetWeaverJavaApplications == null ||
+						!teamscaleServer.hasAllRequiredFieldsSet(),
+				"You provided an SAP NWDI applications config.");
 
 		appendTestwiseCoverageValidations(validator);
 
@@ -318,15 +324,16 @@ public class AgentOptions {
 					additionalMetaDataFiles);
 		}
 
-		if (sapNetWeaverJavaApplications != null && sapNetWeaverJavaApplications.hasAllRequiredFieldsSet()) {
-			logger.info("NWDI configuration detected. The Agent will try and" +
-					" auto-detect commit information by searching all profiled Jar/War/Ear/... files.");
-			return createNwdiTeamscaleUploader(instrumentation);
-		}
-
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
 			return new AzureFileStorageUploader(azureFileStorageConfig,
 					additionalMetaDataFiles);
+		}
+
+		if (sapNetWeaverJavaApplications != null && sapNetWeaverJavaApplications
+				.hasAllRequiredFieldsSet() && teamscaleServer.hasAllRequiredFieldsSetExceptProject()) {
+			logger.info("NWDI configuration detected. The Agent will try and" +
+					" auto-detect commit information by searching all profiled Jar/War/Ear/... files.");
+			return createNwdiTeamscaleUploader(instrumentation);
 		}
 
 		return new LocalDiskUploader();
@@ -361,8 +368,7 @@ public class AgentOptions {
 		DelayedSapNwdiMultiUploader store = new DelayedSapNwdiMultiUploader(
 				(commit, application) -> new TeamscaleUploader(
 						teamscaleServer.withProject(application.getTeamscaleProject(), commit)));
-		NwdiManifestLocator locator = new NwdiManifestLocator(store);
-		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(locator, getLocationIncludeFilter(),
+		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(store, getLocationIncludeFilter(),
 				sapNetWeaverJavaApplications.getApplications()));
 		return store;
 	}
