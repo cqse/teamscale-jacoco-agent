@@ -11,7 +11,7 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiManifestLocatingTransformer;
+import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocatingTransformer;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.upload.IUploader;
@@ -255,9 +255,9 @@ public class AgentOptions {
 		validator.isTrue(sapNetWeaverJavaApplications == null || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
 				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete.");
 
-		validator.isTrue(sapNetWeaverJavaApplications == null ||
-						!teamscaleServer.hasAllRequiredFieldsSet(),
-				"You provided an SAP NWDI applications config.");
+		validator.isTrue(sapNetWeaverJavaApplications == null || !teamscaleServer.hasAllRequiredFieldsSet(),
+				"You provided an SAP NWDI applications config and a teamscale-project. This is not allowed. " +
+						"The project must be specified via sap-nwdi-applications!");
 
 		appendTestwiseCoverageValidations(validator);
 
@@ -367,8 +367,8 @@ public class AgentOptions {
 	private IUploader createNwdiTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedSapNwdiMultiUploader store = new DelayedSapNwdiMultiUploader(
 				(commit, application) -> new TeamscaleUploader(
-						teamscaleServer.withProject(application.getTeamscaleProject(), commit)));
-		instrumentation.addTransformer(new NwdiManifestLocatingTransformer(store, getLocationIncludeFilter(),
+						teamscaleServer.withProjectAndCommit(application.getTeamscaleProject(), commit)));
+		instrumentation.addTransformer(new NwdiMarkerClassLocatingTransformer(store, getLocationIncludeFilter(),
 				sapNetWeaverJavaApplications.getApplications()));
 		return store;
 	}

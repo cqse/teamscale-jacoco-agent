@@ -21,17 +21,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * {@link ClassFileTransformer} that doesn't change the loaded classes but searches their corresponding Jar/War/Ear/...
- * files for a git.properties file.
+ * {@link ClassFileTransformer} that doesn't change the loaded classes but guesses
+ * the rough commit timestamp by inspecting the last modification date of the
+ * applications marker class file.
  */
-public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
+public class NwdiMarkerClassLocatingTransformer implements ClassFileTransformer {
 
+	/** The Design time repository-git-bridge (DTR-bridge) currently only exports a single branch named master. */
+	private static final String DTR_BRIDGE_DEFAULT_BRANCH = "master";
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final DelayedSapNwdiMultiUploader store;
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 	private final Map<String, SapNwdiApplications.SapNwdiApplication> markerClassesToApplications;
 
-	public NwdiManifestLocatingTransformer(
+	public NwdiMarkerClassLocatingTransformer(
 			DelayedSapNwdiMultiUploader store,
 			ClasspathWildcardIncludeFilter locationIncludeFilter,
 			Collection<SapNwdiApplications.SapNwdiApplication> apps) {
@@ -45,12 +48,6 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 	@Override
 	public byte[] transform(ClassLoader classLoader, String className, Class<?> aClass,
 							ProtectionDomain protectionDomain, byte[] classFileContent) {
-		if (className == null || !className.startsWith("eu")) {
-			return null;
-		}
-		logger.info(
-				"Found " + className + " protection avail " + (protectionDomain != null) + " " + classFileContent.length);
-
 		if (protectionDomain == null) {
 			// happens for e.g. java.lang. We can ignore these classes
 			return null;
@@ -58,7 +55,6 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 
 		if (StringUtils.isEmpty(className) || !locationIncludeFilter.isIncluded(className)) {
 			// only search in jar files of included classes
-			logger.info("class not matched!");
 			return null;
 		}
 
@@ -82,13 +78,14 @@ public class NwdiManifestLocatingTransformer implements ClassFileTransformer {
 				Path file = Paths.get(jarOrClassFolderUrl.toURI());
 				BasicFileAttributes attr = Files.readAttributes(file, BasicFileAttributes.class);
 				SapNwdiApplications.SapNwdiApplication application = markerClassesToApplications.get(className);
-				CommitDescriptor commitDescriptor = new CommitDescriptor("master", attr.lastModifiedTime().toMillis());
+				CommitDescriptor commitDescriptor = new CommitDescriptor(
+						DTR_BRIDGE_DEFAULT_BRANCH, attr.lastModifiedTime().toMillis());
 				store.setCommitForApplication(commitDescriptor, application);
 			}
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is
 			// silently discarded by the JVM
-			logger.error("Failed to process class {} in search of git.properties", className, e);
+			logger.error("Failed to process class {} trying to determine its last modification timestamp.", className, e);
 		}
 		return null;
 	}

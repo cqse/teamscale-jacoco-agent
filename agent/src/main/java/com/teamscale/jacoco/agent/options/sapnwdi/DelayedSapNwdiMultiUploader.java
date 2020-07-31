@@ -13,8 +13,12 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
- * Wraps an {@link IUploader} and in order to delay upload until a {@link CommitDescriptor} is asynchronously made
- * available.
+ * Wraps multiple {@link IUploader}s in order to delay uploads until a {@link CommitDescriptor} is asynchronously made
+ * available for each application. Whenever a dump happens the coverage is uploaded to all projects for
+ * which a corresponding commit has already been found. Uploads for application that have not commit at that time are skipped.
+ *
+ * This is safe assuming that the marker class is the central entry point for the application and therefore there
+ * should not be any relevant coverage for the application as long as the marker class has not been loaded.
  */
 public class DelayedSapNwdiMultiUploader implements IUploader {
 
@@ -36,9 +40,8 @@ public class DelayedSapNwdiMultiUploader implements IUploader {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			if (uploaders.isEmpty()) {
 				logger.error("The application was shut down before a commit could be found. The recorded coverage" +
-						" is lost. You configured the agent to auto-detect the commit via the " +
-						"'Implementation-Version' entry in the MANIFEST.MF to which the recorded " +
-						"coverage should be uploaded to Teamscale.");
+						" is lost. You configured the agent to auto-detect the commit via the last modification" +
+						" timestamp of the marker class, which the recorded coverage should be uploaded to Teamscale.");
 			}
 		}));
 	}
@@ -46,7 +49,7 @@ public class DelayedSapNwdiMultiUploader implements IUploader {
 	@Override
 	public synchronized void upload(CoverageFile file) {
 		if (uploaders.isEmpty()) {
-			logger.info("The commit to upload to has not yet been found. Discarding coverage");
+			logger.warn("No commits have been found yet to which coverage should be uploaded. Discarding coverage");
 		} else {
 			for (IUploader wrappedUploader : uploaders.values()) {
 				wrappedUploader.upload(file.acquireReference());

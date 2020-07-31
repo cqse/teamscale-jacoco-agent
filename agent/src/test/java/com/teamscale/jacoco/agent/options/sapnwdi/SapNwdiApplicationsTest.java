@@ -13,7 +13,7 @@ public class SapNwdiApplicationsTest {
 	public void testEmptyConfig() throws AgentOptionParseException {
 		assertThatCode(() -> SapNwdiApplications.parseApplications(""))
 				.hasMessage("Application definition is expected not to be empty.");
-		SapNwdiApplications configuration = SapNwdiApplications.parseApplications(",");
+		SapNwdiApplications configuration = SapNwdiApplications.parseApplications(";");
 		assertThat(configuration.hasAllRequiredFieldsSet()).isFalse();
 	}
 
@@ -41,7 +41,7 @@ public class SapNwdiApplicationsTest {
 	@Test
 	public void testMultipleApplications() throws Exception {
 		SapNwdiApplications configuration = SapNwdiApplications
-				.parseApplications("com.teamscale.test1.Bar:alias, com.teamscale.test2.Bar:id");
+				.parseApplications("com.teamscale.test1.Bar:alias; com.teamscale.test2.Bar:id");
 		assertThat(configuration.getApplications()).element(0).satisfies(application -> {
 			assertThat(application.getMarkerClass()).isEqualTo("com.teamscale.test1.Bar");
 			assertThat(application.getTeamscaleProject()).isEqualTo("alias");

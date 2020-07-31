@@ -76,14 +76,14 @@ public class TeamscaleServer {
 	}
 
 	/** Creates a copy of the {@link TeamscaleServer} configuration, but with the given project and commit set. */
-	public TeamscaleServer withProject(String teamscaleProject, CommitDescriptor commitDescriptor) {
-		TeamscaleServer tsApplication = new TeamscaleServer();
-		tsApplication.url = url;
-		tsApplication.userName = userName;
-		tsApplication.userAccessToken = userAccessToken;
-		tsApplication.partition = partition;
-		tsApplication.project = teamscaleProject;
-		tsApplication.commit = commitDescriptor;
-		return tsApplication;
+	public TeamscaleServer withProjectAndCommit(String teamscaleProject, CommitDescriptor commitDescriptor) {
+		TeamscaleServer teamscaleServer = new TeamscaleServer();
+		teamscaleServer.url = url;
+		teamscaleServer.userName = userName;
+		teamscaleServer.userAccessToken = userAccessToken;
+		teamscaleServer.partition = partition;
+		teamscaleServer.project = teamscaleProject;
+		teamscaleServer.commit = commitDescriptor;
+		return teamscaleServer;
 	}
 }

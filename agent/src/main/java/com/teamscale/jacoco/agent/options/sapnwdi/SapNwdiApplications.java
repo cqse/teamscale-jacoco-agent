@@ -25,7 +25,7 @@ public class SapNwdiApplications {
 	/** Parses an application definition string e.g. "com.package.MyClass:projectId,com.company.Main:project". */
 	public static SapNwdiApplications parseApplications(String applications) throws AgentOptionParseException {
 		SapNwdiApplications nwdiConfiguration = new SapNwdiApplications();
-		String[] markerClassAndProjectPairs = applications.split(",");
+		String[] markerClassAndProjectPairs = applications.split(";");
 		for (String markerClassAndProjectPair : markerClassAndProjectPairs) {
 			if (markerClassAndProjectPair.trim().isEmpty()) {
 				throw new AgentOptionParseException("Application definition is expected not to be empty.");
