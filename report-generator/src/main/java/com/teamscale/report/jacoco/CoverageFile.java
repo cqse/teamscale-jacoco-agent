@@ -18,7 +18,7 @@ import java.util.Objects;
  *
  * The object internally holds a counter of how many references to the file are currently hold. This allows to share
  * the same file for multiple uploads and deleting it once all uploads have succeeded. Use {@link #acquireReference()}
- * to make the object aware that it was passed to another uploader and {@link #delete()} to signal that they you no
+ * to make the object aware that it was passed to another uploader and {@link #delete()} to signal that you no
  * longer intend to access the file.
  */
 public class CoverageFile {

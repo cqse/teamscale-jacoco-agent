@@ -181,7 +181,7 @@ public class AgentOptionsTest {
 				"Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
 	}
 
-	/** Tests the options for azure file storage upload. */
+	/** Tests the options for SAP NWDI applications. */
 	@Test
 	public void testValidSapNwdiOptions() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +

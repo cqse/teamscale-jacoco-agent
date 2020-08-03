@@ -41,7 +41,7 @@ public class DelayedSapNwdiMultiUploader implements IUploader {
 			if (uploaders.isEmpty()) {
 				logger.error("The application was shut down before a commit could be found. The recorded coverage" +
 						" is lost. You configured the agent to auto-detect the commit via the last modification" +
-						" timestamp of the marker class, which the recorded coverage should be uploaded to Teamscale.");
+						" timestamp of an application-specific marker class per Teamscale project.");
 			}
 		}));
 	}
