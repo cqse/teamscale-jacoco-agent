@@ -169,7 +169,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
    separated list of applications. Each application is specified as a fully qualified classname (referred to as marker 
    class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed 
    when the application is running and is unique amongst the other deployed applications. 
-   E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`.
+   E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at 
+   the timestamp of the last modification date of the given marker class.
 
 ## Options for testwise mode
 
