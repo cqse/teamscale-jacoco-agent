@@ -168,7 +168,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 
 ## Options for testwise mode
 
-The testwise coverage mode allows to record coverage per test, which is needed for test impact analysis. This means that
+The testwise coverage mode allows to record coverage per test, which is needed for Test Impact Analysis. This means that
 you can distinguish later, which test did produce which coverage. To enable this the `mode` option must be set to 
 `testwise`.
 
@@ -177,7 +177,7 @@ within Teamscale and should be chosen accordingly. It is furthermore used to mak
 navigable within Teamscale.
 
 In the testwise coverage mode the agent only produces an exec file that needs to be converted and augmented with more 
-data from the test system. See TEST_IMPACT_ANALYSIS.md for more details.
+data from the test system. Please refer to [the documentation for the Test Impact Analysis](../TEST_IMPACT_ANALYSIS_DOC.md) for more details.
 
 There are two basic scenarios to distinguish between.
 
