@@ -33,8 +33,11 @@ import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
  */
 public class Agent extends AgentBase {
 
-	/** Path parameter placeholder used in the http requests. */
+	/** Partition path parameter placeholder used in the http requests. */
 	private static final String PARTITION_PARAMETER = ":partition";
+
+	/** Message path parameter placeholder used in the http requests **/
+	private static final String MESSAGE_PARAMETER = ":message";
 
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
@@ -71,9 +74,12 @@ public class Agent extends AgentBase {
 	protected void initServerEndpoints(Service spark) {
 		spark.get("/partition", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
+		spark.get("/message", (request, response) ->
+				Optional.ofNullable(options.getTeamscaleServerOptions().message).orElse(""));
 		spark.post("/dump", this::handleDump);
 		spark.post("/reset", this::handleReset);
 		spark.post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
+		spark.post("/message/" + MESSAGE_PARAMETER, this::handleSetMessage);
 	}
 
 	/** Handles dumping a XML coverage report for coverage collected until now. */
@@ -105,6 +111,23 @@ public class Agent extends AgentBase {
 		logger.debug("Changing partition name to " + partition);
 		controller.setSessionId(partition);
 		options.getTeamscaleServerOptions().partition = partition;
+
+		response.status(204);
+		return "";
+	}
+
+	/** Handles setting the partition name. */
+	private String handleSetMessage(Request request, Response response) {
+		String message = request.params(MESSAGE_PARAMETER);
+		if (message == null || message.isEmpty()) {
+			logger.error("Message missing in " + request.url() + "! Expected /message/Some%20message.");
+
+			response.status(400);
+			return "Message name is missing!";
+		}
+
+		logger.debug("Changing message to " + message);
+		options.getTeamscaleServerOptions().message = message;
 
 		response.status(204);
 		return "";
