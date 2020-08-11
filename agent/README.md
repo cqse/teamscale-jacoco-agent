@@ -150,6 +150,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /partition/{partitionName}` Sets the name of the partition name that should be used for all followup 
       report dumps (see `teamscale-partition`). For reports that are not directly sent to Teamscale the generated report 
       will contain the partition name as session ID.
+    - `[GET] /message` Returns the name of the currently configured commit message.
+    - `[POST] /message/{newMessage}` Sets the commit message that should be used for all followup report dumps (see `teamscale-message`).
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
