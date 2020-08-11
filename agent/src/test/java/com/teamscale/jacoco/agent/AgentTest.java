@@ -45,7 +45,7 @@ public class AgentTest {
 	@Test
 	public void testGetMessage() throws AgentOptionParseException, UploaderException, IOException {
 		String configuredMessage = "Old Message";
-		Agent agent = startAgentHttpServerWithMessage(configuredMessage);
+		startAgentHttpServerWithMessage(configuredMessage);
 
 		String receivedMessage = getMessageViaHttp();
 
