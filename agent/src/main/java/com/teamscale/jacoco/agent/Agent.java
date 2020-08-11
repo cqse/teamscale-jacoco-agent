@@ -123,7 +123,7 @@ public class Agent extends AgentBase {
 			logger.error("Message missing in " + request.url() + "! Expected /message/Some%20message.");
 
 			response.status(400);
-			return "Message name is missing!";
+			return "Message is missing!";
 		}
 
 		logger.debug("Changing message to " + message);
