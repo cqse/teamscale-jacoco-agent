@@ -19,6 +19,7 @@ import spark.Request;
 import spark.Response;
 import spark.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
@@ -104,7 +105,7 @@ public class Agent extends AgentBase {
 		if (partition == null || partition.isEmpty()) {
 			logger.error("Partition missing in " + request.url() + "! Expected /partition/Some%20Partition%20Name.");
 
-			response.status(400);
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
 			return "Partition name is missing!";
 		}
 
@@ -112,7 +113,7 @@ public class Agent extends AgentBase {
 		controller.setSessionId(partition);
 		options.getTeamscaleServerOptions().partition = partition;
 
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 
@@ -122,14 +123,14 @@ public class Agent extends AgentBase {
 		if (message == null || message.isEmpty()) {
 			logger.error("Message missing in " + request.url() + "! Expected /message/Some%20message.");
 
-			response.status(400);
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
 			return "Message is missing!";
 		}
 
 		logger.debug("Changing message to " + message);
 		options.getTeamscaleServerOptions().message = message;
 
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 
