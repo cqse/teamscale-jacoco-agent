@@ -35,6 +35,9 @@ import static java.util.stream.Collectors.joining;
  */
 public class AgentOptionsParser {
 
+	/** The name of the option for providing the logging config.  */
+	public static final String LOGGING_CONFIG_OPTION = "logging-config";
+
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
@@ -128,7 +131,7 @@ public class AgentOptionsParser {
 			case "config-file":
 				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
 				return true;
-			case "logging-config":
+			case LOGGING_CONFIG_OPTION:
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
 				return true;
 			case "interval":
