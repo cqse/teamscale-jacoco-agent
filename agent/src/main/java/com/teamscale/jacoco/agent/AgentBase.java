@@ -9,12 +9,15 @@ import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 import spark.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.util.Optional;
 
 /**
  * Base class for agent implementations. Handles logger shutdown, store creation
@@ -118,23 +121,44 @@ public abstract class AgentBase {
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
-				String location = optionPart.split("=", 2)[1];
+				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);
+			}
+			
+			if (optionPart.startsWith(AgentOptionsParser.CONFIG_FILE_OPTION + "=")) {
+				String configFileValue = optionPart.split("=", 2)[1];
+				Optional<String> loggingConfigLine = Optional.empty();
 				try {
-					return LoggingUtils.initializeLogging(new FilePatternResolver(delayedLogger)
-							.parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION, location));
+					File configFile = new FilePatternResolver(delayedLogger)
+							.parsePath(AgentOptionsParser.CONFIG_FILE_OPTION, configFileValue).toFile();
+					loggingConfigLine = FileSystemUtils.readLinesUTF8(configFile).stream()
+							.filter(line -> line.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "="))
+							.findFirst();
 				} catch (IOException | AgentOptionParseException e) {
-					String message = "Failed to load log configuration from location " + location + ": "
-							+ e.getMessage();
-					delayedLogger.error(message, e);
-					// output the message to console as well, as this might
-					// otherwise not make it to the user
-					System.err.println(message);
-					return LoggingUtils.initializeDefaultLogging();
+					delayedLogger.error("Failed to load configuration from " + configFileValue + ": " + e.getMessage(),
+							e);
+				}
+				if (loggingConfigLine.isPresent()) {
+					return createFallbackLoggerFromConfig(loggingConfigLine.get().split("=", 2)[1], delayedLogger);
 				}
 			}
 		}
 
 		return LoggingUtils.initializeDefaultLogging();
+	}
+
+	/** Creates a fallback logger using the given config file. */
+	private static LoggingResources createFallbackLoggerFromConfig(String configLocation, DelayedLogger delayedLogger) {
+		try {
+			return LoggingUtils.initializeLogging(new FilePatternResolver(delayedLogger)
+					.parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION, configLocation));
+		} catch (IOException | AgentOptionParseException e) {
+			String message = "Failed to load log configuration from location " + configLocation + ": " + e.getMessage();
+			delayedLogger.error(message, e);
+			// output the message to console as well, as this might
+			// otherwise not make it to the user
+			System.err.println(message);
+			return LoggingUtils.initializeDefaultLogging();
+		}
 	}
 
 	/**
