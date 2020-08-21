@@ -9,6 +9,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] _tia-client_: changed Java API
 - [feature] always exclude common libraries from profiling to shrink coverage files
 - [feature] enable changing and reading the commit message via a new `/message` REST endpoint
+- [breaking change] changing the partition is now a PUT request with the new partition in the request body (formerly POST with the new partition in the URL)
 
 # 17.0.0
 - [breaking change] default for `--interval` changed from 60 to 480 minutes
