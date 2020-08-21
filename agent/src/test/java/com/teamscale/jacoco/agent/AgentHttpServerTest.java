@@ -5,6 +5,7 @@ import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
 import com.teamscale.jacoco.agent.upload.UploaderException;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -82,11 +83,12 @@ public class AgentHttpServerTest {
 	}
 
 
-	private void overrideEndpoint(String endpointPath, String newMessage) throws IOException {
+	private void overrideEndpoint(String endpointPath, String newValue) throws IOException {
 		OkHttpClient client = new OkHttpClient();
+		MediaType textPlainMediaType = MediaType.parse("text/plain; charset=utf-8");
 		Request request = new Request.Builder()
-				.url("http://localhost:" + httpServerPort + "/" + endpointPath + "/" + newMessage)
-				.method("POST", RequestBody.create(null, new byte[0]))
+				.url("http://localhost:" + httpServerPort + "/" + endpointPath)
+				.method("PUT", RequestBody.create(textPlainMediaType, newValue.getBytes()))
 				.build();
 		client.newCall(request).execute();
 	}

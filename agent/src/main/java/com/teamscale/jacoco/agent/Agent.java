@@ -34,12 +34,6 @@ import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
  */
 public class Agent extends AgentBase {
 
-	/** Partition path parameter placeholder used in the http requests. */
-	private static final String PARTITION_PARAMETER = ":partition";
-
-	/** Message path parameter placeholder used in the http requests **/
-	private static final String MESSAGE_PARAMETER = ":message";
-
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
 
@@ -79,15 +73,15 @@ public class Agent extends AgentBase {
 				Optional.ofNullable(options.getTeamscaleServerOptions().message).orElse(""));
 		spark.post("/dump", this::handleDump);
 		spark.post("/reset", this::handleReset);
-		spark.post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
-		spark.post("/message/" + MESSAGE_PARAMETER, this::handleSetMessage);
+		spark.put("/partition", this::handleSetPartition);
+		spark.put("/message", this::handleSetMessage);
 	}
 
 	/** Handles dumping a XML coverage report for coverage collected until now. */
 	private String handleDump(Request request, Response response) {
 		logger.debug("Dumping report triggered via HTTP request");
 		dumpReport();
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 
@@ -95,15 +89,16 @@ public class Agent extends AgentBase {
 	private String handleReset(Request request, Response response) {
 		logger.debug("Resetting coverage triggered via HTTP request");
 		controller.reset();
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 
 	/** Handles setting the partition name. */
 	private String handleSetPartition(Request request, Response response) {
-		String partition = request.params(PARTITION_PARAMETER);
+		String partition = request.body();
 		if (partition == null || partition.isEmpty()) {
-			logger.error("Partition missing in " + request.url() + "! Expected /partition/Some%20Partition%20Name.");
+			logger.error("The new partition name is missing in the request body! Please add it as plain text " +
+					"(content type \"text/plain; charset=UTF-8\"");
 
 			response.status(HttpServletResponse.SC_BAD_REQUEST);
 			return "Partition name is missing!";
@@ -119,9 +114,10 @@ public class Agent extends AgentBase {
 
 	/** Handles setting the partition name. */
 	private String handleSetMessage(Request request, Response response) {
-		String message = request.params(MESSAGE_PARAMETER);
+		String message = request.body();
 		if (message == null || message.isEmpty()) {
-			logger.error("Message missing in " + request.url() + "! Expected /message/Some%20message.");
+			logger.error("The new message is missing in the request body! Please add it as plain text " +
+					"(content type \"text/plain; charset=UTF-8\"");
 
 			response.status(HttpServletResponse.SC_BAD_REQUEST);
 			return "Message is missing!";
