@@ -21,12 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AgentHttpServerTest {
 
 	private Agent agent;
+	private final URI baseUri;
 	private final Integer httpServerPort = 8081;
-	private URI baseUri = new URI("http://localhost:" + httpServerPort);
 	private final String defaultCommitMessage = "Some Message";
 	private final String defaultPartition = "Some Partition";
 
 	public AgentHttpServerTest() throws URISyntaxException {
+		baseUri = new URI("http://localhost:" + httpServerPort);
 	}
 
 	/** Starts the http server to control the agent */
