@@ -97,11 +97,11 @@ public class Agent extends AgentBase {
 	private String handleSetPartition(Request request, Response response) {
 		String partition = request.body();
 		if (partition == null || partition.isEmpty()) {
-			logger.error("The new partition name is missing in the request body! Please add it as plain text " +
-					"(content type \"text/plain; charset=UTF-8\"");
+			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
+			logger.error(errorMessage);
 
 			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return "Partition name is missing!";
+			return errorMessage;
 		}
 
 		logger.debug("Changing partition name to " + partition);
@@ -116,11 +116,11 @@ public class Agent extends AgentBase {
 	private String handleSetMessage(Request request, Response response) {
 		String message = request.body();
 		if (message == null || message.isEmpty()) {
-			logger.error("The new message is missing in the request body! Please add it as plain text " +
-					"(content type \"text/plain; charset=UTF-8\"");
+			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
+			logger.error(errorMessage);
 
 			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return "Message is missing!";
+			return errorMessage;
 		}
 
 		logger.debug("Changing message to " + message);
