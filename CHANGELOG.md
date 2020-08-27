@@ -8,6 +8,8 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
 - [breaking change] _tia-client_: changed Java API
 - [feature] always exclude common libraries from profiling to shrink coverage files
+- [feature] enable changing and reading the commit message via a new `/message` REST endpoint
+- [breaking change] changing the partition is now a PUT request to `/partition` (formerly POST to `/partition/{partitionName}`)
 
 # 17.0.0
 - [breaking change] default for `--interval` changed from 60 to 480 minutes

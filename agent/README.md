@@ -147,9 +147,12 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `http-server-port`: the port at which the agent should start an HTTP server that listens for commands.
     The agent's REST API has the following endpoints:
     - `[GET] /partition` Returns the name of the currently configured partition name.
-    - `[POST] /partition/{partitionName}` Sets the name of the partition name that should be used for all followup 
-      report dumps (see `teamscale-partition`). For reports that are not directly sent to Teamscale the generated report 
-      will contain the partition name as session ID.
+    - `[PUT] /partition` Sets the name of the partition name to the string delivered in the request body in plain text.
+      This partition should be used for all followup report dumps (see `teamscale-partition`).
+      For reports that are not directly sent to Teamscale the generated report will contain the partition name as session ID.
+    - `[GET] /message` Returns the name of the currently configured commit message.
+    - `[PUT] /message` Sets the commit message to the string delivered in the request body in plain text.
+      This message should be used for all followup report dumps (see `teamscale-message`).
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.

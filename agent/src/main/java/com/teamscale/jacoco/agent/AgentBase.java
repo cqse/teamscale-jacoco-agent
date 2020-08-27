@@ -101,13 +101,18 @@ public abstract class AgentBase {
 	 */
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			if (options.getHttpServerPort() != null) {
-				spark.stop();
-			}
+			stopServer();
 			prepareShutdown();
 			logger.info("CQSE JaCoCo agent successfully shut down.");
 			loggingResources.close();
 		}));
+	}
+
+	/** Stop the http server if it's running */
+	void stopServer() {
+		if (options.getHttpServerPort() != null) {
+			spark.stop();
+		}
 	}
 
 	/** Called when the shutdown hook is triggered. */
