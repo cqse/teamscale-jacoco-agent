@@ -90,8 +90,8 @@ public abstract class AgentBase {
 
 				// we perform actual logging output after writing to console to
 				// ensure the console is reached even in case of logging issues
-				// (see TS-23151)
-				Logger logger = LoggingUtils.getLogger(PreMain.class);
+				// (see TS-23151). We use the Agent class here (same as below)
+				Logger logger = LoggingUtils.getLogger(Agent.class);
 				delayedLogger.logTo(logger);
 				throw e;
 			}
