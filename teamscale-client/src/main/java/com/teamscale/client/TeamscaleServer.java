@@ -35,12 +35,12 @@ public class TeamscaleServer {
 	 */
 	public String revision;
 
-	/**
-	 * The commit message shown in the Teamscale UI for the coverage upload. If this is null, auto-generates a sensible
-	 * message.
-	 */
 	private String message = null;
 
+	/**
+	 * The commit message shown in the Teamscale UI for the coverage upload. If the message is null, auto-generates a
+	 * sensible message.
+	 */
 	public String getMessage() {
 		if (message == null) {
 			return createDefaultMessage();
