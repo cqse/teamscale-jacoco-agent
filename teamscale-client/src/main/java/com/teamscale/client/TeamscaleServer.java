@@ -53,7 +53,7 @@ public class TeamscaleServer {
 		if (revision != null) {
 			revisionPart = " for revision " + revision;
 		}
-		return partition + " test coverage uploaded at " +
+		return partition + " coverage uploaded at " +
 				DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()) + revisionPart;
 	}
 
