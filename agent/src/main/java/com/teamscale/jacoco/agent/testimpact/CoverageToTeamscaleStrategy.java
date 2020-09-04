@@ -106,7 +106,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				.uploadReport(EReportFormat.TESTWISE_COVERAGE, json, agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().revision,
 						agentOptions.getTeamscaleServerOptions().partition,
-						agentOptions.getTeamscaleServerOptions().message);
+						agentOptions.getTeamscaleServerOptions().getMessage());
 	}
 
 }

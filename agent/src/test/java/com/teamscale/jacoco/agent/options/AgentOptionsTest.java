@@ -83,7 +83,7 @@ public class AgentOptionsTest {
 		assertThat(teamscaleServer.userAccessToken).isEqualTo("token");
 		assertThat(teamscaleServer.partition).isEqualTo("Unit Tests");
 		assertThat(teamscaleServer.commit.toString()).isEqualTo("default:HEAD");
-		assertThat(teamscaleServer.message).isEqualTo("This is my message");
+		assertThat(teamscaleServer.getMessage()).isEqualTo("This is my message");
 	}
 
 	/** Tests the options for the Test Impact mode. */

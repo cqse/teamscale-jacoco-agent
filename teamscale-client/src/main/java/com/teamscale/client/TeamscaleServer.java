@@ -2,6 +2,9 @@ package com.teamscale.client;
 
 import okhttp3.HttpUrl;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 /** Holds Teamscale server details. */
 public class TeamscaleServer {
 
@@ -32,9 +35,31 @@ public class TeamscaleServer {
 	 */
 	public String revision;
 
+	/**
+	 * The commit message shown in the Teamscale UI for the coverage upload. If this is null, auto-generates a sensible
+	 * message.
+	 */
+	private String message = null;
 
-	/** The commit message shown in the Teamscale UI for the coverage upload. */
-	public String message = "Agent coverage upload";
+	public String getMessage() {
+		if (message == null) {
+			return createDefaultMessage();
+		}
+		return message;
+	}
+
+	private String createDefaultMessage() {
+		String revisionPart = "";
+		if (revision != null) {
+			revisionPart = " for revision " + revision;
+		}
+		return partition + " test coverage uploaded at " +
+				DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()) + revisionPart;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
 
 	/** Returns if all required fields are non-null. */
 	public boolean hasAllRequiredFieldsSet() {
