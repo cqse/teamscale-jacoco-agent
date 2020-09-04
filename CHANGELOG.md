@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 
 - [fix] option parsing errors were not logged in rare cases
+- [breaking change] changed default message to include partition and upload date
 
 # 18.0.0
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
