@@ -2,7 +2,7 @@ package com.teamscale.client;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TeamscaleServerTest {
 
@@ -13,8 +13,10 @@ class TeamscaleServerTest {
 		server.revision = "rev123";
 
 		String message = server.getMessage();
-		String normalizedMessage = message.replaceAll("at .* for", "at DATE for");
-		assertEquals("Unit Test coverage uploaded at DATE for revision rev123", normalizedMessage);
+		String normalizedMessage = message.replaceAll("uploaded at .*", "uploaded at DATE")
+				.replaceAll("hostname: .*", "hostname: HOST");
+		assertEquals("Unit Test coverage uploaded at DATE\n\nuploaded from hostname: HOST\nfor revision: rev123",
+				normalizedMessage);
 	}
 
 }
