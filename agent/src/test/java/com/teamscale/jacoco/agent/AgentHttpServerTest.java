@@ -56,7 +56,7 @@ public class AgentHttpServerTest {
 		putText("/message", newMessage);
 
 		TeamscaleServer teamscaleServer = agent.options.getTeamscaleServerOptions();
-		assertThat(teamscaleServer.message).isEqualTo(newMessage);
+		assertThat(teamscaleServer.getMessage()).isEqualTo(newMessage);
 	}
 
 	/** Test reading the commit message */

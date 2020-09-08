@@ -70,7 +70,7 @@ public class Agent extends AgentBase {
 		spark.get("/partition", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 		spark.get("/message", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().message).orElse(""));
+				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
 		spark.post("/dump", this::handleDump);
 		spark.post("/reset", this::handleReset);
 		spark.put("/partition", this::handleSetPartition);
@@ -124,7 +124,7 @@ public class Agent extends AgentBase {
 		}
 
 		logger.debug("Changing message to " + message);
-		options.getTeamscaleServerOptions().message = message;
+		options.getTeamscaleServerOptions().setMessage(message);
 
 		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
