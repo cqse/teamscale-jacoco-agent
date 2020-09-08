@@ -9,7 +9,7 @@ We use [semantic versioning](http://semver.org/):
 - [fix] option parsing errors were not logged in rare cases
 - [breaking change] changed default message to include partition and upload date
 - [breaking change] Bumped minimum supported Gradle version for the Gradle plugin to 6.5 so we can support Java 11
- 
+- [feature] Made score and duration of test selected by TIA available via the teamscale-client
 
 # 18.0.0
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
