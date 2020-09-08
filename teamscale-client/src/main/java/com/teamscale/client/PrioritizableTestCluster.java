@@ -23,7 +23,9 @@ public class PrioritizableTestCluster {
 	public String clusterId;
 
 	/**
-	 * The score determined by the TIA algorithm for the cluster.
+	 * The score determined by the TIA algorithm. The value is guaranteed to be positive. Higher values describe a
+	 * higher probability of the test to detect potential bugs. The value can only express a relative importance
+	 * compared to other scores of the same request. It makes no sense to compare the score against absolute values.
 	 */
 	@Json(name = "currentScore")
 	public double score;
