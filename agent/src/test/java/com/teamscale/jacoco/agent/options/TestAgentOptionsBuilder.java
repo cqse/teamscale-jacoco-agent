@@ -43,7 +43,7 @@ public class TestAgentOptionsBuilder {
 	public AgentOptions create() {
 		AgentOptions agentOptions = new AgentOptions();
 		agentOptions.teamscaleServer.partition = teamscalePartition;
-		agentOptions.teamscaleServer.message = teamscaleMessage;
+		agentOptions.teamscaleServer.setMessage(teamscaleMessage);
 		agentOptions.httpServerPort = httpServerPort;
 		return agentOptions;
 	}

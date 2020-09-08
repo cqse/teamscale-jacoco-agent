@@ -260,7 +260,7 @@ public class AgentOptionsParser {
 			options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
 			return true;
 		case "teamscale-message":
-			options.teamscaleServer.message = value;
+			options.teamscaleServer.setMessage(value);
 			return true;
 		case AgentOptions.TEAMSCALE_REVISION_OPTION:
 			options.teamscaleServer.revision = value;

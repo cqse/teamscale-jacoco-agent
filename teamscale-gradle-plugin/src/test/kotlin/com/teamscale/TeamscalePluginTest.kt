@@ -135,7 +135,7 @@ class TeamscalePluginTest {
             .withProjectDir(temporaryFolder.root)
             .withPluginClasspath()
             .withArguments(runnerArgs)
-            .withGradleVersion("4.6")
+            .withGradleVersion("6.5")
 
         if (DEBUG_PLUGIN) {
             runner.withDebug(true)
