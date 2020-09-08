@@ -8,6 +8,8 @@ We use [semantic versioning](http://semver.org/):
 
 - [fix] option parsing errors were not logged in rare cases
 - [breaking change] changed default message to include partition and upload date
+- [breaking change] Minimum supported Gradle version for the Gradle plugin bumped to 6.5 so we can support Java 11
+ 
 
 # 18.0.0
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
