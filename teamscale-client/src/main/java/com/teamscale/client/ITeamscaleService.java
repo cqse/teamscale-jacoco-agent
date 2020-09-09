@@ -23,7 +23,7 @@ public interface ITeamscaleService {
 
 	/** Report upload API. */
 	@Multipart
-	@POST("p/{projectName}/external-report/")
+	@POST("api/projects/{projectName}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReport(
 			@Path("projectName") String projectName,
 			@Query("format") String format,
@@ -52,7 +52,7 @@ public interface ITeamscaleService {
 
 	/** Report upload API for multiple reports at once. */
 	@Multipart
-	@POST("p/{projectName}/external-report/")
+	@POST("api/projects/{projectName}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReports(
 			@Path("projectName") String projectName,
 			@Query("format") EReportFormat format,
@@ -64,43 +64,51 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve clustered impacted tests based on the given available tests. */
-	@PUT("p/{projectName}/test-impact")
+	@PUT("api/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			@Query("includeNonImpacted") boolean includeNonImpacted,
+			@Query("include-non-impacted") boolean includeNonImpacted,
+			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
+			@Query("ensure-processed") boolean ensureProcessed,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
-	@PUT("p/{projectName}/test-impact")
+	@PUT("api/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			@Query("includeNonImpacted") boolean includeNonImpacted,
+			@Query("include-non-impacted") boolean includeNonImpacted,
+			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
+			@Query("ensure-processed") boolean ensureProcessed,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale. */
-	@GET("p/{projectName}/test-impact")
+	@GET("api/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			@Query("includeNonImpacted") boolean includeNonImpacted
+			@Query("include-non-impacted") boolean includeNonImpacted,
+			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
+			@Query("ensure-processed") boolean ensureProcessed
 	);
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
-	@GET("p/{projectName}/test-impact")
+	@GET("api/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
-			@Query("includeNonImpacted") boolean includeNonImpacted
+			@Query("include-non-impacted") boolean includeNonImpacted,
+			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
+			@Query("ensure-processed") boolean ensureProcessed
 	);
 
 	/**
