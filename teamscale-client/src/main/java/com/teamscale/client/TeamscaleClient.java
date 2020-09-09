@@ -45,7 +45,8 @@ public class TeamscaleClient {
 
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale. This should be used in a CI environment, because it ensures
-	 * that the given commit has been processed by Teamscale and also considers previous failing tests for re-execution.
+	 * that the given commit has been processed by Teamscale and also considers previous failing tests for
+	 * re-execution.
 	 *
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
@@ -66,8 +67,8 @@ public class TeamscaleClient {
 	}
 
 	/**
-	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or
-	 * you want to exclude failed and skipped tests from previous test runs.
+	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or you
+	 * want to exclude failed and skipped tests from previous test runs.
 	 *
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
@@ -82,36 +83,20 @@ public class TeamscaleClient {
 		boolean includeFailedAndSkippedTests = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
 		boolean ensureProcessed = testImpactOptions.contains(ENSURE_PROCESSED);
 
-		if (baseline == null) {
-			if (availableTests == null) {
-				return wrapInCluster(
-						service.getImpactedTests(projectId, endCommit, partition,
-								includeNonImpacted,
-								includeFailedAndSkippedTests,
-								ensureProcessed).execute());
-			} else {
-				return service.getImpactedTests(projectId, endCommit, partition,
-						includeNonImpacted,
-						includeFailedAndSkippedTests,
-						ensureProcessed, availableTests)
-						.execute();
-			}
+		if (availableTests == null) {
+			return wrapInCluster(
+					service.getImpactedTests(projectId, baseline, endCommit, partition,
+							includeNonImpacted,
+							includeFailedAndSkippedTests,
+							ensureProcessed)
+							.execute());
 		} else {
-			if (availableTests == null) {
-				return wrapInCluster(
-						service.getImpactedTests(projectId, baseline, endCommit, partition,
-								includeNonImpacted,
-								includeFailedAndSkippedTests,
-								ensureProcessed)
-								.execute());
-			} else {
-				return service
-						.getImpactedTests(projectId, baseline, endCommit, partition,
-								includeNonImpacted,
-								includeFailedAndSkippedTests,
-								ensureProcessed, availableTests)
-						.execute();
-			}
+			return service
+					.getImpactedTests(projectId, baseline, endCommit, partition,
+							includeNonImpacted,
+							includeFailedAndSkippedTests,
+							ensureProcessed, availableTests)
+					.execute();
 		}
 	}
 

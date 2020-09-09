@@ -63,47 +63,24 @@ public interface ITeamscaleService {
 			@Part List<MultipartBody.Part> report
 	);
 
-	/** Retrieve clustered impacted tests based on the given available tests. */
-	@PUT("api/projects/{projectName}/impacted-tests")
-	Call<List<PrioritizableTestCluster>> getImpactedTests(
-			@Path("projectName") String projectName,
-			@Query("end") CommitDescriptor end,
-			@Query("partitions") String partition,
-			@Query("include-non-impacted") boolean includeNonImpacted,
-			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
-			@Query("ensure-processed") boolean ensureProcessed,
-			@Body List<ClusteredTestDetails> availableTests
-	);
-
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
 	@PUT("api/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
-			@Query("baseline") long baseline,
+			@Query("baseline") Long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
 			@Query("ensure-processed") boolean ensureProcessed,
 			@Body List<ClusteredTestDetails> availableTests
-	);
-
-	/** Retrieve unclustered impacted tests based on all tests known to Teamscale. */
-	@GET("api/projects/{projectName}/impacted-tests")
-	Call<List<PrioritizableTest>> getImpactedTests(
-			@Path("projectName") String projectName,
-			@Query("end") CommitDescriptor end,
-			@Query("partitions") String partition,
-			@Query("include-non-impacted") boolean includeNonImpacted,
-			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
-			@Query("ensure-processed") boolean ensureProcessed
 	);
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
 	@GET("api/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
-			@Query("baseline") long baseline,
+			@Query("baseline") Long baseline,
 			@Query("end") CommitDescriptor end,
 			@Query("partitions") String partition,
 			@Query("include-non-impacted") boolean includeNonImpacted,
