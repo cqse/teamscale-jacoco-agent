@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 19.0.0
 - [fix] option parsing errors were not logged in rare cases
 - [breaking change] changed default message to include partition and upload date
 - [breaking change] Bumped minimum supported Gradle version for the Gradle plugin to 6.5 so we can support Java 11
