@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [breaking change] This release requires Teamscale 5.9 or higher
+- [feature] Made ensure-processed and include-failed-and-skipped options available in teamscale-client
 
 # 19.0.0
 - [fix] option parsing errors were not logged in rare cases

@@ -15,6 +15,8 @@ configured to only use very little memory, you might have to increase this limit
 the agent to function properly. How much memory is needed depends on how much code is being
 analyzed and thus on how you configure the agent.
 
+To upload coverage directly to Teamscale a Teamscale version of 5.9.0 or higher is required.
+
 ## Installing
 
 Unzip this zip file into any folder. __All files contained in the zip file are required for the agent

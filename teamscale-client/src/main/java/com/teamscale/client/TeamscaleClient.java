@@ -8,10 +8,16 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
 /** Helper class to interact with Teamscale. */
 public class TeamscaleClient {
@@ -38,7 +44,9 @@ public class TeamscaleClient {
 	}
 
 	/**
-	 * Tries to retrieve the impacted tests from Teamscale.
+	 * Tries to retrieve the impacted tests from Teamscale. This should be used in a CI environment, because it ensures
+	 * that the given commit has been processed by Teamscale and also considers previous failing tests for
+	 * re-execution.
 	 *
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
@@ -49,24 +57,46 @@ public class TeamscaleClient {
 			String partition,
 			boolean includeNonImpacted) throws IOException {
 
-		if (baseline == null) {
-			if (availableTests == null) {
-				return wrapInCluster(
-						service.getImpactedTests(projectId, endCommit, partition, includeNonImpacted).execute());
-			} else {
-				return service.getImpactedTests(projectId, endCommit, partition, includeNonImpacted, availableTests)
-						.execute();
-			}
+		if (includeNonImpacted) {
+			return getImpactedTests(availableTests, baseline, endCommit, partition, INCLUDE_NON_IMPACTED,
+					ENSURE_PROCESSED, INCLUDE_FAILED_AND_SKIPPED);
 		} else {
-			if (availableTests == null) {
-				return wrapInCluster(
-						service.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted)
-								.execute());
-			} else {
-				return service
-						.getImpactedTests(projectId, baseline, endCommit, partition, includeNonImpacted, availableTests)
-						.execute();
-			}
+			return getImpactedTests(availableTests, baseline, endCommit, partition, ENSURE_PROCESSED,
+					INCLUDE_FAILED_AND_SKIPPED);
+		}
+	}
+
+	/**
+	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or you
+	 * want to exclude failed and skipped tests from previous test runs.
+	 *
+	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
+	 * all prioritized tests.
+	 */
+	public Response<List<PrioritizableTestCluster>> getImpactedTests(
+			List<ClusteredTestDetails> availableTests, Long baseline,
+			CommitDescriptor endCommit,
+			String partition,
+			ETestImpactOptions... options) throws IOException {
+		EnumSet<ETestImpactOptions> testImpactOptions = EnumSet.copyOf(Arrays.asList(options));
+		boolean includeNonImpacted = testImpactOptions.contains(INCLUDE_NON_IMPACTED);
+		boolean includeFailedAndSkippedTests = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
+		boolean ensureProcessed = testImpactOptions.contains(ENSURE_PROCESSED);
+
+		if (availableTests == null) {
+			return wrapInCluster(
+					service.getImpactedTests(projectId, baseline, endCommit, partition,
+							includeNonImpacted,
+							includeFailedAndSkippedTests,
+							ensureProcessed)
+							.execute());
+		} else {
+			return service
+					.getImpactedTests(projectId, baseline, endCommit, partition,
+							includeNonImpacted,
+							includeFailedAndSkippedTests,
+							ensureProcessed, availableTests)
+					.execute();
 		}
 	}
 
