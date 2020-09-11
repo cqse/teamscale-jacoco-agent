@@ -25,7 +25,7 @@ after_script:
     fi
 after_success:
   - >
-    ./gradlew publish
+    ./gradlew publishMavenPublicationToMavenRepository
     -Psigning.secretKeyRingFile=$TRAVIS_BUILD_DIR/.gnupg/secring.gpg
     -Psigning.password=$MAVEN_CENTRAL_GPG
     -Psigning.keyId=4FB80B8E

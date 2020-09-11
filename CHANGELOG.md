@@ -6,8 +6,16 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 20.0.0
+- [breaking change] This release requires Teamscale 5.9 or higher
+- [feature] Made ensure-processed and include-failed-and-skipped options available in teamscale-client
+
+# 19.0.0
 - [fix] option parsing errors were not logged in rare cases
 - [feature] _tia-client_: add API to hash test data when creating ClusteredTestDetails
+- [breaking change] changed default message to include partition and upload date
+- [breaking change] Bumped minimum supported Gradle version for the Gradle plugin to 6.5 so we can support Java 11
+- [feature] Made score and duration of test selected by TIA available via the teamscale-client
 
 # 18.0.0
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.

@@ -17,7 +17,7 @@ import org.gradle.util.GradleVersion
  * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
  * Furthermore all reports configured are uploaded to Teamscale after the tests have been executed.
  *
- * The plugin needs a gradle version of 4.6 or higher. */
+ * The plugin needs a gradle version of 6.5 or higher. */
 open class TeamscalePlugin : Plugin<Project> {
 
     companion object {
@@ -47,8 +47,8 @@ open class TeamscalePlugin : Plugin<Project> {
         val pluginExtension =
             project.extensions.create(teamscaleExtensionName, TeamscalePluginExtension::class.java, project)
 
-        if (GradleVersion.current() < GradleVersion.version("4.6")) {
-            throw GradleException("The teamscale plugin requires Gradle version 4.6 or higher")
+        if (GradleVersion.current() < GradleVersion.version("6.5")) {
+            throw GradleException("The teamscale plugin requires Gradle version 6.5 or higher")
         }
 
         project.repositories.mavenCentral()

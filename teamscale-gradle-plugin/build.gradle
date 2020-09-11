@@ -3,6 +3,12 @@ plugins {
 	id 'com.teamscale.java-convention'
 	id 'java-gradle-plugin'
 	id 'com.teamscale.coverage'
+	id 'com.teamscale.publish'
+}
+
+publishAs {
+	readableName = "Teamscale Gradle Plugin"
+	description = "A Gradle plugin that supports collecting Testwise Coverage and uploading reports to Teamscale."
 }
 
 gradlePlugin {
