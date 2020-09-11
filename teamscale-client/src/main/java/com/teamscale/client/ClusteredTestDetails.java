@@ -26,9 +26,9 @@ public class ClusteredTestDetails extends TestDetails {
 	 * Example: For a test that reads test data from an XML file, you should pass the contents of that XML file as its
 	 * test data. Then, whenever the XML is modified, the corresponding test will be run by the TIA.
 	 */
-	public ClusteredTestDetails(String uniformPath, String sourcePath, TestData testData, String clusterId) {
-		super(uniformPath, sourcePath, testData.hash);
-		this.clusterId = clusterId;
+	public static ClusteredTestDetails createWithTestData(String uniformPath, String sourcePath, TestData testData,
+														  String clusterId) {
+		return new ClusteredTestDetails(uniformPath, sourcePath, testData.hash, clusterId);
 	}
 
 }
