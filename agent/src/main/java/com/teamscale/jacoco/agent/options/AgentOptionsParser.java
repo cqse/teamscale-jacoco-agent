@@ -135,61 +135,61 @@ public class AgentOptionsParser {
 	private boolean handleAgentOptions(AgentOptions options, String key, String value)
 			throws AgentOptionParseException {
 		switch (key) {
-			case CONFIG_FILE_OPTION:
-				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
-				return true;
-			case LOGGING_CONFIG_OPTION:
-				options.loggingConfig = filePatternResolver.parsePath(key, value);
-				return true;
-			case "interval":
-				options.dumpIntervalInMinutes = parseInt(key, value);
-				return true;
-			case "validate-ssl":
-				options.validateSsl = Boolean.parseBoolean(value);
-				return true;
-			case "out":
-				options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
-				return true;
-			case "upload-url":
-				options.uploadUrl = parseUrl(key, value);
-				return true;
-			case "upload-metadata":
-				try {
-					options.additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
-				} catch (InvalidPathException e) {
-					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
-				}
-				return true;
-			case "duplicates":
-				options.duplicateClassFileBehavior = parseEnumValue(key, value, EDuplicateClassFileBehavior.class);
-				return true;
-			case "ignore-uncovered-classes":
-				options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
-				return true;
-			case "dump-on-exit":
-				options.shouldDumpOnExit = Boolean.parseBoolean(value);
-				return true;
-			case "mode":
-				options.mode = parseEnumValue(key, value, EMode.class);
-				return true;
-			case "includes":
-				options.jacocoIncludes = value.replaceAll(";", ":");
-				return true;
-			case "excludes":
-				options.jacocoExcludes = value.replaceAll(";", ":") + ":" + AgentOptions.DEFAULT_EXCLUDES;
-				return true;
-			case "class-dir":
-				List<String> list = splitMultiOptionValue(value);
-				options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver, list);
-				return true;
-			case "http-server-port":
-				options.httpServerPort = parseInt(key, value);
-				return true;
-			case "sap-nwdi-applications":
-				options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
-				return true;
-			default:
-				return false;
+		case CONFIG_FILE_OPTION:
+			readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
+			return true;
+		case LOGGING_CONFIG_OPTION:
+			options.loggingConfig = filePatternResolver.parsePath(key, value);
+			return true;
+		case "interval":
+			options.dumpIntervalInMinutes = parseInt(key, value);
+			return true;
+		case "validate-ssl":
+			options.validateSsl = Boolean.parseBoolean(value);
+			return true;
+		case "out":
+			options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
+			return true;
+		case "upload-url":
+			options.uploadUrl = parseUrl(key, value);
+			return true;
+		case "upload-metadata":
+			try {
+				options.additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
+			} catch (InvalidPathException e) {
+				throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
+			}
+			return true;
+		case "duplicates":
+			options.duplicateClassFileBehavior = parseEnumValue(key, value, EDuplicateClassFileBehavior.class);
+			return true;
+		case "ignore-uncovered-classes":
+			options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
+			return true;
+		case "dump-on-exit":
+			options.shouldDumpOnExit = Boolean.parseBoolean(value);
+			return true;
+		case "mode":
+			options.mode = parseEnumValue(key, value, EMode.class);
+			return true;
+		case "includes":
+			options.jacocoIncludes = value.replaceAll(";", ":");
+			return true;
+		case "excludes":
+			options.jacocoExcludes = value.replaceAll(";", ":") + ":" + AgentOptions.DEFAULT_EXCLUDES;
+			return true;
+		case "class-dir":
+			List<String> list = splitMultiOptionValue(value);
+			options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver, list);
+			return true;
+		case "http-server-port":
+			options.httpServerPort = parseInt(key, value);
+			return true;
+		case "sap-nwdi-applications":
+			options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
+			return true;
+		default:
+			return false;
 		}
 	}
 
