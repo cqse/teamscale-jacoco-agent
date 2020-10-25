@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.git_properties;
+package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;

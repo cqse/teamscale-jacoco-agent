@@ -8,8 +8,10 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
-import com.teamscale.jacoco.agent.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
@@ -114,8 +116,9 @@ public class AgentOptionsParser {
 		} else if (key.startsWith("artifactory-") && ArtifactoryConfig
 				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
 			return;
-		}
-		if (handleAzureFileStorageOptions(options, key, value)) {
+		} else if (key.startsWith("azure-") && AzureFileStorageConfig
+				.handleAzureFileStorageOptions(options.azureFileStorageConfig, key,
+				value)) {
 			return;
 		}
 		if (handleAgentOptions(options, key, value)) {
@@ -181,6 +184,9 @@ public class AgentOptionsParser {
 			return true;
 		case "http-server-port":
 			options.httpServerPort = parseInt(key, value);
+			return true;
+		case "sap-nwdi-applications":
+			options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
 			return true;
 		default:
 			return false;

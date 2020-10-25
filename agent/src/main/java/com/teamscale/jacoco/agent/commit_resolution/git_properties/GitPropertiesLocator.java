@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.git_properties;
+package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;

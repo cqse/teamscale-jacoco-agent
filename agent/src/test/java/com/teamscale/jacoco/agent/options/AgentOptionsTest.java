@@ -181,6 +181,32 @@ public class AgentOptionsTest {
 				"Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
 	}
 
+	/** Tests the options for SAP NWDI applications. */
+	@Test
+	public void testValidSapNwdiOptions() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
+				"teamscale-server-url=http://your.teamscale.url," +
+				"teamscale-user=your-user-name," +
+				"teamscale-access-token=your-access-token," +
+				"teamscale-partition=Manual Tests," +
+				"sap-nwdi-applications=com.example:project;com.test:p2");
+		assertThat(agentOptions.sapNetWeaverJavaApplications)
+				.isNotNull()
+				.satisfies(sap -> {
+					assertThat(sap.getApplications()).hasSize(2);
+					assertThat(sap.getApplications()).element(0).satisfies(application -> {
+						assertThat(application.markerClass).isEqualTo("com.example");
+						assertThat(application.teamscaleProject).isEqualTo("project");
+					});
+					assertThat(sap.getApplications()).element(1).satisfies(application -> {
+						assertThat(application.markerClass).isEqualTo("com.test");
+						assertThat(application.teamscaleProject).isEqualTo("p2");
+					});
+				});
+		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSetExceptProject()).isTrue();
+		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSet()).isFalse();
+	}
+
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()

@@ -33,7 +33,7 @@ public class TeamscaleUploader implements IUploader {
 				deleteCoverageFile(coverageFile);
 			} else {
 				logger.warn("Failed to upload coverage to Teamscale. " +
-								"Won't delete local file {} so you can upload it youself manually.",
+								"Won't delete local file {} so you can upload it yourself manually.",
 						coverageFile);
 			}
 		}

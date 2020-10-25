@@ -80,8 +80,13 @@ public class TeamscaleServer {
 
 	/** Returns if all required fields are non-null. */
 	public boolean hasAllRequiredFieldsSet() {
+		return project != null &&
+				hasAllRequiredFieldsSetExceptProject();
+	}
+
+	/** Returns if all required fields are non-null. */
+	public boolean hasAllRequiredFieldsSetExceptProject() {
 		return url != null &&
-				project != null &&
 				userName != null &&
 				userAccessToken != null &&
 				partition != null;
@@ -110,5 +115,17 @@ public class TeamscaleServer {
 			at = "commit " + commit;
 		}
 		return "Teamscale " + url + " as user " + userName + " for " + project + " to " + partition + " at " + at;
+	}
+
+	/** Creates a copy of the {@link TeamscaleServer} configuration, but with the given project and commit set. */
+	public TeamscaleServer withProjectAndCommit(String teamscaleProject, CommitDescriptor commitDescriptor) {
+		TeamscaleServer teamscaleServer = new TeamscaleServer();
+		teamscaleServer.url = url;
+		teamscaleServer.userName = userName;
+		teamscaleServer.userAccessToken = userAccessToken;
+		teamscaleServer.partition = partition;
+		teamscaleServer.project = teamscaleProject;
+		teamscaleServer.commit = commitDescriptor;
+		return teamscaleServer;
 	}
 }

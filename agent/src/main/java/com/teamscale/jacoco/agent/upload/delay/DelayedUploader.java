@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * Wraps an {@link IUploader} and in order to delay upload  until a all information describing a commit is
+ * Wraps an {@link IUploader} and in order to delay upload until a all information describing a commit is
  * asynchronously made available.
  */
 public class DelayedUploader<T> implements IUploader {

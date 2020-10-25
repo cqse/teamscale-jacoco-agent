@@ -15,12 +15,28 @@ import java.util.Objects;
 /**
  * Represents a coverage file on disk. The main purpose is to avoid reading the entire file into memory as this
  * dramatically increases the memory footprint of the JVM which might run out of memory because of this.
+ *
+ * The object internally holds a counter of how many references to the file are currently hold. This allows to share
+ * the same file for multiple uploads and deleting it once all uploads have succeeded. Use {@link #acquireReference()}
+ * to make the object aware that it was passed to another uploader and {@link #delete()} to signal that you no
+ * longer intend to access the file.
  */
 public class CoverageFile {
-	private File coverageFile;
+
+	private final File coverageFile;
+	private int referenceCounter = 0;
 
 	public CoverageFile(File coverageFile) {
 		this.coverageFile = coverageFile;
+	}
+
+	/**
+	 * Marks the file as being used by an additional uploader. This ensures that the file is not deleted until all users
+	 * have signed via {@link #delete()} that they no longer intend to access the file.
+	 */
+	public CoverageFile acquireReference() {
+		referenceCounter++;
+		return this;
 	}
 
 	/**
@@ -48,7 +64,10 @@ public class CoverageFile {
 	 * Delete the coverage file from disk
 	 */
 	public void delete() throws IOException {
-		Files.delete(coverageFile.toPath());
+		referenceCounter--;
+		if (referenceCounter <= 0) {
+			Files.delete(coverageFile.toPath());
+		}
 	}
 
 	/**

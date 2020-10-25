@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.git_properties;
+package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 /**
  * Thrown in case a git.properties file is found but it is malformed.

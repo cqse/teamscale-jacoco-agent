@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.upload.delay;
 
-import com.teamscale.jacoco.agent.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
 import com.teamscale.report.jacoco.CoverageFile;
 import org.junit.jupiter.api.Test;
