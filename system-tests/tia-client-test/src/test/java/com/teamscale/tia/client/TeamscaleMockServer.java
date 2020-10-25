@@ -48,8 +48,8 @@ public class TeamscaleMockServer {
 	public TeamscaleMockServer(int port, String... impactedTests) throws IOException {
 		this.impactedTests = Arrays.asList(impactedTests);
 		port(port);
-		post("/p/:projectName/external-report/", this::handleReport);
-		put("/p/:projectName/test-impact", this::handleImpactedTests);
+		post("api/projects/:projectName/external-analysis/session/auto-create/report", this::handleReport);
+		put("api/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());

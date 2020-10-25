@@ -37,6 +37,12 @@ import static java.util.stream.Collectors.joining;
  */
 public class AgentOptionsParser {
 
+	/** The name of the option for providing the logging config. */
+	public static final String LOGGING_CONFIG_OPTION = "logging-config";
+
+	/** The name of the option for providing the config file. */
+	public static final String CONFIG_FILE_OPTION = "config-file";
+
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
@@ -92,7 +98,8 @@ public class AgentOptionsParser {
 		String key = keyAndValue[0].toLowerCase();
 		String value = keyAndValue[1];
 
-		// Remove quotes, which may be used to pass arguments with spaces via the command line
+		// Remove quotes, which may be used to pass arguments with spaces via
+		// the command line
 		if (value.startsWith("\"") && value.endsWith("\"")) {
 			value = value.substring(1, value.length() - 1);
 		}
@@ -125,13 +132,13 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully processed the given option.
 	 */
-	private boolean handleAgentOptions(AgentOptions options, String key,
-									   String value) throws AgentOptionParseException {
+	private boolean handleAgentOptions(AgentOptions options, String key, String value)
+			throws AgentOptionParseException {
 		switch (key) {
-			case "config-file":
+			case CONFIG_FILE_OPTION:
 				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
 				return true;
-			case "logging-config":
+			case LOGGING_CONFIG_OPTION:
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
 				return true;
 			case "interval":
@@ -173,8 +180,7 @@ public class AgentOptionsParser {
 				return true;
 			case "class-dir":
 				List<String> list = splitMultiOptionValue(value);
-				options.classDirectoriesOrZips = ClasspathUtils
-						.resolveClasspathTextFiles(key, filePatternResolver, list);
+				options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver, list);
 				return true;
 			case "http-server-port":
 				options.httpServerPort = parseInt(key, value);
@@ -187,9 +193,12 @@ public class AgentOptionsParser {
 		}
 	}
 
-	/** Parses the given value as an enum constant case-insensitively and converts "-" to "_". */
-	private <T extends Enum<T>> T parseEnumValue(String key, String value,
-												 Class<T> enumClass) throws AgentOptionParseException {
+	/**
+	 * Parses the given value as an enum constant case-insensitively and
+	 * converts "-" to "_".
+	 */
+	private <T extends Enum<T>> T parseEnumValue(String key, String value, Class<T> enumClass)
+			throws AgentOptionParseException {
 		try {
 			return Enum.valueOf(enumClass, value.toUpperCase().replaceAll("-", "_"));
 		} catch (IllegalArgumentException e) {
@@ -200,9 +209,10 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads configuration parameters from the given file. The expected format is basically the same as for the command
-	 * line, but line breaks are also considered as separators. e.g. class-dir=out # Some comment includes=test.*
-	 * excludes=third.party.*
+	 * Reads configuration parameters from the given file. The expected format
+	 * is basically the same as for the command line, but line breaks are also
+	 * considered as separators. e.g. class-dir=out # Some comment
+	 * includes=test.* excludes=third.party.*
 	 */
 	private void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
 		try {
@@ -228,42 +238,41 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully processed the given option.
 	 */
-	private boolean handleTeamscaleOptions(AgentOptions options, String key,
-										   String value) throws AgentOptionParseException {
+	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value)
+			throws AgentOptionParseException {
 		switch (key) {
-			case "teamscale-server-url":
-				options.teamscaleServer.url = parseUrl(key, value);
-				return true;
-			case "teamscale-project":
-				options.teamscaleServer.project = value;
-				return true;
-			case "teamscale-user":
-				options.teamscaleServer.userName = value;
-				return true;
-			case "teamscale-access-token":
-				options.teamscaleServer.userAccessToken = value;
-				return true;
-			case "teamscale-partition":
-				options.teamscaleServer.partition = value;
-				return true;
-			case AgentOptions.TEAMSCALE_COMMIT_OPTION:
-				options.teamscaleServer.commit = parseCommit(value);
-				return true;
-			case AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
-				options.teamscaleServer.commit = getCommitFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
-				return true;
-			case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
-				options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
-				return true;
-			case "teamscale-message":
-				options.teamscaleServer.message = value;
-				return true;
-			case AgentOptions.TEAMSCALE_REVISION_OPTION:
-				options.teamscaleServer.revision = value;
-				return true;
-			default:
-				return false;
+		case "teamscale-server-url":
+			options.teamscaleServer.url = parseUrl(key, value);
+			return true;
+		case "teamscale-project":
+			options.teamscaleServer.project = value;
+			return true;
+		case "teamscale-user":
+			options.teamscaleServer.userName = value;
+			return true;
+		case "teamscale-access-token":
+			options.teamscaleServer.userAccessToken = value;
+			return true;
+		case "teamscale-partition":
+			options.teamscaleServer.partition = value;
+			return true;
+		case AgentOptions.TEAMSCALE_COMMIT_OPTION:
+			options.teamscaleServer.commit = parseCommit(value);
+			return true;
+		case AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
+			options.teamscaleServer.commit = getCommitFromManifest(filePatternResolver.parsePath(key, value).toFile());
+			return true;
+		case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
+			options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
+			return true;
+		case "teamscale-message":
+			options.teamscaleServer.setMessage(value);
+			return true;
+		case AgentOptions.TEAMSCALE_REVISION_OPTION:
+			options.teamscaleServer.revision = value;
+			return true;
+		default:
+			return false;
 		}
 	}
 
@@ -272,17 +281,16 @@ public class AgentOptionsParser {
 	 *
 	 * @return true if it has successfully processed the given option.
 	 */
-	private boolean handleTiaOptions(AgentOptions options, String key,
-									 String value) throws AgentOptionParseException {
+	private boolean handleTiaOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
-			case "tia-mode":
-				options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
-				return true;
-			case "test-env":
-				options.testEnvironmentVariable = value;
-				return true;
-			default:
-				return false;
+		case "tia-mode":
+			options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
+			return true;
+		case "test-env":
+			options.testEnvironmentVariable = value;
+			return true;
+		default:
+			return false;
 		}
 	}
 
@@ -301,8 +309,27 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and builds a commit descriptor out
-	 * of it.
+	 * Handles all command-line options prefixed with 'azure-'
+	 *
+	 * @return true if it has successfully process the given option.
+	 */
+	private boolean handleAzureFileStorageOptions(AgentOptions options, String key, String value)
+			throws AgentOptionParseException {
+		switch (key) {
+		case "azure-url":
+			options.azureFileStorageConfig.url = parseUrl(key, value);
+			return true;
+		case "azure-key":
+			options.azureFileStorageConfig.accessKey = value;
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	/**
+	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's
+	 * manifest and builds a commit descriptor out of it.
 	 */
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(
@@ -322,8 +349,8 @@ public class AgentOptionsParser {
 			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
 			return new CommitDescriptor(branch, timestamp);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
-					"descriptor from MANIFEST failed", e);
+			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit "
+					+ "descriptor from MANIFEST failed", e);
 		}
 	}
 
@@ -356,7 +383,8 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Parses the the string representation of a commit to a  {@link CommitDescriptor} object.
+	 * Parses the the string representation of a commit to a
+	 * {@link CommitDescriptor} object.
 	 * <p>
 	 * The expected format is "branch:timestamp".
 	 */

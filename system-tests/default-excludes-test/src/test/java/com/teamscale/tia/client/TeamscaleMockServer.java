@@ -30,7 +30,7 @@ public class TeamscaleMockServer {
 
 	public TeamscaleMockServer(int port) throws IOException {
 		port(port);
-		post("/p/:projectName/external-report/", this::handleReport);
+		post("api/projects/:projectName/external-analysis/session/auto-create/report", this::handleReport);
 		exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());

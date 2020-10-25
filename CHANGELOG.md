@@ -5,10 +5,25 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _tia-client_: add API to hash test data when creating ClusteredTestDetails
+- [feature] support for SAP NWDI application profiling
+
+# 20.0.0
+- [breaking change] This release requires Teamscale 5.9 or higher
+- [feature] Made ensure-processed and include-failed-and-skipped options available in teamscale-client
+
+# 19.0.0
+- [fix] option parsing errors were not logged in rare cases
+- [breaking change] changed default message to include partition and upload date
+- [breaking change] Bumped minimum supported Gradle version for the Gradle plugin to 6.5 so we can support Java 11
+- [feature] Made score and duration of test selected by TIA available via the teamscale-client
+
+# 18.0.0
 - [breaking change] removed options `coverage-via-http` and `teamscale-testwise-upload`. Use `tia-mode=http` or `tia-mode=teamscale-upload` instead.
 - [breaking change] _tia-client_: changed Java API
 - [feature] always exclude common libraries from profiling to shrink coverage files
-- [feature] support for SAP NWDI application profiling
+- [feature] enable changing and reading the commit message via a new `/message` REST endpoint
+- [breaking change] changing the partition is now a PUT request to `/partition` (formerly POST to `/partition/{partitionName}`)
 
 # 17.0.0
 - [breaking change] default for `--interval` changed from 60 to 480 minutes

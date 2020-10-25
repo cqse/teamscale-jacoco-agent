@@ -2,6 +2,11 @@ package com.teamscale.client;
 
 import okhttp3.HttpUrl;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 /** Holds Teamscale server details. */
 public class TeamscaleServer {
 
@@ -32,9 +37,46 @@ public class TeamscaleServer {
 	 */
 	public String revision;
 
+	private String message = null;
 
-	/** The commit message shown in the Teamscale UI for the coverage upload. */
-	public String message = "Agent coverage upload";
+	/**
+	 * The commit message shown in the Teamscale UI for the coverage upload. If the message is null, auto-generates a
+	 * sensible message.
+	 */
+	public String getMessage() {
+		if (message == null) {
+			return createDefaultMessage();
+		}
+		return message;
+	}
+
+	private String createDefaultMessage() {
+		// we do not include the IP address here as one host may have
+		// - multiple network interfaces
+		// - each with multiple IP addresses
+		// - in either IPv4 or IPv6 format
+		// - and it is unclear which of those is "the right one" or even just which is useful (e.g. loopback or virtual
+		// adapters are not useful and might even confuse readers)
+		String hostnamePart = "uploaded from ";
+		try {
+			hostnamePart += "hostname: " + InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			hostnamePart += "an unknown computer";
+		}
+
+		String revisionPart = "";
+		if (revision != null) {
+			revisionPart = "\nfor revision: " + revision;
+		}
+
+		return partition + " coverage uploaded at " +
+				DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()) + "\n\n" +
+				hostnamePart + revisionPart;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
 
 	/** Returns if all required fields are non-null. */
 	public boolean hasAllRequiredFieldsSet() {

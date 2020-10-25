@@ -19,6 +19,7 @@ import spark.Request;
 import spark.Response;
 import spark.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
@@ -32,9 +33,6 @@ import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
  * interval.
  */
 public class Agent extends AgentBase {
-
-	/** Path parameter placeholder used in the http requests. */
-	private static final String PARTITION_PARAMETER = ":partition";
 
 	/** Converts binary data to XML. */
 	private JaCoCoXmlReportGenerator generator;
@@ -71,16 +69,19 @@ public class Agent extends AgentBase {
 	protected void initServerEndpoints(Service spark) {
 		spark.get("/partition", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
+		spark.get("/message", (request, response) ->
+				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
 		spark.post("/dump", this::handleDump);
 		spark.post("/reset", this::handleReset);
-		spark.post("/partition/" + PARTITION_PARAMETER, this::handleSetPartition);
+		spark.put("/partition", this::handleSetPartition);
+		spark.put("/message", this::handleSetMessage);
 	}
 
 	/** Handles dumping a XML coverage report for coverage collected until now. */
 	private String handleDump(Request request, Response response) {
 		logger.debug("Dumping report triggered via HTTP request");
 		dumpReport();
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 
@@ -88,25 +89,44 @@ public class Agent extends AgentBase {
 	private String handleReset(Request request, Response response) {
 		logger.debug("Resetting coverage triggered via HTTP request");
 		controller.reset();
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 
 	/** Handles setting the partition name. */
 	private String handleSetPartition(Request request, Response response) {
-		String partition = request.params(PARTITION_PARAMETER);
+		String partition = request.body();
 		if (partition == null || partition.isEmpty()) {
-			logger.error("Partition missing in " + request.url() + "! Expected /partition/Some%20Partition%20Name.");
+			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
+			logger.error(errorMessage);
 
-			response.status(400);
-			return "Partition name is missing!";
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return errorMessage;
 		}
 
 		logger.debug("Changing partition name to " + partition);
 		controller.setSessionId(partition);
 		options.getTeamscaleServerOptions().partition = partition;
 
-		response.status(204);
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
+	}
+
+	/** Handles setting the partition name. */
+	private String handleSetMessage(Request request, Response response) {
+		String message = request.body();
+		if (message == null || message.isEmpty()) {
+			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
+			logger.error(errorMessage);
+
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return errorMessage;
+		}
+
+		logger.debug("Changing message to " + message);
+		options.getTeamscaleServerOptions().setMessage(message);
+
+		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
 

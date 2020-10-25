@@ -15,6 +15,8 @@ configured to only use very little memory, you might have to increase this limit
 the agent to function properly. How much memory is needed depends on how much code is being
 analyzed and thus on how you configure the agent.
 
+To upload coverage directly to Teamscale a Teamscale version of 5.9.0 or higher is required.
+
 ## Installing
 
 Unzip this zip file into any folder. __All files contained in the zip file are required for the agent
@@ -147,9 +149,12 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `http-server-port`: the port at which the agent should start an HTTP server that listens for commands.
     The agent's REST API has the following endpoints:
     - `[GET] /partition` Returns the name of the currently configured partition name.
-    - `[POST] /partition/{partitionName}` Sets the name of the partition name that should be used for all followup 
-      report dumps (see `teamscale-partition`). For reports that are not directly sent to Teamscale the generated report 
-      will contain the partition name as session ID.
+    - `[PUT] /partition` Sets the name of the partition name to the string delivered in the request body in plain text.
+      This partition should be used for all followup report dumps (see `teamscale-partition`).
+      For reports that are not directly sent to Teamscale the generated report will contain the partition name as session ID.
+    - `[GET] /message` Returns the name of the currently configured commit message.
+    - `[PUT] /message` Sets the commit message to the string delivered in the request body in plain text.
+      This message should be used for all followup report dumps (see `teamscale-message`).
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
@@ -174,7 +179,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 
 ## Options for testwise mode
 
-The testwise coverage mode allows to record coverage per test, which is needed for test impact analysis. This means that
+The testwise coverage mode allows to record coverage per test, which is needed for Test Impact Analysis. This means that
 you can distinguish later, which test did produce which coverage. To enable this the `mode` option must be set to 
 `testwise`.
 
@@ -183,7 +188,7 @@ within Teamscale and should be chosen accordingly. It is furthermore used to mak
 navigable within Teamscale.
 
 In the testwise coverage mode the agent only produces an exec file that needs to be converted and augmented with more 
-data from the test system. See TEST_IMPACT_ANALYSIS.md for more details.
+data from the test system. Please refer to [the documentation for the Test Impact Analysis](../TEST_IMPACT_ANALYSIS_DOC.md) for more details.
 
 There are two basic scenarios to distinguish between.
 

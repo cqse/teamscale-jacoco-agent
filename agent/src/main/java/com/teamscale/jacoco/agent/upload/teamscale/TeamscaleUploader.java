@@ -68,7 +68,7 @@ public class TeamscaleUploader implements IUploader {
 					teamscaleServer.revision,
 					teamscaleServer.partition,
 					EReportFormat.JACOCO,
-					teamscaleServer.message,
+					teamscaleServer.getMessage(),
 					coverageFile.createFormRequestBody()
 			);
 			return true;
