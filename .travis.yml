@@ -17,11 +17,9 @@ after_script:
     then
       echo "not uploading coverage for pull request builds"
     else
-      curl -L -o teamscale-timestamp.zip https://github.com/cqse/teamscale-timestamp/releases/download/v0.1.0/linux.zip
-      unzip teamscale-timestamp.zip
-      timestamp=$(./teamscale-timestamp)
-      reportParams=$(find . -name jacocoTestReport.xml | sed "s/\(.*\)/-F 'report=@\1'/" | tr '\n' ' ')
-      eval "curl -kv -X POST -ubuild:$TS_BUILD_USER_ACCESS_KEY $reportParams -F format=JACOCO -F partition=Coverage -F message=Coverage -F t=$timestamp https://demo.teamscale.com/p/teamscale-jacoco-agent/external-report"
+      curl -L -o teamscale-upload.zip https://github.com/cqse/teamscale-upload/releases/download/v1.0.0/teamscale-upload-linux.zip
+      unzip teamscale-upload.zip
+      ./teamscale-upload --user build --accesskey $TS_BUILD_USER_ACCESS_KEY --format JACOCO --partition Coverage --server https://demo.teamscale.com --project teamscale-jacoco-agent '**/jacocoTestReport.xml'
     fi
 after_success:
   - >
