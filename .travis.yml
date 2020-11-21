@@ -19,7 +19,7 @@ after_script:
     else
       curl -L -o teamscale-upload.zip https://github.com/cqse/teamscale-upload/releases/download/v1.0.0/teamscale-upload-linux.zip
       unzip teamscale-upload.zip
-      ./teamscale-upload --user build --accesskey $TS_BUILD_USER_ACCESS_KEY --format JACOCO --partition Coverage --server https://demo.teamscale.com --project teamscale-jacoco-agent '**/jacocoTestReport.xml'
+      ./teamscale-upload --user build --accesskey $TS_BUILD_USER_ACCESS_KEY --format JACOCO --partition Coverage --server https://demo.teamscale.com --project teamscale-jacoco-agent --detect-commit '**/jacocoTestReport.xml'
     fi
 after_success:
   - >
