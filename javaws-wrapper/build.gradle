@@ -53,3 +53,7 @@ distributions {
 		}
 	}
 }
+
+tasks.named('shadowDistZip').configure {
+	archiveName = 'javaws.zip'
+}
