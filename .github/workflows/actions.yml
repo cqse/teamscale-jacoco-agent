@@ -2,10 +2,10 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
-    tags: [ 'v*' ]
+    branches: '*'
+    tags: 'v*'
   pull_request:
-    branches: [ master ]
+    branches: '*'
 
 jobs:
   build:
@@ -28,16 +28,16 @@ jobs:
         file: '{agent/build/distributions/teamscale-jacoco-agent.zip,javaws-wrapper/build/distributions/javaws.zip}'
         file_glob: true
         overwrite: true
-    # - name: Publish to Maven Central
-    #   run: |
-    #     ./gradlew publishMavenPublicationToMavenRepository \
-    #       -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
-    #       -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG }} \
-    #       -Psigning.keyId=4FB80B8E \
-    #       -PsonatypeUsername=cqse-build-guild \
-    #       -PsonatypePassword=${{ secrets.SONATYPE_PW }} \
-    #       -Porg.gradle.internal.http.connectionTimeout=500000 \
-    #       -Porg.gradle.internal.http.socketTimeout=500000
+    - name: Publish to Maven Central
+      run: |
+        ./gradlew publishMavenPublicationToMavenRepository \
+          -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
+          -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG }} \
+          -Psigning.keyId=4FB80B8E \
+          -PsonatypeUsername=cqse-build-guild \
+          -PsonatypePassword=${{ secrets.SONATYPE_PW }} \
+          -Porg.gradle.internal.http.connectionTimeout=500000 \
+          -Porg.gradle.internal.http.socketTimeout=500000
     - name: Upload coverage to Teamscale
       if: always() && github.event_name == 'push'
       run: |
