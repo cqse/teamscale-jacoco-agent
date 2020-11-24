@@ -1,3 +1,3 @@
 object VersionUtils {
-    fun isTaggedRelease() = !System.getenv()["TRAVIS_TAG"].isNullOrBlank()
+    fun isTaggedRelease() = System.getenv()["GITHUB_REF"]?.contains("/tags/")
 }
