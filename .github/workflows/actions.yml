@@ -47,7 +47,7 @@ jobs:
           -s https://demo.teamscale.com/ \
           -p teamscale-jacoco-agent \
           -u build \
-          -a ${{ secrets.ACCESS_KEY }} \
+          -a ${{ secrets.TEAMSCALE_ACCESS_KEY }} \
           -t Coverage \
           -f JACOCO \
           --message Coverage \
