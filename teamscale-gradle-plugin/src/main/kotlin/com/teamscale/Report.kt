@@ -1,6 +1,7 @@
 package com.teamscale
 
 import com.teamscale.client.EReportFormat
+import org.gradle.api.file.FileCollection
 import java.io.File
 
 /**

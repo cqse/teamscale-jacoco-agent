@@ -1,6 +1,6 @@
 package com.teamscale
 
-import com.teamscale.config.TeamscaleTaskExtension
+import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.GradleException
@@ -43,11 +43,11 @@ open class TestImpacted : Test() {
      * Reference to the configuration that should be used for this task.
      */
     @Internal
-    lateinit var taskExtension: TeamscaleTaskExtension
+    lateinit var taskExtension: TeamscaleTestImpactedTaskExtension
 
     val reportConfiguration
         @Input
-        get() = taskExtension.report
+        get() = taskExtension.testwiseCoverageConfiguration
 
     val agentFilterConfiguration
         @Input
@@ -86,7 +86,7 @@ open class TestImpacted : Test() {
 
     /** The report task used to setup and cleanup report directories. */
     @Internal
-    lateinit var reportTask: TeamscaleReportTask
+    lateinit var reportTask: TestwiseCoverageReportTask
 
     @Internal
     var includeEngines: Set<String> = emptySet()
@@ -156,13 +156,10 @@ open class TestImpacted : Test() {
             jvmArgs(it.getJvmArgs())
         }
 
-        val reportConfig = taskExtension.getMergedReports()
-        val report = reportConfig.testwiseCoverage.getReport(project, this)
+        val reportConfig = taskExtension.testwiseCoverageConfiguration
+        val report = reportConfig.getReport()
 
         reportTask.addTestArtifactsDirs(report, reportOutputDir)
-        reportConfig.googleClosureCoverage.destination?.let {
-            reportTask.addTestArtifactsDirs(report, it)
-        }
 
         getAllDependentJavaProjects(project).forEach { subProject ->
             val sourceSets = subProject.property("sourceSets") as SourceSetContainer

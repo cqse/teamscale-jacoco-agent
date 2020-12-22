@@ -1,11 +1,15 @@
 package com.teamscale
 
-import com.teamscale.config.TeamscalePluginExtension
+import com.teamscale.config.extension.TeamscaleJacocoReportTaskExtension
+import com.teamscale.config.extension.TeamscaleTestTaskExtension
+import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.util.GradleVersion
 
 
@@ -81,8 +85,59 @@ open class TeamscalePlugin : Plugin<Project> {
                 testImpactedTask
             )
         }
+
+        extendTestTasks(project)
+        extendJaCoCoReportTasks(project)
     }
 
+    /**
+     * Adds an extension to the JacocoReport tasks and adds the report
+     * to the upload task when the extension has been configured.
+     */
+    private fun extendJaCoCoReportTasks(project: Project) {
+        project.tasks.withType(JacocoReport::class.java) { reportTask ->
+            teamscaleUploadTask.mustRunAfter(reportTask)
+
+            val extension =
+                reportTask.extensions.create(
+                    teamscaleExtensionName,
+                    TeamscaleJacocoReportTaskExtension::class.java,
+                    project,
+                    reportTask
+                )
+            reportTask.doLast {
+                val config = extension.jacocoReportConfiguration
+                if (config != null) {
+                    teamscaleUploadTask.reports.add(config.getReport())
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds an extension to the standard test tasks and adds the report
+     * to the upload task when the extension has been configured.
+     */
+    private fun extendTestTasks(project: Project) {
+        project.tasks.withType(Test::class.java) { testTask ->
+            if (testTask is TestImpacted) {
+                return@withType
+            }
+            val extension =
+                testTask.extensions.create(
+                    teamscaleExtensionName,
+                    TeamscaleTestTaskExtension::class.java,
+                    project,
+                    testTask
+                )
+            testTask.doLast {
+                val config = extension.jUnitReportConfiguration
+                if (config != null) {
+                    teamscaleUploadTask.reports.add(config.getReport())
+                }
+            }
+        }
+    }
 
     /** Configures the given impacted test executor. */
     private fun configureTestImpactedTask(
@@ -100,7 +155,7 @@ open class TeamscalePlugin : Plugin<Project> {
         }
 
         val teamscaleReportTask = project.rootProject.tasks
-            .maybeCreate("${testImpacted.name}Report", TeamscaleReportTask::class.java)
+            .maybeCreate("${testImpacted.name}Report", TestwiseCoverageReportTask::class.java)
         testImpacted.finalizedBy(teamscaleReportTask)
 
         testImpacted.reportTask = teamscaleReportTask

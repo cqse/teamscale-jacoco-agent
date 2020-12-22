@@ -1,7 +1,7 @@
 package com.teamscale
 
 import com.teamscale.client.TeamscaleClient
-import com.teamscale.config.TeamscalePluginExtension
+import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
@@ -79,7 +79,11 @@ open class TeamscaleUploadTask : DefaultTask() {
                     val client =
                         TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
                     client.uploadReports(
-                        format, reportFiles, commitDescriptor, partition, "$message ($partition)"
+                        format,
+                        reportFiles,
+                        commitDescriptor,
+                        partition,
+                        message
                     )
                 }
             } catch (e: ConnectException) {

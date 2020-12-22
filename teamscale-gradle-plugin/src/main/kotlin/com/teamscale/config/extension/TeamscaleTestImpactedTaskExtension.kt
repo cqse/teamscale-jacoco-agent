@@ -1,5 +1,8 @@
-package com.teamscale.config
+package com.teamscale.config.extension
 
+import com.teamscale.TestImpacted
+import com.teamscale.config.AgentConfiguration
+import com.teamscale.config.TestwiseCoverageConfiguration
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
@@ -8,18 +11,18 @@ import java.io.Serializable
 /**
  * Holds all user configuration for the teamscale plugin.
  */
-open class TeamscaleTaskExtension(
+open class TeamscaleTestImpactedTaskExtension(
     val project: Project,
     val parent: TeamscalePluginExtension,
-    jacocoExtension: JacocoTaskExtension
+    jacocoExtension: JacocoTaskExtension,
+    testImpacted: TestImpacted
 ) : Serializable {
 
-    /** Settings regarding the reports to generate. */
-    val report = Reports()
+    val testwiseCoverageConfiguration = TestwiseCoverageConfiguration(project, testImpacted)
 
     /** Configures the reports to be uploaded. */
-    fun report(action: Action<in Reports>) {
-        action.execute(report)
+    fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration>) {
+        action.execute(testwiseCoverageConfiguration)
     }
 
     /** Settings regarding the teamscale jacoco agent. */
@@ -29,14 +32,7 @@ open class TeamscaleTaskExtension(
     fun agent(action: Action<in AgentConfiguration>) {
         action.execute(agent)
     }
-
-    /**
-     * Merges the report configuration from TeamscalePluginExtension
-     * with TeamscaleTaskExtension.
-     */
-    fun getMergedReports(): Reports {
-        val reports = Reports()
-        reports.copyWithDefault(report, parent.report)
-        return reports
-    }
 }
+
+
+

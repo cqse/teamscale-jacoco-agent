@@ -1,13 +1,11 @@
 package com.teamscale
 
 import com.teamscale.client.TestDetails
-import com.teamscale.config.GoogleClosureConfiguration
-import com.teamscale.config.SerializableFilter
-import com.teamscale.config.TeamscaleTaskExtension
+import com.teamscale.config.*
+import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.ReportUtils
 import com.teamscale.report.testwise.ETestArtifactFormat
-import com.teamscale.report.testwise.closure.ClosureTestwiseCoverageGenerator
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestwiseCoverage
@@ -21,7 +19,7 @@ import java.io.File
 
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
-open class TeamscaleReportTask : DefaultTask() {
+open class TestwiseCoverageReportTask : DefaultTask() {
 
     /**
      * Test task's name for which reports are generated.
@@ -33,17 +31,12 @@ open class TeamscaleReportTask : DefaultTask() {
      * Reference to the configuration that should be used for this task.
      */
     @Internal
-    lateinit var configuration: TeamscaleTaskExtension
+    lateinit var configuration: TeamscaleTestImpactedTaskExtension
 
     /** Includes and excludes from jacoco which will control which classes will be profiled. */
     val agentFilter: SerializableFilter
         @Input
         get() = configuration.agent.getFilter()
-
-    /** Includes and excludes for js files that should be packaged into the testwise coverage report. */
-    val closureIncludeFilter: GoogleClosureConfiguration.FileNameFilter
-        @Input
-        get() = configuration.getMergedReports().googleClosureCoverage.getFilter()
 
     /** Mapping from report files to artifacts that should be included in the report. */
     @Internal
@@ -150,17 +143,6 @@ open class TeamscaleReportTask : DefaultTask() {
         val testwiseCoverage = TestwiseCoverage()
         for (file in jacocoExecutionData) {
             testwiseCoverage.add(jaCoCoTestwiseReportGenerator.convert(file))
-        }
-
-        val jsCoverageData = ReportUtils.listFiles(ETestArtifactFormat.CLOSURE, artifacts)
-        if (jsCoverageData.isNotEmpty()) {
-            testwiseCoverage.add(
-                ClosureTestwiseCoverageGenerator(
-                    jsCoverageData,
-                    closureIncludeFilter.getPredicate(),
-                    logger.wrapInILogger()
-                ).readTestCoverage()
-            )
         }
         return testwiseCoverage
     }
