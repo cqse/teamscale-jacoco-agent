@@ -14,12 +14,11 @@ open class TeamscaleTestTaskExtension(
     private val test: Test
 ) : Serializable {
 
-    var jUnitReportConfiguration: JUnitReportConfiguration? = null
+    var report = JUnitReportConfiguration(project, test)
 
     /** Configures the reports to be uploaded. */
-    fun junit(action: Action<in JUnitReportConfiguration>) {
+    fun report(action: Action<in JUnitReportConfiguration>) {
         test.reports.junitXml.isEnabled = true
-        this.jUnitReportConfiguration = this.jUnitReportConfiguration ?: JUnitReportConfiguration(project, test)
-        action.execute(jUnitReportConfiguration!!)
+        action.execute(report)
     }
 }

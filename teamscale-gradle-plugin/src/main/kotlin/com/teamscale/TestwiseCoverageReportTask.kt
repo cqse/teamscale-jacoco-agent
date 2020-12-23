@@ -122,10 +122,6 @@ open class TestwiseCoverageReportTask : DefaultTask() {
         val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
         logger.info("Writing report to ${reportConfig.reportFile}")
         ReportUtils.writeTestwiseCoverageReport(reportConfig.reportFile, report)
-
-        if (reportConfig.upload) {
-            uploadTask.reports.add(reportConfig)
-        }
     }
 
     /** Collects JaCoCo's exec files from the artifacts folders and merges it with js coverage. */

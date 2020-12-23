@@ -14,12 +14,11 @@ open class TeamscaleJacocoReportTaskExtension(
     private val jacocoReport: JacocoReport
 ) : Serializable {
 
-    val jacocoReportConfiguration: JacocoReportConfiguration? = null
+    val report = JacocoReportConfiguration(project, jacocoReport)
 
     /** Configures the reports to be uploaded. */
-    fun jacoco(action: Action<in JacocoReportConfiguration>) {
+    fun report(action: Action<in JacocoReportConfiguration>) {
         jacocoReport.reports.xml.isEnabled = true
-        val jacocoReportConfiguration = JacocoReportConfiguration(project, jacocoReport)
-        action.execute(jacocoReportConfiguration)
+        action.execute(report)
     }
 }

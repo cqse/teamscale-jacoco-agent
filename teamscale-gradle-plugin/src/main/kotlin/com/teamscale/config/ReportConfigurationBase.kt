@@ -9,26 +9,35 @@ import java.io.File
 import java.io.Serializable
 
 /** Configuration for the testwise coverage report. */
-open class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) :
-    Serializable {
+open class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
 
     /** The partition for which artifacts are uploaded. */
     var partition: Property<String> = project.objects.property(String::class.java).value(task.name)
+
+    fun setPartition(partition: String) {
+        this.partition.set(partition)
+    }
 
     /** The message that shows up for the upload in Teamscale. */
     var message: Property<String> =
         project.objects.property(String::class.java).value("${format.readableName} gradle upload")
 
+    fun setMessage(message: String) {
+        this.message.set(message)
+    }
+
     /**
      * Whether the report should be uploaded or not.
-     * If it is null the report should not even be created.
      */
     var upload: Property<Boolean> = project.objects.property(Boolean::class.java).value(true)
+
+    fun setUpload(upload: Boolean) {
+        this.upload.set(upload)
+    }
 
     /** The destination where the report should be written to/read from. */
     var destination: Property<File> = project.objects.property(File::class.java)
 
-    /** @see #destination */
     fun setDestination(destination: String) {
         this.destination.set(File(destination))
     }
@@ -39,8 +48,7 @@ open class ReportConfigurationBase(private val format: EReportFormat, val projec
             format = format,
             reportFile = destination.get(),
             message = message.get(),
-            partition = partition.get(),
-            upload = upload.get()
+            partition = partition.get()
         )
     }
 }

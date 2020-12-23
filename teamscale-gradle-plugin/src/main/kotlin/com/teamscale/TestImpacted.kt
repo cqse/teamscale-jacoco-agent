@@ -1,5 +1,6 @@
 package com.teamscale
 
+import com.teamscale.config.extension.TeamscalePluginExtension
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import groovy.lang.Closure
 import org.gradle.api.Action
@@ -43,11 +44,17 @@ open class TestImpacted : Test() {
      * Reference to the configuration that should be used for this task.
      */
     @Internal
+    lateinit var pluginExtension: TeamscalePluginExtension
+
+    /**
+     * Reference to the configuration that should be used for this task.
+     */
+    @Internal
     lateinit var taskExtension: TeamscaleTestImpactedTaskExtension
 
     val reportConfiguration
         @Input
-        get() = taskExtension.testwiseCoverageConfiguration
+        get() = taskExtension.report.getReport()
 
     val agentFilterConfiguration
         @Input
@@ -59,7 +66,7 @@ open class TestImpacted : Test() {
 
     val serverConfiguration
         @Input
-        get() = taskExtension.parent.server
+        get() = pluginExtension.server
 
     /**
      * The (current) commit at which test details should be uploaded to.
@@ -67,14 +74,14 @@ open class TestImpacted : Test() {
      */
     val endCommit
         @Internal
-        get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
+        get() = pluginExtension.commit.getOrResolveCommitDescriptor(project)
 
 
     /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
     val baseline
         @Input
         @Optional
-        get() = taskExtension.parent.baseline
+        get() = pluginExtension.baseline
 
     /**
      * The directory to write the jacoco execution data to. Ensures that the directory
@@ -156,7 +163,7 @@ open class TestImpacted : Test() {
             jvmArgs(it.getJvmArgs())
         }
 
-        val reportConfig = taskExtension.testwiseCoverageConfiguration
+        val reportConfig = taskExtension.report
         val report = reportConfig.getReport()
 
         reportTask.addTestArtifactsDirs(report, reportOutputDir)

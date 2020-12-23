@@ -16,11 +16,12 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 class TopLevelReportConfiguration(val project: Project) {
 
     /** Configures settings for all testwise coverage reports. */
-    fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration>) {
+    @JvmOverloads
+    fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration> = Action {}) {
         project.tasks.withType(TestImpacted::class.java) { testImpacted ->
             val testImpactedExtension =
                 testImpacted.extensions.getByType(TeamscaleTestImpactedTaskExtension::class.java)
-            testImpactedExtension.testwiseCoverage(action)
+            testImpactedExtension.report(action)
         }
     }
 
@@ -28,10 +29,11 @@ class TopLevelReportConfiguration(val project: Project) {
      * Configures jacoco report settings for all jacoco report tasks
      * and makes sure xml report generation is enabled.
      */
-    fun jacoco(action: Action<in JacocoReportConfiguration>) {
+    @JvmOverloads
+    fun jacoco(action: Action<in JacocoReportConfiguration> = Action {}) {
         project.tasks.withType(JacocoReport::class.java) { jacocoReport ->
             val testExtension = jacocoReport.extensions.getByType(TeamscaleJacocoReportTaskExtension::class.java)
-            testExtension.jacoco(action)
+            testExtension.report(action)
         }
     }
 
@@ -39,13 +41,14 @@ class TopLevelReportConfiguration(val project: Project) {
      * Configures junit report settings for all test tasks
      * and makes sure xml report generation is enabled.
      */
-    fun junit(action: Action<in JUnitReportConfiguration>) {
+    @JvmOverloads
+    fun junit(action: Action<in JUnitReportConfiguration> = Action {}) {
         project.tasks.withType(Test::class.java) { test ->
             if (test is TestImpacted) {
                 return@withType
             }
             val testExtension = test.extensions.getByType(TeamscaleTestTaskExtension::class.java)
-            testExtension.junit(action)
+            testExtension.report(action)
         }
     }
 }

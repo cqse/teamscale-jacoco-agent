@@ -13,16 +13,15 @@ import java.io.Serializable
  */
 open class TeamscaleTestImpactedTaskExtension(
     val project: Project,
-    val parent: TeamscalePluginExtension,
     jacocoExtension: JacocoTaskExtension,
     testImpacted: TestImpacted
 ) : Serializable {
 
-    val testwiseCoverageConfiguration = TestwiseCoverageConfiguration(project, testImpacted)
+    val report = TestwiseCoverageConfiguration(project, testImpacted)
 
     /** Configures the reports to be uploaded. */
-    fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration>) {
-        action.execute(testwiseCoverageConfiguration)
+    fun report(action: Action<in TestwiseCoverageConfiguration>) {
+        action.execute(report)
     }
 
     /** Settings regarding the teamscale jacoco agent. */

@@ -1,11 +1,13 @@
 package com.teamscale
 
+import com.teamscale.config.ReportConfigurationBase
 import com.teamscale.config.extension.TeamscaleJacocoReportTaskExtension
 import com.teamscale.config.extension.TeamscaleTestTaskExtension
 import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
@@ -77,17 +79,41 @@ open class TeamscalePlugin : Plugin<Project> {
             extension = pluginExtension
         }
 
-        // Add the teamscale extension also to all test tasks
-        project.tasks.withType(TestImpacted::class.java) { testImpactedTask ->
-            configureTestImpactedTask(
-                project,
-                pluginExtension,
-                testImpactedTask
-            )
-        }
-
+        // Add the teamscale extension also to all TestImpacted tasks
+        extendTestImpactedTasks(project, pluginExtension)
         extendTestTasks(project)
         extendJaCoCoReportTasks(project)
+    }
+
+    private fun extendTestImpactedTasks(
+        project: Project,
+        pluginExtension: TeamscalePluginExtension
+    ) {
+        project.tasks.withType(TestImpacted::class.java) { testImpactedTask ->
+            /** Configures the given impacted test executor. */
+            project.logger.info(
+                "Configuring impacted tests executor task for ${project.name}:${
+                    testImpactedTask
+                        .name
+                }"
+            )
+            val extension = pluginExtension.applyTo(testImpactedTask)
+            testImpactedTask.apply {
+                taskExtension = extension
+                this.pluginExtension = pluginExtension
+                dependsOn.add(project.configurations.getByName(impactedTestEngineConfiguration))
+            }
+            val teamscaleReportTask = project.rootProject.tasks
+                .maybeCreate("${testImpactedTask.name}Report", TestwiseCoverageReportTask::class.java)
+            testImpactedTask.finalizedBy(teamscaleReportTask)
+            testImpactedTask.reportTask = teamscaleReportTask
+            teamscaleReportTask.apply {
+                testTaskName = testImpactedTask.name
+                configuration = extension
+            }
+            teamscaleReportTask.uploadTask = teamscaleUploadTask
+            registerReportAfterTask(testImpactedTask, extension.report)
+        }
     }
 
     /**
@@ -105,12 +131,7 @@ open class TeamscalePlugin : Plugin<Project> {
                     project,
                     reportTask
                 )
-            reportTask.doLast {
-                val config = extension.jacocoReportConfiguration
-                if (config != null) {
-                    teamscaleUploadTask.reports.add(config.getReport())
-                }
-            }
+            registerReportAfterTask(reportTask, extension.report)
         }
     }
 
@@ -130,42 +151,18 @@ open class TeamscalePlugin : Plugin<Project> {
                     project,
                     testTask
                 )
-            testTask.doLast {
-                val config = extension.jUnitReportConfiguration
-                if (config != null) {
-                    teamscaleUploadTask.reports.add(config.getReport())
-                }
+            registerReportAfterTask(testTask, extension.report)
+        }
+    }
+
+    private fun registerReportAfterTask(
+        task: Task,
+        reportConfig: ReportConfigurationBase
+    ) {
+        task.doLast {
+            if (reportConfig.upload.get()) {
+                teamscaleUploadTask.reports.add(reportConfig.getReport())
             }
         }
     }
-
-    /** Configures the given impacted test executor. */
-    private fun configureTestImpactedTask(
-        project: Project,
-        pluginExtension: TeamscalePluginExtension,
-        testImpacted: TestImpacted
-    ) {
-        project.logger.info("Configuring impacted tests executor task for ${project.name}:${testImpacted.name}")
-
-        val extension = pluginExtension.applyTo(testImpacted)
-
-        testImpacted.apply {
-            taskExtension = extension
-            dependsOn.add(project.configurations.getByName(impactedTestEngineConfiguration))
-        }
-
-        val teamscaleReportTask = project.rootProject.tasks
-            .maybeCreate("${testImpacted.name}Report", TestwiseCoverageReportTask::class.java)
-        testImpacted.finalizedBy(teamscaleReportTask)
-
-        testImpacted.reportTask = teamscaleReportTask
-
-        teamscaleReportTask.apply {
-            testTaskName = testImpacted.name
-            configuration = extension
-        }
-
-        teamscaleReportTask.uploadTask = teamscaleUploadTask
-    }
-
 }

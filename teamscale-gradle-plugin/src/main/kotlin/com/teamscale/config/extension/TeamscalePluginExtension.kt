@@ -53,8 +53,8 @@ open class TeamscalePluginExtension(val project: Project) {
                 TeamscalePlugin.teamscaleExtensionName,
                 TeamscaleTestImpactedTaskExtension::class.java,
                 project,
-                this,
-                jacocoTaskExtension
+                jacocoTaskExtension,
+                task
             )
         extension.agent.setDestination(task.project.provider {
             project.file("${project.buildDir}/jacoco/${project.name}-${task.name}")
