@@ -8,7 +8,7 @@ buildscript {
 plugins {
 	id 'java'
 	id 'jacoco'
-	id 'teamscale'
+	id 'com.teamscale'
 }
 
 import com.teamscale.TestImpacted
