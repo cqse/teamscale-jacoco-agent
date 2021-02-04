@@ -9,7 +9,7 @@ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.Serializable
 
 /**
- * Holds all user configuration for the teamscale plugin.
+ * Holds all user configuration regarding testwise coverage report uploads.
  */
 open class TeamscaleTestImpactedTaskExtension(
     val project: Project,

@@ -1,6 +1,10 @@
 package com.teamscale.client;
 
-/** Enum of report formats. */
+/**
+ * Enum of report formats.
+ * This is a subset of the report formats supported by Teamscale.
+ * See https://docs.teamscale.com/reference/upload-formats-and-samples/#supported-formats-for-upload
+ */
 public enum EReportFormat {
 	JACOCO("JaCoCo Coverage"),
 	JUNIT("JUnit Results"),

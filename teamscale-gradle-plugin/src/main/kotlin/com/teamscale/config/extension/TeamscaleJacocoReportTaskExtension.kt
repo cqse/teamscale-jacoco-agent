@@ -7,7 +7,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.io.Serializable
 
 /**
- * Holds all user configuration for the teamscale plugin.
+ * Holds all user configuration regarding JaCoCo report uploads.
  */
 open class TeamscaleJacocoReportTaskExtension(
     val project: Project,
