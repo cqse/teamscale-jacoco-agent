@@ -197,12 +197,13 @@ open class TestImpacted : Test() {
 
     private fun setImpactedTestEngineOptions(report: Report) {
         serverConfiguration.validate()
+        assert(runAllTests || endCommit != null) {"When executing only impacted tests a branchName and timestamp must be specified!"}
         writeEngineProperty("server.url", serverConfiguration.url!!)
         writeEngineProperty("server.project", serverConfiguration.project!!)
         writeEngineProperty("server.userName", serverConfiguration.userName!!)
         writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
         writeEngineProperty("partition", report.partition)
-        writeEngineProperty("endCommit", endCommit.toString())
+        writeEngineProperty("endCommit", endCommit?.toString())
         writeEngineProperty("baseline", baseline?.toString())
         writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))

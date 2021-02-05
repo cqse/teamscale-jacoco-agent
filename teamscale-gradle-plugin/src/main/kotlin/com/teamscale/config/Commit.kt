@@ -37,7 +37,7 @@ class Commit : Serializable {
      * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
      * stores them for later use.
      */
-    fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor, String?> {
+    fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor?, String?> {
         try {
             if (branchName == null || timestamp == null || ref == null) {
                 val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
@@ -47,6 +47,12 @@ class Commit : Serializable {
             }
             return Pair(getCommitDescriptor(), this.ref)
         } catch (e: IOException) {
+            if (branchName != null && timestamp != null) {
+                return Pair(getCommitDescriptor(), null)
+            }
+            if (ref != null) {
+                return Pair(null, ref)
+            }
             throw GradleException("Could not determine Teamscale upload commit", e)
         }
     }

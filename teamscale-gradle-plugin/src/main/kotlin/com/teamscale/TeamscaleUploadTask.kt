@@ -84,7 +84,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
             try {
                 // Prefer to upload to revision and fallback to branch timestamp
-                val commitDescriptorOrNull = if (ref != null) null else commitDescriptor
+                val commitDescriptorOrNull = if (ref != null) null else commitDescriptor!!
                 retry(3) {
                     val client =
                         TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
