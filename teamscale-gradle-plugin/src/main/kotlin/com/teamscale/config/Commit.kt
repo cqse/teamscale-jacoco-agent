@@ -22,8 +22,14 @@ class Commit : Serializable {
             field = value?.trim()
         }
 
+    /** The SHA1 hash of the commit that the artifacts should be uploaded to. */
+    var ref: String? = null
+        set(value) {
+            field = value?.trim()
+        }
+
     /** Wraps branch and timestamp in a commit descriptor. */
-    fun getCommitDescriptor(): CommitDescriptor {
+    private fun getCommitDescriptor(): CommitDescriptor {
         return CommitDescriptor(branchName, timestamp)
     }
 
@@ -31,14 +37,15 @@ class Commit : Serializable {
      * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
      * stores them for later use.
      */
-    fun getOrResolveCommitDescriptor(project: Project): CommitDescriptor {
+    fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor, String?> {
         try {
-            if (branchName == null || timestamp == null) {
-                val commit = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
+            if (branchName == null || timestamp == null || ref == null) {
+                val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
                 branchName = branchName ?: commit.branchName
                 timestamp = timestamp ?: commit.timestamp
+                this.ref = this.ref ?: ref
             }
-            return getCommitDescriptor()
+            return Pair(getCommitDescriptor(), this.ref)
         } catch (e: IOException) {
             throw GradleException("Could not determine Teamscale upload commit", e)
         }

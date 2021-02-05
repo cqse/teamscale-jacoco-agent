@@ -57,6 +57,7 @@ public interface ITeamscaleService {
 			@Path("projectName") String projectName,
 			@Query("format") EReportFormat format,
 			@Query("t") CommitDescriptor commit,
+			@Query("revision") String revision,
 			@Query("movetolastcommit") boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,

@@ -74,7 +74,7 @@ open class TestImpacted : Test() {
      */
     val endCommit
         @Internal
-        get() = pluginExtension.commit.getOrResolveCommitDescriptor(project)
+        get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).first
 
 
     /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
