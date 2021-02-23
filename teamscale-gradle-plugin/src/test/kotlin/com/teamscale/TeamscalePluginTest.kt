@@ -68,7 +68,7 @@ class TeamscalePluginTest {
         assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
-            File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
+            File(temporaryFolder.root, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
         assertThat(testwiseCoverageReportFile).exists()
 
         val source = Okio.buffer(Okio.source(testwiseCoverageReportFile))
@@ -96,7 +96,7 @@ class TeamscalePluginTest {
     fun `report directory is cleaned`() {
         val oldReportFile = File(
             temporaryFolder.root,
-            "build/reports/testwise_coverage/old-report-testwise_coverage-Unit-Tests-unitTest.json"
+            "build/reports/testwise-coverage/unitTest/old-report-Unit-Tests.json"
         )
         oldReportFile.parentFile.mkdirs()
         oldReportFile.writeText("Test")
@@ -112,7 +112,7 @@ class TeamscalePluginTest {
         assertThat(build.output).contains("SUCCESS (18 tests, 12 successes, 0 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
-            File(temporaryFolder.root, "build/reports/testwise_coverage/testwise_coverage-Unit-Tests-unitTest.json")
+            File(temporaryFolder.root, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
         assertThat(testwiseCoverageReportFile).exists()
         assertThat(oldReportFile).doesNotExist()
     }

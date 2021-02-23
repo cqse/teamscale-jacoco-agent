@@ -1,6 +1,9 @@
-package com.teamscale.config
+package com.teamscale.config.extension
 
 import com.teamscale.TeamscalePlugin
+import com.teamscale.config.Commit
+import com.teamscale.config.ServerConfiguration
+import com.teamscale.config.TopLevelReportConfiguration
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -34,24 +37,24 @@ open class TeamscalePluginExtension(val project: Project) {
         action.execute(baseline)
     }
 
-    val report = Reports()
+    val report = TopLevelReportConfiguration(project)
 
     /** Configures the reports to be uploaded. */
-    fun report(action: Action<in Reports>) {
+    fun report(action: Action<in TopLevelReportConfiguration>) {
         action.execute(report)
     }
 
-    fun <T> applyTo(task: T): TeamscaleTaskExtension where T : Task, T : JavaForkOptions {
+    fun <T> applyTo(task: T): TeamscaleTestImpactedTaskExtension where T : Task, T : JavaForkOptions {
         val jacocoTaskExtension: JacocoTaskExtension = task.extensions.getByType(JacocoTaskExtension::class.java)
         jacocoTaskExtension.excludes?.addAll(DEFAULT_EXCLUDES)
 
         val extension =
             task.extensions.create(
                 TeamscalePlugin.teamscaleExtensionName,
-                TeamscaleTaskExtension::class.java,
+                TeamscaleTestImpactedTaskExtension::class.java,
                 project,
-                this,
-                jacocoTaskExtension
+                jacocoTaskExtension,
+                task
             )
         extension.agent.setDestination(task.project.provider {
             project.file("${project.buildDir}/jacoco/${project.name}-${task.name}")
@@ -79,3 +82,4 @@ open class TeamscalePluginExtension(val project: Project) {
         )
     }
 }
+

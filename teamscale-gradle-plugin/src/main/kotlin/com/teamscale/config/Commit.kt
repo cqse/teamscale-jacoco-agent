@@ -22,8 +22,17 @@ class Commit : Serializable {
             field = value?.trim()
         }
 
+    /**
+     * The revision of the commit that the artifacts should be uploaded to.
+     * This is e.g. the SHA1 hash of the commit in Git or the revision of the commit in SVN.
+     */
+    var revision: String? = null
+        set(value) {
+            field = value?.trim()
+        }
+
     /** Wraps branch and timestamp in a commit descriptor. */
-    fun getCommitDescriptor(): CommitDescriptor {
+    private fun getCommitDescriptor(): CommitDescriptor {
         return CommitDescriptor(branchName, timestamp)
     }
 
@@ -31,15 +40,22 @@ class Commit : Serializable {
      * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
      * stores them for later use.
      */
-    fun getOrResolveCommitDescriptor(project: Project): CommitDescriptor {
+    fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor?, String?> {
         try {
-            if (branchName == null || timestamp == null) {
-                val commit = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
+            if (branchName == null || timestamp == null || revision == null) {
+                val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
                 branchName = branchName ?: commit.branchName
                 timestamp = timestamp ?: commit.timestamp
+                this.revision = this.revision ?: ref
             }
-            return getCommitDescriptor()
+            return Pair(getCommitDescriptor(), this.revision)
         } catch (e: IOException) {
+            if (branchName != null && timestamp != null) {
+                return Pair(getCommitDescriptor(), null)
+            }
+            if (revision != null) {
+                return Pair(null, revision)
+            }
             throw GradleException("Could not determine Teamscale upload commit", e)
         }
     }

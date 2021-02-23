@@ -14,13 +14,14 @@ object GitRepositoryHelper {
 
     /** Returns the last commit in the given git repository. */
     @Throws(IOException::class)
-    fun getHeadCommitDescriptor(baseDirectory: File): CommitDescriptor {
+    fun getHeadCommitDescriptor(baseDirectory: File): Pair<CommitDescriptor, String> {
         val git = Git.open(baseDirectory)
         val repository = git.repository
         val branch = repository.branch
         val commit = getCommit(repository, branch)
-        val time = commit.commitTime.toLong()
-        return CommitDescriptor(branch, time * 1000L)
+        val commitTimeSeconds = commit.commitTime.toLong()
+        val ref = repository.refDatabase.getRef("HEAD").objectId.name
+        return Pair(CommitDescriptor(branch, commitTimeSeconds * 1000L), ref)
     }
 
     /** Returns the commit denoted by the given commit id/tag/head.  */

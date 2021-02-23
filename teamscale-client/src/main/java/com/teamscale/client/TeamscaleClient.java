@@ -112,7 +112,7 @@ public class TeamscaleClient {
 	}
 
 	/** Uploads multiple reports to Teamscale. */
-	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
+	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor, String revision,
 							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);
@@ -120,7 +120,7 @@ public class TeamscaleClient {
 		}).collect(Collectors.toList());
 
 		Response<ResponseBody> response = service
-				.uploadExternalReports(projectId, reportFormat, commitDescriptor, true, partition, message,
+				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, true, partition, message,
 						partList).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response));

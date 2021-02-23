@@ -7,6 +7,9 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - [feature] _tia-client_: add API to hash test data when creating ClusteredTestDetails
 - [feature] support for SAP NWDI application profiling
+- [feature] _teamscale-gradle-plugin_: support jacoco and junit report uploads to Teamscale
+- [feature] _teamscale-gradle-plugin_: available on Gradle Plugin Portal
+- [breaking change] _teamscale-gradle-plugin_: teamscale.report.partition is no longer available
 
 # 20.0.0
 - [breaking change] This release requires Teamscale 5.9 or higher

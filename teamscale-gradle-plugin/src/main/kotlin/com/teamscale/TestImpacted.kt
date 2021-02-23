@@ -1,6 +1,7 @@
 package com.teamscale
 
-import com.teamscale.config.TeamscaleTaskExtension
+import com.teamscale.config.extension.TeamscalePluginExtension
+import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.GradleException
@@ -43,11 +44,17 @@ open class TestImpacted : Test() {
      * Reference to the configuration that should be used for this task.
      */
     @Internal
-    lateinit var taskExtension: TeamscaleTaskExtension
+    lateinit var pluginExtension: TeamscalePluginExtension
+
+    /**
+     * Reference to the configuration that should be used for this task.
+     */
+    @Internal
+    lateinit var taskExtension: TeamscaleTestImpactedTaskExtension
 
     val reportConfiguration
         @Input
-        get() = taskExtension.report
+        get() = taskExtension.report.getReport()
 
     val agentFilterConfiguration
         @Input
@@ -59,7 +66,7 @@ open class TestImpacted : Test() {
 
     val serverConfiguration
         @Input
-        get() = taskExtension.parent.server
+        get() = pluginExtension.server
 
     /**
      * The (current) commit at which test details should be uploaded to.
@@ -67,14 +74,14 @@ open class TestImpacted : Test() {
      */
     val endCommit
         @Internal
-        get() = taskExtension.parent.commit.getOrResolveCommitDescriptor(project)
+        get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).first
 
 
     /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
     val baseline
         @Input
         @Optional
-        get() = taskExtension.parent.baseline
+        get() = pluginExtension.baseline
 
     /**
      * The directory to write the jacoco execution data to. Ensures that the directory
@@ -86,7 +93,7 @@ open class TestImpacted : Test() {
 
     /** The report task used to setup and cleanup report directories. */
     @Internal
-    lateinit var reportTask: TeamscaleReportTask
+    lateinit var reportTask: TestwiseCoverageReportTask
 
     @Internal
     var includeEngines: Set<String> = emptySet()
@@ -156,13 +163,10 @@ open class TestImpacted : Test() {
             jvmArgs(it.getJvmArgs())
         }
 
-        val reportConfig = taskExtension.getMergedReports()
-        val report = reportConfig.testwiseCoverage.getReport(project, this)
+        val reportConfig = taskExtension.report
+        val report = reportConfig.getReport()
 
         reportTask.addTestArtifactsDirs(report, reportOutputDir)
-        reportConfig.googleClosureCoverage.destination?.let {
-            reportTask.addTestArtifactsDirs(report, it)
-        }
 
         getAllDependentJavaProjects(project).forEach { subProject ->
             val sourceSets = subProject.property("sourceSets") as SourceSetContainer
@@ -193,12 +197,13 @@ open class TestImpacted : Test() {
 
     private fun setImpactedTestEngineOptions(report: Report) {
         serverConfiguration.validate()
+        assert(runAllTests || endCommit != null) {"When executing only impacted tests a branchName and timestamp must be specified!"}
         writeEngineProperty("server.url", serverConfiguration.url!!)
         writeEngineProperty("server.project", serverConfiguration.project!!)
         writeEngineProperty("server.userName", serverConfiguration.userName!!)
         writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
         writeEngineProperty("partition", report.partition)
-        writeEngineProperty("endCommit", endCommit.toString())
+        writeEngineProperty("endCommit", endCommit?.toString())
         writeEngineProperty("baseline", baseline?.toString())
         writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))

@@ -1,5 +1,5 @@
 ext {
-	appVersion = '20.0.0'
+	appVersion = '21.0.0'
 
 	// When upgrading JaCoCo to a newer version make sure to
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
