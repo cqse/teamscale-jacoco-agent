@@ -21,11 +21,21 @@ import java.util.List;
 /** {@link Retrofit} API specification for Teamscale. */
 public interface ITeamscaleService {
 
-	/** Report upload API. */
+	/**
+	 * Report upload API.
+	 * @param commit A branch and timestamp to upload the report to. Can be null if revision is specified.
+	 * @param moveToLastCommit Whether to move the upload timestamp to right after the last commit
+	 * @param revision This parameter allows to pass a revision instead of a timestamp. Can be null if a timestamp is given.
+	 * @param partition The name of the logical partition to store the results into. All existing data in this partition
+	 *                     will be invalidated. A partition typically corresponds to one analysis run, i.e. if there are
+	 *                     two independent builds/runs, they must use different partitions.
+	 * @see <a href="https://docs.teamscale.com/howto/uploading-external-results/#upload-via-command-line">
+	 *     How to Upload External Analysis Results to Teamscale</a> for details.
+	 */
 	@Multipart
-	@POST("api/projects/{projectName}/external-analysis/session/auto-create/report")
+	@POST("api/projects/{projectAliasOrId}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReport(
-			@Path("projectName") String projectName,
+			@Path("projectAliasOrId") String projectAliasOrId,
 			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision,
@@ -35,7 +45,10 @@ public interface ITeamscaleService {
 			@Part("report") RequestBody report
 	);
 
-	/** Report upload API with {@link EReportFormat}. */
+	/**
+	 * Report upload API with {@link EReportFormat}.
+	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
+	 */
 	default Call<ResponseBody> uploadExternalReport(
 			String projectName,
 			EReportFormat format,
@@ -50,7 +63,10 @@ public interface ITeamscaleService {
 				partition, message, report);
 	}
 
-	/** Report upload API for multiple reports at once. */
+	/**
+	 * Report upload API for multiple reports at once.
+	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
+	 */
 	@Multipart
 	@POST("api/projects/{projectName}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReports(

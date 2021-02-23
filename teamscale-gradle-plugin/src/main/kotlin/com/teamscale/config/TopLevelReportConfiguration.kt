@@ -15,7 +15,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
  */
 class TopLevelReportConfiguration(val project: Project) {
 
-    /** Configures settings for all testwise coverage reports. */
+    /** Configures settings for all Testwise Coverage reports. */
     @JvmOverloads
     fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration> = Action {}) {
         project.tasks.withType(TestImpacted::class.java) { testImpacted ->
@@ -26,8 +26,8 @@ class TopLevelReportConfiguration(val project: Project) {
     }
 
     /**
-     * Configures jacoco report settings for all jacoco report tasks
-     * and makes sure xml report generation is enabled.
+     * Configures JaCoCo report settings for all JaCoCo report tasks
+     * and makes sure XML report generation is enabled.
      */
     @JvmOverloads
     fun jacoco(action: Action<in JacocoReportConfiguration> = Action {}) {
@@ -38,8 +38,8 @@ class TopLevelReportConfiguration(val project: Project) {
     }
 
     /**
-     * Configures junit report settings for all test tasks
-     * and makes sure xml report generation is enabled.
+     * Configures JUnit report settings for all test tasks
+     * and makes sure XML report generation is enabled.
      */
     @JvmOverloads
     fun junit(action: Action<in JUnitReportConfiguration> = Action {}) {

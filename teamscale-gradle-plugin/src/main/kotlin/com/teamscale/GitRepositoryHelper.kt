@@ -19,9 +19,9 @@ object GitRepositoryHelper {
         val repository = git.repository
         val branch = repository.branch
         val commit = getCommit(repository, branch)
-        val time = commit.commitTime.toLong()
+        val commitTimeSeconds = commit.commitTime.toLong()
         val ref = repository.refDatabase.getRef("HEAD").objectId.name
-        return Pair(CommitDescriptor(branch, time * 1000L), ref)
+        return Pair(CommitDescriptor(branch, commitTimeSeconds * 1000L), ref)
     }
 
     /** Returns the commit denoted by the given commit id/tag/head.  */

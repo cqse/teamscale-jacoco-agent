@@ -8,7 +8,7 @@ import org.gradle.api.provider.Property
 import java.io.File
 import java.io.Serializable
 
-/** Configuration for the testwise coverage report. */
+/** Base configuration for all kinds of reports that we want to upload from Gradle. */
 open class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
 
     /** The partition for which artifacts are uploaded. */

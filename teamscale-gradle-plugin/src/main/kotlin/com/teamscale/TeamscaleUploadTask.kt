@@ -32,7 +32,7 @@ open class TeamscaleUploadTask : DefaultTask() {
      * If set it is preferred over commitDescriptor.
      */
     @get:Input
-    val ref
+    val revision
         get() = extension.commit.getOrResolveCommitDescriptor(project).second
 
     /** The list of reports to be uploaded. */
@@ -58,7 +58,7 @@ open class TeamscaleUploadTask : DefaultTask() {
         server.validate()
 
         try {
-            logger.info("Uploading to $server at ${ref ?: commitDescriptor}...")
+            logger.info("Uploading to $server at ${revision ?: commitDescriptor}...")
             uploadReports()
         } catch (e: Exception) {
             if (ignoreFailures) {
@@ -84,7 +84,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
             try {
                 // Prefer to upload to revision and fallback to branch timestamp
-                val commitDescriptorOrNull = if (ref != null) null else commitDescriptor!!
+                val commitDescriptorOrNull = if (revision != null) null else commitDescriptor!!
                 retry(3) {
                     val client =
                         TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
@@ -92,7 +92,7 @@ open class TeamscaleUploadTask : DefaultTask() {
                         format,
                         reportFiles,
                         commitDescriptorOrNull,
-                        ref,
+                        revision,
                         partition,
                         message
                     )

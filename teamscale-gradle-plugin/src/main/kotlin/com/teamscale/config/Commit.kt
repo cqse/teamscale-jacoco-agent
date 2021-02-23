@@ -23,7 +23,7 @@ class Commit : Serializable {
         }
 
     /** The SHA1 hash of the commit that the artifacts should be uploaded to. */
-    var ref: String? = null
+    var revision: String? = null
         set(value) {
             field = value?.trim()
         }
@@ -39,19 +39,19 @@ class Commit : Serializable {
      */
     fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor?, String?> {
         try {
-            if (branchName == null || timestamp == null || ref == null) {
+            if (branchName == null || timestamp == null || revision == null) {
                 val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
                 branchName = branchName ?: commit.branchName
                 timestamp = timestamp ?: commit.timestamp
-                this.ref = this.ref ?: ref
+                this.revision = this.revision ?: ref
             }
-            return Pair(getCommitDescriptor(), this.ref)
+            return Pair(getCommitDescriptor(), this.revision)
         } catch (e: IOException) {
             if (branchName != null && timestamp != null) {
                 return Pair(getCommitDescriptor(), null)
             }
-            if (ref != null) {
-                return Pair(null, ref)
+            if (revision != null) {
+                return Pair(null, revision)
             }
             throw GradleException("Could not determine Teamscale upload commit", e)
         }

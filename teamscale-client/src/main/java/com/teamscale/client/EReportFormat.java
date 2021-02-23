@@ -2,7 +2,7 @@ package com.teamscale.client;
 
 /**
  * Enum of report formats.
- * This is a subset of the report formats supported by Teamscale.
+ * This is the subset of the report formats supported by Teamscale that the plugin currently implements support for.
  * See https://docs.teamscale.com/reference/upload-formats-and-samples/#supported-formats-for-upload
  */
 public enum EReportFormat {

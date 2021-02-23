@@ -14,10 +14,10 @@ import java.io.Serializable
 open class TeamscaleTestImpactedTaskExtension(
     val project: Project,
     jacocoExtension: JacocoTaskExtension,
-    testImpacted: TestImpacted
+    testImpactedTask: TestImpacted
 ) : Serializable {
 
-    val report = TestwiseCoverageConfiguration(project, testImpacted)
+    val report = TestwiseCoverageConfiguration(project, testImpactedTask)
 
     /** Configures the reports to be uploaded. */
     fun report(action: Action<in TestwiseCoverageConfiguration>) {
