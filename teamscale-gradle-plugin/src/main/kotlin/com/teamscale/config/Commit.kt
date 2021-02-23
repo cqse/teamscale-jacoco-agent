@@ -22,7 +22,10 @@ class Commit : Serializable {
             field = value?.trim()
         }
 
-    /** The SHA1 hash of the commit that the artifacts should be uploaded to. */
+    /**
+     * The revision of the commit that the artifacts should be uploaded to.
+     * This is e.g. the SHA1 hash of the commit in Git or the revision of the commit in SVN.
+     */
     var revision: String? = null
         set(value) {
             field = value?.trim()

@@ -82,7 +82,7 @@ open class TeamscalePlugin : Plugin<Project> {
         // Add the teamscale extension also to all TestImpacted tasks
         extendTestImpactedTasks(project, pluginExtension)
         extendTestTasks(project)
-        extendJaCoCoReportTasks(project)
+        extendJacocoReportTasks(project)
     }
 
     private fun extendTestImpactedTasks(
@@ -120,7 +120,7 @@ open class TeamscalePlugin : Plugin<Project> {
      * Adds an extension to the JacocoReport tasks and adds the report
      * to the upload task when the extension has been configured.
      */
-    private fun extendJaCoCoReportTasks(project: Project) {
+    private fun extendJacocoReportTasks(project: Project) {
         project.tasks.withType(JacocoReport::class.java) { reportTask ->
             teamscaleUploadTask.mustRunAfter(reportTask)
 
