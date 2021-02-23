@@ -69,7 +69,6 @@ task integrationTest(type: TestImpacted) {
 
 repositories {
 	mavenCentral()
-	jcenter()
 	mavenLocal()
 }
 
