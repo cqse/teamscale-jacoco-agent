@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 21.0.0
 - [feature] _tia-client_: add API to hash test data when creating ClusteredTestDetails
 - [feature] support for SAP NWDI application profiling
 - [feature] _teamscale-gradle-plugin_: support jacoco and junit report uploads to Teamscale
