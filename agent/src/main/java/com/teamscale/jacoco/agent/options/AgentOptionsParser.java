@@ -8,7 +8,7 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
@@ -297,7 +297,7 @@ public class AgentOptionsParser {
 	private String getRevisionFromGitProperties(String optionName, String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			String revision = GitPropertiesLocator.getRevisionFromGitProperties(jarFile);
+			String revision = GitPropertiesLocatorUtils.getRevisionFromGitProperties(jarFile);
 			if (revision == null) {
 				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
 			}

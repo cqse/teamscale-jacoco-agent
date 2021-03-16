@@ -21,10 +21,10 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final Set<String> seenJars = new ConcurrentSkipListSet<>();
-	private final GitPropertiesLocator<?> locator;
+	private final IGitPropertiesLocator locator;
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
 
-	public GitPropertiesLocatingTransformer(GitPropertiesLocator<?> locator,
+	public GitPropertiesLocatingTransformer(IGitPropertiesLocator locator,
 											ClasspathWildcardIncludeFilter locationIncludeFilter) {
 		this.locator = locator;
 		this.locationIncludeFilter = locationIncludeFilter;

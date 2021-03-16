@@ -128,4 +128,16 @@ public class TeamscaleServer {
 		teamscaleServer.commit = commitDescriptor;
 		return teamscaleServer;
 	}
+
+	/** Creates a copy of the {@link TeamscaleServer} configuration, but with the given project and revision set. */
+	public TeamscaleServer withProjectAndRevision(String teamscaleProject, String revision) {
+		TeamscaleServer teamscaleServer = new TeamscaleServer();
+		teamscaleServer.url = url;
+		teamscaleServer.userName = userName;
+		teamscaleServer.userAccessToken = userAccessToken;
+		teamscaleServer.partition = partition;
+		teamscaleServer.project = teamscaleProject;
+		teamscaleServer.revision = revision;
+		return teamscaleServer;
+	}
 }
