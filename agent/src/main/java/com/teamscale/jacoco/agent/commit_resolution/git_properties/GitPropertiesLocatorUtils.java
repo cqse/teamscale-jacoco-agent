@@ -54,10 +54,14 @@ public class GitPropertiesLocatorUtils {
 		if (entryWithProperties == null) {
 			return null;
 		}
-		String revision = getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_GIT_COMMIT_ID,
-				entryWithProperties.getFirst(), jarFile);
-		String project = getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_TEAMSCALE_PROJECT,
-				entryWithProperties.getFirst(), jarFile);
+		String revision =  entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
+		String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
+		if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
+			throw new InvalidGitPropertiesException(
+					"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + jarFile + "." +
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + entryWithProperties.getSecond().toString()
+			);
+		}
 		return new ProjectRevision(project, revision);
 	}
 

@@ -1,10 +1,12 @@
 package com.teamscale.jacoco.agent.options;
 
+import java.util.Objects;
+
 /** Class encapsulating the Teamscale project and git revision an upload should be performed to. */
 public class ProjectRevision {
 
-	private String project;
-	private String revision;
+	private final String project;
+	private final String revision;
 
 	public ProjectRevision(String project, String revision) {
 		this.project = project;
@@ -21,4 +23,17 @@ public class ProjectRevision {
 		return revision;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ProjectRevision that = (ProjectRevision) o;
+		return Objects.equals(project, that.project) &&
+				Objects.equals(revision, that.revision);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(project, revision);
+	}
 }

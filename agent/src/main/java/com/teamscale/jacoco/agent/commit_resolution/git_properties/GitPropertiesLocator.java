@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
+import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -69,7 +70,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 							"Found inconsistent git.properties files: {} contained data {} while {} contained {}." +
 									" Please ensure that all git.properties files of your application are consistent." +
 									" Otherwise, you may" +
-									" be uploading to the wrong commit which will result in incorrect coverage data" +
+									" be uploading to the wrong project/commit which will result in incorrect coverage data" +
 									" displayed in Teamscale. If you cannot fix the inconsistency, you can manually" +
 									" specify a Jar/War/Ear/... file from which to read the correct git.properties" +
 									" file with the agent's teamscale-git-properties-jar parameter.",

@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
@@ -231,7 +232,7 @@ public class AgentOptions {
 						.hasAllRequiredFieldsSetExceptProject() || sapNetWeaverJavaApplications != null,
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
-		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetExceptProject() && (teamscaleServer.revision != null
+		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetAndProjectNull() && (teamscaleServer.revision != null
 				|| teamscaleServer.commit != null),"You tried to provide a commit to upload to directly. This is not possible, since you" +
 				" did not provide the 'teamscale-project' Teamscale project to upload to. Please either specify the 'teamscale-project'" +
 				" property, or provide the respective commits via all the profiled Jar/War/Ear/...s' " +
@@ -315,7 +316,7 @@ public class AgentOptions {
 			return new HttpUploader(uploadUrl, additionalMetaDataFiles);
 		}
 
-		if (teamscaleServer.hasAllRequiredFieldsSetExceptProject()) {
+		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
 			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
 					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
 					" with the 'teamscale-project' field set.");
@@ -357,18 +358,21 @@ public class AgentOptions {
 	}
 
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
-		DelayedUploader<String> uploader = new DelayedUploader<>(
-				revision -> {
-					teamscaleServer.revision = revision;
+		DelayedUploader<ProjectRevision> uploader = new DelayedUploader<>(
+				projectRevision -> {
+					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project.equals(projectRevision.getProject())) {
+						logger.warn("Teamscale project specified in the agent configuration is not the same as the Teamscale project specified in git.properties file(s). Proceeding to upload to the" +
+								" Teamscale project specified in the agent configuration.");
+					}
+					teamscaleServer.revision = projectRevision.getRevision();
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
-		GitPropertiesLocator<?> locator = new GitPropertiesLocator<>(uploader,
-				GitPropertiesLocatorUtils::getRevisionFromGitProperties);
+		GitPropertiesLocator<ProjectRevision> locator = new GitPropertiesLocator<>(uploader,
+				GitPropertiesLocatorUtils::getProjectRevisionFromGitProperties);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}
 
-	// TODO - VB - reuse code?
 	private IUploader createDelayedMultiProjectTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader((project, revision) ->
 				new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
