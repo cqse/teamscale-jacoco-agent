@@ -128,7 +128,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format 
   section above)
-- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
+- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via 
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
   This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
@@ -454,6 +454,26 @@ jar {
 ```sh
 ./gradlew jar -Dbranch=master
 ```
+
+## Multi-project upload
+
+It is possible to upload the same coverage file to multiple Teamscale projects. In this case, 
+the `teamscale-project` property has to be provided in each of the profiled Jar/War/Ear/... files
+via the contained `git.properties` file. For example, the `git.properties` file can be generated
+using the following Gradle plugin:
+
+```groovy
+plugins {
+  id "com.gorylenko.gradle-git-properties" version "2.2.4"
+}
+gitProperties {
+    customProperty 'teamscale-project', 'my-awesome-project' 
+}
+```
+
+Please note that the commit must also be provided via the `git.properties` in each of the profiled Jar/War/Ear...
+files when specifying the `teamscale-project` this way. In case `teamscale-project` is provided both via the agent properties
+and `git.properties`, the value provided via the agent properties takes precedence.
 
 ## `duplicates`
 
