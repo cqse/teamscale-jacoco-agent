@@ -20,7 +20,7 @@ public class DelayedTeamscaleMultiProjectUploader extends DelayedMultiUploaderBa
 		this.uploaderFactory = uploaderFactory;
 	}
 
-	/** Sets the revision detected for the Teamscale project. */
+	/** Sets the project and revision detected for the Teamscale project. */
 	public void setTeamscaleProjectForRevision(ProjectRevision projectRevision) {
 		IUploader uploader = uploaderFactory.apply(projectRevision.getProject(), projectRevision.getRevision());
 		teamscaleUploaders.add(uploader);

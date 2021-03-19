@@ -233,10 +233,11 @@ public class AgentOptions {
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetAndProjectNull() && (teamscaleServer.revision != null
-				|| teamscaleServer.commit != null),"You tried to provide a commit to upload to directly. This is not possible, since you" +
-				" did not provide the 'teamscale-project' Teamscale project to upload to. Please either specify the 'teamscale-project'" +
-				" property, or provide the respective commits via all the profiled Jar/War/Ear/...s' " +
-				" git.properties files.");
+						|| teamscaleServer.commit != null),
+				"You tried to provide a commit to upload to directly. This is not possible, since you" +
+						" did not provide the 'teamscale-project' Teamscale project to upload to. Please either specify the 'teamscale-project'" +
+						" property, or provide the respective projects and commits via all the profiled Jar/War/Ear/...s' " +
+						" git.properties files.");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
 				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
@@ -319,7 +320,7 @@ public class AgentOptions {
 		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
 			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
 					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
-					" with the 'teamscale-project' field set.");
+					" with the 'teamscale.project' field set.");
 			return createDelayedMultiProjectTeamscaleUploader(instrumentation);
 		}
 
@@ -360,9 +361,12 @@ public class AgentOptions {
 	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedUploader<ProjectRevision> uploader = new DelayedUploader<>(
 				projectRevision -> {
-					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project.equals(projectRevision.getProject())) {
-						logger.warn("Teamscale project specified in the agent configuration is not the same as the Teamscale project specified in git.properties file(s). Proceeding to upload to the" +
-								" Teamscale project specified in the agent configuration.");
+					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project
+							.equals(projectRevision.getProject())) {
+						logger.warn(
+								"Teamscale project '{}' specified in the agent configuration is not the same as the Teamscale project '{}' specified in git.properties file(s). Proceeding to upload to the" +
+										" Teamscale project '{}' specified in the agent configuration.",
+								teamscaleServer.project, projectRevision.getProject(), teamscaleServer.project);
 					}
 					teamscaleServer.revision = projectRevision.getRevision();
 					return new TeamscaleUploader(teamscaleServer);

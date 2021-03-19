@@ -84,7 +84,7 @@ public class TeamscaleServer {
 				hasAllRequiredFieldsSetExceptProject();
 	}
 
-	/** Returns if all required fields are non-null except the project. Explicitly checks that project is not null. */
+	/** Returns if all required fields are non-null except the project. Explicitly checks that project is null. */
 	public boolean hasAllRequiredFieldsSetAndProjectNull() {
 		return project == null && url != null &&
 				userName != null &&

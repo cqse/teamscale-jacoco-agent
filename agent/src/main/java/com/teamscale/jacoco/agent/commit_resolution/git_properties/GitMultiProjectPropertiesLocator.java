@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
@@ -9,15 +8,13 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
  * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
  * e.g. to Teamscale, via a {@link DelayedTeamscaleMultiProjectUploader}.
- * Specifically, this searches for the teamscale-project property specified in each of the discovered git.properties
+ * Specifically, this searches for the 'teamscale.project' property specified in each of the discovered 'git.properties'
  * files.
  */
 public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
@@ -55,10 +52,14 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 				logger.debug("No git.properties file found in {}", jarFile.toString());
 				return;
 			}
+			// this code only runs when 'teamscale-project' is not given via the agent properties,
+			// i.e., a multi-project upload is being attempted.
+			// Therefore, we expect to find both the project (teamscale.project) and the revision
+			// (git.commit.id) in the git.properties file.
 			if (data.getProject() == null || data.getRevision() == null) {
 				logger.error(
 						"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
-								" Teamscale project (teamscale-project) property, or does not specify the commit SHA (git.commit.id)." +
+								" Teamscale project (teamscale.project) property, or does not specify the commit SHA (git.commit.id)." +
 								" Please note that both of these properties are required in order to allow multi-project upload to Teamscale.",
 						jarFile);
 				return;

@@ -25,8 +25,12 @@ public class ProjectRevision {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		ProjectRevision that = (ProjectRevision) o;
 		return Objects.equals(project, that.project) &&
 				Objects.equals(revision, that.revision);

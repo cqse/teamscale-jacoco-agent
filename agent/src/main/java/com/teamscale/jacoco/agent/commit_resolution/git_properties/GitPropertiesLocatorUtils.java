@@ -24,7 +24,7 @@ public class GitPropertiesLocatorUtils {
 	public static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
 
 	/** The git.properties key that holds the Teamscale project name. */
-	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale-project";
+	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
 
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
@@ -43,7 +43,7 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/**
-	 * Reads the teamscale-project property value and the git SHA1 from the given jar file's git.properties. If no
+	 * Reads the 'teamscale.project' property value and the git SHA1 from the given jar file's git.properties. If no
 	 * git.properties file can be found, returns null.
 	 *
 	 * @throws IOException                   If reading the jar file fails.

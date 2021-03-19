@@ -94,7 +94,8 @@ patterns with `*`, `**` and `?`.
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
-- `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs.
+- `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs. If not specified, the
+`teamscale.project` property must be specified via the `git.properties` file in at least one of the profiled JARs/WARs/EARs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the 
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
@@ -457,23 +458,42 @@ jar {
 
 ## Multi-project upload
 
-It is possible to upload the same coverage file to multiple Teamscale projects. In this case, 
-the `teamscale-project` property has to be provided in each of the profiled Jar/War/Ear/... files
+It is possible to upload the same coverage file to multiple Teamscale projects for different commits. In this case, 
+the `teamscale.project` property has to be provided in each of the profiled Jar/War/Ear/... files
 via the contained `git.properties` file. For example, the `git.properties` file can be generated
-using the following Gradle plugin:
+using the [gradle-git-properties][gradle-git-properties]  Gradle plugin:
 
 ```groovy
-plugins {
-  id "com.gorylenko.gradle-git-properties" version "2.2.4"
-}
 gitProperties {
-    customProperty 'teamscale-project', 'my-awesome-project' 
+    customProperty 'teamscale.project', 'my-awesome-project' 
 }
 ```
 
-Please note that the commit must also be provided via the `git.properties` in each of the profiled Jar/War/Ear...
-files when specifying the `teamscale-project` this way. In case `teamscale-project` is provided both via the agent properties
-and `git.properties`, the value provided via the agent properties takes precedence.
+The same can be achieved for Maven using, e.g., the [git-commit-id][git-commit-id] Maven plugin:
+
+```xml
+ <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+            <includes>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+            </includes>
+        </resource>
+ </resources>
+```
+
+You need to include a properties file with unresolved property values for ${teamscale.project} and ${git.commit.id}
+and provide the corresponding values via the `pom.xml` file(s) of your artifact(s). Example:
+```
+git.commit.id=${git.commit.id}
+teamscale.project=${teamscale.project}
+```
+
+Please note that the commit must be provided via the `git.properties` in each of the profiled Jar/War/Ear...
+files when specifying the `teamscale.project` this way. In case `teamscale-project` is provided via the agent properties,
+its value takes precedence over any `teamscale.project` value provided via the `git.properties`.
 
 ## `duplicates`
 
@@ -567,3 +587,5 @@ To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly
 [ts-userguide-keystore]: https://docs.teamscale.com/howto/configuring-https/#creating-a-keystore
 [teamscale]: https://teamscale.com
 [signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html
+[git-commit-id]: https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering
+[gradle-git-properties]: https://github.com/n0mer/gradle-git-properties
