@@ -21,11 +21,11 @@ public class GitPropertiesLocatorTest {
 	public void testReadingGitPropertiesFromArchive() throws Exception {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(getClass().getResourceAsStream(archiveName));
-			Pair<String, Properties> commit = GitPropertiesLocator
+			Pair<String, Properties> commit = GitPropertiesLocatorUtils
 					.findGitPropertiesInJar(jarInputStream);
 			assertThat(commit).isNotNull();
-			String rev = GitPropertiesLocator
-					.getGitPropertiesValue(commit.getSecond(), GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_ID, "test",
+			String rev = GitPropertiesLocatorUtils
+					.getGitPropertiesValue(commit.getSecond(), GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, "test",
 							new File("test.jar"));
 			assertThat(rev).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
 		}
@@ -37,7 +37,7 @@ public class GitPropertiesLocatorTest {
 		gitProperties.put("git.commit.time", "123ab");
 		gitProperties.put("git.branch", "master");
 		assertThatThrownBy(
-				() -> GitPropertiesLocator.getGitPropertiesValue(gitProperties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_ID, "test", new File("test.jar")))
+				() -> GitPropertiesLocatorUtils.getGitPropertiesValue(gitProperties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, "test", new File("test.jar")))
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
 

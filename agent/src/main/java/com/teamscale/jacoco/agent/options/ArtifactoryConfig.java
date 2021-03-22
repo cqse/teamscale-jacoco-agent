@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.Pair;
@@ -104,7 +105,7 @@ public class ArtifactoryConfig {
 	/** Parses the commit information form a git.properties file. */
 	public static CommitInfo parseGitProperties(File jarFile,
 												DateTimeFormatter gitPropertiesCommitTimeFormat) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = GitPropertiesLocator.findGitPropertiesInJar(jarFile);
+		Pair<String, Properties> entryWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInJar(jarFile);
 		if (entryWithProperties == null) {
 			return null;
 		}
@@ -112,12 +113,12 @@ public class ArtifactoryConfig {
 		String entry = entryWithProperties.getFirst();
 		Properties properties = entryWithProperties.getSecond();
 
-		String revision = GitPropertiesLocator
-				.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
+		String revision = GitPropertiesLocatorUtils
+				.getGitPropertiesValue(properties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
 						jarFile);
-		String branchName = GitPropertiesLocator
+		String branchName = GitPropertiesLocatorUtils
 				.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH, entry, jarFile);
-		long timestamp = ZonedDateTime.parse(GitPropertiesLocator
+		long timestamp = ZonedDateTime.parse(GitPropertiesLocatorUtils
 						.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME, entry,
 								jarFile),
 				gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();

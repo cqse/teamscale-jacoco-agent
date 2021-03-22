@@ -157,6 +157,36 @@ public class AgentOptionsTest {
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 	}
 
+	/**
+	 * Tests that an exception is thrown when the user attempts to specify the commit/revision when 'teamscale-project'
+	 * is not specified. The absence of the `teamscale-project` implies a multi-project upload, so the commit/revision
+	 * have to be provided individually via the 'git.properties' file.
+	 */
+	@Test
+	public void testNoCommitOrRevisionGivenWhenProjectNull() throws Exception {
+		String message = "You tried to provide a commit to upload to directly." +
+				" This is not possible, since you did not provide the 'teamscale-project' Teamscale project to upload to";
+
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-server-url=127.0.0.1," +
+								"teamscale-user=build," +
+								"teamscale-access-token=token," +
+								"teamscale-partition=\"Unit Tests\"," +
+								"teamscale-commit=default:HEAD," +
+								"teamscale-message=\"This is my message\""))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-server-url=127.0.0.1," +
+								"teamscale-user=build," +
+								"teamscale-access-token=token," +
+								"teamscale-partition=\"Unit Tests\"," +
+								"teamscale-revision=1234ABCD," +
+								"teamscale-message=\"This is my message\""))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+	}
+
 	/** Tests that supplying version info is supported in Testwise mode. */
 	@Test
 	public void testVersionInfosInTestwiseMode() throws AgentOptionParseException {

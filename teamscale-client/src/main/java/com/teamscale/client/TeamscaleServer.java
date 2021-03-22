@@ -84,6 +84,14 @@ public class TeamscaleServer {
 				hasAllRequiredFieldsSetExceptProject();
 	}
 
+	/** Returns if all required fields are non-null except the project. Explicitly checks that project is null. */
+	public boolean hasAllRequiredFieldsSetAndProjectNull() {
+		return project == null && url != null &&
+				userName != null &&
+				userAccessToken != null &&
+				partition != null;
+	}
+
 	/** Returns if all required fields are non-null. */
 	public boolean hasAllRequiredFieldsSetExceptProject() {
 		return url != null &&
@@ -126,6 +134,18 @@ public class TeamscaleServer {
 		teamscaleServer.partition = partition;
 		teamscaleServer.project = teamscaleProject;
 		teamscaleServer.commit = commitDescriptor;
+		return teamscaleServer;
+	}
+
+	/** Creates a copy of the {@link TeamscaleServer} configuration, but with the given project and revision set. */
+	public TeamscaleServer withProjectAndRevision(String teamscaleProject, String revision) {
+		TeamscaleServer teamscaleServer = new TeamscaleServer();
+		teamscaleServer.url = url;
+		teamscaleServer.userName = userName;
+		teamscaleServer.userAccessToken = userAccessToken;
+		teamscaleServer.partition = partition;
+		teamscaleServer.project = teamscaleProject;
+		teamscaleServer.revision = revision;
 		return teamscaleServer;
 	}
 }
