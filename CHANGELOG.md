@@ -6,6 +6,10 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 21.1.0
+
+- [feature] Support uploading to multiple Teamscale projects
+
 # 21.0.0
 - [feature] _tia-client_: add API to hash test data when creating ClusteredTestDetails
 - [feature] support for SAP NWDI application profiling
