@@ -5,6 +5,9 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [breaking change] _teamscale-client_: Impacted tests now allows to specify multiple partitions
+- [breaking change] _teamscale-client_: Impacted tests baseline can now be a string
+- [breaking change] _teamscale-client_: Impacted tests are queried with CHEAP_ADDITIONAL_COVERAGE_PER_TIME
 
 # 21.1.0
 

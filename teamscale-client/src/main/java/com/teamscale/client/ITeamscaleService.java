@@ -33,7 +33,7 @@ public interface ITeamscaleService {
 	 *     How to Upload External Analysis Results to Teamscale</a> for details.
 	 */
 	@Multipart
-	@POST("api/projects/{projectAliasOrId}/external-analysis/session/auto-create/report")
+	@POST("api/v5.9.0/projects/{projectAliasOrId}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReport(
 			@Path("projectAliasOrId") String projectAliasOrId,
 			@Query("format") String format,
@@ -68,7 +68,7 @@ public interface ITeamscaleService {
 	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
 	 */
 	@Multipart
-	@POST("api/projects/{projectName}/external-analysis/session/auto-create/report")
+	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReports(
 			@Path("projectName") String projectName,
 			@Query("format") EReportFormat format,
@@ -81,12 +81,12 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
-	@PUT("api/projects/{projectName}/impacted-tests")
+	@PUT("api/v6.5.2/projects/{projectName}/impacted-tests?prioritization-strategy=CHEAP_ADDITIONAL_COVERAGE_PER_TIME")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
-			@Query("baseline") Long baseline,
+			@Query("baseline") String baseline,
 			@Query("end") CommitDescriptor end,
-			@Query("partitions") String partition,
+			@Query("partitions") List<String> partitions,
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
 			@Query("ensure-processed") boolean ensureProcessed,
@@ -94,20 +94,19 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
-	@GET("api/projects/{projectName}/impacted-tests")
+	@GET("api/v6.5.2/projects/{projectName}/impacted-tests?prioritization-strategy=CHEAP_ADDITIONAL_COVERAGE_PER_TIME")
 	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
-			@Query("baseline") Long baseline,
+			@Query("baseline") String baseline,
 			@Query("end") CommitDescriptor end,
-			@Query("partitions") String partition,
+			@Query("partitions") List<String> partitions,
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
 			@Query("ensure-processed") boolean ensureProcessed
 	);
 
 	/**
-	 * Uploads the given report body to Teamscale as blocking call with adjusttimestamp set to true and and
-	 * movetolastcommit set to false.
+	 * Uploads the given report body to Teamscale as blocking call with movetolastcommit set to false.
 	 *
 	 * @return Returns the request body if successful, otherwise throws an IOException.
 	 */

@@ -30,7 +30,7 @@ public class TestEngineOptionUtils {
 				.runImpacted(propertyReader.getBoolean("runImpacted"))
 				.runAllTests(propertyReader.getBoolean("runAllTests"))
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
-				.baseline(propertyReader.getLong("baseline"))
+				.baseline(propertyReader.getString("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))
 				.testEngineIds(propertyReader.getStringList("engines"))
 				.reportDirectory(propertyReader.getString("reportDirectory"))
@@ -90,10 +90,6 @@ public class TestEngineOptionUtils {
 
 				return Arrays.asList(listAsString.split(","));
 			});
-		}
-
-		private Long getLong(String propertyName) {
-			return get(propertyName, Long::valueOf);
 		}
 	}
 }

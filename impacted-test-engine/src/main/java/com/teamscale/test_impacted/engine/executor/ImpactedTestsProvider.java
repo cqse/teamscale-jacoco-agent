@@ -9,6 +9,7 @@ import org.junit.platform.commons.logging.LoggerFactory;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -22,7 +23,7 @@ public class ImpactedTestsProvider {
 
 	private final TeamscaleClient client;
 
-	private final Long baseline;
+	private final String baseline;
 
 	private final CommitDescriptor endCommit;
 
@@ -30,7 +31,7 @@ public class ImpactedTestsProvider {
 
 	private final boolean includeNonImpacted;
 
-	public ImpactedTestsProvider(TeamscaleClient client, Long baseline, CommitDescriptor endCommit, String partition,
+	public ImpactedTestsProvider(TeamscaleClient client, String baseline, CommitDescriptor endCommit, String partition,
 								 boolean includeNonImpacted) {
 		this.client = client;
 		this.baseline = baseline;
@@ -45,7 +46,7 @@ public class ImpactedTestsProvider {
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
 			Response<List<PrioritizableTestCluster>> response = client
-					.getImpactedTests(availableTestDetails, baseline, endCommit, partition, includeNonImpacted);
+					.getImpactedTests(availableTestDetails, baseline, endCommit, Collections.singletonList(partition), includeNonImpacted);
 			if (response.isSuccessful()) {
 				List<PrioritizableTestCluster> testClusters = response.body();
 				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {

@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /** Base class for strategies to handle test events. */
@@ -87,7 +88,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @throws UnsupportedOperationException if the user did not properly configure the {@link #teamscaleClient}.
 	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
-							   Long baseline) throws IOException {
+							   String baseline) throws IOException {
 		int availableTestCount = 0;
 		if (availableTests != null) {
 			availableTestCount = availableTests.size();
@@ -108,7 +109,7 @@ public abstract class TestEventHandlerStrategyBase {
 
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
-						agentOptions.getTeamscaleServerOptions().partition, includeNonImpactedTests);
+						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition), includeNonImpactedTests);
 		if (response.isSuccessful()) {
 			String json = prioritizableTestClustersJsonAdapter.toJson(response.body());
 			logger.debug("Teamscale suggested these tests: {}", json);
