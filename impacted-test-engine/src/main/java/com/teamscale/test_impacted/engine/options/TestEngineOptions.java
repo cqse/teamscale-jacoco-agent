@@ -39,7 +39,7 @@ public class TestEngineOptions {
 	 * The baseline. Only code changes after the baseline are considered for determining impacted tests. May be null to
 	 * indicate no baseline.
 	 */
-	private Long baseline;
+	private String baseline;
 
 	/** The end commit used for TIA and for uploading the coverage. May not be null. */
 	private CommitDescriptor endCommit;
@@ -128,7 +128,7 @@ public class TestEngineOptions {
 		}
 
 		/** @see #baseline */
-		public Builder baseline(Long baseline) {
+		public Builder baseline(String baseline) {
 			testEngineOptions.baseline = baseline;
 			return this;
 		}

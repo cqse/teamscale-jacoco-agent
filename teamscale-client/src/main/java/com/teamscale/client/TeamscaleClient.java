@@ -48,20 +48,33 @@ public class TeamscaleClient {
 	 * that the given commit has been processed by Teamscale and also considers previous failing tests for
 	 * re-execution.
 	 *
+	 * @param availableTests A list of tests that is locally available for execution. This allows TIA to consider newly
+	 *                       added tests in addition to those that are already known and allows to filter e.g. if the
+	 *                       user has already selected a subset of relevant tests. This can be <code>null</code> to
+	 *                       indicate that only tests known to Teamscale should be suggested.
+	 * @param baseline       The baseline timestamp AFTER which changes should be considered. Changes that happened
+	 *                       exactly at the baseline will be excluded. In case you want to retrieve impacted tests for a
+	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
+	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
+	 *                       of the given commit.
+	 * @param endCommit      The last commit for which changes should be considered.
+	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
+	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
+	 *
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, Long baseline,
+			List<ClusteredTestDetails> availableTests, String baseline,
 			CommitDescriptor endCommit,
-			String partition,
+			List<String> partitions,
 			boolean includeNonImpacted) throws IOException {
 
 		if (includeNonImpacted) {
-			return getImpactedTests(availableTests, baseline, endCommit, partition, INCLUDE_NON_IMPACTED,
+			return getImpactedTests(availableTests, baseline, endCommit, partitions, INCLUDE_NON_IMPACTED,
 					ENSURE_PROCESSED, INCLUDE_FAILED_AND_SKIPPED);
 		} else {
-			return getImpactedTests(availableTests, baseline, endCommit, partition, ENSURE_PROCESSED,
+			return getImpactedTests(availableTests, baseline, endCommit, partitions, ENSURE_PROCESSED,
 					INCLUDE_FAILED_AND_SKIPPED);
 		}
 	}
@@ -70,13 +83,26 @@ public class TeamscaleClient {
 	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or you
 	 * want to exclude failed and skipped tests from previous test runs.
 	 *
+	 * @param availableTests A list of tests that is locally available for execution. This allows TIA to consider newly
+	 *                       added tests in addition to those that are already known and allows to filter e.g. if the
+	 *                       user has already selected a subset of relevant tests. This can be <code>null</code> to
+	 *                       indicate that only tests known to Teamscale should be suggested.
+	 * @param baseline       The baseline timestamp AFTER which changes should be considered. Changes that happened
+	 *                       exactly at the baseline will be excluded. In case you want to retrieve impacted tests for a
+	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
+	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
+	 *                       of the given commit.
+	 * @param endCommit      The last commit for which changes should be considered.
+	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
+	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
+	 * @param options A list of options (See {@link ETestImpactOptions} for more details)
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, Long baseline,
+			List<ClusteredTestDetails> availableTests, String baseline,
 			CommitDescriptor endCommit,
-			String partition,
+			List<String> partitions,
 			ETestImpactOptions... options) throws IOException {
 		EnumSet<ETestImpactOptions> testImpactOptions = EnumSet.copyOf(Arrays.asList(options));
 		boolean includeNonImpacted = testImpactOptions.contains(INCLUDE_NON_IMPACTED);
@@ -85,14 +111,14 @@ public class TeamscaleClient {
 
 		if (availableTests == null) {
 			return wrapInCluster(
-					service.getImpactedTests(projectId, baseline, endCommit, partition,
+					service.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
 							includeFailedAndSkippedTests,
 							ensureProcessed)
 							.execute());
 		} else {
 			return service
-					.getImpactedTests(projectId, baseline, endCommit, partition,
+					.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
 							includeFailedAndSkippedTests,
 							ensureProcessed, availableTests)
@@ -112,7 +138,8 @@ public class TeamscaleClient {
 	}
 
 	/** Uploads multiple reports to Teamscale. */
-	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor, String revision,
+	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
+							  String revision,
 							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);

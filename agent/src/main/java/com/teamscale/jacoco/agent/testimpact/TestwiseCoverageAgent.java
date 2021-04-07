@@ -102,18 +102,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String handleTestRunStart(Request request, Response response) throws IOException {
 		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("include-non-impacted"));
 
-		String baselineParameter = request.params("baseline");
-		Long baseline = null;
-		if (baselineParameter != null) {
-			try {
-				baseline = Long.parseLong(baselineParameter);
-			} catch (NumberFormatException e) {
-				logger.error("Invalid value for parameter 'baseline'", e);
-				response.status(SC_BAD_REQUEST);
-				return "Invalid value for parameter 'baseline': " + e.getMessage();
-			}
-		}
-
+		String baseline = request.params("baseline");
 		String bodyString = request.body();
 		List<ClusteredTestDetails> availableTests;
 		if (StringUtils.isEmpty(bodyString)) {
