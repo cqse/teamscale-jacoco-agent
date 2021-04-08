@@ -47,7 +47,7 @@ If you get an `IllegalStateException: Cannot process instrumented class com/exam
 
 When master has accumulated changes you want to release, please perform the following on master in a single commit:
 
-- update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g. `v8.1.0`
+- update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g. `21.3.0`
 - update the [build.gradle](build.gradle)'s `appVersion` accordingly
 - commit and push your changes
 - create a GitHub Release tag with the same version number and the text from the changelog.
