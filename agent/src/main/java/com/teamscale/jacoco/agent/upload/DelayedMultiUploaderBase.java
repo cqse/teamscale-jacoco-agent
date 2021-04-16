@@ -13,16 +13,6 @@ public abstract class DelayedMultiUploaderBase implements IUploader {
 	/** Logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
 
-	/** Registers the shutdown hook. */
-	protected void registerShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			if (getWrappedUploaders().isEmpty()) {
-				logger.error("The application was shut down before a commit could be found. The recorded coverage" +
-						" is lost.");
-			}
-		}));
-	}
-
 	@Override
 	public synchronized void upload(CoverageFile file) {
 		Collection<IUploader> wrappedUploaders = getWrappedUploaders();

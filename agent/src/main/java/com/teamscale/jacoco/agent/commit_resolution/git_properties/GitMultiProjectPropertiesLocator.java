@@ -46,6 +46,7 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	}
 
 	private void searchJarFile(File jarFile) {
+		logger.debug("Searching jar file {} for multiple git.properties", jarFile.toString());
 		try {
 			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(jarFile);
 			if (data == null) {
