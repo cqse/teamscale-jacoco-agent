@@ -55,14 +55,16 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 			}
 
 			URL jarOrClassFolderUrl = codeSource.getLocation();
-			if (hasJarAlreadyBeenSearched(jarOrClassFolderUrl)) {
+			File searchRoot = GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(jarOrClassFolderUrl);
+			if (searchRoot == null) {
+				logger.warn("Not searching location for git.properties with unknown protocol or extension {}." +
+								" If this location contains your git.properties, please report this warning as a" +
+								" bug to CQSE. In that case, auto-discovery of git.properties will not work.",
+						jarOrClassFolderUrl);
 				return null;
 			}
 
-			File searchRoot = GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(jarOrClassFolderUrl);
-			if (searchRoot == null) {
-				logger.warn("Not searching location for git.properties with unknown protocol or extension {}",
-						jarOrClassFolderUrl);
+			if (hasLocationAlreadyBeenSearched(searchRoot)) {
 				return null;
 			}
 
@@ -76,8 +78,8 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 		return null;
 	}
 
-	private boolean hasJarAlreadyBeenSearched(URL jarOrClassFolderUrl) {
-		return !seenJars.add(jarOrClassFolderUrl.toString());
+	private boolean hasLocationAlreadyBeenSearched(File location) {
+		return !seenJars.add(location.toString());
 	}
 
 }
