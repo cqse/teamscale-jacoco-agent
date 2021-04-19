@@ -17,7 +17,7 @@ import java.util.Collections;
 
 /**
  * Modified {@link CoverageBuilder} can ignore non-identical duplicate classes or classes without coverage. In addition,
- * Coverage returned via {@link #getBundle(String)} will only return source file coverage, because Teamscale does not
+ * coverage returned via {@link #getBundle(String)} will only return source file coverage because Teamscale does not
  * need class coverage anyway. This reduces XML size by approximately half.
  */
 /* package */class TeamscaleCoverageBuilder extends CoverageBuilder {

@@ -14,6 +14,8 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Utility methods to extract certain properties from git.properties files in JARs. */
 public class GitPropertiesLocatorUtils {
@@ -26,6 +28,9 @@ public class GitPropertiesLocatorUtils {
 
 	/** The git.properties key that holds the Teamscale project name. */
 	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
+
+	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
+	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:file:(.*?)!/.*", Pattern.CASE_INSENSITIVE);
 
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
@@ -57,9 +62,11 @@ public class GitPropertiesLocatorUtils {
 			return new File(jarOrClassFolderUrl.toURI());
 		} else if (protocol.equals("jar")) {
 			// used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
-			String urlString = jarOrClassFolderUrl.toString();
-			String path = urlString.substring(9, urlString.indexOf("!/"));
-			return new File(path);
+			Matcher matcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
+			if (!matcher.matches()) {
+				return null;
+			}
+			return new File(matcher.group(1));
 		}
 		return null;
 	}
