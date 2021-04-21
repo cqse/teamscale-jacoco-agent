@@ -33,7 +33,6 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 	@Override
 	public byte[] transform(ClassLoader classLoader, String className, Class<?> aClass,
 							ProtectionDomain protectionDomain, byte[] classFileContent) {
-
 		if (protectionDomain == null) {
 			// happens for e.g. java.lang. We can ignore these classes
 			return null;
@@ -50,20 +49,27 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 				// unknown when this can happen, we suspect when code is generated at runtime
 				// but there's nothing else we can do here in either case.
 				// codeSource.getLocation() is null e.g. when executing Pixelitor with Java14 for class sun/reflect/misc/Trampoline
+				logger.debug("Could not locate code source for class {}. Skipping git.properties search for this class",
+						className);
 				return null;
 			}
 
 			URL jarOrClassFolderUrl = codeSource.getLocation();
-			if (hasJarAlreadyBeenSearched(jarOrClassFolderUrl)) {
+			File searchRoot = GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(jarOrClassFolderUrl);
+			if (searchRoot == null) {
+				logger.warn("Not searching location for git.properties with unknown protocol or extension {}." +
+								" If this location contains your git.properties, please report this warning as a" +
+								" bug to CQSE. In that case, auto-discovery of git.properties will not work.",
+						jarOrClassFolderUrl);
 				return null;
 			}
 
-			if (jarOrClassFolderUrl.getProtocol().toLowerCase().equals("file") &&
-					StringUtils.endsWithOneOf(
-							jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-				// we do this asynchronously so that we don't unnecessarily block JVM startup
-				locator.searchJarFileForGitPropertiesAsync(new File(jarOrClassFolderUrl.toURI()));
+			if (hasLocationAlreadyBeenSearched(searchRoot)) {
+				return null;
 			}
+
+			logger.debug("Scheduling asynchronous search for git.properties in {}", searchRoot);
+			locator.searchJarFileForGitPropertiesAsync(searchRoot);
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is
 			// silently discarded by the JVM
@@ -72,8 +78,8 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 		return null;
 	}
 
-	private boolean hasJarAlreadyBeenSearched(URL jarOrClassFolderUrl) {
-		return !seenJars.add(jarOrClassFolderUrl.toString());
+	private boolean hasLocationAlreadyBeenSearched(File location) {
+		return !seenJars.add(location.toString());
 	}
 
 }

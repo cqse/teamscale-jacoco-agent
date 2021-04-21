@@ -1,8 +1,8 @@
 package com.teamscale.jacoco.agent.options.sapnwdi;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.DelayedMultiUploaderBase;
+import com.teamscale.jacoco.agent.upload.IUploader;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,11 +12,11 @@ import java.util.function.BiFunction;
 
 /**
  * Wraps multiple {@link IUploader}s in order to delay uploads until a {@link CommitDescriptor} is asynchronously made
- * available for each application. Whenever a dump happens the coverage is uploaded to all projects for
- * which a corresponding commit has already been found. Uploads for application that have not commit at that time are skipped.
- *
- * This is safe assuming that the marker class is the central entry point for the application and therefore there
- * should not be any relevant coverage for the application as long as the marker class has not been loaded.
+ * available for each application. Whenever a dump happens the coverage is uploaded to all projects for which a
+ * corresponding commit has already been found. Uploads for application that have not commit at that time are skipped.
+ * <p>
+ * This is safe assuming that the marker class is the central entry point for the application and therefore there should
+ * not be any relevant coverage for the application as long as the marker class has not been loaded.
  */
 public class DelayedSapNwdiMultiUploader extends DelayedMultiUploaderBase implements IUploader {
 
@@ -35,6 +35,15 @@ public class DelayedSapNwdiMultiUploader extends DelayedMultiUploaderBase implem
 		registerShutdownHook();
 	}
 
+	/** Registers the shutdown hook. */
+	private void registerShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			if (getWrappedUploaders().isEmpty()) {
+				logger.error("The application was shut down before a commit could be found. The recorded coverage" +
+						" is lost.");
+			}
+		}));
+	}
 
 	/** Sets the commit info detected for the application. */
 	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplications.SapNwdiApplication application) {

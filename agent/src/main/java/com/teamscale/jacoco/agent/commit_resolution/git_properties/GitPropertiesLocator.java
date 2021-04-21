@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -57,6 +56,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	}
 
 	private void searchJarFile(File jarFile) {
+		logger.debug("Searching jar file {} for a single git.properties", jarFile);
 		try {
 			T data = dataExtractor.extractData(jarFile);
 			if (data == null) {

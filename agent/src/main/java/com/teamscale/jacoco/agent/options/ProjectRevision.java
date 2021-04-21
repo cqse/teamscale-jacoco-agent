@@ -40,4 +40,12 @@ public class ProjectRevision {
 	public int hashCode() {
 		return Objects.hash(project, revision);
 	}
+
+	@Override
+	public String toString() {
+		return "ProjectRevision{" +
+				"project='" + project + '\'' +
+				", revision='" + revision + '\'' +
+				'}';
+	}
 }

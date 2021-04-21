@@ -54,7 +54,9 @@ public class DelayedUploader<T> implements IUploader {
 								" Teamscale. In order to fix this problem, you need to provide a git.properties file" +
 								" in all of the profiled Jar/War/Ear/... files. If you're using Gradle or" +
 								" Maven, you can use a plugin to create a proper git.properties file for you, see" +
-								" https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info",
+								" https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info" +
+								"\nTo debug problems with git.properties, please enable debug logging for the agent via" +
+								" the logging-config parameter.",
 						cacheDir.toAbsolutePath());
 			}
 		}));

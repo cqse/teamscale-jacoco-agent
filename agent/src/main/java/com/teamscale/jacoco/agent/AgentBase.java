@@ -8,7 +8,6 @@ import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
-
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
@@ -17,14 +16,14 @@ import spark.Service;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.management.ManagementFactory;
 import java.util.Optional;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation
- * and instantiation of the {@link JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
+ * JacocoRuntimeController}.
  * <p>
- * Subclasses must handle dumping onto disk and uploading via the configured
- * uploader.
+ * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
 public abstract class AgentBase {
 
@@ -51,15 +50,15 @@ public abstract class AgentBase {
 					"JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
 		}
 
-		logger.info("Starting JaCoCo agent with options: {}", options.getOriginalOptionsString());
+		logger.info("Starting JaCoCo agent for process {} with options: {}",
+				ManagementFactory.getRuntimeMXBean().getName(), options.getOriginalOptionsString());
 		if (options.getHttpServerPort() != null) {
 			initServer();
 		}
 	}
 
 	/**
-	 * Starts the http server, which waits for information about started and
-	 * finished tests.
+	 * Starts the http server, which waits for information about started and finished tests.
 	 */
 	private void initServer() {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
@@ -75,8 +74,7 @@ public abstract class AgentBase {
 	protected abstract void initServerEndpoints(Service spark);
 
 	/**
-	 * Called by the actual premain method once the agent is isolated from the
-	 * rest of the application.
+	 * Called by the actual premain method once the agent is isolated from the rest of the application.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
@@ -113,17 +111,16 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Initializes fallback logging in case of an error during the parsing of
-	 * the options to {@link #premain(String, Instrumentation)} (see TS-23151).
-	 * This tries to extract the logging configuration and use this and falls
-	 * back to the default logger.
+	 * Initializes fallback logging in case of an error during the parsing of the options to {@link #premain(String,
+	 * Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use this and falls back to
+	 * the default logger.
 	 */
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
 				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);
 			}
-			
+
 			if (optionPart.startsWith(AgentOptionsParser.CONFIG_FILE_OPTION + "=")) {
 				String configFileValue = optionPart.split("=", 2)[1];
 				Optional<String> loggingConfigLine = Optional.empty();
@@ -162,8 +159,7 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Registers a shutdown hook that stops the timer and dumps coverage a final
-	 * time.
+	 * Registers a shutdown hook that stops the timer and dumps coverage a final time.
 	 */
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
