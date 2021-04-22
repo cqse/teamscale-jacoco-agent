@@ -564,7 +564,24 @@ information.
 
 ## How to change the log level
 
-Set an appropriate logback logging configuration XML. See the agent options description above for how to do this.
+Set an appropriate logback logging configuration XML in the agent options:
+
+```
+logging-config=/PATH/TO/logback-config.xml
+```
+
+You can find example logging configurations in the [logging folder in the agent installation directory](./src/dist/logging).
+
+## How to enable debug logging
+
+An appropriate logging configuration is shipped with the agent under [`logging/logback.debug.xml`](./src/dist/logging/logback.debug.xml).
+Set the agent option
+
+```
+logging-config=/PATH/TO/AGENT/INSTALL/DIRECTORY/logging/logback.debug.xml
+```
+
+The debug logs are written to `/PATH/TO/AGENT/INSTALL/DIRECTORY/logs`.
 
 ## How to see which files/folders are filtered due to the `includes` and `excludes` parameters
 
