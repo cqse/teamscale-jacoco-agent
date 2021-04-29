@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _tia-client_: expose rank of tests
 
 # 21.2.1
 - [fix] Spring Boot applications could not be profiled due to changes in their code location format
