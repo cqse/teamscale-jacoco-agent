@@ -31,6 +31,13 @@ public class PrioritizableTestCluster {
 	@Json(name = "currentScore")
 	public double score;
 
+	/**
+	 * Field for storing the tests rank. The rank is the 1-based index of the test
+	 * in the prioritized list.
+	 */
+	@Json(name = "rank")
+	public int rank;
+
 	/** The {@link PrioritizableTest}s in this cluster. */
 	public List<PrioritizableTest> tests;
 
