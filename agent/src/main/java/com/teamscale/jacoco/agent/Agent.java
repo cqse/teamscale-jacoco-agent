@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Optional;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
