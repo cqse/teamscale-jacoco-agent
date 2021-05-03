@@ -14,7 +14,6 @@ import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Path;
 import java.time.Duration;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
@@ -132,7 +130,7 @@ public class Agent extends AgentBase {
 		}
 
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
-			File outputFile = options.createTempFile("jacoco",  "xml");
+			File outputFile = options.createTempFile("jacoco", "xml");
 			CoverageFile coverageFile = generator.convert(dump, outputFile);
 			uploader.upload(coverageFile);
 		} catch (IOException e) {

@@ -9,7 +9,6 @@ import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
-import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
@@ -33,7 +32,6 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
