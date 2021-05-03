@@ -164,6 +164,6 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		String outputFilePath = "test-coverage-" + currentTime + ".xml";
 		return new JaCoCoXmlReportGenerator(Collections.singletonList(classFileFolder), filter,
 				duplicateClassFileBehavior, ignoreUncoveredClasses,
-				mock(ILogger.class)).convert(dump, Paths.get(outputFilePath));
+				mock(ILogger.class)).convert(dump, Paths.get(outputFilePath).toFile());
 	}
 }
