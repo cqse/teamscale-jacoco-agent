@@ -129,7 +129,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		return responseBody;
 	}
 
-	private String handleTestRunEnd(Request request, Response response) throws IOException {
+	private String handleTestRunEnd(Request request, Response response) throws IOException, CoverageGenerationException {
 		testEventHandler.testRunEnd();
 		response.status(SC_NO_CONTENT);
 		return "";

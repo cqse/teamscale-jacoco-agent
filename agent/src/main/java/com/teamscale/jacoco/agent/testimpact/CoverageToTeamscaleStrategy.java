@@ -7,7 +7,6 @@ import com.teamscale.client.EReportFormat;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
@@ -15,8 +14,10 @@ import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the {@link
- * #testRunStart(List, boolean, Long)} event by retrieving tests to run from Teamscale.
+ * #testRunStart(List, boolean, String)} event by retrieving tests to run from Teamscale.
  */
 public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
@@ -34,7 +35,11 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestwiseCoverageReport.class);
 
-	private final TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+	/**
+	 * The path to the exec file into which the coverage of the current test run is appended to. Will be null if there
+	 * is no file for the current test run yet.
+	 */
+	private File testExecFile;
 	private final List<TestExecution> testExecutions = new ArrayList<>();
 	private List<ClusteredTestDetails> availableTests = new ArrayList<>();
 	private final JaCoCoTestwiseReportGenerator reportGenerator;
@@ -77,15 +82,28 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	public String testEnd(String test,
 						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
-
 		testExecutions.add(testExecution);
-		Dump dump = controller.dumpAndReset();
-		testwiseCoverage.add(reportGenerator.convert(dump));
+
+		try {
+			if (testExecFile == null) {
+				testExecFile = agentOptions.createTempFile("coverage", "exec");
+				testExecFile.deleteOnExit();
+			}
+			controller.dumpToFileAndReset(testExecFile);
+		} catch (IOException e) {
+			throw new JacocoRuntimeController.DumpException("Failed to write coverage to disk into " + testExecFile + "!",
+					e);
+		}
 		return null;
 	}
 
 	@Override
-	public void testRunEnd() throws IOException {
+	public void testRunEnd() throws IOException, CoverageGenerationException {
+		if (testExecFile == null) {
+			logger.warn("Tried to end a test run that contained no tests!");
+			return;
+		}
+
 		List<String> executionUniformPaths = testExecutions.stream().map(execution -> {
 			if (execution == null) {
 				return null;
@@ -93,6 +111,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				return execution.getUniformPath();
 			}
 		}).collect(toList());
+
+		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
 		logger.debug("Creating testwise coverage for available tests `{}`, test executions `{}` and coverage for `{}`",
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
 				executionUniformPaths,
@@ -101,12 +121,23 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
 				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
 
-		String json = testwiseCoverageReportJsonAdapter.toJson(report);
-		teamscaleClient
-				.uploadReport(EReportFormat.TESTWISE_COVERAGE, json, agentOptions.getTeamscaleServerOptions().commit,
-						agentOptions.getTeamscaleServerOptions().revision,
-						agentOptions.getTeamscaleServerOptions().partition,
-						agentOptions.getTeamscaleServerOptions().getMessage());
+		String testwiseCoverageJson = testwiseCoverageReportJsonAdapter.toJson(report);
+		try {
+			teamscaleClient
+					.uploadReport(EReportFormat.TESTWISE_COVERAGE, testwiseCoverageJson,
+							agentOptions.getTeamscaleServerOptions().commit,
+							agentOptions.getTeamscaleServerOptions().revision,
+							agentOptions.getTeamscaleServerOptions().partition,
+							agentOptions.getTeamscaleServerOptions().getMessage());
+		} catch (IOException e) {
+			File reportFile = agentOptions.createTempFile("testwise-coverage", "json");
+			FileSystemUtils.writeFileUTF8(reportFile, testwiseCoverageJson);
+			String errorMessage = "Failed to upload coverage to Teamscale! Report is stored in " + reportFile + "!";
+			logger.error(errorMessage, e);
+			throw new IOException(errorMessage, e);
+		}
+		testExecFile.delete();
+		testExecFile = null;
 	}
 
 }

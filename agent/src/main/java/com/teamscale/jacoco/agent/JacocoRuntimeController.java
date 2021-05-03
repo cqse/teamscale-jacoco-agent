@@ -14,6 +14,9 @@ import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
@@ -69,6 +72,17 @@ public class JacocoRuntimeController {
 			throw new DumpException("should never happen for the ByteArrayInputStream", e);
 		}
 	}
+	/**
+	 * Dumps execution data to the given file and resets it afterwards.
+	 */
+	public void dumpToFileAndReset(File file) throws IOException {
+		byte[] binaryData = agent.getExecutionData(true);
+
+		try (FileOutputStream outputStream = new FileOutputStream(file)) {
+			outputStream.write(binaryData);
+		}
+	}
+
 
 	/**
 	 * Dumps execution data to a file and resets it.

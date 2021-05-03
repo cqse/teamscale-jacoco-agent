@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] _tia-client_: dynamically set partition and message
+- [fix] Upload to teamscale mode for testwise coverage did miss some class files when class-dir was not explicitly given
 
 # 21.3.0
 - [feature] _tia-client_: expose rank of tests

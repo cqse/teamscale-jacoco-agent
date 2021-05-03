@@ -63,8 +63,8 @@ public class JaCoCoXmlReportGenerator {
 	 *
 	 * @return The file object of for the converted report or null if it could not be created
 	 */
-	public CoverageFile convert(Dump dump, Path filePath) throws IOException, EmptyReportException {
-		CoverageFile coverageFile = new CoverageFile(filePath.toFile());
+	public CoverageFile convert(Dump dump, File filePath) throws IOException, EmptyReportException {
+		CoverageFile coverageFile = new CoverageFile(filePath);
 		convertToReport(coverageFile, dump);
 		return coverageFile;
 	}

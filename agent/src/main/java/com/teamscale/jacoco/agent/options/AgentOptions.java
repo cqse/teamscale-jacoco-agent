@@ -38,6 +38,7 @@ import org.jacoco.core.runtime.WildcardMatcher;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -424,6 +425,12 @@ public class AgentOptions {
 	 */
 	public Path getOutputDirectory() {
 		return outputDirectory;
+	}
+
+	/** Creates a new temp file with the given prefix, extension and current timestamp and ensures that the parent folder actually exists. */
+	public File createTempFile(String prefix, String extension) throws IOException {
+		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureParentDirectoryExists(outputDirectory.toFile());
+		return outputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(AgentOptions.DATE_TIME_FORMATTER) + "." + extension).toFile();
 	}
 
 	/**
