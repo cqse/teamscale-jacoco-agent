@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _tia-client_: dynamically set partition and message
 
 # 21.3.0
 - [feature] _tia-client_: expose rank of tests
