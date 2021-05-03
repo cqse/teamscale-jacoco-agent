@@ -86,7 +86,9 @@ public class TestwiseCoverageAgentTest {
 		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
 		int port = PORT_COUNTER.incrementAndGet();
-		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
+		AgentOptions options = mockOptions(port);
+		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
+		new TestwiseCoverageAgent(options, null, reportGenerator);
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
 
@@ -141,10 +143,9 @@ public class TestwiseCoverageAgentTest {
 		assertThat(tests.get(0).tests).hasSize(1);
 	}
 
-	private AgentOptions mockOptions(int port) throws IOException {
+	private AgentOptions mockOptions(int port) {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
-		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");
