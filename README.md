@@ -52,7 +52,7 @@ When master has accumulated changes you want to release, please perform the foll
 - commit and push your changes
 - create a GitHub Release tag with the same version number and the text from the changelog.
 - After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository.
-  The credential are stored in the `teamscale.kdbx` keystore.
+  The credential are stored in 1Password.
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
 

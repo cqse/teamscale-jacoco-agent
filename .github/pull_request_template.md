@@ -1,4 +1,4 @@
-Addresses issue [TS-XXXXX](https://jira.cqse.eu/browse/TS-XXXXX)
+Addresses issue [TS-XXXXX](https://cqse.atlassian.net/browse/TS-XXXXX)
 
 - [ ] Changes are tested adequately
 - [ ] Agent's README.md updated in case of user-visible changes

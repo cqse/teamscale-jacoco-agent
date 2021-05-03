@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Optional;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
@@ -67,14 +66,9 @@ public class Agent extends AgentBase {
 
 	@Override
 	protected void initServerEndpoints(Service spark) {
-		spark.get("/partition", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
-		spark.get("/message", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
+		super.initServerEndpoints(spark);
 		spark.post("/dump", this::handleDump);
 		spark.post("/reset", this::handleReset);
-		spark.put("/partition", this::handleSetPartition);
-		spark.put("/message", this::handleSetMessage);
 	}
 
 	/** Handles dumping a XML coverage report for coverage collected until now. */
@@ -89,43 +83,6 @@ public class Agent extends AgentBase {
 	private String handleReset(Request request, Response response) {
 		logger.debug("Resetting coverage triggered via HTTP request");
 		controller.reset();
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	/** Handles setting the partition name. */
-	private String handleSetPartition(Request request, Response response) {
-		String partition = request.body();
-		if (partition == null || partition.isEmpty()) {
-			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
-			logger.error(errorMessage);
-
-			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return errorMessage;
-		}
-
-		logger.debug("Changing partition name to " + partition);
-		controller.setSessionId(partition);
-		options.getTeamscaleServerOptions().partition = partition;
-
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	/** Handles setting the partition name. */
-	private String handleSetMessage(Request request, Response response) {
-		String message = request.body();
-		if (message == null || message.isEmpty()) {
-			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
-			logger.error(errorMessage);
-
-			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return errorMessage;
-		}
-
-		logger.debug("Changing message to " + message);
-		options.getTeamscaleServerOptions().setMessage(message);
-
 		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}

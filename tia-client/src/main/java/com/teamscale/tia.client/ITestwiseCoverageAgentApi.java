@@ -10,6 +10,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -17,6 +18,14 @@ import java.util.List;
 
 /** {@link Retrofit} API specification for the JaCoCo agent in test-wise coverage mode. */
 public interface ITestwiseCoverageAgentApi {
+
+	/** Set the partition name as shown in Teamscale. */
+	@PUT("partition")
+	Call<ResponseBody> setPartition(@Body String partition);
+
+	/** Set the commit message with which the upload is shown in Teamscale. */
+	@PUT("message")
+	Call<ResponseBody> setMessage(@Body String message);
 
 	/** Test start. */
 	@POST("test/start/{testUniformPath}")
