@@ -12,6 +12,7 @@ import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.tia.client.RunningTest;
@@ -21,6 +22,7 @@ import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Call;
@@ -30,6 +32,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +57,9 @@ public class TestwiseCoverageAgentTest {
 	@Mock
 	private JaCoCoTestwiseReportGenerator reportGenerator;
 
+	@TempDir
+	File tempDir;
+
 	/**
 	 * Ensures that each test case gets it's own port number, so each tested instance of the agent runs it's REST API on
 	 * a separate port.
@@ -74,7 +81,9 @@ public class TestwiseCoverageAgentTest {
 		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
 		fileCoverageBuilder.addLineRange(1, 4);
 		testCoverageBuilder.add(fileCoverageBuilder);
-		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+		testwiseCoverage.add(testCoverageBuilder);
+		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
 		int port = PORT_COUNTER.incrementAndGet();
 		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
@@ -132,9 +141,10 @@ public class TestwiseCoverageAgentTest {
 		assertThat(tests.get(0).tests).hasSize(1);
 	}
 
-	private AgentOptions mockOptions(int port) {
+	private AgentOptions mockOptions(int port) throws IOException {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
+		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");
