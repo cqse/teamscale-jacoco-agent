@@ -78,7 +78,7 @@ public class JacocoRuntimeController {
 	public void dumpToFileAndReset(File file) throws IOException {
 		byte[] binaryData = agent.getExecutionData(true);
 
-		try (FileOutputStream outputStream = new FileOutputStream(file)) {
+		try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
 			outputStream.write(binaryData);
 		}
 	}
