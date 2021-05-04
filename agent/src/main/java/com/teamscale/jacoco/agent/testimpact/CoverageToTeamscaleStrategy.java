@@ -91,7 +91,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 			}
 			controller.dumpToFileAndReset(testExecFile);
 		} catch (IOException e) {
-			throw new JacocoRuntimeController.DumpException("Failed to write coverage to disk into " + testExecFile + "!",
+			throw new JacocoRuntimeController.DumpException(
+					"Failed to write coverage to disk into " + testExecFile + "!",
 					e);
 		}
 		return null;
@@ -104,24 +105,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 			return;
 		}
 
-		List<String> executionUniformPaths = testExecutions.stream().map(execution -> {
-			if (execution == null) {
-				return null;
-			} else {
-				return execution.getUniformPath();
-			}
-		}).collect(toList());
-
-		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
-		logger.debug("Creating testwise coverage for available tests `{}`, test executions `{}` and coverage for `{}`",
-				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
-				executionUniformPaths,
-				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
-
-		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
-				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
-
-		String testwiseCoverageJson = testwiseCoverageReportJsonAdapter.toJson(report);
+		String testwiseCoverageJson = createTestwiseCoverageReport();
 		try {
 			teamscaleClient
 					.uploadReport(EReportFormat.TESTWISE_COVERAGE, testwiseCoverageJson,
@@ -136,8 +120,34 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 			logger.error(errorMessage, e);
 			throw new IOException(errorMessage, e);
 		}
+	}
+
+	/**
+	 * Creates a testwise coverage report from the coverage collected in {@link #testExecFile} and the test execution
+	 * information in {@link #testExecutions}.
+	 */
+	private String createTestwiseCoverageReport() throws IOException, CoverageGenerationException {
+		List<String> executionUniformPaths = testExecutions.stream().map(execution -> {
+			if (execution == null) {
+				return null;
+			} else {
+				return execution.getUniformPath();
+			}
+		}).collect(toList());
+
+		logger.debug("Creating testwise coverage form available tests `{}`, test executions `{}` and exec file",
+				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
+				executionUniformPaths);
+		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
 		testExecFile.delete();
 		testExecFile = null;
+		logger.debug("Created testwise coverage report (containing coverage for tests `{}`)",
+				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
+
+		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
+				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
+
+		return testwiseCoverageReportJsonAdapter.toJson(report);
 	}
 
 }

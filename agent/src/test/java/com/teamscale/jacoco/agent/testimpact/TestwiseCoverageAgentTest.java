@@ -11,9 +11,6 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestwiseCoverage;
-import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
-import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
@@ -75,13 +72,8 @@ public class TestwiseCoverageAgentTest {
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("test2");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
-		testwiseCoverage.add(testCoverageBuilder);
-		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
+		when(reportGenerator.convert(any(File.class)))
+				.thenReturn(CoverageToTeamscaleStrategyTest.getDummyTestwiseCoverage("test2"));
 
 		int port = PORT_COUNTER.incrementAndGet();
 		AgentOptions options = mockOptions(port);

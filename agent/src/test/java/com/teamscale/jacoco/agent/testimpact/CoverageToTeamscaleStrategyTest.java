@@ -56,12 +56,7 @@ public class CoverageToTeamscaleStrategyTest {
 		AgentOptions options = mockOptions();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
-		testwiseCoverage.add(testCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
 		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
 		// we skip testRunStart and don't provide any available tests
@@ -81,12 +76,7 @@ public class CoverageToTeamscaleStrategyTest {
 						Collections.singletonList(new PrioritizableTest("mytest"))));
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
-		testwiseCoverage.add(testCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
 		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
 		AgentOptions options = mockOptions();
@@ -103,6 +93,16 @@ public class CoverageToTeamscaleStrategyTest {
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"tests\":[{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
 				any(), any(), any(), any());
+	}
+
+	protected static TestwiseCoverage getDummyTestwiseCoverage(String test) {
+		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder(test);
+		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
+		fileCoverageBuilder.addLineRange(1, 4);
+		testCoverageBuilder.add(fileCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+		testwiseCoverage.add(testCoverageBuilder);
+		return testwiseCoverage;
 	}
 
 	private AgentOptions mockOptions() throws IOException {
