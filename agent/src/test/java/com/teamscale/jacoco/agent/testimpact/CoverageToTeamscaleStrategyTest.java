@@ -95,6 +95,7 @@ public class CoverageToTeamscaleStrategyTest {
 				any(), any(), any(), any());
 	}
 
+	/** Returns a dummy testwise coverage object for a test with the given name that covers a few lines of Main.java. */
 	protected static TestwiseCoverage getDummyTestwiseCoverage(String test) {
 		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder(test);
 		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
