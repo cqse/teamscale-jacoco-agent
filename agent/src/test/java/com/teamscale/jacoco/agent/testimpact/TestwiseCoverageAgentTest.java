@@ -9,11 +9,8 @@ import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
-import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
-import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
@@ -21,6 +18,7 @@ import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Call;
@@ -30,6 +28,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +52,9 @@ public class TestwiseCoverageAgentTest {
 	@Mock
 	private JaCoCoTestwiseReportGenerator reportGenerator;
 
+	@TempDir
+	File tempDir;
+
 	/**
 	 * Ensures that each test case gets it's own port number, so each tested instance of the agent runs it's REST API on
 	 * a separate port.
@@ -70,14 +72,13 @@ public class TestwiseCoverageAgentTest {
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("test2");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+		when(reportGenerator.convert(any(File.class)))
+				.thenReturn(CoverageToTeamscaleStrategyTest.getDummyTestwiseCoverage("test2"));
 
 		int port = PORT_COUNTER.incrementAndGet();
-		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
+		AgentOptions options = mockOptions(port);
+		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
+		new TestwiseCoverageAgent(options, null, reportGenerator);
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
 

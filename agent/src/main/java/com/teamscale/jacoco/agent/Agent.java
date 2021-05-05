@@ -14,15 +14,14 @@ import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.nio.file.Path;
 import java.time.Duration;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
@@ -130,20 +129,14 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		CoverageFile coverageFile;
-		long currentTime = System.currentTimeMillis();
-		Path outputPath = options.getOutputDirectory().resolve("jacoco-" + currentTime + ".xml");
-
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
-			FileSystemUtils.ensureParentDirectoryExists(outputPath.toFile());
-			coverageFile = generator.convert(dump, outputPath);
+			File outputFile = options.createTempFile("jacoco", "xml");
+			CoverageFile coverageFile = generator.convert(dump, outputFile);
+			uploader.upload(coverageFile);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);
-			return;
 		} catch (EmptyReportException e) {
 			logger.warn("No coverage was collected.", e);
-			return;
 		}
-		uploader.upload(coverageFile);
 	}
 }

@@ -4,7 +4,6 @@ import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
-
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -16,7 +15,6 @@ import org.jacoco.report.xml.XMLFormatter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +37,7 @@ public class JaCoCoXmlReportGenerator {
 
 	/** Whether to remove uncovered classes from the report. */
 	private final boolean ignoreUncoveredClasses;
-	
+
 	/** Part of the error message logged when validating the coverage report fails. */
 	private static final String MOST_LIKELY_CAUSE_MESSAGE = "Most likely you did not configure the agent correctly." +
 			" Please check that the includes and excludes options are set correctly so the relevant code is included." +
@@ -49,7 +47,8 @@ public class JaCoCoXmlReportGenerator {
 
 	public JaCoCoXmlReportGenerator(List<File> codeDirectoriesOrArchives,
 									ClasspathWildcardIncludeFilter locationIncludeFilter,
-									EDuplicateClassFileBehavior duplicateClassFileBehavior, boolean ignoreUncoveredClasses, ILogger logger) {
+									EDuplicateClassFileBehavior duplicateClassFileBehavior,
+									boolean ignoreUncoveredClasses, ILogger logger) {
 		this.codeDirectoriesOrArchives = codeDirectoriesOrArchives;
 		this.duplicateClassFileBehavior = duplicateClassFileBehavior;
 		this.locationIncludeFilter = locationIncludeFilter;
@@ -63,8 +62,8 @@ public class JaCoCoXmlReportGenerator {
 	 *
 	 * @return The file object of for the converted report or null if it could not be created
 	 */
-	public CoverageFile convert(Dump dump, Path filePath) throws IOException, EmptyReportException {
-		CoverageFile coverageFile = new CoverageFile(filePath.toFile());
+	public CoverageFile convert(Dump dump, File filePath) throws IOException, EmptyReportException {
+		CoverageFile coverageFile = new CoverageFile(filePath);
 		convertToReport(coverageFile, dump);
 		return coverageFile;
 	}
@@ -74,7 +73,7 @@ public class JaCoCoXmlReportGenerator {
 		ExecutionDataStore mergedStore = dump.store;
 		IBundleCoverage bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore);
 		checkForEmptyReport(bundleCoverage);
-		try(OutputStream outputStream = coverageFile.getOutputStream()) {
+		try (OutputStream outputStream = coverageFile.getOutputStream()) {
 			createReport(outputStream, bundleCoverage, dump.info, mergedStore);
 		}
 	}

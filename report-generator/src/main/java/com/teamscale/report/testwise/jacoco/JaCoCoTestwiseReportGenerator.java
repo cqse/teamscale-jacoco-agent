@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 public class JaCoCoTestwiseReportGenerator {
 
 	/** The execution data reader and converter. */
-	private CachingExecutionDataReader executionDataReader;
+	private final CachingExecutionDataReader executionDataReader;
 
 	/** The filter for the analyzed class files. */
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
@@ -106,7 +106,7 @@ public class JaCoCoTestwiseReportGenerator {
 		private ExecutionDataStore store;
 
 		/** The consumer to pass {@link Dump}s to. */
-		private Consumer<Dump> dumpConsumer;
+		private final Consumer<Dump> dumpConsumer;
 
 		private DumpCallback(Consumer<Dump> dumpConsumer) {
 			this.dumpConsumer = dumpConsumer;

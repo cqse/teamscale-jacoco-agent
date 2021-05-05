@@ -14,13 +14,14 @@ import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
  * Wrapper around JaCoCo's {@link RT} runtime interface.
  * <p>
- * Can be used if the calling code is run in the same JVM as the agent is
- * attached to.
+ * Can be used if the calling code is run in the same JVM as the agent is attached to.
  */
 public class JacocoRuntimeController {
 
@@ -48,8 +49,8 @@ public class JacocoRuntimeController {
 	/**
 	 * Dumps execution data and resets it.
 	 *
-	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping
-	 *                       should simply be retried later if this ever happens.
+	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping should simply be retried
+	 *                       later if this ever happens.
 	 */
 	public Dump dumpAndReset() throws DumpException {
 		byte[] binaryData = agent.getExecutionData(true);
@@ -71,10 +72,22 @@ public class JacocoRuntimeController {
 	}
 
 	/**
+	 * Dumps execution data to the given file and resets it afterwards.
+	 */
+	public void dumpToFileAndReset(File file) throws IOException {
+		byte[] binaryData = agent.getExecutionData(true);
+
+		try (FileOutputStream outputStream = new FileOutputStream(file, true)) {
+			outputStream.write(binaryData);
+		}
+	}
+
+
+	/**
 	 * Dumps execution data to a file and resets it.
 	 *
-	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping
-	 *                       should simply be retried later if this ever happens.
+	 * @throws DumpException if dumping fails. This should never happen in real life. Dumping should simply be retried
+	 *                       later if this ever happens.
 	 */
 	public void dump() throws DumpException {
 		try {
@@ -95,16 +108,14 @@ public class JacocoRuntimeController {
 	}
 
 	/**
-	 * Sets the current sessionId of the agent that can be used to identify
-	 * which coverage is recorded from now on.
+	 * Sets the current sessionId of the agent that can be used to identify which coverage is recorded from now on.
 	 */
 	public void setSessionId(String sessionId) {
 		agent.setSessionId(sessionId);
 	}
 
 	/**
-	 * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in
-	 * case nothing is received.
+	 * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in case nothing is received.
 	 */
 	private static class SessionInfoVisitor implements ISessionInfoVisitor {
 

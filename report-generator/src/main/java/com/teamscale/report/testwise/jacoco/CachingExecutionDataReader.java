@@ -41,10 +41,9 @@ class CachingExecutionDataReader {
 	 * Analyzes the class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
 	private void analyzeClassDirs() throws CoverageGenerationException {
-		if (probesCache != null) {
-			return;
+		if (probesCache == null) {
+			probesCache = new ProbesCache(logger, duplicateClassFileBehavior);
 		}
-		probesCache = new ProbesCache(logger, duplicateClassFileBehavior);
 		AnalyzerCache analyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
 		for (File classDir : classesDirectories) {
 			if (classDir.exists()) {
