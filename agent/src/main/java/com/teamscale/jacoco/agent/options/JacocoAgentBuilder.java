@@ -10,12 +10,10 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.Collections;
 
 /** Builder for the JaCoCo agent options string. */
@@ -31,7 +29,7 @@ public class JacocoAgentBuilder {
 	/**
 	 * Returns the options to pass to the JaCoCo agent.
 	 */
-	public String createJacocoAgentOptions() throws AgentOptionParseException {
+	public String createJacocoAgentOptions() throws AgentOptionParseException, IOException {
 		StringBuilder builder = new StringBuilder(getModeSpecificOptions());
 		if (agentOptions.jacocoIncludes != null) {
 			builder.append(",includes=").append(agentOptions.jacocoIncludes);
@@ -84,13 +82,13 @@ public class JacocoAgentBuilder {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException {
+	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException, IOException {
 		if (agentOptions.useTestwiseCoverageMode()) {
 			JaCoCoTestwiseReportGenerator reportGenerator = new JaCoCoTestwiseReportGenerator(
 					agentOptions.getClassDirectoriesOrZips(), agentOptions.getLocationIncludeFilter(),
 					agentOptions.getDuplicateClassFileBehavior(), LoggingUtils.wrap(logger));
 			return new TestwiseCoverageAgent(agentOptions,
-					new TestExecutionWriter(getTempFile("test-execution", "json")),
+					new TestExecutionWriter(agentOptions.createTempFile("test-execution", "json")),
 					reportGenerator);
 		} else {
 			return new Agent(agentOptions, instrumentation);
@@ -101,7 +99,7 @@ public class JacocoAgentBuilder {
 	 * Returns additional options for JaCoCo depending on the selected {@link AgentOptions#mode} and {@link
 	 * AgentOptions#testwiseCoverageMode}.
 	 */
-	String getModeSpecificOptions() {
+	String getModeSpecificOptions() throws IOException {
 		if (agentOptions
 				.useTestwiseCoverageMode() && agentOptions.testwiseCoverageMode == ETestwiseCoverageMode.EXEC_FILE) {
 			String sessionId = "";
@@ -109,7 +107,7 @@ public class JacocoAgentBuilder {
 				sessionId = System.getenv(agentOptions.testEnvironmentVariable);
 			}
 			// when writing to a .exec file, we can instruct JaCoCo to do so directly
-			return "sessionid=" + sessionId + ",destfile=" + getTempFile("jacoco", "exec").getAbsolutePath();
+			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createTempFile("jacoco", "exec").getAbsolutePath();
 
 		} else {
 			// otherwise we don't need JaCoCo to perform any output of the .exec information
@@ -117,8 +115,4 @@ public class JacocoAgentBuilder {
 		}
 	}
 
-	private File getTempFile(final String prefix, final String extension) {
-		return new File(agentOptions.getOutputDirectory().toFile(),
-				prefix + "-" + LocalDateTime.now().format(AgentOptions.DATE_TIME_FORMATTER) + "." + extension);
-	}
 }

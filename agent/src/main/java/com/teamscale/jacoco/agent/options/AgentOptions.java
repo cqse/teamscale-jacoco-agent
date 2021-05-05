@@ -430,7 +430,7 @@ public class AgentOptions {
 	/** Creates a new temp file with the given prefix, extension and current timestamp and ensures that the parent folder actually exists. */
 	public File createTempFile(String prefix, String extension) throws IOException {
 		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
-		return outputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(AgentOptions.DATE_TIME_FORMATTER) + "." + extension).toFile();
+		return outputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
 	}
 
 	/**
