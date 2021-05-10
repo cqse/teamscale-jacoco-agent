@@ -47,12 +47,13 @@ If you get an `IllegalStateException: Cannot process instrumented class com/exam
 
 When master has accumulated changes you want to release, please perform the following on master in a single commit:
 
-- update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g. `21.3.0`
-- update the [build.gradle](build.gradle)'s `appVersion` accordingly
-- commit and push your changes
-- create a GitHub Release tag with the same version number and the text from the changelog.
-- After the build finished visit https://oss.sonatype.org/#stagingRepositories, close and release the staging repository.
-  The credential are stored in 1Password.
+- Update [the changelog](CHANGELOG.md) and move all changes from the _Next release_ section to a new version, e.g., `21.3.0`.
+- Update the [build.gradle](build.gradle)'s `appVersion` accordingly.
+- Commit and push your changes.
+- Create a GitHub Release tag with the same version number and the text from the changelog.
+- Once the [build for the tag](https://github.com/cqse/teamscale-jacoco-agent/actions/workflows/actions.yml) is successful, inform the release crew on Slack ([`#release-crew` via Slack](https://app.slack.com/client/T02FWLRP9/C9BPT4Y2W)) that the artifacts can now be promoted to Maven Central.
+- The release crew will then _Close_ and _Release_ the [staging repository](https://oss.sonatype.org/#stagingRepositories).
+  The credentials are stored in 1Password.
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
 
@@ -65,4 +66,3 @@ Only use GitHub releases in production. This ensures that we always know which c
 * change `ext.jacocoVersion` in the build script
 * `./gradlew dist`
 * **Do not commit unless you are upgrading to a newer version!**
-
