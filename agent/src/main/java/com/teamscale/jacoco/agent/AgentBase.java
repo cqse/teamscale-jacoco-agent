@@ -11,8 +11,11 @@ import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
+import spark.Request;
+import spark.Response;
 import spark.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -71,7 +74,14 @@ public abstract class AgentBase {
 	}
 
 	/** Adds the endpoints that are available in the implemented mode. */
-	protected abstract void initServerEndpoints(Service spark);
+	protected void initServerEndpoints(Service spark) {
+		spark.get("/partition", (request, response) ->
+				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
+		spark.get("/message", (request, response) ->
+				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
+		spark.put("/partition", this::handleSetPartition);
+		spark.put("/message", this::handleSetMessage);
+	}
 
 	/**
 	 * Called by the actual premain method once the agent is isolated from the rest of the application.
@@ -180,5 +190,42 @@ public abstract class AgentBase {
 	/** Called when the shutdown hook is triggered. */
 	protected void prepareShutdown() {
 		// Template method to be overridden by subclasses.
+	}
+
+	/** Handles setting the partition name. */
+	private String handleSetPartition(Request request, Response response) {
+		String partition = request.body();
+		if (partition == null || partition.isEmpty()) {
+			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
+			logger.error(errorMessage);
+
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return errorMessage;
+		}
+
+		logger.debug("Changing partition name to " + partition);
+		controller.setSessionId(partition);
+		options.getTeamscaleServerOptions().partition = partition;
+
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
+	}
+
+	/** Handles setting the partition name. */
+	private String handleSetMessage(Request request, Response response) {
+		String message = request.body();
+		if (message == null || message.isEmpty()) {
+			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
+			logger.error(errorMessage);
+
+			response.status(HttpServletResponse.SC_BAD_REQUEST);
+			return errorMessage;
+		}
+
+		logger.debug("Changing message to " + message);
+		options.getTeamscaleServerOptions().setMessage(message);
+
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
 	}
 }

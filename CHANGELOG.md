@@ -6,6 +6,13 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 21.4.0
+- [feature] _tia-client_: dynamically set partition and message
+- [fix] Upload to teamscale mode for testwise coverage did miss some class files when class-dir was not explicitly given
+
+# 21.3.0
+- [feature] _tia-client_: expose rank of tests
+
 # 21.2.1
 - [fix] Spring Boot applications could not be profiled due to changes in their code location format
 

@@ -9,21 +9,22 @@ import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import okhttp3.HttpUrl;
-import org.jacoco.core.data.ExecutionDataStore;
-import org.jacoco.core.data.SessionInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Response;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,18 +48,16 @@ public class CoverageToTeamscaleStrategyTest {
 	@Mock
 	private JacocoRuntimeController controller;
 
+	@TempDir
+	File tempDir;
+
 	@Test
 	public void shouldRecordCoverageForTestsEvenIfNotProvidedAsAvailableTest() throws Exception {
-		when(controller.dumpAndReset()).thenReturn(new Dump(new SessionInfo("mytest", 0, 0), new ExecutionDataStore()));
-
 		AgentOptions options = mockOptions();
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
+		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
 		// we skip testRunStart and don't provide any available tests
 		strategy.testStart("mytest");
@@ -77,14 +76,11 @@ public class CoverageToTeamscaleStrategyTest {
 						Collections.singletonList(new PrioritizableTest("mytest"))));
 		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
 
-		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder("mytest");
-		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
-		fileCoverageBuilder.addLineRange(1, 4);
-		testCoverageBuilder.add(fileCoverageBuilder);
-		when(reportGenerator.convert(any(Dump.class))).thenReturn(testCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
+		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
 		AgentOptions options = mockOptions();
-		JacocoRuntimeController controller = mockController();
+		JacocoRuntimeController controller = mock(JacocoRuntimeController.class);
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		strategy.testRunStart(
@@ -99,15 +95,21 @@ public class CoverageToTeamscaleStrategyTest {
 				any(), any(), any(), any());
 	}
 
-	private JacocoRuntimeController mockController() throws JacocoRuntimeController.DumpException {
-		JacocoRuntimeController controller = mock(JacocoRuntimeController.class);
-		when(controller.dumpAndReset()).thenReturn(new Dump(new SessionInfo("mytest", 0, 0), new ExecutionDataStore()));
-		return controller;
+	/** Returns a dummy testwise coverage object for a test with the given name that covers a few lines of Main.java. */
+	protected static TestwiseCoverage getDummyTestwiseCoverage(String test) {
+		TestCoverageBuilder testCoverageBuilder = new TestCoverageBuilder(test);
+		FileCoverageBuilder fileCoverageBuilder = new FileCoverageBuilder("src/main/java", "Main.java");
+		fileCoverageBuilder.addLineRange(1, 4);
+		testCoverageBuilder.add(fileCoverageBuilder);
+		TestwiseCoverage testwiseCoverage = new TestwiseCoverage();
+		testwiseCoverage.add(testCoverageBuilder);
+		return testwiseCoverage;
 	}
 
-	private AgentOptions mockOptions() {
+	private AgentOptions mockOptions() throws IOException {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
+		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");

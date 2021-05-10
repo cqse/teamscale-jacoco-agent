@@ -75,6 +75,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 	@Override
 	protected void initServerEndpoints(Service spark) {
+		super.initServerEndpoints(spark);
 		spark.get("/test", (request, response) -> controller.getSessionId());
 		spark.get("/revision", (request, response) -> this.getRevisionInfo());
 		spark.post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
@@ -128,7 +129,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		return responseBody;
 	}
 
-	private String handleTestRunEnd(Request request, Response response) throws IOException {
+	private String handleTestRunEnd(Request request, Response response) throws IOException, CoverageGenerationException {
 		testEventHandler.testRunEnd();
 		response.status(SC_NO_CONTENT);
 		return "";
