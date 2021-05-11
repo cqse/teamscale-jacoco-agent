@@ -63,7 +63,9 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	@Override
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
 							   String baseline) throws IOException {
-		this.availableTests = new ArrayList<>(availableTests);
+		if (availableTests != null) {
+			this.availableTests = new ArrayList<>(availableTests);
+		}
 		return super.testRunStart(this.availableTests, includeNonImpactedTests, baseline);
 	}
 
