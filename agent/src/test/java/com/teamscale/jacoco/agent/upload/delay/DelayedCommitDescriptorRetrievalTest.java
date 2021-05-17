@@ -4,6 +4,7 @@ import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitProperties
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
 import com.teamscale.jacoco.agent.util.InMemoryUploader;
 import com.teamscale.report.jacoco.CoverageFile;
+import org.conqat.lib.commons.collections.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -35,7 +36,7 @@ public class DelayedCommitDescriptorRetrievalTest {
 				GitPropertiesLocatorUtils::getRevisionFromGitProperties, locatorExecutor);
 
 		store.upload(coverageFile);
-		locator.searchJarFileForGitPropertiesAsync(new File(getClass().getResource("git-properties.jar").toURI()));
+		locator.searchJarFileForGitPropertiesAsync(Pair.createPair(new File(getClass().getResource("git-properties.jar").toURI()), true));
 		locatorExecutor.shutdown();
 		locatorExecutor.awaitTermination(5, TimeUnit.SECONDS);
 		storeExecutor.shutdown();

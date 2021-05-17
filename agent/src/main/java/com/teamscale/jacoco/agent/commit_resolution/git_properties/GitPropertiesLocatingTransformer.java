@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.string.StringUtils;
 import org.slf4j.Logger;
 
@@ -55,8 +56,8 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 			}
 
 			URL jarOrClassFolderUrl = codeSource.getLocation();
-			File searchRoot = GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(jarOrClassFolderUrl);
-			if (searchRoot == null) {
+			Pair<File, Boolean> searchRoot = GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(jarOrClassFolderUrl);
+			if (searchRoot == null || searchRoot.getFirst() == null) {
 				logger.warn("Not searching location for git.properties with unknown protocol or extension {}." +
 								" If this location contains your git.properties, please report this warning as a" +
 								" bug to CQSE. In that case, auto-discovery of git.properties will not work.",
@@ -64,7 +65,7 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 				return null;
 			}
 
-			if (hasLocationAlreadyBeenSearched(searchRoot)) {
+			if (hasLocationAlreadyBeenSearched(searchRoot.getFirst())) {
 				return null;
 			}
 

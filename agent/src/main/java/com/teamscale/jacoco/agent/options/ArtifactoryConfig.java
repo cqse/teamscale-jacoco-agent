@@ -105,7 +105,7 @@ public class ArtifactoryConfig {
 	/** Parses the commit information form a git.properties file. */
 	public static CommitInfo parseGitProperties(File jarFile,
 												DateTimeFormatter gitPropertiesCommitTimeFormat) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInJar(jarFile);
+		Pair<String, Properties> entryWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(jarFile, true);
 		if (entryWithProperties == null) {
 			return null;
 		}

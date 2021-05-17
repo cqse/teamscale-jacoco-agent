@@ -22,7 +22,7 @@ public class GitPropertiesLocatorTest {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(getClass().getResourceAsStream(archiveName));
 			Pair<String, Properties> commit = GitPropertiesLocatorUtils
-					.findGitPropertiesInJar(jarInputStream);
+					.findGitPropertiesInJarFile(jarInputStream);
 			assertThat(commit).isNotNull();
 			String rev = GitPropertiesLocatorUtils
 					.getGitPropertiesValue(commit.getSecond(), GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, "test",

@@ -8,6 +8,9 @@ import org.conqat.lib.commons.collections.Pair;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -39,13 +42,14 @@ public class GitPropertiesLocatorUtils {
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static String getRevisionFromGitProperties(File jarFile) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = findGitPropertiesInJar(jarFile);
+	public static String getRevisionFromGitProperties(
+			File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException {
+		Pair<String, Properties> entryWithProperties = findGitPropertiesInFile(file, isJarFile);
 		if (entryWithProperties == null) {
 			return null;
 		}
 		return getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_GIT_COMMIT_ID,
-				entryWithProperties.getFirst(), jarFile);
+				entryWithProperties.getFirst(), file);
 	}
 
 	/**
@@ -55,20 +59,48 @@ public class GitPropertiesLocatorUtils {
 	 * @throws URISyntaxException under certain circumstances if parsing the URL fails. This should be treated the same
 	 *                            as a null search result but the exception is preserved so it can be logged.
 	 */
-	public static File extractGitPropertiesSearchRoot(URL jarOrClassFolderUrl) throws URISyntaxException {
+	public static Pair<File, Boolean> extractGitPropertiesSearchRoot(
+			URL jarOrClassFolderUrl) throws URISyntaxException, IOException, NoSuchMethodException,
+			IllegalAccessException, InvocationTargetException {
 		String protocol = jarOrClassFolderUrl.getProtocol().toLowerCase();
-		if (protocol.equals("file") && org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
-				jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-			return new File(jarOrClassFolderUrl.toURI());
-		} else if (protocol.equals("jar")) {
-			// used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
-			Matcher matcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
-			if (!matcher.matches()) {
+		switch (protocol) {
+			case "file":
+				if (org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
+						jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
+					return Pair.createPair(new File(jarOrClassFolderUrl.toURI()), true);
+				}
+				break;
+			case "jar":
+				// used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
+				Matcher matcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
+				if (!matcher.matches()) {
+					return null;
+				}
+				return Pair.createPair(new File(matcher.group(1)), true);
+			case "vfs":
+				return getVfsContentFolder(jarOrClassFolderUrl);
+			default:
 				return null;
-			}
-			return new File(matcher.group(1));
 		}
 		return null;
+	}
+
+	private static Pair<File, Boolean> getVfsContentFolder(
+			URL jarOrClassFolderUrl) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+		// used by JBoss EAP and Wildfly. Example: vfs:/content/helloworld.war/WEB-INF/classes
+		Object virtualFile = jarOrClassFolderUrl.openConnection().getContent();
+		Class<?> virtualFileClass = virtualFile.getClass();
+		// obtain the physical location of the class file. It is created on demand in <jboss-installation-dir>/standalone/tmp/vfs
+		Method getPhysicalFileMethod = virtualFileClass.getMethod("getPhysicalFile");
+		File file = (File) getPhysicalFileMethod.invoke(virtualFile);
+		if (file.getParentFile() == null || file.getParentFile().getParentFile() == null) {
+			return null;
+		}
+		// the physical location of the class is in, e.g., WEB-INF/classes folder.
+		// We need to navigate two times up to get into the root folder of the deployment
+		// that contains the git.properties file.
+		File contentFolder = file.getParentFile().getParentFile();
+		return Pair.createPair(contentFolder, false);
 	}
 
 	/**
@@ -79,8 +111,8 @@ public class GitPropertiesLocatorUtils {
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
 	public static ProjectRevision getProjectRevisionFromGitProperties(
-			File jarFile) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = findGitPropertiesInJar(jarFile);
+			File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException {
+		Pair<String, Properties> entryWithProperties = findGitPropertiesInFile(file, isJarFile);
 		if (entryWithProperties == null) {
 			return null;
 		}
@@ -88,7 +120,7 @@ public class GitPropertiesLocatorUtils {
 		String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
 		if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
 			throw new InvalidGitPropertiesException(
-					"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + jarFile + "." +
+					"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
 							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + entryWithProperties.getSecond()
 							.toString()
 			);
@@ -97,19 +129,47 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
-	public static Pair<String, Properties> findGitPropertiesInJar(
-			File jarFile) throws IOException {
+	public static Pair<String, Properties> findGitPropertiesInFile(
+			File file, boolean isJarFile) throws IOException {
+		if (isJarFile) {
+			return findGitPropertiesInJarFile(file);
+		}
+		return findGitPropertiesInDirectoryFile(file);
+	}
+
+	private static Pair<String, Properties> findGitPropertiesInJarFile(File file) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
-				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
-			return findGitPropertiesInJar(jarStream);
+				new BashFileSkippingInputStream(new FileInputStream(file)))) {
+			return findGitPropertiesInJarFile(jarStream);
 		} catch (IOException e) {
-			throw new IOException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit " +
+			throw new IOException("Reading jar " + file.getAbsolutePath() + " for obtaining commit " +
 					"descriptor from git.properties failed", e);
 		}
 	}
 
+	private static Pair<String, Properties> findGitPropertiesInDirectoryFile(File file) throws IOException {
+		File[] directoryFiles = file.listFiles();
+		if (directoryFiles == null) {
+			return null;
+		}
+		for (File directoryFile : directoryFiles) {
+			if (directoryFile.getName().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME)) {
+				try (InputStream is = new FileInputStream(directoryFile)) {
+					Properties gitProperties = new Properties();
+					gitProperties.load(is);
+					return Pair.createPair(directoryFile.getName(), gitProperties);
+				} catch (IOException e) {
+					throw new IOException(
+							"Reading directory " + directoryFile.getAbsolutePath() + " for obtaining commit " +
+									"descriptor from git.properties failed", e);
+				}
+			}
+		}
+		return null;
+	}
+
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
-	static Pair<String, Properties> findGitPropertiesInJar(
+	static Pair<String, Properties> findGitPropertiesInJarFile(
 			JarInputStream jarStream) throws IOException {
 		JarEntry entry = jarStream.getNextJarEntry();
 		while (entry != null) {

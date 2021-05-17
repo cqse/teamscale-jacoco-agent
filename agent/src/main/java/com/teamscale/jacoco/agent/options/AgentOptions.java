@@ -393,8 +393,8 @@ public class AgentOptions {
 					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles);
 				}, outputDirectory);
 		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
-				jar -> ArtifactoryConfig.parseGitProperties(
-						jar, artifactoryConfig.gitPropertiesCommitTimeFormat));
+				(file, isJarFile) -> ArtifactoryConfig.parseGitProperties(
+						file, artifactoryConfig.gitPropertiesCommitTimeFormat));
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}
