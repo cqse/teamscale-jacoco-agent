@@ -70,7 +70,7 @@ public class GitPropertiesLocatingTransformer implements ClassFileTransformer {
 			}
 
 			logger.debug("Scheduling asynchronous search for git.properties in {}", searchRoot);
-			locator.searchJarFileForGitPropertiesAsync(searchRoot);
+			locator.searchFileForGitPropertiesAsync(searchRoot.getFirst(), searchRoot.getSecond());
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is
 			// silently discarded by the JVM

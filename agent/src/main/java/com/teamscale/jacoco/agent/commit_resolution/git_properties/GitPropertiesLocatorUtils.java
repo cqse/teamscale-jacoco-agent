@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
+import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.report.util.BashFileSkippingInputStream;
@@ -14,6 +15,7 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -85,22 +87,48 @@ public class GitPropertiesLocatorUtils {
 		return null;
 	}
 
+	/**
+	 * VFS (Virtual File System) protocol is used by JBoss EAP and Wildfly. Example of an URL:
+	 * vfs:/content/helloworld.war/WEB-INF/classes
+	 */
 	private static Pair<File, Boolean> getVfsContentFolder(
 			URL jarOrClassFolderUrl) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		// used by JBoss EAP and Wildfly. Example: vfs:/content/helloworld.war/WEB-INF/classes
-		Object virtualFile = jarOrClassFolderUrl.openConnection().getContent();
+		// we obtain the URL of a specific class file as input, e.g.,
+		// vfs:/content/helloworld.war/WEB-INF/classes
+		// Next, we try to extract the artefact URL from it, e.g., vfs:/content/helloworld.war
+		String artefactUrl = extractArtefactUrl(jarOrClassFolderUrl);
+		if (artefactUrl == null) {
+			return null;
+		}
+
+		Object virtualFile = new URL(artefactUrl).openConnection().getContent();
 		Class<?> virtualFileClass = virtualFile.getClass();
 		// obtain the physical location of the class file. It is created on demand in <jboss-installation-dir>/standalone/tmp/vfs
 		Method getPhysicalFileMethod = virtualFileClass.getMethod("getPhysicalFile");
 		File file = (File) getPhysicalFileMethod.invoke(virtualFile);
-		if (file.getParentFile() == null || file.getParentFile().getParentFile() == null) {
+		return Pair.createPair(file, false);
+	}
+
+	private static String extractArtefactUrl(URL jarOrClassFolderUrl) {
+		String url = jarOrClassFolderUrl.getPath().toLowerCase();
+		String[] pathSegments = url.split("/");
+		StringBuilder artefactUrlBuilder = new StringBuilder("vfs:");
+		int segmentIdx = 0;
+		String segment = pathSegments[segmentIdx];
+		while (segmentIdx < pathSegments.length && !org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
+				segment, ".jar", ".war", ".ear", ".aar")) {
+			artefactUrlBuilder.append(segment);
+			artefactUrlBuilder.append("/");
+			if (segmentIdx + 1 < pathSegments.length) {
+				segment = pathSegments[segmentIdx + 1];
+			}
+			segmentIdx += 1;
+		}
+		if (segmentIdx == pathSegments.length) {
 			return null;
 		}
-		// the physical location of the class is in, e.g., WEB-INF/classes folder.
-		// We need to navigate two times up to get into the root folder of the deployment
-		// that contains the git.properties file.
-		File contentFolder = file.getParentFile().getParentFile();
-		return Pair.createPair(contentFolder, false);
+		artefactUrlBuilder.append(pathSegments[segmentIdx]);
+		return artefactUrlBuilder.toString();
 	}
 
 	/**
@@ -147,25 +175,23 @@ public class GitPropertiesLocatorUtils {
 		}
 	}
 
-	private static Pair<String, Properties> findGitPropertiesInDirectoryFile(File file) throws IOException {
-		File[] directoryFiles = file.listFiles();
-		if (directoryFiles == null) {
-			return null;
+	private static Pair<String, Properties> findGitPropertiesInDirectoryFile(File directoryFile) throws IOException {
+		List<File> directoryFiles = FileSystemUtils.listFilesRecursively(directoryFile,
+				file -> file.getName().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME));
+		if (directoryFiles.size() != 1) {
+			throw new IllegalArgumentException(
+					"There must be a single git.properties file in the directory " + directoryFile.toString());
 		}
-		for (File directoryFile : directoryFiles) {
-			if (directoryFile.getName().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME)) {
-				try (InputStream is = new FileInputStream(directoryFile)) {
-					Properties gitProperties = new Properties();
-					gitProperties.load(is);
-					return Pair.createPair(directoryFile.getName(), gitProperties);
-				} catch (IOException e) {
-					throw new IOException(
-							"Reading directory " + directoryFile.getAbsolutePath() + " for obtaining commit " +
-									"descriptor from git.properties failed", e);
-				}
-			}
+		File file = directoryFiles.get(0);
+		try (InputStream is = new FileInputStream(file)) {
+			Properties gitProperties = new Properties();
+			gitProperties.load(is);
+			return Pair.createPair(file.getName(), gitProperties);
+		} catch (IOException e) {
+			throw new IOException(
+					"Reading directory " + file.getAbsolutePath() + " for obtaining commit " +
+							"descriptor from git.properties failed", e);
 		}
-		return null;
 	}
 
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */

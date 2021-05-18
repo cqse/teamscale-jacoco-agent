@@ -42,14 +42,14 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	 * Asynchronously searches the given jar file for a git.properties file.
 	 */
 	@Override
-	public void searchJarFileForGitPropertiesAsync(Pair<File, Boolean> file) {
-		executor.execute(() -> searchJarFile(file));
+	public void searchFileForGitPropertiesAsync(File file, boolean isJarFile) {
+		executor.execute(() -> searchFile(file, isJarFile));
 	}
 
-	private void searchJarFile(Pair<File, Boolean> file) {
-		logger.debug("Searching jar file {} for multiple git.properties", file.toString());
+	private void searchFile(File file, boolean isJarFile) {
+		logger.debug("Searching file {} for multiple git.properties", file.toString());
 		try {
-			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(file.getFirst(), file.getSecond());
+			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(file, isJarFile);
 			if (data == null) {
 				logger.debug("No git.properties file found in {}", file.toString());
 				return;

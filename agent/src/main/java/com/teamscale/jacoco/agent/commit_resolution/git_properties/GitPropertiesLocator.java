@@ -3,7 +3,6 @@ package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import org.conqat.lib.commons.collections.Pair;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -52,14 +51,14 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	 * Asynchronously searches the given jar file for a git.properties file.
 	 */
 	@Override
-	public void searchJarFileForGitPropertiesAsync(Pair<File, Boolean> file) {
-		executor.execute(() -> searchJarFile(file));
+	public void searchFileForGitPropertiesAsync(File file, boolean isJarFile) {
+		executor.execute(() -> searchFile(file, isJarFile));
 	}
 
-	private void searchJarFile(Pair<File, Boolean> file) {
+	private void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching jar file {} for a single git.properties", file);
 		try {
-			T data = dataExtractor.extractData(file.getFirst(), file.getSecond());
+			T data = dataExtractor.extractData(file, isJarFile);
 			if (data == null) {
 				logger.debug("No git.properties file found in {}", file.toString());
 				return;
@@ -83,7 +82,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 			logger.debug("Found git.properties file in {} and found commit descriptor {}", file.toString(),
 					data);
 			foundData = data;
-			jarFileWithGitProperties = file.getFirst();
+			jarFileWithGitProperties = file;
 			uploader.setCommitAndTriggerAsynchronousUpload(data);
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", file.toString(), e);
