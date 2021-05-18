@@ -4,7 +4,6 @@ import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import org.conqat.lib.commons.collections.Pair;
 import org.slf4j.Logger;
 
 import java.io.File;

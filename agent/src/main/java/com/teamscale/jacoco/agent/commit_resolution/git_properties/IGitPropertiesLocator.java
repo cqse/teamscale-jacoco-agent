@@ -1,7 +1,5 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import org.conqat.lib.commons.collections.Pair;
-
 import java.io.File;
 
 /** Interface for the locator classes that search files (e.g., a JAR) for git.properties files containing certain properties. */

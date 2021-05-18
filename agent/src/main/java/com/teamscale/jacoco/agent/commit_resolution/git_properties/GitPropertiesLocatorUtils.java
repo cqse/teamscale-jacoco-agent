@@ -106,7 +106,12 @@ public class GitPropertiesLocatorUtils {
 		return Pair.createPair(file, false);
 	}
 
-	/* package */ static String extractArtefactUrl(URL jarOrClassFolderUrl) {
+	/**
+	 * Extracts the artefact URL (e.g., vfs:/content/helloworld.war/) from the full URL of the class file (e.g.,
+	 * vfs:/content/helloworld.war/WEB-INF/classes).
+	 */
+	/* package */
+	static String extractArtefactUrl(URL jarOrClassFolderUrl) {
 		String url = jarOrClassFolderUrl.getPath().toLowerCase();
 		String[] pathSegments = url.split("/");
 		StringBuilder artefactUrlBuilder = new StringBuilder("vfs:");
@@ -178,8 +183,7 @@ public class GitPropertiesLocatorUtils {
 			return null;
 		}
 		if (gitPropertiesFiles.size() > 1) {
-			throw new IllegalArgumentException(
-					"There must be a single git.properties file in the directory " + directoryFile.toString());
+			throw new IllegalArgumentException(buildErrorMessage(directoryFile, gitPropertiesFiles));
 		}
 		File file = gitPropertiesFiles.get(0);
 		try (InputStream is = new FileInputStream(file)) {
@@ -191,6 +195,21 @@ public class GitPropertiesLocatorUtils {
 					"Reading directory " + file.getAbsolutePath() + " for obtaining commit " +
 							"descriptor from git.properties failed", e);
 		}
+	}
+
+	private static String buildErrorMessage(File directoryFile, List<File> gitPropertiesFiles) {
+		StringBuilder errorMessage = new StringBuilder();
+		errorMessage.append("There must be a single git.properties file in the directory ");
+		errorMessage.append(directoryFile.toString());
+		errorMessage.append(". Instead, found git.properties files in following locations: ");
+		for (int i = 0; i < gitPropertiesFiles.size(); i++) {
+			File gitPropertiesFile = gitPropertiesFiles.get(0);
+			errorMessage.append(gitPropertiesFile.toString());
+			if (i < gitPropertiesFiles.size() - 1) {
+				errorMessage.append(", ");
+			}
+		}
+		return errorMessage.toString();
 	}
 
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
