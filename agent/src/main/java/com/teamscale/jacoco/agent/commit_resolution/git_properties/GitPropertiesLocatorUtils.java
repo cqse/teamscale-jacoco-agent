@@ -97,9 +97,6 @@ public class GitPropertiesLocatorUtils {
 		// vfs:/content/helloworld.war/WEB-INF/classes
 		// Next, we try to extract the artefact URL from it, e.g., vfs:/content/helloworld.war
 		String artefactUrl = extractArtefactUrl(jarOrClassFolderUrl);
-		if (artefactUrl == null) {
-			return null;
-		}
 
 		Object virtualFile = new URL(artefactUrl).openConnection().getContent();
 		Class<?> virtualFileClass = virtualFile.getClass();
@@ -109,25 +106,24 @@ public class GitPropertiesLocatorUtils {
 		return Pair.createPair(file, false);
 	}
 
-	private static String extractArtefactUrl(URL jarOrClassFolderUrl) {
+	/* package */ static String extractArtefactUrl(URL jarOrClassFolderUrl) {
 		String url = jarOrClassFolderUrl.getPath().toLowerCase();
 		String[] pathSegments = url.split("/");
 		StringBuilder artefactUrlBuilder = new StringBuilder("vfs:");
 		int segmentIdx = 0;
-		String segment = pathSegments[segmentIdx];
-		while (segmentIdx < pathSegments.length && !org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
-				segment, ".jar", ".war", ".ear", ".aar")) {
+		while (segmentIdx < pathSegments.length) {
+			String segment = pathSegments[segmentIdx];
 			artefactUrlBuilder.append(segment);
 			artefactUrlBuilder.append("/");
-			if (segmentIdx + 1 < pathSegments.length) {
-				segment = pathSegments[segmentIdx + 1];
+			if (org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
+					segment, ".jar", ".war", ".ear", ".aar")) {
+				break;
 			}
 			segmentIdx += 1;
 		}
 		if (segmentIdx == pathSegments.length) {
-			return null;
+			return url;
 		}
-		artefactUrlBuilder.append(pathSegments[segmentIdx]);
 		return artefactUrlBuilder.toString();
 	}
 
@@ -176,13 +172,16 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	private static Pair<String, Properties> findGitPropertiesInDirectoryFile(File directoryFile) throws IOException {
-		List<File> directoryFiles = FileSystemUtils.listFilesRecursively(directoryFile,
+		List<File> gitPropertiesFiles = FileSystemUtils.listFilesRecursively(directoryFile,
 				file -> file.getName().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME));
-		if (directoryFiles.size() != 1) {
+		if (gitPropertiesFiles.size() == 0) {
+			return null;
+		}
+		if (gitPropertiesFiles.size() > 1) {
 			throw new IllegalArgumentException(
 					"There must be a single git.properties file in the directory " + directoryFile.toString());
 		}
-		File file = directoryFiles.get(0);
+		File file = gitPropertiesFiles.get(0);
 		try (InputStream is = new FileInputStream(file)) {
 			Properties gitProperties = new Properties();
 			gitProperties.load(is);

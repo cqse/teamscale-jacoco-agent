@@ -21,5 +21,4 @@ class GitPropertiesLocatorUtilsTest {
 				.extractGitPropertiesSearchRoot(new URL("file:/home/k/demo.jar")).getFirst())
 				.isEqualTo(new File("/home/k/demo.jar"));
 	}
-
 }

@@ -8,7 +8,7 @@ import java.io.File;
 public interface IGitPropertiesLocator {
 
 	/**
-	 * Searches the file for the git.properties file containing certain properties. The boolean frag indicates whether the
+	 * Searches the file for the git.properties file containing certain properties. The boolean flag indicates whether the
 	 * searched file is a JAR file or a plain directory.
 	 */
 	void searchFileForGitPropertiesAsync(File file, boolean isJarFile);
