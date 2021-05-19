@@ -63,8 +63,10 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	@Override
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
 							   String baseline) throws IOException {
-		this.availableTests = availableTests;
-		return super.testRunStart(availableTests, includeNonImpactedTests, baseline);
+		if (availableTests != null) {
+			this.availableTests = new ArrayList<>(availableTests);
+		}
+		return super.testRunStart(this.availableTests, includeNonImpactedTests, baseline);
 	}
 
 	@Override
@@ -139,13 +141,16 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
 				executionUniformPaths);
 		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
-		testExecFile.delete();
-		testExecFile = null;
 		logger.debug("Created testwise coverage report (containing coverage for tests `{}`)",
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
 
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
 				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
+
+		testExecFile.delete();
+		testExecFile = null;
+		availableTests.clear();
+		testExecutions.clear();
 
 		return testwiseCoverageReportJsonAdapter.toJson(report);
 	}

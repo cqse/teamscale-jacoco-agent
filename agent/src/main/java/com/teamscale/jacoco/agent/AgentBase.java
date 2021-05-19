@@ -9,6 +9,7 @@ import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 import spark.Request;
@@ -194,7 +195,7 @@ public abstract class AgentBase {
 
 	/** Handles setting the partition name. */
 	private String handleSetPartition(Request request, Response response) {
-		String partition = request.body();
+		String partition = StringUtils.removeDoubleQuotes(request.body());
 		if (partition == null || partition.isEmpty()) {
 			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
 			logger.error(errorMessage);
@@ -213,7 +214,7 @@ public abstract class AgentBase {
 
 	/** Handles setting the partition name. */
 	private String handleSetMessage(Request request, Response response) {
-		String message = request.body();
+		String message =  StringUtils.removeDoubleQuotes(request.body());
 		if (message == null || message.isEmpty()) {
 			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
 			logger.error(errorMessage);

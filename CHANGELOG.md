@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] Upload to teamscale mode for testwise coverage did report tests multiple times when multiple uploads were triggered
+- [fix] Setting partition or message via REST did not strip JSON encoding quotes
 
 # 21.4.0
 - [feature] _tia-client_: dynamically set partition and message

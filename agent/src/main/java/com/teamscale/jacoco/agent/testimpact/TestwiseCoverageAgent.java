@@ -96,8 +96,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 			exception.printStackTrace(printWriter);
 		}
-		response.body("Request failed with an exception in the agent: " + exception.getMessage() + "\n" + stringWriter
-				.toString());
+		response.body("Request failed with an exception in the agent: " + exception.getMessage() + "\n" + stringWriter);
 	}
 
 	private String handleTestRunStart(Request request, Response response) throws IOException {
