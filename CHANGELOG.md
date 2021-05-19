@@ -6,6 +6,9 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 21.5.0
+- [feature] Support for VFS (Virtual File System) URL format used in JBoss and Wildfly
+
 # 21.4.0
 - [feature] _tia-client_: dynamically set partition and message
 - [fix] Upload to teamscale mode for testwise coverage did miss some class files when class-dir was not explicitly given
