@@ -8,6 +8,9 @@ We use [semantic versioning](http://semver.org/):
 - [fix] Upload to teamscale mode for testwise coverage did report tests multiple times when multiple uploads were triggered
 - [fix] Setting partition or message via REST did not strip JSON encoding quotes
 
+# 21.5.0
+- [feature] Support for VFS (Virtual File System) URL format used in JBoss and Wildfly
+
 # 21.4.0
 - [feature] _tia-client_: dynamically set partition and message
 - [fix] Upload to teamscale mode for testwise coverage did miss some class files when class-dir was not explicitly given

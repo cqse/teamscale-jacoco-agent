@@ -297,7 +297,7 @@ public class AgentOptionsParser {
 	private String getRevisionFromGitProperties(String optionName, String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			String revision = GitPropertiesLocatorUtils.getRevisionFromGitProperties(jarFile);
+			String revision = GitPropertiesLocatorUtils.getRevisionFromGitProperties(jarFile, true);
 			if (revision == null) {
 				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
 			}

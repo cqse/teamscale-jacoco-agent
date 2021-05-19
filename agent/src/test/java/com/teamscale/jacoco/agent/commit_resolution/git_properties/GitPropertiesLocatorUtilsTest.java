@@ -11,15 +11,14 @@ class GitPropertiesLocatorUtilsTest {
 	@Test
 	public void parseSpringBootCodeLocations() throws Exception {
 		Assertions.assertThat(GitPropertiesLocatorUtils
-				.extractGitPropertiesSearchRoot(new URL("jar:file:/home/k/demo.jar!/BOOT-INF/classes!/")))
+				.extractGitPropertiesSearchRoot(new URL("jar:file:/home/k/demo.jar!/BOOT-INF/classes!/")).getFirst())
 				.isEqualTo(new File("/home/k/demo.jar"));
 	}
 
 	@Test
 	public void parseFileCodeLocations() throws Exception {
 		Assertions.assertThat(GitPropertiesLocatorUtils
-				.extractGitPropertiesSearchRoot(new URL("file:/home/k/demo.jar")))
+				.extractGitPropertiesSearchRoot(new URL("file:/home/k/demo.jar")).getFirst())
 				.isEqualTo(new File("/home/k/demo.jar"));
 	}
-
 }

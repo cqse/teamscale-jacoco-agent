@@ -41,16 +41,16 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	 * Asynchronously searches the given jar file for a git.properties file.
 	 */
 	@Override
-	public void searchJarFileForGitPropertiesAsync(File jarFile) {
-		executor.execute(() -> searchJarFile(jarFile));
+	public void searchFileForGitPropertiesAsync(File file, boolean isJarFile) {
+		executor.execute(() -> searchFile(file, isJarFile));
 	}
 
-	private void searchJarFile(File jarFile) {
-		logger.debug("Searching jar file {} for multiple git.properties", jarFile.toString());
+	private void searchFile(File file, boolean isJarFile) {
+		logger.debug("Searching file {} for multiple git.properties", file.toString());
 		try {
-			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(jarFile);
+			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(file, isJarFile);
 			if (data == null) {
-				logger.debug("No git.properties file found in {}", jarFile.toString());
+				logger.debug("No git.properties file found in {}", file.toString());
 				return;
 			}
 			// this code only runs when 'teamscale-project' is not given via the agent properties,
@@ -62,14 +62,14 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 						"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
 								" Teamscale project (teamscale.project) property, or does not specify the commit SHA (git.commit.id)." +
 								" Please note that both of these properties are required in order to allow multi-project upload to Teamscale.",
-						jarFile);
+						file);
 				return;
 			}
 			uploader.setTeamscaleProjectForRevision(data);
-			logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", jarFile.toString(),
+			logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file.toString(),
 					data.getProject(), data.getRevision());
 		} catch (IOException | InvalidGitPropertiesException e) {
-			logger.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
+			logger.error("Error during asynchronous search for git.properties in {}", file.toString(), e);
 		}
 	}
 

@@ -51,16 +51,16 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	 * Asynchronously searches the given jar file for a git.properties file.
 	 */
 	@Override
-	public void searchJarFileForGitPropertiesAsync(File jarFile) {
-		executor.execute(() -> searchJarFile(jarFile));
+	public void searchFileForGitPropertiesAsync(File file, boolean isJarFile) {
+		executor.execute(() -> searchFile(file, isJarFile));
 	}
 
-	private void searchJarFile(File jarFile) {
-		logger.debug("Searching jar file {} for a single git.properties", jarFile);
+	private void searchFile(File file, boolean isJarFile) {
+		logger.debug("Searching jar file {} for a single git.properties", file);
 		try {
-			T data = dataExtractor.extractData(jarFile);
+			T data = dataExtractor.extractData(file, isJarFile);
 			if (data == null) {
-				logger.debug("No git.properties file found in {}", jarFile.toString());
+				logger.debug("No git.properties file found in {}", file.toString());
 				return;
 			}
 
@@ -74,18 +74,18 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 									" displayed in Teamscale. If you cannot fix the inconsistency, you can manually" +
 									" specify a Jar/War/Ear/... file from which to read the correct git.properties" +
 									" file with the agent's teamscale-git-properties-jar parameter.",
-							jarFileWithGitProperties, foundData, jarFile, data);
+							jarFileWithGitProperties, foundData, file, data);
 				}
 				return;
 			}
 
-			logger.debug("Found git.properties file in {} and found commit descriptor {}", jarFile.toString(),
+			logger.debug("Found git.properties file in {} and found commit descriptor {}", file.toString(),
 					data);
 			foundData = data;
-			jarFileWithGitProperties = jarFile;
+			jarFileWithGitProperties = file;
 			uploader.setCommitAndTriggerAsynchronousUpload(data);
 		} catch (IOException | InvalidGitPropertiesException e) {
-			logger.error("Error during asynchronous search for git.properties in {}", jarFile.toString(), e);
+			logger.error("Error during asynchronous search for git.properties in {}", file.toString(), e);
 		}
 	}
 
@@ -93,6 +93,6 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	@FunctionalInterface
 	public interface DataExtractor<T> {
 		/** Extracts data from the JAR. */
-		T extractData(File jarFile) throws IOException, InvalidGitPropertiesException;
+		T extractData(File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException;
 	}
 }
