@@ -362,6 +362,9 @@ script in the Tomcat installation directory. Create this file if it does not yet
 Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
 This ensures that the performance of your application does not degrade.
 
+To ensure the Tomcat process is properly shutdown you need to add `CATALINA_PID="$CATALINA_BASE/bin/catalina.pid"` to the `bin/setenv.sh` script and stop Tomcat via `catalina stop -force`.
+This makes Tomcat store the process ID of the server in the specified file and uses it to kill the process when stopped.
+
 ## Additional steps for Glassfish
 
 You have two options to register the JVM option:
