@@ -1,3 +1,10 @@
+pluginManagement {
+	plugins {
+		id 'com.github.ben-manes.versions' version '0.38.0'
+		id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.1.0'
+	}
+}
+
 /*
  * The settings file is used to specify which projects to include in your build.
  */

@@ -2,7 +2,7 @@ plugins {
 	id 'com.teamscale.java-convention'
 	id 'application'
 	id 'com.teamscale.coverage'
-	id "com.gorylenko.gradle-git-properties" version "2.2.0"
+	id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 
 version 'unspecified'

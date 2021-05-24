@@ -20,7 +20,7 @@ object GitRepositoryHelper {
         val branch = repository.branch
         val commit = getCommit(repository, branch)
         val commitTimeSeconds = commit.commitTime.toLong()
-        val ref = repository.refDatabase.getRef("HEAD").objectId.name
+        val ref = repository.refDatabase.findRef("HEAD").objectId.name
         return Pair(CommitDescriptor(branch, commitTimeSeconds * 1000L), ref)
     }
 
@@ -29,7 +29,7 @@ object GitRepositoryHelper {
     private fun getCommit(repository: Repository, revisionBranchOrTag: String): RevCommit {
         val revWalk = RevWalk(repository)
         try {
-            val head = repository.refDatabase.getRef(revisionBranchOrTag)
+            val head = repository.refDatabase.findRef(revisionBranchOrTag)
             return if (head != null) {
                 revWalk.parseCommit(head.leaf.objectId)
             } else revWalk.parseCommit(ObjectId.fromString(revisionBranchOrTag))

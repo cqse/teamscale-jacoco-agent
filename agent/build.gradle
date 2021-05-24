@@ -1,6 +1,6 @@
 plugins {
 	id 'com.teamscale.java-convention'
-	id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.0.1'
+	id 'de.fntsoftware.gradle.markdown-to-pdf'
 	id 'application'
 
 	// we don't want to cause conflicts between our dependencies and the target application
@@ -34,17 +34,17 @@ dependencies {
 	implementation 'ch.qos.logback:logback-core:1.2.3'
 	implementation 'ch.qos.logback:logback-classic:1.2.3'
 
-	implementation 'io.reactivex.rxjava2:rxjava:2.1.2'
-	implementation 'com.beust:jcommander:1.71'
-	implementation 'com.teamscale:teamscale-lib-commons:6.0.1'
+	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
+	implementation 'com.beust:jcommander:1.81'
+	implementation 'com.teamscale:teamscale-lib-commons:7.0.2'
 
-	implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-	implementation 'com.sparkjava:spark-core:2.7.2'
+	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+	implementation 'com.sparkjava:spark-core:2.9.3'
 
-	implementation 'com.squareup.moshi:moshi:1.8.0'
+	implementation 'com.squareup.moshi:moshi:1.12.0'
 
 	testImplementation project(':tia-client')
-	testImplementation 'com.squareup.retrofit2:converter-moshi:2.4.0'
+	testImplementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
 }
 
 mainClassName = 'com.teamscale.jacoco.agent.Main'
@@ -53,12 +53,12 @@ shadowJar {
 	// Needed as a workaround for https://github.com/johnrengelman/shadow/issues/521
 	inputs.property("debug", project.hasProperty("debug"))
 
-	baseName = 'teamscale-jacoco-agent'
+	archiveBaseName = 'teamscale-jacoco-agent'
 	classifier = null
 	// since this is used as an agent, we want it to always have the same name
 	// otherwise people have to adjust their -javaagent parameters after every
 	// update
-	version = null
+	archiveVersion = null
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
 
@@ -106,7 +106,7 @@ distributions {
 }
 
 tasks.named('shadowDistZip').configure {
-	archiveName = 'teamscale-jacoco-agent.zip'
+	archiveFileName = 'teamscale-jacoco-agent.zip'
 }
 
 processResources {
