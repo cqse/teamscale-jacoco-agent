@@ -8,7 +8,6 @@ group = "com.teamscale"
 
 repositories {
     mavenCentral()
-    maven (url = "https://share.cqse.eu/svn/artifacts/maven")
 }
 
 java {
