@@ -8,7 +8,6 @@ import org.jacoco.core.data.ExecutionData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Holds information about a class' probes and to which line ranges they refer.
