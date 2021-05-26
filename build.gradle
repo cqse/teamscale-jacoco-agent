@@ -1,10 +1,14 @@
+plugins {
+	id 'com.github.ben-manes.versions'
+}
+
 ext {
 	appVersion = '21.5.0'
 
 	// When upgrading JaCoCo to a newer version make sure to
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.java.
-	jacocoVersion = '0.8.5'
+	jacocoVersion = '0.8.7'
 }
 
 subprojects {
@@ -25,3 +29,16 @@ task iGP(dependsOn: [
 		':teamscale-client:publishToMavenLocal',
 		':tia-client:publishToMavenLocal'
 ])
+
+dependencyUpdates.resolutionStrategy {
+	componentSelection { rules ->
+		rules.all { ComponentSelection selection ->
+			boolean rejected = ['alpha', 'beta', 'b', 'rc', 'cr', 'm', 'preview', 'pr'].any { qualifier ->
+				selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+			}
+			if (rejected) {
+				selection.reject('Release candidate')
+			}
+		}
+	}
+}

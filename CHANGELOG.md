@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Support for Java 16 (and experimental support for Java 17)
 
 # 21.5.0
 - [feature] Support for VFS (Virtual File System) URL format used in JBoss and Wildfly
