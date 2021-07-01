@@ -4,6 +4,7 @@ import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.TestExecution;
 import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -15,6 +16,7 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** {@link Retrofit} API specification for the JaCoCo agent in test-wise coverage mode. */
 public interface ITestwiseCoverageAgentApi {
@@ -65,9 +67,14 @@ public interface ITestwiseCoverageAgentApi {
 	 * and which sets the Accept header to JSON.
 	 */
 	static ITestwiseCoverageAgentApi createService(HttpUrl baseUrl) {
+		OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+		httpClientBuilder.connectTimeout(60, TimeUnit.SECONDS);
+		httpClientBuilder.readTimeout(120, TimeUnit.SECONDS);
+		httpClientBuilder.writeTimeout(60, TimeUnit.SECONDS);
 		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl(baseUrl)
-				.addConverterFactory(MoshiConverterFactory.create())
+				.client(httpClientBuilder.build()) //
+				.baseUrl(baseUrl) //
+				.addConverterFactory(MoshiConverterFactory.create()) //
 				.build();
 		return retrofit.create(ITestwiseCoverageAgentApi.class);
 	}
