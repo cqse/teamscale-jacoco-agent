@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _teamscale-gradle-plugin_: Deprecation warnings under Gradle 7.1
 
 # 21.6.0
 - [feature] Support for Java 16 (and experimental support for Java 17)

@@ -9,15 +9,17 @@ import java.io.File
 open class TestwiseCoverageConfiguration(project: Project, task: TestImpacted) :
     ReportConfigurationBase(EReportFormat.TESTWISE_COVERAGE, project, task) {
     init {
-        destination.set(project.providers.provider {
-            File(
-                project.rootProject.buildDir, "reports/testwise-coverage/${task.name}/${
-                    partition.get().replace(
-                        "[ /\\\\]".toRegex(),
-                        "-"
-                    )
-                }.json"
-            )
+        destination.set(partition.map { partition ->
+            project.objects.fileProperty().fileValue(
+                File(
+                    project.rootProject.buildDir, "reports/testwise-coverage/${task.name}/${
+                        partition.replace(
+                            "[ /\\\\]".toRegex(),
+                            "-"
+                        )
+                    }.json"
+                )
+            ).get()
         })
     }
 }

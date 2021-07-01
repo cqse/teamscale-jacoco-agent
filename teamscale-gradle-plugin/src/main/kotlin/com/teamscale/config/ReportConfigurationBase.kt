@@ -4,6 +4,8 @@ import com.teamscale.Report
 import com.teamscale.client.EReportFormat
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Property
 import java.io.File
 import java.io.Serializable
@@ -36,17 +38,17 @@ open class ReportConfigurationBase(private val format: EReportFormat, val projec
     }
 
     /** The destination where the report should be written to/read from. */
-    var destination: Property<File> = project.objects.property(File::class.java)
+    var destination: Property<FileSystemLocation> = project.objects.property(FileSystemLocation::class.java)
 
     fun setDestination(destination: String) {
-        this.destination.set(File(destination))
+        this.destination.set(project.objects.fileProperty().fileValue(File(destination)))
     }
 
     /** Returns a report specification used in the TeamscaleUploadTask. */
     fun getReport(): Report {
         return Report(
             format = format,
-            reportFile = destination.get(),
+            reportFile = destination.get().asFile,
             message = message.get(),
             partition = partition.get()
         )
