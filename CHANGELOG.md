@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _teamscale-gradle-plugin_: Deprecation warnings under Gradle 7.1
 - [fix] _tia-client_: Increased timout for connection to Teamscale JaCoCo agent
 
 # 21.6.0

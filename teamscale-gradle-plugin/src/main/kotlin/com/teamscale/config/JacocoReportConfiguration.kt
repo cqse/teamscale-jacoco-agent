@@ -8,8 +8,6 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 open class JacocoReportConfiguration(project: Project, task: JacocoReport) :
     ReportConfigurationBase(EReportFormat.JACOCO, project, task) {
     init {
-        destination.set(project.providers.provider {
-            task.reports.xml.destination
-        })
+        destination.set(task.reports.xml.outputLocation)
     }
 }

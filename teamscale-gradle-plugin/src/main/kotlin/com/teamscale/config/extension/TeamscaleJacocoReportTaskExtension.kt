@@ -18,7 +18,7 @@ open class TeamscaleJacocoReportTaskExtension(
 
     /** Configures the reports to be uploaded. */
     fun report(action: Action<in JacocoReportConfiguration>) {
-        jacocoReport.reports.xml.isEnabled = true
+        jacocoReport.reports.xml.required.set(true)
         action.execute(report)
     }
 }

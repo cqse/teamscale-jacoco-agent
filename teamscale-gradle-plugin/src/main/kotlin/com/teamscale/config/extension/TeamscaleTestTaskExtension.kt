@@ -18,7 +18,7 @@ open class TeamscaleTestTaskExtension(
 
     /** Configures the reports to be uploaded. */
     fun report(action: Action<in JUnitReportConfiguration>) {
-        test.reports.junitXml.isEnabled = true
+        test.reports.junitXml.required.set(true)
         action.execute(report)
     }
 }

@@ -8,6 +8,6 @@ import org.gradle.api.tasks.testing.Test
 open class JUnitReportConfiguration(project: Project, task: Test) :
     ReportConfigurationBase(EReportFormat.JUNIT, project, task) {
     init {
-        destination.set(project.providers.provider { task.reports.junitXml.destination })
+        destination.set(task.reports.junitXml.outputLocation)
     }
 }

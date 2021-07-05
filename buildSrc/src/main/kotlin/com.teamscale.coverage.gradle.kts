@@ -4,7 +4,7 @@ plugins {
 
 tasks.named<JacocoReport>("jacocoTestReport") {
     reports {
-        xml.isEnabled = true
+        xml.required.set(true)
     }
 }
 tasks.named("test") {
