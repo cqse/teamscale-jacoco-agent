@@ -348,11 +348,27 @@ This ensures that the performance of your application does not degrade.
 
 ## Additional steps for Wildfly
 
-Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf` or `domain.conf`
-file inside the Wildfly installation directory - depending on which "mode" is used; probably standalone.
-
 Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
 This ensures that the performance of your application does not degrade.
+
+### Using standalone mode
+
+Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf`
+file inside the Wildfly installation directory.
+
+### Using domain mode
+
+Register the agent in `domain.xml` under
+
+```xml
+<server-group>
+  <jvm>
+    <jvm-options>
+      <option value="-javaagent:..."/>
+    </jvm-options>
+  </jvm>
+</server-group>
+```
 
 ## Additional steps for Tomcat/TomEE
 
