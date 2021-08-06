@@ -48,6 +48,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -192,6 +194,12 @@ public class AgentOptions {
 	 */
 	/* package */ SapNwdiApplications sapNetWeaverJavaApplications = null;
 
+	/**
+	 * Whether to obfuscate security related configuration options when dumping them
+	 * into the log or onto the console or not.
+	 */
+	/* package */ boolean obfuscateSecurityRelatedOutputs = true;
+
 	public AgentOptions() {
 		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
 	}
@@ -201,6 +209,24 @@ public class AgentOptions {
 	 */
 	public String getOriginalOptionsString() {
 		return originalOptionsString;
+	}
+
+	/**
+	 * Remove parts of the API key for security reasons from the options string.
+	 * String is used for logging purposes.
+	 */
+	public String getObfuscatedOptionsString() {
+		// Example for `getOriginalOptionsString()`:
+		// 		config-file=jacocoagent.properties,teamscale-access-token=unlYgehaYYYhbPAegNWV3WgjOzxkmNHn
+		Pattern pattern = Pattern.compile("(.*-access-token=)([^,]+)(.*)");
+		Matcher match = pattern.matcher(getOriginalOptionsString());
+		if (match.find()) {
+			String apiKey = match.group(2);
+			String obfuscatedApiKey = String.format("<obfuscated-api-key-prefix>%s", apiKey.substring(Math.max(0, apiKey.length()-4)));
+			return String.format("%s%s%s", match.group(1), obfuscatedApiKey, match.group(3));
+		} else {
+			return getOriginalOptionsString();
+		}
 	}
 
 	/**
@@ -486,6 +512,13 @@ public class AgentOptions {
 	 */
 	public boolean shouldValidateSsl() {
 		return validateSsl;
+	}
+
+	/**
+	 * @see #obfuscateSecurityRelatedOutputs
+	 */
+	public boolean shouldObfuscateSecurityRelatedOutputs() {
+		return obfuscateSecurityRelatedOutputs;
 	}
 
 	/**

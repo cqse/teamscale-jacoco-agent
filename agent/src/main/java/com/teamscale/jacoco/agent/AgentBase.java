@@ -55,7 +55,10 @@ public abstract class AgentBase {
 		}
 
 		logger.info("Starting JaCoCo agent for process {} with options: {}",
-				ManagementFactory.getRuntimeMXBean().getName(), options.getOriginalOptionsString());
+				ManagementFactory.getRuntimeMXBean().getName(),
+					options.shouldObfuscateSecurityRelatedOutputs() ?
+					options.getObfuscatedOptionsString() :
+							options.getOriginalOptionsString());
 		if (options.getHttpServerPort() != null) {
 			initServer();
 		}
@@ -229,4 +232,5 @@ public abstract class AgentBase {
 		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}
+
 }

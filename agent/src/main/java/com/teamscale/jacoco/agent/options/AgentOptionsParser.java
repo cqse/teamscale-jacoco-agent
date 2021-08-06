@@ -166,6 +166,9 @@ public class AgentOptionsParser {
 		case "ignore-uncovered-classes":
 			options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
 			return true;
+		case "obfuscate-security-related-outputs":
+			options.obfuscateSecurityRelatedOutputs = Boolean.parseBoolean(value);
+			return true;
 		case "dump-on-exit":
 			options.shouldDumpOnExit = Boolean.parseBoolean(value);
 			return true;

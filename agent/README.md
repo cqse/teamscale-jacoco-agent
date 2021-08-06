@@ -1,6 +1,7 @@
 # Teamscale JaCoCo Agent
 
-This is a Java agent that allows recording coverage, similar to JaCoCo (which is in fact used underneath). It improves on JaCoCo in the following ways:
+This is a Java agent that allows recording coverage, similar to JaCoCo (which is in fact used underneath). 
+It improves on JaCoCo in the following ways:
 
 - allow configuration via a .properties file
 - allow time-interval based dumping of coverage (e.g. "dump coverage every hour") instead of only at JVM shutdown
@@ -15,7 +16,7 @@ configured to only use very little memory, you might have to increase this limit
 the agent to function properly. How much memory is needed depends on how much code is being
 analyzed and thus on how you configure the agent.
 
-To upload coverage directly to Teamscale a Teamscale version of 5.9.0 or higher is required.
+To upload coverage directly to Teamscale, a Teamscale version of 5.9.0 or higher is required.
 
 ## Installing
 
