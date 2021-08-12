@@ -229,7 +229,8 @@ public class AgentOptions {
 		Matcher match = pattern.matcher(getOriginalOptionsString());
 		if (match.find()) {
 			String apiKey = match.group(2);
-			String obfuscatedApiKey = String.format("************%s", apiKey.substring(Math.max(0, apiKey.length()-4)));
+			String obfuscatedApiKey = String.format("************%s", apiKey.substring(Math.max(0, 
+ apiKey.length() - 4)));
 			return String.format("%s%s%s", match.group(1), obfuscatedApiKey, match.group(3));
 		}
 
