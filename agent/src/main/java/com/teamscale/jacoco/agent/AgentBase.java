@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
