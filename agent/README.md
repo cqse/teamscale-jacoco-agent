@@ -109,7 +109,7 @@ patterns with `*`, `**` and `?`.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
 - `obfuscate-security-related-outputs`: boolean value determining if security critical information such as access 
-   keys are obfuscated when printing them to the console or into the log (Default is true).
+   keys are obfuscated when printing them to the console or into the log (default is true).
 
   If **Git** is your VCS, you can get the commit info via
   
