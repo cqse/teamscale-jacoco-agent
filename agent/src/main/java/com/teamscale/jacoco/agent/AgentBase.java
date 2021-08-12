@@ -72,9 +72,8 @@ public abstract class AgentBase {
 			public String toString() {
 				if (options.shouldObfuscateSecurityRelatedOutputs()) {
 					return options.getObfuscatedOptionsString();
-				} else {
-					return options.getOriginalOptionsString();
 				}
+				return options.getOriginalOptionsString();
 			}
 		};
 	}
