@@ -5,7 +5,9 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.options.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.report.jacoco.CoverageFile;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
 
@@ -30,8 +32,14 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	@Override
 	protected void configureOkHttp(OkHttpClient.Builder builder) {
 		super.configureOkHttp(builder);
-		builder.addInterceptor(HttpUtils.getBasicAuthInterceptor(artifactoryConfig.user, artifactoryConfig.password));
+		if (artifactoryConfig.apiKey != null) {
+			builder.addInterceptor(getArtifactoryApiHeaderInterceptor());
+		} else {
+			builder.addInterceptor(
+					HttpUtils.getBasicAuthInterceptor(artifactoryConfig.user, artifactoryConfig.password));
+		}
 	}
+
 
 	@Override
 	public void upload(CoverageFile coverageFile) {
@@ -60,5 +68,14 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	@Override
 	public String describe() {
 		return "Uploading to " + uploadUrl;
+	}
+
+	private Interceptor getArtifactoryApiHeaderInterceptor() {
+		return chain -> {
+			// TODO extract header name to constant
+			Request newRequest = chain.request().newBuilder().header("X-JFrog-Art-Api", artifactoryConfig.apiKey)
+					.build();
+			return chain.proceed(newRequest);
+		};
 	}
 }
