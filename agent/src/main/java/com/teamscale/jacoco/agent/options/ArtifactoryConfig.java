@@ -35,6 +35,8 @@ public class ArtifactoryConfig {
 	/** The git time formatter, defaults to git.properties plugin default value. */
 	public DateTimeFormatter gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
+	public String apiKey;
+
 	/**
 	 * Handles all command-line options prefixed with 'artifactory-'
 	 *
@@ -63,6 +65,9 @@ public class ArtifactoryConfig {
 				return true;
 			case "artifactory-git-properties-commit-date-format":
 				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
+				return true;
+			case "artifactory-api-key": // TODO introduce constant (also for options above) and use in test
+				options.apiKey = value;
 				return true;
 			default:
 				return false;

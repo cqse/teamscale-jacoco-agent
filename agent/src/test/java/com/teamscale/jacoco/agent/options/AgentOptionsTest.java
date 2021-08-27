@@ -237,6 +237,14 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSet()).isFalse();
 	}
 
+	@Test
+	public void testArtifactoryApiKeyOption() throws AgentOptionParseException {
+		String someArtifactoryApiKey = "some_api_key";
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+				"artifactory-api-key=" + someArtifactoryApiKey);
+		assertThat(agentOptions.artifactoryConfig.apiKey).isEqualTo(someArtifactoryApiKey);
+	}
+
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
