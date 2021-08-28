@@ -19,6 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArtifactoryUploaderTest {
 
+	/**
+	 * Tests if the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} is set, it will be used as authentication
+	 * method against artifactory in the {@link ArtifactoryUploader#ARTIFACTORY_API_HEADER}
+	 */
 	@Test
 	public void testUseApiKeyHeaderWhenOptionIsPresent(@TempDir File tmpDir) throws IOException, InterruptedException {
 		MockWebServer mockWebServer = new MockWebServer();
