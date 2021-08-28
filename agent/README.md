@@ -162,24 +162,26 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
- - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
-    The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
- - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
- - `artifactory-password` (required for artifactory): The password of the user.
- - `artifactory-zip-path` (optional): The path within the stored ZIP file where the reports are stored.
-    Default is to store at root level.
-    This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options. 
- - `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
-    If not specified, Git commit information is extracted from the first found `git.properties` file.
-    See `teamscale-git-properties-jar` for details. 
- - `artifactory-git-properties-commit-date-format` (optional):
-    The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
- - `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon 
-   separated list of applications. Each application is specified as a fully qualified classname (referred to as marker 
-   class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed 
-   when the application is running and is unique amongst the other deployed applications. 
-   E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at 
-   the timestamp of the last modification date of the given marker class.
+- `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
+   The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
+- `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
+- `artifactory-password` (required for artifactory): The password of the user.
+- `artifactory-api-key` (alternative to `artifactory-user` and `artifactory-password`) The API key for artifactory from
+  a user with write access (c.f. [Artifactory Documentation](https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey))
+- `artifactory-zip-path` (optional): The path within the stored ZIP file where the reports are stored.
+   Default is to store at root level.
+   This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options. 
+- `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
+   If not specified, Git commit information is extracted from the first found `git.properties` file.
+   See `teamscale-git-properties-jar` for details. 
+- `artifactory-git-properties-commit-date-format` (optional):
+   The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
+- `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon 
+  separated list of applications. Each application is specified as a fully qualified classname (referred to as marker 
+  class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed 
+  when the application is running and is unique amongst the other deployed applications. 
+  E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at 
+  the timestamp of the last modification date of the given marker class.
 
 ## Options for testwise mode
 
