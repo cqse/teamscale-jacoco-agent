@@ -195,8 +195,8 @@ public class AgentOptions {
 	/* package */ SapNwdiApplications sapNetWeaverJavaApplications = null;
 
 	/**
-	 * Whether to obfuscate security related configuration options when dumping them
-	 * into the log or onto the console or not.
+	 * Whether to obfuscate security related configuration options when dumping them into the log or onto the console or
+	 * not.
 	 */
 	/* package */ boolean obfuscateSecurityRelatedOutputs = true;
 
@@ -212,13 +212,10 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Remove parts of the API key for security reasons from the options string.
-	 * String is used for logging purposes.
-	 *
-	 * Given, for example,
-	 * 		"config-file=jacocoagent.properties,teamscale-access-token=unlYgehaYYYhbPAegNWV3WgjOzxkmNHn"
-	 * we produce a string with obfuscation:
-	 * 		"config-file=jacocoagent.properties,teamscale-access-token=************mNHn"
+	 * Remove parts of the API key for security reasons from the options string. String is used for logging purposes.
+	 * <p>
+	 * Given, for example, "config-file=jacocoagent.properties,teamscale-access-token=unlYgehaYYYhbPAegNWV3WgjOzxkmNHn"
+	 * we produce a string with obfuscation: "config-file=jacocoagent.properties,teamscale-access-token=************mNHn"
 	 */
 	public String getObfuscatedOptionsString() {
 		if (getOriginalOptionsString() == null) {
@@ -229,8 +226,8 @@ public class AgentOptions {
 		Matcher match = pattern.matcher(getOriginalOptionsString());
 		if (match.find()) {
 			String apiKey = match.group(2);
-			String obfuscatedApiKey = String.format("************%s", apiKey.substring(Math.max(0, 
- apiKey.length() - 4)));
+			String obfuscatedApiKey = String.format("************%s", apiKey.substring(Math.max(0,
+					apiKey.length() - 4)));
 			return String.format("%s%s%s", match.group(1), obfuscatedApiKey, match.group(3));
 		}
 
@@ -278,10 +275,12 @@ public class AgentOptions {
 				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
+		// TODO also make api key possible
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
-				"If you want to upload data to Artifactory you need to provide " +
-						"'artifactory-url', 'artifactory-user' and 'artifactory-password' ");
+				String.format("If you want to upload data to Artifactory you need to provide " +
+								"'%s', '%s' and '%s' ", ArtifactoryConfig.ARTIFACTORY_URL_OPTION,
+						ArtifactoryConfig.ARTIFACTORY_USER_OPTION, ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION));
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
@@ -461,10 +460,14 @@ public class AgentOptions {
 		return outputDirectory;
 	}
 
-	/** Creates a new temp file with the given prefix, extension and current timestamp and ensures that the parent folder actually exists. */
+	/**
+	 * Creates a new temp file with the given prefix, extension and current timestamp and ensures that the parent folder
+	 * actually exists.
+	 */
 	public File createTempFile(String prefix, String extension) throws IOException {
 		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
-		return outputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
+		return outputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension)
+				.toFile();
 	}
 
 	/**

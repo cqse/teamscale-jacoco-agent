@@ -35,11 +35,9 @@ public class ArtifactoryUploaderTest {
 		artifactoryUploader.upload(new CoverageFile(tmpFile));
 		RecordedRequest recordedRequest = mockWebServer.takeRequest(5, TimeUnit.SECONDS);
 
-		//TODO move header to constant
-		// Use constant for option
 		assert recordedRequest != null;
 		assertThat(recordedRequest.getHeader(ArtifactoryUploader.ARTIFACTORY_API_HEADER)).as(
-						"Artifactory API Header (" + ArtifactoryUploader.ARTIFACTORY_API_HEADER + ") not used when the option artifactory-api-key is set.")
+						"Artifactory API Header (" + ArtifactoryUploader.ARTIFACTORY_API_HEADER + ") not used when the option" + ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION + "is set.")
 				.isNotNull();
 
 		mockWebServer.shutdown();

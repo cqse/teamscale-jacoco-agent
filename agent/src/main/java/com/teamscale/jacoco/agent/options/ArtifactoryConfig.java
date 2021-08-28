@@ -17,6 +17,14 @@ import java.util.Properties;
 
 /** Config necessary to upload files to an azure file storage. */
 public class ArtifactoryConfig {
+	// TODO documentation?
+	public static final String ARTIFACTORY_URL_OPTION = "artifactory-url";
+	public static final String ARTIFACTORY_USER_OPTION = "artifactory-user";
+	public static final String ARTIFACTORY_PASSWORD_OPTION = "artifactory-password";
+	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
+	public static final String ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION = "artifactory-git-properties-jar";
+	public static final String ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "artifactory-git-properties-commit-date-format";
+	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
 	/** The URL to artifactory */
 	public HttpUrl url;
 
@@ -47,26 +55,26 @@ public class ArtifactoryConfig {
 												   String key, String value)
 			throws AgentOptionParseException {
 		switch (key) {
-			case "artifactory-url":
+			case ARTIFACTORY_URL_OPTION:
 				options.url = AgentOptionsParser.parseUrl(key, value);
 				return true;
-			case "artifactory-user":
+			case ARTIFACTORY_USER_OPTION:
 				options.user = value;
 				return true;
-			case "artifactory-password":
+			case ARTIFACTORY_PASSWORD_OPTION:
 				options.password = value;
 				return true;
-			case "artifactory-zip-path":
+			case ARTIFACTORY_ZIP_PATH_OPTION:
 				options.zipPath = StringUtils.stripSuffix(value, "/");
 				return true;
-			case "artifactory-git-properties-jar":
+			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
 				options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
 						options.gitPropertiesCommitTimeFormat, key, value);
 				return true;
-			case "artifactory-git-properties-commit-date-format":
+			case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
 				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
 				return true;
-			case "artifactory-api-key": // TODO introduce constant (also for options above) and use in test
+			case ARTIFACTORY_API_KEY_OPTION:
 				options.apiKey = value;
 				return true;
 			default:
