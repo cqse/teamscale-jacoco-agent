@@ -20,8 +20,11 @@ import java.util.List;
  * Uploads XMLs to Artifactory.
  */
 public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> {
-	// TODO documentation and reduce visibility (if possible)
-	static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
+	/**
+	 * Header that can be used as alternative to basic authentication to authenticate requests against artifactory. For
+	 * details check https://www.jfrog.com/confluence/display/JFROG/Artifactory+REST+API
+	 */
+	public static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
 	private final ArtifactoryConfig artifactoryConfig;
 	private String uploadPath;
 

@@ -17,32 +17,67 @@ import java.util.Properties;
 
 /** Config necessary to upload files to an azure file storage. */
 public class ArtifactoryConfig {
-	// TODO documentation?
+	/**
+	 * Option to specify the artifactory URL. This shall be the entire path down to the directory to which the coverage
+	 * should be uploaded to, not only the base url of artifactory.
+	 */
 	public static final String ARTIFACTORY_URL_OPTION = "artifactory-url";
+
+	/**
+	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
+	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 */
 	public static final String ARTIFACTORY_USER_OPTION = "artifactory-user";
+
+	/**
+	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
+	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 */
 	public static final String ARTIFACTORY_PASSWORD_OPTION = "artifactory-password";
-	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
-	public static final String ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION = "artifactory-git-properties-jar";
-	public static final String ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "artifactory-git-properties-commit-date-format";
+
+	/**
+	 * API key that shall be used to authenticat requests to artifacotry with the {@link
+	 * com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively basic
+	 * auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password ({@link
+	 * ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
+	 */
 	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
-	/** The URL to artifactory */
+
+	/**
+	 * Option that specifies under which path the coverage file shall lie within the zip file that is created for the
+	 * upload.
+	 */
+	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
+
+	/**
+	 * Specifies the location of the JAR file which includes the git.properties file.
+	 */
+	public static final String ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION = "artifactory-git-properties-jar";
+
+	/**
+	 * Specifies the date format in which the commit timestamp in the git.properties file is formatted.
+	 */
+	public static final String ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "artifactory-git-properties-commit-date-format";
+
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} */
 	public HttpUrl url;
 
-	/** The artifactory username */
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} */
 	public String user;
 
-	/** The artifactory password */
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION} */
 	public String password;
 
-	/** The path within the zip file, used as partition in Teamscale. */
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_ZIP_PATH_OPTION} */
 	public String zipPath;
 
 	/** The information regarding a commit. */
 	public CommitInfo commitInfo;
 
-	/** The git time formatter, defaults to git.properties plugin default value. */
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION} */
 	public DateTimeFormatter gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} */
 	public String apiKey;
 
 	/**
