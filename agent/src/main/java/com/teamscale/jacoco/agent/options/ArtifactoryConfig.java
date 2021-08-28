@@ -117,14 +117,15 @@ public class ArtifactoryConfig {
 		}
 	}
 
-	/** Checks if none of the required fields is null. */
+	/** Checks if all required options are set to upload to artifactory. */
 	public boolean hasAllRequiredFieldsSet() {
-		return url != null && user != null && password != null;
+		boolean requiredAuthOptionsSet = (user != null && password != null) || apiKey != null;
+		return url != null && requiredAuthOptionsSet;
 	}
 
 	/** Checks if all required fields are null. */
 	public boolean hasAllRequiredFieldsNull() {
-		return url == null && user == null && password == null;
+		return url == null && user == null && password == null && apiKey == null;
 	}
 
 	/** Checks whether commit and revision are set. */

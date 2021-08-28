@@ -279,8 +279,10 @@ public class AgentOptions {
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
 				String.format("If you want to upload data to Artifactory you need to provide " +
-								"'%s', '%s' and '%s' ", ArtifactoryConfig.ARTIFACTORY_URL_OPTION,
-						ArtifactoryConfig.ARTIFACTORY_USER_OPTION, ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION));
+								"'%s', and an authentication method (either'%s' and '%s' or %s) ",
+						ArtifactoryConfig.ARTIFACTORY_URL_OPTION,
+						ArtifactoryConfig.ARTIFACTORY_USER_OPTION, ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION,
+						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION));
 
 		validator.isTrue((azureFileStorageConfig.hasAllRequiredFieldsSet() || azureFileStorageConfig
 						.hasAllRequiredFieldsNull()),
