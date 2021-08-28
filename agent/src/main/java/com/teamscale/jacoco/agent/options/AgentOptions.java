@@ -275,7 +275,6 @@ public class AgentOptions {
 				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
-		// TODO also make api key possible
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
 				String.format("If you want to upload data to Artifactory you need to provide " +

@@ -248,7 +248,6 @@ public class AgentOptionsTest {
 				String.format("%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
 						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, someArtifactoryApiKey));
 		assertThat(agentOptions.artifactoryConfig.apiKey).isEqualTo(someArtifactoryApiKey);
-//				ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION + "=" + someArtifactoryApiKey);
 	}
 
 	/**
