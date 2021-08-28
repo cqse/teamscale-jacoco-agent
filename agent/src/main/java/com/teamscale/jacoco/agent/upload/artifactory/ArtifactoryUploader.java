@@ -20,6 +20,8 @@ import java.util.List;
  * Uploads XMLs to Artifactory.
  */
 public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> {
+	// TODO documentation and reduce visibility (if possible)
+	public static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
 	private final ArtifactoryConfig artifactoryConfig;
 	private String uploadPath;
 
@@ -73,7 +75,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	private Interceptor getArtifactoryApiHeaderInterceptor() {
 		return chain -> {
 			// TODO extract header name to constant
-			Request newRequest = chain.request().newBuilder().header("X-JFrog-Art-Api", artifactoryConfig.apiKey)
+			Request newRequest = chain.request().newBuilder().header(ARTIFACTORY_API_HEADER, artifactoryConfig.apiKey)
 					.build();
 			return chain.proceed(newRequest);
 		};

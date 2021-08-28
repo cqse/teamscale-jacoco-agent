@@ -38,8 +38,8 @@ public class ArtifactoryUploaderTest {
 		//TODO move header to constant
 		// Use constant for option
 		assert recordedRequest != null;
-		assertThat(recordedRequest.getHeader("X-JFrog-Art-Api")).as(
-						"Artifactory API Header (X-JFrog-Art-Api) not used when the option artifactory-api-key is set.")
+		assertThat(recordedRequest.getHeader(ArtifactoryUploader.ARTIFACTORY_API_HEADER)).as(
+						"Artifactory API Header (" + ArtifactoryUploader.ARTIFACTORY_API_HEADER + ") not used when the option artifactory-api-key is set.")
 				.isNotNull();
 
 		mockWebServer.shutdown();
