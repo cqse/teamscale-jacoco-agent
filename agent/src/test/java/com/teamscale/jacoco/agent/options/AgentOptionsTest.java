@@ -245,8 +245,10 @@ public class AgentOptionsTest {
 	public void testArtifactoryApiKeyOptionIsCorrectlyParsed() throws AgentOptionParseException {
 		String someArtifactoryApiKey = "some_api_key";
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
-				ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION + "=" + someArtifactoryApiKey);
+				String.format("%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
+						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, someArtifactoryApiKey));
 		assertThat(agentOptions.artifactoryConfig.apiKey).isEqualTo(someArtifactoryApiKey);
+//				ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION + "=" + someArtifactoryApiKey);
 	}
 
 	/**
