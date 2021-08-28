@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> {
 	// TODO documentation and reduce visibility (if possible)
-	public static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
+	static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
 	private final ArtifactoryConfig artifactoryConfig;
 	private String uploadPath;
 
