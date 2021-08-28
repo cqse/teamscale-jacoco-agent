@@ -74,7 +74,6 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 
 	private Interceptor getArtifactoryApiHeaderInterceptor() {
 		return chain -> {
-			// TODO extract header name to constant
 			Request newRequest = chain.request().newBuilder().header(ARTIFACTORY_API_HEADER, artifactoryConfig.apiKey)
 					.build();
 			return chain.proceed(newRequest);
