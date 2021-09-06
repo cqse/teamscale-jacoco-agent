@@ -4,6 +4,7 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
+import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -235,6 +236,45 @@ public class AgentOptionsTest {
 				});
 		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSetExceptProject()).isTrue();
 		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSet()).isFalse();
+	}
+
+	/**
+	 * Tests successful parsing of the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 */
+	@Test
+	public void testArtifactoryApiKeyOptionIsCorrectlyParsed() throws AgentOptionParseException {
+		String someArtifactoryApiKey = "some_api_key";
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+				String.format("%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
+						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, someArtifactoryApiKey));
+		assertThat(agentOptions.artifactoryConfig.apiKey).isEqualTo(someArtifactoryApiKey);
+	}
+
+	/**
+	 * Tests that setting {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} and {@link
+	 * ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION} (along with {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION})
+	 * passes the AgentOptions' validity check.
+	 */
+	@Test
+	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
+		agentOptions.artifactoryConfig.user = "user";
+		agentOptions.artifactoryConfig.password = "password";
+		assertThat(agentOptions.getValidator().isValid()).isTrue();
+	}
+
+	/**
+	 * Tests that setting {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} and {@link
+	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} (along with {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION})
+	 * passes the AgentOptions' validity check.
+	 */
+	@Test
+	public void testArtifactoryApiKeySetPassesValidityCheck() throws AgentOptionParseException {
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
+		agentOptions.artifactoryConfig.apiKey = "api_key";
+		assertThat(agentOptions.getValidator().isValid()).isTrue();
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */

@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Option `artifactory-api-key` that can be used instead of `artifactory-user` and `artifactory-password` as authentication mechanism for artifactory.
 
 # 21.7.1
 - [feature] Option `obfuscate-security-related-outputs` to enable or disable obfuscating of security related outputs such as the access key.
