@@ -45,7 +45,6 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		}
 	}
 
-
 	@Override
 	public void upload(CoverageFile coverageFile) {
 		this.uploadPath = String.join("/", artifactoryConfig.commitInfo.commit.branchName,

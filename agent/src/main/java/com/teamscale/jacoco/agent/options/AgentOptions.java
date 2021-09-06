@@ -278,7 +278,7 @@ public class AgentOptions {
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
 				String.format("If you want to upload data to Artifactory you need to provide " +
-								"'%s', and an authentication method (either'%s' and '%s' or %s) ",
+								"'%s', and an authentication method (either '%s' and '%s' or '%s') ",
 						ArtifactoryConfig.ARTIFACTORY_URL_OPTION,
 						ArtifactoryConfig.ARTIFACTORY_USER_OPTION, ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION,
 						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION));
