@@ -6,10 +6,11 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] Option `artifactory-api-key` that can be used instead of `artifactory-user` and `artifactory-password` as authentication mechanism for artifactory.
+- [feature] _tia-client_: Added all available report formats
 
 # 21.7.1
 - [feature] Option `obfuscate-security-related-outputs` to enable or disable obfuscating of security related outputs such as the access key.
-- [fix] Obfuscating the access key when logging it or printing it to the console.  
+- [fix] Obfuscating the access key when logging it or printing it to the console.
 
 # 21.6.1
 - [fix] _teamscale-gradle-plugin_: Deprecation warnings under Gradle 7.1
