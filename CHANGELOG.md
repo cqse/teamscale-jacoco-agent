@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 21.8.0
 - [feature] Option `artifactory-api-key` that can be used instead of `artifactory-user` and `artifactory-password` as authentication mechanism for artifactory.
 - [feature] _tia-client_: Added all available report formats
 

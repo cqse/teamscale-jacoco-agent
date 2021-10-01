@@ -3,7 +3,7 @@ plugins {
 }
 
 ext {
-	appVersion = '21.7.1'
+	appVersion = '21.8.0'
 
 	// When upgrading JaCoCo to a newer version make sure to
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
