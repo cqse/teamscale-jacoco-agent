@@ -1,5 +1,18 @@
 # Wrapper around javaws to allow profiling Web Start applications
 
+## Rationale
+
+The normal JavaWS startup mechanism does not allow us to inject the `-javaagent` argument into the final JVM that is required to install the profiler's Java agent that records test coverage.
+The `java-vm-args` property of JNLP files unfortunately [does not allow setting the `-javaagent` VM argument](https://docs.oracle.com/javase/7/docs/technotes/guides/javaws/developersguide/syntax.html).
+
+Additionally, the default security policy for JavaWS does not allow the agent to read system properties, write the coverage information to disk or to contact Teamscale via HTTP(S) (and possibly more).
+
+## Alternatives
+
+One workaround is to set `-javaagent` via `JAVA_TOOL_OPTIONS`.
+The `javaws` process must see this environment variable and will then apply these options to the spawned VM.
+However, this usually means the environment variable must be set system-wide, i.e. all Java applications will be profiled.
+
 ## Installation
 
 Please review the Security section below before installing!
