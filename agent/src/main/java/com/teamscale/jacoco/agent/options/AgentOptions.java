@@ -69,6 +69,9 @@ public class AgentOptions {
 	/** Option name that allows to specify a git commit hash to which coverage should be uploaded to. */
 	public static final String TEAMSCALE_REVISION_OPTION = "teamscale-revision";
 
+	/** Option name that allows to specify a jar file that contains the git commit hash in a MANIFEST.MF file. */
+	public static final String TEAMSCALE_REVISION_MANIFEST_JAR_OPTION = "teamscale-revision-manifest-jar";
+
 	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
 	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
 
@@ -272,7 +275,7 @@ public class AgentOptions {
 						" git.properties files.");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
-				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
+				"'" + AgentOptions.TEAMSCALE_REVISION_OPTION + "' and '" + AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "' are incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig

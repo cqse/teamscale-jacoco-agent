@@ -274,6 +274,9 @@ public class AgentOptionsParser {
 		case AgentOptions.TEAMSCALE_REVISION_OPTION:
 			options.teamscaleServer.revision = value;
 			return true;
+		case AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
+			options.teamscaleServer.revision = getRevisionFromManifest(filePatternResolver.parsePath(key, value).toFile());
+			return true;
 		default:
 			return false;
 		}
@@ -335,6 +338,36 @@ public class AgentOptionsParser {
 	 * manifest and builds a commit descriptor out of it.
 	 */
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
+		Manifest manifest = getManifestFromJarFile(jarFile);
+		String branch = manifest.getMainAttributes().getValue("Branch");
+		String timestamp = manifest.getMainAttributes().getValue("Timestamp");
+		if (StringUtils.isEmpty(branch)) {
+			throw new AgentOptionParseException("No entry 'Branch' in MANIFEST");
+		} else if (StringUtils.isEmpty(timestamp)) {
+			throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST");
+		}
+		logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
+		return new CommitDescriptor(branch, timestamp);
+	}
+
+	/**
+	 * Reads `Git_Commit` entry from the given jar/war file's
+	 * manifest and sets it as revision.
+	 */
+	private String getRevisionFromManifest(File jarFile) throws AgentOptionParseException {
+		Manifest manifest = getManifestFromJarFile(jarFile);
+		String revision = manifest.getMainAttributes().getValue("Git_Commit");
+		if (StringUtils.isEmpty(revision)) {
+			throw new AgentOptionParseException("No entry 'Git_Commit' in MANIFEST");
+		}
+		logger.debug("Found revision " + revision + " in file " + jarFile);
+		return revision;
+	}
+
+	/**
+	 * Reads the JarFile to extract the MANIFEST.MF.
+	 */
+	private Manifest getManifestFromJarFile(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
 			Manifest manifest = jarStream.getManifest();
@@ -342,15 +375,7 @@ public class AgentOptionsParser {
 				throw new AgentOptionParseException(
 						"Unable to read manifest from " + jarFile + ". Maybe the manifest is corrupt?");
 			}
-			String branch = manifest.getMainAttributes().getValue("Branch");
-			String timestamp = manifest.getMainAttributes().getValue("Timestamp");
-			if (StringUtils.isEmpty(branch)) {
-				throw new AgentOptionParseException("No entry 'Branch' in MANIFEST");
-			} else if (StringUtils.isEmpty(timestamp)) {
-				throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST");
-			}
-			logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
-			return new CommitDescriptor(branch, timestamp);
+			return manifest;
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit "
 					+ "descriptor from MANIFEST failed", e);
