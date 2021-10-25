@@ -120,12 +120,12 @@ class TeamscalePluginTest {
     private fun build(executesTask: Boolean, expectFailure: Boolean, vararg arguments: String): BuildResult {
         val runnerArgs = arguments.toMutableList()
         val runner = GradleRunner.create()
+        runnerArgs.add("--stacktrace")
 
         if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
             runner.withDebug(true)
             runnerArgs.add("--refresh-dependencies")
             runnerArgs.add("--debug")
-            runnerArgs.add("--stacktrace")
         }
         if (executesTask && DEBUG_TEST_ENGINE) {
             runnerArgs.add("--debug-jvm")
