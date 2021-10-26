@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Option `teamscale-revision-manifest-jar` which can be used to read the git commit revision from the MANIFEST.MF in the Jar file. The field must be named `Git_Commit` and must be provided as a main attribute or as an attribute of an entry called `Git`.
 
 # 21.8.0
 - [feature] Option `artifactory-api-key` that can be used instead of `artifactory-user` and `artifactory-password` as authentication mechanism for artifactory.
