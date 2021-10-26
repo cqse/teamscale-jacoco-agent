@@ -27,6 +27,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
@@ -358,7 +359,10 @@ public class AgentOptionsParser {
 		Manifest manifest = getManifestFromJarFile(jarFile);
 		String revision = manifest.getMainAttributes().getValue("Git_Commit");
 		if (StringUtils.isEmpty(revision)) {
-			throw new AgentOptionParseException("No entry 'Git_Commit' in MANIFEST");
+			revision = manifest.getAttributes("Git").getValue("Git_Commit");
+			if(StringUtils.isEmpty(revision)) {
+				throw new AgentOptionParseException("No entry 'Git_Commit' in MANIFEST");
+			}
 		}
 		logger.debug("Found revision " + revision + " in file " + jarFile);
 		return revision;

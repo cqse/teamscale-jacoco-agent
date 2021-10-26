@@ -166,6 +166,16 @@ public class AgentOptionsTest {
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 	}
 
+	/** Tests the 'teamscale-revision-manifest-jar' option correctly parses the 'Git_Commit' field in the manifest.*/
+	@Test
+	public void testTeamscaleRevisionManifestJarOption() throws URISyntaxException, AgentOptionParseException {
+		File jar = new File(getClass().getResource("manifest-with-git-commit-revision.jar").toURI());
+		AgentOptions options = getAgentOptionsParserWithDummyLogger().parse(
+				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath());
+
+		assertThat(options.getTeamscaleServerOptions().revision).isEqualTo("f364d58dc4966ca856260185e46a90f80ee5e9c6");
+	}
+
 	/**
 	 * Tests that an exception is thrown when the user attempts to specify the commit/revision when 'teamscale-project'
 	 * is not specified. The absence of the `teamscale-project` implies a multi-project upload, so the commit/revision
