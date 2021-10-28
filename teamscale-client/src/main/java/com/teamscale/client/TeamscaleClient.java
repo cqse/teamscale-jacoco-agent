@@ -137,8 +137,15 @@ public class TeamscaleClient {
 		}
 	}
 
-	/** Uploads multiple reports to Teamscale. */
+	/** Uploads multiple reports to Teamscale in the given {@link EReportFormat}. */
 	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
+							  String revision,
+							  String partition, String message) throws IOException {
+		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, partition, message);
+	}
+
+	/** Uploads multiple reports to Teamscale. */
+	public void uploadReports(String reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
 							  String revision,
 							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {

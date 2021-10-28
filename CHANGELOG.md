@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] _teamscale-gradle-plugin_: Improve compatibility with Groovy DSL
+- [feature] _teamscale-client_: Added support for jQAssistant report format
+- [feature] _teamscale-client_: Added upload endpoint that accepts a string instead of EReportFormat
 
 # 21.8.0
 - [feature] Option `artifactory-api-key` that can be used instead of `artifactory-user` and `artifactory-password` as authentication mechanism for artifactory.
