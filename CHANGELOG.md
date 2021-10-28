@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 21.9.0
 - [feature] _teamscale-gradle-plugin_: Improve compatibility with Groovy DSL
 - [feature] _teamscale-client_: Added support for jQAssistant report format
 - [feature] _teamscale-client_: Added upload endpoint that accepts a string instead of EReportFormat
