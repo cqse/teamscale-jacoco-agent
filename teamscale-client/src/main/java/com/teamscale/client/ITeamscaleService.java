@@ -23,14 +23,16 @@ public interface ITeamscaleService {
 
 	/**
 	 * Report upload API.
-	 * @param commit A branch and timestamp to upload the report to. Can be null if revision is specified.
+	 *
+	 * @param commit           A branch and timestamp to upload the report to. Can be null if revision is specified.
 	 * @param moveToLastCommit Whether to move the upload timestamp to right after the last commit
-	 * @param revision This parameter allows to pass a revision instead of a timestamp. Can be null if a timestamp is given.
-	 * @param partition The name of the logical partition to store the results into. All existing data in this partition
-	 *                     will be invalidated. A partition typically corresponds to one analysis run, i.e. if there are
-	 *                     two independent builds/runs, they must use different partitions.
+	 * @param revision         This parameter allows to pass a revision instead of a timestamp. Can be null if a
+	 *                         timestamp is given.
+	 * @param partition        The name of the logical partition to store the results into. All existing data in this
+	 *                         partition will be invalidated. A partition typically corresponds to one analysis run,
+	 *                         i.e. if there are two independent builds/runs, they must use different partitions.
 	 * @see <a href="https://docs.teamscale.com/howto/uploading-external-results/#upload-via-command-line">
-	 *     How to Upload External Analysis Results to Teamscale</a> for details.
+	 * How to Upload External Analysis Results to Teamscale</a> for details.
 	 */
 	@Multipart
 	@POST("api/v5.9.0/projects/{projectAliasOrId}/external-analysis/session/auto-create/report")
@@ -47,6 +49,7 @@ public interface ITeamscaleService {
 
 	/**
 	 * Report upload API with {@link EReportFormat}.
+	 *
 	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
 	 */
 	default Call<ResponseBody> uploadExternalReport(
@@ -65,6 +68,7 @@ public interface ITeamscaleService {
 
 	/**
 	 * Report upload API for multiple reports at once.
+	 *
 	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
 	 */
 	@Multipart
@@ -72,6 +76,26 @@ public interface ITeamscaleService {
 	Call<ResponseBody> uploadExternalReports(
 			@Path("projectName") String projectName,
 			@Query("format") EReportFormat format,
+			@Query("t") CommitDescriptor commit,
+			@Query("revision") String revision,
+			@Query("movetolastcommit") boolean moveToLastCommit,
+			@Query("partition") String partition,
+			@Query("message") String message,
+			@Part List<MultipartBody.Part> report
+	);
+
+	/**
+	 * Report upload API for multiple reports at once. This is an overloaded version that takes a string as report
+	 * format so that consumers can add support for new report formats without the requirement that the teamscale-client
+	 * needs to be adjusted beforehand.
+	 *
+	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
+	 */
+	@Multipart
+	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
+	Call<ResponseBody> uploadExternalReports(
+			@Path("projectName") String projectName,
+			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision,
 			@Query("movetolastcommit") boolean moveToLastCommit,
