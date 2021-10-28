@@ -1,6 +1,7 @@
 package com.teamscale.config.extension
 
 import com.teamscale.config.JacocoReportConfiguration
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.testing.jacoco.tasks.JacocoReport
@@ -20,5 +21,10 @@ open class TeamscaleJacocoReportTaskExtension(
     fun report(action: Action<in JacocoReportConfiguration>) {
         jacocoReport.reports.xml.required.set(true)
         action.execute(report)
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun report(closure: Closure<*>) {
+        report { o -> project.configure(o, closure) }
     }
 }

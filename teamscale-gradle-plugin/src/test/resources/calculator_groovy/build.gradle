@@ -31,7 +31,9 @@ teamscale {
 		branchName = "master"
 	}
 	report {
-		testwiseCoverage()
+		testwiseCoverage {
+			partition = 'Unit Tests'
+		}
 	}
 }
 
@@ -39,7 +41,6 @@ task unitTest(type: TestImpacted) {
 	useJUnitPlatform {
 		excludeTags 'integration'
 	}
-	teamscale.report.partition = 'Unit Tests'
 	jacoco.includes = [ 'com.example.project.*' ]
 	testLogging {
 		// events "started", "skipped", "failed"

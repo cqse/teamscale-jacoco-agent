@@ -4,6 +4,7 @@ import com.teamscale.TestImpacted
 import com.teamscale.config.extension.TeamscaleJacocoReportTaskExtension
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import com.teamscale.config.extension.TeamscaleTestTaskExtension
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -25,6 +26,11 @@ class TopLevelReportConfiguration(val project: Project) {
         }
     }
 
+    /** Overload for Groovy DSL compatibility. */
+    fun testwiseCoverage(closure: Closure<*>) {
+        testwiseCoverage { o -> project.configure(o, closure) }
+    }
+
     /**
      * Configures JaCoCo report settings for all JaCoCo report tasks
      * and makes sure XML report generation is enabled.
@@ -35,6 +41,11 @@ class TopLevelReportConfiguration(val project: Project) {
             val testExtension = jacocoReport.extensions.getByType(TeamscaleJacocoReportTaskExtension::class.java)
             testExtension.report(action)
         }
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun jacoco(closure: Closure<*>) {
+        jacoco { o -> project.configure(o, closure) }
     }
 
     /**
@@ -50,5 +61,10 @@ class TopLevelReportConfiguration(val project: Project) {
             val testExtension = test.extensions.getByType(TeamscaleTestTaskExtension::class.java)
             testExtension.report(action)
         }
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun junit(closure: Closure<*>) {
+        junit { o -> project.configure(o, closure) }
     }
 }
