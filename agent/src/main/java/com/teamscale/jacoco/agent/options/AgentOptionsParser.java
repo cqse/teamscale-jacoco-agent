@@ -356,11 +356,15 @@ public class AgentOptionsParser {
 	 */
 	private String getRevisionFromManifest(File jarFile) throws AgentOptionParseException {
 		Manifest manifest = getManifestFromJarFile(jarFile);
-		String revision = manifest.getMainAttributes().getValue("Git_Commit");
+		String revision = manifest.getMainAttributes().getValue("Revision");
 		if (StringUtils.isEmpty(revision)) {
-			revision = manifest.getAttributes("Git").getValue("Git_Commit");
+			// currently needed option for a customer
+			if(manifest.getAttributes("Git") != null){
+				revision = manifest.getAttributes("Git").getValue("Git_Commit");
+			}
+
 			if(StringUtils.isEmpty(revision)) {
-				throw new AgentOptionParseException("No entry 'Git_Commit' in MANIFEST");
+				throw new AgentOptionParseException("No entry 'Revision' in MANIFEST");
 			}
 		}
 		logger.debug("Found revision " + revision + " in file " + jarFile);
