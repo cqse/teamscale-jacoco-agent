@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Option `teamscale-revision-manifest-jar` which can be used to read the git commit revision from the `META-INF/MANIFEST.MF` in the Jar file. The field must be named `Revision` and must be provided as a main attribute. Alternatively the field can be called `Git_Commit` and must be an attribute of an entry called `Git`.
 
 # 21.9.0
 - [feature] _teamscale-gradle-plugin_: Improve compatibility with Groovy DSL

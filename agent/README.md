@@ -104,7 +104,7 @@ patterns with `*`, `**` and `?`.
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in 
   Teamscale's UI.
 - `teamscale-revision`: the source control revision (e.g. SVN revision or Git hash) that has been used to build 
-  the system under test. Teamscale uses this to map the coverage to the corresponding source code.
+  the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
@@ -128,7 +128,9 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   ```bash
  echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
 ```
-  
+
+- `teamscale-revision-manifest-jar` As an alternative to `teamscale-revision` the agent accepts the repository revision provided in the given jar/war's `META-INF/MANIFEST.MF` file (for details see path format
+  section above). The revision must be supplied as an main attribute called `Revision` (preferred) or as an attribute called `Git_Commit`, which belongs to an entry called `Git`.
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format 
   section above)

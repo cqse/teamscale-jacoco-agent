@@ -143,8 +143,8 @@ public class AgentOptionsTest {
 	/** Tests that supplying both revision and commit info is forbidden. */
 	@Test
 	public void testBothRevisionAndCommitSupplied() throws URISyntaxException {
-		String message = "'teamscale-revision' is incompatible with 'teamscale-commit' and "
-				+ "'teamscale-commit-manifest-jar'.";
+		String message = "'teamscale-revision' and 'teamscale-revision-manifest-jar' are incompatible with "
+				+ "'teamscale-commit' and 'teamscale-commit-manifest-jar'.";
 
 		File jar = new File(getClass().getResource("manifest-and-git-properties.jar").toURI());
 
@@ -156,6 +156,24 @@ public class AgentOptionsTest {
 				() -> getAgentOptionsParserWithDummyLogger().parse(
 						"teamscale-revision=1234,teamscale-commit-manifest-jar=" + jar.getAbsolutePath()))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-commit=master:1000"))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+		assertThatThrownBy(
+				() -> getAgentOptionsParserWithDummyLogger().parse(
+						"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-commit-manifest-jar=" + jar.getAbsolutePath()))
+				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
+	}
+
+	/** Tests the 'teamscale-revision-manifest-jar' option correctly parses the 'Git_Commit' field in the manifest.*/
+	@Test
+	public void testTeamscaleRevisionManifestJarOption() throws URISyntaxException, AgentOptionParseException {
+		File jar = new File(getClass().getResource("manifest-with-git-commit-revision.jar").toURI());
+		AgentOptions options = getAgentOptionsParserWithDummyLogger().parse(
+				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath());
+
+		assertThat(options.getTeamscaleServerOptions().revision).isEqualTo("f364d58dc4966ca856260185e46a90f80ee5e9c6");
 	}
 
 	/**
