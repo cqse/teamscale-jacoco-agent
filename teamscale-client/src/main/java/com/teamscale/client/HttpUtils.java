@@ -30,7 +30,7 @@ public class HttpUtils {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */
-	private static boolean shouldValidateSsl = false;
+	private static boolean shouldValidateSsl = true;
 
 	/** @see #shouldValidateSsl */
 	public static void setShouldValidateSsl(boolean shouldValidateSsl) {

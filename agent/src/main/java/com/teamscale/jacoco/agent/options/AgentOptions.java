@@ -129,11 +129,9 @@ public class AgentOptions {
 	/* package */ boolean shouldDumpOnExit = true;
 
 	/**
-	 * Whether to validate SSL certificates or simply ignore them. We disable this by default on purpose in order to
-	 * make the initial setup of the agent as smooth as possible. Many users have self-signed certificates that cause
-	 * problems. Users that need this feature can turn it on deliberately.
+	 * Whether to validate SSL certificates, defaults to true.
 	 */
-	/* package */ boolean validateSsl = false;
+	/* package */ boolean validateSsl = true;
 
 	/**
 	 * Whether to ignore duplicate, non-identical class files.
