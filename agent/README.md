@@ -143,9 +143,8 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
   section above)
-- `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
-  even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
-  You might need to make your self-signed certificates available to the agent via a keystore. See
+- `validate-ssl` (optional): defaults to true. Can be used to disable SSL validation (not recommended).
+  For successful SSL validation you might need to make your (self-signed) certificates available to the agent via a keystore. See
   [the Teamscale userguide's section on that topic][ts-userguide-keystore] for how to do that.
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
   https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case 
