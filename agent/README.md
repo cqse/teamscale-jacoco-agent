@@ -183,11 +183,16 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   the timestamp of the last modification date of the given marker class.
 
 ## Secure communication
-If the Teamscale server runs exclusively in HTTPS mode and/or secure communication with the server is desired, a
-Java Trust Store must be created, which contains the certificate used by the Teamscale server for inbound HTTPS
-communication. Please refer to the [section on HTTPS configuration in the Teamscale documentation][ts-userguide-truststore] 
-for details on how to create a Java Trust Store. In order to enable the trust store you need to specify the
-JVM parameters -Djavax.net.ssl.trustStore=<Path-to-Truststore-File> and -Djavax.net.ssl.trustStorePassword=<Password>
+If the connection to the Teamscale server should be established via HTTPS, a Java Trust Store can be required, 
+which contains the certificate used by the Teamscale server for inbound HTTPS communication. Please refer to the
+[section on HTTPS configuration in the Teamscale documentation][ts-userguide-truststore] 
+for details on when and how to create a Java Trust Store (please note that from the viewpoint of the agent, Teamscale
+is the "external" server here. In order to activate usage of the trust store you need to specify the
+following JVM parameters 
+```properties
+-Djavax.net.ssl.trustStore=<Path-to-Truststore-File>
+-Djavax.net.ssl.trustStorePassword=<Password>
+```
 
 ## Options for testwise mode
 
