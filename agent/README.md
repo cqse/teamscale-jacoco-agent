@@ -144,8 +144,6 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
   section above)
 - `validate-ssl` (optional): defaults to true. Can be used to disable SSL validation (not recommended).
-  For successful SSL validation you might need to make your (self-signed) certificates available to the agent via a keystore. See
-  [the Teamscale userguide's section on that topic][ts-userguide-keystore] for how to do that.
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
   https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case 
   that the given
@@ -183,6 +181,18 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   when the application is running and is unique amongst the other deployed applications. 
   E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at 
   the timestamp of the last modification date of the given marker class.
+
+## Secure communication
+If the connection to the Teamscale server should be established via HTTPS, a Java Trust Store can be required, 
+which contains the certificate used by the Teamscale server for inbound HTTPS communication. Please refer to the
+[section on HTTPS configuration in the Teamscale documentation][ts-userguide-truststore] 
+for details on when and how to create a Java Trust Store (please note that from the viewpoint of the agent, Teamscale
+is the "external" server here. In order to activate usage of the trust store you need to specify the
+following JVM parameters 
+```properties
+-Djavax.net.ssl.trustStore=<Path-to-Truststore-File>
+-Djavax.net.ssl.trustStorePassword=<Password>
+```
 
 ## Options for testwise mode
 
@@ -610,7 +620,7 @@ To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info
-[ts-userguide-keystore]: https://docs.teamscale.com/howto/configuring-https/#creating-a-keystore
+[ts-userguide-truststore]: https://docs.teamscale.com/howto/connecting-via-https
 [teamscale]: https://teamscale.com
 [signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html
 [git-commit-id]: https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering
