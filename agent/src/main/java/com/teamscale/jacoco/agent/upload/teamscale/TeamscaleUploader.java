@@ -1,7 +1,9 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
 import com.teamscale.client.EReportFormat;
+import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
+import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.upload.IUploader;
@@ -60,7 +62,9 @@ public class TeamscaleUploader implements IUploader {
 					ITeamscaleService.class,
 					teamscaleServer.url,
 					teamscaleServer.userName,
-					teamscaleServer.userAccessToken
+					teamscaleServer.userAccessToken,
+					HttpUtils.DEFAULT_READ_TIMEOUT,
+					HttpUtils.DEFAULT_WRITE_TIMEOUT
 			);
 			api.uploadReport(
 					teamscaleServer.project,

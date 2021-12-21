@@ -28,19 +28,34 @@ public class TeamscaleClient {
 	/** The project ID within Teamscale. */
 	private final String projectId;
 
+	/** Constructor with parameters for read and write timeout in seconds. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, int readTimeout, int writeTimeout) {
+		this.projectId = projectId;
+		service = TeamscaleServiceGenerator
+				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken, readTimeout, writeTimeout);
+	}
+
 	/** Constructor. */
 	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
-				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken);
+				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken, HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 	}
 
-	/** Constructor. */
-	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File file) {
+	/** Constructor with parameters for read and write timeout in seconds and logfile. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File logfile, int readTimeout, int writeTimeout) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
 				.createServiceWithRequestLogging(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
-						file);
+						logfile, readTimeout, writeTimeout);
+	}
+
+	/** Constructor with logfile. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File logfile) {
+		this.projectId = projectId;
+		service = TeamscaleServiceGenerator
+				.createServiceWithRequestLogging(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
+						logfile, HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 	}
 
 	/**

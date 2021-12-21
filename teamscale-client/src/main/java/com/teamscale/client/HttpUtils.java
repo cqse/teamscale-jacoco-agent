@@ -28,6 +28,8 @@ import java.util.function.Consumer;
 public class HttpUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
+	public static final int DEFAULT_READ_TIMEOUT = 60;
+	public static final int DEFAULT_WRITE_TIMEOUT = 60;
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */
 	private static boolean shouldValidateSsl = true;
@@ -37,11 +39,9 @@ public class HttpUtils {
 		HttpUtils.shouldValidateSsl = shouldValidateSsl;
 	}
 
-	/** Creates a new {@link Retrofit} with proper defaults. The instance can be customized with the given action. */
-	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction) {
-		return createRetrofit(retrofitBuilderAction, okHttpBuilder -> {
-			// nothing to do
-		});
+	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction,
+										  Consumer<OkHttpClient.Builder> okHttpBuilderAction) {
+		return createRetrofit(retrofitBuilderAction, okHttpBuilderAction, DEFAULT_READ_TIMEOUT, DEFAULT_WRITE_TIMEOUT);
 	}
 
 	/**
@@ -49,9 +49,9 @@ public class HttpUtils {
 	 * be customized with the given action.
 	 */
 	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction,
-										  Consumer<OkHttpClient.Builder> okHttpBuilderAction) {
+										  Consumer<OkHttpClient.Builder> okHttpBuilderAction, int readTimeout, int writeTimeout) {
 		OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-		setDefaults(httpClientBuilder);
+		setTimeouts(httpClientBuilder, readTimeout, writeTimeout);
 		setUpSslValidation(httpClientBuilder);
 		okHttpBuilderAction.accept(httpClientBuilder);
 
@@ -63,10 +63,10 @@ public class HttpUtils {
 	/**
 	 * Sets sensible defaults for the {@link OkHttpClient}.
 	 */
-	private static void setDefaults(OkHttpClient.Builder builder) {
+	private static void setTimeouts(OkHttpClient.Builder builder, int readTimeout, int writeTimeout) {
 		builder.connectTimeout(60, TimeUnit.SECONDS);
-		builder.readTimeout(60, TimeUnit.SECONDS);
-		builder.writeTimeout(60, TimeUnit.SECONDS);
+		builder.readTimeout(readTimeout, TimeUnit.SECONDS);
+		builder.writeTimeout(writeTimeout, TimeUnit.SECONDS);
 	}
 
 	/**
