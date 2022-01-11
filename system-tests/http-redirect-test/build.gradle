@@ -1,0 +1,29 @@
+plugins {
+	id 'com.teamscale.java-convention'
+	// we do not enable code coverage recording for the system tests as we already need our agent attached
+	// it would conflict with JaCoCo's
+}
+
+test {
+	/** These ports must match what is configured in the SystemTest class. */
+	def fakeRedirectPort = 65437
+	def agentPort = 65436
+	def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
+	jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,teamscale-server-url=http://localhost:$fakeRedirectPort," +
+			"teamscale-user=fake,teamscale-access-token=fake," +
+			"teamscale-project=p,teamscale-partition=part,teamscale-commit=master:12345," +
+			"includes=**,excludes=*foo.*"
+}
+
+tasks.test.dependsOn(":agent:shadowJar")
+
+dependencies {
+	testImplementation project(':teamscale-client')
+
+	testImplementation 'com.sparkjava:spark-core:2.9.3'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+	testImplementation 'org.assertj:assertj-core:3.19.0'
+	testImplementation 'com.squareup.moshi:moshi:1.12.0'
+	testImplementation 'org.slf4j:slf4j-simple:1.7.9'
+}
