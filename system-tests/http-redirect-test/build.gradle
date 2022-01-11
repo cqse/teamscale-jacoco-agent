@@ -12,7 +12,7 @@ test {
 	jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,teamscale-server-url=http://localhost:$fakeRedirectPort," +
 			"teamscale-user=fake,teamscale-access-token=fake," +
 			"teamscale-project=p,teamscale-partition=part,teamscale-commit=master:12345," +
-			"includes=**,excludes=*foo.*"
+			"includes=**"
 }
 
 tasks.test.dependsOn(":agent:shadowJar")

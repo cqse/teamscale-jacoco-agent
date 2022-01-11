@@ -17,6 +17,7 @@ import java.util.List;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static spark.Spark.exception;
 import static spark.Spark.notFound;
+import static spark.Spark.port;
 import static spark.Spark.post;
 
 /**
@@ -29,13 +30,14 @@ public class TeamscaleMockServer {
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 
 	public TeamscaleMockServer(int port) throws IOException {
-		Service.ignite().port(port);
-		post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report", this::handleReport);
-		exception(Exception.class, (Exception exception, Request request, Response response) -> {
+		Service service = Service.ignite();
+		service.port(port);
+		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report", this::handleReport);
+		service.exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());
 		});
-		notFound((Request request, Response response) -> {
+		service.notFound((Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			return "Unexpected request: " + request.requestMethod() + " " + request.uri();
 		});

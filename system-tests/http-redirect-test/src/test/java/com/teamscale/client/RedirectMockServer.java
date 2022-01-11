@@ -14,14 +14,15 @@ import static spark.Spark.post;
 public class RedirectMockServer {
 
 	public RedirectMockServer(int port, int redirectTo){
-		Service.ignite().port(port);
-		post("/", (Request request, Response response) -> {
+		Service service = Service.ignite();
+		service.port(port);
+		service.post("/*", (Request request, Response response) -> {
 			String url = request.url();
 			url = url.replace(Integer.toString(port),Integer.toString(redirectTo));
 			response.redirect(url,307);
 			return response;
 		});
-		exception(Exception.class, (Exception exception, Request request, Response response) -> {
+		service.exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());
 		});
