@@ -39,6 +39,8 @@ public class HttpRedirectSystemTest {
 		dumpCoverage();
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		redirectMockServer.shutdown();
+		teamscaleMockServer.shutdown();
 	}
 
 	private void dumpCoverage() throws IOException {

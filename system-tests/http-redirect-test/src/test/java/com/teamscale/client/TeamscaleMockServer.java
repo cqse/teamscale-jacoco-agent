@@ -15,10 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static spark.Spark.exception;
-import static spark.Spark.notFound;
-import static spark.Spark.port;
-import static spark.Spark.post;
 
 /**
  * Mocks a Teamscale server: stores all uploaded reports so tests can run assertions on them.
@@ -28,11 +24,13 @@ public class TeamscaleMockServer {
 	/** All reports uploaded to this Teamscale instance. */
 	public final List<String> uploadedReports = new ArrayList<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
+	private final Service service;
 
 	public TeamscaleMockServer(int port) throws IOException {
-		Service service = Service.ignite();
+		service = Service.ignite();
 		service.port(port);
-		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report", this::handleReport);
+		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
+				this::handleReport);
 		service.exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());
@@ -53,6 +51,11 @@ public class TeamscaleMockServer {
 		file.delete();
 
 		return "success";
+	}
+
+	public void shutdown() {
+		service.stop();
+		service.awaitStop();
 	}
 
 }
