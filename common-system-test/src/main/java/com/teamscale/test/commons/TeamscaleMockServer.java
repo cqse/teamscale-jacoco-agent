@@ -73,6 +73,9 @@ public class TeamscaleMockServer {
 		return "success";
 	}
 
+	/**
+	 * Shuts down the mock server and waits for it to be stopped.
+	 */
 	public void shutdown() {
 		service.stop();
 		service.awaitStop();

@@ -28,6 +28,10 @@ public class RedirectMockServer {
 		});
 	}
 
+
+	/**
+	 * Shuts down the mock server and waits for it to be stopped.
+	 */
 	public void shutdown() {
 		service.stop();
 		service.awaitStop();
