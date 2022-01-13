@@ -1,5 +1,6 @@
 package com.teamscale.tia.client;
 
+import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.Test;
 import retrofit2.Call;
 import retrofit2.Retrofit;
