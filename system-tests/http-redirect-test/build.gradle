@@ -6,13 +6,13 @@ plugins {
 
 test {
 	/** These ports must match what is configured in the SystemTest class. */
-	def fakeTeamscalePort = 65437
+	def fakeRedirectPort = 65437
 	def agentPort = 65436
 	def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
-	jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,teamscale-server-url=http://localhost:$fakeTeamscalePort," +
+	jvmArgs "-javaagent:$agentJar=http-server-port=$agentPort,teamscale-server-url=http://localhost:$fakeRedirectPort," +
 			"teamscale-user=fake,teamscale-access-token=fake," +
 			"teamscale-project=p,teamscale-partition=part,teamscale-commit=master:12345," +
-			"includes=**,excludes=*foo.*"
+			"includes=**"
 }
 
 tasks.test.dependsOn(":agent:shadowJar")
