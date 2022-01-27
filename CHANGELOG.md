@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 22.1.0
 - [feature] The agent now follows HTTP 307/308 redirects for Teamscale uploads
 - [fix] Updated to latest Log4J 2.17.1
 
