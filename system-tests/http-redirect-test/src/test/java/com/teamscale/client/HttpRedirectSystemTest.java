@@ -1,4 +1,4 @@
-package com.teamscale.tia.client;
+package com.teamscale.client;
 
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Runs the system under test and then forces a dump of the agent to our {@link TeamscaleMockServer}. Checks the
  * resulting report to ensure the default excludes are applied.
  */
-public class DefaultExcludesSystemTest {
+public class HttpRedirectSystemTest {
 
 	private interface AgentService {
 		/** Dumps coverage */
@@ -24,7 +24,8 @@ public class DefaultExcludesSystemTest {
 	}
 
 	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
-	private static final int FAKE_TEAMSCALE_PORT = 65437;
+	private static final int FAKE_TEAMSCALE_PORT = 65438;
+	private static final int FAKE_REDIRECT_PORT = 65437;
 	private static final int AGENT_PORT = 65436;
 
 	@Test
@@ -32,22 +33,15 @@ public class DefaultExcludesSystemTest {
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
 		System.setProperty("org.eclipse.jetty.LEVEL", "OFF");
 
+		RedirectMockServer redirectMockServer = new RedirectMockServer(FAKE_REDIRECT_PORT, FAKE_TEAMSCALE_PORT);
 		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT);
 
 		new SystemUnderTest().foo();
 		dumpCoverage();
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		String report = teamscaleMockServer.uploadedReports.get(0);
-		assertThat(report).doesNotContain("shadow");
-		assertThat(report).doesNotContain("junit");
-		assertThat(report).doesNotContain("eclipse");
-		assertThat(report).doesNotContain("apache");
-		assertThat(report).doesNotContain("javax");
-		assertThat(report).doesNotContain("slf4j");
-		assertThat(report).doesNotContain("com/sun");
-		assertThat(report).contains("SystemUnderTest");
-		assertThat(report).contains("NotExcludedClass");
+		redirectMockServer.shutdown();
+		teamscaleMockServer.shutdown();
 	}
 
 	private void dumpCoverage() throws IOException {

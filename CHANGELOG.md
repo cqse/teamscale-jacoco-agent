@@ -6,6 +6,10 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 22.1.0
+- [feature] The agent now follows HTTP 307/308 redirects for Teamscale uploads
+- [fix] Updated to latest Log4J 2.17.1
+
 # 22.0.0
 - [feature] Option `teamscale-revision-manifest-jar` which can be used to read the git commit revision from the `META-INF/MANIFEST.MF` in the Jar file. The field must be named `Revision` and must be provided as a main attribute. Alternatively the field can be called `Git_Commit` and must be an attribute of an entry called `Git`.
 - [breaking change] SSL validation (option `validate-ssl`) is now enabled by default
