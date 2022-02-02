@@ -35,6 +35,9 @@ public class TestEngineOptions {
 	/** Executes only impacted tests, not all ones if set. Defaults to true. */
 	private boolean runImpacted = true;
 
+	/** Includes added tests in the list of tests to execute. Defaults to true */
+	private boolean includeAddedTests = true;
+
 	/**
 	 * The baseline. Only code changes after the baseline are considered for determining impacted tests. May be null to
 	 * indicate no baseline.
@@ -63,6 +66,11 @@ public class TestEngineOptions {
 		return runAllTests;
 	}
 
+	/** @see #includeAddedTests */
+	private boolean isIncludeAddedTests() {
+		return includeAddedTests;
+	}
+
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
 		ITestExecutor testExecutor = createTestExecutor();
 		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(testEngineIds);
@@ -79,7 +87,7 @@ public class TestEngineOptions {
 				serverOptions.getUserAccessToken(), serverOptions.getProject(),
 				new File(reportDirectory, "server-request.txt"));
 		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition,
-				isRunAllTests());
+				isRunAllTests(), isIncludeAddedTests());
 		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, testsProvider);
 	}
 
@@ -118,6 +126,12 @@ public class TestEngineOptions {
 		/** @see #runAllTests */
 		public Builder runAllTests(boolean runAllTests) {
 			testEngineOptions.runAllTests = runAllTests;
+			return this;
+		}
+
+		/** @see #includeAddedTests  */
+		public Builder includeAddedTests(boolean includeAddedTests) {
+			testEngineOptions.includeAddedTests = includeAddedTests;
 			return this;
 		}
 

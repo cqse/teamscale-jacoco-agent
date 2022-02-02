@@ -114,6 +114,7 @@ public interface ITeamscaleService {
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
 			@Query("ensure-processed") boolean ensureProcessed,
+			@Query("include-added-tests") boolean includeAddedTests,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
@@ -126,7 +127,8 @@ public interface ITeamscaleService {
 			@Query("partitions") List<String> partitions,
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
-			@Query("ensure-processed") boolean ensureProcessed
+			@Query("ensure-processed") boolean ensureProcessed,
+			@Query("include-added-tests") boolean includeAddedTests
 	);
 
 	/**

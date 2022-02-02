@@ -74,7 +74,8 @@ public class CoverageToTeamscaleStrategyTest {
 		List<PrioritizableTestCluster> clusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("mytest"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean())).thenReturn(Response.success(clusters));
+		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(
+				Response.success(clusters));
 
 		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
 		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
@@ -85,6 +86,7 @@ public class CoverageToTeamscaleStrategyTest {
 
 		strategy.testRunStart(
 				Collections.singletonList(new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
+				true,
 				null);
 		strategy.testStart("mytest");
 		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));

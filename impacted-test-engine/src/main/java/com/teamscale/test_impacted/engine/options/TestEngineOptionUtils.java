@@ -29,6 +29,7 @@ public class TestEngineOptionUtils {
 				.partition(propertyReader.getString("partition"))
 				.runImpacted(propertyReader.getBoolean("runImpacted"))
 				.runAllTests(propertyReader.getBoolean("runAllTests"))
+				.includeAddedTests(propertyReader.getBoolean("includeAddedTests"))
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getString("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))

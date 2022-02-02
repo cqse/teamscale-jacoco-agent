@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
@@ -83,7 +84,8 @@ public class TeamscaleClient {
 			List<ClusteredTestDetails> availableTests, String baseline,
 			CommitDescriptor endCommit,
 			List<String> partitions,
-			boolean includeNonImpacted) throws IOException {
+			boolean includeNonImpacted,
+			boolean includeAddedTests) throws IOException {
 
 		if (includeNonImpacted) {
 			return getImpactedTests(availableTests, baseline, endCommit, partitions, INCLUDE_NON_IMPACTED,
@@ -123,20 +125,21 @@ public class TeamscaleClient {
 		boolean includeNonImpacted = testImpactOptions.contains(INCLUDE_NON_IMPACTED);
 		boolean includeFailedAndSkippedTests = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
 		boolean ensureProcessed = testImpactOptions.contains(ENSURE_PROCESSED);
+		boolean includeAddedTests = testImpactOptions.contains(INCLUDE_ADDED_TESTS);
 
 		if (availableTests == null) {
 			return wrapInCluster(
 					service.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
 							includeFailedAndSkippedTests,
-							ensureProcessed)
+							ensureProcessed, includeAddedTests)
 							.execute());
 		} else {
 			return service
 					.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
 							includeFailedAndSkippedTests,
-							ensureProcessed, availableTests)
+							ensureProcessed, includeAddedTests, availableTests)
 					.execute();
 		}
 	}

@@ -88,6 +88,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @throws UnsupportedOperationException if the user did not properly configure the {@link #teamscaleClient}.
 	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
+							   boolean includeAddedTests,
 							   String baseline) throws IOException {
 		int availableTestCount = 0;
 		if (availableTests != null) {
@@ -109,7 +110,8 @@ public abstract class TestEventHandlerStrategyBase {
 
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
-						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition), includeNonImpactedTests);
+						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition),
+						includeNonImpactedTests, includeAddedTests);
 		if (response.isSuccessful()) {
 			String json = prioritizableTestClustersJsonAdapter.toJson(response.body());
 			logger.debug("Teamscale suggested these tests: {}", json);
