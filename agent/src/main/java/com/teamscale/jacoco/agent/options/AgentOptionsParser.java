@@ -405,13 +405,14 @@ public class AgentOptionsParser {
 			value += "/";
 		}
 
-		// default to HTTP if no scheme is given and port is not 443, default to HTTP if no scheme is given AND port is 443
+		// default to HTTP if no scheme is given and port is not 443, default to HTTPS if no scheme is given AND port is 443
 		if (!value.startsWith("http://") && !value.startsWith("https://")) {
 			HttpUrl url = getUrl(key, "http://" + value);
-			if (url.port() != 443) {
-				return url;
+			if (url.port() == 443) {
+				value = "https://" + value;
+			} else {
+				value = "http://" + value;
 			}
-			value = "https://" + value;
 		}
 
 		return getUrl(key, value);
