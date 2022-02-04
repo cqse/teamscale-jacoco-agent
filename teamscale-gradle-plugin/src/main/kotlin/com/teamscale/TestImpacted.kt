@@ -40,7 +40,7 @@ open class TestImpacted : Test() {
     )
     var runAllTests: Boolean = false
 
-    /** Command line switch to activate running all tests. */
+    /** Command line switch to include or exclude added tests. */
     @Input
     @Option(
         option = "include-added-tests",
