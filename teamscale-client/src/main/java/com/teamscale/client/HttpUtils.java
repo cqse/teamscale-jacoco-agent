@@ -28,7 +28,15 @@ import java.util.function.Consumer;
 public class HttpUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
+
+	/**
+	 * Default read timeout in seconds.
+	 */
 	public static final int DEFAULT_READ_TIMEOUT = 60;
+
+	/**
+	 * Default write timeout in seconds.
+	 */
 	public static final int DEFAULT_WRITE_TIMEOUT = 60;
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */

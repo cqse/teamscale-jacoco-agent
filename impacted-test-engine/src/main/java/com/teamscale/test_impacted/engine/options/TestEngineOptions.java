@@ -117,7 +117,7 @@ public class TestEngineOptions {
 			return this;
 		}
 
-		/** @see #runAllTests */
+		/** @see #runImpacted */
 		public Builder runImpacted(boolean runImpacted) {
 			testEngineOptions.runImpacted = runImpacted;
 			return this;
