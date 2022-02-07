@@ -22,6 +22,7 @@ import spark.Request;
 import spark.Response;
 import spark.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -78,6 +79,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 		super.initServerEndpoints(spark);
 		spark.get("/test", (request, response) -> controller.getSessionId());
 		spark.get("/revision", (request, response) -> this.getRevisionInfo());
+		spark.put("/revision", this::handleSetRevision);
 		spark.post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
 		spark.post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
 		spark.post("/testrun/start", this::handleTestRunStart);
@@ -128,7 +130,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 		return responseBody;
 	}
 
-	private String handleTestRunEnd(Request request, Response response) throws IOException, CoverageGenerationException {
+	private String handleTestRunEnd(Request request,
+									Response response) throws IOException, CoverageGenerationException {
 		testEventHandler.testRunEnd();
 		response.status(SC_NO_CONTENT);
 		return "";
@@ -198,5 +201,18 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String getRevisionInfo() {
 		TeamscaleServer server = options.getTeamscaleServerOptions();
 		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
+	}
+
+	/** Handles setting the revision. */
+	private String handleSetRevision(Request request, Response response) {
+		String revision = org.conqat.lib.commons.string.StringUtils.removeDoubleQuotes(request.body());
+		if (revision == null || revision.isEmpty()) {
+			return handleBadRequest(response,
+					"The new revision name is missing in the request body! Please add it as plain text.");
+		}
+		logger.debug("Changing revision name to " + revision);
+		options.getTeamscaleServerOptions().revision = revision;
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
 	}
 }

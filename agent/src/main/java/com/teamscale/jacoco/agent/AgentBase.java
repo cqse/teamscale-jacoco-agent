@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -62,8 +63,7 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Lazily generated string representation of the command line arguments
-	 * to print to the log.
+	 * Lazily generated string representation of the command line arguments to print to the log.
 	 */
 	private Object getOptionsObjectToLog() {
 		return new Object() {
@@ -98,6 +98,7 @@ public abstract class AgentBase {
 				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
 		spark.put("/partition", this::handleSetPartition);
 		spark.put("/message", this::handleSetMessage);
+		spark.put("/commit", this::handleSetCommit);
 	}
 
 	/**
@@ -213,11 +214,8 @@ public abstract class AgentBase {
 	private String handleSetPartition(Request request, Response response) {
 		String partition = StringUtils.removeDoubleQuotes(request.body());
 		if (partition == null || partition.isEmpty()) {
-			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
-			logger.error(errorMessage);
-
-			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return errorMessage;
+			return handleBadRequest(response,
+					"The new partition name is missing in the request body! Please add it as plain text.");
 		}
 
 		logger.debug("Changing partition name to " + partition);
@@ -228,15 +226,12 @@ public abstract class AgentBase {
 		return "";
 	}
 
-	/** Handles setting the partition name. */
+	/** Handles setting the upload message. */
 	private String handleSetMessage(Request request, Response response) {
-		String message =  StringUtils.removeDoubleQuotes(request.body());
+		String message = StringUtils.removeDoubleQuotes(request.body());
 		if (message == null || message.isEmpty()) {
-			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
-			logger.error(errorMessage);
-
-			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return errorMessage;
+			return handleBadRequest(response,
+					"The new message is missing in the request body! Please add it as plain text.");
 		}
 
 		logger.debug("Changing message to " + message);
@@ -244,6 +239,25 @@ public abstract class AgentBase {
 
 		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
+	}
+
+	/** Handles setting the upload commit. */
+	private String handleSetCommit(Request request, Response response) {
+		String commit = StringUtils.removeDoubleQuotes(request.body());
+		if (commit == null || commit.isEmpty()) {
+			return handleBadRequest(response,
+					"The new upload commit is missing in the request body! Please add it as plain text.");
+		}
+		options.getTeamscaleServerOptions().commit = CommitDescriptor.parse(commit);
+
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
+	}
+
+	protected String handleBadRequest(Response response, String message) {
+		logger.error(message);
+		response.status(HttpServletResponse.SC_BAD_REQUEST);
+		return message;
 	}
 
 }

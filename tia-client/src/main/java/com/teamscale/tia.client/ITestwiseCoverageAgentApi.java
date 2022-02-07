@@ -25,6 +25,14 @@ public interface ITestwiseCoverageAgentApi {
 	@PUT("partition")
 	Call<ResponseBody> setPartition(@Body String partition);
 
+	/** Set the revision as shown in Teamscale. */
+	@PUT("revision")
+	Call<ResponseBody> setRevision(@Body String partition);
+
+	/** Set the upload commit as shown in Teamscale. */
+	@PUT("commit")
+	Call<ResponseBody> setCommit(@Body String commit);
+
 	/** Set the commit message with which the upload is shown in Teamscale. */
 	@PUT("message")
 	Call<ResponseBody> setMessage(@Body String message);
