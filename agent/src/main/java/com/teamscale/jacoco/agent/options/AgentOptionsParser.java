@@ -118,7 +118,7 @@ public class AgentOptionsParser {
 			return;
 		} else if (key.startsWith("azure-") && AzureFileStorageConfig
 				.handleAzureFileStorageOptions(options.azureFileStorageConfig, key,
-				value)) {
+						value)) {
 			return;
 		}
 		if (handleAgentOptions(options, key, value)) {
@@ -135,70 +135,70 @@ public class AgentOptionsParser {
 	private boolean handleAgentOptions(AgentOptions options, String key, String value)
 			throws AgentOptionParseException {
 		switch (key) {
-		case CONFIG_FILE_OPTION:
-			readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
-			return true;
-		case LOGGING_CONFIG_OPTION:
-			options.loggingConfig = filePatternResolver.parsePath(key, value);
-			return true;
-		case "interval":
-			options.dumpIntervalInMinutes = parseInt(key, value);
-			return true;
-		case "validate-ssl":
-			options.validateSsl = Boolean.parseBoolean(value);
-			return true;
-		case "out":
-			options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
-			return true;
-		case "upload-url":
-			options.uploadUrl = parseUrl(key, value);
-			return true;
-		case "upload-metadata":
-			try {
-				options.additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
-			} catch (InvalidPathException e) {
-				throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
-			}
-			return true;
-		case "duplicates":
-			options.duplicateClassFileBehavior = parseEnumValue(key, value, EDuplicateClassFileBehavior.class);
-			return true;
-		case "ignore-uncovered-classes":
-			options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
-			return true;
-		case "obfuscate-security-related-outputs":
-			options.obfuscateSecurityRelatedOutputs = Boolean.parseBoolean(value);
-			return true;
-		case "dump-on-exit":
-			options.shouldDumpOnExit = Boolean.parseBoolean(value);
-			return true;
-		case "mode":
-			options.mode = parseEnumValue(key, value, EMode.class);
-			return true;
-		case "includes":
-			options.jacocoIncludes = value.replaceAll(";", ":");
-			return true;
-		case "excludes":
-			options.jacocoExcludes = value.replaceAll(";", ":") + ":" + AgentOptions.DEFAULT_EXCLUDES;
-			return true;
-		case "class-dir":
-			List<String> list = splitMultiOptionValue(value);
-			options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver, list);
-			return true;
-		case "http-server-port":
-			options.httpServerPort = parseInt(key, value);
-			return true;
-		case "sap-nwdi-applications":
-			options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
-			return true;
-		default:
-			return false;
+			case CONFIG_FILE_OPTION:
+				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
+				return true;
+			case LOGGING_CONFIG_OPTION:
+				options.loggingConfig = filePatternResolver.parsePath(key, value);
+				return true;
+			case "interval":
+				options.dumpIntervalInMinutes = parseInt(key, value);
+				return true;
+			case "validate-ssl":
+				options.validateSsl = Boolean.parseBoolean(value);
+				return true;
+			case "out":
+				options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
+				return true;
+			case "upload-url":
+				options.uploadUrl = parseUrl(key, value);
+				return true;
+			case "upload-metadata":
+				try {
+					options.additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);
+				} catch (InvalidPathException e) {
+					throw new AgentOptionParseException("Invalid path given for option 'upload-metadata'", e);
+				}
+				return true;
+			case "duplicates":
+				options.duplicateClassFileBehavior = parseEnumValue(key, value, EDuplicateClassFileBehavior.class);
+				return true;
+			case "ignore-uncovered-classes":
+				options.ignoreUncoveredClasses = Boolean.parseBoolean(value);
+				return true;
+			case "obfuscate-security-related-outputs":
+				options.obfuscateSecurityRelatedOutputs = Boolean.parseBoolean(value);
+				return true;
+			case "dump-on-exit":
+				options.shouldDumpOnExit = Boolean.parseBoolean(value);
+				return true;
+			case "mode":
+				options.mode = parseEnumValue(key, value, EMode.class);
+				return true;
+			case "includes":
+				options.jacocoIncludes = value.replaceAll(";", ":");
+				return true;
+			case "excludes":
+				options.jacocoExcludes = value.replaceAll(";", ":") + ":" + AgentOptions.DEFAULT_EXCLUDES;
+				return true;
+			case "class-dir":
+				List<String> list = splitMultiOptionValue(value);
+				options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver,
+						list);
+				return true;
+			case "http-server-port":
+				options.httpServerPort = parseInt(key, value);
+				return true;
+			case "sap-nwdi-applications":
+				options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
+				return true;
+			default:
+				return false;
 		}
 	}
 
 	/**
-	 * Parses the given value as an enum constant case-insensitively and
-	 * converts "-" to "_".
+	 * Parses the given value as an enum constant case-insensitively and converts "-" to "_".
 	 */
 	private <T extends Enum<T>> T parseEnumValue(String key, String value, Class<T> enumClass)
 			throws AgentOptionParseException {
@@ -212,10 +212,9 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads configuration parameters from the given file. The expected format
-	 * is basically the same as for the command line, but line breaks are also
-	 * considered as separators. e.g. class-dir=out # Some comment
-	 * includes=test.* excludes=third.party.*
+	 * Reads configuration parameters from the given file. The expected format is basically the same as for the command
+	 * line, but line breaks are also considered as separators. e.g. class-dir=out # Some comment includes=test.*
+	 * excludes=third.party.*
 	 */
 	private void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
 		try {
@@ -244,41 +243,43 @@ public class AgentOptionsParser {
 	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value)
 			throws AgentOptionParseException {
 		switch (key) {
-		case "teamscale-server-url":
-			options.teamscaleServer.url = parseUrl(key, value);
-			return true;
-		case "teamscale-project":
-			options.teamscaleServer.project = value;
-			return true;
-		case "teamscale-user":
-			options.teamscaleServer.userName = value;
-			return true;
-		case "teamscale-access-token":
-			options.teamscaleServer.userAccessToken = value;
-			return true;
-		case "teamscale-partition":
-			options.teamscaleServer.partition = value;
-			return true;
-		case AgentOptions.TEAMSCALE_COMMIT_OPTION:
-			options.teamscaleServer.commit = parseCommit(value);
-			return true;
-		case AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
-			options.teamscaleServer.commit = getCommitFromManifest(filePatternResolver.parsePath(key, value).toFile());
-			return true;
-		case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
-			options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
-			return true;
-		case "teamscale-message":
-			options.teamscaleServer.setMessage(value);
-			return true;
-		case AgentOptions.TEAMSCALE_REVISION_OPTION:
-			options.teamscaleServer.revision = value;
-			return true;
-		case AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
-			options.teamscaleServer.revision = getRevisionFromManifest(filePatternResolver.parsePath(key, value).toFile());
-			return true;
-		default:
-			return false;
+			case "teamscale-server-url":
+				options.teamscaleServer.url = parseUrl(key, value);
+				return true;
+			case "teamscale-project":
+				options.teamscaleServer.project = value;
+				return true;
+			case "teamscale-user":
+				options.teamscaleServer.userName = value;
+				return true;
+			case "teamscale-access-token":
+				options.teamscaleServer.userAccessToken = value;
+				return true;
+			case "teamscale-partition":
+				options.teamscaleServer.partition = value;
+				return true;
+			case AgentOptions.TEAMSCALE_COMMIT_OPTION:
+				options.teamscaleServer.commit = parseCommit(value);
+				return true;
+			case AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
+				options.teamscaleServer.commit = getCommitFromManifest(
+						filePatternResolver.parsePath(key, value).toFile());
+				return true;
+			case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
+				options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
+				return true;
+			case "teamscale-message":
+				options.teamscaleServer.setMessage(value);
+				return true;
+			case AgentOptions.TEAMSCALE_REVISION_OPTION:
+				options.teamscaleServer.revision = value;
+				return true;
+			case AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
+				options.teamscaleServer.revision = getRevisionFromManifest(
+						filePatternResolver.parsePath(key, value).toFile());
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -289,14 +290,14 @@ public class AgentOptionsParser {
 	 */
 	private boolean handleTiaOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
-		case "tia-mode":
-			options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
-			return true;
-		case "test-env":
-			options.testEnvironmentVariable = value;
-			return true;
-		default:
-			return false;
+			case "tia-mode":
+				options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
+				return true;
+			case "test-env":
+				options.testEnvironmentVariable = value;
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -322,20 +323,20 @@ public class AgentOptionsParser {
 	private boolean handleAzureFileStorageOptions(AgentOptions options, String key, String value)
 			throws AgentOptionParseException {
 		switch (key) {
-		case "azure-url":
-			options.azureFileStorageConfig.url = parseUrl(key, value);
-			return true;
-		case "azure-key":
-			options.azureFileStorageConfig.accessKey = value;
-			return true;
-		default:
-			return false;
+			case "azure-url":
+				options.azureFileStorageConfig.url = parseUrl(key, value);
+				return true;
+			case "azure-key":
+				options.azureFileStorageConfig.accessKey = value;
+				return true;
+			default:
+				return false;
 		}
 	}
 
 	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's
-	 * manifest and builds a commit descriptor out of it.
+	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and builds a commit descriptor out
+	 * of it.
 	 */
 	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
 		Manifest manifest = getManifestFromJarFile(jarFile);
@@ -351,19 +352,18 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Reads `Git_Commit` entry from the given jar/war file's
-	 * manifest and sets it as revision.
+	 * Reads `Git_Commit` entry from the given jar/war file's manifest and sets it as revision.
 	 */
 	private String getRevisionFromManifest(File jarFile) throws AgentOptionParseException {
 		Manifest manifest = getManifestFromJarFile(jarFile);
 		String revision = manifest.getMainAttributes().getValue("Revision");
 		if (StringUtils.isEmpty(revision)) {
 			// currently needed option for a customer
-			if(manifest.getAttributes("Git") != null){
+			if (manifest.getAttributes("Git") != null) {
 				revision = manifest.getAttributes("Git").getValue("Git_Commit");
 			}
 
-			if(StringUtils.isEmpty(revision)) {
+			if (StringUtils.isEmpty(revision)) {
 				throw new AgentOptionParseException("No entry 'Revision' in MANIFEST");
 			}
 		}
@@ -401,15 +401,24 @@ public class AgentOptionsParser {
 	 * Parses the given value as a URL.
 	 */
 	public static HttpUrl parseUrl(String key, String value) throws AgentOptionParseException {
-		// default to HTTP if no scheme is given
-		if (!value.startsWith("http://") && !value.startsWith("https://")) {
-			value = "http://" + value;
-		}
-
 		if (!value.endsWith("/")) {
 			value += "/";
 		}
 
+		// default to HTTP if no scheme is given and port is not 443, default to HTTPS if no scheme is given AND port is 443
+		if (!value.startsWith("http://") && !value.startsWith("https://")) {
+			HttpUrl url = getUrl(key, "http://" + value);
+			if (url.port() == 443) {
+				value = "https://" + value;
+			} else {
+				value = "http://" + value;
+			}
+		}
+
+		return getUrl(key, value);
+	}
+
+	private static HttpUrl getUrl(String key, String value) throws AgentOptionParseException {
 		HttpUrl url = HttpUrl.parse(value);
 		if (url == null) {
 			throw new AgentOptionParseException("Invalid URL given for option '" + key + "'");
@@ -418,8 +427,7 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Parses the the string representation of a commit to a
-	 * {@link CommitDescriptor} object.
+	 * Parses the the string representation of a commit to a {@link CommitDescriptor} object.
 	 * <p>
 	 * The expected format is "branch:timestamp".
 	 */

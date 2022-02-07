@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] The agent now uses HTTPS when port 443 is specified in a URL but no scheme is provided
 
 # 22.1.0
 - [feature] The agent now follows HTTP 307/308 redirects for Teamscale uploads
