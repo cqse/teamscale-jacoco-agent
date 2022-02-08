@@ -47,6 +47,10 @@ public class HttpUtils {
 		HttpUtils.shouldValidateSsl = shouldValidateSsl;
 	}
 
+	/**
+	 * Creates a new {@link Retrofit} with proper defaults. The instance and the corresponding {@link OkHttpClient} can
+	 * be customized with the given action. Read and write timeouts are set according to the default values.
+	 */
 	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction,
 										  Consumer<OkHttpClient.Builder> okHttpBuilderAction) {
 		return createRetrofit(retrofitBuilderAction, okHttpBuilderAction, DEFAULT_READ_TIMEOUT, DEFAULT_WRITE_TIMEOUT);
@@ -54,7 +58,7 @@ public class HttpUtils {
 
 	/**
 	 * Creates a new {@link Retrofit} with proper defaults. The instance and the corresponding {@link OkHttpClient} can
-	 * be customized with the given action.
+	 * be customized with the given action. Timeouts for reading and writing can be customized.
 	 */
 	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction,
 										  Consumer<OkHttpClient.Builder> okHttpBuilderAction, int readTimeout, int writeTimeout) {

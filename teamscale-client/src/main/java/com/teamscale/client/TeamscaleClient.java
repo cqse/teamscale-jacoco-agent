@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_TESTS;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
 /** Helper class to interact with Teamscale. */

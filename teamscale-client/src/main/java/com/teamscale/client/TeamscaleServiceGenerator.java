@@ -29,13 +29,10 @@ public class TeamscaleServiceGenerator {
 		return retrofit.create(serviceClass);
 	}
 
-	private static OkHttpClient.Builder addInterceptors(OkHttpClient.Builder builder, Interceptor... interceptors) {
-		for (Interceptor interceptor : interceptors) {
-			builder.addInterceptor(interceptor);
-		}
-		return builder;
-	}
-
+	/**
+	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
+	 * server and which sets the accept-header to json. Logs requests and responses to the given logfile.
+	 */
 	public static <S> S createServiceWithRequestLogging(Class<S> serviceClass, HttpUrl baseUrl, String username,
 														String accessToken, File logfile, int readTimeout,
 														int writeTimeout, Interceptor... interceptors) {
@@ -48,6 +45,13 @@ public class TeamscaleServiceGenerator {
 				readTimeout, writeTimeout
 		);
 		return retrofit.create(serviceClass);
+	}
+
+	private static OkHttpClient.Builder addInterceptors(OkHttpClient.Builder builder, Interceptor... interceptors) {
+		for (Interceptor interceptor : interceptors) {
+			builder.addInterceptor(interceptor);
+		}
+		return builder;
 	}
 
 
