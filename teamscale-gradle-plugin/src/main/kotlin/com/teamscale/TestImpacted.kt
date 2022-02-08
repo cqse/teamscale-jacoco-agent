@@ -48,6 +48,14 @@ open class TestImpacted : Test() {
     )
     var includeAddedTests: Boolean = true
 
+    /** Command line switch to include or exclude failed and skipped tests. */
+    @Input
+    @Option(
+        option = "include-failed-and-skipped",
+        description = "When set to true includes failed and skipped tests in test selection."
+    )
+    var includeFailedAndSkipped: Boolean = true
+
     /**
      * Reference to the configuration that should be used for this task.
      */
@@ -218,6 +226,7 @@ open class TestImpacted : Test() {
         writeEngineProperty("runImpacted", runImpacted.toString())
         writeEngineProperty("runAllTests", runAllTests.toString())
         writeEngineProperty("includeAddedTests", includeAddedTests.toString())
+        writeEngineProperty("includeFailedAndSkipped", includeFailedAndSkipped.toString())
         writeEngineProperty("engines", includeEngines.joinToString(","))
     }
 }

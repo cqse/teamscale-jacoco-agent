@@ -30,6 +30,7 @@ public class TestEngineOptionUtils {
 				.runImpacted(propertyReader.getBoolean("runImpacted"))
 				.runAllTests(propertyReader.getBoolean("runAllTests"))
 				.includeAddedTests(propertyReader.getBoolean("includeAddedTests"))
+				.includeFailedAndSkipped(propertyReader.getBoolean("includeFailedAndSkipped"))
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getString("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))

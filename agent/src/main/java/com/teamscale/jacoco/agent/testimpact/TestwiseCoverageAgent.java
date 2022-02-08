@@ -102,6 +102,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private String handleTestRunStart(Request request, Response response) throws IOException {
 		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("include-non-impacted"));
 		boolean includeAddedTests = "true".equalsIgnoreCase(request.params("include-added-tests"));
+		boolean includeFailedAndSkipped = "true".equalsIgnoreCase(request.params("include-failed-and-skipped"));
 
 		String baseline = request.params("baseline");
 		String bodyString = request.body();
@@ -124,7 +125,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 			}
 		}
 
-		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, includeAddedTests, baseline);
+		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped, baseline);
 		response.type(APPLICATION_JSON.asString());
 		return responseBody;
 	}

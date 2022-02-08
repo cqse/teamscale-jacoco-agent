@@ -69,7 +69,7 @@ public class TestwiseCoverageAgentTest {
 		List<PrioritizableTestCluster> impactedClusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("test2"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean()))
+		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
 		when(reportGenerator.convert(any(File.class)))
@@ -115,7 +115,7 @@ public class TestwiseCoverageAgentTest {
 		List<PrioritizableTestCluster> impactedClusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("test2"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean()))
+		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
 		int port = PORT_COUNTER.incrementAndGet();

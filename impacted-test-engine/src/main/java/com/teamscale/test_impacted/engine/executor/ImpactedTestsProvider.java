@@ -33,14 +33,17 @@ public class ImpactedTestsProvider {
 
 	private final boolean includeAddedTests;
 
+	private final boolean includeFailedAndSkipped;
+
 	public ImpactedTestsProvider(TeamscaleClient client, String baseline, CommitDescriptor endCommit, String partition,
-								 boolean includeNonImpacted, boolean includeAddedTests) {
+								 boolean includeNonImpacted, boolean includeAddedTests, boolean includeFailedAndSkipped) {
 		this.client = client;
 		this.baseline = baseline;
 		this.endCommit = endCommit;
 		this.partition = partition;
 		this.includeNonImpacted = includeNonImpacted;
 		this.includeAddedTests = includeAddedTests;
+		this.includeFailedAndSkipped = includeFailedAndSkipped;
 	}
 
 	/** Queries Teamscale for impacted tests. */
@@ -50,7 +53,7 @@ public class ImpactedTestsProvider {
 			LOGGER.info(() -> "Getting impacted tests...");
 			Response<List<PrioritizableTestCluster>> response = client
 					.getImpactedTests(availableTestDetails, baseline, endCommit, Collections.singletonList(partition),
-							includeNonImpacted, includeAddedTests);
+							includeNonImpacted, includeAddedTests, includeFailedAndSkipped);
 			if (response.isSuccessful()) {
 				List<PrioritizableTestCluster> testClusters = response.body();
 				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {
