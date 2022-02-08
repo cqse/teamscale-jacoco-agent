@@ -26,7 +26,7 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the {@link
- * #testRunStart(List, boolean, String)} event by retrieving tests to run from Teamscale.
+ * #testRunStart(List, boolean, boolean, boolean, String)} event by retrieving tests to run from Teamscale.
  */
 public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
@@ -61,12 +61,12 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
+	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests, boolean includeAddedTests, boolean includeFailedAndSkipped,
 							   String baseline) throws IOException {
 		if (availableTests != null) {
 			this.availableTests = new ArrayList<>(availableTests);
 		}
-		return super.testRunStart(this.availableTests, includeNonImpactedTests, baseline);
+		return super.testRunStart(this.availableTests, includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped, baseline);
 	}
 
 	@Override

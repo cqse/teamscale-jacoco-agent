@@ -8,6 +8,7 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
@@ -28,19 +30,38 @@ public class TeamscaleClient {
 	/** The project ID within Teamscale. */
 	private final String projectId;
 
+	/** Constructor with parameters for read and write timeout in seconds. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, int readTimeout,
+						   int writeTimeout) {
+		this.projectId = projectId;
+		service = TeamscaleServiceGenerator
+				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken, readTimeout,
+						writeTimeout);
+	}
+
 	/** Constructor. */
 	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
-				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken);
+				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
+						HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 	}
 
-	/** Constructor. */
-	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File file) {
+	/** Constructor with parameters for read and write timeout in seconds and logfile. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File logfile,
+						   int readTimeout, int writeTimeout) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
 				.createServiceWithRequestLogging(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
-						file);
+						logfile, readTimeout, writeTimeout);
+	}
+
+	/** Constructor with logfile. */
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File logfile) {
+		this.projectId = projectId;
+		service = TeamscaleServiceGenerator
+				.createServiceWithRequestLogging(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
+						logfile, HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 	}
 
 	/**
@@ -60,7 +81,6 @@ public class TeamscaleClient {
 	 * @param endCommit      The last commit for which changes should be considered.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
-	 *
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
@@ -68,15 +88,20 @@ public class TeamscaleClient {
 			List<ClusteredTestDetails> availableTests, String baseline,
 			CommitDescriptor endCommit,
 			List<String> partitions,
-			boolean includeNonImpacted) throws IOException {
-
+			boolean includeNonImpacted,
+			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
+		List<ETestImpactOptions> selectedOptions = new ArrayList<>(Collections.singletonList(ENSURE_PROCESSED));
 		if (includeNonImpacted) {
-			return getImpactedTests(availableTests, baseline, endCommit, partitions, INCLUDE_NON_IMPACTED,
-					ENSURE_PROCESSED, INCLUDE_FAILED_AND_SKIPPED);
-		} else {
-			return getImpactedTests(availableTests, baseline, endCommit, partitions, ENSURE_PROCESSED,
-					INCLUDE_FAILED_AND_SKIPPED);
+			selectedOptions.add(INCLUDE_NON_IMPACTED);
 		}
+		if (includeAddedTests) {
+			selectedOptions.add(INCLUDE_ADDED_TESTS);
+		}
+		if (includeFailedAndSkipped) {
+			selectedOptions.add(INCLUDE_FAILED_AND_SKIPPED);
+		}
+		return getImpactedTests(availableTests, baseline, endCommit, partitions,
+				selectedOptions.toArray(new ETestImpactOptions[0]));
 	}
 
 	/**
@@ -95,33 +120,34 @@ public class TeamscaleClient {
 	 * @param endCommit      The last commit for which changes should be considered.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
-	 * @param options A list of options (See {@link ETestImpactOptions} for more details)
+	 * @param options        A list of options (See {@link ETestImpactOptions} for more details)
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
-	public Response<List<PrioritizableTestCluster>> getImpactedTests(
+	private Response<List<PrioritizableTestCluster>> getImpactedTests(
 			List<ClusteredTestDetails> availableTests, String baseline,
 			CommitDescriptor endCommit,
 			List<String> partitions,
 			ETestImpactOptions... options) throws IOException {
 		EnumSet<ETestImpactOptions> testImpactOptions = EnumSet.copyOf(Arrays.asList(options));
 		boolean includeNonImpacted = testImpactOptions.contains(INCLUDE_NON_IMPACTED);
-		boolean includeFailedAndSkippedTests = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
+		boolean includeFailedAndSkipped = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
 		boolean ensureProcessed = testImpactOptions.contains(ENSURE_PROCESSED);
+		boolean includeAddedTests = testImpactOptions.contains(INCLUDE_ADDED_TESTS);
 
 		if (availableTests == null) {
 			return wrapInCluster(
 					service.getImpactedTests(projectId, baseline, endCommit, partitions,
-							includeNonImpacted,
-							includeFailedAndSkippedTests,
-							ensureProcessed)
+									includeNonImpacted,
+									includeFailedAndSkipped,
+									ensureProcessed, includeAddedTests)
 							.execute());
 		} else {
 			return service
 					.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
-							includeFailedAndSkippedTests,
-							ensureProcessed, availableTests)
+							includeFailedAndSkipped,
+							ensureProcessed, includeAddedTests, availableTests)
 					.execute();
 		}
 	}
