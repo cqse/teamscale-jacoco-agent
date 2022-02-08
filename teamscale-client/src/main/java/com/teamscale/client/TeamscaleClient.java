@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_TESTS;
 import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
 /** Helper class to interact with Teamscale. */
@@ -89,13 +90,16 @@ public class TeamscaleClient {
 			CommitDescriptor endCommit,
 			List<String> partitions,
 			boolean includeNonImpacted,
-			boolean includeAddedTests) throws IOException {
-		List<ETestImpactOptions> selectedOptions = new ArrayList<>(Arrays.asList(INCLUDE_FAILED_AND_SKIPPED, ENSURE_PROCESSED));
+			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
+		List<ETestImpactOptions> selectedOptions = new ArrayList<>(Collections.singletonList(ENSURE_PROCESSED));
 		if (includeNonImpacted) {
 			selectedOptions.add(INCLUDE_NON_IMPACTED);
 		}
 		if (includeAddedTests) {
 			selectedOptions.add(INCLUDE_ADDED_TESTS);
+		}
+		if (includeFailedAndSkipped) {
+			selectedOptions.add(INCLUDE_FAILED_AND_SKIPPED);
 		}
 		return getImpactedTests(availableTests, baseline, endCommit, partitions,
 				selectedOptions.toArray(new ETestImpactOptions[0]));
@@ -128,7 +132,7 @@ public class TeamscaleClient {
 			ETestImpactOptions... options) throws IOException {
 		EnumSet<ETestImpactOptions> testImpactOptions = EnumSet.copyOf(Arrays.asList(options));
 		boolean includeNonImpacted = testImpactOptions.contains(INCLUDE_NON_IMPACTED);
-		boolean includeFailedAndSkippedTests = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
+		boolean includeFailedAndSkipped = testImpactOptions.contains(INCLUDE_FAILED_AND_SKIPPED);
 		boolean ensureProcessed = testImpactOptions.contains(ENSURE_PROCESSED);
 		boolean includeAddedTests = testImpactOptions.contains(INCLUDE_ADDED_TESTS);
 
@@ -136,14 +140,14 @@ public class TeamscaleClient {
 			return wrapInCluster(
 					service.getImpactedTests(projectId, baseline, endCommit, partitions,
 									includeNonImpacted,
-									includeFailedAndSkippedTests,
+									includeFailedAndSkipped,
 									ensureProcessed, includeAddedTests)
 							.execute());
 		} else {
 			return service
 					.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
-							includeFailedAndSkippedTests,
+							includeFailedAndSkipped,
 							ensureProcessed, includeAddedTests, availableTests)
 					.execute();
 		}
