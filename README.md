@@ -63,7 +63,7 @@ When master has accumulated changes you want to release, please perform the foll
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
 
-All tags are built automatically using [Github Actions](https://github.com/cqse/teamscale-jacoco-agent/actions) and [Docker Cloud Build](https://cloud.docker.com/swarm/cqse/repository/docker/cqse/teamscale-jacoco-client) with the release binaries being uploaded to the GitHub Releases.
+All tags are built automatically using [Github Actions](https://github.com/cqse/teamscale-jacoco-agent/actions) with the release binaries being uploaded to the GitHub Releases, Maven Central, Gradle Plugin Portal and DockerHub.
 
 Only use GitHub releases in production. This ensures that we always know which code is running in production.
 

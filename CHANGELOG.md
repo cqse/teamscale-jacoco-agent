@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] Restored upload to DockerHub
 - [fix] The agent now uses HTTPS when port 443 is specified in a URL but no scheme is provided
 
 # 22.1.1
