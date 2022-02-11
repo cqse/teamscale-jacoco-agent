@@ -7,6 +7,9 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - [fix] The agent now uses HTTPS when port 443 is specified in a URL but no scheme is provided
 
+# 22.1.1
+- [fix] The Docker image is available again for the latest version of the JaCoCo agent
+
 # 22.1.0
 - [feature] The agent now follows HTTP 307/308 redirects for Teamscale uploads
 - [fix] Updated to latest Log4J 2.17.1
