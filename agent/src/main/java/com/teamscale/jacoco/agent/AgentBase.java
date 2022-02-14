@@ -1,7 +1,10 @@
 package com.teamscale.jacoco.agent;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.HttpUtils;
+import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -9,6 +12,7 @@ import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
+import com.teamscale.report.testwise.model.RevisionInfo;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.agent.rt.RT;
@@ -44,6 +48,10 @@ public abstract class AgentBase {
 	private static LoggingUtils.LoggingResources loggingResources;
 
 	private final Service spark = Service.ignite();
+
+	/** JSON adapter for revision information. */
+	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
+			.adapter(RevisionInfo.class);
 
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
@@ -96,6 +104,8 @@ public abstract class AgentBase {
 				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 		spark.get("/message", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
+		spark.get("/revision", (request, response) -> this.getRevisionInfo());
+		spark.put("/revision", this::handleSetRevision);
 		spark.put("/partition", this::handleSetPartition);
 		spark.put("/message", this::handleSetMessage);
 		spark.put("/commit", this::handleSetCommit);
@@ -258,6 +268,25 @@ public abstract class AgentBase {
 		logger.error(message);
 		response.status(HttpServletResponse.SC_BAD_REQUEST);
 		return message;
+	}
+
+	/** Returns revision information for the Teamscale upload. */
+	private String getRevisionInfo() {
+		TeamscaleServer server = options.getTeamscaleServerOptions();
+		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
+	}
+
+	/** Handles setting the revision. */
+	private String handleSetRevision(Request request, Response response) {
+		String revision = org.conqat.lib.commons.string.StringUtils.removeDoubleQuotes(request.body());
+		if (revision == null || revision.isEmpty()) {
+			return handleBadRequest(response,
+					"The new revision name is missing in the request body! Please add it as plain text.");
+		}
+		logger.debug("Changing revision name to " + revision);
+		options.getTeamscaleServerOptions().revision = revision;
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
 	}
 
 }
