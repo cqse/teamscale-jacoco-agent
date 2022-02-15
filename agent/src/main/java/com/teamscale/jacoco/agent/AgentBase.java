@@ -105,10 +105,13 @@ public abstract class AgentBase {
 		spark.get("/message", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
 		spark.get("/revision", (request, response) -> this.getRevisionInfo());
-		spark.put("/revision", this::handleSetRevision);
+		spark.get("/commit", (request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().commit)
+				.orElse(new CommitDescriptor("", "")));
 		spark.put("/partition", this::handleSetPartition);
 		spark.put("/message", this::handleSetMessage);
+		spark.put("/revision", this::handleSetRevision);
 		spark.put("/commit", this::handleSetCommit);
+
 	}
 
 	/**
@@ -264,7 +267,7 @@ public abstract class AgentBase {
 		return "";
 	}
 
-	protected String handleBadRequest(Response response, String message) {
+	private String handleBadRequest(Response response, String message) {
 		logger.error(message);
 		response.status(HttpServletResponse.SC_BAD_REQUEST);
 		return message;
