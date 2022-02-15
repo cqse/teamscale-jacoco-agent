@@ -35,6 +35,12 @@ public class TestEngineOptions {
 	/** Executes only impacted tests, not all ones if set. Defaults to true. */
 	private boolean runImpacted = true;
 
+	/** Includes added tests in the list of tests to execute. Defaults to true */
+	private boolean includeAddedTests = true;
+
+	/** Includes failed and skipped tests in the list of tests to execute. Defaults to true */
+	private boolean includeFailedAndSkipped = true;
+
 	/**
 	 * The baseline. Only code changes after the baseline are considered for determining impacted tests. May be null to
 	 * indicate no baseline.
@@ -63,6 +69,16 @@ public class TestEngineOptions {
 		return runAllTests;
 	}
 
+	/** @see #includeAddedTests */
+	private boolean isIncludeAddedTests() {
+		return includeAddedTests;
+	}
+
+	/** @see #includeFailedAndSkipped */
+	private boolean isIncludeFailedAndSkipped() {
+		return includeFailedAndSkipped;
+	}
+
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
 		ITestExecutor testExecutor = createTestExecutor();
 		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(testEngineIds);
@@ -79,7 +95,7 @@ public class TestEngineOptions {
 				serverOptions.getUserAccessToken(), serverOptions.getProject(),
 				new File(reportDirectory, "server-request.txt"));
 		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition,
-				isRunAllTests());
+				isRunAllTests(), isIncludeAddedTests(), isIncludeFailedAndSkipped());
 		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, testsProvider);
 	}
 
@@ -109,7 +125,7 @@ public class TestEngineOptions {
 			return this;
 		}
 
-		/** @see #runAllTests */
+		/** @see #runImpacted */
 		public Builder runImpacted(boolean runImpacted) {
 			testEngineOptions.runImpacted = runImpacted;
 			return this;
@@ -118,6 +134,18 @@ public class TestEngineOptions {
 		/** @see #runAllTests */
 		public Builder runAllTests(boolean runAllTests) {
 			testEngineOptions.runAllTests = runAllTests;
+			return this;
+		}
+
+		/** @see #includeAddedTests  */
+		public Builder includeAddedTests(boolean includeAddedTests) {
+			testEngineOptions.includeAddedTests = includeAddedTests;
+			return this;
+		}
+
+		/** @see #includeFailedAndSkipped   */
+		public Builder includeFailedAndSkipped(boolean includeFailedAndSkipped) {
+			testEngineOptions.includeFailedAndSkipped = includeFailedAndSkipped;
 			return this;
 		}
 

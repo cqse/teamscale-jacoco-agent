@@ -45,7 +45,7 @@ public class TeamscaleMockServer {
 		service.port(port);
 		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
 				this::handleReport);
-		service.put("api/v6.5.2/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		service.put("api/v7.6.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		service.exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());

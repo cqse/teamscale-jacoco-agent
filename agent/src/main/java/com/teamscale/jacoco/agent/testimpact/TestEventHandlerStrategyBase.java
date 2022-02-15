@@ -88,6 +88,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @throws UnsupportedOperationException if the user did not properly configure the {@link #teamscaleClient}.
 	 */
 	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
+							   boolean includeAddedTests, boolean includeFailedAndSkipped,
 							   String baseline) throws IOException {
 		int availableTestCount = 0;
 		if (availableTests != null) {
@@ -95,6 +96,25 @@ public abstract class TestEventHandlerStrategyBase {
 		}
 		logger.debug("Test run started with {} available tests. baseline = {}, includeNonImpactedTests = {}",
 				availableTestCount, baseline, includeNonImpactedTests);
+		validateConfiguration();
+
+		Response<List<PrioritizableTestCluster>> response = teamscaleClient
+				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
+						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition),
+						includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped);
+		if (response.isSuccessful()) {
+			String json = prioritizableTestClustersJsonAdapter.toJson(response.body());
+			logger.debug("Teamscale suggested these tests: {}", json);
+			return json;
+		} else {
+			String responseBody = HttpUtils.getErrorBodyStringSafe(response);
+			throw new IOException(
+					"Request to Teamscale to get impacted tests failed with HTTP status " + response.code() +
+							" " + response.message() + ". Response body: " + responseBody);
+		}
+	}
+
+	private void validateConfiguration() {
 		if (teamscaleClient == null) {
 			throw new UnsupportedOperationException("You did not configure a connection to Teamscale in the agent." +
 					" Thus, you cannot use the agent to retrieve impacted tests via the testrun/start REST endpoint." +
@@ -105,20 +125,6 @@ public abstract class TestEventHandlerStrategyBase {
 					"You did not provide a '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' or '" +
 							AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
 							AgentOptions.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
-		}
-
-		Response<List<PrioritizableTestCluster>> response = teamscaleClient
-				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
-						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition), includeNonImpactedTests);
-		if (response.isSuccessful()) {
-			String json = prioritizableTestClustersJsonAdapter.toJson(response.body());
-			logger.debug("Teamscale suggested these tests: {}", json);
-			return json;
-		} else {
-			String responseBody = HttpUtils.getErrorBodyStringSafe(response);
-			throw new IOException(
-					"Request to Teamscale to get impacted tests failed with HTTP status " + response.code() +
-							" " + response.message() + ". Response body: " + responseBody);
 		}
 	}
 

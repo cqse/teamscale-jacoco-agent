@@ -4,7 +4,12 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# Next Release
+# 22.1.2
+- [fix] Restored upload to DockerHub
+- [fix] The agent now uses HTTPS when port 443 is specified in a URL but no scheme is provided
+
+# 22.1.1
+- [fix] The Docker image is available again for the latest version of the JaCoCo agent
 
 # 22.1.0
 - [feature] The agent now follows HTTP 307/308 redirects for Teamscale uploads
