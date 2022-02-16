@@ -161,6 +161,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
+    - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
+    - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
+    - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
+    - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
    The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
