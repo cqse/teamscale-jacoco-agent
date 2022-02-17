@@ -105,8 +105,7 @@ public abstract class AgentBase {
 		spark.get("/message", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
 		spark.get("/revision", (request, response) -> this.getRevisionInfo());
-		spark.get("/commit", (request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().commit)
-				.orElse(new CommitDescriptor("", "")));
+		spark.get("/commit", (request, response) -> this.getRevisionInfo());
 		spark.put("/partition", this::handleSetPartition);
 		spark.put("/message", this::handleSetMessage);
 		spark.put("/revision", this::handleSetRevision);
