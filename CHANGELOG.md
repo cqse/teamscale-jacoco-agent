@@ -4,6 +4,7 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+# 22.2.0
 - [feature] Add REST endpoint to change revision and commit while agent is running.
 
 # 22.1.2
