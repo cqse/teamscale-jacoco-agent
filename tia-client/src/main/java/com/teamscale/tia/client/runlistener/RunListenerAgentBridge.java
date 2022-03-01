@@ -1,10 +1,11 @@
-package com.teamscale.tia.client;
+package com.teamscale.tia.client.runlistener;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.tia.client.RunningTest;
+import com.teamscale.tia.client.TestRun;
+import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
 import org.junit.runner.notification.RunListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handles communication with the {@link TiaAgent} and logging for any type of test run listener. This allows e.g. Junit
@@ -14,7 +15,7 @@ public class RunListenerAgentBridge {
 
 	private final TestRun testRun;
 	private RunningTest runningTest;
-	private final Logger logger = LoggerFactory.getLogger(RunListenerAgentBridge.class);
+	private final RunListenerLogger logger =  new RunListenerLogger(RunListenerAgentBridge.class);
 
 	private static class RunListenerConfigurationException extends RuntimeException {
 		public RunListenerConfigurationException(String message) {
@@ -29,10 +30,12 @@ public class RunListenerAgentBridge {
 			agentUrl = System.getenv("TIA_AGENT");
 		}
 		if (agentUrl == null) {
-			throw new RunListenerConfigurationException(
+			RunListenerConfigurationException exception = new RunListenerConfigurationException(
 					"You did not provide the URL of a Teamscale JaCoCo agent that will record test-wise coverage." +
 							" You can configure the URL either as a system property with -Dtia.agent=URL" +
 							" or as an environment variable with TIA_AGENT=URL.");
+			logger.error("Failed to instantiate " + runListenerClassName, exception);
+			throw exception;
 		}
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get(agentUrl));
@@ -59,7 +62,7 @@ public class RunListenerAgentBridge {
 
 	/** Notifies the {@link TiaAgent} that the given test was started. */
 	public void testStarted(String uniformPath) {
-		logger.debug("Started test '{}'", uniformPath);
+		logger.debug("Started test '" + uniformPath + "'");
 		handleErrors(() -> runningTest = testRun.startTest(uniformPath), "Starting test '" + uniformPath + "'");
 	}
 
@@ -74,7 +77,7 @@ public class RunListenerAgentBridge {
 	 * @param message mey be null if no useful message can be provided.
 	 */
 	public void testFinished(String uniformPath, ETestExecutionResult result, String message) {
-		logger.debug("Finished test '{}'", uniformPath);
+		logger.debug("Finished test '" + uniformPath + "'");
 		handleErrors(() -> {
 			if (runningTest != null) {
 				runningTest.endTest(new TestRun.TestResultWithMessage(result, message));
@@ -89,7 +92,7 @@ public class RunListenerAgentBridge {
 	 * @param reason Optional reason. Pass null if no reason was provided by the test framework.
 	 */
 	public void testSkipped(String uniformPath, String reason) {
-		logger.debug("Skipped test '{}'", uniformPath);
+		logger.debug("Skipped test '" + uniformPath + "'");
 		handleErrors(() -> {
 			if (runningTest != null) {
 				runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.SKIPPED, reason));

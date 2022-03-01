@@ -1,6 +1,7 @@
-package com.teamscale.tia.client;
+package com.teamscale.tia.client.runlistener;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.tia.client.TiaAgent;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -10,10 +11,10 @@ import org.junit.runner.notification.RunListener;
  * {@link RunListener} that uses the {@link TiaAgent} to record test-wise coverage.
  */
 @SuppressWarnings("unused")
-public class TestWiseCoverageRunListener extends RunListener {
+public class JUnit4TestWiseCoverageRunListener extends RunListener {
 
 	private final RunListenerAgentBridge bridge = new RunListenerAgentBridge(
-			TestWiseCoverageRunListener.class.getName());
+			JUnit4TestWiseCoverageRunListener.class.getName());
 
 	@Override
 	public void testStarted(Description description) {

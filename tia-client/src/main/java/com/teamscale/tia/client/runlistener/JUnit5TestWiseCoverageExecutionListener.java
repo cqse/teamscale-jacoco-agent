@@ -1,6 +1,7 @@
-package com.teamscale.tia.client;
+package com.teamscale.tia.client.runlistener;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.tia.client.TiaAgent;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
