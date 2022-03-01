@@ -1,6 +1,8 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import systemundertest.SystemUnderTest;
+
 public class JUnit5Test {
 
     @Test

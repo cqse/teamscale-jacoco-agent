@@ -11,6 +11,9 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <tia.agent.port>65433</tia.agent.port>
+        <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
+        <tia.agent.path>${env.AGENT_PATH}</tia.agent.path>
     </properties>
 
     <dependencies>
@@ -48,8 +51,9 @@
                 </dependencies>
                 <configuration>
                     <systemPropertyVariables>
-                        <tia.agent>http://localhost:65433</tia.agent>
+                        <tia.agent>http://localhost:${tia.agent.port}</tia.agent>
                     </systemPropertyVariables>
+                    <argLine>-javaagent:${tia.agent.path}=http-server-port=${tia.agent.port},tia-mode=teamscale-upload,teamscale-server-url=http://localhost:${tia.teamscale.fake.port},teamscale-user=fake,teamscale-access-token=fake,teamscale-project=p,teamscale-partition=part,mode=testwise,teamscale-commit=master:12345,includes=*systemundertest.*</argLine>
                 </configuration>
             </plugin>
         </plugins>
