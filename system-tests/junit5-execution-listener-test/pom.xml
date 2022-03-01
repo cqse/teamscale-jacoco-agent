@@ -46,6 +46,11 @@
                         <version>5.8.2</version>
                     </dependency>
                 </dependencies>
+                <configuration>
+                    <systemPropertyVariables>
+                        <tia.agent>http://localhost:65433</tia.agent>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>
