@@ -14,6 +14,7 @@
         <tia.agent.port>65433</tia.agent.port>
         <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
         <tia.agent.path>${env.AGENT_PATH}</tia.agent.path>
+        <tia.client.version>${env.TIA_CLIENT_VERSION}</tia.client.version>
     </properties>
 
     <dependencies>
@@ -32,7 +33,7 @@
         <dependency>
             <groupId>com.teamscale</groupId>
             <artifactId>tia-client</artifactId>
-            <version>21.8.0-SNAPSHOT</version>
+            <version>${tia.client.version}</version>
         </dependency>
     </dependencies>
 
