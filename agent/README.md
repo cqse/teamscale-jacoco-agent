@@ -94,6 +94,8 @@ patterns with `*`, `**` and `?`.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
+- `obfuscate-security-related-outputs`: boolean value determining if security critical information such as access 
+   keys are obfuscated when printing them to the console or into the log (default is true).
 - `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs. If not specified, the
 `teamscale.project` property must be specified via the `git.properties` file in at least one of the profiled JARs/WARs/EARs.
@@ -108,8 +110,6 @@ patterns with `*`, `**` and `?`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
-- `obfuscate-security-related-outputs`: boolean value determining if security critical information such as access 
-   keys are obfuscated when printing them to the console or into the log (default is true).
 
   If **Git** is your VCS, you can get the commit info via
   
@@ -161,6 +161,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
+    - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
+    - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
+    - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
+    - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
    The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
