@@ -3,8 +3,11 @@ package com.teamscale.tia.client;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import org.conqat.lib.commons.io.ProcessUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,8 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 /**
  * Runs a Maven project's Surefire tests (written with JUnit 5) that have the agent attached and the JUnit 5 {@link
  * org.junit.platform.launcher.TestExecutionListener} enabled. Checks that this produces a correct coverage report.
- *
- * This test requires an installed {@code mvn} binary or it will fail.
  */
 public class JUnit5ExecutionListenerSystemTest {
 
@@ -36,16 +37,20 @@ public class JUnit5ExecutionListenerSystemTest {
 		assertThat(report.tests).hasSize(2);
 		assertAll(() -> {
 			assertThat(report.tests).extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder("testBar", "testFoo");
+					.containsExactlyInAnyOrder("JUnit4ExecutedWithJUnit5Test/testAdd()", "JUnit5Test/testAdd()");
 			assertThat(report.tests).extracting(test -> test.result)
-					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
+					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
 			assertThat(report.tests).extracting(JUnit5ExecutionListenerSystemTest::getCoverageString)
-					.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
+					.containsExactly("SystemUnderTest.java:3,6", "SystemUnderTest.java:3,6");
 		});
 	}
 
-	private static void runMavenTests() {
-		
+	private static void runMavenTests() throws IOException {
+		ProcessUtils.ExecutionResult result = ProcessUtils.execute(
+				new ProcessBuilder("mvnw", "clean", "test").directory(new File("./maven-project")));
+		if (!result.isNormalTermination()) {
+			throw new RuntimeException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
+		}
 	}
 
 	private static String getCoverageString(TestInfo info) {
