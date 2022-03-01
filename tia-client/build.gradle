@@ -22,7 +22,6 @@ dependencies {
 	api 'com.squareup.retrofit2:retrofit:2.9.0'
 	api 'junit:junit:4.13.2'
 	api 'org.junit.platform:junit-platform-launcher:1.8.2'
-	implementation 'org.slf4j:slf4j-api:1.7.36'
 
 	implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
 

@@ -4,16 +4,16 @@ package com.teamscale.tia.client.runlistener;
  * Implements simple STDOUT logging for run listeners. We cannot use SLF4J, since the run listeners are executed in the
  * context of the system under test, where we cannot rely on any SLF4J bindings to be present.
  * <p>
- * To enable debug logging, specify {@code -DTIA_DEBUG} for the JVM containing the run listener.
+ * To enable debug logging, specify {@code -Dtia.debug} for the JVM containing the run listener.
  */
 public class RunListenerLogger {
 
-	private static final boolean DEBUG_ENABLED = Boolean.getBoolean("TIA_DEBUG");
+	private static final boolean DEBUG_ENABLED = Boolean.getBoolean("tia.debug");
 
 	private final String callerClassName;
 
 	public RunListenerLogger(Class<?> callerClass) {
-		callerClassName = callerClass.getName();
+		callerClassName = callerClass.getSimpleName();
 	}
 
 	public void debug(String message) {
