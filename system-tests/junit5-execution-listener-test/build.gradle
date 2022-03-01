@@ -1,0 +1,24 @@
+plugins {
+    id 'com.teamscale.java-convention'
+    // we do not enable code coverage recording for the system tests as we already need our agent attached
+    // it would conflict with JaCoCo's
+}
+
+test {
+    def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
+    environment("AGENT_PATH", agentJar)
+    environment("AGENT_VERSION", version)
+}
+
+dependencies {
+    testImplementation project(':tia-client')
+
+    testImplementation 'com.sparkjava:spark-core:2.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testImplementation 'org.assertj:assertj-core:3.19.0'
+    testImplementation 'com.squareup.moshi:moshi:1.12.0'
+}
+
+tasks.test.dependsOn(project(':agent').tasks.shadowJar)
+tasks.test.dependsOn(project(':tia-runlisteners').tasks.publishToMavenLocal)

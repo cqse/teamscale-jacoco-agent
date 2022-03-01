@@ -1,0 +1,57 @@
+package com.teamscale.tia.client;
+
+import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestInfo;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import org.junit.jupiter.api.Test;
+
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+/**
+ * Runs a Maven project's Surefire tests (written with JUnit 5) that have the agent attached and the JUnit 5 {@link
+ * org.junit.platform.launcher.TestExecutionListener} enabled. Checks that this produces a correct coverage report.
+ *
+ * This test requires an installed {@code mvn} binary or it will fail.
+ */
+public class JUnit5ExecutionListenerSystemTest {
+
+	/**
+	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
+	 * project.
+	 */
+	private static final int FAKE_TEAMSCALE_PORT = 65432;
+
+	@Test
+	public void systemTest() throws Exception {
+		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT);
+
+		runMavenTests();
+
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+
+		TestwiseCoverageReport report = teamscaleMockServer.uploadedReports.get(0);
+		assertThat(report.tests).hasSize(2);
+		assertAll(() -> {
+			assertThat(report.tests).extracting(test -> test.uniformPath)
+					.containsExactlyInAnyOrder("testBar", "testFoo");
+			assertThat(report.tests).extracting(test -> test.result)
+					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
+			assertThat(report.tests).extracting(JUnit5ExecutionListenerSystemTest::getCoverageString)
+					.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
+		});
+	}
+
+	private static void runMavenTests() {
+		
+	}
+
+	private static String getCoverageString(TestInfo info) {
+		return info.paths.stream().flatMap(path -> path.getFiles().stream())
+				.map(file -> file.fileName + ":" + file.coveredLines).collect(
+						Collectors.joining(";"));
+	}
+
+}

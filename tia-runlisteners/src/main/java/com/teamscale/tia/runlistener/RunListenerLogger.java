@@ -1,4 +1,4 @@
-package com.teamscale.tia.client.runlistener;
+package com.teamscale.tia.runlistener;
 
 /**
  * Implements simple STDOUT logging for run listeners. We cannot use SLF4J, since the run listeners are executed in the

@@ -14,7 +14,7 @@
         <tia.agent.port>65433</tia.agent.port>
         <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
         <tia.agent.path>${env.AGENT_PATH}</tia.agent.path>
-        <tia.client.version>${env.TIA_CLIENT_VERSION}</tia.client.version>
+        <tia.agent.version>${env.AGENT_VERSION}</tia.agent.version>
     </properties>
 
     <dependencies>
@@ -32,8 +32,8 @@
         </dependency>
         <dependency>
             <groupId>com.teamscale</groupId>
-            <artifactId>tia-client</artifactId>
-            <version>${tia.client.version}</version>
+            <artifactId>tia-runlisteners</artifactId>
+            <version>${tia.agent.version}</version>
         </dependency>
     </dependencies>
 

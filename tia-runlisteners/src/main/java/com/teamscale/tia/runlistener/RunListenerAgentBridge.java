@@ -1,4 +1,4 @@
-package com.teamscale.tia.client.runlistener;
+package com.teamscale.tia.runlistener;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.tia.client.RunningTest;

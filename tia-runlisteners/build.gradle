@@ -1,0 +1,23 @@
+plugins {
+	id 'com.teamscale.java-convention'
+	id 'java-library'
+	id 'com.teamscale.coverage'
+	id 'com.teamscale.publish'
+}
+
+publishAs {
+	readableName = "Teamscale TIA JUnit Run Listeners"
+	description = "JUnit 4 RunListener and JUnit 5 TestExecutionListener to record testwise coverage via the tia-client"
+}
+
+jar {
+	manifest {
+		attributes "Main-Class": "com.teamscale.tia.CommandLineInterface"
+	}
+}
+
+dependencies {
+	implementation project(':tia-client')
+	api 'junit:junit:4.13.2'
+	api 'org.junit.platform:junit-platform-launcher:1.8.2'
+}
