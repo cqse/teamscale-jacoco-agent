@@ -47,8 +47,17 @@ public class JUnit5ExecutionListenerSystemTest {
 	}
 
 	private static void runMavenTests() throws IOException {
-		ProcessUtils.ExecutionResult result = ProcessUtils.execute(
-				new ProcessBuilder("mvnw", "clean", "test").directory(new File("./maven-project")));
+		File workingDirectory = new File("./maven-project");
+
+		ProcessUtils.ExecutionResult result;
+		try {
+			result = ProcessUtils.execute(
+					new ProcessBuilder("mvnw", "clean", "test").directory(workingDirectory));
+		} catch (IOException e) {
+			throw new IOException("Failed to run mvnw in directory " + workingDirectory.getAbsolutePath(),
+					e);
+		}
+
 		if (!result.isNormalTermination()) {
 			throw new IOException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
