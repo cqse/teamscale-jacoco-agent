@@ -16,6 +16,7 @@ public class RunListenerLogger {
 		callerClassName = callerClass.getSimpleName();
 	}
 
+	/** Logs a debug message. */
 	public void debug(String message) {
 		if (!DEBUG_ENABLED) {
 			return;
@@ -24,6 +25,7 @@ public class RunListenerLogger {
 		System.err.println("[DEBUG] " + callerClassName + " - " + message);
 	}
 
+	/** Logs an error message and the stack trace of an optional throwable. */
 	public void error(String message, Throwable throwable) {
 		System.err.println("[ERROR] " + callerClassName + " - " + message);
 		throwable.printStackTrace();

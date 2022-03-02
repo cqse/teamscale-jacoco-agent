@@ -1,7 +1,5 @@
 package com.teamscale.tia.client;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
@@ -23,12 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  */
 public class TiaClientSystemTest {
 
-	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
-			.adapter(TestwiseCoverageReport.class);
-
 	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
-	private final static int FAKE_TEAMSCALE_PORT = 65432;
-	private final static int AGENT_PORT = 65433;
+	private static final int FAKE_TEAMSCALE_PORT = 65432;
+	private static final int AGENT_PORT = 65433;
 
 	@Test
 	public void systemTest() throws Exception {

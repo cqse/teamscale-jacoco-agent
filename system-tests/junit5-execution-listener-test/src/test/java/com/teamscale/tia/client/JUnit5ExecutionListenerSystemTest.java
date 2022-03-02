@@ -50,7 +50,7 @@ public class JUnit5ExecutionListenerSystemTest {
 		ProcessUtils.ExecutionResult result = ProcessUtils.execute(
 				new ProcessBuilder("mvnw", "clean", "test").directory(new File("./maven-project")));
 		if (!result.isNormalTermination()) {
-			throw new RuntimeException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
+			throw new IOException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
 	}
 
