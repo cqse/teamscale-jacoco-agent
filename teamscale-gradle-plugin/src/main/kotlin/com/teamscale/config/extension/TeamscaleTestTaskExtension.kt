@@ -1,6 +1,7 @@
 package com.teamscale.config.extension
 
 import com.teamscale.config.JUnitReportConfiguration
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -20,5 +21,10 @@ open class TeamscaleTestTaskExtension(
     fun report(action: Action<in JUnitReportConfiguration>) {
         test.reports.junitXml.required.set(true)
         action.execute(report)
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun report(closure: Closure<*>) {
+        report { o -> project.configure(o, closure) }
     }
 }

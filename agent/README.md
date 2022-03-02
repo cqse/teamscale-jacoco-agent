@@ -94,6 +94,8 @@ patterns with `*`, `**` and `?`.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a 
   semicolon.
   You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
+- `obfuscate-security-related-outputs`: boolean value determining if security critical information such as access 
+   keys are obfuscated when printing them to the console or into the log (default is true).
 - `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs. If not specified, the
 `teamscale.project` property must be specified via the `git.properties` file in at least one of the profiled JARs/WARs/EARs.
@@ -104,12 +106,10 @@ patterns with `*`, `**` and `?`.
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in 
   Teamscale's UI.
 - `teamscale-revision`: the source control revision (e.g. SVN revision or Git hash) that has been used to build 
-  the system under test. Teamscale uses this to map the coverage to the corresponding source code.
+  the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit 
   from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
-- `obfuscate-security-related-outputs`: boolean value determining if security critical information such as access 
-   keys are obfuscated when printing them to the console or into the log (default is true).
 
   If **Git** is your VCS, you can get the commit info via
   
@@ -128,7 +128,9 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   ```bash
  echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
 ```
-  
+
+- `teamscale-revision-manifest-jar` As an alternative to `teamscale-revision` the agent accepts the repository revision provided in the given jar/war's `META-INF/MANIFEST.MF` file (for details see path format
+  section above). The revision must be supplied as an main attribute called `Revision` (preferred) or as an attribute called `Git_Commit`, which belongs to an entry called `Git`.
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via 
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format 
   section above)
@@ -141,10 +143,7 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries 
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format 
   section above)
-- `validate-ssl` (optional): by default the agent will accept any SSL certificate. This enables a fast setup of the agent
-  even in the face of broken or self-signed certificates. If you need to validate certificates, set this option to `true`.
-  You might need to make your self-signed certificates available to the agent via a keystore. See
-  [the Teamscale userguide's section on that topic][ts-userguide-keystore] for how to do that.
+- `validate-ssl` (optional): defaults to true. Can be used to disable SSL validation (not recommended).
 - `azure-url`: a HTTPS URL to an azure file storage. Must be in the following format: 
   https://\<account\>.file.core.windows.net/\<share\>/(\<path\>)</pre>. The \<path\> is optional; note, that in the case 
   that the given
@@ -162,6 +161,10 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
     - `[POST] /dump` Instructs the agent to dump the collected coverage.
     - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in 
       the current JVM session.
+    - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
+    - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
+    - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
+    - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
    The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
@@ -182,6 +185,18 @@ echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"
   when the application is running and is unique amongst the other deployed applications. 
   E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at 
   the timestamp of the last modification date of the given marker class.
+
+## Secure communication
+If the connection to the Teamscale server should be established via HTTPS, a Java Trust Store can be required, 
+which contains the certificate used by the Teamscale server for inbound HTTPS communication. Please refer to the
+[section on HTTPS configuration in the Teamscale documentation][ts-userguide-truststore] 
+for details on when and how to create a Java Trust Store (please note that from the viewpoint of the agent, Teamscale
+is the "external" server here. In order to activate usage of the trust store you need to specify the
+following JVM parameters 
+```properties
+-Djavax.net.ssl.trustStore=<Path-to-Truststore-File>
+-Djavax.net.ssl.trustStorePassword=<Password>
+```
 
 ## Options for testwise mode
 
@@ -353,11 +368,27 @@ This ensures that the performance of your application does not degrade.
 
 ## Additional steps for Wildfly
 
-Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf` or `domain.conf`
-file inside the Wildfly installation directory - depending on which "mode" is used; probably standalone.
-
 Please set the agent's `includes` parameter so that the Wildfly code is not being profiled.
 This ensures that the performance of your application does not degrade.
+
+### Using standalone mode
+
+Register the agent in the `JAVA_OPTS` environment variable in the `standalone.conf`
+file inside the Wildfly installation directory.
+
+### Using domain mode
+
+Register the agent in `domain.xml` under
+
+```xml
+<server-group>
+  <jvm>
+    <jvm-options>
+      <option value="-javaagent:..."/>
+    </jvm-options>
+  </jvm>
+</server-group>
+```
 
 ## Additional steps for Tomcat/TomEE
 
@@ -609,7 +640,7 @@ To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info
-[ts-userguide-keystore]: https://docs.teamscale.com/howto/configuring-https/#creating-a-keystore
+[ts-userguide-truststore]: https://docs.teamscale.com/howto/connecting-via-https
 [teamscale]: https://teamscale.com
 [signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html
 [git-commit-id]: https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering

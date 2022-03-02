@@ -1,23 +1,21 @@
 plugins {
-    id 'com.teamscale.java-convention'
+	id 'com.teamscale.java-convention'
 }
 
 version 'unspecified'
 
-sourceCompatibility = 1.8
-
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.12'
+	testImplementation 'junit:junit:4.12'
 }
 
 jar {
-    manifest {
-        attributes(
-                'Main-Class': 'com.example.Main'
-        )
-    }
+	manifest {
+		attributes(
+				'Main-Class': 'com.example.Main'
+		)
+	}
 }

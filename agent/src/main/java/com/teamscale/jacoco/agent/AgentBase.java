@@ -1,6 +1,10 @@
 package com.teamscale.jacoco.agent;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.HttpUtils;
+import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -8,6 +12,7 @@ import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
+import com.teamscale.report.testwise.model.RevisionInfo;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.agent.rt.RT;
@@ -44,6 +49,10 @@ public abstract class AgentBase {
 
 	private final Service spark = Service.ignite();
 
+	/** JSON adapter for revision information. */
+	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
+			.adapter(RevisionInfo.class);
+
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		this.options = options;
@@ -62,8 +71,7 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Lazily generated string representation of the command line arguments
-	 * to print to the log.
+	 * Lazily generated string representation of the command line arguments to print to the log.
 	 */
 	private Object getOptionsObjectToLog() {
 		return new Object() {
@@ -96,8 +104,13 @@ public abstract class AgentBase {
 				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
 		spark.get("/message", (request, response) ->
 				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
+		spark.get("/revision", (request, response) -> this.getRevisionInfo());
+		spark.get("/commit", (request, response) -> this.getRevisionInfo());
 		spark.put("/partition", this::handleSetPartition);
 		spark.put("/message", this::handleSetMessage);
+		spark.put("/revision", this::handleSetRevision);
+		spark.put("/commit", this::handleSetCommit);
+
 	}
 
 	/**
@@ -213,11 +226,8 @@ public abstract class AgentBase {
 	private String handleSetPartition(Request request, Response response) {
 		String partition = StringUtils.removeDoubleQuotes(request.body());
 		if (partition == null || partition.isEmpty()) {
-			String errorMessage = "The new partition name is missing in the request body! Please add it as plain text.";
-			logger.error(errorMessage);
-
-			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return errorMessage;
+			return handleBadRequest(response,
+					"The new partition name is missing in the request body! Please add it as plain text.");
 		}
 
 		logger.debug("Changing partition name to " + partition);
@@ -228,20 +238,55 @@ public abstract class AgentBase {
 		return "";
 	}
 
-	/** Handles setting the partition name. */
+	/** Handles setting the upload message. */
 	private String handleSetMessage(Request request, Response response) {
-		String message =  StringUtils.removeDoubleQuotes(request.body());
+		String message = StringUtils.removeDoubleQuotes(request.body());
 		if (message == null || message.isEmpty()) {
-			String errorMessage = "The new message is missing in the request body! Please add it as plain text.";
-			logger.error(errorMessage);
-
-			response.status(HttpServletResponse.SC_BAD_REQUEST);
-			return errorMessage;
+			return handleBadRequest(response,
+					"The new message is missing in the request body! Please add it as plain text.");
 		}
 
 		logger.debug("Changing message to " + message);
 		options.getTeamscaleServerOptions().setMessage(message);
 
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
+	}
+
+	/** Handles setting the upload commit. */
+	private String handleSetCommit(Request request, Response response) {
+		String commit = StringUtils.removeDoubleQuotes(request.body());
+		if (commit == null || commit.isEmpty()) {
+			return handleBadRequest(response,
+					"The new upload commit is missing in the request body! Please add it as plain text.");
+		}
+		options.getTeamscaleServerOptions().commit = CommitDescriptor.parse(commit);
+
+		response.status(HttpServletResponse.SC_NO_CONTENT);
+		return "";
+	}
+
+	private String handleBadRequest(Response response, String message) {
+		logger.error(message);
+		response.status(HttpServletResponse.SC_BAD_REQUEST);
+		return message;
+	}
+
+	/** Returns revision information for the Teamscale upload. */
+	private String getRevisionInfo() {
+		TeamscaleServer server = options.getTeamscaleServerOptions();
+		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
+	}
+
+	/** Handles setting the revision. */
+	private String handleSetRevision(Request request, Response response) {
+		String revision = org.conqat.lib.commons.string.StringUtils.removeDoubleQuotes(request.body());
+		if (revision == null || revision.isEmpty()) {
+			return handleBadRequest(response,
+					"The new revision name is missing in the request body! Please add it as plain text.");
+		}
+		logger.debug("Changing revision name to " + revision);
+		options.getTeamscaleServerOptions().revision = revision;
 		response.status(HttpServletResponse.SC_NO_CONTENT);
 		return "";
 	}

@@ -17,7 +17,6 @@ ext.junit4Version = '4.12'
 ext.junitVintageVersion = '5.4.0'
 ext.junitPlatformVersion = '1.4.0'
 ext.junitJupiterVersion = '5.4.0'
-ext.log4jVersion = '2.9.0'
 
 teamscale {
 	server {
@@ -31,7 +30,9 @@ teamscale {
 		branchName = "master"
 	}
 	report {
-		testwiseCoverage()
+		testwiseCoverage {
+			partition = 'Unit Tests'
+		}
 	}
 }
 
@@ -39,7 +40,6 @@ task unitTest(type: TestImpacted) {
 	useJUnitPlatform {
 		excludeTags 'integration'
 	}
-	teamscale.report.partition = 'Unit Tests'
 	jacoco.includes = [ 'com.example.project.*' ]
 	testLogging {
 		// events "started", "skipped", "failed"

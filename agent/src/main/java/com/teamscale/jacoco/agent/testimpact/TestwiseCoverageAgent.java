@@ -10,13 +10,11 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.StringUtils;
-import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.JacocoRuntimeController.DumpException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import com.teamscale.report.testwise.model.RevisionInfo;
 import com.teamscale.report.testwise.model.TestExecution;
 import spark.Request;
 import spark.Response;
@@ -46,10 +44,6 @@ public class TestwiseCoverageAgent extends AgentBase {
 	private final JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestExecution.class);
 
-	/** JSON adapter for revision information. */
-	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
-			.adapter(RevisionInfo.class);
-
 	/** JSON adapter for test details. */
 	private final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsAdapter = new Moshi.Builder().build()
 			.adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
@@ -77,7 +71,6 @@ public class TestwiseCoverageAgent extends AgentBase {
 	protected void initServerEndpoints(Service spark) {
 		super.initServerEndpoints(spark);
 		spark.get("/test", (request, response) -> controller.getSessionId());
-		spark.get("/revision", (request, response) -> this.getRevisionInfo());
 		spark.post("/test/start/" + TEST_ID_PARAMETER, this::handleTestStart);
 		spark.post("/test/end/" + TEST_ID_PARAMETER, this::handleTestEnd);
 		spark.post("/testrun/start", this::handleTestRunStart);
@@ -101,6 +94,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 	private String handleTestRunStart(Request request, Response response) throws IOException {
 		boolean includeNonImpactedTests = "true".equalsIgnoreCase(request.params("include-non-impacted"));
+		boolean includeAddedTests = "true".equalsIgnoreCase(request.params("include-added-tests"));
+		boolean includeFailedAndSkipped = "true".equalsIgnoreCase(request.params("include-failed-and-skipped"));
 
 		String baseline = request.params("baseline");
 		String bodyString = request.body();
@@ -123,12 +118,13 @@ public class TestwiseCoverageAgent extends AgentBase {
 			}
 		}
 
-		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, baseline);
+		String responseBody = testEventHandler.testRunStart(availableTests, includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped, baseline);
 		response.type(APPLICATION_JSON.asString());
 		return responseBody;
 	}
 
-	private String handleTestRunEnd(Request request, Response response) throws IOException, CoverageGenerationException {
+	private String handleTestRunEnd(Request request,
+									Response response) throws IOException, CoverageGenerationException {
 		testEventHandler.testRunEnd();
 		response.status(SC_NO_CONTENT);
 		return "";
@@ -192,11 +188,5 @@ public class TestwiseCoverageAgent extends AgentBase {
 			logger.error("Failed to store test execution: " + e.getMessage(), e);
 			return Optional.empty();
 		}
-	}
-
-	/** Returns revision information for the Teamscale upload. */
-	private String getRevisionInfo() {
-		TeamscaleServer server = options.getTeamscaleServerOptions();
-		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
 	}
 }

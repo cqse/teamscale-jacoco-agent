@@ -19,12 +19,30 @@ public class TeamscaleServiceGenerator {
 	 * server and which sets the accept header to json.
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
-									  Interceptor... interceptors) {
+									  int readTimeout, int writeTimeout, Interceptor... interceptors) {
+		Retrofit retrofit = HttpUtils.createRetrofit(
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
+				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
+						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
+						.addInterceptor(new AcceptJsonInterceptor()), readTimeout, writeTimeout
+		);
+		return retrofit.create(serviceClass);
+	}
+
+	/**
+	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
+	 * server and which sets the accept-header to json. Logs requests and responses to the given logfile.
+	 */
+	public static <S> S createServiceWithRequestLogging(Class<S> serviceClass, HttpUrl baseUrl, String username,
+														String accessToken, File logfile, int readTimeout,
+														int writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
+						.addInterceptor(new FileLoggingInterceptor(logfile)),
+				readTimeout, writeTimeout
 		);
 		return retrofit.create(serviceClass);
 	}
@@ -34,18 +52,6 @@ public class TeamscaleServiceGenerator {
 			builder.addInterceptor(interceptor);
 		}
 		return builder;
-	}
-
-	public static <S> S createServiceWithRequestLogging(Class<S> serviceClass, HttpUrl baseUrl, String username,
-														String accessToken, File file, Interceptor... interceptors) {
-		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
-				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-						.addInterceptor(new AcceptJsonInterceptor())
-						.addInterceptor(new FileLoggingInterceptor(file))
-		);
-		return retrofit.create(serviceClass);
 	}
 
 

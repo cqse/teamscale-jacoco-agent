@@ -69,6 +69,9 @@ public class AgentOptions {
 	/** Option name that allows to specify a git commit hash to which coverage should be uploaded to. */
 	public static final String TEAMSCALE_REVISION_OPTION = "teamscale-revision";
 
+	/** Option name that allows to specify a jar file that contains the git commit hash in a MANIFEST.MF file. */
+	public static final String TEAMSCALE_REVISION_MANIFEST_JAR_OPTION = "teamscale-revision-manifest-jar";
+
 	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
 	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
 
@@ -126,11 +129,9 @@ public class AgentOptions {
 	/* package */ boolean shouldDumpOnExit = true;
 
 	/**
-	 * Whether to validate SSL certificates or simply ignore them. We disable this by default on purpose in order to
-	 * make the initial setup of the agent as smooth as possible. Many users have self-signed certificates that cause
-	 * problems. Users that need this feature can turn it on deliberately.
+	 * Whether to validate SSL certificates, defaults to true.
 	 */
-	/* package */ boolean validateSsl = false;
+	/* package */ boolean validateSsl = true;
 
 	/**
 	 * Whether to ignore duplicate, non-identical class files.
@@ -272,7 +273,7 @@ public class AgentOptions {
 						" git.properties files.");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
-				"'teamscale-revision' is incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
+				"'" + AgentOptions.TEAMSCALE_REVISION_OPTION + "' and '" + AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "' are incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig

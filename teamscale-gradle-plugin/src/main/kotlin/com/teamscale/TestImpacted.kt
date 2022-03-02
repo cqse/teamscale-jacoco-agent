@@ -40,6 +40,22 @@ open class TestImpacted : Test() {
     )
     var runAllTests: Boolean = false
 
+    /** Command line switch to include or exclude added tests. */
+    @Input
+    @Option(
+        option = "include-added-tests",
+        description = "When set to true includes added tests in test selection."
+    )
+    var includeAddedTests: Boolean = true
+
+    /** Command line switch to include or exclude failed and skipped tests. */
+    @Input
+    @Option(
+        option = "include-failed-and-skipped",
+        description = "When set to true includes failed and skipped tests in test selection."
+    )
+    var includeFailedAndSkipped: Boolean = true
+
     /**
      * Reference to the configuration that should be used for this task.
      */
@@ -209,6 +225,8 @@ open class TestImpacted : Test() {
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
         writeEngineProperty("runImpacted", runImpacted.toString())
         writeEngineProperty("runAllTests", runAllTests.toString())
+        writeEngineProperty("includeAddedTests", includeAddedTests.toString())
+        writeEngineProperty("includeFailedAndSkipped", includeFailedAndSkipped.toString())
         writeEngineProperty("engines", includeEngines.joinToString(","))
     }
 }

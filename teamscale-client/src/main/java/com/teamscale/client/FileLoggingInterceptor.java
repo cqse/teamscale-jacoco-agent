@@ -11,18 +11,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 
 /**
  * OkHttpInterceptor which prints out the full request and server response of requests to a file.
  */
 public class FileLoggingInterceptor implements Interceptor {
 
-	private File file;
+	private final File logfile;
 
 	/** Constructor. */
-	public FileLoggingInterceptor(File file) {
-		this.file = file;
+	public FileLoggingInterceptor(File logfile) {
+		this.logfile = logfile;
 	}
 
 	@Override
@@ -30,7 +29,7 @@ public class FileLoggingInterceptor implements Interceptor {
 		Request request = chain.request();
 
 		long requestStartTime = System.nanoTime();
-		try (PrintWriter fileWriter = new PrintWriter(new FileWriter(file))) {
+		try (PrintWriter fileWriter = new PrintWriter(new FileWriter(logfile))) {
 			fileWriter.write(String.format("--> Sending request %s on %s %s%n%s%n", request.method(), request.url(),
 					chain.connection(),
 					request.headers()));

@@ -160,7 +160,12 @@ public enum EReportFormat {
 	 * the Lauterbach Trace32 tool. See the {@code trace32_example_reports.zip} for
 	 * additional report examples.
 	 */
-	LAUTERBACH_TRACE32("Lauterbach Trace32");
+	LAUTERBACH_TRACE32("Lauterbach Trace32"),
+
+	/**
+	 * jQAssistant report format.
+	 */
+	JQASSISTANT("jQAssistant");
 
 	/** Each ReportFormat needs a readable name for the UI */
 	private final String readableName;

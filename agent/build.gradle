@@ -36,7 +36,7 @@ dependencies {
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 	implementation 'com.beust:jcommander:1.81'
-	implementation 'com.teamscale:teamscale-lib-commons:7.0.2'
+	implementation 'com.teamscale:teamscale-lib-commons:7.6.1'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 	implementation 'com.sparkjava:spark-core:2.9.3'
@@ -54,12 +54,11 @@ shadowJar {
 	// Needed as a workaround for https://github.com/johnrengelman/shadow/issues/521
 	inputs.property("debug", project.hasProperty("debug"))
 
-	archiveBaseName = 'teamscale-jacoco-agent'
-	classifier = null
 	// since this is used as an agent, we want it to always have the same name
 	// otherwise people have to adjust their -javaagent parameters after every
 	// update
-	archiveVersion = null
+	archiveFileName.set('teamscale-jacoco-agent.jar')
+	archiveClassifier.set(null)
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
 

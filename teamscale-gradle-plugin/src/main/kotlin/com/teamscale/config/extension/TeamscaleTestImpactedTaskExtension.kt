@@ -3,6 +3,7 @@ package com.teamscale.config.extension
 import com.teamscale.TestImpacted
 import com.teamscale.config.AgentConfiguration
 import com.teamscale.config.TestwiseCoverageConfiguration
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
@@ -24,12 +25,22 @@ open class TeamscaleTestImpactedTaskExtension(
         action.execute(report)
     }
 
+    /** Overload for Groovy DSL compatibility. */
+    fun report(closure: Closure<*>) {
+        report { o -> project.configure(o, closure) }
+    }
+
     /** Settings regarding the teamscale jacoco agent. */
     val agent = AgentConfiguration(project, jacocoExtension)
 
     /** Configures the jacoco agent options. */
     fun agent(action: Action<in AgentConfiguration>) {
         action.execute(agent)
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun agent(closure: Closure<*>) {
+        agent { o -> project.configure(o, closure) }
     }
 }
 
