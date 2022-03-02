@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.jacoco.agent.options.ArtifactoryConfig;
 import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;

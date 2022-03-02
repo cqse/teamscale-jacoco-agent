@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
 import okhttp3.HttpUrl;
@@ -166,7 +167,7 @@ public class AgentOptionsTest {
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 	}
 
-	/** Tests the 'teamscale-revision-manifest-jar' option correctly parses the 'Git_Commit' field in the manifest.*/
+	/** Tests the 'teamscale-revision-manifest-jar' option correctly parses the 'Git_Commit' field in the manifest. */
 	@Test
 	public void testTeamscaleRevisionManifestJarOption() throws URISyntaxException, AgentOptionParseException {
 		File jar = new File(getClass().getResource("manifest-with-git-commit-revision.jar").toURI());

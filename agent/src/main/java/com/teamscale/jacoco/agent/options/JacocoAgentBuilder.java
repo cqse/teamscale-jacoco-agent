@@ -39,7 +39,7 @@ public class JacocoAgentBuilder {
 		}
 
 		// Don't dump class files in testwise mode when coverage is written to an exec file
-		boolean needsClassFiles = agentOptions.mode == EMode.NORMAL || agentOptions.testwiseCoverageMode != ETestwiseCoverageMode.EXEC_FILE;
+		boolean needsClassFiles = agentOptions.mode == EMode.NORMAL || agentOptions.testImpactConfig.testwiseCoverageMode != ETestwiseCoverageMode.EXEC_FILE;
 		if (agentOptions.classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
@@ -97,17 +97,18 @@ public class JacocoAgentBuilder {
 
 	/**
 	 * Returns additional options for JaCoCo depending on the selected {@link AgentOptions#mode} and {@link
-	 * AgentOptions#testwiseCoverageMode}.
+	 * com.teamscale.jacoco.agent.testimpact.TestImpactConfig#testwiseCoverageMode}.
 	 */
 	String getModeSpecificOptions() throws IOException {
 		if (agentOptions
-				.useTestwiseCoverageMode() && agentOptions.testwiseCoverageMode == ETestwiseCoverageMode.EXEC_FILE) {
+				.useTestwiseCoverageMode() && agentOptions.testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.EXEC_FILE) {
 			String sessionId = "";
-			if (agentOptions.testEnvironmentVariable != null) {
-				sessionId = System.getenv(agentOptions.testEnvironmentVariable);
+			if (agentOptions.testImpactConfig.testEnvironmentVariable != null) {
+				sessionId = System.getenv(agentOptions.testImpactConfig.testEnvironmentVariable);
 			}
 			// when writing to a .exec file, we can instruct JaCoCo to do so directly
-			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createTempFile("jacoco", "exec").getAbsolutePath();
+			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createTempFile("jacoco", "exec")
+					.getAbsolutePath();
 
 		} else {
 			// otherwise we don't need JaCoCo to perform any output of the .exec information

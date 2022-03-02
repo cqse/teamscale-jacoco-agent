@@ -9,6 +9,7 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
@@ -122,9 +123,9 @@ public abstract class TestEventHandlerStrategyBase {
 		}
 		if (agentOptions.getTeamscaleServerOptions().commit == null) {
 			throw new UnsupportedOperationException(
-					"You did not provide a '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' or '" +
-							AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
-							AgentOptions.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
+					"You did not provide a '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION + "' or '" +
+							TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
+							TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
 		}
 	}
 
