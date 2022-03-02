@@ -3,6 +3,7 @@ package com.teamscale.tia.client;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.TeamscaleMockServer;
 import org.conqat.lib.commons.io.ProcessUtils;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +34,7 @@ public class JUnit5ExecutionListenerSystemTest {
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 
-		TestwiseCoverageReport report = teamscaleMockServer.uploadedReports.get(0);
+		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(report.tests).hasSize(2);
 		assertAll(() -> {
 			assertThat(report.tests).extracting(test -> test.uniformPath)

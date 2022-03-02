@@ -5,6 +5,7 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -33,6 +34,9 @@ public class TeamscaleMockServer {
 	private final JsonAdapter<List<PrioritizableTestCluster>> testClusterJsonAdapter = new Moshi.Builder().build()
 			.adapter(Types.newParameterizedType(List.class, PrioritizableTestCluster.class));
 
+	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
+			.adapter(TestwiseCoverageReport.class);
+
 	/** All reports uploaded to this Teamscale instance. */
 	public final List<String> uploadedReports = new ArrayList<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
@@ -54,6 +58,15 @@ public class TeamscaleMockServer {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			return "Unexpected request: " + request.requestMethod() + " " + request.uri();
 		});
+	}
+
+	/**
+	 * Returns the report at the given index in {@link #uploadedReports}, parsed as a {@link TestwiseCoverageReport}.
+	 *
+	 * @throws IOException when parsing the report fails.
+	 */
+	public TestwiseCoverageReport parseUploadedTestwiseCoverageReport(int index) throws IOException {
+		return testwiseCoverageReportJsonAdapter.fromJson(uploadedReports.get(index));
 	}
 
 	private String handleImpactedTests(Request request, Response response) {
