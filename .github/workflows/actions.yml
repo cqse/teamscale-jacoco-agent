@@ -18,7 +18,7 @@ jobs:
       with:
         java-version: 11
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build --info
     - name: Upload Release Assets
       if: startsWith(github.ref, 'refs/tags/v')
       uses: svenstaro/upload-release-action@v2

@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,11 +50,42 @@ public class JUnit5ExecutionListenerSystemTest {
 
 	private static void runMavenTests() throws IOException {
 		File workingDirectory = new File("maven-project");
+		System.err.println("------> exists=" + Files.exists(workingDirectory.toPath()));
+
+		Files.walk(Paths.get(".")).forEach(path -> System.err.println("-->" + path));
+		//Files.list(Paths.get("./maven-project")).forEach(path -> System.err.println("-->" + path));
+
+		try {
+			ProcessUtils.execute(new ProcessBuilder("bla.sh"));
+			System.err.println("------------> test1 success");
+		} catch (Exception e) {
+			System.err.println("------------> test1 fail");
+		}
+
+		try {
+			ProcessUtils.execute(new ProcessBuilder("./bla.sh"));
+			System.err.println("------------> test2 success");
+		} catch (Exception e) {
+			System.err.println("------------> test2 fail");
+		}
+
+		try {
+			ProcessUtils.execute(new ProcessBuilder(new File("bla.sh").getAbsolutePath()));
+			System.err.println("------------> test3 success");
+		} catch (Exception e) {
+			System.err.println("------------> test3 fail");
+		}
+
+		try {
+			ProcessUtils.execute(new ProcessBuilder(new File("./bla.sh").getAbsolutePath()));
+			System.err.println("------------> test4 success");
+		} catch (Exception e) {
+			System.err.println("------------> test4 fail");
+		}
 
 		ProcessUtils.ExecutionResult result;
 		try {
-			result = ProcessUtils.execute(
-					new ProcessBuilder("run_test_with_tia.sh").directory(workingDirectory));
+			result = ProcessUtils.execute(new ProcessBuilder("./run_test_with_tia.sh").directory(workingDirectory));
 		} catch (IOException e) {
 			throw new IOException("Failed to run mvnw in directory " + workingDirectory.getAbsolutePath(),
 					e);
