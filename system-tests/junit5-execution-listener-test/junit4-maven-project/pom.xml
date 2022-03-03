@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>junit4-run-listener-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <tia.agent.port>65433</tia.agent.port>
+        <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
+        <tia.agent.path>${env.AGENT_PATH}</tia.agent.path>
+        <tia.agent.version>${env.AGENT_VERSION}</tia.agent.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.teamscale</groupId>
+            <artifactId>tia-runlisteners</artifactId>
+            <version>${tia.agent.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit4</artifactId>
+                        <version>3.0.0-M5</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <systemPropertyVariables>
+                        <tia.agent>http://localhost:${tia.agent.port}</tia.agent>
+                    </systemPropertyVariables>
+                    <argLine>-javaagent:${tia.agent.path}=http-server-port=${tia.agent.port},tia-mode=teamscale-upload,teamscale-server-url=http://localhost:${tia.teamscale.fake.port},teamscale-user=fake,teamscale-access-token=fake,teamscale-project=p,teamscale-partition=part,mode=testwise,teamscale-commit=master:12345,includes=*systemundertest.*</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
