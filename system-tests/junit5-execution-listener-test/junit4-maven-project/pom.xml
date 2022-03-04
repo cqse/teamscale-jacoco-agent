@@ -45,6 +45,12 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+                    <properties>44
+                        <property>
+                            <name>listener</name>
+                            <value>com.teamscale.tia.runlistener.JUnit4TestWiseCoverageRunListener</value>
+                        </property>
+                    </properties>
                     <systemPropertyVariables>
                         <tia.agent>http://localhost:${tia.agent.port}</tia.agent>
                     </systemPropertyVariables>

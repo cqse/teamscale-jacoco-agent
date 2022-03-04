@@ -61,14 +61,14 @@ public class JUnitRunListenerSystemTest {
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(report.tests).hasSize(2);
+		assertThat(report.tests).hasSize(1);
 		assertAll(() -> {
 			assertThat(report.tests).extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder("JUnit4Test/testAdd()");
+					.containsExactlyInAnyOrder("JUnit4Test/testAdd");
 			assertThat(report.tests).extracting(test -> test.result)
-					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
+					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED);
 			assertThat(report.tests).extracting(JUnitRunListenerSystemTest::getCoverageString)
-					.containsExactly("SystemUnderTest.java:3,6", "SystemUnderTest.java:3,6");
+					.containsExactly("SystemUnderTest.java:3,6");
 		});
 	}
 
