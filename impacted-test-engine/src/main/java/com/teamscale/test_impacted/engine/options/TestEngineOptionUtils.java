@@ -27,10 +27,10 @@ public class TestEngineOptionUtils {
 		return TestEngineOptions.builder()
 				.serverOptions(serverOptions)
 				.partition(propertyReader.getString("partition"))
-				.runImpacted(propertyReader.getBoolean("runImpacted"))
-				.runAllTests(propertyReader.getBoolean("runAllTests"))
-				.includeAddedTests(propertyReader.getBoolean("includeAddedTests"))
-				.includeFailedAndSkipped(propertyReader.getBoolean("includeFailedAndSkipped"))
+				.runImpacted(propertyReader.getBoolean("runImpacted", true))
+				.runAllTests(propertyReader.getBoolean("runAllTests", false))
+				.includeAddedTests(propertyReader.getBoolean("includeAddedTests", true))
+				.includeFailedAndSkipped(propertyReader.getBoolean("includeFailedAndSkipped", true))
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getString("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))
@@ -61,7 +61,7 @@ public class TestEngineOptionUtils {
 
 		private final ConfigurationParameters configurationParameters;
 
-		private String prefix;
+		private final String prefix;
 
 		private PrefixingPropertyReader(String prefix, ConfigurationParameters configurationParameters) {
 			this.prefix = prefix;
@@ -76,8 +76,12 @@ public class TestEngineOptionUtils {
 			return get(propertyName, Function.identity());
 		}
 
-		private Boolean getBoolean(String propertyName) {
-			return get(propertyName, Boolean::valueOf);
+		private Boolean getBoolean(String propertyName, boolean defaultValue) {
+			Boolean value = get(propertyName, Boolean::valueOf);
+			if (value == null) {
+				return defaultValue;
+			}
+			return value;
 		}
 
 		private CommitDescriptor getCommitDescriptor(String propertyName) {
