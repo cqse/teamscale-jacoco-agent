@@ -7,7 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # New Release
 
 - [feature] The agent logs now an error with further information when dumped coverage is empty
-- [fix] Bot specifying a boolean option for the JUnit 5 impacted test engine caused an NPE
+- [fix] Not specifying certain options for the JUnit 5 impacted test engine caused an NPE
 
 # 22.2.0
 

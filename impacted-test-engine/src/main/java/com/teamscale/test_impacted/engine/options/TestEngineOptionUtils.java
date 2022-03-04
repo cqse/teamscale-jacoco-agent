@@ -68,24 +68,24 @@ public class TestEngineOptionUtils {
 			this.configurationParameters = configurationParameters;
 		}
 
-		private <T> T get(String propertyName, Function<String, T> mapper) {
-			return configurationParameters.get(prefix + propertyName).map(mapper).orElse(null);
+		private <T> T getOrNull(String propertyName, Function<String, T> mapper) {
+			return get(propertyName, mapper, null);
+		}
+
+		private <T> T get(String propertyName, Function<String, T> mapper, T defaultValue) {
+			return configurationParameters.get(prefix + propertyName).map(mapper).orElse(defaultValue);
 		}
 
 		private String getString(String propertyName) {
-			return get(propertyName, Function.identity());
+			return getOrNull(propertyName, Function.identity());
 		}
 
 		private Boolean getBoolean(String propertyName, boolean defaultValue) {
-			Boolean value = get(propertyName, Boolean::valueOf);
-			if (value == null) {
-				return defaultValue;
-			}
-			return value;
+			return get(propertyName, Boolean::valueOf, defaultValue);
 		}
 
 		private CommitDescriptor getCommitDescriptor(String propertyName) {
-			return get(propertyName, CommitDescriptor::parse);
+			return getOrNull(propertyName, CommitDescriptor::parse);
 		}
 
 		private List<String> getStringList(String propertyName) {
@@ -95,7 +95,7 @@ public class TestEngineOptionUtils {
 				}
 
 				return Arrays.asList(listAsString.split(","));
-			});
+			}, Collections.emptyList());
 		}
 	}
 }
