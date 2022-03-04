@@ -7,6 +7,8 @@ We use [semantic versioning](http://semver.org/):
 # New Release
 
 - [feature] The agent logs now an error with further information when dumped coverage is empty
+- [feature] add JUnit 5 TestExecutionListener for testwise coverage recording
+- [breaking change] JUnit 4 RunListener renamed to com.teamscale.tia.runlistener.JUnit4TestWiseCoverageRunListener and published via new artifact com.teamscale:tia-runlisteners
 
 # 22.2.0
 
