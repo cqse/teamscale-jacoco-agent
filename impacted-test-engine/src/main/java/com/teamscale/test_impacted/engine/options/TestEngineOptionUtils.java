@@ -27,10 +27,10 @@ public class TestEngineOptionUtils {
 		return TestEngineOptions.builder()
 				.serverOptions(serverOptions)
 				.partition(propertyReader.getString("partition"))
-				.runImpacted(propertyReader.getBoolean("runImpacted"))
-				.runAllTests(propertyReader.getBoolean("runAllTests"))
-				.includeAddedTests(propertyReader.getBoolean("includeAddedTests"))
-				.includeFailedAndSkipped(propertyReader.getBoolean("includeFailedAndSkipped"))
+				.runImpacted(propertyReader.getBoolean("runImpacted", true))
+				.runAllTests(propertyReader.getBoolean("runAllTests", false))
+				.includeAddedTests(propertyReader.getBoolean("includeAddedTests", true))
+				.includeFailedAndSkipped(propertyReader.getBoolean("includeFailedAndSkipped", true))
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getString("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))
@@ -61,27 +61,31 @@ public class TestEngineOptionUtils {
 
 		private final ConfigurationParameters configurationParameters;
 
-		private String prefix;
+		private final String prefix;
 
 		private PrefixingPropertyReader(String prefix, ConfigurationParameters configurationParameters) {
 			this.prefix = prefix;
 			this.configurationParameters = configurationParameters;
 		}
 
-		private <T> T get(String propertyName, Function<String, T> mapper) {
-			return configurationParameters.get(prefix + propertyName).map(mapper).orElse(null);
+		private <T> T getOrNull(String propertyName, Function<String, T> mapper) {
+			return get(propertyName, mapper, null);
+		}
+
+		private <T> T get(String propertyName, Function<String, T> mapper, T defaultValue) {
+			return configurationParameters.get(prefix + propertyName).map(mapper).orElse(defaultValue);
 		}
 
 		private String getString(String propertyName) {
-			return get(propertyName, Function.identity());
+			return getOrNull(propertyName, Function.identity());
 		}
 
-		private Boolean getBoolean(String propertyName) {
-			return get(propertyName, Boolean::valueOf);
+		private Boolean getBoolean(String propertyName, boolean defaultValue) {
+			return get(propertyName, Boolean::valueOf, defaultValue);
 		}
 
 		private CommitDescriptor getCommitDescriptor(String propertyName) {
-			return get(propertyName, CommitDescriptor::parse);
+			return getOrNull(propertyName, CommitDescriptor::parse);
 		}
 
 		private List<String> getStringList(String propertyName) {
@@ -91,7 +95,7 @@ public class TestEngineOptionUtils {
 				}
 
 				return Arrays.asList(listAsString.split(","));
-			});
+			}, Collections.emptyList());
 		}
 	}
 }

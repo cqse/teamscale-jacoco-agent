@@ -178,7 +178,9 @@ public class TestEngineOptions {
 
 		/** @see #reportDirectory */
 		public Builder reportDirectory(String reportDirectory) {
-			testEngineOptions.reportDirectory = new File(reportDirectory);
+			if (reportDirectory != null) {
+				testEngineOptions.reportDirectory = new File(reportDirectory);
+			}
 			return this;
 		}
 
