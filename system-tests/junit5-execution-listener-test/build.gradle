@@ -23,9 +23,4 @@ dependencies {
 
 tasks.test.dependsOn(project(':agent').tasks.shadowJar)
 // install dependencies needed by the Maven test projects
-rootProject.getAllprojects().forEach {
-    def publishTask = it.tasks.findByPath("publishToMavenLocal")
-    if (publishTask != null) {
-        tasks.test.dependsOn(publishTask)
-    }
-}
+tasks.test.dependsOn(rootProject.tasks.iGP)

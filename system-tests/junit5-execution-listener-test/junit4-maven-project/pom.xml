@@ -48,7 +48,7 @@
                     <properties>44
                         <property>
                             <name>listener</name>
-                            <value>com.teamscale.tia.runlistener.JUnit4TestWiseCoverageRunListener</value>
+                            <value>com.teamscale.tia.runlistener.JUnit4TestwiseCoverageRunListener</value>
                         </property>
                     </properties>
                     <systemPropertyVariables>

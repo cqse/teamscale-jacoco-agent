@@ -27,7 +27,8 @@ task iGP(dependsOn: [
 		':report-generator:publishToMavenLocal',
 		':teamscale-gradle-plugin:publishToMavenLocal',
 		':teamscale-client:publishToMavenLocal',
-		':tia-client:publishToMavenLocal'
+		':tia-client:publishToMavenLocal',
+		':tia-runlisteners:publishToMavenLocal'
 ])
 
 dependencyUpdates.resolutionStrategy {

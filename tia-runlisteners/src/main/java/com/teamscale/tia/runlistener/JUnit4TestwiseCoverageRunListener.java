@@ -11,10 +11,10 @@ import org.junit.runner.notification.RunListener;
  * {@link RunListener} that uses the {@link TiaAgent} to record test-wise coverage.
  */
 @SuppressWarnings("unused")
-public class JUnit4TestWiseCoverageRunListener extends RunListener {
+public class JUnit4TestwiseCoverageRunListener extends RunListener {
 
 	private final RunListenerAgentBridge bridge = new RunListenerAgentBridge(
-			JUnit4TestWiseCoverageRunListener.class.getName());
+			JUnit4TestwiseCoverageRunListener.class.getName());
 
 	@Override
 	public void testStarted(Description description) {

@@ -16,10 +16,10 @@ import java.util.Optional;
  * {@link TestExecutionListener} that uses the {@link TiaAgent} to record test-wise coverage.
  */
 @SuppressWarnings("unused")
-public class JUnit5TestWiseCoverageExecutionListener implements TestExecutionListener {
+public class JUnit5TestwiseCoverageExecutionListener implements TestExecutionListener {
 
 	private final RunListenerAgentBridge bridge = new RunListenerAgentBridge(
-			JUnit5TestWiseCoverageExecutionListener.class.getName());
+			JUnit5TestwiseCoverageExecutionListener.class.getName());
 
 	@Override
 	public void executionStarted(TestIdentifier testIdentifier) {
