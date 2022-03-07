@@ -9,6 +9,7 @@ We use [semantic versioning](http://semver.org/):
 - [feature] The agent logs now an error with further information when dumped coverage is empty
 - [feature] add JUnit 5 TestExecutionListener for testwise coverage recording
 - [breaking change] JUnit 4 RunListener renamed to com.teamscale.tia.runlistener.JUnit4TestwiseCoverageRunListener and published via new artifact com.teamscale:tia-runlisteners
+- [fix] Not specifying certain options for the JUnit 5 impacted test engine caused an NPE
 
 # 22.2.0
 
