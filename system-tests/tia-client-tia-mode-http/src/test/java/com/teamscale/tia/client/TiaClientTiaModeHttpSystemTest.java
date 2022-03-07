@@ -18,11 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TiaClientTiaModeHttpSystemTest {
 
 	/** This port must match what is configured for the -javaagent line in this project's build.gradle. */
-	private final int agentPort = 65433;
+	private static final int AGENT_PORT = 65433;
 
 	@Test
 	public void systemTest() throws Exception {
-		CustomTestFramework customTestFramework = new CustomTestFramework(agentPort);
+		CustomTestFramework customTestFramework = new CustomTestFramework(AGENT_PORT);
 		customTestFramework.runTestsWithTia();
 
 		assertThat(customTestFramework.testInfos.stream().map(TiaClientTiaModeHttpSystemTest::getCoverageString))
