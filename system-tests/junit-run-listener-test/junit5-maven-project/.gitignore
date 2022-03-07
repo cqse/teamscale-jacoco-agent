@@ -1,2 +1,4 @@
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/MavenWrapperDownloader.java
 target
 .idea
