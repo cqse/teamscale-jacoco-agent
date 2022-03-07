@@ -5,30 +5,27 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
-import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 
 import static java.util.stream.Collectors.joining;
 
@@ -48,10 +45,12 @@ public class AgentOptionsParser {
 
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
+	private final TeamscaleConfig teamscaleConfig;
 
 	public AgentOptionsParser(ILogger logger) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
+		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
 	}
 
 	/**
@@ -68,7 +67,7 @@ public class AgentOptionsParser {
 		if (optionsString == null) {
 			optionsString = "";
 		}
-
+		logger.debug("Parsing options: " + optionsString);
 		AgentOptions options = new AgentOptions();
 		options.originalOptionsString = optionsString;
 
@@ -90,6 +89,36 @@ public class AgentOptionsParser {
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
 	private void handleOption(AgentOptions options, String optionPart) throws AgentOptionParseException {
+		Pair<String, String> keyAndValue = parseOption(optionPart);
+		String key = keyAndValue.getFirst();
+		String value = keyAndValue.getSecond();
+		if (key.startsWith("jacoco-")) {
+			options.additionalJacocoOptions.add(key.substring(7), value);
+			return;
+		}
+		if (key.startsWith("teamscale-") && teamscaleConfig.handleTeamscaleOptions(options.teamscaleServer, key,
+				value)) {
+			return;
+		}
+		if (TestImpactConfig.handleTiaOptions(options.testImpactConfig, key, value)) {
+			return;
+		}
+		if (key.startsWith("artifactory-") && ArtifactoryConfig
+				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
+			return;
+		}
+		if (key.startsWith("azure-") && AzureFileStorageConfig
+				.handleAzureFileStorageOptions(options.azureFileStorageConfig, key,
+						value)) {
+			return;
+		}
+		if (handleAgentOptions(options, key, value)) {
+			return;
+		}
+		throw new AgentOptionParseException("Unknown option: " + key);
+	}
+
+	private Pair<String, String> parseOption(String optionPart) throws AgentOptionParseException {
 		String[] keyAndValue = optionPart.split("=", 2);
 		if (keyAndValue.length < 2) {
 			throw new AgentOptionParseException("Got an option without any value: " + optionPart);
@@ -103,28 +132,7 @@ public class AgentOptionsParser {
 		if (value.startsWith("\"") && value.endsWith("\"")) {
 			value = value.substring(1, value.length() - 1);
 		}
-
-		if (key.startsWith("jacoco-")) {
-			options.additionalJacocoOptions.add(key.substring(7), value);
-			return;
-		}
-		if (handleTeamscaleOptions(options, key, value)) {
-			return;
-		}
-		if (handleTiaOptions(options, key, value)) {
-			return;
-		} else if (key.startsWith("artifactory-") && ArtifactoryConfig
-				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
-			return;
-		} else if (key.startsWith("azure-") && AzureFileStorageConfig
-				.handleAzureFileStorageOptions(options.azureFileStorageConfig, key,
-						value)) {
-			return;
-		}
-		if (handleAgentOptions(options, key, value)) {
-			return;
-		}
-		throw new AgentOptionParseException("Unknown option: " + key);
+		return new Pair<>(key, value);
 	}
 
 	/**
@@ -200,7 +208,7 @@ public class AgentOptionsParser {
 	/**
 	 * Parses the given value as an enum constant case-insensitively and converts "-" to "_".
 	 */
-	private <T extends Enum<T>> T parseEnumValue(String key, String value, Class<T> enumClass)
+	public static <T extends Enum<T>> T parseEnumValue(String key, String value, Class<T> enumClass)
 			throws AgentOptionParseException {
 		try {
 			return Enum.valueOf(enumClass, value.toUpperCase().replaceAll("-", "_"));
@@ -232,160 +240,6 @@ public class AgentOptionsParser {
 		} catch (IOException e) {
 			throw new AgentOptionParseException(
 					"An error occurred while reading the config file " + configFile.getAbsolutePath(), e);
-		}
-	}
-
-	/**
-	 * Handles all command line options prefixed with "teamscale-".
-	 *
-	 * @return true if it has successfully processed the given option.
-	 */
-	private boolean handleTeamscaleOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException {
-		switch (key) {
-			case "teamscale-server-url":
-				options.teamscaleServer.url = parseUrl(key, value);
-				return true;
-			case "teamscale-project":
-				options.teamscaleServer.project = value;
-				return true;
-			case "teamscale-user":
-				options.teamscaleServer.userName = value;
-				return true;
-			case "teamscale-access-token":
-				options.teamscaleServer.userAccessToken = value;
-				return true;
-			case "teamscale-partition":
-				options.teamscaleServer.partition = value;
-				return true;
-			case AgentOptions.TEAMSCALE_COMMIT_OPTION:
-				options.teamscaleServer.commit = parseCommit(value);
-				return true;
-			case AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
-				options.teamscaleServer.commit = getCommitFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
-				return true;
-			case AgentOptions.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
-				options.teamscaleServer.revision = getRevisionFromGitProperties(key, value);
-				return true;
-			case "teamscale-message":
-				options.teamscaleServer.setMessage(value);
-				return true;
-			case AgentOptions.TEAMSCALE_REVISION_OPTION:
-				options.teamscaleServer.revision = value;
-				return true;
-			case AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
-				options.teamscaleServer.revision = getRevisionFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Handles all TIA-related command line option.
-	 *
-	 * @return true if it has successfully processed the given option.
-	 */
-	private boolean handleTiaOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
-		switch (key) {
-			case "tia-mode":
-				options.testwiseCoverageMode = parseEnumValue(key, value, ETestwiseCoverageMode.class);
-				return true;
-			case "test-env":
-				options.testEnvironmentVariable = value;
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	private String getRevisionFromGitProperties(String optionName, String value) throws AgentOptionParseException {
-		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
-		try {
-			String revision = GitPropertiesLocatorUtils.getRevisionFromGitProperties(jarFile, true);
-			if (revision == null) {
-				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
-			}
-			return revision;
-		} catch (IOException | InvalidGitPropertiesException e) {
-			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
-					e);
-		}
-	}
-
-	/**
-	 * Handles all command-line options prefixed with 'azure-'
-	 *
-	 * @return true if it has successfully process the given option.
-	 */
-	private boolean handleAzureFileStorageOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException {
-		switch (key) {
-			case "azure-url":
-				options.azureFileStorageConfig.url = parseUrl(key, value);
-				return true;
-			case "azure-key":
-				options.azureFileStorageConfig.accessKey = value;
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Reads `Branch` and `Timestamp` entries from the given jar/war file's manifest and builds a commit descriptor out
-	 * of it.
-	 */
-	private CommitDescriptor getCommitFromManifest(File jarFile) throws AgentOptionParseException {
-		Manifest manifest = getManifestFromJarFile(jarFile);
-		String branch = manifest.getMainAttributes().getValue("Branch");
-		String timestamp = manifest.getMainAttributes().getValue("Timestamp");
-		if (StringUtils.isEmpty(branch)) {
-			throw new AgentOptionParseException("No entry 'Branch' in MANIFEST");
-		} else if (StringUtils.isEmpty(timestamp)) {
-			throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST");
-		}
-		logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
-		return new CommitDescriptor(branch, timestamp);
-	}
-
-	/**
-	 * Reads `Git_Commit` entry from the given jar/war file's manifest and sets it as revision.
-	 */
-	private String getRevisionFromManifest(File jarFile) throws AgentOptionParseException {
-		Manifest manifest = getManifestFromJarFile(jarFile);
-		String revision = manifest.getMainAttributes().getValue("Revision");
-		if (StringUtils.isEmpty(revision)) {
-			// currently needed option for a customer
-			if (manifest.getAttributes("Git") != null) {
-				revision = manifest.getAttributes("Git").getValue("Git_Commit");
-			}
-
-			if (StringUtils.isEmpty(revision)) {
-				throw new AgentOptionParseException("No entry 'Revision' in MANIFEST");
-			}
-		}
-		logger.debug("Found revision " + revision + " in file " + jarFile);
-		return revision;
-	}
-
-	/**
-	 * Reads the JarFile to extract the MANIFEST.MF.
-	 */
-	private Manifest getManifestFromJarFile(File jarFile) throws AgentOptionParseException {
-		try (JarInputStream jarStream = new JarInputStream(
-				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
-			Manifest manifest = jarStream.getManifest();
-			if (manifest == null) {
-				throw new AgentOptionParseException(
-						"Unable to read manifest from " + jarFile + ". Maybe the manifest is corrupt?");
-			}
-			return manifest;
-		} catch (IOException e) {
-			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit "
-					+ "descriptor from MANIFEST failed", e);
 		}
 	}
 
@@ -424,19 +278,6 @@ public class AgentOptionsParser {
 			throw new AgentOptionParseException("Invalid URL given for option '" + key + "'");
 		}
 		return url;
-	}
-
-	/**
-	 * Parses the the string representation of a commit to a {@link CommitDescriptor} object.
-	 * <p>
-	 * The expected format is "branch:timestamp".
-	 */
-	private static CommitDescriptor parseCommit(String commit) throws AgentOptionParseException {
-		String[] split = commit.split(":");
-		if (split.length != 2) {
-			throw new AgentOptionParseException("Invalid commit given " + commit);
-		}
-		return new CommitDescriptor(split[0], split[1]);
 	}
 
 	/**

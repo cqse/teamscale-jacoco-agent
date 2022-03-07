@@ -17,15 +17,18 @@ import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitProperties
 import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocatingTransformer;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -62,21 +65,6 @@ public class AgentOptions {
 	 */
 	/* package */ static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
-
-	/** Option name that allows to specify to which branch coverage should be uploaded to (branch:timestamp). */
-	public static final String TEAMSCALE_COMMIT_OPTION = "teamscale-commit";
-
-	/** Option name that allows to specify a git commit hash to which coverage should be uploaded to. */
-	public static final String TEAMSCALE_REVISION_OPTION = "teamscale-revision";
-
-	/** Option name that allows to specify a jar file that contains the git commit hash in a MANIFEST.MF file. */
-	public static final String TEAMSCALE_REVISION_MANIFEST_JAR_OPTION = "teamscale-revision-manifest-jar";
-
-	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
-	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
-
-	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
-	public static final String TEAMSCALE_GIT_PROPERTIES_JAR_OPTION = "teamscale-git-properties-jar";
 
 	/**
 	 * The default excludes applied to JaCoCo. These are packages that should never be profiled. Excluding them makes
@@ -161,19 +149,14 @@ public class AgentOptions {
 	/* package */ TeamscaleServer teamscaleServer = new TeamscaleServer();
 
 	/**
-	 * The name of the environment variable that holds the test uniform path for TIA mode.
+	 * The configuration necessary to for TIA
 	 */
-	/* package */ String testEnvironmentVariable = null;
+	/* package */ TestImpactConfig testImpactConfig = new TestImpactConfig();
 
 	/**
 	 * The port on which the HTTP server should be listening.
 	 */
 	/* package */ Integer httpServerPort = null;
-
-	/**
-	 * How testwise coverage should be handled in test-wise mode.
-	 */
-	/* package */ ETestwiseCoverageMode testwiseCoverageMode = ETestwiseCoverageMode.EXEC_FILE;
 
 	/**
 	 * Whether classes without coverage should be skipped from the XML report.
@@ -240,27 +223,52 @@ public class AgentOptions {
 	 */
 	/* package */ Validator getValidator() {
 		Validator validator = new Validator();
-		for (File path : classDirectoriesOrZips) {
-			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
-			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
-		}
+
+		validateFilePaths(validator);
 
 		if (loggingConfig != null) {
-			validator.ensure(() -> {
-				CCSMAssert.isTrue(Files.exists(loggingConfig),
-						"The path provided for the logging configuration does not exist: " + loggingConfig);
-				CCSMAssert.isTrue(Files.isRegularFile(loggingConfig),
-						"The path provided for the logging configuration is not a file: " + loggingConfig);
-				CCSMAssert.isTrue(Files.isReadable(loggingConfig),
-						"The file provided for the logging configuration is not readable: " + loggingConfig);
-				CCSMAssert.isTrue("xml".equalsIgnoreCase(FileSystemUtils.getFileExtension(loggingConfig.toFile())),
-						"The logging configuration file must have the file extension .xml and be a valid XML file");
-			});
+			validateLoggingConfig(validator);
 		}
 
 		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
 				"You specified additional meta data files to be uploaded but did not configure an upload URL");
 
+		validateTeamscaleUploadConfig(validator);
+
+		validateUploadConfig(validator);
+
+		validateSapNetWeaverConfig(validator);
+
+		validator.isFalse(!useTestwiseCoverageMode() && testImpactConfig.testEnvironmentVariable != null,
+				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
+		if (useTestwiseCoverageMode()) {
+			validateTestwiseCoverageConfig(validator);
+		}
+
+		return validator;
+	}
+
+	private void validateFilePaths(Validator validator) {
+		for (File path : classDirectoriesOrZips) {
+			validator.isTrue(path.exists(), "Path '" + path + "' does not exist");
+			validator.isTrue(path.canRead(), "Path '" + path + "' is not readable");
+		}
+	}
+
+	private void validateLoggingConfig(Validator validator) {
+		validator.ensure(() -> {
+			CCSMAssert.isTrue(Files.exists(loggingConfig),
+					"The path provided for the logging configuration does not exist: " + loggingConfig);
+			CCSMAssert.isTrue(Files.isRegularFile(loggingConfig),
+					"The path provided for the logging configuration is not a file: " + loggingConfig);
+			CCSMAssert.isTrue(Files.isReadable(loggingConfig),
+					"The file provided for the logging configuration is not readable: " + loggingConfig);
+			CCSMAssert.isTrue("xml".equalsIgnoreCase(FileSystemUtils.getFileExtension(loggingConfig.toFile())),
+					"The logging configuration file must have the file extension .xml and be a valid XML file");
+		});
+	}
+
+	private void validateTeamscaleUploadConfig(Validator validator) {
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer
 						.hasAllRequiredFieldsSetExceptProject() || sapNetWeaverJavaApplications != null,
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
@@ -273,9 +281,11 @@ public class AgentOptions {
 						" git.properties files.");
 
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
-				"'" + AgentOptions.TEAMSCALE_REVISION_OPTION + "' and '" + AgentOptions.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "' are incompatible with '" + AgentOptions.TEAMSCALE_COMMIT_OPTION + "' and '" +
-						AgentOptions.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
+				"'" + TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "' and '" + TeamscaleConfig.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "' are incompatible with '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION + "' and '" +
+						TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
+	}
 
+	private void validateUploadConfig(Validator validator) {
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
 				String.format("If you want to upload data to Artifactory you need to provide " +
@@ -295,7 +305,9 @@ public class AgentOptions {
 
 		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
 				"such as a Teamscale instance, upload URL, Azure file storage or artifactory");
+	}
 
+	private void validateSapNetWeaverConfig(Validator validator) {
 		validator.isTrue(sapNetWeaverJavaApplications == null || sapNetWeaverJavaApplications.hasAllRequiredFieldsSet(),
 				"You provided an SAP NWDI applications config, but it is empty.");
 
@@ -305,31 +317,26 @@ public class AgentOptions {
 		validator.isTrue(sapNetWeaverJavaApplications == null || !teamscaleServer.hasAllRequiredFieldsSet(),
 				"You provided an SAP NWDI applications config and a teamscale-project. This is not allowed. " +
 						"The project must be specified via sap-nwdi-applications!");
-
-		appendTestwiseCoverageValidations(validator);
-
-		return validator;
 	}
 
-	private void appendTestwiseCoverageValidations(Validator validator) {
+	private void validateTestwiseCoverageConfig(Validator validator) {
 		validator.isFalse(
-				useTestwiseCoverageMode() && httpServerPort == null && testEnvironmentVariable == null,
+				httpServerPort == null && testImpactConfig.testEnvironmentVariable == null,
 				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor 'test-env'!" +
 						" One of them is required!");
 
-		validator.isFalse(useTestwiseCoverageMode() && httpServerPort != null && testEnvironmentVariable != null,
+		validator.isFalse(
+				httpServerPort != null && testImpactConfig.testEnvironmentVariable != null,
 				"You did set both 'http-server-port' and 'test-env'! Only one of them is allowed!");
 
-		validator.isFalse(useTestwiseCoverageMode() && uploadUrl != null, "'upload-url' option is " +
-				"incompatible with Testwise coverage mode!");
+		validator.isFalse(uploadUrl != null,
+				"'upload-url' option is " +
+						"incompatible with Testwise coverage mode!");
 
-		validator.isFalse(testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
+		validator.isFalse(testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.hasAllRequiredFieldsSet(),
 				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
-
-		validator.isFalse(!useTestwiseCoverageMode() && testEnvironmentVariable != null,
-				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
 	}
 
 
@@ -495,7 +502,7 @@ public class AgentOptions {
 	}
 
 	/** Returns whether the config indicates to use Test Impact mode. */
-	/* package */ boolean useTestwiseCoverageMode() {
+	public boolean useTestwiseCoverageMode() {
 		return mode == EMode.TESTWISE;
 	}
 
@@ -510,7 +517,7 @@ public class AgentOptions {
 	 * Returns the name of the environment variable to read the test uniform path from.
 	 */
 	public String getTestEnvironmentVariableName() {
-		return testEnvironmentVariable;
+		return testImpactConfig.testEnvironmentVariable;
 	}
 
 	/**
@@ -552,9 +559,9 @@ public class AgentOptions {
 		return shouldDumpOnExit;
 	}
 
-	/** @see AgentOptions#testwiseCoverageMode */
+	/** @see TestImpactConfig#testwiseCoverageMode */
 	public ETestwiseCoverageMode getTestwiseCoverageMode() {
-		return testwiseCoverageMode;
+		return testImpactConfig.testwiseCoverageMode;
 	}
 
 	/** @see #ignoreUncoveredClasses */
