@@ -1,5 +1,6 @@
 package com.teamscale.client;
 
+import okhttp3.ConnectionSpec;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,7 +19,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -85,6 +88,7 @@ public class HttpUtils {
 	 * Enables or disables SSL certificate validation for the {@link Retrofit} instance
 	 */
 	private static void setUpSslValidation(OkHttpClient.Builder builder) {
+		LOGGER.error("Setting up SSL Validation with value " + shouldValidateSsl);
 		if (shouldValidateSsl) {
 			// this is the default behaviour of OkHttp, so we don't need to do anything
 			return;
@@ -104,6 +108,7 @@ public class HttpUtils {
 		builder.sslSocketFactory(sslSocketFactory, TrustAllCertificatesManager.INSTANCE);
 		// this causes it to ignore invalid host names in the certificates
 		builder.hostnameVerifier((String hostName, SSLSession session) -> true);
+		builder.connectionSpecs(Arrays.asList(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT));
 	}
 
 	/**
