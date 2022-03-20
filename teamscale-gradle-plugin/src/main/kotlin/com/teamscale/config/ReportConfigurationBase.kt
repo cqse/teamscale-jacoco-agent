@@ -14,7 +14,7 @@ import java.io.Serializable
 open class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
 
     /** The partition for which artifacts are uploaded. */
-    var partition: Property<String> = project.objects.property(String::class.java).value(task.name)
+    var partition: Property<String> = project.objects.property(String::class.java).convention(task.name)
 
     fun setPartition(partition: String) {
         this.partition.set(partition)
@@ -22,7 +22,7 @@ open class ReportConfigurationBase(private val format: EReportFormat, val projec
 
     /** The message that shows up for the upload in Teamscale. */
     var message: Property<String> =
-        project.objects.property(String::class.java).value("${format.readableName} gradle upload")
+        project.objects.property(String::class.java).convention("${format.readableName} gradle upload")
 
     fun setMessage(message: String) {
         this.message.set(message)
@@ -31,7 +31,7 @@ open class ReportConfigurationBase(private val format: EReportFormat, val projec
     /**
      * Whether the report should be uploaded or not.
      */
-    var upload: Property<Boolean> = project.objects.property(Boolean::class.java).value(true)
+    var upload: Property<Boolean> = project.objects.property(Boolean::class.java).convention(true)
 
     fun setUpload(upload: Boolean) {
         this.upload.set(upload)
