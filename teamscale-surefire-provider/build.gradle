@@ -13,7 +13,5 @@ publishAs {
 dependencies {
 	implementation('org.junit.jupiter:junit-jupiter-engine:5.8.2')
 	implementation('org.junit.platform:junit-platform-launcher:1.8.2')
-	implementation 'org.apache.maven.surefire:surefire-api:3.0.0-M5'
-	implementation 'org.apache.maven.surefire:surefire-shared-utils:3.0.0-M5'
 	implementation 'org.apache.maven.surefire:common-java5:3.0.0-M5'
 }
