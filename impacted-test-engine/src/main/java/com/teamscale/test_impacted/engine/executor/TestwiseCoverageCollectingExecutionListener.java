@@ -111,6 +111,11 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 			endTest(uniformPath.get());
 		} else {
 			testResultCache.put(testDescriptor.getUniqueId(), testExecutionResult);
+
+			if (!testDescriptor.getParent().isPresent()) {
+				// this is the root node, i.e. test execution is completely finished now
+				endTestRun();
+			}
 		}
 
 		delegateEngineExecutionListener.executionFinished(testDescriptor, testExecutionResult);
@@ -162,6 +167,17 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
 		}
 	}
+
+	private void endTestRun() {
+		try {
+			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
+				apiService.testRunFinished().execute();
+			}
+		} catch (IOException e) {
+			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
+		}
+	}
+
 
 	private Optional<TestExecution> buildTestExecution(String testUniformPath, long duration,
 													   Status status, String message) {
