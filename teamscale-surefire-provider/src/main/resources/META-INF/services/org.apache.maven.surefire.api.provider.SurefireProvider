@@ -1,1 +1,1 @@
-org.apache.maven.surefire.teamscale.TeamscalePlatformProvider
+org.apache.maven.surefire.teamscale.ImpactedTestEngineProvider

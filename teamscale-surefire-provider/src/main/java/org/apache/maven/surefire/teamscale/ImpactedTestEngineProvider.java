@@ -69,11 +69,21 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqu
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
 /**
- * JUnit 5 Platform Provider.
- *
- * @since 2.22.0
+ * Surefire provider for Teamscale's impacted test engine.
+ * <p>
+ * This is a copy of the JUnitPlatformProvider. The only modification is {@link #addImpactedTestEngineFilter(List)} and
+ * its usages. Basically, this provider disables all other test engines except our own.
+ * <p>
+ * Ideally, we would like to subclass the JUnitPlatformProvider and only override what we want to change, but it is not
+ * published as an artifact by Surefire.
+ * <p>
+ * Starting with Maven 3.0.0-M6, users can also configure the included engines in Surefire directly via {@code
+ * includeJUnit5Engines}. However, that has not yet been released.
+ * <p>
+ * Copyright notices in the files in this project must be retained, as the files are copies from the Maven Surefire
+ * repository.
  */
-public class TeamscalePlatformProvider
+public class ImpactedTestEngineProvider
 		extends AbstractProvider {
 	static final String CONFIGURATION_PARAMETERS = "configurationParameters";
 
@@ -85,11 +95,11 @@ public class TeamscalePlatformProvider
 
 	private final Map<String, String> configurationParameters;
 
-	public TeamscalePlatformProvider(ProviderParameters parameters) {
+	public ImpactedTestEngineProvider(ProviderParameters parameters) {
 		this(parameters, LauncherFactory.create());
 	}
 
-	TeamscalePlatformProvider(ProviderParameters parameters, Launcher launcher) {
+	ImpactedTestEngineProvider(ProviderParameters parameters, Launcher launcher) {
 		this.parameters = parameters;
 		this.launcher = launcher;
 		filters = newFilters();
@@ -199,7 +209,7 @@ public class TeamscalePlatformProvider
 				.map(TagFilter::excludeTags)
 				.ifPresent(filters::add);
 
-		filters.add(EngineFilter.includeEngines("teamscale-test-impacted"));
+		addImpactedTestEngineFilter(filters);
 
 		TestListResolver testListResolver = parameters.getTestRequest().getTestListResolver();
 		if (!testListResolver.isEmpty()) {
@@ -207,6 +217,11 @@ public class TeamscalePlatformProvider
 		}
 
 		return filters.toArray(new Filter<?>[filters.size()]);
+	}
+
+	/** Adds a filter that disables all but our own test engine. */
+	private void addImpactedTestEngineFilter(List<Filter<?>> filters) {
+		filters.add(EngineFilter.includeEngines("teamscale-test-impacted"));
 	}
 
 	Filter<?>[] getFilters() {
