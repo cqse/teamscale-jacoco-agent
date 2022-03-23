@@ -4,14 +4,17 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# New Release
+# 23.0.0
 
 - [feature] The agent logs now an error with further information when dumped coverage is empty
 - [feature] add JUnit 5 TestExecutionListener for testwise coverage recording
-- [breaking change] JUnit 4 RunListener renamed to com.teamscale.tia.runlistener.JUnit4TestwiseCoverageRunListener and published via new artifact com.teamscale:tia-runlisteners
+- [breaking change] JUnit 4 RunListener renamed to com.teamscale.tia.runlistener.JUnit4TestwiseCoverageRunListener and
+  published via new artifact com.teamscale:tia-runlisteners
 - [fix] Not specifying certain options for the JUnit 5 impacted test engine caused an NPE
-- [breaking change] _teamscale-gradle-plugin_: Removed automatic registration of mavenCentral repository (Makes the plugin compatible with `dependencyResolutionManagement`)
-- [breaking change] _teamscale-gradle-plugin_: The `TestImpacted` task now collects testwise coverage by default even without the `--impacted` option being set. Can be disabled with `--collect-testwise-coverage=false`.
+- [breaking change] _teamscale-gradle-plugin_: Removed automatic registration of mavenCentral repository (Makes the
+  plugin compatible with `dependencyResolutionManagement`)
+- [breaking change] _teamscale-gradle-plugin_: The `TestImpacted` task now collects testwise coverage by default even
+  without the `--impacted` option being set. Can be disabled with `--collect-testwise-coverage=false`.
 - [feature] The Teamscale server configuration for the `TestImpacted` task is only needed when `--impacted` is used.
 
 # 22.2.0
