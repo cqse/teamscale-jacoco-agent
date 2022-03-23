@@ -3,11 +3,8 @@ package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.options.ProjectRevision;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.BashFileSkippingInputStream;
-import kotlin.text.Regex;
 import org.conqat.lib.commons.collections.Pair;
-import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,7 +37,10 @@ public class GitPropertiesLocatorUtils {
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
 	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:file:(.*?)!/.*", Pattern.CASE_INSENSITIVE);
 
-	private static final Logger LOGGER = LoggingUtils.getLogger(GitPropertiesLocatorUtils.class);
+	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[j|w]ar:file:(.*?)\\*(.*)", Pattern.CASE_INSENSITIVE);
+
+	public static final String WAR_FILE_ENDING = ".war";
+	public static final String JAR_FILE_ENDING = ".jar";
 
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
@@ -83,11 +83,13 @@ public class GitPropertiesLocatorUtils {
 				Matcher jarMatcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
 				if (jarMatcher.matches()) {
 					return Pair.createPair(new File(jarMatcher.group(1)), true);
-				} else if (org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
-						jarOrClassFolderUrl.getPath().toLowerCase(), ".jar")) {
-					return Pair.createPair(new File(jarOrClassFolderUrl.getPath().replace("*", "")), true);
 				} else {
-					return null;
+					Matcher nestedMatcher = NESTED_JAR_REGEX.matcher(jarOrClassFolderUrl.toString());
+					if (nestedMatcher.matches()) {
+						return Pair.createPair(new File(nestedMatcher.group(1) + nestedMatcher.group(2)), true);
+					} else {
+						return null;
+					}
 				}
 			case "vfs":
 				return getVfsContentFolder(jarOrClassFolderUrl);
@@ -178,11 +180,9 @@ public class GitPropertiesLocatorUtils {
 
 	private static Pair<String, Properties> findGitPropertiesInArchiveFile(File file) throws IOException {
 		String filePath = file.getPath();
-		if (filePath.contains(":")) {
-			filePath = filePath.substring(filePath.indexOf(':') + 1);
-		}
-		if ((filePath.contains(".war") && filePath.endsWith(".jar")) || (filePath.contains(".jar") && filePath.indexOf(
-				".jar") != filePath.length() - ".jar".length())) {
+		if ((filePath.contains(WAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING)) || (filePath.contains(
+				JAR_FILE_ENDING) && filePath.indexOf(
+				JAR_FILE_ENDING) != filePath.length() - JAR_FILE_ENDING.length())) {
 			// Handle nested jar files
 			return findGitPropertiesInNestedArchiveFile(filePath);
 		} else {
@@ -198,17 +198,17 @@ public class GitPropertiesLocatorUtils {
 
 	private static Pair<String, Properties> findGitPropertiesInNestedArchiveFile(String filePath) throws IOException {
 		int firstPartEndIndex;
-		if (filePath.contains(".war")) {
-			firstPartEndIndex = filePath.indexOf(".war") + ".war".length();
+		if (filePath.contains(WAR_FILE_ENDING)) {
+			firstPartEndIndex = filePath.indexOf(WAR_FILE_ENDING) + WAR_FILE_ENDING.length();
 		} else {
-			firstPartEndIndex = filePath.indexOf(".jar") + ".jar".length();
+			firstPartEndIndex = filePath.indexOf(JAR_FILE_ENDING) + JAR_FILE_ENDING.length();
 		}
 		String firstPart = filePath.substring(0, firstPartEndIndex);
 		String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(new FileInputStream(firstPart)))) {
 			Pair<String, JarInputStream> nestedJar = findEntry(jarStream, fileName);
-			if(nestedJar == null) {
+			if (nestedJar == null) {
 				return null;
 			}
 			JarInputStream nestedJarStream = new JarInputStream(nestedJar.getSecond());

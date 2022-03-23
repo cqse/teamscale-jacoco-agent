@@ -46,11 +46,11 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	}
 
 	private void searchFile(File file, boolean isJarFile) {
-		logger.warn("Searching file {} for multiple git.properties", file.toString());
+		logger.debug("Searching file {} for multiple git.properties", file.toString());
 		try {
 			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(file, isJarFile);
 			if (data == null) {
-				logger.warn("No git.properties file found in {}", file);
+				logger.debug("No git.properties file found in {}", file);
 				return;
 			}
 			// this code only runs when 'teamscale-project' is not given via the agent properties,
@@ -59,14 +59,14 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 			// (git.commit.id) in the git.properties file.
 			if (data.getProject() == null || data.getRevision() == null) {
 				logger.error(
-						"Found inconsistent giti.properties file: the git.properties file in {} either does not specify the" +
+						"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
 								" Teamscale project (teamscale.project) property, or does not specify the commit SHA (git.commit.id)." +
 								" Please note that both of these properties are required in order to allow multi-project upload to Teamscale.",
 						file);
 				return;
 			}
 			uploader.setTeamscaleProjectForRevision(data);
-			logger.warn("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
+			logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
 					data.getProject(), data.getRevision());
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", file, e);
