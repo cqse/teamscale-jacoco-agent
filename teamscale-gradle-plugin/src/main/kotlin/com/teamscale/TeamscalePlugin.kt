@@ -57,8 +57,6 @@ open class TeamscalePlugin : Plugin<Project> {
             throw GradleException("The teamscale plugin requires Gradle version 6.5 or higher")
         }
 
-        project.repositories.mavenCentral()
-
         // Add impacted tests executor to a custom configuration that will later be used to
         // create the classpath for the TestImpacted created by this plugin.
         project.configurations.maybeCreate(impactedTestEngineConfiguration)

@@ -17,17 +17,21 @@ public class TestEngineOptionUtils {
 	public static TestEngineOptions getEngineOptions(ConfigurationParameters configurationParameters) {
 		PrefixingPropertyReader propertyReader = new PrefixingPropertyReader("teamscale.test.impacted.",
 				configurationParameters);
-		ServerOptions serverOptions = ServerOptions.builder()
-				.url(propertyReader.getString("server.url"))
-				.project(propertyReader.getString("server.project"))
-				.userName(propertyReader.getString("server.userName"))
-				.userAccessToken(propertyReader.getString("server.userAccessToken"))
-				.build();
+		ServerOptions serverOptions = null;
+		Boolean runImpacted = propertyReader.getBoolean("runImpacted", true);
+		if (runImpacted) {
+			serverOptions = ServerOptions.builder()
+					.url(propertyReader.getString("server.url"))
+					.project(propertyReader.getString("server.project"))
+					.userName(propertyReader.getString("server.userName"))
+					.userAccessToken(propertyReader.getString("server.userAccessToken"))
+					.build();
+		}
 
 		return TestEngineOptions.builder()
 				.serverOptions(serverOptions)
 				.partition(propertyReader.getString("partition"))
-				.runImpacted(propertyReader.getBoolean("runImpacted", true))
+				.runImpacted(runImpacted)
 				.runAllTests(propertyReader.getBoolean("runAllTests", false))
 				.includeAddedTests(propertyReader.getBoolean("includeAddedTests", true))
 				.includeFailedAndSkipped(propertyReader.getBoolean("includeFailedAndSkipped", true))

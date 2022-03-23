@@ -18,13 +18,18 @@ ext.junitVintageVersion = '5.4.0'
 ext.junitPlatformVersion = '1.4.0'
 ext.junitJupiterVersion = '5.4.0'
 
-teamscale {
-	server {
-		url = 'http://127.0.0.1:8080'
-		userName = 'build'
-		userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
-		project = 'test'
+if (!project.hasProperty("withoutServerConfig")) {
+	teamscale {
+		server {
+			url = 'http://127.0.0.1:8080'
+			userName = 'build'
+			userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
+			project = 'test'
+		}
 	}
+}
+
+teamscale {
 	commit {
 		timestamp = 1544512967526L
 		branchName = "master"

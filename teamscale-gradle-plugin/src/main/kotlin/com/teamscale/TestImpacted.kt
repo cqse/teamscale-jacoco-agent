@@ -8,35 +8,50 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junit.JUnitOptions
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.api.tasks.testing.testng.TestNGOptions
+import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
 @CacheableTask
-open class TestImpacted : Test() {
+open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
 
     companion object {
         const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
     }
 
-    /** Command line switch to activate running all tests. */
+    /** Command line switch to enable/disable testwise coverage collection. */
+    @Input
+    @Option(
+        option = "collect-testwise-coverage",
+        description = "If set Testwise coverage is recorded."
+    )
+    val collectTestwiseCoverage = objects.property(Boolean::class.java).convention(true)
+
+    /** Command line switch to activate requesting from Teamscale which tests are impacted by a change (last commit be default). */
     @Input
     @Option(
         option = "impacted",
-        description = "If set Testwise coverage is recorded. By default only impacted tests are executed."
+        description = "If set the plugin connects to Teamscale to retrieve impacted tests and an optimized order in " +
+                "which they should be executed."
     )
     var runImpacted: Boolean = false
 
-    /** Command line switch to activate running all tests. */
+    /**
+     * Command line switch to activate running all tests. This is the default if "--impacted" is false.
+     * If "--impacted" is set this runs all test, but still requests on optimized order from Teamscale for the tests.
+     */
     @Input
     @Option(
         option = "run-all-tests",
-        description = "When set to true runs all tests, but still collects testwise coverage."
+        description = "When set to true runs all tests even those that are not impacted. " +
+                "Teamscale still tries to optimize the execution order to cause failures early."
     )
     var runAllTests: Boolean = false
 
@@ -171,25 +186,27 @@ open class TestImpacted : Test() {
 
     @TaskAction
     override fun executeTests() {
-        classpath = classpath.plus(testEngineConfiguration)
+        if (collectTestwiseCoverage.get()) {
+            classpath = classpath.plus(testEngineConfiguration)
 
-        jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
+            jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
 
-        taskExtension.agent.localAgent?.let {
-            jvmArgs(it.getJvmArgs())
+            taskExtension.agent.localAgent?.let {
+                jvmArgs(it.getJvmArgs())
+            }
+
+            val reportConfig = taskExtension.report
+            val report = reportConfig.getReport()
+
+            reportTask.addTestArtifactsDirs(report, reportOutputDir)
+
+            getAllDependentJavaProjects(project).forEach { subProject ->
+                val sourceSets = subProject.property("sourceSets") as SourceSetContainer
+                reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
+            }
+
+            setImpactedTestEngineOptions(report)
         }
-
-        val reportConfig = taskExtension.report
-        val report = reportConfig.getReport()
-
-        reportTask.addTestArtifactsDirs(report, reportOutputDir)
-
-        getAllDependentJavaProjects(project).forEach { subProject ->
-            val sourceSets = subProject.property("sourceSets") as SourceSetContainer
-            reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
-        }
-
-        setImpactedTestEngineOptions(report)
         super.executeTests()
     }
 
@@ -212,12 +229,14 @@ open class TestImpacted : Test() {
     }
 
     private fun setImpactedTestEngineOptions(report: Report) {
-        serverConfiguration.validate()
-        assert(runAllTests || endCommit != null) {"When executing only impacted tests a branchName and timestamp must be specified!"}
-        writeEngineProperty("server.url", serverConfiguration.url!!)
-        writeEngineProperty("server.project", serverConfiguration.project!!)
-        writeEngineProperty("server.userName", serverConfiguration.userName!!)
-        writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
+        if (runImpacted) {
+            assert(endCommit != null) { "When executing only impacted tests a branchName and timestamp must be specified!" }
+            serverConfiguration.validate()
+            writeEngineProperty("server.url", serverConfiguration.url!!)
+            writeEngineProperty("server.project", serverConfiguration.project!!)
+            writeEngineProperty("server.userName", serverConfiguration.userName!!)
+            writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
+        }
         writeEngineProperty("partition", report.partition)
         writeEngineProperty("endCommit", endCommit?.toString())
         writeEngineProperty("baseline", baseline?.toString())

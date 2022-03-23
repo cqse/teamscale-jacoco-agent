@@ -11,7 +11,7 @@ import java.util.List;
 /** Test executor that records test wise coverage and executes the full {@link TestExecutorRequest}. */
 public class TestwiseCoverageCollectingTestExecutor implements ITestExecutor {
 
-	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
+	private final List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
 
 	public TestwiseCoverageCollectingTestExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;

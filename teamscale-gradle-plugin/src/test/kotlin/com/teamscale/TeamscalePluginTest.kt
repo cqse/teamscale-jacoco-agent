@@ -4,7 +4,9 @@ import com.squareup.moshi.Moshi
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
-import okio.Okio
+import okio.BufferedSource
+import okio.buffer
+import okio.source
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -71,7 +73,42 @@ class TeamscalePluginTest {
             File(temporaryFolder.root, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
         assertThat(testwiseCoverageReportFile).exists()
 
-        val source = Okio.buffer(Okio.source(testwiseCoverageReportFile))
+        val source: BufferedSource = testwiseCoverageReportFile.source().buffer()
+        val testwiseCoverageReport =
+            Moshi.Builder().build().adapter(TestwiseCoverageReport::class.java).fromJson(source)
+        assertThat(testwiseCoverageReport!!)
+            .containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
+            .containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
+            .containsExecutionResult(
+                "com/example/project/JUnit5Test/withValueSource(String)",
+                ETestExecutionResult.PASSED
+            )
+            .containsExecutionResult("com/example/project/FailingRepeatedTest/testRepeatedTest()", ETestExecutionResult.FAILURE)
+            .containsExecutionResult("FibonacciTest/test[4]", ETestExecutionResult.PASSED)
+            .containsCoverage(
+                "com/example/project/JUnit4Test/systemTest",
+                "com/example/project/Calculator.java",
+                "13,16,20-22"
+            )
+            // 19 Tests because JUnit 5 parameterized tests are grouped
+            .hasSize(19)
+    }
+
+    @Test
+    fun `unit tests without server config produce coverage`() {
+        val build = build(
+            true, true,
+            "clean",
+            "unitTest",
+            "-PwithoutServerConfig=true"
+        )
+        assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
+            .doesNotContain("you did not provide all relevant class files")
+        val testwiseCoverageReportFile =
+            File(temporaryFolder.root, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
+        assertThat(testwiseCoverageReportFile).exists()
+
+        val source = testwiseCoverageReportFile.source().buffer()
         val testwiseCoverageReport =
             Moshi.Builder().build().adapter(TestwiseCoverageReport::class.java).fromJson(source)
         assertThat(testwiseCoverageReport!!)
