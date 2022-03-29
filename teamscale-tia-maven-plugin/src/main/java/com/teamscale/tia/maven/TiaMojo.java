@@ -24,12 +24,22 @@ public class TiaMojo extends AbstractMojo {
 	private String userName;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		System.err.println("----->>>" + teamscaleUrl);
-		session.getUserProperties().setProperty("teamscale.test.impacted.reportDirectory", "./target/tia");
-		session.getUserProperties().setProperty("teamscale.test.impacted.server.url", teamscaleUrl);
-		session.getUserProperties().setProperty("teamscale.test.impacted.server.project", project);
-		session.getUserProperties().setProperty("teamscale.test.impacted.server.userName", userName);
+		setTiaProperty("reportDirectory", "./target/tia");
+		setTiaProperty("url", teamscaleUrl);
+		setTiaProperty("project", project);
+		setTiaProperty("userName", userName);
 		// TODO (FS) access key?
 		// TODO (FS) agent url
+	}
+
+	/**
+	 * Sets a user property in the TIA namespace. User properties are respected both during the build and during tests
+	 * (as e.g. failsafe tests are often run in a separate JVM spawned by Maven).
+	 */
+	private void setTiaProperty(String name, String value) {
+		String fullyQualifiedName = "teamscale.test.impacted." + name;
+		if (session.getUserProperties().get(fullyQualifiedName) == null) {
+			session.getUserProperties().setProperty(fullyQualifiedName, value);
+		}
 	}
 }
