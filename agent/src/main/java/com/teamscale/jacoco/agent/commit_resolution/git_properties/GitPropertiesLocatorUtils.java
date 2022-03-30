@@ -87,7 +87,7 @@ public class GitPropertiesLocatorUtils {
 				if (jarMatcher.matches()) {
 					return Pair.createPair(new File(jarMatcher.group(1)), true);
 				}
-				// Intentionally no break to handle jar and war files
+				// Intentionally no break to handle ear and war files
 			case "war":
 			case "ear":
 				// Used by some web applications and potentially fat jars.
