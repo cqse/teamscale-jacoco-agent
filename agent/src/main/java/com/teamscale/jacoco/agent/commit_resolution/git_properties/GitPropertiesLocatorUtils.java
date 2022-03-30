@@ -177,7 +177,8 @@ public class GitPropertiesLocatorUtils {
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
 	public static Pair<String, Properties> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
-		if (isNestedArchivePath(file.getPath())) {
+		String filePath = file.getPath();
+		if (isNestedInWar(filePath) || isNestedInFatJar(filePath)) {
 			return findGitPropertiesInNestedArchiveFile(file);
 		} else if (isJarFile) {
 			return findGitPropertiesInArchiveFile(file);
@@ -185,10 +186,13 @@ public class GitPropertiesLocatorUtils {
 		return findGitPropertiesInDirectoryFile(file);
 	}
 
-	private static boolean isNestedArchivePath(String filePath) {
-		return (filePath.contains(WAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING))
-				|| (filePath.contains(JAR_FILE_ENDING) && filePath.indexOf(
-				JAR_FILE_ENDING) != filePath.length() - JAR_FILE_ENDING.length());
+	private static boolean isNestedInWar(String filePath) {
+		return filePath.contains(WAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
+	}
+
+	private static boolean isNestedInFatJar(String filePath) {
+		return filePath.contains(JAR_FILE_ENDING) &&
+				filePath.indexOf(JAR_FILE_ENDING) != filePath.length() - JAR_FILE_ENDING.length();
 	}
 
 	private static Pair<String, Properties> findGitPropertiesInArchiveFile(File file) throws IOException {
