@@ -89,6 +89,7 @@ public class GitPropertiesLocatorUtils {
 				}
 				// Intentionally no break to handle jar and war files
 			case "war":
+			case "ear":
 				// Used by some web applications and potentially fat jars.
 				// Example: war:file:/Users/example/apache-tomcat/webapps/demo.war*/WEB-INF/lib/demoLib-1.0-SNAPSHOT.jar
 				Matcher nestedMatcher = NESTED_JAR_REGEX.matcher(jarOrClassFolderUrl.toString());
