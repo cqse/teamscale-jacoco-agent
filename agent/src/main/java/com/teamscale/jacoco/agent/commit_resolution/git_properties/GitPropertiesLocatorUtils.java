@@ -81,20 +81,21 @@ public class GitPropertiesLocatorUtils {
 					return Pair.createPair(new File(jarOrClassFolderUrl.toURI()), true);
 				}
 				break;
-			case "war":
 			case "jar":
-				// used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
+				// Used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
 				Matcher jarMatcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
 				if (jarMatcher.matches()) {
 					return Pair.createPair(new File(jarMatcher.group(1)), true);
-				} else {
-					Matcher nestedMatcher = NESTED_JAR_REGEX.matcher(jarOrClassFolderUrl.toString());
-					if (nestedMatcher.matches()) {
-						return Pair.createPair(new File(nestedMatcher.group(1) + nestedMatcher.group(2)), true);
-					} else {
-						return null;
-					}
 				}
+				// Intentionally no break to handle jar and war files
+			case "war":
+				// Used by some web applications and potentially fat jars.
+				// Example: war:file:/Users/example/apache-tomcat/webapps/demo.war*/WEB-INF/lib/demoLib-1.0-SNAPSHOT.jar
+				Matcher nestedMatcher = NESTED_JAR_REGEX.matcher(jarOrClassFolderUrl.toString());
+				if (nestedMatcher.matches()) {
+					return Pair.createPair(new File(nestedMatcher.group(1) + nestedMatcher.group(2)), true);
+				}
+				break;
 			case "vfs":
 				return getVfsContentFolder(jarOrClassFolderUrl);
 			default:
@@ -291,7 +292,7 @@ public class GitPropertiesLocatorUtils {
 		if (StringUtils.isEmpty(revision)) {
 			throw new InvalidGitPropertiesException(
 					"No entry or empty value for '" + key + "' in " + entryName + " in " + jarFile + "." +
-							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties.toString()
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties
 			);
 		}
 

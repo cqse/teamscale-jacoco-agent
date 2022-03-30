@@ -18,8 +18,6 @@ public class GitPropertiesLocatorTest {
 	private static final List<String> TEST_ARCHIVES = Arrays
 			.asList("plain-git-properties.jar", "spring-boot-git-properties.jar", "spring-boot-git-properties.war");
 
-	private static String nestedTestArchive = "nested-jar.war";
-
 	@Test
 	public void testReadingGitPropertiesFromArchive() throws Exception {
 		for (String archiveName : TEST_ARCHIVES) {
@@ -39,6 +37,7 @@ public class GitPropertiesLocatorTest {
 	 */
 	@Test
 	public void testReadingGitPropertiesFromNestedArchive() throws Exception {
+		String nestedTestArchive = "nested-jar.war";
 		URL nestedArchiveURL = getClass().getResource(nestedTestArchive);
 		String nestedPath = nestedArchiveURL.getFile() + "WEB-INF/lib/demoLib-1.0-SNAPSHOT.jar";
 		File nestedArchiveFile = new File(nestedPath);
