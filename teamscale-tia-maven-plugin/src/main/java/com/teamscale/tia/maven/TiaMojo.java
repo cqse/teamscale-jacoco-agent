@@ -62,6 +62,12 @@ public class TiaMojo extends AbstractMojo {
 	@Parameter
 	private String propertyName;
 
+	@Parameter(defaultValue = "Test Impact Analysis")
+	private String partition;
+
+	@Parameter(defaultValue = "12888")
+	private String agentPort;
+
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
 	private Map<String, Artifact> pluginArtifactMap;
 
@@ -72,17 +78,21 @@ public class TiaMojo extends AbstractMojo {
 	private MavenSession session;
 
 	private Path targetDirectory;
+	private String resolvedEndCommit;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
+
+		resolvedEndCommit = resolveEndCommit();
 
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
 		setTiaProperty("server.project", project);
 		setTiaProperty("server.userName", userName);
 		setTiaProperty("server.userAccessToken", accessToken);
-		setTiaProperty("endCommit", getEndCommit());
+		setTiaProperty("endCommit", resolvedEndCommit);
+		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 
 		Path agentConfigFile = createAgentConfigFile();
 		setArgLine(agentConfigFile);
@@ -129,7 +139,15 @@ public class TiaMojo extends AbstractMojo {
 	}
 
 	private String createAgentConfig() {
-		return "testing";
+		return "mode=testwise" +
+				"\ntia-mode=teamscale-upload" +
+				"\nteamscale-server-url=" + teamscaleUrl +
+				"\nteamscale-project=" + project +
+				"\nteamscale-user=" + userName +
+				"\nteamscale-access-token=" + accessToken +
+				"\nteamscale-commit=" + resolvedEndCommit +
+				"\nteamscale-partition=" + partition +
+				"\nhttp-server-port=" + agentPort;
 	}
 
 	private String createAgentOptions(Path agentConfigFile) {
@@ -152,7 +170,7 @@ public class TiaMojo extends AbstractMojo {
 		return SUREFIRE_ARG_LINE;
 	}
 
-	private String getEndCommit() throws MojoFailureException {
+	private String resolveEndCommit() throws MojoFailureException {
 		if (StringUtils.isNotBlank(endCommit)) {
 			return endCommit;
 		}
