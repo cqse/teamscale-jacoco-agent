@@ -37,6 +37,15 @@ public class GitPropertiesLocatorUtils {
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
 	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:file:(.*?)!/.*", Pattern.CASE_INSENSITIVE);
 
+	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[j|w]ar:file:(.*?)\\*(.*)",
+			Pattern.CASE_INSENSITIVE);
+
+	/** File ending of Java web archive packages */
+	public static final String WAR_FILE_ENDING = ".war";
+
+	/** File ending of Java archive packages */
+	public static final String JAR_FILE_ENDING = ".jar";
+
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
 	 * git.properties file can be found, returns null.
@@ -73,12 +82,21 @@ public class GitPropertiesLocatorUtils {
 				}
 				break;
 			case "jar":
-				// used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
-				Matcher matcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
-				if (!matcher.matches()) {
-					return null;
+				// Used e.g. by Spring Boot. Example: jar:file:/home/k/demo.jar!/BOOT-INF/classes!/
+				Matcher jarMatcher = JAR_URL_REGEX.matcher(jarOrClassFolderUrl.toString());
+				if (jarMatcher.matches()) {
+					return Pair.createPair(new File(jarMatcher.group(1)), true);
 				}
-				return Pair.createPair(new File(matcher.group(1)), true);
+				// Intentionally no break to handle ear and war files
+			case "war":
+			case "ear":
+				// Used by some web applications and potentially fat jars.
+				// Example: war:file:/Users/example/apache-tomcat/webapps/demo.war*/WEB-INF/lib/demoLib-1.0-SNAPSHOT.jar
+				Matcher nestedMatcher = NESTED_JAR_REGEX.matcher(jarOrClassFolderUrl.toString());
+				if (nestedMatcher.matches()) {
+					return Pair.createPair(new File(nestedMatcher.group(1) + nestedMatcher.group(2)), true);
+				}
+				break;
 			case "vfs":
 				return getVfsContentFolder(jarOrClassFolderUrl);
 			default:
@@ -110,8 +128,7 @@ public class GitPropertiesLocatorUtils {
 	 * Extracts the artefact URL (e.g., vfs:/content/helloworld.war/) from the full URL of the class file (e.g.,
 	 * vfs:/content/helloworld.war/WEB-INF/classes).
 	 */
-	/* package */
-	static String extractArtefactUrl(URL jarOrClassFolderUrl) {
+	private static String extractArtefactUrl(URL jarOrClassFolderUrl) {
 		String url = jarOrClassFolderUrl.getPath().toLowerCase();
 		String[] pathSegments = url.split("/");
 		StringBuilder artefactUrlBuilder = new StringBuilder("vfs:");
@@ -160,25 +177,74 @@ public class GitPropertiesLocatorUtils {
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
 	public static Pair<String, Properties> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
-		if (isJarFile) {
-			return findGitPropertiesInJarFile(file);
+		String filePath = file.getPath();
+		if (isNestedInWar(filePath) || isNestedInFatJar(filePath)) {
+			return findGitPropertiesInNestedArchiveFile(file);
+		} else if (isJarFile) {
+			return findGitPropertiesInArchiveFile(file);
 		}
 		return findGitPropertiesInDirectoryFile(file);
 	}
 
-	private static Pair<String, Properties> findGitPropertiesInJarFile(File file) throws IOException {
+	private static boolean isNestedInWar(String filePath) {
+		return filePath.contains(WAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
+	}
+
+	private static boolean isNestedInFatJar(String filePath) {
+		return filePath.contains(JAR_FILE_ENDING) &&
+				filePath.indexOf(JAR_FILE_ENDING) != filePath.length() - JAR_FILE_ENDING.length();
+	}
+
+	private static Pair<String, Properties> findGitPropertiesInArchiveFile(File file) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(new FileInputStream(file)))) {
-			return findGitPropertiesInJarFile(jarStream);
+			return findGitPropertiesInArchive(jarStream);
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + file.getAbsolutePath() + " for obtaining commit " +
 					"descriptor from git.properties failed", e);
 		}
 	}
 
+	/** Searches for a git.properties file inside a jar file that is nested inside a jar or war file. */
+	static Pair<String, Properties> findGitPropertiesInNestedArchiveFile(File file) throws IOException {
+		String filePath = file.getPath();
+		int firstPartEndIndex;
+		if (filePath.contains(WAR_FILE_ENDING)) {
+			firstPartEndIndex = filePath.indexOf(WAR_FILE_ENDING) + WAR_FILE_ENDING.length();
+		} else {
+			firstPartEndIndex = filePath.indexOf(JAR_FILE_ENDING) + JAR_FILE_ENDING.length();
+		}
+		String firstPart = filePath.substring(0, firstPartEndIndex);
+		String fileName = file.getName();
+		try (JarInputStream jarStream = new JarInputStream(
+				new BashFileSkippingInputStream(new FileInputStream(firstPart)))) {
+			Pair<String, JarInputStream> nestedJar = findEntry(jarStream, fileName);
+			if (nestedJar == null) {
+				return null;
+			}
+			JarInputStream nestedJarStream = new JarInputStream(nestedJar.getSecond());
+			return findGitPropertiesInArchive(nestedJarStream);
+
+		} catch (IOException e) {
+			throw new IOException("Reading jar " + firstPart + " for obtaining commit " +
+					"descriptor from git.properties failed", e);
+		}
+	}
+
+	/** Searches the the give jar or war file for the given name. */
+	private static Pair<String, JarInputStream> findEntry(JarInputStream in, String name) throws IOException {
+		JarEntry entry;
+		while ((entry = in.getNextJarEntry()) != null) {
+			if (Paths.get(entry.getName()).getFileName().toString().equalsIgnoreCase(name)) {
+				return Pair.createPair(entry.getName(), in);
+			}
+		}
+		return null;
+	}
+
 	private static Pair<String, Properties> findGitPropertiesInDirectoryFile(File directoryFile) throws IOException {
 		List<File> gitPropertiesFiles = FileSystemUtils.listFilesRecursively(directoryFile,
-				file -> file.getName().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME));
+				file -> file.getName().equalsIgnoreCase(GIT_PROPERTIES_FILE_NAME));
 		if (gitPropertiesFiles.size() == 0) {
 			return null;
 		}
@@ -213,18 +279,14 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
-	static Pair<String, Properties> findGitPropertiesInJarFile(
+	static Pair<String, Properties> findGitPropertiesInArchive(
 			JarInputStream jarStream) throws IOException {
-		JarEntry entry = jarStream.getNextJarEntry();
-		while (entry != null) {
-			if (Paths.get(entry.getName()).getFileName().toString().toLowerCase().equals(GIT_PROPERTIES_FILE_NAME)) {
-				Properties gitProperties = new Properties();
-				gitProperties.load(jarStream);
-				return Pair.createPair(entry.getName(), gitProperties);
-			}
-			entry = jarStream.getNextJarEntry();
+		Pair<String, JarInputStream> propertiesEntry = findEntry(jarStream, GIT_PROPERTIES_FILE_NAME);
+		if (propertiesEntry != null) {
+			Properties gitProperties = new Properties();
+			gitProperties.load(jarStream);
+			return Pair.createPair(propertiesEntry.getFirst(), gitProperties);
 		}
-
 		return null;
 	}
 
@@ -235,7 +297,7 @@ public class GitPropertiesLocatorUtils {
 		if (StringUtils.isEmpty(revision)) {
 			throw new InvalidGitPropertiesException(
 					"No entry or empty value for '" + key + "' in " + entryName + " in " + jarFile + "." +
-							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties.toString()
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties
 			);
 		}
 

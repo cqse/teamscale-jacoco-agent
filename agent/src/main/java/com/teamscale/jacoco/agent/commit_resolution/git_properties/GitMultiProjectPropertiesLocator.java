@@ -50,7 +50,7 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 		try {
 			ProjectRevision data = GitPropertiesLocatorUtils.getProjectRevisionFromGitProperties(file, isJarFile);
 			if (data == null) {
-				logger.debug("No git.properties file found in {}", file.toString());
+				logger.debug("No git.properties file found in {}", file);
 				return;
 			}
 			// this code only runs when 'teamscale-project' is not given via the agent properties,
@@ -66,10 +66,10 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 				return;
 			}
 			uploader.setTeamscaleProjectForRevision(data);
-			logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file.toString(),
+			logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
 					data.getProject(), data.getRevision());
 		} catch (IOException | InvalidGitPropertiesException e) {
-			logger.error("Error during asynchronous search for git.properties in {}", file.toString(), e);
+			logger.error("Error during asynchronous search for git.properties in {}", file, e);
 		}
 	}
 
