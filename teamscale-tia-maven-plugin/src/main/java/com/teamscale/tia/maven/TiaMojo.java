@@ -1,6 +1,5 @@
 package com.teamscale.tia.maven;
 
-import shadow.org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -17,9 +16,14 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import shadow.org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,12 +40,6 @@ public class TiaMojo extends AbstractMojo {
 	 * Name of the property used in maven-surefire-plugin.
 	 */
 	private static final String SUREFIRE_ARG_LINE = "argLine";
-
-	@Parameter(defaultValue = "${session}")
-	private MavenSession session;
-
-	@Parameter(property = "project", readonly = true)
-	private MavenProject mavenProject;
 
 	@Parameter(required = true)
 	private String teamscaleUrl;
@@ -65,36 +63,78 @@ public class TiaMojo extends AbstractMojo {
 	private String propertyName;
 
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
-	Map<String, Artifact> pluginArtifactMap;
+	private Map<String, Artifact> pluginArtifactMap;
+
+	@Parameter(defaultValue = "${project.build.directory}")
+	private String projectBuildDir;
+
+	@Parameter(defaultValue = "${session}")
+	private MavenSession session;
+
+	private Path targetDirectory;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		setTiaProperty("reportDirectory", "./target/tia");
+		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
+		createTargetDirectory();
+
+		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
 		setTiaProperty("server.project", project);
 		setTiaProperty("server.userName", userName);
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", getEndCommit());
 
-		setArgLine();
+		Path agentConfigFile = createAgentConfigFile();
+		setArgLine(agentConfigFile);
 	}
 
-	private void setArgLine() {
+	private void createTargetDirectory() throws MojoFailureException {
+		try {
+			Files.createDirectories(targetDirectory);
+		} catch (IOException e) {
+			throw new MojoFailureException("Could not create target directory " + targetDirectory, e);
+		}
+	}
+
+	private void setArgLine(Path agentConfigFile) {
 		String propertyName = getEffectivePropertyName();
-		Properties projectProperties = mavenProject.getProperties();
+		Properties projectProperties = getMavenProject().getProperties();
+
 		String oldValue = projectProperties.getProperty(propertyName);
-		String newValue = createAgentOptions(oldValue);
+		String newValue = createAgentOptions(agentConfigFile);
+		if (StringUtils.isNotBlank(oldValue)) {
+			newValue = newValue + " " + oldValue;
+		}
+
 		getLog().info(propertyName + " set to " + newValue);
 		projectProperties.setProperty(propertyName, newValue);
 	}
 
-	private String createAgentOptions(String oldValue) {
-		String agentPath = findAgentJarFile().getAbsolutePath();
+	private MavenProject getMavenProject() {
+		return session.getCurrentProject();
+	}
 
-		String javaAgentOption = "-javaagent:" + agentPath + "=config-file=/home/k/proj/tia-maven/agent.properties";
-		if (StringUtils.isNotBlank(oldValue)) {
-			javaAgentOption = javaAgentOption + " " + oldValue;
+	private Path createAgentConfigFile() throws MojoFailureException {
+		Path configFilePath = targetDirectory.resolve("agent.properties");
+		String agentConfig = createAgentConfig();
+		try {
+			Files.write(configFilePath, Collections.singleton(agentConfig));
+		} catch (IOException e) {
+			throw new MojoFailureException("Writing the configuration file for the TIA agent failed." +
+					" Make sure the path " + configFilePath + " is writeable.", e);
 		}
-		return javaAgentOption;
+
+		getLog().info("Agent config file created at " + configFilePath);
+		return configFilePath;
+	}
+
+	private String createAgentConfig() {
+		return "testing";
+	}
+
+	private String createAgentOptions(Path agentConfigFile) {
+		String agentPath = findAgentJarFile().getAbsolutePath();
+		return "-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
 	}
 
 	private File findAgentJarFile() {
@@ -106,7 +146,7 @@ public class TiaMojo extends AbstractMojo {
 		if (StringUtils.isNotBlank(propertyName)) {
 			return propertyName;
 		}
-		if ("eclipse-test-plugin".equals(mavenProject.getPackaging())) {
+		if ("eclipse-test-plugin".equals(getMavenProject().getPackaging())) {
 			return TYCHO_ARG_LINE;
 		}
 		return SUREFIRE_ARG_LINE;
