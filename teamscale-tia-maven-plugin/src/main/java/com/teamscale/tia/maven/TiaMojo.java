@@ -3,7 +3,6 @@ package com.teamscale.tia.maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -42,48 +41,46 @@ public class TiaMojo extends AbstractMojo {
 	private static final String SUREFIRE_ARG_LINE = "argLine";
 
 	@Parameter(required = true)
-	private String teamscaleUrl;
+	public String teamscaleUrl;
 
 	@Parameter(required = true)
-	private String project;
+	public String project;
 
 	@Parameter(required = true)
-	private String userName;
+	public String userName;
 
 	@Parameter(property = "teamscale.accessToken", required = true)
-	private String accessToken;
+	public String accessToken;
+
+	// TODO (FS) should we also allow specifying a revision?
+	@Parameter
+	public String endCommit;
 
 	@Parameter
-	private String revision;
-
-	@Parameter
-	private String endCommit;
-
-	@Parameter
-	private String propertyName;
+	public String propertyName;
 
 	@Parameter(defaultValue = "Test Impact Analysis")
-	private String partition;
+	public String partition;
 
 	@Parameter(defaultValue = "12888")
-	private String agentPort;
+	public String agentPort;
 
 	@Parameter
-	private String additionalAgentOptions;
+	public String additionalAgentOptions;
 
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
-	private Map<String, Artifact> pluginArtifactMap;
+	public Map<String, Artifact> pluginArtifactMap;
 
 	@Parameter(defaultValue = "${project.build.directory}")
-	private String projectBuildDir;
+	public String projectBuildDir;
 
 	@Parameter(defaultValue = "${session}")
-	private MavenSession session;
+	public MavenSession session;
 
 	private Path targetDirectory;
 	private String resolvedEndCommit;
 
-	public void execute() throws MojoExecutionException, MojoFailureException {
+	public void execute() throws MojoFailureException {
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
