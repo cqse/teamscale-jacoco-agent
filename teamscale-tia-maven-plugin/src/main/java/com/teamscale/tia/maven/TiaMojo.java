@@ -68,6 +68,9 @@ public class TiaMojo extends AbstractMojo {
 	@Parameter(defaultValue = "12888")
 	private String agentPort;
 
+	@Parameter
+	private String additionalAgentOptions;
+
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
 	private Map<String, Artifact> pluginArtifactMap;
 
@@ -152,7 +155,11 @@ public class TiaMojo extends AbstractMojo {
 
 	private String createAgentOptions(Path agentConfigFile) {
 		String agentPath = findAgentJarFile().getAbsolutePath();
-		return "-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
+		String javaagentArgument = "-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
+		if (StringUtils.isNotBlank(additionalAgentOptions)) {
+			javaagentArgument += "," + additionalAgentOptions;
+		}
+		return javaagentArgument;
 	}
 
 	private File findAgentJarFile() {
