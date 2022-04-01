@@ -15,10 +15,13 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import shadow.org.apache.commons.compress.utils.IOUtils;
 import shadow.org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,6 +71,9 @@ public class TiaMojo extends AbstractMojo {
 	@Parameter
 	public String additionalAgentOptions;
 
+	@Parameter(defaultValue = "INFO")
+	public String agentLogLevel;
+
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
 	public Map<String, Artifact> pluginArtifactMap;
 
@@ -94,8 +100,9 @@ public class TiaMojo extends AbstractMojo {
 		setTiaProperty("endCommit", resolvedEndCommit);
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 
-		Path agentConfigFile = createAgentConfigFile();
-		setArgLine(agentConfigFile);
+		Path agentConfigFile = createAgentConfigFiles();
+		Path logFilePath = targetDirectory.resolve("agent.log");
+		setArgLine(agentConfigFile, logFilePath);
 	}
 
 	private void createTargetDirectory() throws MojoFailureException {
@@ -106,12 +113,12 @@ public class TiaMojo extends AbstractMojo {
 		}
 	}
 
-	private void setArgLine(Path agentConfigFile) {
+	private void setArgLine(Path agentConfigFile, Path logFilePath) {
 		String propertyName = getEffectivePropertyName();
 		Properties projectProperties = getMavenProject().getProperties();
 
 		String oldValue = projectProperties.getProperty(propertyName);
-		String newValue = createAgentOptions(agentConfigFile);
+		String newValue = createJvmOptions(agentConfigFile, logFilePath);
 		if (StringUtils.isNotBlank(oldValue)) {
 			newValue = newValue + " " + oldValue;
 		}
@@ -124,9 +131,17 @@ public class TiaMojo extends AbstractMojo {
 		return session.getCurrentProject();
 	}
 
-	private Path createAgentConfigFile() throws MojoFailureException {
+	private Path createAgentConfigFiles() throws MojoFailureException {
+		Path loggingConfigPath = targetDirectory.resolve("logback.xml");
+		try (OutputStream loggingConfigOutputStream = Files.newOutputStream(loggingConfigPath)) {
+			IOUtils.copy(readAgentLogbackConfig(), loggingConfigOutputStream);
+		} catch (IOException e) {
+			throw new MojoFailureException("Writing the logging configuration file for the TIA agent failed." +
+					" Make sure the path " + loggingConfigPath + " is writeable.", e);
+		}
+
 		Path configFilePath = targetDirectory.resolve("agent.properties");
-		String agentConfig = createAgentConfig();
+		String agentConfig = createAgentConfig(loggingConfigPath);
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));
 		} catch (IOException e) {
@@ -138,7 +153,11 @@ public class TiaMojo extends AbstractMojo {
 		return configFilePath;
 	}
 
-	private String createAgentConfig() {
+	private InputStream readAgentLogbackConfig() {
+		return TiaMojo.class.getResourceAsStream("logback-agent.xml");
+	}
+
+	private String createAgentConfig(Path loggingConfigPath) {
 		return "mode=testwise" +
 				"\ntia-mode=teamscale-upload" +
 				"\nteamscale-server-url=" + teamscaleUrl +
@@ -147,16 +166,19 @@ public class TiaMojo extends AbstractMojo {
 				"\nteamscale-access-token=" + accessToken +
 				"\nteamscale-commit=" + resolvedEndCommit +
 				"\nteamscale-partition=" + partition +
-				"\nhttp-server-port=" + agentPort;
+				"\nhttp-server-port=" + agentPort +
+				"\nlogging-config=" + loggingConfigPath;
 	}
 
-	private String createAgentOptions(Path agentConfigFile) {
+	private String createJvmOptions(Path agentConfigFile, Path logFilePath) {
 		String agentPath = findAgentJarFile().getAbsolutePath();
-		String javaagentArgument = "-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
+		String javaagentArgument = "'-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
 		if (StringUtils.isNotBlank(additionalAgentOptions)) {
 			javaagentArgument += "," + additionalAgentOptions;
 		}
-		return javaagentArgument;
+		javaagentArgument += "'";
+		return javaagentArgument + " '-DTEAMSCALE_AGENT_LOG_FILE=" + logFilePath + "'" +
+				" -DTEAMSCALE_AGENT_LOG_LEVEL=" + agentLogLevel;
 	}
 
 	private File findAgentJarFile() {
