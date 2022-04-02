@@ -28,16 +28,6 @@ import java.util.Properties;
 
 public abstract class TiaMojoBase extends AbstractMojo {
 
-	/**
-	 * Name of the property used in maven-osgi-test-plugin.
-	 */
-	private static final String TYCHO_ARG_LINE = "tycho.testArgLine";
-
-	/**
-	 * Name of the property used in maven-surefire-plugin.
-	 */
-	private static final String SUREFIRE_ARG_LINE = "argLine";
-
 	@Parameter(required = true)
 	public String teamscaleUrl;
 
@@ -117,24 +107,15 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	private void setArgLine(Path agentConfigFile, Path logFilePath) {
-		String propertyName = getEffectivePropertyName();
+		String effectivePropertyName = ArgLine.getEffectivePropertyName(propertyName, getMavenProject());
 		Properties projectProperties = getMavenProject().getProperties();
 
-		String oldValue = removePreviousTiaAgent(projectProperties.getProperty(propertyName));
-		String newValue = createJvmOptions(agentConfigFile, logFilePath);
-		if (StringUtils.isNotBlank(oldValue)) {
-			newValue = newValue + " " + oldValue;
-		}
+		String oldArgLine = projectProperties.getProperty(effectivePropertyName);
+		String newArgLine = new ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile,
+				logFilePath).prependTo(oldArgLine);
 
-		getLog().info(propertyName + " set to " + newValue);
-		projectProperties.setProperty(propertyName, newValue);
-	}
-
-	private String removePreviousTiaAgent(String argLine) {
-		if (argLine == null) {
-			return null;
-		}
-		return argLine.replaceAll("-Dteamscale.markstart.*teamscale.markend", "");
+		getLog().info(effectivePropertyName + " set to " + newArgLine);
+		projectProperties.setProperty(effectivePropertyName, newArgLine);
 	}
 
 	private MavenProject getMavenProject() {
@@ -187,30 +168,9 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		return config;
 	}
 
-	private String createJvmOptions(Path agentConfigFile, Path logFilePath) {
-		String agentPath = findAgentJarFile().getAbsolutePath();
-		String javaagentArgument = "-Dteamscale.markstart '-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
-		if (StringUtils.isNotBlank(additionalAgentOptions)) {
-			javaagentArgument += "," + additionalAgentOptions;
-		}
-		javaagentArgument += "'";
-		return javaagentArgument + " '-DTEAMSCALE_AGENT_LOG_FILE=" + logFilePath + "'" +
-				" -DTEAMSCALE_AGENT_LOG_LEVEL=" + agentLogLevel + " -Dteamscale.markend";
-	}
-
-	private File findAgentJarFile() {
+	private Path findAgentJarFile() {
 		Artifact agentArtifact = pluginArtifactMap.get("com.teamscale:teamscale-jacoco-agent");
-		return agentArtifact.getFile();
-	}
-
-	private String getEffectivePropertyName() {
-		if (StringUtils.isNotBlank(propertyName)) {
-			return propertyName;
-		}
-		if ("eclipse-test-plugin".equals(getMavenProject().getPackaging())) {
-			return TYCHO_ARG_LINE;
-		}
-		return SUREFIRE_ARG_LINE;
+		return agentArtifact.getFile().toPath();
 	}
 
 	private String resolveEndCommit() throws MojoFailureException {
