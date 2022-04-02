@@ -10,6 +10,9 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Represents a single commit in a Git repository.
+ */
 public class GitCommit {
 
 	public final String ref;
@@ -22,6 +25,11 @@ public class GitCommit {
 		this.branch = branch;
 	}
 
+	/**
+	 * Determines the current HEAD commit in the Git repository located in the given base directory.
+	 *
+	 * @throws IOException if reading from the Git repository fails or the current directory is not a Git repository.
+	 */
 	public static GitCommit getGitHeadCommitDescriptor(File baseDirectory) throws IOException {
 		Git git = Git.open(baseDirectory);
 		Repository repository = git.getRepository();
