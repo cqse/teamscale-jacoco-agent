@@ -1,7 +1,7 @@
 package com.teamscale.tia.maven;
 
 import org.apache.maven.project.MavenProject;
-import shadow.org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.file.Path;
 

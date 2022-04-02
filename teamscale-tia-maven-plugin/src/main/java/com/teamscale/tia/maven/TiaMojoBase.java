@@ -1,13 +1,13 @@
 package com.teamscale.tia.maven;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import shadow.org.apache.commons.compress.utils.IOUtils;
-import shadow.org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
