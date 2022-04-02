@@ -6,16 +6,9 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import shadow.org.apache.commons.compress.utils.IOUtils;
 import shadow.org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -179,45 +172,11 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		}
 
 		try {
-			GitCommit commit = getGitHeadCommitDescriptor(session.getCurrentProject().getBasedir());
+			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(session.getCurrentProject().getBasedir());
 			return commit.branch + ":" + commit.timestamp;
 		} catch (IOException e) {
-			throw new MojoFailureException(
-					"You did not configure an <endCommit> in the pom.xml and I could also not determine the checked out commit from Git",
-					e);
-		}
-	}
-
-	private static class GitCommit {
-		public final String ref;
-		public final long timestamp;
-		public final String branch;
-
-		private GitCommit(String ref, long timestamp, String branch) {
-			this.ref = ref;
-			this.timestamp = timestamp;
-			this.branch = branch;
-		}
-	}
-
-	private static GitCommit getGitHeadCommitDescriptor(File baseDirectory) throws IOException {
-		Git git = Git.open(baseDirectory);
-		Repository repository = git.getRepository();
-		String branch = repository.getBranch();
-		RevCommit commit = getCommit(repository, branch);
-		long commitTimeSeconds = commit.getCommitTime();
-		String ref = repository.getRefDatabase().findRef("HEAD").getObjectId().getName();
-		return new GitCommit(ref, commitTimeSeconds * 1000L, branch);
-	}
-
-	private static RevCommit getCommit(Repository repository, String revisionBranchOrTag) throws IOException {
-		try (RevWalk revWalk = new RevWalk(repository)) {
-			Ref head = repository.getRefDatabase().findRef(revisionBranchOrTag);
-			if (head != null) {
-				return revWalk.parseCommit(head.getLeaf().getObjectId());
-			} else {
-				return revWalk.parseCommit(ObjectId.fromString(revisionBranchOrTag));
-			}
+			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
+					" and I could also not determine the checked out commit from Git", e);
 		}
 	}
 
