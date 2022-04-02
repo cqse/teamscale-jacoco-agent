@@ -56,6 +56,12 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public String endCommit;
 
 	@Parameter
+	public String includes;
+
+	@Parameter
+	public String excludes;
+
+	@Parameter
 	public String propertyName;
 
 	@Parameter(defaultValue = "12888")
@@ -165,7 +171,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	private String createAgentConfig(Path loggingConfigPath) {
-		return "mode=testwise" +
+		String config = "mode=testwise" +
 				"\ntia-mode=teamscale-upload" +
 				"\nteamscale-server-url=" + teamscaleUrl +
 				"\nteamscale-project=" + project +
@@ -175,6 +181,13 @@ public abstract class TiaMojoBase extends AbstractMojo {
 				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath;
+		if (StringUtils.isNotBlank(includes)) {
+			config += "\nincludes=" + includes;
+		}
+		if (StringUtils.isNotBlank(excludes)) {
+			config += "\nexcludes=" + excludes;
+		}
+		return config;
 	}
 
 	private String createJvmOptions(Path agentConfigFile, Path logFilePath) {
