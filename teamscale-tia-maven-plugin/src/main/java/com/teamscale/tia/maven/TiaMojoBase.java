@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 public abstract class TiaMojoBase extends AbstractMojo {
 
@@ -135,9 +134,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		if (argLine == null) {
 			return null;
 		}
-		String agentPath = findAgentJarFile().getAbsolutePath();
-		String pattern = "-javaagent:" + Pattern.quote(agentPath) + ".*?-DTEAMSCALE_AGENT_LOG_LEVEL=[^ ]*";
-		return argLine.replaceAll(pattern, "");
+		return argLine.replaceAll("-Dteamscale.markstart.*teamscale.markend", "");
 	}
 
 	private MavenProject getMavenProject() {
@@ -192,13 +189,13 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	private String createJvmOptions(Path agentConfigFile, Path logFilePath) {
 		String agentPath = findAgentJarFile().getAbsolutePath();
-		String javaagentArgument = "'-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
+		String javaagentArgument = "-Dteamscale.markstart '-javaagent:" + agentPath + "=config-file=" + agentConfigFile.toAbsolutePath();
 		if (StringUtils.isNotBlank(additionalAgentOptions)) {
 			javaagentArgument += "," + additionalAgentOptions;
 		}
 		javaagentArgument += "'";
 		return javaagentArgument + " '-DTEAMSCALE_AGENT_LOG_FILE=" + logFilePath + "'" +
-				" -DTEAMSCALE_AGENT_LOG_LEVEL=" + agentLogLevel;
+				" -DTEAMSCALE_AGENT_LOG_LEVEL=" + agentLogLevel + " -Dteamscale.markend";
 	}
 
 	private File findAgentJarFile() {
