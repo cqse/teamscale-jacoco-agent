@@ -4,10 +4,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -28,10 +25,9 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
-@Mojo(name = "tia", defaultPhase = LifecyclePhase.INITIALIZE, requiresDependencyResolution = ResolutionScope.RUNTIME,
-		threadSafe = true)
-public class TiaMojo extends AbstractMojo {
+public abstract class TiaMojoBase extends AbstractMojo {
 
 	/**
 	 * Name of the property used in maven-osgi-test-plugin.
@@ -61,9 +57,6 @@ public class TiaMojo extends AbstractMojo {
 
 	@Parameter
 	public String propertyName;
-
-	@Parameter(defaultValue = "Test Impact Analysis")
-	public String partition;
 
 	@Parameter(defaultValue = "12888")
 	public String agentPort;
@@ -105,6 +98,11 @@ public class TiaMojo extends AbstractMojo {
 		setArgLine(agentConfigFile, logFilePath);
 	}
 
+	/**
+	 * @return the partition to upload testwise coverage to.
+	 */
+	protected abstract String getPartition();
+
 	private void createTargetDirectory() throws MojoFailureException {
 		try {
 			Files.createDirectories(targetDirectory);
@@ -117,7 +115,7 @@ public class TiaMojo extends AbstractMojo {
 		String propertyName = getEffectivePropertyName();
 		Properties projectProperties = getMavenProject().getProperties();
 
-		String oldValue = projectProperties.getProperty(propertyName);
+		String oldValue = removePreviousTiaAgent(projectProperties.getProperty(propertyName));
 		String newValue = createJvmOptions(agentConfigFile, logFilePath);
 		if (StringUtils.isNotBlank(oldValue)) {
 			newValue = newValue + " " + oldValue;
@@ -125,6 +123,15 @@ public class TiaMojo extends AbstractMojo {
 
 		getLog().info(propertyName + " set to " + newValue);
 		projectProperties.setProperty(propertyName, newValue);
+	}
+
+	private String removePreviousTiaAgent(String argLine) {
+		if (argLine == null) {
+			return null;
+		}
+		String agentPath = findAgentJarFile().getAbsolutePath();
+		String pattern = "-javaagent:" + Pattern.quote(agentPath) + ".*?-DTEAMSCALE_AGENT_LOG_LEVEL=[^ ]*";
+		return argLine.replaceAll(pattern, "");
 	}
 
 	private MavenProject getMavenProject() {
@@ -154,7 +161,7 @@ public class TiaMojo extends AbstractMojo {
 	}
 
 	private InputStream readAgentLogbackConfig() {
-		return TiaMojo.class.getResourceAsStream("logback-agent.xml");
+		return TiaMojoBase.class.getResourceAsStream("logback-agent.xml");
 	}
 
 	private String createAgentConfig(Path loggingConfigPath) {
@@ -165,7 +172,7 @@ public class TiaMojo extends AbstractMojo {
 				"\nteamscale-user=" + userName +
 				"\nteamscale-access-token=" + accessToken +
 				"\nteamscale-commit=" + resolvedEndCommit +
-				"\nteamscale-partition=" + partition +
+				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath;
 	}
