@@ -4,6 +4,10 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+# 23.1.0
+
+- [feature] add support for git properties files in jar files nested in jar or war files
+
 # 23.0.0
 
 - [feature] The agent logs now an error with further information when dumped coverage is empty
