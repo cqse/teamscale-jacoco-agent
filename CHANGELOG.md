@@ -4,6 +4,9 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+# New Release
+- [fix] _teamscale-gradle-plugin_: The `TestImpacted` task did not execute any tests when `collectTestwiseCoverage = false` was set
+
 # 23.1.0
 
 - [feature] add support for git properties files in jar files nested in jar or war files
@@ -18,7 +21,7 @@ We use [semantic versioning](http://semver.org/):
 - [breaking change] _teamscale-gradle-plugin_: Removed automatic registration of mavenCentral repository (Makes the
   plugin compatible with `dependencyResolutionManagement`)
 - [breaking change] _teamscale-gradle-plugin_: The `TestImpacted` task now collects testwise coverage by default even
-  without the `--impacted` option being set. Can be disabled with `--collect-testwise-coverage=false`.
+  without the `--impacted` option being set. Can be disabled programmatically with `collectTestwiseCoverage = false`.
 - [feature] The Teamscale server configuration for the `TestImpacted` task is only needed when `--impacted` is used.
 
 # 22.2.0

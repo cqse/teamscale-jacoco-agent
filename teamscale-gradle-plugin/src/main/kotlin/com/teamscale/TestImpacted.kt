@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
@@ -28,11 +29,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
 
     /** Command line switch to enable/disable testwise coverage collection. */
     @Input
-    @Option(
-        option = "collect-testwise-coverage",
-        description = "If set Testwise coverage is recorded."
-    )
-    val collectTestwiseCoverage = objects.property(Boolean::class.java).convention(true)
+    val collectTestwiseCoverage: Property<Boolean> = objects.property(Boolean::class.java).convention(true)
 
     /** Command line switch to activate requesting from Teamscale which tests are impacted by a change (last commit be default). */
     @Input
@@ -126,12 +123,6 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
     @Internal
     lateinit var reportTask: TestwiseCoverageReportTask
 
-    @Internal
-    var includeEngines: Set<String> = emptySet()
-
-    @Internal
-    val junitPlatformOptions: JUnitPlatformOptions = JUnitPlatformOptions()
-
     val testEngineConfiguration: FileCollection
         @InputFiles
         @Classpath
@@ -142,50 +133,10 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         description = "Executes the impacted tests and collects coverage per test case"
     }
 
-    /** Overrides default behavior to only execute impacted tests. */
-    override fun useJUnitPlatform(testFrameworkConfigure: Action<in JUnitPlatformOptions>) {
-        testFrameworkConfigure.execute(junitPlatformOptions)
-
-        if (junitPlatformOptions.excludeEngines.contains(IMPACTED_TEST_ENGINE)) {
-            throw GradleException("Engine '$IMPACTED_TEST_ENGINE' can't be excluded in '$TestImpacted' Gradle task")
-        }
-
-        includeEngines = junitPlatformOptions.includeEngines
-
-        super.useJUnitPlatform {
-            it.excludeEngines = junitPlatformOptions.excludeEngines
-            it.includeEngines = setOf("teamscale-test-impacted")
-            it.includeTags = junitPlatformOptions.includeTags
-            it.excludeTags = junitPlatformOptions.excludeTags
-        }
-    }
-
-    override fun useJUnit() {
-        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
-    }
-
-    override fun useJUnit(testFrameworkConfigure: Closure<*>?) {
-        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
-    }
-
-    override fun useJUnit(testFrameworkConfigure: Action<in JUnitOptions>) {
-        throw GradleException("JUnit 4 is not supported! Use JUnit Platform instead!")
-    }
-
-    override fun useTestNG() {
-        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
-    }
-
-    override fun useTestNG(testFrameworkConfigure: Closure<Any>) {
-        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
-    }
-
-    override fun useTestNG(testFrameworkConfigure: Action<in TestNGOptions>) {
-        throw GradleException("TestNG is not supported! Use JUnit Platform instead!")
-    }
-
     @TaskAction
     override fun executeTests() {
+        val testFrameworkOptions = options
+        require(testFrameworkOptions is JUnitPlatformOptions) { "Only JUnit Platform is supported as test framework!" }
         if (collectTestwiseCoverage.get()) {
             classpath = classpath.plus(testEngineConfiguration)
 
@@ -205,7 +156,8 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
                 reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
             }
 
-            setImpactedTestEngineOptions(report)
+            setImpactedTestEngineOptions(report, testFrameworkOptions)
+            testFrameworkOptions.includeEngines = setOf(IMPACTED_TEST_ENGINE)
         }
         super.executeTests()
     }
@@ -228,7 +180,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         }
     }
 
-    private fun setImpactedTestEngineOptions(report: Report) {
+    private fun setImpactedTestEngineOptions(report: Report, options: JUnitPlatformOptions) {
         if (runImpacted) {
             assert(endCommit != null) { "When executing only impacted tests a branchName and timestamp must be specified!" }
             serverConfiguration.validate()
@@ -246,6 +198,6 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         writeEngineProperty("runAllTests", runAllTests.toString())
         writeEngineProperty("includeAddedTests", includeAddedTests.toString())
         writeEngineProperty("includeFailedAndSkipped", includeFailedAndSkipped.toString())
-        writeEngineProperty("engines", includeEngines.joinToString(","))
+        writeEngineProperty("engines", options.includeEngines.joinToString(","))
     }
 }
