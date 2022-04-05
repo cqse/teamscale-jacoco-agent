@@ -4,8 +4,10 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# New Release
-- [fix] _teamscale-gradle-plugin_: The `TestImpacted` task did not execute any tests when `collectTestwiseCoverage = false` was set
+# 23.1.1
+
+- [fix] _teamscale-gradle-plugin_: The `TestImpacted` task did not execute any tests
+  when `collectTestwiseCoverage = false` was set
 
 # 23.1.0
 
