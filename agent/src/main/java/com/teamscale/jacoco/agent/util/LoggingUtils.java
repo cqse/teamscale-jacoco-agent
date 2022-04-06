@@ -17,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 
 /**
  * Helps initialize the logging framework properly.
@@ -55,8 +57,8 @@ public class LoggingUtils {
 	}
 
 	/**
-	 * Reconfigures the logger context to use the configuration XML from the given input stream.
-	 * C.f. https://logback.qos.ch/manual/configuration.html
+	 * Reconfigures the logger context to use the configuration XML from the given input stream. C.f.
+	 * https://logback.qos.ch/manual/configuration.html
 	 */
 	private static void reconfigureLoggerContext(InputStream stream) {
 		LoggerContext loggerContext = getLoggerContext();
@@ -68,12 +70,29 @@ public class LoggingUtils {
 		} catch (JoranException je) {
 			// StatusPrinter will handle this
 		}
+
+		// these properties will be logged to logstash
+		loggerContext.putProperty("Tool", "Teamscale JaCoCo Agent");
+		loggerContext.putProperty("JVM arguments", getCurrentCommandLine());
+
 		StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
 	}
 
+	private static String getCurrentCommandLine() {
+		return ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
+				.map(LoggingUtils::quoteCommandLineArgument).collect(Collectors.joining(","));
+	}
+
+	private static String quoteCommandLineArgument(String argument) {
+		if (!argument.contains(" ")) {
+			return argument;
+		}
+		return "'" + argument.replaceAll("'", "\\'") + "'";
+	}
+
 	/**
-	 * Initializes the logging from the given file. If that is <code>null</code>,
-	 * uses {@link #initializeDefaultLogging()} instead.
+	 * Initializes the logging from the given file. If that is <code>null</code>, uses {@link
+	 * #initializeDefaultLogging()} instead.
 	 */
 	public static LoggingResources initializeLogging(Path loggingConfigFile) throws IOException {
 		if (loggingConfigFile == null) {
