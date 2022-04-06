@@ -82,6 +82,7 @@ public class AgentOptionsParser {
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
 		}
+
 		return options;
 	}
 

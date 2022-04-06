@@ -25,6 +25,7 @@ import java.lang.instrument.Instrumentation;
 import java.time.Duration;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
+import static net.logstash.logback.argument.StructuredArguments.value;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
@@ -56,7 +57,7 @@ public class Agent extends AgentBase {
 		if (options.shouldDumpInIntervals()) {
 			timer = new Timer(this::dumpReport, Duration.ofMinutes(options.getDumpIntervalInMinutes()));
 			timer.start();
-			logger.info("Dumping every {} minutes.", options.getDumpIntervalInMinutes());
+			logger.info("Dumping every {} minutes.", value("dump_interval", options.getDumpIntervalInMinutes()));
 		}
 		if (options.getTeamscaleServerOptions().partition != null) {
 			controller.setSessionId(options.getTeamscaleServerOptions().partition);
