@@ -25,12 +25,18 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	 */
 	public static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
 	private final ArtifactoryConfig artifactoryConfig;
+	private final String coverageFormat;
 	private String uploadPath;
 
 	/** Constructor. */
-	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles) {
+	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles, boolean testWiseCoverage) {
 		super(config.url, additionalMetaDataFiles, IArtifactoryUploadApi.class);
 		this.artifactoryConfig = config;
+		if (testWiseCoverage) {
+			this.coverageFormat = "testwise_coverage";
+		} else {
+			this.coverageFormat = "jacoco";
+		}
 	}
 
 	@Override
@@ -49,12 +55,12 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		if (artifactoryConfig.pathSuffix == null) {
 			this.uploadPath = String.join("/", "uploads", artifactoryConfig.commitInfo.commit.branchName,
 					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
-					artifactoryConfig.partition, "jacoco",
+					artifactoryConfig.partition, coverageFormat,
 					coverageFile.getNameWithoutExtension() + ".zip");
 		} else {
 			this.uploadPath = String.join("/", "uploads", artifactoryConfig.commitInfo.commit.branchName,
 					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
-					artifactoryConfig.partition, "jacoco", artifactoryConfig.pathSuffix,
+					artifactoryConfig.partition, coverageFormat, artifactoryConfig.pathSuffix,
 					coverageFile.getNameWithoutExtension() + ".zip");
 		}
 		super.upload(coverageFile);

@@ -384,7 +384,7 @@ public class AgentOptions {
 				return createDelayedArtifactoryUploader(instrumentation);
 			}
 			return new ArtifactoryUploader(artifactoryConfig,
-					additionalMetaDataFiles);
+					additionalMetaDataFiles, useTestwiseCoverageMode());
 		}
 
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
@@ -433,7 +433,8 @@ public class AgentOptions {
 		DelayedUploader<ArtifactoryConfig.CommitInfo> uploader = new DelayedUploader<>(
 				commitInfo -> {
 					artifactoryConfig.commitInfo = commitInfo;
-					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles);
+					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles,
+							useTestwiseCoverageMode());
 				}, outputDirectory);
 		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
 				(file, isJarFile) -> ArtifactoryConfig.parseGitProperties(

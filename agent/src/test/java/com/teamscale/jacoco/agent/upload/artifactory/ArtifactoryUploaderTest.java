@@ -31,7 +31,7 @@ public class ArtifactoryUploaderTest {
 
 		ArtifactoryConfig artifactoryConfig = generateBasicArtifacotryConfig(serverUrl);
 		artifactoryConfig.apiKey = "some_api_key";
-		ArtifactoryUploader artifactoryUploader = new ArtifactoryUploader(artifactoryConfig, new ArrayList<>());
+		ArtifactoryUploader artifactoryUploader = new ArtifactoryUploader(artifactoryConfig, new ArrayList<>(), false);
 		File tmpFile = new File(tmpDir.getPath() + File.separator + "tmpfile");
 		tmpFile.createNewFile();
 
