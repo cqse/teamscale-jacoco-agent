@@ -53,6 +53,11 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
 
 	/**
+	 * Option that specifies intermediate directories which should be append.
+	 */
+	public static final String ARTIFACTORY_PATH_SUFFIX = "artifactory-path-suffix";
+
+	/**
 	 * Specifies the location of the JAR file which includes the git.properties file.
 	 */
 	public static final String ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION = "artifactory-git-properties-jar";
@@ -61,6 +66,11 @@ public class ArtifactoryConfig {
 	 * Specifies the date format in which the commit timestamp in the git.properties file is formatted.
 	 */
 	public static final String ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "artifactory-git-properties-commit-date-format";
+
+	/**
+	 * Specifies the partition for which the upload is.
+	 */
+	public static final String ARTIFACTORY_PARTITION = "artifactory-partition";
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} */
 	public HttpUrl url;
@@ -74,6 +84,9 @@ public class ArtifactoryConfig {
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_ZIP_PATH_OPTION} */
 	public String zipPath;
 
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PATH_SUFFIX} */
+	public String pathSuffix;
+
 	/** The information regarding a commit. */
 	public CommitInfo commitInfo;
 
@@ -82,6 +95,9 @@ public class ArtifactoryConfig {
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} */
 	public String apiKey;
+
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PARTITION} */
+	public String partition;
 
 	/**
 	 * Handles all command-line options prefixed with 'artifactory-'
@@ -105,6 +121,9 @@ public class ArtifactoryConfig {
 			case ARTIFACTORY_ZIP_PATH_OPTION:
 				options.zipPath = StringUtils.stripSuffix(value, "/");
 				return true;
+			case ARTIFACTORY_PATH_SUFFIX:
+				options.pathSuffix = StringUtils.stripSuffix(value, "/");
+				return true;
 			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
 				options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
 						options.gitPropertiesCommitTimeFormat, key, value);
@@ -115,6 +134,9 @@ public class ArtifactoryConfig {
 			case ARTIFACTORY_API_KEY_OPTION:
 				options.apiKey = value;
 				return true;
+			case ARTIFACTORY_PARTITION:
+				options.partition = value;
+				return true;
 			default:
 				return false;
 		}
@@ -123,12 +145,12 @@ public class ArtifactoryConfig {
 	/** Checks if all required options are set to upload to artifactory. */
 	public boolean hasAllRequiredFieldsSet() {
 		boolean requiredAuthOptionsSet = (user != null && password != null) || apiKey != null;
-		return url != null && requiredAuthOptionsSet;
+		return url != null && partition != null && requiredAuthOptionsSet;
 	}
 
 	/** Checks if all required fields are null. */
 	public boolean hasAllRequiredFieldsNull() {
-		return url == null && user == null && password == null && apiKey == null;
+		return url == null && user == null && password == null && apiKey == null && partition == null;
 	}
 
 	/** Checks whether commit and revision are set. */

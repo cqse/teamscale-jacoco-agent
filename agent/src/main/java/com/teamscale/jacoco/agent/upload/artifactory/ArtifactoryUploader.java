@@ -46,9 +46,17 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 
 	@Override
 	public void upload(CoverageFile coverageFile) {
-		this.uploadPath = String.join("/", artifactoryConfig.commitInfo.commit.branchName,
-				artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
-				coverageFile.getNameWithoutExtension() + ".zip");
+		if (artifactoryConfig.pathSuffix == null) {
+			this.uploadPath = String.join("/", "uploads", artifactoryConfig.commitInfo.commit.branchName,
+					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
+					artifactoryConfig.partition, "jacoco",
+					coverageFile.getNameWithoutExtension() + ".zip");
+		} else {
+			this.uploadPath = String.join("/", "uploads", artifactoryConfig.commitInfo.commit.branchName,
+					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
+					artifactoryConfig.partition, "jacoco", artifactoryConfig.pathSuffix,
+					coverageFile.getNameWithoutExtension() + ".zip");
+		}
 		super.upload(coverageFile);
 	}
 
