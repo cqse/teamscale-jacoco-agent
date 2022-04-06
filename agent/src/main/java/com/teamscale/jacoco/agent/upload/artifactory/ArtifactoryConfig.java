@@ -53,7 +53,7 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
 
 	/**
-	 * Option that specifies intermediate directories which should be append.
+	 * Option that specifies intermediate directories which should be appended.
 	 */
 	public static final String ARTIFACTORY_PATH_SUFFIX = "artifactory-path-suffix";
 
