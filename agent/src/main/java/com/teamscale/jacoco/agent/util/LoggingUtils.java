@@ -74,6 +74,7 @@ public class LoggingUtils {
 		// these properties will be logged to logstash
 		loggerContext.putProperty("Tool", "Teamscale JaCoCo Agent");
 		loggerContext.putProperty("JVM arguments", getCurrentCommandLine());
+		loggerContext.putProperty("PID", getPid());
 
 		StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
 	}
@@ -81,6 +82,16 @@ public class LoggingUtils {
 	private static String getCurrentCommandLine() {
 		return ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
 				.map(LoggingUtils::quoteCommandLineArgument).collect(Collectors.joining(","));
+	}
+
+	private static String getPid() {
+		String processName =
+				java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
+		String[] split = processName.split("@");
+		if (split.length > 0) {
+			return split[0];
+		}
+		return "unknown";
 	}
 
 	private static String quoteCommandLineArgument(String argument) {
