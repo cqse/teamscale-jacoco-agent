@@ -1,17 +1,18 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.teamscale</groupId>
-    <artifactId>teamscale-maven-plugin</artifactId>
-    <version>1.0.0</version>
-    <packaging>maven-plugin</packaging>
-
-    <name>Teamscale Maven Plugin</name>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <revision>1.0.0-SNAPSHOT</revision>
     </properties>
+
+    <groupId>com.teamscale</groupId>
+    <artifactId>teamscale-maven-plugin</artifactId>
+    <version>${revision}</version>
+    <packaging>maven-plugin</packaging>
+
+    <name>Teamscale Maven Plugin</name>
 
     <dependencies>
         <dependency>
