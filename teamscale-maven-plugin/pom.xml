@@ -2,11 +2,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.teamscale</groupId>
-    <artifactId>teamscale-tia-maven-plugin</artifactId>
+    <artifactId>teamscale-maven-plugin</artifactId>
     <version>1.0.0</version>
     <packaging>maven-plugin</packaging>
 
-    <name>Plugin to simplify the TIA setup for Apache Maven projects</name>
+    <name>Teamscale Maven Plugin</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
