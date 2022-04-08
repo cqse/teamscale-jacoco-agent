@@ -27,6 +27,7 @@ dependencies {
 	implementation gradleApi()
 	implementation 'org.eclipse.jgit:org.eclipse.jgit:5.11.1.202105131744-r'
 	implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+	testImplementation "com.squareup.okio:okio:2.10.0"
 }
 
 processResources {

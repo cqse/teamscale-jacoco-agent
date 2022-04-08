@@ -5,10 +5,10 @@ import com.teamscale.client.TeamscaleClient;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration;
 import com.teamscale.test_impacted.engine.TestEngineRegistry;
-import com.teamscale.test_impacted.engine.executor.DelegatingTestExecutor;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
+import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import okhttp3.HttpUrl;
 import org.junit.platform.engine.TestEngine;
@@ -90,7 +90,7 @@ public class TestEngineOptions {
 
 	private ITestExecutor createTestExecutor() {
 		if (!isRunImpacted()) {
-			return new DelegatingTestExecutor();
+			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
 		}
 
 		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
@@ -189,7 +189,9 @@ public class TestEngineOptions {
 		/** Checks field conditions and returns the built {@link TestEngineOptions}. */
 		public TestEngineOptions build() {
 			TestEngineOptionUtils.assertNotNull(testEngineOptions.endCommit, "End commit must be set.");
-			TestEngineOptionUtils.assertNotNull(testEngineOptions.serverOptions, "Server options must be set.");
+			if (testEngineOptions.runImpacted) {
+				TestEngineOptionUtils.assertNotNull(testEngineOptions.serverOptions, "Server options must be set.");
+			}
 			TestEngineOptionUtils.assertNotNull(testEngineOptions.testwiseCoverageAgentApis,
 					"Agent urls may be empty but not null.");
 			TestEngineOptionUtils.assertNotNull(testEngineOptions.reportDirectory, "Report directory must be set.");
