@@ -44,3 +44,40 @@ dependencyUpdates.resolutionStrategy {
 		}
 	}
 }
+
+task buildMavenPlugin(type: Exec) {
+	workingDir './teamscale-maven-plugin'
+	commandLine './mvnw', 'verify', "-Drevision=${appVersion}"
+}
+
+if (project.hasProperty("sonatypeUsername") &&
+	project.hasProperty("sonatypePassword") &&
+	project.hasProperty("signing.keyId") &&
+	project.hasProperty("signing.secretKeyRingFile")) {
+
+	task publishMavenPluginToMavenCentral(type: Exec, dependsOn: buildMavenPlugin) {
+		doFirst {
+			file("/tmp/.maven-settings").write("""
+					<servers>
+						<server>
+							<id>sonatype-nexus-snapshots</id>
+							<username>${project.property("sonatypeUsername")}</username>
+							<password>${project.property("sonatypePassword")}</password>
+						</server>
+						<server>
+							<id>sonatype-nexus-staging</id>
+							<username>${project.property("sonatypeUsername")}</username>
+							<password>${project.property("sonatypePassword")}</password>
+						</server>
+					</servers>
+					""")
+		}
+
+		workingDir './teamscale-maven-plugin'
+			commandLine ['./mvnw', 'deploy', "-s", "/tmp/.maven-settings", "-Drevision=${appVersion}",
+						"-Dgpg.passphrase=${project.property("signing.password")}",
+						"-Dgpg.keyname=${project.property("signing.keyId")}",
+						"-DsecretKeyRingFile=${project.property("signing.secretKeyRingFile")}"]
+
+	}
+}
