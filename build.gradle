@@ -59,9 +59,9 @@ task publishMavenPluginToMavenLocal(type: Exec) {
 rootProject.tasks.publishToMavenLocal.dependsOn(publishMavenPluginToMavenLocal)
 
 if (project.hasProperty("sonatypeUsername") &&
-	project.hasProperty("sonatypePassword") &&
-	project.hasProperty("signing.keyId") &&
-	project.hasProperty("signing.secretKeyRingFile")) {
+		project.hasProperty("sonatypePassword") &&
+		project.hasProperty("signing.keyId") &&
+		project.hasProperty("signing.secretKeyRingFile")) {
 
 	task publishMavenPluginToMavenCentral(type: Exec, dependsOn: buildMavenPlugin) {
 		doFirst {
@@ -82,10 +82,10 @@ if (project.hasProperty("sonatypeUsername") &&
 		}
 
 		workingDir './teamscale-maven-plugin'
-			commandLine ['./mvnw', 'deploy', "-s", "/tmp/.maven-settings", "-Drevision=${snapshotVersion}",
-						"-Dgpg.passphrase=${project.property("signing.password")}",
-						"-Dgpg.keyname=${project.property("signing.keyId")}",
-						"-DsecretKeyRingFile=${project.property("signing.secretKeyRingFile")}"]
+		commandLine './mvnw', 'deploy', "-s", "/tmp/.maven-settings", "-Drevision=${snapshotVersion}",
+				"-Dgpg.passphrase=${project.property("signing.password")}",
+				"-Dgpg.keyname=${project.property("signing.keyId")}",
+				"-DsecretKeyRingFile=${project.property("signing.secretKeyRingFile")}"
 
 	}
 }
