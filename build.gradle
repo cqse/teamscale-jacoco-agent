@@ -50,6 +50,12 @@ task buildMavenPlugin(type: Exec) {
 	commandLine './mvnw', 'verify', "-Drevision=${appVersion}"
 }
 
+task publishMavenPluginToMavenLocal(type: Exec) {
+	workingDir './teamscale-maven-plugin'
+	commandLine './mvnw', 'install', "-Drevision=${appVersion}"
+}
+rootProject.tasks.publishToMavenLocal.dependsOn(publishMavenPluginToMavenLocal)
+
 if (project.hasProperty("sonatypeUsername") &&
 	project.hasProperty("sonatypePassword") &&
 	project.hasProperty("signing.keyId") &&
