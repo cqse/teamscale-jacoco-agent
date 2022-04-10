@@ -1,10 +1,9 @@
 package com.teamscale.tia.client;
 
 import com.teamscale.report.testwise.model.TestInfo;
+import com.teamscale.test.commons.SystemTestUtils;
 import org.junit.jupiter.api.Test;
 import testframework.CustomTestFramework;
-
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,14 +24,8 @@ public class TiaClientTiaModeHttpSystemTest {
 		CustomTestFramework customTestFramework = new CustomTestFramework(AGENT_PORT);
 		customTestFramework.runTestsWithTia();
 
-		assertThat(customTestFramework.testInfos.stream().map(TiaClientTiaModeHttpSystemTest::getCoverageString))
+		assertThat(customTestFramework.testInfos.stream().map(SystemTestUtils::getCoverageString))
 				.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
-	}
-
-	private static String getCoverageString(TestInfo info) {
-		return info.paths.stream().flatMap(path -> path.getFiles().stream())
-				.map(file -> file.fileName + ":" + file.coveredLines).collect(
-						Collectors.joining(";"));
 	}
 
 }

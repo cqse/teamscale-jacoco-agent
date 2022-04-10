@@ -16,7 +16,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testImplementation 'org.assertj:assertj-core:3.19.0'
     testImplementation 'com.squareup.moshi:moshi:1.12.0'
-    testImplementation 'com.teamscale:teamscale-lib-commons:7.0.2'
 }
 
 // install dependencies needed by the Maven test project
