@@ -1,6 +1,7 @@
-package foo;
+package bar;
 
 import org.junit.jupiter.api.Test;
+import foo.SUT;
 
 public class IntegIT {
 

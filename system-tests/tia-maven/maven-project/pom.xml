@@ -44,6 +44,9 @@
                 <username>build</username>
                 <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
                 <endCommit>master:HEAD</endCommit>
+                <includes>
+                    <include>*foo.*</include>
+                </includes>
             </configuration>
         </plugin>
         <plugin>

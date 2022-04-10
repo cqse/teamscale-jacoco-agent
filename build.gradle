@@ -9,13 +9,12 @@ ext {
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.java.
 	jacocoVersion = '0.8.7'
-}
 
-def snapshotVersion
-if (VersionUtils.INSTANCE.isTaggedRelease()) {
-	snapshotVersion = appVersion
-} else {
-	snapshotVersion = appVersion + '-SNAPSHOT'
+	if (VersionUtils.INSTANCE.isTaggedRelease()) {
+		snapshotVersion = appVersion
+	} else {
+		snapshotVersion = appVersion + '-SNAPSHOT'
+	}
 }
 
 subprojects {
