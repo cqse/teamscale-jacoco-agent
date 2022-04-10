@@ -141,7 +141,6 @@
                                         <arg>--pinentry-mode</arg>
                                         <arg>loopback</arg>
                                     </gpgArguments>
-                                    <secretKeyring>${secretKeyRingFile}</secretKeyring>
                                 </configuration>
                             </execution>
                         </executions>

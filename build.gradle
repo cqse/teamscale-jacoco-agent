@@ -61,7 +61,7 @@ rootProject.tasks.publishToMavenLocal.dependsOn(publishMavenPluginToMavenLocal)
 if (project.hasProperty("sonatypeUsername") &&
 		project.hasProperty("sonatypePassword") &&
 		project.hasProperty("signing.keyId") &&
-		project.hasProperty("signing.secretKeyRingFile")) {
+		project.hasProperty("gpgDirectory")) {
 
 	task publishMavenPluginToMavenCentral(type: Exec, dependsOn: buildMavenPlugin) {
 		doFirst {
@@ -84,6 +84,7 @@ if (project.hasProperty("sonatypeUsername") &&
 		workingDir './teamscale-maven-plugin'
 		commandLine './mvnw', 'deploy', "-s", "/tmp/.maven-settings", "-Drevision=${snapshotVersion}",
 				"-Dgpg.passphrase=${project.property("signing.password")}",
+				"-Dgpg.homedir=${project.property("gpgDirectory")}",
 				"-Dgpg.keyname=${project.property("signing.keyId")}",
 				"-DsecretKeyRingFile=${project.property("signing.secretKeyRingFile")}"
 
