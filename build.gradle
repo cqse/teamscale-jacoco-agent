@@ -47,14 +47,14 @@ dependencyUpdates.resolutionStrategy {
 	}
 }
 
-task buildMavenPlugin(type: Exec) {
+task buildMavenPlugin(type: Exec, dependsOn: ':agent:publishToMavenLocal') {
 	workingDir './teamscale-maven-plugin'
-	commandLine './mvnw', 'verify', "-Drevision=${snapshotVersion}"
+	commandLine './mvnw', 'verify', "-Drevision=${snapshotVersion}", "-Dteamscale.agent.version=${snapshotVersion}"
 }
 
-task publishMavenPluginToMavenLocal(type: Exec) {
+task publishMavenPluginToMavenLocal(type: Exec, dependsOn: ':agent:publishToMavenLocal') {
 	workingDir './teamscale-maven-plugin'
-	commandLine './mvnw', 'install', "-Drevision=${snapshotVersion}"
+	commandLine './mvnw', 'install', "-Drevision=${snapshotVersion}", "-Dteamscale.agent.version=${snapshotVersion}"
 }
 rootProject.tasks.publishToMavenLocal.dependsOn(publishMavenPluginToMavenLocal)
 
@@ -63,7 +63,7 @@ if (project.hasProperty("sonatypeUsername") &&
 		project.hasProperty("signing.keyId") &&
 		project.hasProperty("gpgDirectory")) {
 
-	task publishMavenPluginToMavenCentral(type: Exec, dependsOn: buildMavenPlugin) {
+	task publishMavenPluginToMavenCentral(type: Exec, dependsOn: [':agent:publishToMavenLocal']) {
 		doFirst {
 			file("/tmp/maven-settings.xml").write("""
 <settings>
@@ -84,7 +84,8 @@ if (project.hasProperty("sonatypeUsername") &&
 		}
 
 		workingDir './teamscale-maven-plugin'
-		commandLine './mvnw', 'deploy', "-s", "/tmp/maven-settings.xml", "-Drevision=${snapshotVersion}",
+		commandLine './mvnw', 'deploy', "-s", "/tmp/maven-settings.xml",
+				"-Drevision=${snapshotVersion}", "-Dteamscale.agent.version=${snapshotVersion}",
 				"-Dgpg.passphrase=${project.property("signing.password")}",
 				"-Dgpg.homedir=${project.property("gpgDirectory")}",
 				"-Dgpg.keyname=${project.property("signing.keyId")}",
