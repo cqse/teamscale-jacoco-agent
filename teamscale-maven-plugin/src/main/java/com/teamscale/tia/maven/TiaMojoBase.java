@@ -43,7 +43,7 @@ import java.util.Properties;
  *         <dependency>
  *             <groupId>com.teamscale</groupId>
  *             <artifactId>teamscale-surefire-provider</artifactId>
- *             <version>23.0.0</version>
+ *             <version>23.2.0</version>
  *         </dependency>
  *     </dependencies>
  * </plugin>
