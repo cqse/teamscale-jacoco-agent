@@ -19,16 +19,18 @@ package org.apache.maven.surefire.teamscale;
  * under the License.
  */
 
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
-import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
-
 import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestPlan;
 
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
+import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
+
 /**
+ * This class was copied from maven-surefire-plugin since it is not accessible otherwise.
+ * We did not modify it on purpose (apart from this comment) to make future updates easy.
  * @since 2.22.0
  */
 final class TestPlanScannerFilter

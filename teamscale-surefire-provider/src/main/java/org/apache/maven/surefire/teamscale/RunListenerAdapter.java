@@ -19,23 +19,10 @@ package org.apache.maven.surefire.teamscale;
  * under the License.
  */
 
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.joining;
-import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
-import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
-import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
-
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -44,7 +31,22 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.joining;
+import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
+import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
+
 /**
+ * This class was copied from maven-surefire-plugin since it is not accessible otherwise.
+ * We did not modify it on purpose (apart from this comment) to make future updates easy.
  * @since 2.22.0
  */
 final class RunListenerAdapter

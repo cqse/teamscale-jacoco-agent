@@ -15,12 +15,15 @@ import java.io.IOException;
  */
 public class GitCommit {
 
-	public final String ref;
+	/** The SHA1 of this commit. */
+	public final String sha1;
+	/** The timestamp of this commit (Unix epoch in milliseconds). */
 	public final long timestamp;
+	/** The branch of this commit. */
 	public final String branch;
 
-	private GitCommit(String ref, long timestamp, String branch) {
-		this.ref = ref;
+	private GitCommit(String sha1, long timestamp, String branch) {
+		this.sha1 = sha1;
 		this.timestamp = timestamp;
 		this.branch = branch;
 	}

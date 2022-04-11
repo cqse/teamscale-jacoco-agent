@@ -81,7 +81,6 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	@Parameter(property = "teamscale.accessToken", required = true)
 	public String accessToken;
 
-	// TODO (FS) should we also allow specifying a revision?
 	/**
 	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
 	 * {@code BRANCH:UNIX_EPOCH_TIMESTAMP_IN_MILLISECONDS}

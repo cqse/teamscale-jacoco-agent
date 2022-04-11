@@ -26,6 +26,8 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.PostDiscoveryFilter;
 
 /**
+ * This class was copied from maven-surefire-plugin since it is not accessible otherwise.
+ * We did not modify it on purpose (apart from this comment) to make future updates easy.
  * @since 2.22.0
  */
 class TestMethodFilter
