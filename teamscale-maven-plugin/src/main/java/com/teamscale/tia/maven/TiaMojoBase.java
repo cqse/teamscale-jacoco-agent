@@ -65,11 +65,11 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
 	@Parameter(required = true)
-	public String project;
+	public String projectId;
 
 	/**
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the {@link
-	 * #project}.
+	 * #projectId}.
 	 */
 	@Parameter(required = true)
 	public String username;
@@ -168,7 +168,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
-		setTiaProperty("server.project", project);
+		setTiaProperty("server.project", projectId);
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedEndCommit);
@@ -238,7 +238,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		String config = "mode=testwise" +
 				"\ntia-mode=teamscale-upload" +
 				"\nteamscale-server-url=" + teamscaleUrl +
-				"\nteamscale-project=" + project +
+				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
 				"\nteamscale-access-token=" + accessToken +
 				"\nteamscale-commit=" + resolvedEndCommit +

@@ -40,7 +40,7 @@
             </executions>
             <configuration>
                 <teamscaleUrl>http://localhost:${tia.teamscale.fake.port}</teamscaleUrl>
-                <project>m</project>
+                <projectId>m</projectId>
                 <username>build</username>
                 <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
                 <endCommit>master:HEAD</endCommit>
