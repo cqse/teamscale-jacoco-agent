@@ -278,13 +278,15 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	/**
-	 * Sets a user property in the TIA namespace. User properties are respected both during the build and during tests
-	 * (as e.g. failsafe tests are often run in a separate JVM spawned by Maven).
+	 * Sets a property in the TIA namespace. It seems that, depending on Maven version and which other plugins are used,
+	 * different types of properties are respected both during the build and during tests (as e.g. failsafe tests are
+	 * often run in a separate JVM spawned by Maven). So we set our properties in every possible way to make sure the
+	 * plugin works out of the box in most situations.
 	 */
 	private void setTiaProperty(String name, String value) {
 		String fullyQualifiedName = "teamscale.test.impacted." + name;
-		if (session.getUserProperties().get(fullyQualifiedName) == null) {
-			session.getUserProperties().setProperty(fullyQualifiedName, value);
-		}
+		session.getUserProperties().setProperty(fullyQualifiedName, value);
+		session.getSystemProperties().setProperty(fullyQualifiedName, value);
+		System.setProperty(fullyQualifiedName, value);
 	}
 }
