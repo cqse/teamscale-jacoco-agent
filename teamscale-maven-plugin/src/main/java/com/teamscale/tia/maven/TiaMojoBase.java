@@ -10,7 +10,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -133,10 +132,10 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public String[] additionalAgentOptions;
 
 	/**
-	 * Changes the log level of the agent.
+	 * Changes the log level of the agent to DEBUG.
 	 */
-	@Parameter(defaultValue = "INFO")
-	public String agentLogLevel;
+	@Parameter(defaultValue = "false")
+	public boolean debugLogging;
 
 	/**
 	 * Map of resolved Maven artifacts. Provided automatically by Maven.
@@ -197,6 +196,10 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		Properties projectProperties = getMavenProject().getProperties();
 
 		String oldArgLine = projectProperties.getProperty(effectivePropertyName);
+		String agentLogLevel = "INFO";
+		if (debugLogging) {
+			agentLogLevel = "DEBUG";
+		}
 		String newArgLine = new ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile,
 				logFilePath).prependTo(oldArgLine);
 
@@ -264,7 +267,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 			return endCommit;
 		}
 
-		File basedir = session.getCurrentProject().getBasedir();
+		Path basedir = session.getCurrentProject().getBasedir().toPath();
 		try {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
 			return commit.branch + ":" + commit.timestamp;
