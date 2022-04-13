@@ -285,6 +285,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 */
 	private void setTiaProperty(String name, String value) {
 		String fullyQualifiedName = "teamscale.test.impacted." + name;
+		getLog().debug("Setting property " + name + "=" + value);
 		session.getUserProperties().setProperty(fullyQualifiedName, value);
 		session.getSystemProperties().setProperty(fullyQualifiedName, value);
 		System.setProperty(fullyQualifiedName, value);
