@@ -6,6 +6,7 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
@@ -23,6 +24,9 @@ import java.util.zip.ZipOutputStream;
 
 /** Base class for uploading the coverage zip to a provided url */
 public abstract class HttpZipUploaderBase<T> implements IUploader {
+
+	/** Custom user agent of the requests, used to monitor API traffic. */
+	public static final String USER_AGENT = "Teamscale JaCoCo Agent";
 
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
@@ -48,6 +52,13 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 
 	/** Template method to configure the OkHttp Client. */
 	protected void configureOkHttp(OkHttpClient.Builder builder) {
+		builder.addNetworkInterceptor(chain -> {
+			Request originalRequest = chain.request();
+			Request requestWithUserAgent = originalRequest.newBuilder()
+					.header("User-Agent", USER_AGENT)
+					.build();
+			return chain.proceed(requestWithUserAgent);
+		});
 	}
 
 	/** Returns the API for creating request to the http uploader */
