@@ -12,7 +12,7 @@ import org.junit.platform.engine.UniqueId;
 public class ImpactedTestEngine implements TestEngine {
 
 	/** The id of the {@link ImpactedTestEngine}. */
-	static final String ENGINE_ID = "teamscale-test-impacted";
+	public static final String ENGINE_ID = "teamscale-test-impacted";
 
 	private InternalImpactedTestEngine internalImpactedTestEngine = null;
 

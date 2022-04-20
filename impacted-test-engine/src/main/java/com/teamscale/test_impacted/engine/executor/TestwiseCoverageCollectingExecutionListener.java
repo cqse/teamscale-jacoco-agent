@@ -2,6 +2,7 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
@@ -114,13 +115,23 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		} else {
 			testResultCache.put(testDescriptor.getUniqueId(), testExecutionResult);
 
-			if (!testDescriptor.getParent().isPresent()) {
+			if (isLastDescriptor(testDescriptor)) {
 				// this is the root node, i.e. test execution is completely finished now
 				endTestRun();
 			}
 		}
 
 		delegateEngineExecutionListener.executionFinished(testDescriptor, testExecutionResult);
+	}
+
+	private static boolean isLastDescriptor(TestDescriptor descriptor) {
+		return descriptor.isRoot() || descriptor.getParent().map(
+				TestwiseCoverageCollectingExecutionListener::isImpactedTestEngineDescriptor).orElse(false);
+	}
+
+	private static boolean isImpactedTestEngineDescriptor(TestDescriptor descriptor) {
+		UniqueId.Segment segment = descriptor.getUniqueId().getLastSegment();
+		return segment.getType().equals("engine") && segment.getValue().equals(ImpactedTestEngine.ENGINE_ID);
 	}
 
 	private TestExecution getTestExecution(TestDescriptor testDescriptor,
