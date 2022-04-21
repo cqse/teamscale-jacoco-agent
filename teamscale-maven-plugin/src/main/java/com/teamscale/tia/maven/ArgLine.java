@@ -10,28 +10,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
  * Composes a new argLine based on the current one and input about the desired agent configuration.
  */
 public class ArgLine {
-
-	/**
-	 * Name of the property used in the maven-osgi-test-plugin.
-	 */
-	private static final String TYCHO_ARG_LINE = "tycho.testArgLine";
-
-	/**
-	 * Name of the property used in the maven-surefire-plugin.
-	 */
-	private static final String SUREFIRE_ARG_LINE = "argLine";
-
-	/**
-	 * Name of the property used in the spring-boot-maven-plugin start goal.
-	 */
-	private static final String SPRING_BOOT_ARG_LINE = "spring-boot.run.jvmArguments";
 
 	private final String[] additionalAgentOptions;
 	private final String agentLogLevel;
@@ -51,33 +35,27 @@ public class ArgLine {
 	public static void applyToMavenProject(ArgLine argLine, MavenSession session, Log log,
 										   String userDefinedPropertyName, boolean isIntegrationTest) {
 		MavenProject mavenProject = session.getCurrentProject();
-		String effectivePropertyName = ArgLine.getEffectivePropertyName(userDefinedPropertyName, mavenProject,
+		ArgLineProperty effectiveProperty = ArgLine.getEffectiveProperty(userDefinedPropertyName, mavenProject,
 				isIntegrationTest);
 
-		Properties projectProperties = mavenProject.getProperties();
-		cleanOldArgLines(projectProperties, log);
-
-		if (effectivePropertyName.equals(SPRING_BOOT_ARG_LINE)) {
-			projectProperties = session.getUserProperties();
-		}
-		String oldArgLine = projectProperties.getProperty(effectivePropertyName);
+		String oldArgLine = effectiveProperty.getValue(session);
 		String newArgLine = argLine.prependTo(oldArgLine);
 
-		projectProperties.setProperty(effectivePropertyName, newArgLine);
-		log.info(effectivePropertyName + " set to " + newArgLine);
+		effectiveProperty.setValue(session, newArgLine);
+		log.info(effectiveProperty.propertyName + " set to " + newArgLine);
 	}
 
-	private static void cleanOldArgLines(Properties projectProperties, Log log) {
-		for (String propertyName : Arrays.asList(SPRING_BOOT_ARG_LINE, TYCHO_ARG_LINE, SUREFIRE_ARG_LINE)) {
-			String oldArgLine = projectProperties.getProperty(propertyName);
+	public static void cleanOldArgLines(MavenSession session, Log log) {
+		for (ArgLineProperty property : ArgLineProperty.STANDARD_PROPERTIES) {
+			String oldArgLine = property.getValue(session);
 			if (StringUtils.isBlank(oldArgLine)) {
 				continue;
 			}
 
 			String newArgLine = removePreviousTiaAgent(oldArgLine);
 			if (!oldArgLine.equals(newArgLine)) {
-				log.info("Removed agent from property " + propertyName);
-				projectProperties.setProperty(propertyName, newArgLine);
+				log.info("Removed agent from property " + property.propertyName);
+				property.setValue(session, newArgLine);
 			}
 		}
 	}
@@ -87,11 +65,12 @@ public class ArgLine {
 	 * constructor parameters of this class. Preserves all other options in the old argLine.
 	 */
 	/*package*/ String prependTo(String oldArgLine) {
-		String suffix = removePreviousTiaAgent(oldArgLine);
-		if (StringUtils.isNotBlank(suffix)) {
-			suffix = " " + suffix;
+		String jvmOptions = createJvmOptions();
+		if (StringUtils.isBlank(oldArgLine)) {
+			return jvmOptions;
 		}
-		return createJvmOptions() + suffix;
+
+		return jvmOptions + " " + oldArgLine;
 	}
 
 	private String createJvmOptions() {
@@ -124,21 +103,20 @@ public class ArgLine {
 	 * Determines the property in which to set the argLine. By default, this is the property used by the testing
 	 * framework of the current project's packaging. The user may override this by providing their own property name.
 	 */
-	private static String getEffectivePropertyName(String userDefinedPropertyName, MavenProject mavenProject,
-												  boolean isIntegrationTest) {
+	private static ArgLineProperty getEffectiveProperty(String userDefinedPropertyName, MavenProject mavenProject,
+											   boolean isIntegrationTest) {
 		if (StringUtils.isNotBlank(userDefinedPropertyName)) {
-			return userDefinedPropertyName;
+			return ArgLineProperty.projectProperty(userDefinedPropertyName);
 		}
 
-		System.err.println("-----> isIT=" + isIntegrationTest + " hasSB=" + hasSpringBootPluginEnabled(mavenProject));
 		if (isIntegrationTest && hasSpringBootPluginEnabled(mavenProject)) {
-			return SPRING_BOOT_ARG_LINE;
+			return ArgLineProperty.SPRING_BOOT_ARG_LINE;
 		}
 
 		if ("eclipse-test-plugin".equals(mavenProject.getPackaging())) {
-			return TYCHO_ARG_LINE;
+			return ArgLineProperty.TYCHO_ARG_LINE;
 		}
-		return SUREFIRE_ARG_LINE;
+		return ArgLineProperty.SUREFIRE_ARG_LINE;
 	}
 
 	private static boolean hasSpringBootPluginEnabled(MavenProject mavenProject) {
@@ -150,7 +128,7 @@ public class ArgLine {
 	 * Removes any previous invocation of our agent from the given argLine. This is necessary in case we want to
 	 * instrument unit and integration tests but with different arguments.
 	 */
-	private static String removePreviousTiaAgent(String argLine) {
+	/*package*/ static String removePreviousTiaAgent(String argLine) {
 		if (argLine == null) {
 			return "";
 		}

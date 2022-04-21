@@ -14,27 +14,27 @@ class ArgLineTest {
 		ArgLine argLine = new ArgLine(null, "info", Paths.get("agent.jar"), Paths.get("agent.properties"),
 				Paths.get("agent.log"));
 		String firstArgLine = argLine.prependTo("");
-		String secondArgLine = argLine.prependTo(firstArgLine);
+		String secondArgLine = argLine.prependTo(ArgLine.removePreviousTiaAgent(firstArgLine));
 
 		assertEquals(firstArgLine, secondArgLine);
 	}
 
 	@Test
-	public void secondInvocationOverridesFirst() {
-		String firstArgLine = new ArgLine(null, "info", Paths.get("agent.jar"), Paths.get("agent.properties"),
-				Paths.get("agent.log")).prependTo("");
-		String secondArgLine = new ArgLine(null, "info", Paths.get("agent2.jar"), Paths.get("agent.properties"),
-				Paths.get("agent.log")).prependTo(firstArgLine);
+	public void testNullOriginalArgLine() {
+		ArgLine argLine = new ArgLine(null, "info", Paths.get("agent.jar"), Paths.get("agent.properties"),
+				Paths.get("agent.log"));
+		String newArgLine = argLine.prependTo(null);
 
-		assertTrue(secondArgLine.contains("agent2.jar"));
+		assertTrue(newArgLine.startsWith("-Dteamscale.markstart"));
+		assertTrue(newArgLine.endsWith("-Dteamscale.markend"));
 	}
 
 	@Test
 	public void preservesUnrelatedAgents() {
-		String argLine = new ArgLine(null, "info", Paths.get("agent.jar"), Paths.get("agent.properties"),
-				Paths.get("agent.log")).prependTo("-javaagent:someother.jar");
+		String argLine = "-javaagent:someother.jar";
+		String newArgLine = ArgLine.removePreviousTiaAgent(argLine);
 
-		assertTrue(argLine.matches(".*agent\\.jar.*someother\\.jar.*"));
+		assertEquals(argLine, newArgLine);
 	}
 
 }

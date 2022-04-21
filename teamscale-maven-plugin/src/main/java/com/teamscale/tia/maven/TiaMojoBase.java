@@ -203,6 +203,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 			agentLogLevel = "DEBUG";
 		}
 
+		ArgLine.cleanOldArgLines(session, getLog());
 		ArgLine.applyToMavenProject(
 				new ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile, logFilePath),
 				session, getLog(), propertyName, isIntegrationTest());
