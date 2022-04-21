@@ -22,4 +22,9 @@ public class TiaUnitTestMojo extends TiaMojoBase {
 	protected String getPartition() {
 		return partition;
 	}
+
+	@Override
+	protected boolean isIntegrationTest() {
+		return false;
+	}
 }

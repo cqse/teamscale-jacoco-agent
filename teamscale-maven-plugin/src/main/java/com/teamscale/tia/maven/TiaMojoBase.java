@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Base class for TIA Mojos. Provides all necessary functionality but can be subclassed to change the partition.
@@ -183,6 +182,13 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 */
 	protected abstract String getPartition();
 
+	/**
+	 * @return whether this Mojo applies to integration tests.
+	 * <p>
+	 * Depending on this, different properties are used to set the argLine.
+	 */
+	protected abstract boolean isIntegrationTest();
+
 	private void createTargetDirectory() throws MojoFailureException {
 		try {
 			Files.createDirectories(targetDirectory);
@@ -192,19 +198,14 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	private void setArgLine(Path agentConfigFile, Path logFilePath) {
-		String effectivePropertyName = ArgLine.getEffectivePropertyName(propertyName, getMavenProject());
-		Properties projectProperties = getMavenProject().getProperties();
-
-		String oldArgLine = projectProperties.getProperty(effectivePropertyName);
 		String agentLogLevel = "INFO";
 		if (debugLogging) {
 			agentLogLevel = "DEBUG";
 		}
-		String newArgLine = new ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile,
-				logFilePath).prependTo(oldArgLine);
 
-		getLog().info(effectivePropertyName + " set to " + newArgLine);
-		projectProperties.setProperty(effectivePropertyName, newArgLine);
+		ArgLine.applyToMavenProject(
+				new ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile, logFilePath),
+				session, getLog(), propertyName, isIntegrationTest());
 	}
 
 	private MavenProject getMavenProject() {
