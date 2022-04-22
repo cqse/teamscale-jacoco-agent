@@ -1,10 +1,12 @@
 package com.teamscale.tia.maven;
 
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 
 import java.util.Properties;
 import java.util.function.Function;
 
+/** Accessor for different types of properties, e.g. project or user properties, in a {@link MavenSession}. */
 public class ArgLineProperty {
 
 	/**
@@ -22,6 +24,7 @@ public class ArgLineProperty {
 	 */
 	public static final ArgLineProperty SPRING_BOOT_ARG_LINE = userProperty("spring-boot.run.jvmArguments");
 
+	/** The standard properties that this plugin might modify. */
 	public static final ArgLineProperty[] STANDARD_PROPERTIES = new ArgLineProperty[]{TYCHO_ARG_LINE, SUREFIRE_ARG_LINE, SPRING_BOOT_ARG_LINE};
 
 	private static Properties getProjectProperties(MavenSession session) {
@@ -32,14 +35,17 @@ public class ArgLineProperty {
 		return session.getUserProperties();
 	}
 
+	/** Creates a project property ({@link MavenProject#getProperties()}). */
 	public static ArgLineProperty projectProperty(String name) {
 		return new ArgLineProperty(name, ArgLineProperty::getProjectProperties);
 	}
 
+	/** Creates a user property ({@link MavenSession#getUserProperties()}). */
 	public static ArgLineProperty userProperty(String name) {
 		return new ArgLineProperty(name, ArgLineProperty::getUserProperties);
 	}
 
+	/** The name of the property. */
 	public final String propertyName;
 	private final Function<MavenSession, Properties> propertiesAccess;
 
@@ -49,10 +55,12 @@ public class ArgLineProperty {
 		this.propertiesAccess = propertiesAccess;
 	}
 
+	/** Returns the value of this property in the given Maven session */
 	public String getValue(MavenSession session) {
 		return propertiesAccess.apply(session).getProperty(propertyName);
 	}
 
+	/** Sets the value of this property in the given Maven session */
 	public void setValue(MavenSession session, String value) {
 		propertiesAccess.apply(session).setProperty(propertyName, value);
 	}

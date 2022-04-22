@@ -32,6 +32,7 @@ public class ArgLine {
 		this.logFilePath = logFilePath;
 	}
 
+	/** Applies the given {@link ArgLine} to the given {@link MavenSession}. */
 	public static void applyToMavenProject(ArgLine argLine, MavenSession session, Log log,
 										   String userDefinedPropertyName, boolean isIntegrationTest) {
 		MavenProject mavenProject = session.getCurrentProject();
@@ -45,6 +46,9 @@ public class ArgLine {
 		log.info(effectiveProperty.propertyName + " set to " + newArgLine);
 	}
 
+	/**
+	 * Removes any occurrences of our agent from all {@link ArgLineProperty#STANDARD_PROPERTIES}.
+	 */
 	public static void cleanOldArgLines(MavenSession session, Log log) {
 		for (ArgLineProperty property : ArgLineProperty.STANDARD_PROPERTIES) {
 			String oldArgLine = property.getValue(session);
@@ -104,7 +108,7 @@ public class ArgLine {
 	 * framework of the current project's packaging. The user may override this by providing their own property name.
 	 */
 	private static ArgLineProperty getEffectiveProperty(String userDefinedPropertyName, MavenProject mavenProject,
-											   boolean isIntegrationTest) {
+														boolean isIntegrationTest) {
 		if (StringUtils.isNotBlank(userDefinedPropertyName)) {
 			return ArgLineProperty.projectProperty(userDefinedPropertyName);
 		}
@@ -128,7 +132,8 @@ public class ArgLine {
 	 * Removes any previous invocation of our agent from the given argLine. This is necessary in case we want to
 	 * instrument unit and integration tests but with different arguments.
 	 */
-	/*package*/ static String removePreviousTiaAgent(String argLine) {
+	/*package*/
+	static String removePreviousTiaAgent(String argLine) {
 		if (argLine == null) {
 			return "";
 		}
