@@ -7,7 +7,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.IOException;
@@ -207,10 +206,6 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		ArgLine.applyToMavenProject(
 				new ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile, logFilePath),
 				session, getLog(), propertyName, isIntegrationTest());
-	}
-
-	private MavenProject getMavenProject() {
-		return session.getCurrentProject();
 	}
 
 	private Path createAgentConfigFiles() throws MojoFailureException {
