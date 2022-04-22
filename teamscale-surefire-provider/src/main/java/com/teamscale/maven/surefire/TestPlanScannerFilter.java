@@ -1,4 +1,4 @@
-package org.apache.maven.surefire.teamscale;
+package com.teamscale.maven.surefire;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

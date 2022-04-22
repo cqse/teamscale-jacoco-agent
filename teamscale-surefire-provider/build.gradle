@@ -1,6 +1,11 @@
 plugins {
 	id 'com.teamscale.java-convention'
 	id 'java-library'
+
+	// since this provider jar is loaded into the Maven test classpath, the likelyhood of
+	// collisions is very high so we use the shadow plugin to relocate our dependencies
+	id 'com.github.johnrengelman.shadow'
+
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
 }
@@ -10,9 +15,38 @@ publishAs {
 	description = "A Maven Surefire provider that enable test impact analysis for JUnit 5"
 }
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+shadowJar {
+	// Needed as a workaround for https://github.com/johnrengelman/shadow/issues/521
+	inputs.property("debug", project.hasProperty("debug"))
+	archiveClassifier.set(null)
+	mergeServiceFiles()
+}
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+	target = tasks.shadowJar
+	onlyIf {
+		!project.hasProperty("debug")
+	}
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
 dependencies {
-	implementation('org.junit.jupiter:junit-jupiter-engine:5.8.2')
-	implementation('org.junit.platform:junit-platform-launcher:1.8.2')
-	implementation 'org.apache.maven.surefire:common-java5:3.0.0-M5'
+	shadow('org.junit.jupiter:junit-jupiter-engine:5.8.2')
+	shadow('org.junit.platform:junit-platform-launcher:1.8.2')
+	shadow 'org.apache.maven.surefire:common-java5:3.0.0-M5'
 	api project(':impacted-test-engine')
 }
+
+// due to a Gradle bug, the generated POM contains a second empty <dependencies/> tag which breaks the build
+// this removes the tag. C.f. https://github.com/jfrog/build-info/issues/198
+task fixPom {
+	doLast {
+		File file = new File("$buildDir/publications/maven/pom-default.xml")
+		String text = file.text
+		file.write(text.replaceAll("<dependencies/>", ""))
+	}
+}
+//generatePomFileForMavenPublication.finalizedBy fixPom

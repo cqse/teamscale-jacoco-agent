@@ -1,1 +1,1 @@
-org.apache.maven.surefire.teamscale.ImpactedTestEngineProvider
+com.teamscale.maven.surefire.ImpactedTestEngineProvider
