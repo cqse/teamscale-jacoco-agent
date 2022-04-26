@@ -14,6 +14,9 @@ import java.io.IOException;
 /** Helper class for generating a teamscale compatible service. */
 public class TeamscaleServiceGenerator {
 
+	/** Custom user agent of the requests, used to monitor API traffic. */
+	public static final String USER_AGENT = "Teamscale JaCoCo Agent";
+
 	/**
 	 * Generates a {@link Retrofit} instance for the given service, which uses basic auth to authenticate against the
 	 * server and which sets the accept header to json.
@@ -24,7 +27,9 @@ public class TeamscaleServiceGenerator {
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-						.addInterceptor(new AcceptJsonInterceptor()), readTimeout, writeTimeout
+						.addInterceptor(new AcceptJsonInterceptor())
+						.addNetworkInterceptor(new CustomUserAgentInterceptor())
+				, readTimeout, writeTimeout
 		);
 		return retrofit.create(serviceClass);
 	}
@@ -41,6 +46,7 @@ public class TeamscaleServiceGenerator {
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
+						.addNetworkInterceptor(new CustomUserAgentInterceptor())
 						.addInterceptor(new FileLoggingInterceptor(logfile)),
 				readTimeout, writeTimeout
 		);
@@ -63,6 +69,17 @@ public class TeamscaleServiceGenerator {
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request newRequest = chain.request().newBuilder().header("Accept", "application/json").build();
+			return chain.proceed(newRequest);
+		}
+	}
+
+	/**
+	 * Sets the custom user agent {@link #USER_AGENT} header on all requests.
+	 */
+	private static class CustomUserAgentInterceptor implements Interceptor {
+		@Override
+		public Response intercept(Chain chain) throws IOException {
+			Request newRequest = chain.request().newBuilder().header("User-Agent", USER_AGENT).build();
 			return chain.proceed(newRequest);
 		}
 	}

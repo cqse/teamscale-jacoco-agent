@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.upload;
 
 import com.teamscale.client.HttpUtils;
+import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
@@ -24,9 +25,6 @@ import java.util.zip.ZipOutputStream;
 
 /** Base class for uploading the coverage zip to a provided url */
 public abstract class HttpZipUploaderBase<T> implements IUploader {
-
-	/** Custom user agent of the requests, used to monitor API traffic. */
-	public static final String USER_AGENT = "Teamscale JaCoCo Agent";
 
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
@@ -55,7 +53,7 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 		builder.addNetworkInterceptor(chain -> {
 			Request originalRequest = chain.request();
 			Request requestWithUserAgent = originalRequest.newBuilder()
-					.header("User-Agent", USER_AGENT)
+					.header("User-Agent", TeamscaleServiceGenerator.USER_AGENT)
 					.build();
 			return chain.proceed(requestWithUserAgent);
 		});
