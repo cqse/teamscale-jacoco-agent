@@ -14,6 +14,7 @@ import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import com.teamscale.report.testwise.model.RevisionInfo;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.agent.rt.RT;
@@ -27,8 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -123,6 +124,14 @@ public abstract class AgentBase {
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
+
+		List<String> javagents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
+				s -> s.contains("-javaagent"));
+		if (javagents.size() > 1 || !javagents.get(0).contains("teamscale-jacoco-agent.jar")) {
+			delayedLogger.warn("Using multiple java agents could interfere with coverage recording."
+					+ " For best results consider registering the Teamscale JaCoCo Agent first.");
+		}
+
 		try {
 			agentOptions = AgentOptionsParser.parse(options, delayedLogger);
 		} catch (AgentOptionParseException e) {
