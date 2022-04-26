@@ -76,7 +76,7 @@ public class TeamscaleServiceGenerator {
 	/**
 	 * Sets the custom user agent {@link #USER_AGENT} header on all requests.
 	 */
-	private static class CustomUserAgentInterceptor implements Interceptor {
+	public static class CustomUserAgentInterceptor implements Interceptor {
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request newRequest = chain.request().newBuilder().header("User-Agent", USER_AGENT).build();
