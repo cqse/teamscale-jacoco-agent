@@ -135,7 +135,15 @@ public abstract class AgentBase {
 			}
 		}
 
-		loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+		if (agentOptions.isDebugLogging()) {
+			if (!agentOptions.getLoggingFilePath().isEmpty()) {
+				// handle explicitly specified file path
+			} else {
+				loggingResources = LoggingUtils.initializeDefaultDebugLogging();
+			}
+		} else {
+			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+		}
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);

@@ -50,6 +50,12 @@ public class LoggingUtils {
 		return new LoggingResources();
 	}
 
+	public static LoggingResources initializeDefaultDebugLogging() {
+		InputStream stream = Agent.class.getResourceAsStream("logback-default-debugging.xml");
+		reconfigureLoggerContext(stream);
+		return new LoggingResources();
+	}
+
 	private static LoggerContext getLoggerContext() {
 		return (LoggerContext) LoggerFactory.getILoggerFactory();
 	}
