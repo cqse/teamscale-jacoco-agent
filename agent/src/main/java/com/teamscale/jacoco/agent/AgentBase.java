@@ -127,9 +127,11 @@ public abstract class AgentBase {
 
 		List<String> javagents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
-		if (javagents.size() > 1 || !javagents.get(0).contains("teamscale-jacoco-agent.jar")) {
-			delayedLogger.warn("Using multiple java agents could interfere with coverage recording."
-					+ " For best results consider registering the Teamscale JaCoCo Agent first.");
+		if (javagents.size() > 1) {
+			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
+		}
+		if (!javagents.get(0).contains("teamscale-jacoco-agent.jar")) {
+			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
 		}
 
 		try {
