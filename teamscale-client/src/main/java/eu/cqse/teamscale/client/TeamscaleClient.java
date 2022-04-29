@@ -55,6 +55,10 @@ public class TeamscaleClient {
 		service.uploadReport(projectId, commitDescriptor, partition, EReportFormat.TEST_LIST, message, requestFile);
 	}
 
+	public void sampleAddedMethod() {
+		out.println("This Method is added to test ts.io");
+	}
+
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale.
 	 *
