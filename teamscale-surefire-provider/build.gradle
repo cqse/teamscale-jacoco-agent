@@ -49,4 +49,3 @@ task fixPom {
 		file.write(text.replaceAll("<dependencies/>", ""))
 	}
 }
-//generatePomFileForMavenPublication.finalizedBy fixPom
