@@ -8,3 +8,4 @@
 *.swp
 report-generator/test-coverage-*.xml
 gradle.properties
+**/maven-wrapper.jar
