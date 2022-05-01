@@ -130,9 +130,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	}
 
 	private static boolean isImpactedTestEngineDescriptor(TestDescriptor descriptor) {
-		List<UniqueId.Segment> segments = descriptor.getUniqueId().getSegments();
-		UniqueId.Segment segment = segments.get(segments.size() - 1);
-		return segment.getType().equals("engine") && segment.getValue().equals(ImpactedTestEngine.ENGINE_ID);
+		return UniqueId.forEngine(ImpactedTestEngine.ENGINE_ID).equals(descriptor.getUniqueId());
 	}
 
 	private TestExecution getTestExecution(TestDescriptor testDescriptor,
