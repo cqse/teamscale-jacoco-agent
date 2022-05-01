@@ -66,9 +66,9 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	/**
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the {@link
-	 * #projectId}.
+	 * #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
 	 */
-	@Parameter(required = true)
+	@Parameter(property = "teamscale.username", required = true)
 	public String username;
 
 	/**
