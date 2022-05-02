@@ -37,14 +37,19 @@ public class GitPropertiesLocatorUtils {
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
 	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:file:(.*?)!/.*", Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[j|w]ar:file:(.*?)\\*(.*)",
+	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwe]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);
 
 	/** File ending of Java web archive packages */
 	public static final String WAR_FILE_ENDING = ".war";
 
+	/** File ending of Java enterprise archive packages */
+	public static final String EAR_FILE_ENDING = ".ear";
+
 	/** File ending of Java archive packages */
 	public static final String JAR_FILE_ENDING = ".jar";
+
+	// TODO aar
 
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
@@ -178,7 +183,8 @@ public class GitPropertiesLocatorUtils {
 	public static Pair<String, Properties> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
 		String filePath = file.getPath();
-		if (isNestedInWar(filePath) || isNestedInFatJar(filePath)) {
+		// TODO aar
+		if (isNestedInWar(filePath) || isNestedInEar(filePath) || isNestedInFatJar(filePath)) {
 			return findGitPropertiesInNestedArchiveFile(file);
 		} else if (isJarFile) {
 			return findGitPropertiesInArchiveFile(file);
@@ -194,6 +200,12 @@ public class GitPropertiesLocatorUtils {
 		return filePath.contains(JAR_FILE_ENDING) &&
 				filePath.indexOf(JAR_FILE_ENDING) != filePath.length() - JAR_FILE_ENDING.length();
 	}
+
+	private static boolean isNestedInEar(String filePath) {
+		return filePath.contains(EAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
+	}
+
+	// TODO add isNestedInAar method
 
 	private static Pair<String, Properties> findGitPropertiesInArchiveFile(File file) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
@@ -211,9 +223,12 @@ public class GitPropertiesLocatorUtils {
 		int firstPartEndIndex;
 		if (filePath.contains(WAR_FILE_ENDING)) {
 			firstPartEndIndex = filePath.indexOf(WAR_FILE_ENDING) + WAR_FILE_ENDING.length();
+		} else if (filePath.contains(EAR_FILE_ENDING)) {
+			firstPartEndIndex = filePath.indexOf(EAR_FILE_ENDING) + EAR_FILE_ENDING.length();
 		} else {
 			firstPartEndIndex = filePath.indexOf(JAR_FILE_ENDING) + JAR_FILE_ENDING.length();
 		}
+		// TODO aar
 		String firstPart = filePath.substring(0, firstPartEndIndex);
 		String fileName = file.getName();
 		try (JarInputStream jarStream = new JarInputStream(
@@ -231,7 +246,7 @@ public class GitPropertiesLocatorUtils {
 		}
 	}
 
-	/** Searches the the give jar or war file for the given name. */
+	/** Searches the given archive for the given name. */
 	private static Pair<String, JarInputStream> findEntry(JarInputStream in, String name) throws IOException {
 		JarEntry entry;
 		while ((entry = in.getNextJarEntry()) != null) {
