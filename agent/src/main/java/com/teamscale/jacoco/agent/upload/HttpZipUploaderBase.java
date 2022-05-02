@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.upload;
 
 import com.teamscale.client.HttpUtils;
-import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
@@ -49,7 +48,6 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 
 	/** Template method to configure the OkHttp Client. */
 	protected void configureOkHttp(OkHttpClient.Builder builder) {
-		builder.addNetworkInterceptor(new TeamscaleServiceGenerator.CustomUserAgentInterceptor());
 	}
 
 	/** Returns the API for creating request to the http uploader */
