@@ -8,6 +8,7 @@ import retrofit2.http.POST;
 import systemundertest.SystemUnderTest;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +41,8 @@ public class HttpRedirectSystemTest {
 		dumpCoverage();
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		checkCustomUserAgent(teamscaleMockServer);
+
 		redirectMockServer.shutdown();
 		teamscaleMockServer.shutdown();
 	}
@@ -47,6 +50,11 @@ public class HttpRedirectSystemTest {
 	private void dumpCoverage() throws IOException {
 		new Retrofit.Builder().baseUrl("http://localhost:" + AGENT_PORT).build()
 				.create(AgentService.class).dump().execute();
+	}
+
+	private void checkCustomUserAgent(TeamscaleMockServer teamscaleMockServer) {
+		Set<String> collectedUserAgents = teamscaleMockServer.collectedUserAgents;
+		assertThat(collectedUserAgents).containsExactly(TeamscaleServiceGenerator.USER_AGENT);
 	}
 
 }
