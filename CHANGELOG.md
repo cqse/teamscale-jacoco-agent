@@ -4,6 +4,10 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+# Next Version
+
+- [breaking change] Artifactory uploader: use of new default upload schema for easy integration with Teamscale
+
 # 23.1.1
 
 - [fix] _teamscale-gradle-plugin_: The `TestImpacted` task did not execute any tests
