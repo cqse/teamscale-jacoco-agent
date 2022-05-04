@@ -27,4 +27,9 @@ public class TiaUnitTestMojo extends TiaMojoBase {
 	protected boolean isIntegrationTest() {
 		return false;
 	}
+
+	@Override
+	protected String getTestPluginArtifact() {
+		return "org.apache.maven.plugins:maven-surefire-plugin";
+	}
 }

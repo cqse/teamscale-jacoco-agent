@@ -27,4 +27,9 @@ public class TiaIntegrationTestMojo extends TiaMojoBase {
 	protected boolean isIntegrationTest() {
 		return true;
 	}
+
+	@Override
+	protected String getTestPluginArtifact() {
+		return "org.apache.maven.plugins:maven-failsafe-plugin";
+	}
 }

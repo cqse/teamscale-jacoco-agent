@@ -4,9 +4,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.IOException;
@@ -130,7 +132,6 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public String[] additionalAgentOptions;
 
 
-
 	/**
 	 * Changes the log level of the agent to DEBUG.
 	 */
@@ -170,6 +171,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 			return;
 		}
 
+		validateTestPluginConfiguration(getTestPluginArtifact());
+
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
@@ -188,10 +191,60 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setArgLine(agentConfigFile, logFilePath);
 	}
 
+	private void validateTestPluginConfiguration(String testPluginArtifact) throws MojoFailureException {
+		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
+		Plugin testPlugin = plugins.get(testPluginArtifact);
+		if (testPlugin == null) {
+			return;
+		}
+
+		Xpp3Dom configurationDom = (Xpp3Dom) testPlugin.getConfiguration();
+		if (configurationDom == null) {
+			return;
+		}
+
+		validateParallelizationParameter(testPluginArtifact, configurationDom, "threadCount");
+		validateParallelizationParameter(testPluginArtifact, configurationDom, "forkCount");
+
+		Xpp3Dom parameterDom = configurationDom.getChild("reuseForks");
+		if (parameterDom == null) {
+			return;
+		}
+
+		String value = parameterDom.getValue();
+		if (value != null && !value.equals("true")) {
+			throw new MojoFailureException(
+					"You configured the " + testPluginArtifact + " plugin to not reuse forks via the reuseForks configuration parameter." +
+							" This is not supported when performing Test Impact analysis as it prevents properly recording testwise coverage." +
+							" Please enable fork reuse when running Test Impact analysis.");
+		}
+	}
+
+	private void validateParallelizationParameter(String testPluginArtifact, Xpp3Dom configurationDom,
+						   String parallelizationParameter) throws MojoFailureException {
+		Xpp3Dom parameterDom = configurationDom.getChild(parallelizationParameter);
+		if (parameterDom == null) {
+			return;
+		}
+
+		String value = parameterDom.getValue();
+		if (value != null && !value.equals("1")) {
+			throw new MojoFailureException(
+					"You configured parallel tests in the " + testPluginArtifact + " plugin via the " + parallelizationParameter + " configuration parameter." +
+							" Parallel tests are not supported when performing Test Impact analysis as they prevent recording testwise coverage." +
+							" Please disable parallel tests when running Test Impact analysis.");
+		}
+	}
+
 	/**
 	 * @return the partition to upload testwise coverage to.
 	 */
 	protected abstract String getPartition();
+
+	/**
+	 * @return the artifact name of the test plugin (e.g. Surefire, Failsafe).
+	 */
+	protected abstract String getTestPluginArtifact();
 
 	/**
 	 * @return whether this Mojo applies to integration tests.
