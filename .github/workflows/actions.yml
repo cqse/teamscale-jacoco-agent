@@ -18,7 +18,7 @@ jobs:
       with:
         java-version: 11
     - name: Build with Gradle
-      run: ./gradlew build buildMavenPlugin
+      run: ./gradlew build
     - name: Upload Release Assets
       if: startsWith(github.ref, 'refs/tags/v')
       uses: svenstaro/upload-release-action@v2
@@ -30,7 +30,7 @@ jobs:
         overwrite: true
     - name: Publish to Maven Central
       run: |
-        ./gradlew publishMavenPublicationToMavenRepository publishMavenPluginToMavenCentral \
+        ./gradlew publishMavenPublicationToMavenRepository \
           -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
           -PgpgDirectory=${{ github.workspace }}/.gnupg \
           -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG_SIGNATURE }} \
