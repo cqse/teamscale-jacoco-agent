@@ -70,6 +70,10 @@ import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.r
 /**
  * JUnit 5 Platform Provider.
  *
+ * This class was copied from maven-surefire-plugin since it is not accessible otherwise.
+ * We modified it as little as possible: added this comment and made the {@link #newFilters()} method protected
+ * to allow overriding it in a subclass. This makes future updates simple.
+ *
  * @since 2.22.0
  */
 public class JUnitPlatformProvider
