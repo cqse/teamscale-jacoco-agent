@@ -6,8 +6,7 @@ It improves on JaCoCo in the following ways:
 - allow configuration via a .properties file
 - allow time-interval based dumping of coverage (e.g. "dump coverage every hour") instead of only at JVM shutdown
 - directly dumps XML instead of .exec files, i.e. already performs that conversion automatically
-- transfers dumped XML files either to a central location for further processing or even uploads them directly
-  to [Teamscale][]
+- transfers dumped XML files either to a central location for further processing or even uploads them directly to [Teamscale][]
 - writes a log file, which makes debugging problems a bit easier
 
 ## Requirements
@@ -54,8 +53,7 @@ The following options are available:
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format
   section below)
-- `logging-config` (optional): path to a [logback][logback] configuration XML file (other configuration formats are not
-  supported
+- `logging-config` (optional): path to a [logback][logback] configuration XML file (other configuration formats are not supported
   at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section
@@ -70,8 +68,7 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
-The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that
-location, it means the agent didn't even start and you have not configured it correctly.
+The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
 
 #### Path format
 
@@ -81,18 +78,14 @@ patterns with `*`, `**` and `?`.
 ### Options for normal mode
 
 - `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
-  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May
-  be
-  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. You may also supply one or
-  more `.txt`
+  by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
+  a directory or a Jar/War/Ear/... file. Separate multiple paths with a semicolon. You may also supply one or more `.txt`
   files with classpath entries separated by newlines (For details see path format section above)
-- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 480, i.e. 8
-  hours). If set to
+- `interval`: the interval in minutes between dumps of the current coverage to an XML file (Default is 480, i.e. 8 hours). If set to
   0 coverage is only dumped at JVM shutdown.
 - `dump-on-exit`: whether a coverage report should be written on JVM shutdown (Default is true).
 - `duplicates`: defines how JaCoCo handles duplicate class files. This is by default set to `WARN` to make the initial
-  setup of the tool as easy as possible. However, this should be set to `FAIL` for productive use if possible. In
-  special
+  setup of the tool as easy as possible. However, this should be set to `FAIL` for productive use if possible. In special
   cases you can also set it to `IGNORE` to print no warnings. See the special section on `duplicates` below.
 - `ignore-uncovered-classes`: Whether classes without any recorded coverage should be ignored when generating the XML
   coverage report. Since Teamscale assumes classes not contained in the report to have no coverage at all, this can
@@ -100,14 +93,12 @@ patterns with `*`, `**` and `?`.
 - `upload-url`: an HTTP(S) URL to which to upload generated XML files. The XML files will be zipped before the upload.
 - `upload-metadata`: paths to files that should also be included in uploaded zips. Separate multiple paths with a
   semicolon.
-  You can use this to include useful meta data about the deployed application with the coverage, e.g. its version
-  number.
+  You can use this to include useful meta data about the deployed application with the coverage, e.g. its version number.
 - `obfuscate-security-related-outputs`: boolean value determining if security critical information such as access
   keys are obfuscated when printing them to the console or into the log (default is true).
 - `teamscale-server-url`: the HTTP(S) URL of the Teamscale instance to which coverage should be uploaded.
 - `teamscale-project`: the project alias or ID within Teamscale to which the coverage belongs. If not specified, the
-  `teamscale.project` property must be specified via the `git.properties` file in at least one of the profiled
-  JARs/WARs/EARs.
+  `teamscale.project` property must be specified via the `git.properties` file in at least one of the profiled JARs/WARs/EARs.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
@@ -115,12 +106,10 @@ patterns with `*`, `**` and `?`.
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in
   Teamscale's UI.
 - `teamscale-revision`: the source control revision (e.g. SVN revision or Git hash) that has been used to build
-  the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative
-  see `teamscale-revision-manifest-jar`.
+  the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit
-  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar`
-  and `teamscale-git-properties-jar`.
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
 
   If **Git** is your VCS, you can get the commit info via
 
@@ -140,24 +129,16 @@ directories, you can get the commit info via
  echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
 ```
 
-- `teamscale-revision-manifest-jar` As an alternative to `teamscale-revision` the agent accepts the repository revision
-  provided in the given jar/war's `META-INF/MANIFEST.MF` file (for details see path format
-  section above). The revision must be supplied as an main attribute called `Revision` (preferred) or as an attribute
-  called `Git_Commit`, which belongs to an entry called `Git`.
+- `teamscale-revision-manifest-jar` As an alternative to `teamscale-revision` the agent accepts the repository revision provided in the given jar/war's `META-INF/MANIFEST.MF` file (for details see path format
+  section above). The revision must be supplied as an main attribute called `Revision` (preferred) or as an attribute called `Git_Commit`, which belongs to an entry called `Git`.
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format
   section above)
-- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts
-  values supplied via
-  a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in
-  a jar/war/ear/...
-  If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties`
-  file.
-  This file must contain at least the properties `git.branch` and `git.commit.time` (in the
-  format `yyyy-MM-dd'T'HH:mm:ssZ`).
-  This search works up to a nesting depth of two, meaning that for example a Jar file inside a War file will be
-  searched. If there was another Jar file inside the previous Jar file, it would not be searched for a `git.properties`
-  file.
+- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
+  a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
+  If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
+  This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
+  This search works up to a nesting depth of two, meaning that for example a Jar file inside a War file will be searched. If there was another Jar file inside the previous Jar file, it would not be searched for a `git.properties` file.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
@@ -171,31 +152,27 @@ directories, you can get the commit info via
 - `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 - `http-server-port`: the port at which the agent should start an HTTP server that listens for commands.
   The agent's REST API has the following endpoints:
-    - `[GET] /partition` Returns the name of the currently configured partition name.
-    - `[PUT] /partition` Sets the name of the partition name to the string delivered in the request body in plain text.
-      This partition should be used for all followup report dumps (see `teamscale-partition`).
-      For reports that are not directly sent to Teamscale the generated report will contain the partition name as
-      session ID.
-    - `[GET] /message` Returns the name of the currently configured commit message.
-    - `[PUT] /message` Sets the commit message to the string delivered in the request body in plain text.
-      This message should be used for all followup report dumps (see `teamscale-message`).
-    - `[POST] /dump` Instructs the agent to dump the collected coverage.
-    - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in
-      the current JVM session.
-    - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
-    - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in
-      plain text.
-    - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
-    - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain
-      thext in the format: branch:timestmap
+  - `[GET] /partition` Returns the name of the currently configured partition name.
+  - `[PUT] /partition` Sets the name of the partition name to the string delivered in the request body in plain text.
+    This partition should be used for all followup report dumps (see `teamscale-partition`).
+    For reports that are not directly sent to Teamscale the generated report will contain the partition name as session ID.
+  - `[GET] /message` Returns the name of the currently configured commit message.
+  - `[PUT] /message` Sets the commit message to the string delivered in the request body in plain text.
+    This message should be used for all followup report dumps (see `teamscale-message`).
+  - `[POST] /dump` Instructs the agent to dump the collected coverage.
+  - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in
+    the current JVM session.
+  - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
+  - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
+  - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
+  - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
   The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
 - `artifactory-partition`: the partition name that is passed later on via Teamscale Artifactory connector options.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
 - `artifactory-password` (required for artifactory): The password of the user.
 - `artifactory-api-key` (alternative to `artifactory-user` and `artifactory-password`) The API key for artifactory from
-  a user with write access (
-  c.f. [Artifactory Documentation](https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey))
+  a user with write access (c.f. [Artifactory Documentation](https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey))
 - `artifactory-zip-path` (optional): The path within the stored ZIP file where the reports are stored.
   Default is to store at root level.
   This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options.
@@ -214,14 +191,12 @@ directories, you can get the commit info via
   the timestamp of the last modification date of the given marker class.
 
 ## Secure communication
-
 If the connection to the Teamscale server should be established via HTTPS, a Java Trust Store can be required,
 which contains the certificate used by the Teamscale server for inbound HTTPS communication. Please refer to the
 [section on HTTPS configuration in the Teamscale documentation][ts-userguide-truststore]
 for details on when and how to create a Java Trust Store (please note that from the viewpoint of the agent, Teamscale
 is the "external" server here. In order to activate usage of the trust store you need to specify the
 following JVM parameters
-
 ```properties
 -Djavax.net.ssl.trustStore=<Path-to-Truststore-File>
 -Djavax.net.ssl.trustStorePassword=<Password>
@@ -238,8 +213,7 @@ within Teamscale and should be chosen accordingly. It is furthermore used to mak
 navigable within Teamscale.
 
 In the testwise coverage mode the agent only produces an exec file that needs to be converted and augmented with more
-data from the test system. Please refer
-to [the documentation for the Test Impact Analysis](../TEST_IMPACT_ANALYSIS_DOC.md) for more details.
+data from the test system. Please refer to [the documentation for the Test Impact Analysis](../TEST_IMPACT_ANALYSIS_DOC.md) for more details.
 
 There are two basic scenarios to distinguish between.
 
@@ -266,7 +240,6 @@ finished via a REST API. The corresponding server listens at the specified port.
 #### REST API
 
 The agent's REST API has the following endpoints:
-
 - `[GET] /test` Returns the testPath of the current test. The result will be empty when the test already finished or was
   not started yet.
 - `[GET] /revision` Returns the source control revision or commit the system under test was build from. This is
@@ -279,15 +252,14 @@ The agent's REST API has the following endpoints:
 
 ```json
 {
-  "type": "COMMIT|REVISION",
-  "value": "<branch>:<timestamp>|<revision>"
+ "type": "COMMIT|REVISION",
+ "value": "<branch>:<timestamp>|<revision>"
 }
 ```
 
 - `[POST] /testrun/start` If you configured a connection to Teamscale via the `teamscale-` options, this will fetch
   impacted tests from Teamscale and return them in the response body. The format is the same as returned by Teamscale
-  itself. You may optionally provide a list of all available test cases in the body of the request. These will also be
-  used to
+  itself. You may optionally provide a list of all available test cases in the body of the request. These will also be used to
   generate the testwise coverage report in `[POST] /testrun/end`. The format of the request body is:
 
   ```json
@@ -303,10 +275,10 @@ The agent's REST API has the following endpoints:
 
   Additionally, you may pass the following optional URL query parameters:
 
-    - `include-non-impacted`: If this is `true`, will not perform test-selection, only test-prioritization.
-    - `baseline`: UNIX timestamp in milliseconds to indicate the time since which changes should be considered.
-      If not given, the time since the last uploaded testwise coverage report is used (i.e. the last time you
-      ran the TIA).
+  - `include-non-impacted`: If this is `true`, will not perform test-selection, only test-prioritization.
+  - `baseline`: UNIX timestamp in milliseconds to indicate the time since which changes should be considered.
+    If not given, the time since the last uploaded testwise coverage report is used (i.e. the last time you
+    ran the TIA).
 
 - `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled
   `teamscale-testwise-upload`, this will upload a testwise coverage report to Teamscale.
@@ -322,7 +294,6 @@ The agent's REST API has the following endpoints:
 ```
 
 `result` can be one of:
-
 - `PASSED` Test execution was successful.
 - `IGNORED` The test is currently marked as "do not execute" (e.g. JUnit @Ignore or @Disabled).
 - `SKIPPED` Caused by a failing assumption.
@@ -339,25 +310,16 @@ E.g. `com/example/MyTest/testSomething` -> `http://localhost:8123/test/start/com
 You can run the testwise agent in three different modes, configured via the option `tia-mode`:
 
 - `exec-file` (default): The agent stores the coverage in a binary `*.exec` file within the `out` directory.
-  This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert
-  all `*.exec` files and upload a testwise coverage report to Teamscale or in situations where the agent must consume as
-  little memory and CPU as possible and thus cannot convert the execution data to a report as required by the other
-  options.
+  This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert all `*.exec` files and upload a testwise coverage report to Teamscale or in situations where the agent must consume as little memory and CPU as possible and thus cannot convert the execution data to a report as required by the other options.
   It is, however, less convenient as you have to convert the `*.exec` files yourself.
 
-- `teamscale-upload`: the agent will buffer all testwise coverage and test execution data in-memory and upload the
-  testwise report to Teamscale once you call the `POST /testrun/end` REST endpoint.
-  This option is the most convenient of the different modes as the agent handles all aspects of report generation and
-  the upload to Teamscale for you.
-  This mode may slow down the startup of the system under test and result in a larger memory footprint than
-  the `exec-file` mode.
+- `teamscale-upload`: the agent will buffer all testwise coverage and test execution data in-memory and upload the testwise report to Teamscale once you call the `POST /testrun/end` REST endpoint.
+  This option is the most convenient of the different modes as the agent handles all aspects of report generation and the upload to Teamscale for you.
+  This mode may slow down the startup of the system under test and result in a larger memory footprint than the `exec-file` mode.
 
-- `http`: the agent converts the coverage collected during a test in-process and returns it as a JSON in the response to
-  the `[POST] /test/end/...` request.
-  This allows the caller to handle merging coverage of multiple tests into one testwise coverage report, e.g. in
-  situations where more than one agent is running at the same time (e.g. profiling across multiple microservices.)
-  This option may slow down the startup of the system under test and result in a larger memory footprint than
-  the `exec-file` mode.
+- `http`: the agent converts the coverage collected during a test in-process and returns it as a JSON in the response to the `[POST] /test/end/...` request.
+  This allows the caller to handle merging coverage of multiple tests into one testwise coverage report, e.g. in situations where more than one agent is running at the same time (e.g. profiling across multiple microservices.)
+  This option may slow down the startup of the system under test and result in a larger memory footprint than the `exec-file` mode.
 
   The response format looks like this:
     ```json
@@ -423,13 +385,12 @@ file inside the Wildfly installation directory.
 Register the agent in `domain.xml` under
 
 ```xml
-
 <server-group>
-    <jvm>
-        <jvm-options>
-            <option value="-javaagent:..."/>
-        </jvm-options>
-    </jvm>
+  <jvm>
+    <jvm-options>
+      <option value="-javaagent:..."/>
+    </jvm-options>
+  </jvm>
 </server-group>
 ```
 
@@ -441,8 +402,7 @@ script in the Tomcat installation directory. Create this file if it does not yet
 Please set the agent's `includes` parameter so that the Tomcat code is not being profiled.
 This ensures that the performance of your application does not degrade.
 
-To ensure the Tomcat process is properly shutdown you need to add `CATALINA_PID="$CATALINA_BASE/bin/catalina.pid"` to
-the `bin/setenv.sh` script and stop Tomcat via `catalina stop -force`.
+To ensure the Tomcat process is properly shutdown you need to add `CATALINA_PID="$CATALINA_BASE/bin/catalina.pid"` to the `bin/setenv.sh` script and stop Tomcat via `catalina stop -force`.
 This makes Tomcat store the process ID of the server in the specified file and uses it to kill the process when stopped.
 
 ## Additional steps for Glassfish
@@ -452,8 +412,7 @@ You have two options to register the JVM option:
 1. Register the agent [via the `asadmin` tool][glassfish-asadmin].
 2. Register the agent by [manually editing `domain.xml`][glassfish-domainxml] and adding a `jvm-options` element.
 
-When using the `asadmin` tool, some characters need to be escaped with a backslash,
-see [this StackOverflow answer][glassfish-escaping].
+When using the `asadmin` tool, some characters need to be escaped with a backslash, see [this StackOverflow answer][glassfish-escaping].
 
 Afterwards, restart Glassfish. Please verify the setup with `asadmin`'s `list-jvm-options` command.
 
@@ -469,8 +428,7 @@ Prior versions of NetWeaver Java are not supported by the Teamscale JaCoCo Agent
 In order to set the JVM agent parameter, you need to use the NetWeaver Administrator to navigate to
 `Configuration` - `Infrastructure` - `Java System Properties` and add an additional JVM parameter.
 Use the search field to search for `agent`, and select the `-javaagent:<jarpath>[=<options>]` entry.
-In the `Name` field, enter the first part, until (including) the `.jar`, and provide all the options (*without* the
-leading
+In the `Name` field, enter the first part, until (including) the `.jar`, and provide all the options (*without* the leading
 `=`) in the `Value` field. We advise to only set the `config-file` option here, and provide all other
 options via the config file. Choose `Add` and then `Save`, and restart the Java server from the SAP
 Management Console.
@@ -479,13 +437,13 @@ Management Console.
 
 Please ask CQSE for special tooling that is available to instrument Java Web Start processes.
 
+
 ## Store Commit in Jar file
 
 If you are using Git, you can use either a Maven or Gradle plugin to store the commit
 in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
 
-Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts
-to commits,
+Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits,
 especially when tests are executed independently from the build. The following assumes that we are using a Git
 repository.
 
@@ -494,13 +452,12 @@ repository.
 To configure this for the maven build add the following to your top level `pom.xml`.
 
 ```xml
-
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-war-plugin</artifactId> <!-- Works also for the maven-jar-plugin -->
     ...
     <configuration>
-        ...
+         ...
         <resourceEncoding>UTF-8</resourceEncoding>
         <archive>
             <manifest>
@@ -517,7 +474,6 @@ To configure this for the maven build add the following to your top level `pom.x
 ```
 
 When executing maven pass in the branch and timestamp to Maven:
-
 ```sh
 mvn ... -Dbranch=$BRANCH_NAME -Dtimestamp=$(git --no-pager log -n1 --format="%ct000")
 ```
@@ -552,37 +508,34 @@ using the [gradle-git-properties][gradle-git-properties]  Gradle plugin:
 
 ```groovy
 gitProperties {
-	customProperty 'teamscale.project', 'my-awesome-project'
+    customProperty 'teamscale.project', 'my-awesome-project' 
 }
 ```
 
 The same can be achieved for Maven using, e.g., the [git-commit-id][git-commit-id] Maven plugin:
 
 ```xml
-
-<resources>
-    <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-            <include>**/*.properties</include>
-            <include>**/*.xml</include>
-        </includes>
-    </resource>
-</resources>
+ <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+            <includes>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+            </includes>
+        </resource>
+ </resources>
 ```
 
 You need to include a properties file with unresolved property values for ${teamscale.project} and ${git.commit.id}
 and provide the corresponding values via the `pom.xml` file(s) of your artifact(s). Example:
-
 ```
 git.commit.id=${git.commit.id}
 teamscale.project=${teamscale.project}
 ```
 
 Please note that the commit must be provided via the `git.properties` in each of the profiled Jar/War/Ear...
-files when specifying the `teamscale.project` this way. In case `teamscale-project` is provided via the agent
-properties,
+files when specifying the `teamscale.project` this way. In case `teamscale-project` is provided via the agent properties,
 its value takes precedence over any `teamscale.project` value provided via the `git.properties`.
 
 ## `duplicates`
@@ -607,8 +560,7 @@ information.
 
 # Docker
 
-If you'd like to set up the agent for Docker, please refer
-to [our guide on Java with Docker profiling](https://docs.teamscale.com/howto/recording-test-coverage-for-java-with-docker)
+If you'd like to set up the agent for Docker, please refer to [our guide on Java with Docker profiling](https://docs.teamscale.com/howto/recording-test-coverage-for-java-with-docker)
 
 # One-time conversion of .exec files to .xml
 
@@ -661,13 +613,11 @@ Set an appropriate logback logging configuration XML in the agent options:
 logging-config=/PATH/TO/logback-config.xml
 ```
 
-You can find example logging configurations in
-the [logging folder in the agent installation directory](./src/dist/logging).
+You can find example logging configurations in the [logging folder in the agent installation directory](./src/dist/logging).
 
 ## How to enable debug logging
 
-An appropriate logging configuration is shipped with the agent
-under [`logging/logback.debug.xml`](./src/dist/logging/logback.debug.xml).
+An appropriate logging configuration is shipped with the agent under [`logging/logback.debug.xml`](./src/dist/logging/logback.debug.xml).
 Set the agent option
 
 ```
@@ -681,36 +631,21 @@ The debug logs are written to `/PATH/TO/AGENT/INSTALL/DIRECTORY/logs`.
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
 
 ## Error: "The application was shut down before a commit could be found", despite including a git.properties file in your jar/war/...
-
-When using application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which
-results in an "The application was shut down before a commit could be found" error.
+When using  application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which results in an "The application was shut down before a commit could be found" error.
 To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
 
 
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306
-
 [so-duplicates]: https://stackoverflow.com/questions/11673356/jacoco-cant-add-different-class-with-same-name-org-hamcrest-basedescription
-
 [jacoco-faq]: https://www.jacoco.org/jacoco/trunk/doc/faq.html
-
 [jacoco-doc]: https://www.jacoco.org/jacoco/trunk/doc
-
 [logback]: https://logback.qos.ch/manual/index.html
-
 [glassfish-asadmin]: https://docs.oracle.com/cd/E19798-01/821-1751/gepzd/index.html
-
 [glassfish-domainxml]: https://docs.oracle.com/cd/E19798-01/821-1753/abhar/index.html
-
 [glassfish-escaping]: https://stackoverflow.com/questions/24699202/how-to-add-a-jvm-option-to-glassfish-4-0
-
 [git-properties-spring]: https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-git-info
-
 [ts-userguide-truststore]: https://docs.teamscale.com/howto/connecting-via-https
-
 [teamscale]: https://teamscale.com
-
 [signal-trapping]: http://veithen.io/2014/11/16/sigterm-propagation.html
-
 [git-commit-id]: https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering
-
 [gradle-git-properties]: https://github.com/n0mer/gradle-git-properties
