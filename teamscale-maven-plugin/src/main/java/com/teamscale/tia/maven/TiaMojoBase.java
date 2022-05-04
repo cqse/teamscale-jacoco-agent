@@ -129,11 +129,19 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	@Parameter
 	public String[] additionalAgentOptions;
 
+
+
 	/**
 	 * Changes the log level of the agent to DEBUG.
 	 */
 	@Parameter(defaultValue = "false")
 	public boolean debugLogging;
+
+	/**
+	 * Whether to skip the execution of this Mojo.
+	 */
+	@Parameter(defaultValue = "false")
+	public boolean skip;
 
 	/**
 	 * Map of resolved Maven artifacts. Provided automatically by Maven.
@@ -158,6 +166,10 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoFailureException {
+		if (skip) {
+			return;
+		}
+
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
