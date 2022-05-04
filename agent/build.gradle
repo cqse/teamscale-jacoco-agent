@@ -6,7 +6,7 @@ plugins {
 	// we don't want to cause conflicts between our dependencies and the target application
 	// since the agent will be loaded with the same class loader as the profiled application
 	// so we use the shadow plugin to relocate our dependencies
-	id 'com.github.johnrengelman.shadow'
+	id 'com.teamscale.shadow-convention'
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
 }
@@ -16,8 +16,6 @@ publishAs {
 	readableName = "Teamscale JaCoCo Agent"
 	description = "JVM profiler that simplifies various aspects around recording and uploading test coverage"
 }
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 ext {
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
@@ -51,14 +49,10 @@ dependencies {
 mainClassName = 'com.teamscale.jacoco.agent.Main'
 
 shadowJar {
-	// Needed as a workaround for https://github.com/johnrengelman/shadow/issues/521
-	inputs.property("debug", project.hasProperty("debug"))
-
 	// since this is used as an agent, we want it to always have the same name
 	// otherwise people have to adjust their -javaagent parameters after every
 	// update
 	archiveFileName.set('teamscale-jacoco-agent.jar')
-	archiveClassifier.set(null)
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
 
@@ -70,18 +64,7 @@ shadowJar {
 	// Default would be shadow/META-INF/versions/9/, which is wrong
 	// See http://openjdk.java.net/jeps/238
 	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
-
-	mergeServiceFiles()
 }
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-	target = tasks.shadowJar
-	onlyIf {
-		!project.hasProperty("debug")
-	}
-}
-
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 startShadowScripts {
 	applicationName = 'convert'

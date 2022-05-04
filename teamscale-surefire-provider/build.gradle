@@ -4,7 +4,7 @@ plugins {
 
 	// since this provider jar is loaded into the Maven test classpath, the likelyhood of
 	// collisions is very high so we use the shadow plugin to relocate our dependencies
-	id 'com.github.johnrengelman.shadow'
+	id 'com.teamscale.shadow-convention'
 
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
@@ -14,24 +14,6 @@ publishAs {
 	readableName = "Teamscale TIA Maven Surefire provider for JUnit 5"
 	description = "A Maven Surefire provider that enable test impact analysis for JUnit 5"
 }
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
-shadowJar {
-	// Needed as a workaround for https://github.com/johnrengelman/shadow/issues/521
-	inputs.property("debug", project.hasProperty("debug"))
-	archiveClassifier.set(null)
-	mergeServiceFiles()
-}
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-	target = tasks.shadowJar
-	onlyIf {
-		!project.hasProperty("debug")
-	}
-}
-
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 dependencies {
 	shadow('org.junit.jupiter:junit-jupiter-engine:5.8.2')
