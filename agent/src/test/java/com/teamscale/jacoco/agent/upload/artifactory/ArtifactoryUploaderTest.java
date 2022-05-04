@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.EReportFormat;
 import com.teamscale.report.jacoco.CoverageFile;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
@@ -31,7 +32,8 @@ public class ArtifactoryUploaderTest {
 
 		ArtifactoryConfig artifactoryConfig = generateBasicArtifacotryConfig(serverUrl);
 		artifactoryConfig.apiKey = "some_api_key";
-		ArtifactoryUploader artifactoryUploader = new ArtifactoryUploader(artifactoryConfig, new ArrayList<>(), false);
+		ArtifactoryUploader artifactoryUploader = new ArtifactoryUploader(artifactoryConfig, new ArrayList<>(),
+				EReportFormat.JACOCO);
 		File tmpFile = new File(tmpDir.getPath() + File.separator + "tmpfile");
 		tmpFile.createNewFile();
 

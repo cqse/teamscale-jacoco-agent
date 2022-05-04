@@ -27,22 +27,22 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_URL_OPTION = "artifactory-url";
 
 	/**
-	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_USER_OPTION = "artifactory-user";
 
 	/**
-	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_PASSWORD_OPTION = "artifactory-password";
 
 	/**
-	 * API key that shall be used to authenticat requests to artifacotry with the {@link
-	 * com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively basic
-	 * auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password ({@link
-	 * ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
+	 * API key that shall be used to authenticate requests to artifactory with the
+	 * {@link com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively
+	 * basic auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password
+	 * ({@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
 	 */
 	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
 

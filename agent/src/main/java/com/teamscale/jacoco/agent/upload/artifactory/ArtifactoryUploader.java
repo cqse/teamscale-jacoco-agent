@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
+import com.teamscale.client.EReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
@@ -29,14 +30,11 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	private String uploadPath;
 
 	/** Constructor. */
-	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles, boolean testWiseCoverage) {
+	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles,
+							   EReportFormat reportFormat) {
 		super(config.url, additionalMetaDataFiles, IArtifactoryUploadApi.class);
 		this.artifactoryConfig = config;
-		if (testWiseCoverage) {
-			this.coverageFormat = "testwise_coverage";
-		} else {
-			this.coverageFormat = "jacoco";
-		}
+		this.coverageFormat = reportFormat.name().toLowerCase();
 	}
 
 	@Override
