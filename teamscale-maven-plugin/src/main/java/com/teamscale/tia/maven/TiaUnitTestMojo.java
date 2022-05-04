@@ -8,7 +8,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 /**
  * Instruments the Surefire unit tests and uploads testwise coverage to Teamscale.
  */
-@Mojo(name = "tia-ut", defaultPhase = LifecyclePhase.INITIALIZE, requiresDependencyResolution = ResolutionScope.RUNTIME,
+@Mojo(name = "prepare-tia-unit-test", defaultPhase = LifecyclePhase.INITIALIZE, requiresDependencyResolution = ResolutionScope.RUNTIME,
 		threadSafe = true)
 public class TiaUnitTestMojo extends TiaMojoBase {
 

@@ -33,8 +33,8 @@
             <executions>
                 <execution>
                     <goals>
-                        <goal>tia-ut</goal>
-                        <goal>tia-it</goal>
+                        <goal>prepare-tia-unit-test</goal>
+                        <goal>prepare-tia-integration-test</goal>
                     </goals>
                 </execution>
             </executions>
