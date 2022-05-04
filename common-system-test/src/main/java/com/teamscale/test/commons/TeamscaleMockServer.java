@@ -20,7 +20,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -39,6 +41,8 @@ public class TeamscaleMockServer {
 
 	/** All reports uploaded to this Teamscale instance. */
 	public final List<String> uploadedReports = new ArrayList<>();
+	/** All user agents that were present in the received requests. */
+	public final Set<String> collectedUserAgents = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private final List<String> impactedTests;
@@ -70,11 +74,13 @@ public class TeamscaleMockServer {
 	}
 
 	private String handleImpactedTests(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
 		return testClusterJsonAdapter.toJson(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
 	}
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
+		collectedUserAgents.add(request.headers("User-Agent"));
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(tempDir.toString());
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
