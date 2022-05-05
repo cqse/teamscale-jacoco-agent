@@ -37,7 +37,7 @@ public class GitPropertiesLocatorUtils {
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
 	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:file:(.*?)!/.*", Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwe]ar:file:(.*?)\\*(.*)",
+	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwea]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);
 
 	/** File ending of Java web archive packages */
@@ -49,7 +49,8 @@ public class GitPropertiesLocatorUtils {
 	/** File ending of Java archive packages */
 	public static final String JAR_FILE_ENDING = ".jar";
 
-	// TODO aar
+	/** File ending of Android archive packages */
+	public static final String AAR_FILE_ENDING = ".aar";
 
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
@@ -183,8 +184,8 @@ public class GitPropertiesLocatorUtils {
 	public static Pair<String, Properties> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
 		String filePath = file.getPath();
-		// TODO aar
-		if (isNestedInWar(filePath) || isNestedInEar(filePath) || isNestedInFatJar(filePath)) {
+		if (isNestedInWar(filePath) || isNestedInEar(filePath) || isNestedInAar(filePath) || isNestedInFatJar(
+				filePath)) {
 			return findGitPropertiesInNestedArchiveFile(file);
 		} else if (isJarFile) {
 			return findGitPropertiesInArchiveFile(file);
@@ -205,7 +206,9 @@ public class GitPropertiesLocatorUtils {
 		return filePath.contains(EAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
 	}
 
-	// TODO add isNestedInAar method
+	private static boolean isNestedInAar(String filePath) {
+		return filePath.contains(AAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
+	}
 
 	private static Pair<String, Properties> findGitPropertiesInArchiveFile(File file) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
@@ -225,10 +228,11 @@ public class GitPropertiesLocatorUtils {
 			firstPartEndIndex = filePath.indexOf(WAR_FILE_ENDING) + WAR_FILE_ENDING.length();
 		} else if (filePath.contains(EAR_FILE_ENDING)) {
 			firstPartEndIndex = filePath.indexOf(EAR_FILE_ENDING) + EAR_FILE_ENDING.length();
+		} else if (filePath.contains(AAR_FILE_ENDING)) {
+			firstPartEndIndex = filePath.indexOf(AAR_FILE_ENDING) + AAR_FILE_ENDING.length();
 		} else {
 			firstPartEndIndex = filePath.indexOf(JAR_FILE_ENDING) + JAR_FILE_ENDING.length();
 		}
-		// TODO aar
 		String firstPart = filePath.substring(0, firstPartEndIndex);
 		String fileName = file.getName();
 		try (JarInputStream jarStream = new JarInputStream(
