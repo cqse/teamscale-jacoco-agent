@@ -9,14 +9,16 @@ ext {
 	// check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 	// and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.java.
 	jacocoVersion = '0.8.7'
+
+	if (VersionUtils.INSTANCE.isTaggedRelease()) {
+		snapshotVersion = appVersion
+	} else {
+		snapshotVersion = appVersion + '-SNAPSHOT'
+	}
 }
 
 subprojects {
-	if (VersionUtils.INSTANCE.isTaggedRelease()) {
-		version appVersion
-	} else {
-		version appVersion + '-SNAPSHOT'
-	}
+	version snapshotVersion
 }
 
 // Installs all Maven artifacts to your local Maven repository

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="EntryPointsManager">
-    <list size="8">
+    <list size="9">
       <item index="0" class="java.lang.String" itemvalue="javax.xml.bind.annotation.XmlAttribute" />
       <item index="1" class="java.lang.String" itemvalue="javax.xml.bind.annotation.XmlElement" />
-      <item index="2" class="java.lang.String" itemvalue="org.gradle.api.tasks.Input" />
-      <item index="3" class="java.lang.String" itemvalue="org.gradle.api.tasks.InputFile" />
-      <item index="4" class="java.lang.String" itemvalue="org.gradle.api.tasks.InputFiles" />
-      <item index="5" class="java.lang.String" itemvalue="org.gradle.api.tasks.Internal" />
-      <item index="6" class="java.lang.String" itemvalue="org.gradle.api.tasks.TaskAction" />
-      <item index="7" class="java.lang.String" itemvalue="org.gradle.api.tasks.options.Option" />
+      <item index="2" class="java.lang.String" itemvalue="org.apache.maven.plugins.annotations.Mojo" />
+      <item index="3" class="java.lang.String" itemvalue="org.gradle.api.tasks.Input" />
+      <item index="4" class="java.lang.String" itemvalue="org.gradle.api.tasks.InputFile" />
+      <item index="5" class="java.lang.String" itemvalue="org.gradle.api.tasks.InputFiles" />
+      <item index="6" class="java.lang.String" itemvalue="org.gradle.api.tasks.Internal" />
+      <item index="7" class="java.lang.String" itemvalue="org.gradle.api.tasks.TaskAction" />
+      <item index="8" class="java.lang.String" itemvalue="org.gradle.api.tasks.options.Option" />
     </list>
     <writeAnnotations>
       <writeAnnotation name="org.junit.jupiter.api.io.TempDir" />
@@ -19,5 +20,15 @@
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="web" url="file://$PROJECT_DIR$" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="11" project-jdk-type="JavaSDK" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/teamscale-maven-plugin/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK" />
+  <component name="SuppressKotlinCodeStyleNotification">
+    <option name="disableForAll" value="true" />
+  </component>
 </project>

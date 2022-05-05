@@ -53,6 +53,10 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 					uniqueIdsOfTestsToExecute, executorRequest.configurationParameters);
 			TestDescriptor testDescriptor = executorRequest.testEngine.discover(engineDiscoveryRequest,
 					UniqueId.forEngine(executorRequest.testEngine.getId()));
+
+			// preserve the root node of the test descriptor hierarchy. This should be our teamscale-test-impacted engine
+			executorRequest.engineTestDescriptor.getParent().ifPresent(testDescriptor::setParent);
+
 			TestExecutorRequest impactedExecutorRequest = new TestExecutorRequest(executorRequest.testEngine,
 					testDescriptor, executionListener, executorRequest.configurationParameters);
 			List<TestExecution> testExecutionsForCluster = super
