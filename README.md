@@ -12,6 +12,12 @@
 
 ## Development
 
+Before starting development, please enable the pre-commit hook by running:
+
+```
+git config --local core.hooksPath .githooks
+```
+
 ### Build locally
 
 * Import in Eclipse/IntelliJ as Gradle project

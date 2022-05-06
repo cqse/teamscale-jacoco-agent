@@ -1,0 +1,10 @@
+#!/bin/sh
+# ensures that the pom.xml of the teamscale-maven-plugin is always tidy
+
+# only run this hook when pom.xml is modified
+git diff --cached --name-only HEAD | grep -q 'pom.xml' || exit 0
+
+cd ./teamscale-maven-plugin/
+./mvnw tidy:pom 2>&1 >/dev/null
+git add pom.xml
+
