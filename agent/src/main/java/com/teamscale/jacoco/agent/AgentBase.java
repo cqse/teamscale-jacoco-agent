@@ -10,6 +10,8 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
+import com.teamscale.jacoco.agent.util.DebugLogDirectoryPropertyDefiner;
+import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import com.teamscale.report.testwise.model.RevisionInfo;
@@ -136,15 +138,12 @@ public abstract class AgentBase {
 		}
 
 		if (agentOptions.isDebugLogging()) {
-			if (!agentOptions.getLoggingFilePath().isEmpty()) {
-				// handle explicitly specified file path
-			} else {
-				loggingResources = LoggingUtils.initializeDefaultDebugLogging();
-			}
+			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getLoggingFilePath());
+			delayedLogger.info("Logging to " + new DebugLogDirectoryPropertyDefiner().getPropertyValue());
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+			delayedLogger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
 		}
-
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 
