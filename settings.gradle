@@ -25,3 +25,6 @@ include ':system-tests:http-redirect-test'
 include ':system-tests:tia-client-tia-mode-http'
 include ':system-tests:junit-run-listener-test'
 include ':sample-debugging-app'
+include 'system-tests:debug-logging-test'
+findProject(':system-tests:debug-logging-test')?.name = 'debug-logging-test'
+
