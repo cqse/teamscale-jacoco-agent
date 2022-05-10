@@ -3,7 +3,7 @@ import org.codehaus.plexus.util.Os
 class MavenExec extends Exec {
 	@TaskAction
 	void exec() {
-		def mavenExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvn.cmd" : "mvn"
+		def mavenExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvnw.cmd" : "./mvnw"
 		setExecutable(mavenExecutable)
 		workingDir('.')
 		super.exec()

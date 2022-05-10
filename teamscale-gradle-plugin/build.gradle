@@ -1,10 +1,16 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+	id 'org.jetbrains.kotlin.jvm' version "1.6.21"
 	id 'com.teamscale.java-convention'
 	id 'java-gradle-plugin'
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
 	id "com.gradle.plugin-publish"
+}
+
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(11))
+	}
 }
 
 publishAs {
@@ -25,9 +31,9 @@ dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 	implementation gradleApi()
-	implementation 'org.eclipse.jgit:org.eclipse.jgit:5.11.1.202105131744-r'
+	implementation 'org.eclipse.jgit:org.eclipse.jgit:6.1.0.202203080745-r'
 	implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-	testImplementation "com.squareup.okio:okio:2.10.0"
+	testImplementation 'com.squareup.okio:okio:3.1.0'
 }
 
 processResources {

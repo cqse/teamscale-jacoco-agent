@@ -14,6 +14,6 @@ dependencies {
     api 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
     implementation 'commons-codec:commons-codec:1.15'
-    implementation 'org.slf4j:slf4j-api:1.7.30'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
     implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
 }

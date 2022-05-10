@@ -11,5 +11,5 @@ dependencies {
 
 	api 'com.sparkjava:spark-core:2.9.3'
 	api 'com.squareup.moshi:moshi:1.12.0'
-	api 'com.teamscale:teamscale-lib-commons:7.0.2'
+	api 'com.teamscale:teamscale-lib-commons:7.8.4'
 }
