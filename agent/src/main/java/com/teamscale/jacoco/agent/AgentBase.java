@@ -138,7 +138,7 @@ public abstract class AgentBase {
 		}
 
 		if (agentOptions.isDebugLogging()) {
-			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getLoggingFilePath());
+			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLoggingFilePath());
 			delayedLogger.info("Logging to " + new DebugLogDirectoryPropertyDefiner().getPropertyValue());
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());

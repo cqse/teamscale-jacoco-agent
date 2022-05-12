@@ -22,6 +22,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -94,10 +95,13 @@ public class AgentOptionsParser {
 		String value = keyAndValue.getSecond();
 		if (key.startsWith("debug")) {
 			options.debugLogging = true;
-			if (!value.isEmpty() && !value.equalsIgnoreCase("true")) {
-				options.loggingFilePath = value;
+			if (value.isEmpty() || value.equalsIgnoreCase("true")) {
+				return;
 			}
-			return;
+			if (!FileSystemUtils.isValidPath(value)) {
+				throw new AgentOptionParseException("Invalid debug logging file path: " + value);
+			}
+			options.debugLoggingFilePath = value;
 		}
 		if (key.startsWith("jacoco-")) {
 			options.additionalJacocoOptions.add(key.substring(7), value);
