@@ -29,12 +29,12 @@ dependencies {
 	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
-	implementation 'ch.qos.logback:logback-core:1.2.3'
-	implementation 'ch.qos.logback:logback-classic:1.2.3'
+	implementation 'ch.qos.logback:logback-core:1.2.11'
+	implementation 'ch.qos.logback:logback-classic:1.2.11'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
-	implementation 'com.beust:jcommander:1.81'
-	implementation 'com.teamscale:teamscale-lib-commons:7.6.1'
+	implementation 'com.beust:jcommander:1.82'
+	implementation 'com.teamscale:teamscale-lib-commons:7.8.4'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 	implementation 'com.sparkjava:spark-core:2.9.3'
@@ -43,7 +43,7 @@ dependencies {
 
 	testImplementation project(':tia-client')
 	testImplementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-	testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.0'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.3'
 }
 
 mainClassName = 'com.teamscale.jacoco.agent.Main'
@@ -64,6 +64,7 @@ shadowJar {
 	// Default would be shadow/META-INF/versions/9/, which is wrong
 	// See http://openjdk.java.net/jeps/238
 	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
+	relocate 'META-INF/versions/16/', 'META-INF/versions/16/shadow/'
 }
 
 startShadowScripts {

@@ -1,6 +1,6 @@
 pluginManagement {
 	plugins {
-		id 'com.github.ben-manes.versions' version '0.38.0'
+		id 'com.github.ben-manes.versions' version '0.42.0'
 		id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.1.0'
 	}
 }

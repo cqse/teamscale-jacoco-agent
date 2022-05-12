@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # next release
 
 - [feature] add Maven plugin for TIA
+- [feature] added official support for Java 17 and 18 and experimental support for Java 19.
 
 # 23.1.1
 
