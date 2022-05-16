@@ -8,7 +8,6 @@ pluginManagement {
 /*
  * The settings file is used to specify which projects to include in your build.
  */
-
 include ':agent'
 include ':javaws-wrapper'
 include ':report-generator'
@@ -28,4 +27,5 @@ include ':system-tests:debug-logging-test'
 include ':system-tests:tia-maven'
 include ':sample-debugging-app'
 include ':teamscale-surefire-provider'
+include ':system-tests:mutliple-agents-test'
 include ':teamscale-maven-plugin'

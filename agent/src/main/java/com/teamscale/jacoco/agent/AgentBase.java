@@ -125,12 +125,12 @@ public abstract class AgentBase {
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
 
-		List<String> javagents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
+		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
-		if (javagents.size() > 1) {
+		if (javaAgents.size() > 1) {
 			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
 		}
-		if (!javagents.get(0).contains("teamscale-jacoco-agent.jar")) {
+		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
 			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
 		}
 
