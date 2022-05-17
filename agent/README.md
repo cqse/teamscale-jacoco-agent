@@ -168,7 +168,8 @@ directories, you can get the commit info via
   - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
   The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
-- `artifactory-partition`: the partition name that is passed later on via Teamscale Artifactory connector options.
+- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Works with `-artifactory-legacy-path` or `-artifactory-legacy-path=true`. Defaults to false.
+- `artifactory-partition` (required if `legacy-path` option is not set): the partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
 - `artifactory-password` (required for artifactory): The password of the user.
 - `artifactory-api-key` (alternative to `artifactory-user` and `artifactory-password`) The API key for artifactory from

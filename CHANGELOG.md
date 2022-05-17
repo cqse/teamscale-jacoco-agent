@@ -8,7 +8,7 @@ We use [semantic versioning](http://semver.org/):
 
 - [feature] add Maven plugin for TIA
 - [feature] added official support for Java 17 and 18 and experimental support for Java 19.
-- [breaking change] Artifactory uploader: use of new default upload schema for easy integration with Teamscale
+- [breaking change] Artifactory uploader: use of new default upload schema for easy integration with Teamscale. To keep the old behavior add the `artifactory-legacy-path` option.
 
 # 23.1.1
 

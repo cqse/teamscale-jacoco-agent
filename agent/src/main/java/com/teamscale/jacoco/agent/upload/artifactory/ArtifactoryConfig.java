@@ -47,6 +47,12 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
 
 	/**
+	 * Option that specifies if the legacy path for uploading files to artifactory should be used instead of the new
+	 * standard path.
+	 */
+	public static final String ARTIFACTORY_LEGACY_PATH_OPTION = "artifactory-legacy-path";
+
+	/**
 	 * Option that specifies under which path the coverage file shall lie within the zip file that is created for the
 	 * upload.
 	 */
@@ -80,6 +86,9 @@ public class ArtifactoryConfig {
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION} */
 	public String password;
+
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_LEGACY_PATH_OPTION} */
+	public boolean legacyPath = false;
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_ZIP_PATH_OPTION} */
 	public String zipPath;
@@ -118,6 +127,13 @@ public class ArtifactoryConfig {
 			case ARTIFACTORY_PASSWORD_OPTION:
 				options.password = value;
 				return true;
+			case ARTIFACTORY_LEGACY_PATH_OPTION:
+				if (value.isEmpty()) {
+					options.legacyPath = true;
+					return true;
+				}
+				options.legacyPath = Boolean.parseBoolean(value);
+				return true;
 			case ARTIFACTORY_ZIP_PATH_OPTION:
 				options.zipPath = StringUtils.stripSuffix(value, "/");
 				return true;
@@ -145,7 +161,8 @@ public class ArtifactoryConfig {
 	/** Checks if all required options are set to upload to artifactory. */
 	public boolean hasAllRequiredFieldsSet() {
 		boolean requiredAuthOptionsSet = (user != null && password != null) || apiKey != null;
-		return url != null && partition != null && requiredAuthOptionsSet;
+		boolean partitionSet = partition != null || legacyPath;
+		return url != null && partitionSet && requiredAuthOptionsSet;
 	}
 
 	/** Checks if all required fields are null. */
