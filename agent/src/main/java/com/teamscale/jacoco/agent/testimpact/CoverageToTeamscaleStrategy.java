@@ -87,7 +87,9 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	public String testEnd(String test,
 						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
-		testExecutions.add(testExecution);
+		if (testExecution != null) {
+			testExecutions.add(testExecution);
+		}
 
 		try {
 			if (testExecFile == null) {

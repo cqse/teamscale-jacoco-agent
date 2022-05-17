@@ -1,13 +1,11 @@
 package com.teamscale.tia.client;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.Test;
 import testframework.CustomTestFramework;
-
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -40,15 +38,9 @@ public class TiaClientSystemTest {
 					.containsExactlyInAnyOrder("testBar", "testFoo");
 			assertThat(report.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
-			assertThat(report.tests).extracting(TiaClientSystemTest::getCoverageString)
+			assertThat(report.tests).extracting(SystemTestUtils::getCoverageString)
 					.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
 		});
-	}
-
-	private static String getCoverageString(TestInfo info) {
-		return info.paths.stream().flatMap(path -> path.getFiles().stream())
-				.map(file -> file.fileName + ":" + file.coveredLines).collect(
-						Collectors.joining(";"));
 	}
 
 }

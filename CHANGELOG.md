@@ -4,8 +4,10 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# 23.1.2
+# next release
 
+- [feature] add Maven plugin for TIA
+- [feature] added official support for Java 17 and 18 and experimental support for Java 19.
 - [feature] New command line option: `debug`. Simplifies debugging by avoiding the process of providing an XML logging
   configuration file. In debug mode logs are written to console and a configurable directory. For more details, see
   [here](agent/README.md#general-options).
