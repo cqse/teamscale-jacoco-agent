@@ -1,0 +1,15 @@
+plugins {
+	id 'com.teamscale.java-convention'
+}
+
+test {
+	def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
+	def logFilePath = "logTest"
+	jvmArgs "-javaagent:$agentJar=debug=$logFilePath"
+}
+
+tasks.test.dependsOn(":agent:shadowJar")
+
+dependencies {
+	testImplementation project(':common-system-test')
+}
