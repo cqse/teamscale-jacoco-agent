@@ -59,6 +59,9 @@ The following options are available:
   `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section 
   below)
 - `mode` (optional): which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
+- `debug` (optional): `true`, `false` or a path to which the logs should be written to. `true` if no explicit value given.
+  This option turns on debug mode. The logs will be written to console and the given file path. If no file path is given,
+  the logs files will be stored to a default location.
   
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo 

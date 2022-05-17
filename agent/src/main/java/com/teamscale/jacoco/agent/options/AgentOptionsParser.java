@@ -124,6 +124,9 @@ public class AgentOptionsParser {
 
 	/** Parses and stores the debug logging file path if given. */
 	private void handleDebugOption(AgentOptions options, String value) {
+		if (value.equalsIgnoreCase("false")) {
+			return;
+		}
 		options.debugLogging = true;
 		if (!value.isEmpty() && !value.equalsIgnoreCase("true")) {
 			options.debugLogDirectory = Paths.get(value);

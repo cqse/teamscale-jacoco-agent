@@ -4,6 +4,12 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
+# 23.1.2
+
+- [feature] New command line option: `debug`. Simplifies debugging by avoiding the process of providing an XML logging
+  configuration file. In debug mode logs are written to console and a configurable directory. For more details, see
+  [here](agent/README.md#general-options).
+
 # 23.1.1
 
 - [fix] _teamscale-gradle-plugin_: The `TestImpacted` task did not execute any tests
