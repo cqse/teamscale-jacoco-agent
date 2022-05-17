@@ -28,13 +28,14 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
- * JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
+ * {@link JacocoRuntimeController}.
  * <p>
  * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
@@ -181,9 +182,9 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Initializes fallback logging in case of an error during the parsing of the options to {@link #premain(String,
-	 * Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use this and falls back to
-	 * the default logger.
+	 * Initializes fallback logging in case of an error during the parsing of the options to
+	 * {@link #premain(String, Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use
+	 * this and falls back to the default logger.
 	 */
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {

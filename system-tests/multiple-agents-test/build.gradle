@@ -2,14 +2,23 @@ plugins {
 	id 'com.teamscale.java-convention'
 }
 
+configurations {
+	jacocoAgent
+}
+
 test {
-	def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
-	jvmArgs "-javaagent:$agentJar"
+	doFirst {
+		def teamscaleJacocoAgent = project(':agent').tasks.shadowJar.outputs.files.files.first()
+		def otherJacocoAgent = configurations.jacocoAgent.files.first()
+		def logFilePath = "logTest"
+		jvmArgs "-javaagent:$otherJacocoAgent"
+		jvmArgs "-javaagent:$teamscaleJacocoAgent=debug=$logFilePath"
+	}
 }
 
 tasks.test.dependsOn(":agent:shadowJar")
 
 dependencies {
-	implementation project(':common-system-test')
+	testImplementation project(':common-system-test')
+	jacocoAgent 'org.jacoco:org.jacoco.agent:0.8.8:runtime'
 }
-
