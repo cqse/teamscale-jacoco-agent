@@ -83,7 +83,7 @@ public class AgentOptions {
 	/* package */ boolean debugLogging = false;
 
 	/** Explicitly defined log file. */
-	/* package */ String debugLoggingFilePath = "";
+	/* package */ Path debugLogDirectory = null;
 
 	/**
 	 * The directories and/or zips that contain all class files being profiled. Never null. If this is empty, classes
@@ -199,9 +199,9 @@ public class AgentOptions {
 		return debugLogging;
 	}
 
-	/** @see #debugLoggingFilePath */
-	public String getDebugLoggingFilePath() {
-		return debugLoggingFilePath;
+	/** @see #debugLogDirectory */
+	public Path getDebugLogDirectory() {
+		return debugLogDirectory;
 	}
 
 	/**

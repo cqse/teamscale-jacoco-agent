@@ -18,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Helps initialize the logging framework properly.
@@ -86,9 +85,9 @@ public class LoggingUtils {
 	}
 
 	/** Initializes debug logging. */
-	public static LoggingResources initializeDebugLogging(String fileLocation) {
-		if (!fileLocation.isEmpty()) {
-			DebugLogDirectoryPropertyDefiner.filePath = Paths.get(fileLocation);
+	public static LoggingResources initializeDebugLogging(Path logDirectory) {
+		if (logDirectory != null) {
+			DebugLogDirectoryPropertyDefiner.filePath = logDirectory;
 		}
 		InputStream stream = Agent.class.getResourceAsStream("logback-default-debugging.xml");
 		reconfigureLoggerContext(stream);

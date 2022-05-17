@@ -94,13 +94,10 @@ public class AgentOptionsParser {
 		String value = keyAndValue.getSecond();
 		if (key.startsWith("debug")) {
 			options.debugLogging = true;
-			if (value.isEmpty() || value.equalsIgnoreCase("true")) {
-				return;
+			if (!value.isEmpty() && !value.equalsIgnoreCase("true")) {
+				options.debugLogDirectory = Paths.get(value);
 			}
-			if (!FileSystemUtils.isValidPath(value)) {
-				throw new AgentOptionParseException("Invalid debug logging file path: " + value);
-			}
-			options.debugLoggingFilePath = value;
+			return;
 		}
 		if (key.startsWith("jacoco-")) {
 			options.additionalJacocoOptions.add(key.substring(7), value);
