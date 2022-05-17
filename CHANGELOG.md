@@ -4,8 +4,10 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# Next Version
+# next release
 
+- [feature] add Maven plugin for TIA
+- [feature] added official support for Java 17 and 18 and experimental support for Java 19.
 - [breaking change] Artifactory uploader: use of new default upload schema for easy integration with Teamscale
 
 # 23.1.1

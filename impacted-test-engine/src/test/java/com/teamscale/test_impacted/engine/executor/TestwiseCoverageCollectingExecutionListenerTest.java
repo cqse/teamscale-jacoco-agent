@@ -4,6 +4,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
@@ -42,6 +43,15 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 	private final UniqueId rootId = UniqueId.forEngine("dummy");
 
 	@SuppressWarnings("unchecked")
+	@BeforeEach
+	void setupMockApi() {
+		when(mockApi.testStarted(anyString())).thenReturn(mock(Call.class));
+		when(mockApi.testFinished(anyString())).thenReturn(mock(Call.class));
+		when(mockApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
+		when(mockApi.testRunFinished()).thenReturn(mock(Call.class));
+	}
+
+	@SuppressWarnings("unchecked")
 	@Test
 	void testInteractionWithListenersAndCoverageApi() {
 		UniqueId testClassId = rootId.append("TEST_CONTAINER", "MyClass");
@@ -64,8 +74,6 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		when(resolver.getUniformPath(regularSkippedTestCase))
 				.thenReturn(Optional.of("MyClass/regularSkippedTestCase()"));
 		when(resolver.getClusterId(regularSkippedTestCase)).thenReturn(Optional.of("MyClass"));
-		when(mockApi.testStarted(anyString())).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(anyString())).thenReturn(mock(Call.class));
 
 		// Start engine and class.
 		executionListener.executionStarted(testRoot);
@@ -78,7 +86,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(mockApi).testStarted("MyClass/impactedTestCase()");
 		verify(executionListenerMock).executionStarted(impactedTestCase);
 		executionListener.executionFinished(impactedTestCase, successful());
-		verify(mockApi).testFinished(eq("MyClass/impactedTestCase()"));
+		verify(mockApi).testFinished(eq("MyClass/impactedTestCase()"), any());
 		verify(executionListenerMock).executionFinished(impactedTestCase, successful());
 
 		// Non impacted test case is skipped.
@@ -94,6 +102,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(executionListenerMock).executionFinished(testClass, successful());
 		executionListener.executionFinished(testRoot, successful());
 		verify(executionListenerMock).executionFinished(testRoot, successful());
+		verify(mockApi).testRunFinished();
 
 		verifyNoMoreInteractions(mockApi);
 		verifyNoMoreInteractions(executionListenerMock);
