@@ -139,18 +139,7 @@ public abstract class AgentBase {
 			}
 		}
 
-		if (agentOptions.isDebugLogging()) {
-			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
-			Path logDirectory = agentOptions.getDebugLogDirectory().resolve("logs");
-			if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
-				delayedLogger.info("Logging to " + logDirectory);
-			} else {
-				delayedLogger.warn("Could not create " + logDirectory + ". Logging to console only.");
-			}
-		} else {
-			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
-			delayedLogger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
-		}
+		initializeLogging(agentOptions, delayedLogger);
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 
@@ -162,6 +151,22 @@ public abstract class AgentBase {
 
 		AgentBase agent = agentBuilder.createAgent(instrumentation);
 		agent.registerShutdownHook();
+	}
+
+	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
+	private static void initializeLogging(AgentOptions agentOptions, DelayedLogger logger) throws IOException {
+		if (agentOptions.isDebugLogging()) {
+			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
+			Path logDirectory = agentOptions.getDebugLogDirectory().resolve("logs");
+			if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
+				logger.info("Logging to " + logDirectory);
+			} else {
+				logger.warn("Could not create " + logDirectory + ". Logging to console only.");
+			}
+		} else {
+			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
+		}
 	}
 
 	/**
