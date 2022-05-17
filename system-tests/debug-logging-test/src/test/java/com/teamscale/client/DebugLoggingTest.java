@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DebugLoggingTest {
 
-	private static final Path LOG_DIRECTORY = Paths.get("").resolve("logs");
+	private static final Path LOG_DIRECTORY = Paths.get("logTest").resolve("logs");
 
 	@Test
 	public void systemTest() throws Exception {

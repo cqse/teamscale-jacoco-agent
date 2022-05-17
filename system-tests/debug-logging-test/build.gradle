@@ -4,7 +4,7 @@ plugins {
 
 test {
 	def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
-	def logFilePath = project.getRootDir().path + "/system-tests/debug-logging-test/"
+	def logFilePath = "logTest"
 	jvmArgs "-javaagent:$agentJar=debug=$logFilePath"
 }
 
