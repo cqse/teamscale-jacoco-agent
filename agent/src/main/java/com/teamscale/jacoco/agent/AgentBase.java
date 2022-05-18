@@ -10,6 +10,7 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
+import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import com.teamscale.report.testwise.model.RevisionInfo;
@@ -26,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -100,10 +103,11 @@ public abstract class AgentBase {
 
 	/** Adds the endpoints that are available in the implemented mode. */
 	protected void initServerEndpoints(Service spark) {
-		spark.get("/partition", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
-		spark.get("/message", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
+		spark.get("/partition",
+				(request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
+		spark.get("/message",
+				(request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().getMessage())
+						.orElse(""));
 		spark.get("/revision", (request, response) -> this.getRevisionInfo());
 		spark.get("/commit", (request, response) -> this.getRevisionInfo());
 		spark.put("/partition", this::handleSetPartition);
@@ -135,8 +139,7 @@ public abstract class AgentBase {
 			}
 		}
 
-		loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
-
+		initializeLogging(agentOptions, delayedLogger);
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 
@@ -148,6 +151,22 @@ public abstract class AgentBase {
 
 		AgentBase agent = agentBuilder.createAgent(instrumentation);
 		agent.registerShutdownHook();
+	}
+
+	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
+	private static void initializeLogging(AgentOptions agentOptions, DelayedLogger logger) throws IOException {
+		if (agentOptions.isDebugLogging()) {
+			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
+			Path logDirectory = agentOptions.getDebugLogDirectory().resolve("logs");
+			if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
+				logger.info("Logging to " + logDirectory);
+			} else {
+				logger.warn("Could not create " + logDirectory + ". Logging to console only.");
+			}
+		} else {
+			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
+		}
 	}
 
 	/**
@@ -165,8 +184,8 @@ public abstract class AgentBase {
 				String configFileValue = optionPart.split("=", 2)[1];
 				Optional<String> loggingConfigLine = Optional.empty();
 				try {
-					File configFile = new FilePatternResolver(delayedLogger)
-							.parsePath(AgentOptionsParser.CONFIG_FILE_OPTION, configFileValue).toFile();
+					File configFile = new FilePatternResolver(delayedLogger).parsePath(
+							AgentOptionsParser.CONFIG_FILE_OPTION, configFileValue).toFile();
 					loggingConfigLine = FileSystemUtils.readLinesUTF8(configFile).stream()
 							.filter(line -> line.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "="))
 							.findFirst();
@@ -186,8 +205,9 @@ public abstract class AgentBase {
 	/** Creates a fallback logger using the given config file. */
 	private static LoggingResources createFallbackLoggerFromConfig(String configLocation, DelayedLogger delayedLogger) {
 		try {
-			return LoggingUtils.initializeLogging(new FilePatternResolver(delayedLogger)
-					.parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION, configLocation));
+			return LoggingUtils.initializeLogging(
+					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
+							configLocation));
 		} catch (IOException | AgentOptionParseException e) {
 			String message = "Failed to load log configuration from location " + configLocation + ": " + e.getMessage();
 			delayedLogger.error(message, e);

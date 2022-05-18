@@ -80,6 +80,12 @@ public class AgentOptions {
 	 */
 	/* package */ String originalOptionsString;
 
+	/** Whether debug logging is active or not. */
+	/* package */ boolean debugLogging = false;
+
+	/** Explicitly defined log file. */
+	/* package */ Path debugLogDirectory = null;
+
 	/**
 	 * The directories and/or zips that contain all class files being profiled. Never null. If this is empty, classes
 	 * should be dumped to a temporary directory which should be used as the class-dir.
@@ -187,6 +193,16 @@ public class AgentOptions {
 
 	public AgentOptions() {
 		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
+	}
+
+	/** @see #debugLogging */
+	public boolean isDebugLogging() {
+		return debugLogging;
+	}
+
+	/** @see #debugLogDirectory */
+	public Path getDebugLogDirectory() {
+		return debugLogDirectory;
 	}
 
 	/**
