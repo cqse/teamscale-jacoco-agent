@@ -176,7 +176,7 @@ directories, you can get the commit info via
 ### Options for the Artifactory Upload
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
   The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
-- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Use `-artifactory-legacy-path=true` to keep the old behavior. Defaults to false. For more details see [legacy upload schema](#the-legacy-standard-upload-schema), [new upload schema](#the-new-standard-upload-schema) and [migration](#migration-from-the-legacy-to-the-new-standard-upload-schema).
+- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Use `-artifactory-legacy-path=true` to keep the old behavior. Defaults to false. For more details see [new upload schema](#the-new-standard-upload-schema), [legacy upload schema](#the-legacy-standard-upload-schema) and [migration](#migration-from-the-legacy-to-the-new-standard-upload-schema).
 - `artifactory-partition` (required if `legacy-path` option is not set): the partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
 - `artifactory-password` (required for artifactory): The password of the user.
