@@ -166,15 +166,23 @@ directories, you can get the commit info via
   - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
   - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
   - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
+- `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon
+  separated list of applications. Each application is specified as a fully qualified classname (referred to as marker
+  class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed
+  when the application is running and is unique amongst the other deployed applications.
+  E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at
+  the timestamp of the last modification date of the given marker class.
+
+### Options for the Artifactory Upload
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
   The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
-- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Works with `-artifactory-legacy-path` or `-artifactory-legacy-path=true`. Defaults to false.
+- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Use `-artifactory-legacy-path=true` to keep the old behavior. Defaults to false. For more details see [legacy upload schema](#the-legacy-standard-upload-schema), [new upload schema](#the-new-standard-upload-schema) and [migration](#migration-from-the-legacy-to-the-new-standard-upload-schema).
 - `artifactory-partition` (required if `legacy-path` option is not set): the partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
 - `artifactory-password` (required for artifactory): The password of the user.
 - `artifactory-api-key` (alternative to `artifactory-user` and `artifactory-password`) The API key for artifactory from
   a user with write access (c.f. [Artifactory Documentation](https://www.jfrog.com/confluence/display/JFROG/User+Profile#UserProfile-APIKey))
-- `artifactory-zip-path` (optional): The path within the stored ZIP file where the reports are stored.
+- `artifactory-zip-path` (legacy option): The path within the stored ZIP file where the reports are stored.
   Default is to store at root level.
   This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-path-suffix` (optional): The path within the storage location between
@@ -184,12 +192,33 @@ directories, you can get the commit info via
   See `teamscale-git-properties-jar` for details.
 - `artifactory-git-properties-commit-date-format` (optional):
   The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
-- `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon
-  separated list of applications. Each application is specified as a fully qualified classname (referred to as marker
-  class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed
-  when the application is running and is unique amongst the other deployed applications.
-  E.g. `com.company.app1.Main:app1alias;com.company.app2.Starter:ts-app2-id`. The coverage is uploaded to master at
-  the timestamp of the last modification date of the given marker class.
+
+### The new standard upload schema
+```
+/ arbitraryly / many / directories / before / the / upload / root
+    / 'uploads'
+    / <branch name> 
+    / <commit timestamp (Java long)>[-<commit hash>]?
+    / <upload partition> 
+    / <artifact type> 
+    / none / or / some / internediate / directories /
+    / <Zip archive file>
+```
+
+### The legacy standard upload schema
+```
+/ arbitraryly / many / directories / before / the / upload / root
+    / <branch name> 
+    / <commit timestamp (Java long)>[-<commit hash>]?
+    / <Zip archive file>
+```
+
+### Migration from the legacy to the new standard upload schema
+- Add a second artifactory connector to the Teamscale project with the new pattern next to the old one.
+- Update the Teamscale JaCoCo agent.
+- Validate that the new reports are handled correctly.
+- Remove the old artifactory connector once the data is old enough to be no longer relevant.
+
 
 ## Secure communication
 If the connection to the Teamscale server should be established via HTTPS, a Java Trust Store can be required,

@@ -128,10 +128,6 @@ public class ArtifactoryConfig {
 				options.password = value;
 				return true;
 			case ARTIFACTORY_LEGACY_PATH_OPTION:
-				if (value.isEmpty()) {
-					options.legacyPath = true;
-					return true;
-				}
 				options.legacyPath = Boolean.parseBoolean(value);
 				return true;
 			case ARTIFACTORY_ZIP_PATH_OPTION:
