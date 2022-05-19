@@ -27,30 +27,41 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_URL_OPTION = "artifactory-url";
 
 	/**
-	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_USER_OPTION = "artifactory-user";
 
 	/**
-	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_PASSWORD_OPTION = "artifactory-password";
 
 	/**
-	 * API key that shall be used to authenticat requests to artifacotry with the {@link
-	 * com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively basic
-	 * auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password ({@link
-	 * ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
+	 * API key that shall be used to authenticate requests to artifactory with the
+	 * {@link com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively
+	 * basic auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password
+	 * ({@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
 	 */
 	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
+
+	/**
+	 * Option that specifies if the legacy path for uploading files to artifactory should be used instead of the new
+	 * standard path.
+	 */
+	public static final String ARTIFACTORY_LEGACY_PATH_OPTION = "artifactory-legacy-path";
 
 	/**
 	 * Option that specifies under which path the coverage file shall lie within the zip file that is created for the
 	 * upload.
 	 */
 	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
+
+	/**
+	 * Option that specifies intermediate directories which should be appended.
+	 */
+	public static final String ARTIFACTORY_PATH_SUFFIX = "artifactory-path-suffix";
 
 	/**
 	 * Specifies the location of the JAR file which includes the git.properties file.
@@ -62,6 +73,11 @@ public class ArtifactoryConfig {
 	 */
 	public static final String ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "artifactory-git-properties-commit-date-format";
 
+	/**
+	 * Specifies the partition for which the upload is.
+	 */
+	public static final String ARTIFACTORY_PARTITION = "artifactory-partition";
+
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} */
 	public HttpUrl url;
 
@@ -71,8 +87,14 @@ public class ArtifactoryConfig {
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION} */
 	public String password;
 
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_LEGACY_PATH_OPTION} */
+	public boolean legacyPath = false;
+
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_ZIP_PATH_OPTION} */
 	public String zipPath;
+
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PATH_SUFFIX} */
+	public String pathSuffix;
 
 	/** The information regarding a commit. */
 	public CommitInfo commitInfo;
@@ -82,6 +104,9 @@ public class ArtifactoryConfig {
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} */
 	public String apiKey;
+
+	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_PARTITION} */
+	public String partition;
 
 	/**
 	 * Handles all command-line options prefixed with 'artifactory-'
@@ -102,8 +127,14 @@ public class ArtifactoryConfig {
 			case ARTIFACTORY_PASSWORD_OPTION:
 				options.password = value;
 				return true;
+			case ARTIFACTORY_LEGACY_PATH_OPTION:
+				options.legacyPath = Boolean.parseBoolean(value);
+				return true;
 			case ARTIFACTORY_ZIP_PATH_OPTION:
 				options.zipPath = StringUtils.stripSuffix(value, "/");
+				return true;
+			case ARTIFACTORY_PATH_SUFFIX:
+				options.pathSuffix = StringUtils.stripSuffix(value, "/");
 				return true;
 			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
 				options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
@@ -115,6 +146,9 @@ public class ArtifactoryConfig {
 			case ARTIFACTORY_API_KEY_OPTION:
 				options.apiKey = value;
 				return true;
+			case ARTIFACTORY_PARTITION:
+				options.partition = value;
+				return true;
 			default:
 				return false;
 		}
@@ -123,12 +157,13 @@ public class ArtifactoryConfig {
 	/** Checks if all required options are set to upload to artifactory. */
 	public boolean hasAllRequiredFieldsSet() {
 		boolean requiredAuthOptionsSet = (user != null && password != null) || apiKey != null;
-		return url != null && requiredAuthOptionsSet;
+		boolean partitionSet = partition != null || legacyPath;
+		return url != null && partitionSet && requiredAuthOptionsSet;
 	}
 
 	/** Checks if all required fields are null. */
 	public boolean hasAllRequiredFieldsNull() {
-		return url == null && user == null && password == null && apiKey == null;
+		return url == null && user == null && password == null && apiKey == null && partition == null;
 	}
 
 	/** Checks whether commit and revision are set. */

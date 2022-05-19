@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
+import com.teamscale.client.EReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
@@ -25,12 +26,15 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	 */
 	public static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
 	private final ArtifactoryConfig artifactoryConfig;
+	private final String coverageFormat;
 	private String uploadPath;
 
 	/** Constructor. */
-	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles) {
+	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles,
+							   EReportFormat reportFormat) {
 		super(config.url, additionalMetaDataFiles, IArtifactoryUploadApi.class);
 		this.artifactoryConfig = config;
+		this.coverageFormat = reportFormat.name().toLowerCase();
 	}
 
 	@Override
@@ -46,9 +50,21 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 
 	@Override
 	public void upload(CoverageFile coverageFile) {
-		this.uploadPath = String.join("/", artifactoryConfig.commitInfo.commit.branchName,
-				artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
-				coverageFile.getNameWithoutExtension() + ".zip");
+		if (artifactoryConfig.legacyPath) {
+			this.uploadPath = String.join("/", artifactoryConfig.commitInfo.commit.branchName,
+					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
+					coverageFile.getNameWithoutExtension() + ".zip");
+		} else if (artifactoryConfig.pathSuffix == null) {
+			this.uploadPath = String.join("/", "uploads", artifactoryConfig.commitInfo.commit.branchName,
+					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
+					artifactoryConfig.partition, coverageFormat,
+					coverageFile.getNameWithoutExtension() + ".zip");
+		} else {
+			this.uploadPath = String.join("/", "uploads", artifactoryConfig.commitInfo.commit.branchName,
+					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
+					artifactoryConfig.partition, coverageFormat, artifactoryConfig.pathSuffix,
+					coverageFile.getNameWithoutExtension() + ".zip");
+		}
 		super.upload(coverageFile);
 	}
 
