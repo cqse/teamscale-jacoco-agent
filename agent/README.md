@@ -179,7 +179,7 @@ directories, you can get the commit info via
 ### Options for the Artifactory Upload
 - `artifactory-url`: the HTTP(S) url of the artifactory server to upload the reports to.
   The URL may include a subpath on the artifactory server, e.g. `https://artifactory.acme.com/my-repo/my/subpath`.
-- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Use `-artifactory-legacy-path=true` to keep the old behavior. Defaults to false. For more details see [new upload schema](#the-new-standard-upload-schema), [legacy upload schema](#the-legacy-standard-upload-schema) and [migration](#migration-from-the-legacy-to-the-new-standard-upload-schema).
+- `artifactory-legacy-path`: option to use the upload path as defined pre v24.0.0. Use `artifactory-legacy-path=true` to keep the old behavior. Defaults to false. For more details see [new upload schema](#the-new-standard-upload-schema), [legacy upload schema](#the-legacy-standard-upload-schema) and [migration](#migration-from-the-legacy-to-the-new-standard-upload-schema).
 - `artifactory-partition` (required if `legacy-path` option is not set): the partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-user` (required for artifactory): The name of an artifactory user with write access.
 - `artifactory-password` (required for artifactory): The password of the user.
@@ -204,7 +204,7 @@ directories, you can get the commit info via
     / <commit timestamp (Java long)>[-<commit hash>]?
     / <upload partition> 
     / <artifact type> 
-    / none / or / some / internediate / directories /
+    / none / or / some / intermediate / directories /
     / <Zip archive file>
 ```
 
@@ -226,7 +226,7 @@ The following options must be set in the Teamscale Artifactory Connector to impo
 ```
 
 ### Migration from the legacy to the new standard upload schema
-- Add a second artifactory connector to the Teamscale project with the new pattern next to the old one.
+- Add a second artifactory connector to the Teamscale project with the new patterns next to the already existing Artifactory connector.
 - Update the Teamscale JaCoCo agent.
 - Validate that the new reports are handled correctly.
 - Remove the old artifactory connector once the data is old enough to be no longer relevant.
