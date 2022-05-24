@@ -6,6 +6,10 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+# 24.0.1
+
+- [fix] fix POM metadata of Maven plugin to allow publishing it
+
 # 24.0.0
 
 - [feature] add Maven plugin for TIA
