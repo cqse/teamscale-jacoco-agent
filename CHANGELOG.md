@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+- [feature] The agent logs a warning when multiple java agents are used and recommends registering the Teamscale JaCoCo Agent first.
+
 # 24.0.1
 
 - [fix] fix POM metadata of Maven plugin to allow publishing it

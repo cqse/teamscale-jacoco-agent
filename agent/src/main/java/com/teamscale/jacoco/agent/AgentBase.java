@@ -14,6 +14,7 @@ import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import com.teamscale.report.testwise.model.RevisionInfo;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.agent.rt.RT;
@@ -29,11 +30,12 @@ import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
- * JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
+ * {@link JacocoRuntimeController}.
  * <p>
  * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
@@ -123,6 +125,16 @@ public abstract class AgentBase {
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
+
+		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
+				s -> s.contains("-javaagent"));
+		if (javaAgents.size() > 1) {
+			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
+		}
+		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
+			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
+		}
+
 		try {
 			agentOptions = AgentOptionsParser.parse(options, delayedLogger);
 		} catch (AgentOptionParseException e) {
@@ -170,9 +182,9 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Initializes fallback logging in case of an error during the parsing of the options to {@link #premain(String,
-	 * Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use this and falls back to
-	 * the default logger.
+	 * Initializes fallback logging in case of an error during the parsing of the options to
+	 * {@link #premain(String, Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use
+	 * this and falls back to the default logger.
 	 */
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {
