@@ -5,7 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # next release
-
+- [feature] The agent logs a warning when multiple java agents are used and recommends registering the Teamscale JaCoCo Agent first.
 - [feature] add Maven plugin for TIA
 - [feature] added official support for Java 17 and 18 and experimental support for Java 19.
 - [feature] New command line option: `debug`. Simplifies debugging by avoiding the process of providing an XML logging
