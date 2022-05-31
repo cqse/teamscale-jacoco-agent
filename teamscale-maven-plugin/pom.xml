@@ -12,12 +12,27 @@
     <packaging>maven-plugin</packaging>
 
     <name>Teamscale Maven Plugin</name>
+    <description>Maven Plugin for Teamscale</description>
+    <url>https://github.com/cqse/teamscale-jacoco-agent</url>
+    <organization>
+        <name>CQSE GmbH</name>
+        <url>https://cqse.eu</url>
+    </organization>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <name>CQSE GmbH</name>
+            <email>info@cqse.eu</email>
+            <organization>CQSE GmbH</organization>
+            <organizationUrl>https://cqse.eu</organizationUrl>
+        </developer>
+    </developers>
 
     <scm>
         <connection>scm:git:git@github.com:cqse/teamscale-jacoco-agent.git</connection>

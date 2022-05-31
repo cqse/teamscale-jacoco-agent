@@ -5,12 +5,22 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # next release
+
 - [feature] The agent logs a warning when multiple java agents are used and recommends registering the Teamscale JaCoCo Agent first.
+
+# 24.0.1
+
+- [fix] fix POM metadata of Maven plugin to allow publishing it
+
+# 24.0.0
+
 - [feature] add Maven plugin for TIA
 - [feature] added official support for Java 17 and 18 and experimental support for Java 19.
 - [feature] New command line option: `debug`. Simplifies debugging by avoiding the process of providing an XML logging
   configuration file. In debug mode logs are written to console and a configurable directory. For more details, see
   [here](agent/README.md#general-options).
+- [breaking change] Artifactory uploader: use of new default upload schema for easy integration with Teamscale. To keep the old behavior add the `artifactory-legacy-path=true` option. For more details see 
+  [here](agent/README.md#options-for-the-artifactory-upload).
 
 # 23.1.1
 
