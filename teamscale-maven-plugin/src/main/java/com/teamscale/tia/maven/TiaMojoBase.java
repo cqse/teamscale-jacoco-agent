@@ -283,7 +283,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		}
 
 		Path configFilePath = targetDirectory.resolve("agent.properties");
-		String agentConfig = createAgentConfig(loggingConfigPath);
+		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory.resolve("reports"));
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));
 		} catch (IOException e) {
@@ -299,7 +299,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		return TiaMojoBase.class.getResourceAsStream("logback-agent.xml");
 	}
 
-	private String createAgentConfig(Path loggingConfigPath) {
+	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
 		String config = "mode=testwise" +
 				"\ntia-mode=teamscale-upload" +
 				"\nteamscale-server-url=" + teamscaleUrl +
@@ -309,7 +309,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 				"\nteamscale-commit=" + resolvedEndCommit +
 				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
-				"\nlogging-config=" + loggingConfigPath;
+				"\nlogging-config=" + loggingConfigPath +
+				"\nout=" + agentOutputDirectory.toAbsolutePath();
 		if (ArrayUtils.isNotEmpty(includes)) {
 			config += "\nincludes=" + String.join(",", includes);
 		}
