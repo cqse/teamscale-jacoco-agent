@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+- [feature] The Maven plugin now writes temporary reports to `target/tia/reports` in case of upload errors so they can be inspected manually.
 - [feature] The agent logs a warning when multiple java agents are used and recommends registering the Teamscale JaCoCo Agent first.
 
 # 24.0.1
