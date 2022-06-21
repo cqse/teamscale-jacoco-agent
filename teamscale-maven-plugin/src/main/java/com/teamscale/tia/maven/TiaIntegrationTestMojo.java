@@ -8,7 +8,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 /**
  * Instruments the Failsafe integration tests and uploads testwise coverage to Teamscale.
  */
-@Mojo(name = "prepare-tia-integration-test", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST,
+@Mojo(name = "prepare-tia-integration-test", defaultPhase = LifecyclePhase.PACKAGE,
 		requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class TiaIntegrationTestMojo extends TiaMojoBase {
 
