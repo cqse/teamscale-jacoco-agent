@@ -6,11 +6,14 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+# 24.1.1
+
+- [fix] Maven plugin for TIA: sometimes the agent was not attached to a Spring Boot application during integration tests
+
 # 24.1.0
 
 - [feature] The Maven plugin now writes temporary reports to `target/tia/reports` in case of upload errors so they can be inspected manually.
 - [feature] The agent logs a warning when multiple java agents are used and recommends registering the Teamscale JaCoCo Agent first.
-- [fix] Maven plugin for TIA: sometimes the agent was not attached to a Spring Boot application during integration tests
 
 # 24.0.1
 
