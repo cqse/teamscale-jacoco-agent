@@ -7,14 +7,15 @@ import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.conqat.lib.commons.collections.Pair;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
@@ -59,14 +60,15 @@ public class GitPropertiesLocatorUtils {
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static String getRevisionFromGitProperties(
+	public static List<String> getRevisionsFromGitProperties(
 			File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = findGitPropertiesInFile(file, isJarFile);
-		if (entryWithProperties == null) {
-			return null;
+		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile);
+		List<String> result = new ArrayList<>();
+		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
+			result.add(getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_GIT_COMMIT_ID,
+					entryWithProperties.getFirst(), file));
 		}
-		return getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_GIT_COMMIT_ID,
-				entryWithProperties.getFirst(), file);
+		return result;
 	}
 
 	/**
@@ -162,26 +164,27 @@ public class GitPropertiesLocatorUtils {
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static ProjectRevision getProjectRevisionFromGitProperties(
+	public static List<ProjectRevision> getProjectRevisionsFromGitProperties(
 			File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = findGitPropertiesInFile(file, isJarFile);
-		if (entryWithProperties == null) {
-			return null;
+		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile);
+		List<ProjectRevision> result = new ArrayList<>();
+		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
+			String revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
+			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
+			if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
+				throw new InvalidGitPropertiesException(
+						"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
+								"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + entryWithProperties.getSecond()
+								.toString()
+				);
+			}
+			result.add(new ProjectRevision(project, revision));
 		}
-		String revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
-		String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
-		if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
-			throw new InvalidGitPropertiesException(
-					"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
-							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + entryWithProperties.getSecond()
-							.toString()
-			);
-		}
-		return new ProjectRevision(project, revision);
+		return result;
 	}
 
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
-	public static Pair<String, Properties> findGitPropertiesInFile(
+	public static List<Pair<String, Properties>> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
 		String filePath = file.getPath();
 		if (isNestedInWar(filePath) || isNestedInEar(filePath) || isNestedInAar(filePath) || isNestedInFatJar(
@@ -210,9 +213,9 @@ public class GitPropertiesLocatorUtils {
 		return filePath.contains(AAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
 	}
 
-	private static Pair<String, Properties> findGitPropertiesInArchiveFile(File file) throws IOException {
+	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
-				new BashFileSkippingInputStream(new FileInputStream(file)))) {
+				new BashFileSkippingInputStream(Files.newInputStream(file.toPath())))) {
 			return findGitPropertiesInArchive(jarStream);
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + file.getAbsolutePath() + " for obtaining commit " +
@@ -221,7 +224,8 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/** Searches for a git.properties file inside a jar file that is nested inside a jar or war file. */
-	static Pair<String, Properties> findGitPropertiesInNestedArchiveFile(File file) throws IOException {
+	static List<Pair<String, Properties>> findGitPropertiesInNestedArchiveFile(File file) throws IOException {
+		List<Pair<String, Properties>> result = new ArrayList<>();
 		String filePath = file.getPath();
 		int firstPartEndIndex;
 		if (filePath.contains(WAR_FILE_ENDING)) {
@@ -236,77 +240,76 @@ public class GitPropertiesLocatorUtils {
 		String firstPart = filePath.substring(0, firstPartEndIndex);
 		String fileName = file.getName();
 		try (JarInputStream jarStream = new JarInputStream(
-				new BashFileSkippingInputStream(new FileInputStream(firstPart)))) {
-			Pair<String, JarInputStream> nestedJar = findEntry(jarStream, fileName);
-			if (nestedJar == null) {
-				return null;
+				new BashFileSkippingInputStream(Files.newInputStream(Paths.get(firstPart))))) {
+			List<Pair<String, JarInputStream>> nestedJars = findEntries(jarStream, fileName);
+			for (Pair<String, JarInputStream> nestedJar : nestedJars) {
+				JarInputStream nestedJarStream = new JarInputStream(nestedJar.getSecond());
+				result.addAll(findGitPropertiesInArchive(nestedJarStream));
 			}
-			JarInputStream nestedJarStream = new JarInputStream(nestedJar.getSecond());
-			return findGitPropertiesInArchive(nestedJarStream);
 
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + firstPart + " for obtaining commit " +
 					"descriptor from git.properties failed", e);
 		}
+		return result;
 	}
 
 	/** Searches the given archive for the given name. */
-	private static Pair<String, JarInputStream> findEntry(JarInputStream in, String name) throws IOException {
+	private static List<Pair<String, JarInputStream>> findEntries(JarInputStream in, String name) throws IOException {
+		List<Pair<String, JarInputStream>> result = new ArrayList<>();
 		JarEntry entry;
 		while ((entry = in.getNextJarEntry()) != null) {
 			if (Paths.get(entry.getName()).getFileName().toString().equalsIgnoreCase(name)) {
-				return Pair.createPair(entry.getName(), in);
+				result.add(Pair.createPair(entry.getName(), in));
 			}
 		}
-		return null;
+		return result;
 	}
 
-	private static Pair<String, Properties> findGitPropertiesInDirectoryFile(File directoryFile) throws IOException {
+	private static List<Pair<String, Properties>> findGitPropertiesInDirectoryFile(
+			File directoryFile) throws IOException {
+		List<Pair<String, Properties>> result = new ArrayList<>();
 		List<File> gitPropertiesFiles = FileSystemUtils.listFilesRecursively(directoryFile,
 				file -> file.getName().equalsIgnoreCase(GIT_PROPERTIES_FILE_NAME));
-		if (gitPropertiesFiles.size() == 0) {
-			return null;
+		List<File> jarFiles = FileSystemUtils.listFilesRecursively(directoryFile,
+				file -> file.getName().endsWith(JAR_FILE_ENDING));
+		if (gitPropertiesFiles.isEmpty() && jarFiles.isEmpty()) {
+			return result;
 		}
-		if (gitPropertiesFiles.size() > 1) {
-			throw new IllegalArgumentException(buildErrorMessage(directoryFile, gitPropertiesFiles));
-		}
-		File file = gitPropertiesFiles.get(0);
-		try (InputStream is = new FileInputStream(file)) {
-			Properties gitProperties = new Properties();
-			gitProperties.load(is);
-			return Pair.createPair(file.getName(), gitProperties);
-		} catch (IOException e) {
-			throw new IOException(
-					"Reading directory " + file.getAbsolutePath() + " for obtaining commit " +
-							"descriptor from git.properties failed", e);
-		}
-	}
 
-	private static String buildErrorMessage(File directoryFile, List<File> gitPropertiesFiles) {
-		StringBuilder errorMessage = new StringBuilder();
-		errorMessage.append("There must be a single git.properties file in the directory ");
-		errorMessage.append(directoryFile.toString());
-		errorMessage.append(". Instead, found git.properties files in following locations: ");
-		for (int i = 0; i < gitPropertiesFiles.size(); i++) {
-			File gitPropertiesFile = gitPropertiesFiles.get(0);
-			errorMessage.append(gitPropertiesFile.toString());
-			if (i < gitPropertiesFiles.size() - 1) {
-				errorMessage.append(", ");
+		for (File gitPropertiesFile : gitPropertiesFiles) {
+			try (InputStream is = Files.newInputStream(gitPropertiesFile.toPath())) {
+				Properties gitProperties = new Properties();
+				gitProperties.load(is);
+				result.add(Pair.createPair(gitPropertiesFile.getName(), gitProperties));
+			} catch (IOException e) {
+				throw new IOException(
+						"Reading directory " + gitPropertiesFile.getAbsolutePath() + " for obtaining commit " +
+								"descriptor from git.properties failed", e);
 			}
 		}
-		return errorMessage.toString();
+
+		for (File jarFile : jarFiles) {
+			JarInputStream is = new JarInputStream(Files.newInputStream(jarFile.toPath()));
+			result.addAll(findGitPropertiesInArchive(is));
+		}
+		return result;
 	}
 
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
-	static Pair<String, Properties> findGitPropertiesInArchive(
+	static List<Pair<String, Properties>> findGitPropertiesInArchive(
 			JarInputStream jarStream) throws IOException {
-		Pair<String, JarInputStream> propertiesEntry = findEntry(jarStream, GIT_PROPERTIES_FILE_NAME);
-		if (propertiesEntry != null) {
-			Properties gitProperties = new Properties();
-			gitProperties.load(jarStream);
-			return Pair.createPair(propertiesEntry.getFirst(), gitProperties);
+		List<Pair<String, Properties>> result = new ArrayList<>();
+		List<Pair<String, JarInputStream>> propertiesEntries = findEntries(jarStream, GIT_PROPERTIES_FILE_NAME);
+		for (Pair<String, JarInputStream> propertiesEntry : propertiesEntries) {
+			if (propertiesEntry != null) {
+				Properties gitProperties = new Properties();
+				gitProperties.load(jarStream);
+				result.add(Pair.createPair(propertiesEntry.getFirst(), gitProperties));
+
+			}
 		}
-		return null;
+		return result;
 	}
 
 	/** Returns a value from a git properties file. */

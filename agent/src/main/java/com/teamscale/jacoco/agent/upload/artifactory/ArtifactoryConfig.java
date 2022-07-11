@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -27,22 +29,22 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_URL_OPTION = "artifactory-url";
 
 	/**
-	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_USER_OPTION = "artifactory-user";
 
 	/**
-	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_PASSWORD_OPTION = "artifactory-password";
 
 	/**
-	 * API key that shall be used to authenticat requests to artifacotry with the {@link
-	 * com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively basic
-	 * auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password ({@link
-	 * ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
+	 * API key that shall be used to authenticat requests to artifacotry with the
+	 * {@link com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively
+	 * basic auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password
+	 * ({@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
 	 */
 	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
 
@@ -142,39 +144,45 @@ public class ArtifactoryConfig {
 												String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			CommitInfo commitInfo = parseGitProperties(jarFile, gitPropertiesCommitTimeFormat);
-			if (commitInfo == null) {
+			List<CommitInfo> commitInfo = parseGitProperties(jarFile, gitPropertiesCommitTimeFormat);
+			if (commitInfo.isEmpty()) {
 				throw new AgentOptionParseException(
-						"Could not locate a git.properties file in " + jarFile.toString());
+						"Found no git.properties files in " + jarFile);
 			}
-			return commitInfo;
+			if (commitInfo.size() > 1) {
+				throw new AgentOptionParseException(
+						"Found multiple git.properties files in " + jarFile);
+			}
+			return commitInfo.get(0);
 		} catch (IOException | InvalidGitPropertiesException e) {
-			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
-					e);
+			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile, e);
 		}
 	}
 
 	/** Parses the commit information form a git.properties file. */
-	public static CommitInfo parseGitProperties(File jarFile,
-												DateTimeFormatter gitPropertiesCommitTimeFormat) throws IOException, InvalidGitPropertiesException {
-		Pair<String, Properties> entryWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(jarFile, true);
-		if (entryWithProperties == null) {
-			return null;
+	public static List<CommitInfo> parseGitProperties(File jarFile,
+													  DateTimeFormatter gitPropertiesCommitTimeFormat) throws IOException, InvalidGitPropertiesException {
+		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(
+				jarFile, true);
+		List<CommitInfo> result = new ArrayList<>();
+
+		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
+			String entry = entryWithProperties.getFirst();
+			Properties properties = entryWithProperties.getSecond();
+
+			String revision = GitPropertiesLocatorUtils
+					.getGitPropertiesValue(properties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
+							jarFile);
+			String branchName = GitPropertiesLocatorUtils
+					.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH, entry, jarFile);
+			long timestamp = ZonedDateTime.parse(GitPropertiesLocatorUtils
+							.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME, entry,
+									jarFile),
+					gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
+			result.add(new CommitInfo(revision, new CommitDescriptor(branchName, timestamp)));
+
 		}
-
-		String entry = entryWithProperties.getFirst();
-		Properties properties = entryWithProperties.getSecond();
-
-		String revision = GitPropertiesLocatorUtils
-				.getGitPropertiesValue(properties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
-						jarFile);
-		String branchName = GitPropertiesLocatorUtils
-				.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH, entry, jarFile);
-		long timestamp = ZonedDateTime.parse(GitPropertiesLocatorUtils
-						.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME, entry,
-								jarFile),
-				gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
-		return new CommitInfo(revision, new CommitDescriptor(branchName, timestamp));
+		return result;
 	}
 
 	/** Hold information regarding a commit. */

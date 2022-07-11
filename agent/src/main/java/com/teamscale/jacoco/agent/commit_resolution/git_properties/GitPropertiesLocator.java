@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -58,14 +59,19 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	private void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching jar file {} for a single git.properties", file);
 		try {
-			T data = dataExtractor.extractData(file, isJarFile);
-			if (data == null) {
-				logger.debug("No git.properties file found in {}", file.toString());
+			List<T> data = dataExtractor.extractData(file, isJarFile);
+			if (data.isEmpty()) {
+				logger.debug("No git.properties files found in {}", file.toString());
 				return;
 			}
+			if (data.size() > 1) {
+				logger.debug("Multiple git.properties files found in {}", file.toString());
+				return;
+			}
+			T dataEntry = data.get(0);
 
 			if (foundData != null) {
-				if (!foundData.equals(data)) {
+				if (!foundData.equals(dataEntry)) {
 					logger.error(
 							"Found inconsistent git.properties files: {} contained data {} while {} contained {}." +
 									" Please ensure that all git.properties files of your application are consistent." +
@@ -80,10 +86,10 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 			}
 
 			logger.debug("Found git.properties file in {} and found commit descriptor {}", file.toString(),
-					data);
-			foundData = data;
+					dataEntry);
+			foundData = dataEntry;
 			jarFileWithGitProperties = file;
-			uploader.setCommitAndTriggerAsynchronousUpload(data);
+			uploader.setCommitAndTriggerAsynchronousUpload(dataEntry);
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", file.toString(), e);
 		}
@@ -93,6 +99,6 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	@FunctionalInterface
 	public interface DataExtractor<T> {
 		/** Extracts data from the JAR. */
-		T extractData(File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException;
+		List<T> extractData(File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException;
 	}
 }

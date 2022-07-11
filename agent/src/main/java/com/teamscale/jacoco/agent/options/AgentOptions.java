@@ -415,7 +415,7 @@ public class AgentOptions {
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 		GitPropertiesLocator<ProjectRevision> locator = new GitPropertiesLocator<>(uploader,
-				GitPropertiesLocatorUtils::getProjectRevisionFromGitProperties);
+				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}

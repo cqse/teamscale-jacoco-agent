@@ -14,6 +14,7 @@ import com.teamscale.report.util.ILogger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
@@ -164,14 +165,16 @@ public class TeamscaleConfig {
 												String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			String revision = GitPropertiesLocatorUtils.getRevisionFromGitProperties(jarFile, true);
-			if (revision == null) {
-				throw new AgentOptionParseException("Could not locate a git.properties file in " + jarFile.toString());
+			List<String> revisions = GitPropertiesLocatorUtils.getRevisionsFromGitProperties(jarFile, true);
+			if (revisions.isEmpty()) {
+				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
 			}
-			return revision;
+			if (revisions.size() > 1) {
+				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile);
+			}
+			return revisions.get(0);
 		} catch (IOException | InvalidGitPropertiesException e) {
-			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile.toString(),
-					e);
+			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile, e);
 		}
 	}
 }
