@@ -23,7 +23,7 @@ public class GitPropertiesLocatorTest {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(getClass().getResourceAsStream(archiveName));
 			List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils
-					.findGitPropertiesInArchive(jarInputStream);
+					.findGitPropertiesInArchive(jarInputStream, archiveName);
 			assertThat(commits.size()).isEqualTo(1);
 			String rev = GitPropertiesLocatorUtils
 					.getGitPropertiesValue(commits.get(0).getSecond(),
@@ -42,11 +42,11 @@ public class GitPropertiesLocatorTest {
 		URL nestedArchiveURL = getClass().getResource(nestedTestArchive);
 		String nestedPath = nestedArchiveURL.getFile() + "WEB-INF/lib/demoLib-1.0-SNAPSHOT.jar";
 		File nestedArchiveFile = new File(nestedPath);
-		List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils.findGitPropertiesInNestedArchiveFile(
-				nestedArchiveFile);
-		assertThat(commits.size()).isEqualTo(1);
+		List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils.findGitPropertiesInFile(nestedArchiveFile,
+				true);
+		assertThat(commits.size()).isEqualTo(2); // First git.properties in the root war, 2nd in the nested Jar
 		String rev = GitPropertiesLocatorUtils
-				.getGitPropertiesValue(commits.get(0).getSecond(),
+				.getGitPropertiesValue(commits.get(1).getSecond(),
 						GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID,
 						"test",
 						new File("test.jar"));
@@ -65,4 +65,6 @@ public class GitPropertiesLocatorTest {
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
 
+	// TODO test recursive directory search
+	// TODO does nested jar file search still work when jar is loaded from jvm?
 }
