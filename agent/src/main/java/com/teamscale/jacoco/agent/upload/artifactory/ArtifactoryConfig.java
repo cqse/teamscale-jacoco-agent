@@ -149,6 +149,7 @@ public class ArtifactoryConfig {
 				throw new AgentOptionParseException(
 						"Found no git.properties files in " + jarFile);
 			}
+			// TODO Improve error message: multiproject uplaod not possible with artifactory
 			if (commitInfo.size() > 1) {
 				throw new AgentOptionParseException(
 						"Found multiple git.properties files in " + jarFile);

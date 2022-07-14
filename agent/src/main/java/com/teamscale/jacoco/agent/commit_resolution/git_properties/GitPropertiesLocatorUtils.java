@@ -87,9 +87,11 @@ public class GitPropertiesLocatorUtils {
 		String protocol = jarOrClassFolderUrl.getProtocol().toLowerCase();
 		switch (protocol) {
 			case "file":
-				if (org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
+				// TODO in current Tomcat setup, only one git.properties file is found according to the log, Is there only one? or is there problem with log or the detection?
+				File jarOrClassFolderFile = new File(jarOrClassFolderUrl.toURI());
+				if (jarOrClassFolderFile.isDirectory() || org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
 						jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
-					return Pair.createPair(new File(jarOrClassFolderUrl.toURI()), true);
+					return Pair.createPair(new File(jarOrClassFolderUrl.toURI()), !jarOrClassFolderFile.isDirectory());
 				}
 				break;
 			case "jar":

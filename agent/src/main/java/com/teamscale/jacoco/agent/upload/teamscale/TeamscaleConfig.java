@@ -169,6 +169,7 @@ public class TeamscaleConfig {
 			if (revisions.isEmpty()) {
 				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
 			}
+			// TODO improve error message: multiple git properties not possible with teamscale-git-properties option
 			if (revisions.size() > 1) {
 				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile);
 			}
