@@ -129,7 +129,7 @@ public class GitPropertiesLocatorUtils {
 		// obtain the physical location of the class file. It is created on demand in <jboss-installation-dir>/standalone/tmp/vfs
 		Method getPhysicalFileMethod = virtualFileClass.getMethod("getPhysicalFile");
 		File file = (File) getPhysicalFileMethod.invoke(virtualFile);
-		return Pair.createPair(file, false);
+		return Pair.createPair(file, !file.isDirectory());
 	}
 
 	/**
@@ -225,6 +225,7 @@ public class GitPropertiesLocatorUtils {
 
 	/** Searches for a git.properties file inside a jar file that is nested inside a jar or war file. */
 	static List<Pair<String, Properties>> findGitPropertiesInNestedArchiveFile(File file) throws IOException {
+		//TODO return Pair instead of List
 		List<Pair<String, Properties>> result = new ArrayList<>();
 		String filePath = file.getPath();
 		int firstPartEndIndex;
@@ -241,8 +242,8 @@ public class GitPropertiesLocatorUtils {
 		String fileName = file.getName();
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(Files.newInputStream(Paths.get(firstPart))))) {
-			List<Pair<String, JarInputStream>> nestedJars = findEntries(jarStream, fileName);
-			for (Pair<String, JarInputStream> nestedJar : nestedJars) {
+			Pair<String, JarInputStream> nestedJar = findEntry(jarStream, fileName);
+			if (nestedJar != null) {
 				JarInputStream nestedJarStream = new JarInputStream(nestedJar.getSecond());
 				result.addAll(findGitPropertiesInArchive(nestedJarStream));
 			}
@@ -255,15 +256,21 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/** Searches the given archive for the given name. */
-	private static List<Pair<String, JarInputStream>> findEntries(JarInputStream in, String name) throws IOException {
-		List<Pair<String, JarInputStream>> result = new ArrayList<>();
+	private static Pair<String, JarInputStream> findEntry(JarInputStream in, String name) throws IOException {
 		JarEntry entry;
+		boolean isEmpty = true;
 		while ((entry = in.getNextJarEntry()) != null) {
+			isEmpty = false;
 			if (Paths.get(entry.getName()).getFileName().toString().equalsIgnoreCase(name)) {
-				result.add(Pair.createPair(entry.getName(), in));
+				return Pair.createPair(entry.getName(), in);
 			}
 		}
-		return result;
+		if (isEmpty) {
+			// TODO change in to file name
+			throw new IOException(
+					"No entries in Jar file " + in + ". Is this a valid jar file?. If not, please report to CQSE.");
+		}
+		return null;
 	}
 
 	private static List<Pair<String, Properties>> findGitPropertiesInDirectoryFile(
@@ -299,15 +306,13 @@ public class GitPropertiesLocatorUtils {
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
 	static List<Pair<String, Properties>> findGitPropertiesInArchive(
 			JarInputStream jarStream) throws IOException {
+		//TODO return Pair instead of List
 		List<Pair<String, Properties>> result = new ArrayList<>();
-		List<Pair<String, JarInputStream>> propertiesEntries = findEntries(jarStream, GIT_PROPERTIES_FILE_NAME);
-		for (Pair<String, JarInputStream> propertiesEntry : propertiesEntries) {
-			if (propertiesEntry != null) {
-				Properties gitProperties = new Properties();
-				gitProperties.load(jarStream);
-				result.add(Pair.createPair(propertiesEntry.getFirst(), gitProperties));
-
-			}
+		Pair<String, JarInputStream> propertiesEntry = findEntry(jarStream, GIT_PROPERTIES_FILE_NAME);
+		if (propertiesEntry != null) {
+			Properties gitProperties = new Properties();
+			gitProperties.load(jarStream);
+			result.add(Pair.createPair(propertiesEntry.getFirst(), gitProperties));
 		}
 		return result;
 	}
