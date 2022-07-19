@@ -169,9 +169,10 @@ public class TeamscaleConfig {
 			if (revisions.isEmpty()) {
 				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
 			}
-			// TODO improve error message: multiple git properties not possible with teamscale-git-properties option
 			if (revisions.size() > 1) {
-				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile);
+				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile +
+						". Uploading to multiple projects is currently not possible with the option teamscale-git-properties-jar. " +
+						"Please contact CQSE if you need this feature.");
 			}
 			return revisions.get(0);
 		} catch (IOException | InvalidGitPropertiesException e) {
