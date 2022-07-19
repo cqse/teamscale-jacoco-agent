@@ -23,9 +23,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// TODO update JavaDoc in changed methods (esp. in those returning a list now)
-
-/** Utility methods to extract certain properties from git.properties files in JARs. */
+/** Utility methods to extract certain properties from git.properties files in archives and folders. */
 public class GitPropertiesLocatorUtils {
 
 	/** Name of the git.properties file. */
@@ -152,8 +150,8 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/**
-	 * Reads the 'teamscale.project' property value and the git SHA1 from the given jar file's git.properties. If no
-	 * git.properties file can be found, returns null.
+	 * Reads the 'teamscale.project' property values and the git SHA1s from all git.properties files contained in the
+	 * provided folder or archive file.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
@@ -177,7 +175,10 @@ public class GitPropertiesLocatorUtils {
 		return result;
 	}
 
-	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
+	/**
+	 * Returns pairs of paths to git.properties files and their parsed properties found in the provided folder or
+	 * archive file. Nested jar files will also be searched recursively. // TODO adapt if feature toggled
+	 */
 	public static List<Pair<String, Properties>> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
 		if (isJarFile) {
@@ -233,7 +234,10 @@ public class GitPropertiesLocatorUtils {
 
 	// TODO hide recursive search behind feature toggle?
 
-	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
+	/**
+	 * Returns pairs of paths to git.properties files and their parsed properties found in the provided JarInputStream.
+	 * Nested jar files will also be searched recursively. // TODO adapt if feature toggled
+	 */
 	static List<Pair<String, Properties>> findGitPropertiesInArchive(
 			JarInputStream in, String archiveName) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
