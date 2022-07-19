@@ -22,7 +22,7 @@ public class GitPropertiesLocatorTest {
 		for (String archiveName : TEST_ARCHIVES) {
 			JarInputStream jarInputStream = new JarInputStream(getClass().getResourceAsStream(archiveName));
 			List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils
-					.findGitPropertiesInArchive(jarInputStream, archiveName);
+					.findGitPropertiesInArchive(jarInputStream, archiveName, true);
 			assertThat(commits.size()).isEqualTo(1);
 			String rev = GitPropertiesLocatorUtils
 					.getGitPropertiesValue(commits.get(0).getSecond(),
@@ -39,7 +39,7 @@ public class GitPropertiesLocatorTest {
 	public void testReadingGitPropertiesFromNestedArchive() throws Exception {
 		File nestedArchiveFile = new File(getClass().getResource("nested-jar.war").toURI());
 		List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils.findGitPropertiesInFile(nestedArchiveFile,
-				true);
+				true, true);
 		assertThat(commits.size()).isEqualTo(2); // First git.properties in the root war, 2nd in the nested Jar
 		String rev = GitPropertiesLocatorUtils
 				.getGitPropertiesValue(commits.get(1).getSecond(),
@@ -52,7 +52,7 @@ public class GitPropertiesLocatorTest {
 	@Test
 	public void testReadingGitPropertiesInJarFileNestedInFolder() throws Exception {
 		File folder = new File(getClass().getResource("multiple-git-properties-folder").toURI());
-		List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils.findGitPropertiesInFile(folder, false);
+		List<Pair<String, Properties>> commits = GitPropertiesLocatorUtils.findGitPropertiesInFile(folder, false, true);
 		assertThat(commits.size()).isEqualTo(2);
 		Pair<String, Properties> firstFind = commits.get(0);
 		Pair<String, Properties> secondFind = commits.get(1);

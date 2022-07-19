@@ -144,7 +144,9 @@ public class ArtifactoryConfig {
 												String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			List<CommitInfo> commitInfo = parseGitProperties(jarFile, gitPropertiesCommitTimeFormat);
+			// We can't be sure that the search-git-properties-recursively option is parsed already.
+			// Since we only support one git.properties file for artifactory anyway, recursive search is disabled here.
+			List<CommitInfo> commitInfo = parseGitProperties(jarFile, gitPropertiesCommitTimeFormat, false);
 			if (commitInfo.isEmpty()) {
 				throw new AgentOptionParseException(
 						"Found no git.properties files in " + jarFile);
@@ -163,9 +165,10 @@ public class ArtifactoryConfig {
 
 	/** Parses the commit information form a git.properties file. */
 	public static List<CommitInfo> parseGitProperties(File jarFile,
-													  DateTimeFormatter gitPropertiesCommitTimeFormat) throws IOException, InvalidGitPropertiesException {
+													  DateTimeFormatter gitPropertiesCommitTimeFormat,
+													  boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(
-				jarFile, true);
+				jarFile, true, recursiveSearch);
 		List<CommitInfo> result = new ArrayList<>();
 
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {

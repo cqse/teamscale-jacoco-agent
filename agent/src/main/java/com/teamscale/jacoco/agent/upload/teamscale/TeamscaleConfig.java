@@ -12,8 +12,8 @@ import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -148,7 +148,7 @@ public class TeamscaleConfig {
 	 */
 	private Manifest getManifestFromJarFile(File jarFile) throws AgentOptionParseException {
 		try (JarInputStream jarStream = new JarInputStream(
-				new BashFileSkippingInputStream(new FileInputStream(jarFile)))) {
+				new BashFileSkippingInputStream(Files.newInputStream(jarFile.toPath())))) {
 			Manifest manifest = jarStream.getManifest();
 			if (manifest == null) {
 				throw new AgentOptionParseException(
@@ -165,7 +165,9 @@ public class TeamscaleConfig {
 												String value) throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			List<String> revisions = GitPropertiesLocatorUtils.getRevisionsFromGitProperties(jarFile, true);
+			// We can't be sure that the search-git-properties-recursively option is parsed already.
+			// Since we only support one git.properties file here anyway, recursive search is disabled.
+			List<String> revisions = GitPropertiesLocatorUtils.getRevisionsFromGitProperties(jarFile, true, false);
 			if (revisions.isEmpty()) {
 				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
 			}

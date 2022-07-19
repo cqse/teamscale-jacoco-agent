@@ -117,6 +117,11 @@ public class AgentOptions {
 	/* package */ boolean shouldDumpOnExit = true;
 
 	/**
+	 * Whether to search directories and jar files recursively for git.properties files
+	 */
+	/* package */ boolean searchGitPropertiesRecursively = true;
+
+	/**
 	 * Whether to validate SSL certificates, defaults to true.
 	 */
 	/* package */ boolean validateSsl = true;
@@ -415,7 +420,7 @@ public class AgentOptions {
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 		GitPropertiesLocator<ProjectRevision> locator = new GitPropertiesLocator<>(uploader,
-				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties);
+				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}
@@ -423,7 +428,8 @@ public class AgentOptions {
 	private IUploader createDelayedMultiProjectTeamscaleUploader(Instrumentation instrumentation) {
 		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader((project, revision) ->
 				new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
-		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader);
+		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
+				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}
@@ -435,8 +441,9 @@ public class AgentOptions {
 					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles);
 				}, outputDirectory);
 		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
-				(file, isJarFile) -> ArtifactoryConfig.parseGitProperties(
-						file, artifactoryConfig.gitPropertiesCommitTimeFormat));
+				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
+						file, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
+				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}
@@ -557,6 +564,13 @@ public class AgentOptions {
 	/** Whether coverage should be dumped on JVM shutdown. */
 	public boolean shouldDumpOnExit() {
 		return shouldDumpOnExit;
+	}
+
+	/**
+	 * Whether to search directories and jar files recursively for git.properties files
+	 */
+	public boolean isSearchGitPropertiesRecursively() {
+		return searchGitPropertiesRecursively;
 	}
 
 	/** @see TestImpactConfig#testwiseCoverageMode */

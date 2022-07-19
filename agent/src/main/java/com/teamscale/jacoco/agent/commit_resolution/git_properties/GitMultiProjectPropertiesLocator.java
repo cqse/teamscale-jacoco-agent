@@ -24,17 +24,21 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	private final Executor executor;
 	private final DelayedTeamscaleMultiProjectUploader uploader;
 
-	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader) {
+	private final boolean recursiveSearch;
+
+	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, boolean recursiveSearch) {
 		// using a single threaded executor allows this class to be lock-free
 		this(uploader, Executors
 				.newSingleThreadExecutor(
 						new DaemonThreadFactory(GitMultiProjectPropertiesLocator.class,
-								"git.properties Jar scanner thread")));
+								"git.properties Jar scanner thread")), recursiveSearch);
 	}
 
-	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, Executor executor) {
+	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, Executor executor,
+											boolean recursiveSearch) {
 		this.uploader = uploader;
 		this.executor = executor;
+		this.recursiveSearch = recursiveSearch;
 	}
 
 	/**
@@ -50,7 +54,8 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 		try {
 			List<ProjectRevision> projectRevisions = GitPropertiesLocatorUtils.getProjectRevisionsFromGitProperties(
 					file,
-					isJarFile);
+					isJarFile,
+					recursiveSearch);
 			if (projectRevisions.isEmpty()) {
 				logger.debug("No git.properties file found in {}", file);
 				return;

@@ -52,8 +52,9 @@ public class GitPropertiesLocatorUtils {
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
 	public static List<String> getRevisionsFromGitProperties(
-			File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException {
-		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile);
+			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
+		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
+				recursiveSearch);
 		List<String> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			result.add(getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_GIT_COMMIT_ID,
@@ -157,8 +158,9 @@ public class GitPropertiesLocatorUtils {
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
 	public static List<ProjectRevision> getProjectRevisionsFromGitProperties(
-			File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException {
-		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile);
+			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
+		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
+				recursiveSearch);
 		List<ProjectRevision> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			String revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
@@ -177,38 +179,57 @@ public class GitPropertiesLocatorUtils {
 
 	/**
 	 * Returns pairs of paths to git.properties files and their parsed properties found in the provided folder or
-	 * archive file. Nested jar files will also be searched recursively. // TODO adapt if feature toggled
+	 * archive file. Nested jar files will also be searched recursively if specified.
 	 */
 	public static List<Pair<String, Properties>> findGitPropertiesInFile(
-			File file, boolean isJarFile) throws IOException {
+			File file, boolean isJarFile, boolean recursiveSearch) throws IOException {
 		if (isJarFile) {
-			return findGitPropertiesInArchiveFile(file);
+			return findGitPropertiesInArchiveFile(file, recursiveSearch);
 		}
-		return findGitPropertiesInDirectoryFile(file);
+		return findGitPropertiesInDirectoryFile(file, recursiveSearch);
 	}
 
-	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file) throws IOException {
+	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file,
+																				 boolean recursiveSearch) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(Files.newInputStream(file.toPath())))) {
-			return findGitPropertiesInArchive(jarStream, file.getName());
+			return findGitPropertiesInArchive(jarStream, file.getName(), recursiveSearch);
 		} catch (IOException e) {
 			throw new IOException("Reading jar " + file.getAbsolutePath() + " for obtaining commit " +
 					"descriptor from git.properties failed", e);
 		}
 	}
 
-	// TODO hide recursive search behind feature toggle?
 	private static List<Pair<String, Properties>> findGitPropertiesInDirectoryFile(
+			File directoryFile, boolean recursiveSearch) throws IOException {
+		List<Pair<String, Properties>> result = new ArrayList<>();
+		result.addAll(findGitPropertiesInFolder(directoryFile));
+
+		if (recursiveSearch) {
+			result.addAll(findInJarFilesNestedGitPropertiesFilesInFolder(directoryFile));
+		}
+
+		return result;
+	}
+
+	private static List<Pair<String, Properties>> findInJarFilesNestedGitPropertiesFilesInFolder(
 			File directoryFile) throws IOException {
+		List<Pair<String, Properties>> result = new ArrayList<>();
+		List<File> jarFiles = FileSystemUtils.listFilesRecursively(directoryFile,
+				file -> file.getName().endsWith(JAR_FILE_ENDING));
+		for (File jarFile : jarFiles) {
+			JarInputStream is = new JarInputStream(Files.newInputStream(jarFile.toPath()));
+			String relativeFilePath = directoryFile.getName() + File.separator + directoryFile.toPath()
+					.relativize(jarFile.toPath());
+			result.addAll(findGitPropertiesInArchive(is, relativeFilePath, true));
+		}
+		return result;
+	}
+
+	private static List<Pair<String, Properties>> findGitPropertiesInFolder(File directoryFile) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
 		List<File> gitPropertiesFiles = FileSystemUtils.listFilesRecursively(directoryFile,
 				file -> file.getName().equalsIgnoreCase(GIT_PROPERTIES_FILE_NAME));
-		List<File> jarFiles = FileSystemUtils.listFilesRecursively(directoryFile,
-				file -> file.getName().endsWith(JAR_FILE_ENDING));
-		if (gitPropertiesFiles.isEmpty() && jarFiles.isEmpty()) {
-			return result;
-		}
-
 		for (File gitPropertiesFile : gitPropertiesFiles) {
 			try (InputStream is = Files.newInputStream(gitPropertiesFile.toPath())) {
 				Properties gitProperties = new Properties();
@@ -222,24 +243,15 @@ public class GitPropertiesLocatorUtils {
 								"descriptor from git.properties failed", e);
 			}
 		}
-
-		for (File jarFile : jarFiles) {
-			JarInputStream is = new JarInputStream(Files.newInputStream(jarFile.toPath()));
-			String relativeFilePath = directoryFile.getName() + File.separator + directoryFile.toPath()
-					.relativize(jarFile.toPath());
-			result.addAll(findGitPropertiesInArchive(is, relativeFilePath));
-		}
 		return result;
 	}
 
-	// TODO hide recursive search behind feature toggle?
-
 	/**
 	 * Returns pairs of paths to git.properties files and their parsed properties found in the provided JarInputStream.
-	 * Nested jar files will also be searched recursively. // TODO adapt if feature toggled
+	 * Nested jar files will also be searched recursively if specified.
 	 */
 	static List<Pair<String, Properties>> findGitPropertiesInArchive(
-			JarInputStream in, String archiveName) throws IOException {
+			JarInputStream in, String archiveName, boolean recursiveSearch) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
 		JarEntry entry;
 		boolean isEmpty = true;
@@ -251,8 +263,8 @@ public class GitPropertiesLocatorUtils {
 				Properties gitProperties = new Properties();
 				gitProperties.load(in);
 				result.add(Pair.createPair(fullEntryName, gitProperties));
-			} else if (entry.getName().endsWith(JAR_FILE_ENDING)) {
-				result.addAll(findGitPropertiesInArchive(new JarInputStream(in), fullEntryName));
+			} else if (entry.getName().endsWith(JAR_FILE_ENDING) && recursiveSearch) {
+				result.addAll(findGitPropertiesInArchive(new JarInputStream(in), fullEntryName, true));
 			}
 		}
 		if (isEmpty) {

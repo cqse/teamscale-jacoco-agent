@@ -31,21 +31,26 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	private final DelayedUploader<T> uploader;
 	private final DataExtractor<T> dataExtractor;
 
-	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor) {
+	private final boolean recursiveSearch;
+
+	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, boolean recursiveSearch) {
 		// using a single threaded executor allows this class to be lock-free
 		this(uploader, dataExtractor, Executors
-				.newSingleThreadExecutor(
-						new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")));
+						.newSingleThreadExecutor(
+								new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")),
+				recursiveSearch);
 	}
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} in order to test the asynchronous functionality
 	 * of this class.
 	 */
-	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, Executor executor) {
+	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, Executor executor,
+								boolean recursiveSearch) {
 		this.uploader = uploader;
 		this.dataExtractor = dataExtractor;
 		this.executor = executor;
+		this.recursiveSearch = recursiveSearch;
 	}
 
 	/**
@@ -59,7 +64,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	private void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching jar file {} for a single git.properties", file);
 		try {
-			List<T> data = dataExtractor.extractData(file, isJarFile);
+			List<T> data = dataExtractor.extractData(file, isJarFile, recursiveSearch);
 			if (data.isEmpty()) {
 				logger.debug("No git.properties files found in {}", file.toString());
 				return;
@@ -101,6 +106,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	@FunctionalInterface
 	public interface DataExtractor<T> {
 		/** Extracts data from the JAR. */
-		List<T> extractData(File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException;
+		List<T> extractData(File file, boolean isJarFile,
+							boolean recursiveSearch) throws IOException, InvalidGitPropertiesException;
 	}
 }
