@@ -43,18 +43,8 @@ public class GitPropertiesLocatorUtils {
 	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwea]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);
 
-	//TODO can we clean this up now? e.g. provide one regex for pruning paths
-	/** File ending of Java web archive packages */
-	public static final String WAR_FILE_ENDING = ".war";
-
-	/** File ending of Java enterprise archive packages */
-	public static final String EAR_FILE_ENDING = ".ear";
-
 	/** File ending of Java archive packages */
 	public static final String JAR_FILE_ENDING = ".jar";
-
-	/** File ending of Android archive packages */
-	public static final String AAR_FILE_ENDING = ".aar";
 
 	/**
 	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
@@ -87,7 +77,6 @@ public class GitPropertiesLocatorUtils {
 		String protocol = jarOrClassFolderUrl.getProtocol().toLowerCase();
 		switch (protocol) {
 			case "file":
-				// TODO in current Tomcat setup, only one git.properties file is found according to the log, Is there only one? or is there problem with log or the detection?
 				File jarOrClassFolderFile = new File(jarOrClassFolderUrl.toURI());
 				if (jarOrClassFolderFile.isDirectory() || org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
 						jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
@@ -107,7 +96,7 @@ public class GitPropertiesLocatorUtils {
 				// Example: war:file:/Users/example/apache-tomcat/webapps/demo.war*/WEB-INF/lib/demoLib-1.0-SNAPSHOT.jar
 				Matcher nestedMatcher = NESTED_JAR_REGEX.matcher(jarOrClassFolderUrl.toString());
 				if (nestedMatcher.matches()) {
-					return Pair.createPair(new File(nestedMatcher.group(1) + nestedMatcher.group(2)), true);
+					return Pair.createPair(new File(nestedMatcher.group(1)), true);
 				}
 				break;
 			case "vfs":
@@ -191,45 +180,10 @@ public class GitPropertiesLocatorUtils {
 	/** Returns a pair of the zipfile entry name and parsed properties, or null if no git.properties were found. */
 	public static List<Pair<String, Properties>> findGitPropertiesInFile(
 			File file, boolean isJarFile) throws IOException {
-		File rootFile = file;
-		String filePath = file.getPath();
-		// TODO this can be improved, just call a method that strips all after .ear,.war,.aar,.jar
-		if (isNestedInWar(filePath) || isNestedInEar(filePath) || isNestedInAar(filePath) || isNestedInFatJar(
-				filePath)) {
-			int firstPartEndIndex;
-			if (filePath.contains(WAR_FILE_ENDING)) {
-				firstPartEndIndex = filePath.indexOf(WAR_FILE_ENDING) + WAR_FILE_ENDING.length();
-			} else if (filePath.contains(EAR_FILE_ENDING)) {
-				firstPartEndIndex = filePath.indexOf(EAR_FILE_ENDING) + EAR_FILE_ENDING.length();
-			} else if (filePath.contains(AAR_FILE_ENDING)) {
-				firstPartEndIndex = filePath.indexOf(AAR_FILE_ENDING) + AAR_FILE_ENDING.length();
-			} else {
-				firstPartEndIndex = filePath.indexOf(JAR_FILE_ENDING) + JAR_FILE_ENDING.length();
-			}
-			String firstPart = filePath.substring(0, firstPartEndIndex);
-			rootFile = Paths.get(firstPart).toFile();
-		}
 		if (isJarFile) {
-			return findGitPropertiesInArchiveFile(rootFile);
+			return findGitPropertiesInArchiveFile(file);
 		}
-		return findGitPropertiesInDirectoryFile(rootFile);
-	}
-
-	private static boolean isNestedInWar(String filePath) {
-		return filePath.contains(WAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
-	}
-
-	private static boolean isNestedInFatJar(String filePath) {
-		return filePath.contains(JAR_FILE_ENDING) &&
-				filePath.indexOf(JAR_FILE_ENDING) != filePath.length() - JAR_FILE_ENDING.length();
-	}
-
-	private static boolean isNestedInEar(String filePath) {
-		return filePath.contains(EAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
-	}
-
-	private static boolean isNestedInAar(String filePath) {
-		return filePath.contains(AAR_FILE_ENDING) && filePath.endsWith(JAR_FILE_ENDING);
+		return findGitPropertiesInDirectoryFile(file);
 	}
 
 	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file) throws IOException {
@@ -258,7 +212,9 @@ public class GitPropertiesLocatorUtils {
 			try (InputStream is = Files.newInputStream(gitPropertiesFile.toPath())) {
 				Properties gitProperties = new Properties();
 				gitProperties.load(is);
-				result.add(Pair.createPair(gitPropertiesFile.getName(), gitProperties));
+				String relativeFilePath = directoryFile.getName() + File.separator + directoryFile.toPath()
+						.relativize(gitPropertiesFile.toPath());
+				result.add(Pair.createPair(relativeFilePath, gitProperties));
 			} catch (IOException e) {
 				throw new IOException(
 						"Reading directory " + gitPropertiesFile.getAbsolutePath() + " for obtaining commit " +
@@ -268,7 +224,9 @@ public class GitPropertiesLocatorUtils {
 
 		for (File jarFile : jarFiles) {
 			JarInputStream is = new JarInputStream(Files.newInputStream(jarFile.toPath()));
-			result.addAll(findGitPropertiesInArchive(is, jarFile.getName()));
+			String relativeFilePath = directoryFile.getName() + File.separator + directoryFile.toPath()
+					.relativize(jarFile.toPath());
+			result.addAll(findGitPropertiesInArchive(is, relativeFilePath));
 		}
 		return result;
 	}
