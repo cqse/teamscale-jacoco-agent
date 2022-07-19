@@ -65,8 +65,9 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 				return;
 			}
 			if (data.size() > 1) {
-				// TODO improve error message: User should remove teamscale project option to enable multi project upload
-				logger.debug("Multiple git.properties files found in {}", file.toString());
+				logger.debug("Multiple git.properties files found in {}", file.toString() +
+						". Uploading to multiple projects is not possible with the option teamscale-project.");
+
 				return;
 			}
 			T dataEntry = data.get(0);
