@@ -1,0 +1,58 @@
+import org.codehaus.plexus.util.Os
+
+class MavenExec extends Exec {
+	@TaskAction
+	void exec() {
+		def mavenExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvnw.cmd" : "./mvnw"
+		setExecutable(mavenExecutable)
+		workingDir('.')
+		super.exec()
+	}
+}
+
+task clean(type: MavenExec) {
+	args 'clean'
+}
+
+task build(type: MavenExec, dependsOn: ':agent:publishToMavenLocal') {
+	args 'verify', "-Drevision=${snapshotVersion}", "-Dteamscale.agent.version=${snapshotVersion}"
+}
+
+task publishToMavenLocal(type: MavenExec, dependsOn: ':agent:publishToMavenLocal') {
+	args 'install', "-Drevision=${snapshotVersion}", "-Dteamscale.agent.version=${snapshotVersion}"
+}
+
+if (project.hasProperty("sonatypeUsername") &&
+		project.hasProperty("sonatypePassword") &&
+		project.hasProperty("signing.keyId") &&
+		project.hasProperty("gpgDirectory")) {
+
+	task publishMavenPublicationToMavenRepository(type: MavenExec, dependsOn: [':agent:publishToMavenLocal']) {
+		doFirst {
+			file("/tmp/maven-settings.xml").write("""
+<settings>
+	<servers>
+		<server>
+			<id>sonatype-nexus-snapshots</id>
+			<username>${project.property("sonatypeUsername")}</username>
+			<password>${project.property("sonatypePassword")}</password>
+		</server>
+		<server>
+			<id>sonatype-nexus-staging</id>
+			<username>${project.property("sonatypeUsername")}</username>
+			<password>${project.property("sonatypePassword")}</password>
+		</server>
+	</servers>
+</settings>
+""")
+		}
+
+		args 'deploy', "-s", "/tmp/maven-settings.xml",
+				"-Drevision=${snapshotVersion}", "-Dteamscale.agent.version=${snapshotVersion}",
+				"-Dgpg.passphrase=${project.property("signing.password")}",
+				"-Dgpg.homedir=${project.property("gpgDirectory")}",
+				"-Dgpg.keyname=${project.property("signing.keyId")}",
+				"-DsecretKeyRingFile=${project.property("signing.secretKeyRingFile")}"
+
+	}
+}

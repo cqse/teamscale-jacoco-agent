@@ -92,6 +92,10 @@ public class AgentOptionsParser {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
 		String key = keyAndValue.getFirst();
 		String value = keyAndValue.getSecond();
+		if (key.startsWith("debug")) {
+			handleDebugOption(options, value);
+			return;
+		}
 		if (key.startsWith("jacoco-")) {
 			options.additionalJacocoOptions.add(key.substring(7), value);
 			return;
@@ -116,6 +120,17 @@ public class AgentOptionsParser {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
+	}
+
+	/** Parses and stores the debug logging file path if given. */
+	private void handleDebugOption(AgentOptions options, String value) {
+		if (value.equalsIgnoreCase("false")) {
+			return;
+		}
+		options.debugLogging = true;
+		if (!value.isEmpty() && !value.equalsIgnoreCase("true")) {
+			options.debugLogDirectory = Paths.get(value);
+		}
 	}
 
 	private Pair<String, String> parseOption(String optionPart) throws AgentOptionParseException {

@@ -2,6 +2,7 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
@@ -34,7 +35,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestwiseCoverageCollectingExecutionListener.class);
 
 	/** An API service to signal test start and end to the agent. */
-	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
+	private final List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
 
 	/** List of tests that have been executed, skipped or failed. */
 	private final List<TestExecution> testExecutions = new ArrayList<>();
@@ -105,19 +106,35 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 				return;
 			}
 
-			Optional<TestExecution> testExecution = getTestExecution(testDescriptor, testExecutionResult,
+			TestExecution testExecution = getTestExecution(testDescriptor, testExecutionResult,
 					uniformPath.get());
-			testExecution.ifPresent(testExecutions::add);
-			endTest(uniformPath.get());
+			if (testExecution != null) {
+				testExecutions.add(testExecution);
+			}
+			endTest(uniformPath.get(), testExecution);
 		} else {
 			testResultCache.put(testDescriptor.getUniqueId(), testExecutionResult);
+
+			if (isLastDescriptor(testDescriptor)) {
+				// this is the root node, i.e. test execution is completely finished now
+				endTestRun();
+			}
 		}
 
 		delegateEngineExecutionListener.executionFinished(testDescriptor, testExecutionResult);
 	}
 
-	private Optional<TestExecution> getTestExecution(TestDescriptor testDescriptor,
-													 TestExecutionResult testExecutionResult, String testUniformPath) {
+	private static boolean isLastDescriptor(TestDescriptor descriptor) {
+		return descriptor.isRoot() || descriptor.getParent().map(
+				TestwiseCoverageCollectingExecutionListener::isImpactedTestEngineDescriptor).orElse(false);
+	}
+
+	private static boolean isImpactedTestEngineDescriptor(TestDescriptor descriptor) {
+		return UniqueId.forEngine(ImpactedTestEngine.ENGINE_ID).equals(descriptor.getUniqueId());
+	}
+
+	private TestExecution getTestExecution(TestDescriptor testDescriptor,
+										   TestExecutionResult testExecutionResult, String testUniformPath) {
 		List<TestExecutionResult> testExecutionResults = getTestExecutionResults(testDescriptor, testExecutionResult);
 
 		long executionEndTime = System.currentTimeMillis();
@@ -153,30 +170,45 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		return testExecutionResults;
 	}
 
-	private void endTest(String testUniformPath) {
+	private void endTest(String testUniformPath, TestExecution testExecution) {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testFinished(testUniformPath).execute();
+				if (testExecution == null) {
+					apiService.testFinished(testUniformPath).execute();
+				} else {
+					apiService.testFinished(testUniformPath, testExecution).execute();
+				}
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
 		}
 	}
 
-	private Optional<TestExecution> buildTestExecution(String testUniformPath, long duration,
-													   Status status, String message) {
+	private void endTestRun() {
+		try {
+			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
+				apiService.testRunFinished().execute();
+			}
+		} catch (IOException e) {
+			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
+		}
+	}
+
+
+	private TestExecution buildTestExecution(String testUniformPath, long duration,
+											 Status status, String message) {
 		switch (status) {
 			case SUCCESSFUL:
-				return Optional.of(new TestExecution(testUniformPath, duration, ETestExecutionResult.PASSED));
+				return new TestExecution(testUniformPath, duration, ETestExecutionResult.PASSED);
 			case ABORTED:
-				return Optional.of(new TestExecution(testUniformPath, duration, ETestExecutionResult.ERROR,
-						message));
+				return new TestExecution(testUniformPath, duration, ETestExecutionResult.ERROR,
+						message);
 			case FAILED:
-				return Optional.of(new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE,
-						message));
+				return new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE,
+						message);
 			default:
 				LOGGER.error(() -> "Got unexpected test execution result status: " + status);
-				return Optional.empty();
+				return null;
 		}
 	}
 

@@ -55,8 +55,8 @@ public class LoggingUtils {
 	}
 
 	/**
-	 * Reconfigures the logger context to use the configuration XML from the given input stream.
-	 * C.f. https://logback.qos.ch/manual/configuration.html
+	 * Reconfigures the logger context to use the configuration XML from the given input stream. Cf. <a
+	 * href="https://logback.qos.ch/manual/configuration.html">https://logback.qos.ch/manual/configuration.html</a>
 	 */
 	private static void reconfigureLoggerContext(InputStream stream) {
 		LoggerContext loggerContext = getLoggerContext();
@@ -72,8 +72,8 @@ public class LoggingUtils {
 	}
 
 	/**
-	 * Initializes the logging from the given file. If that is <code>null</code>,
-	 * uses {@link #initializeDefaultLogging()} instead.
+	 * Initializes the logging from the given file. If that is <code>null</code>, uses {@link
+	 * #initializeDefaultLogging()} instead.
 	 */
 	public static LoggingResources initializeLogging(Path loggingConfigFile) throws IOException {
 		if (loggingConfigFile == null) {
@@ -81,6 +81,16 @@ public class LoggingUtils {
 		}
 
 		reconfigureLoggerContext(new FileInputStream(loggingConfigFile.toFile()));
+		return new LoggingResources();
+	}
+
+	/** Initializes debug logging. */
+	public static LoggingResources initializeDebugLogging(Path logDirectory) {
+		if (logDirectory != null) {
+			DebugLogDirectoryPropertyDefiner.filePath = logDirectory;
+		}
+		InputStream stream = Agent.class.getResourceAsStream("logback-default-debugging.xml");
+		reconfigureLoggerContext(stream);
 		return new LoggingResources();
 	}
 

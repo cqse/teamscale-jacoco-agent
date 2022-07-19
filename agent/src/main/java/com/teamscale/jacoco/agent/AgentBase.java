@@ -10,9 +10,11 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
+import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import com.teamscale.report.testwise.model.RevisionInfo;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.agent.rt.RT;
@@ -26,11 +28,14 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
- * JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
+ * {@link JacocoRuntimeController}.
  * <p>
  * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
@@ -100,10 +105,11 @@ public abstract class AgentBase {
 
 	/** Adds the endpoints that are available in the implemented mode. */
 	protected void initServerEndpoints(Service spark) {
-		spark.get("/partition", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
-		spark.get("/message", (request, response) ->
-				Optional.ofNullable(options.getTeamscaleServerOptions().getMessage()).orElse(""));
+		spark.get("/partition",
+				(request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
+		spark.get("/message",
+				(request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().getMessage())
+						.orElse(""));
 		spark.get("/revision", (request, response) -> this.getRevisionInfo());
 		spark.get("/commit", (request, response) -> this.getRevisionInfo());
 		spark.put("/partition", this::handleSetPartition);
@@ -119,6 +125,16 @@ public abstract class AgentBase {
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
+
+		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
+				s -> s.contains("-javaagent"));
+		if (javaAgents.size() > 1) {
+			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
+		}
+		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
+			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
+		}
+
 		try {
 			agentOptions = AgentOptionsParser.parse(options, delayedLogger);
 		} catch (AgentOptionParseException e) {
@@ -135,8 +151,7 @@ public abstract class AgentBase {
 			}
 		}
 
-		loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
-
+		initializeLogging(agentOptions, delayedLogger);
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 
@@ -144,16 +159,32 @@ public abstract class AgentBase {
 
 		logger.info("Starting JaCoCo's agent");
 		JacocoAgentBuilder agentBuilder = new JacocoAgentBuilder(agentOptions);
-		org.jacoco.agent.rt.internal_3570298.PreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation);
+		org.jacoco.agent.rt.internal_b6258fc.PreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation);
 
 		AgentBase agent = agentBuilder.createAgent(instrumentation);
 		agent.registerShutdownHook();
 	}
 
+	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
+	private static void initializeLogging(AgentOptions agentOptions, DelayedLogger logger) throws IOException {
+		if (agentOptions.isDebugLogging()) {
+			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
+			Path logDirectory = agentOptions.getDebugLogDirectory().resolve("logs");
+			if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
+				logger.info("Logging to " + logDirectory);
+			} else {
+				logger.warn("Could not create " + logDirectory + ". Logging to console only.");
+			}
+		} else {
+			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
+		}
+	}
+
 	/**
-	 * Initializes fallback logging in case of an error during the parsing of the options to {@link #premain(String,
-	 * Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use this and falls back to
-	 * the default logger.
+	 * Initializes fallback logging in case of an error during the parsing of the options to
+	 * {@link #premain(String, Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use
+	 * this and falls back to the default logger.
 	 */
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {
@@ -165,8 +196,8 @@ public abstract class AgentBase {
 				String configFileValue = optionPart.split("=", 2)[1];
 				Optional<String> loggingConfigLine = Optional.empty();
 				try {
-					File configFile = new FilePatternResolver(delayedLogger)
-							.parsePath(AgentOptionsParser.CONFIG_FILE_OPTION, configFileValue).toFile();
+					File configFile = new FilePatternResolver(delayedLogger).parsePath(
+							AgentOptionsParser.CONFIG_FILE_OPTION, configFileValue).toFile();
 					loggingConfigLine = FileSystemUtils.readLinesUTF8(configFile).stream()
 							.filter(line -> line.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "="))
 							.findFirst();
@@ -186,8 +217,9 @@ public abstract class AgentBase {
 	/** Creates a fallback logger using the given config file. */
 	private static LoggingResources createFallbackLoggerFromConfig(String configLocation, DelayedLogger delayedLogger) {
 		try {
-			return LoggingUtils.initializeLogging(new FilePatternResolver(delayedLogger)
-					.parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION, configLocation));
+			return LoggingUtils.initializeLogging(
+					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
+							configLocation));
 		} catch (IOException | AgentOptionParseException e) {
 			String message = "Failed to load log configuration from location " + configLocation + ": " + e.getMessage();
 			delayedLogger.error(message, e);

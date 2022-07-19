@@ -264,8 +264,9 @@ public class AgentOptionsTest {
 	public void testArtifactoryApiKeyOptionIsCorrectlyParsed() throws AgentOptionParseException {
 		String someArtifactoryApiKey = "some_api_key";
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
-				String.format("%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
-						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, someArtifactoryApiKey));
+				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
+						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, someArtifactoryApiKey,
+						ArtifactoryConfig.ARTIFACTORY_PARTITION, "partition"));
 		assertThat(agentOptions.artifactoryConfig.apiKey).isEqualTo(someArtifactoryApiKey);
 	}
 
@@ -280,6 +281,7 @@ public class AgentOptionsTest {
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.user = "user";
 		agentOptions.artifactoryConfig.password = "password";
+		agentOptions.artifactoryConfig.partition = "partition";
 		assertThat(agentOptions.getValidator().isValid()).isTrue();
 	}
 
@@ -293,6 +295,7 @@ public class AgentOptionsTest {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.apiKey = "api_key";
+		agentOptions.artifactoryConfig.partition = "partition";
 		assertThat(agentOptions.getValidator().isValid()).isTrue();
 	}
 

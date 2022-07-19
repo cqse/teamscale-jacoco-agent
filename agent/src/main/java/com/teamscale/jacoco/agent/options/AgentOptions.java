@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.client.EReportFormat;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
@@ -78,6 +79,12 @@ public class AgentOptions {
 	 * The original options passed to the agent.
 	 */
 	/* package */ String originalOptionsString;
+
+	/** Whether debug logging is active or not. */
+	/* package */ boolean debugLogging = false;
+
+	/** Explicitly defined log file. */
+	/* package */ Path debugLogDirectory = null;
 
 	/**
 	 * The directories and/or zips that contain all class files being profiled. Never null. If this is empty, classes
@@ -193,6 +200,16 @@ public class AgentOptions {
 		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
 	}
 
+	/** @see #debugLogging */
+	public boolean isDebugLogging() {
+		return debugLogging;
+	}
+
+	/** @see #debugLogDirectory */
+	public Path getDebugLogDirectory() {
+		return debugLogDirectory;
+	}
+
 	/**
 	 * @see #originalOptionsString
 	 */
@@ -204,7 +221,8 @@ public class AgentOptions {
 	 * Remove parts of the API key for security reasons from the options string. String is used for logging purposes.
 	 * <p>
 	 * Given, for example, "config-file=jacocoagent.properties,teamscale-access-token=unlYgehaYYYhbPAegNWV3WgjOzxkmNHn"
-	 * we produce a string with obfuscation: "config-file=jacocoagent.properties,teamscale-access-token=************mNHn"
+	 * we produce a string with obfuscation:
+	 * "config-file=jacocoagent.properties,teamscale-access-token=************mNHn"
 	 */
 	public String getObfuscatedOptionsString() {
 		if (getOriginalOptionsString() == null) {
@@ -294,8 +312,9 @@ public class AgentOptions {
 		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
 				String.format("If you want to upload data to Artifactory you need to provide " +
-								"'%s', and an authentication method (either '%s' and '%s' or '%s') ",
+								"'%s', '%s' and an authentication method (either '%s' and '%s' or '%s') ",
 						ArtifactoryConfig.ARTIFACTORY_URL_OPTION,
+						ArtifactoryConfig.ARTIFACTORY_PARTITION,
 						ArtifactoryConfig.ARTIFACTORY_USER_OPTION, ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION,
 						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION));
 
@@ -388,7 +407,7 @@ public class AgentOptions {
 				return createDelayedArtifactoryUploader(instrumentation);
 			}
 			return new ArtifactoryUploader(artifactoryConfig,
-					additionalMetaDataFiles);
+					additionalMetaDataFiles, getReportFormat());
 		}
 
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
@@ -438,7 +457,8 @@ public class AgentOptions {
 		DelayedUploader<ArtifactoryConfig.CommitInfo> uploader = new DelayedUploader<>(
 				commitInfo -> {
 					artifactoryConfig.commitInfo = commitInfo;
-					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles);
+					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles,
+							getReportFormat());
 				}, outputDirectory);
 		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
 				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
@@ -455,6 +475,13 @@ public class AgentOptions {
 		instrumentation.addTransformer(new NwdiMarkerClassLocatingTransformer(uploader, getLocationIncludeFilter(),
 				sapNetWeaverJavaApplications.getApplications()));
 		return uploader;
+	}
+
+	private EReportFormat getReportFormat() {
+		if (useTestwiseCoverageMode()) {
+			return EReportFormat.TESTWISE_COVERAGE;
+		}
+		return EReportFormat.JACOCO;
 	}
 
 	/**

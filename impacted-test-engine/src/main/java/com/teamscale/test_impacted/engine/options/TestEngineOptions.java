@@ -14,6 +14,8 @@ import okhttp3.HttpUrl;
 import org.junit.platform.engine.TestEngine;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -194,8 +196,12 @@ public class TestEngineOptions {
 					"Agent urls may be empty but not null.");
 			TestEngineOptionUtils.assertNotNull(testEngineOptions.reportDirectory, "Report directory must be set.");
 			if (!testEngineOptions.reportDirectory.isDirectory() || !testEngineOptions.reportDirectory.canWrite()) {
-				throw new AssertionError(
-						"Report directory must be readable directory: " + testEngineOptions.reportDirectory);
+				try {
+					Files.createDirectories(testEngineOptions.reportDirectory.toPath());
+				} catch (IOException e) {
+					throw new AssertionError(
+							"Report directory could not be created: " + testEngineOptions.reportDirectory, e);
+				}
 			}
 			return testEngineOptions;
 		}

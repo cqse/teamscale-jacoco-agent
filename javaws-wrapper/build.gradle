@@ -10,7 +10,7 @@ plugins {
 }
 
 dependencies {
-	implementation 'com.teamscale:teamscale-lib-commons:7.6.1'
+	implementation 'com.teamscale:teamscale-lib-commons:7.8.4'
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
 	implementation 'org.apache.commons:commons-exec:1.3'
 }

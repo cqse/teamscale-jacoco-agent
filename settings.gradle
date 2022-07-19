@@ -1,6 +1,6 @@
 pluginManagement {
 	plugins {
-		id 'com.github.ben-manes.versions' version '0.38.0'
+		id 'com.github.ben-manes.versions' version '0.42.0'
 		id 'de.fntsoftware.gradle.markdown-to-pdf' version '1.1.0'
 	}
 }
@@ -8,7 +8,6 @@ pluginManagement {
 /*
  * The settings file is used to specify which projects to include in your build.
  */
-
 include ':agent'
 include ':javaws-wrapper'
 include ':report-generator'
@@ -24,4 +23,10 @@ include ':system-tests:default-excludes-test'
 include ':system-tests:http-redirect-test'
 include ':system-tests:tia-client-tia-mode-http'
 include ':system-tests:junit-run-listener-test'
+include ':system-tests:debug-logging-test'
+include ':system-tests:tia-maven'
+include ':system-tests:multiple-agents-test'
 include ':sample-debugging-app'
+include ':teamscale-surefire-provider'
+include ':system-tests:mutliple-agents-test'
+include ':teamscale-maven-plugin'

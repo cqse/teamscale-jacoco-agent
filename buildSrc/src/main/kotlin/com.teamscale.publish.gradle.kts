@@ -23,16 +23,21 @@ publishing {
         create<MavenPublication>("maven") {
             extension.applyTo(this)
 
-            pluginManager.withPlugin("java-library") {
-                from(components["java"])
-            }
-
             val publication = this
+            var hasShadow = false
             pluginManager.withPlugin("com.github.johnrengelman.shadow") {
                 val shadowExtension = extensions.getByName<ShadowExtension>("shadow")
                 shadowExtension.component(publication)
                 artifact(tasks["sourcesJar"])
                 artifact(tasks["javadocJar"])
+                hasShadow = true
+            }
+
+            // we do not want to publish both the shadow and the normal jar (this causes errors during publishing)
+            if (!hasShadow) {
+                pluginManager.withPlugin("java-library") {
+                    from(components["java"])
+                }
             }
         }
     }
