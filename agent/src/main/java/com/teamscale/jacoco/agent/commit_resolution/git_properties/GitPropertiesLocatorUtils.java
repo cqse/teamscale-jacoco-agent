@@ -189,6 +189,9 @@ public class GitPropertiesLocatorUtils {
 		return findGitPropertiesInDirectoryFile(file, recursiveSearch);
 	}
 
+	/**
+	 * Searches for git properties in jar/war/ear/aar files
+	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file,
 																				 boolean recursiveSearch) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
@@ -200,6 +203,11 @@ public class GitPropertiesLocatorUtils {
 		}
 	}
 
+	/**
+	 * Searches for git.properties file in the given folder
+	 *
+	 * @param recursiveSearch If enabled, git.properties files will also be searched in jar files
+	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInDirectoryFile(
 			File directoryFile, boolean recursiveSearch) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
@@ -212,6 +220,9 @@ public class GitPropertiesLocatorUtils {
 		return result;
 	}
 
+	/**
+	 * Finds all jar files in the given folder and searches them recursively for git.properties
+	 */
 	private static List<Pair<String, Properties>> findInJarFilesNestedGitPropertiesFilesInFolder(
 			File directoryFile) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
@@ -226,6 +237,9 @@ public class GitPropertiesLocatorUtils {
 		return result;
 	}
 
+	/**
+	 * Searches for git.properties files in the given folder
+	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInFolder(File directoryFile) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
 		List<File> gitPropertiesFiles = FileSystemUtils.listFilesRecursively(directoryFile,
