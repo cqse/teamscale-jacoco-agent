@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
  * e.g. to Teamscale, via a {@link DelayedUploader}.
  */
-public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
+public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocator {
 
 	/** The git.properties key that holds the commit time. */
 	public static final String GIT_PROPERTIES_GIT_COMMIT_TIME = "git.commit.time";
@@ -23,7 +23,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	/** The git.properties key that holds the commit branch. */
 	public static final String GIT_PROPERTIES_GIT_BRANCH = "git.branch";
 
-	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
+	private final Logger logger = LoggingUtils.getLogger(GitSingleProjectPropertiesLocator.class);
 	private final Executor executor;
 	private T foundData = null;
 	private File jarFileWithGitProperties = null;
@@ -33,11 +33,11 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 
 	private final boolean recursiveSearch;
 
-	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, boolean recursiveSearch) {
+	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, boolean recursiveSearch) {
 		// using a single threaded executor allows this class to be lock-free
 		this(uploader, dataExtractor, Executors
 						.newSingleThreadExecutor(
-								new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")),
+								new DaemonThreadFactory(GitSingleProjectPropertiesLocator.class, "git.properties Jar scanner thread")),
 				recursiveSearch);
 	}
 
@@ -45,8 +45,8 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	 * Visible for testing. Allows tests to control the {@link Executor} in order to test the asynchronous functionality
 	 * of this class.
 	 */
-	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, Executor executor,
-								boolean recursiveSearch) {
+	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, Executor executor,
+											 boolean recursiveSearch) {
 		this.uploader = uploader;
 		this.dataExtractor = dataExtractor;
 		this.executor = executor;

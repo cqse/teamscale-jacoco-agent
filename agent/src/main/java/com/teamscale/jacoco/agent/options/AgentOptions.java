@@ -13,8 +13,8 @@ import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitMultiProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatingTransformer;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocatingTransformer;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
@@ -438,7 +438,7 @@ public class AgentOptions {
 					teamscaleServer.revision = projectRevision.getRevision();
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
-		GitPropertiesLocator<ProjectRevision> locator = new GitPropertiesLocator<>(uploader,
+		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
@@ -460,7 +460,8 @@ public class AgentOptions {
 					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles,
 							getReportFormat());
 				}, outputDirectory);
-		GitPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitPropertiesLocator<>(uploader,
+		GitSingleProjectPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
+				uploader,
 				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
 						file, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
 				this.searchGitPropertiesRecursively);

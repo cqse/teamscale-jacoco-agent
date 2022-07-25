@@ -2,8 +2,8 @@ package com.teamscale.jacoco.agent.upload.artifactory;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -214,9 +214,11 @@ public class ArtifactoryConfig {
 					.getGitPropertiesValue(properties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
 							jarFile);
 			String branchName = GitPropertiesLocatorUtils
-					.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH, entry, jarFile);
+					.getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH,
+							entry, jarFile);
 			long timestamp = ZonedDateTime.parse(GitPropertiesLocatorUtils
-							.getGitPropertiesValue(properties, GitPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME, entry,
+							.getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME,
+									entry,
 									jarFile),
 					gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
 			result.add(new CommitInfo(revision, new CommitDescriptor(branchName, timestamp)));
