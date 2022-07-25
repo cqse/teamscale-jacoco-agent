@@ -214,7 +214,7 @@ public class GitPropertiesLocatorUtils {
 		result.addAll(findGitPropertiesInFolder(directoryFile));
 
 		if (recursiveSearch) {
-			result.addAll(findInJarFilesNestedGitPropertiesFilesInFolder(directoryFile));
+			result.addAll(findGitPropertiesInNestedJarFiles(directoryFile));
 		}
 
 		return result;
@@ -223,7 +223,7 @@ public class GitPropertiesLocatorUtils {
 	/**
 	 * Finds all jar files in the given folder and searches them recursively for git.properties
 	 */
-	private static List<Pair<String, Properties>> findInJarFilesNestedGitPropertiesFilesInFolder(
+	private static List<Pair<String, Properties>> findGitPropertiesInNestedJarFiles(
 			File directoryFile) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
 		List<File> jarFiles = FileSystemUtils.listFilesRecursively(directoryFile,
