@@ -33,11 +33,13 @@ public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocat
 
 	private final boolean recursiveSearch;
 
-	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, boolean recursiveSearch) {
+	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor,
+											 boolean recursiveSearch) {
 		// using a single threaded executor allows this class to be lock-free
 		this(uploader, dataExtractor, Executors
 						.newSingleThreadExecutor(
-								new DaemonThreadFactory(GitSingleProjectPropertiesLocator.class, "git.properties Jar scanner thread")),
+								new DaemonThreadFactory(GitSingleProjectPropertiesLocator.class,
+										"git.properties Jar scanner thread")),
 				recursiveSearch);
 	}
 
@@ -45,7 +47,8 @@ public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocat
 	 * Visible for testing. Allows tests to control the {@link Executor} in order to test the asynchronous functionality
 	 * of this class.
 	 */
-	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, Executor executor,
+	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor,
+											 Executor executor,
 											 boolean recursiveSearch) {
 		this.uploader = uploader;
 		this.dataExtractor = dataExtractor;
@@ -70,16 +73,15 @@ public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocat
 				return;
 			}
 			if (data.size() > 1) {
-				logger.debug("Multiple git.properties files found in {}", file.toString() +
-						". Uploading to multiple projects is not possible with the option teamscale-project.");
+				logger.warn("Multiple git.properties files found in {}", file.toString() +
+						". Using the first one: " + data.get(0));
 
-				return;
 			}
 			T dataEntry = data.get(0);
 
 			if (foundData != null) {
 				if (!foundData.equals(dataEntry)) {
-					logger.error(
+					logger.warn(
 							"Found inconsistent git.properties files: {} contained data {} while {} contained {}." +
 									" Please ensure that all git.properties files of your application are consistent." +
 									" Otherwise, you may" +
