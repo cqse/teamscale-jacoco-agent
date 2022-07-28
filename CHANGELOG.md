@@ -5,7 +5,10 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # next release
- - [fix] Find git.properties files recursively in folders, all types of archive files (jar, war, ear, aar, ...) and arbitrary depth. This was only possible for nested jar and war files and up to nesting depth 1. If you'd like to disable recursive search, e.g. due to performance issues, please use `search-git-properties-recursively=false`.
+
+# 25.0.0
+ - [breaking] Find git.properties files recursively in folders, all types of archive files (jar, war, ear, aar, ...) and arbitrary depth. This was only possible for nested jar and war files and up to nesting depth 1. If you'd like to disable recursive search, e.g. due to performance issues, please use `search-git-properties-recursively=false`.  
+  Note: This is not actually a breaking change but if you profile large projects and don't use the multi-project upload, you might want to disable recursive search.
 
 # 24.1.1
 
