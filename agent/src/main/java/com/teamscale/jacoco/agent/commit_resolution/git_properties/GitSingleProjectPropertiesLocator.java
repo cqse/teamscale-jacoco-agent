@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -14,7 +15,7 @@ import java.util.concurrent.Executors;
  * Searches a Jar/War/Ear/... file for a git.properties file in order to enable upload for the commit described therein,
  * e.g. to Teamscale, via a {@link DelayedUploader}.
  */
-public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
+public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocator {
 
 	/** The git.properties key that holds the commit time. */
 	public static final String GIT_PROPERTIES_GIT_COMMIT_TIME = "git.commit.time";
@@ -22,7 +23,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	/** The git.properties key that holds the commit branch. */
 	public static final String GIT_PROPERTIES_GIT_BRANCH = "git.branch";
 
-	private final Logger logger = LoggingUtils.getLogger(GitPropertiesLocator.class);
+	private final Logger logger = LoggingUtils.getLogger(GitSingleProjectPropertiesLocator.class);
 	private final Executor executor;
 	private T foundData = null;
 	private File jarFileWithGitProperties = null;
@@ -30,21 +31,29 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	private final DelayedUploader<T> uploader;
 	private final DataExtractor<T> dataExtractor;
 
-	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor) {
+	private final boolean recursiveSearch;
+
+	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor,
+											 boolean recursiveSearch) {
 		// using a single threaded executor allows this class to be lock-free
 		this(uploader, dataExtractor, Executors
-				.newSingleThreadExecutor(
-						new DaemonThreadFactory(GitPropertiesLocator.class, "git.properties Jar scanner thread")));
+						.newSingleThreadExecutor(
+								new DaemonThreadFactory(GitSingleProjectPropertiesLocator.class,
+										"git.properties Jar scanner thread")),
+				recursiveSearch);
 	}
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} in order to test the asynchronous functionality
 	 * of this class.
 	 */
-	public GitPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor, Executor executor) {
+	public GitSingleProjectPropertiesLocator(DelayedUploader<T> uploader, DataExtractor<T> dataExtractor,
+											 Executor executor,
+											 boolean recursiveSearch) {
 		this.uploader = uploader;
 		this.dataExtractor = dataExtractor;
 		this.executor = executor;
+		this.recursiveSearch = recursiveSearch;
 	}
 
 	/**
@@ -58,15 +67,21 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	private void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching jar file {} for a single git.properties", file);
 		try {
-			T data = dataExtractor.extractData(file, isJarFile);
-			if (data == null) {
-				logger.debug("No git.properties file found in {}", file.toString());
+			List<T> data = dataExtractor.extractData(file, isJarFile, recursiveSearch);
+			if (data.isEmpty()) {
+				logger.debug("No git.properties files found in {}", file.toString());
 				return;
 			}
+			if (data.size() > 1) {
+				logger.warn("Multiple git.properties files found in {}", file.toString() +
+						". Using the first one: " + data.get(0));
+
+			}
+			T dataEntry = data.get(0);
 
 			if (foundData != null) {
-				if (!foundData.equals(data)) {
-					logger.error(
+				if (!foundData.equals(dataEntry)) {
+					logger.warn(
 							"Found inconsistent git.properties files: {} contained data {} while {} contained {}." +
 									" Please ensure that all git.properties files of your application are consistent." +
 									" Otherwise, you may" +
@@ -80,10 +95,10 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 			}
 
 			logger.debug("Found git.properties file in {} and found commit descriptor {}", file.toString(),
-					data);
-			foundData = data;
+					dataEntry);
+			foundData = dataEntry;
 			jarFileWithGitProperties = file;
-			uploader.setCommitAndTriggerAsynchronousUpload(data);
+			uploader.setCommitAndTriggerAsynchronousUpload(dataEntry);
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", file.toString(), e);
 		}
@@ -93,6 +108,7 @@ public class GitPropertiesLocator<T> implements IGitPropertiesLocator {
 	@FunctionalInterface
 	public interface DataExtractor<T> {
 		/** Extracts data from the JAR. */
-		T extractData(File file, boolean isJarFile) throws IOException, InvalidGitPropertiesException;
+		List<T> extractData(File file, boolean isJarFile,
+							boolean recursiveSearch) throws IOException, InvalidGitPropertiesException;
 	}
 }
