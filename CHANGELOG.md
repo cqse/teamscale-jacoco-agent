@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+- [fix] _impacted-test-engine_: Handle tests with trailing whitespaces correctly
+
 # 24.1.1
 
 - [fix] Maven plugin for TIA: sometimes the agent was not attached to a Spring Boot application during integration tests

@@ -16,7 +16,7 @@ public abstract class JUnitTestDescriptorResolverBase implements ITestDescriptor
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
 		return getClassName(testDescriptor).map(className -> {
 			String classNameUniformPath = className.replace(".", "/");
-			return classNameUniformPath + "/" + testDescriptor.getLegacyReportingName();
+			return classNameUniformPath + "/" + testDescriptor.getLegacyReportingName().trim();
 		});
 	}
 
