@@ -26,8 +26,8 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the {@link
- * #testRunStart(List, boolean, boolean, boolean, String)} event by retrieving tests to run from Teamscale.
+ * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the
+ * {@link #testRunStart(List, boolean, boolean, boolean, String)} event by retrieving tests to run from Teamscale.
  */
 public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
@@ -79,7 +79,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 		if (availableTests.stream().noneMatch(test -> test.uniformPath.equals(uniformPath))) {
 			// ensure that we can at least generate a report for the tests that were actually run,
 			// even if the caller did not provide a list of tests up-front in testRunStart
-			availableTests.add(new ClusteredTestDetails(uniformPath, uniformPath, null, null));
+			availableTests.add(new ClusteredTestDetails(uniformPath, uniformPath, null, null, null));
 		}
 	}
 

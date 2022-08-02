@@ -37,12 +37,15 @@ class InternalImpactedTestEngine {
 
 	private final TestDataWriter testDataWriter;
 
+	private final String partition;
+
 	InternalImpactedTestEngine(TestEngineRegistry testEngineRegistry,
 							   ITestExecutor testExecutor,
-							   TestDataWriter testDataWriter) {
+							   TestDataWriter testDataWriter, String partition) {
 		this.testEngineRegistry = testEngineRegistry;
 		this.testExecutor = testExecutor;
 		this.testDataWriter = testDataWriter;
+		this.partition = partition;
 	}
 
 	/**
@@ -69,8 +72,8 @@ class InternalImpactedTestEngine {
 	}
 
 	/**
-	 * Executes the request by requesting execution of the {@link TestDescriptor} children aggregated in {@link
-	 * #discover(EngineDiscoveryRequest, UniqueId)} with the corresponding {@link TestEngine}.
+	 * Executes the request by requesting execution of the {@link TestDescriptor} children aggregated in
+	 * {@link #discover(EngineDiscoveryRequest, UniqueId)} with the corresponding {@link TestEngine}.
 	 */
 	void execute(ExecutionRequest request) {
 		EngineExecutionListener engineExecutionListener = request.getEngineExecutionListener();
@@ -99,7 +102,7 @@ class InternalImpactedTestEngine {
 
 			TestEngine testEngine = testEngineRegistry.getTestEngine(engineId.get());
 			AvailableTests availableTestsForEngine = TestDescriptorUtils
-					.getAvailableTests(testEngine, engineTestDescriptor);
+					.getAvailableTests(testEngine, engineTestDescriptor, partition);
 			TestExecutorRequest testExecutorRequest = new TestExecutorRequest(testEngine, engineTestDescriptor,
 					request.getEngineExecutionListener(), request.getConfigurationParameters());
 			List<TestExecution> testExecutionsOfEngine = testExecutor.execute(testExecutorRequest);

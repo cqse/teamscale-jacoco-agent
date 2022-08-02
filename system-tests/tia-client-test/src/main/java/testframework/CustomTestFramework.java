@@ -41,7 +41,7 @@ public class CustomTestFramework {
 	public void runTestsWithTia() throws AgentHttpRequestFailedException {
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + agentPort));
 		TestRunWithClusteredSuggestions testRun = agent.startTestRun(
-				allTests.keySet().stream().map(name -> new ClusteredTestDetails(name, name, null, null))
+				allTests.keySet().stream().map(name -> new ClusteredTestDetails(name, name, null, null, null))
 						.collect(toList()));
 
 		for (PrioritizableTestCluster cluster : testRun.getPrioritizedClusters()) {

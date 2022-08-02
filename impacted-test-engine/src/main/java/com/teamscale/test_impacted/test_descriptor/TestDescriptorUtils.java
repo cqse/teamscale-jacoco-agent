@@ -56,7 +56,8 @@ public class TestDescriptorUtils {
 	 * <p>
 	 * An example of a {@link UniqueId} of the {@link TestDescriptor} is:
 	 * <p>
-	 * {@code [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]}
+	 * {@code
+	 * [engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]}
 	 */
 	public static boolean isTestTemplateOrTestFactory(TestDescriptor testDescriptor) {
 		if (testDescriptor == null) {
@@ -105,7 +106,8 @@ public class TestDescriptorUtils {
 	}
 
 	/** Returns the {@link AvailableTests} contained within the root {@link TestDescriptor}. */
-	public static AvailableTests getAvailableTests(TestEngine testEngine, TestDescriptor rootTestDescriptor) {
+	public static AvailableTests getAvailableTests(TestEngine testEngine, TestDescriptor rootTestDescriptor,
+												   String partition) {
 		AvailableTests availableTests = new AvailableTests();
 		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
 				.getTestDescriptorResolver(testEngine);
@@ -128,7 +130,7 @@ public class TestDescriptorUtils {
 					}
 
 					ClusteredTestDetails testDetails = new ClusteredTestDetails(uniformPath.get(), source, null,
-							clusterId.get());
+							clusterId.get(), partition);
 					availableTests.add(testDescriptor.getUniqueId(), testDetails);
 				});
 

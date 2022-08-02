@@ -81,6 +81,11 @@ public class TestEngineOptions {
 		return includeFailedAndSkipped;
 	}
 
+	/** @see #partition */
+	public String getPartition() {
+		return partition;
+	}
+
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
 		ITestExecutor testExecutor = createTestExecutor();
 		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(testEngineIds);

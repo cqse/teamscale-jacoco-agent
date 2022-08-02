@@ -85,7 +85,8 @@ public class CoverageToTeamscaleStrategyTest {
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		strategy.testRunStart(
-				Collections.singletonList(new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
+				Collections.singletonList(
+						new ClusteredTestDetails("mytest", "mytest", "content", "cluster", "partition")), false,
 				true, true,
 				null);
 		strategy.testStart("mytest");

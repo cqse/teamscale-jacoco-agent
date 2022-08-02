@@ -147,7 +147,10 @@ public class TeamscaleClient {
 					.getImpactedTests(projectId, baseline, endCommit, partitions,
 							includeNonImpacted,
 							includeFailedAndSkipped,
-							ensureProcessed, includeAddedTests, availableTests)
+							ensureProcessed, includeAddedTests, availableTests.stream()
+									.map(clusteredTestDetails -> TestWithClusterId.fromClusteredTestDetails(
+											clusteredTestDetails)).collect(
+											Collectors.toList()))
 					.execute();
 		}
 	}

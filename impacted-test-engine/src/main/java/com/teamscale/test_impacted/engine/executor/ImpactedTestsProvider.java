@@ -27,7 +27,10 @@ public class ImpactedTestsProvider {
 
 	private final CommitDescriptor endCommit;
 
-	private final String partition;
+	/**
+	 * The partition for the tests provided.
+	 */
+	public final String partition;
 
 	private final boolean includeNonImpacted;
 
@@ -36,7 +39,8 @@ public class ImpactedTestsProvider {
 	private final boolean includeFailedAndSkipped;
 
 	public ImpactedTestsProvider(TeamscaleClient client, String baseline, CommitDescriptor endCommit, String partition,
-								 boolean includeNonImpacted, boolean includeAddedTests, boolean includeFailedAndSkipped) {
+								 boolean includeNonImpacted, boolean includeAddedTests,
+								 boolean includeFailedAndSkipped) {
 		this.client = client;
 		this.baseline = baseline;
 		this.endCommit = endCommit;

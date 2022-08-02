@@ -30,7 +30,8 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 	@Override
 	public List<TestExecution> execute(TestExecutorRequest executorRequest) {
 		AvailableTests availableTestDetails = TestDescriptorUtils
-				.getAvailableTests(executorRequest.testEngine, executorRequest.engineTestDescriptor);
+				.getAvailableTests(executorRequest.testEngine, executorRequest.engineTestDescriptor,
+						impactedTestsProvider.partition);
 		List<PrioritizableTestCluster> testClusters = impactedTestsProvider.getImpactedTestsFromTeamscale(
 				availableTestDetails.getTestList());
 
