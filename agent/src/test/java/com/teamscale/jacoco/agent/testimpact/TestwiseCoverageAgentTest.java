@@ -64,8 +64,8 @@ public class TestwiseCoverageAgentTest {
 	@Test
 	public void testAccessViaTiaClientAndReportUploadToTeamscale() throws Exception {
 		List<ClusteredTestDetails> availableTests = Arrays
-				.asList(new ClusteredTestDetails("test1", "test1", "content", "cluster"),
-						new ClusteredTestDetails("test2", "test2", "content", "cluster"));
+				.asList(new ClusteredTestDetails("test1", "test1", "content", "cluster", "partition"),
+						new ClusteredTestDetails("test2", "test2", "content", "cluster", "partition"));
 		List<PrioritizableTestCluster> impactedClusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("test2"))));

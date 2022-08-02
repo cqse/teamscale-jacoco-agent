@@ -30,7 +30,7 @@ public class ImpactedTestEngine implements TestEngine {
 		// Re-initialize the configuration for this discovery (and optional following execution).
 		internalImpactedTestEngine =
 				new InternalImpactedTestEngine(configuration.testEngineRegistry, configuration.testExecutor,
-						new TestDataWriter(configuration.reportDirectory));
+						new TestDataWriter(configuration.reportDirectory), engineOptions.getPartition());
 
 		return internalImpactedTestEngine.discover(discoveryRequest, uniqueId);
 	}

@@ -63,7 +63,8 @@ class InternalImpactedTestEngineTest {
 	private final ITestwiseCoverageAgentApi testwiseCoverageAgentApi = mock(ITestwiseCoverageAgentApi.class);
 
 	private InternalImpactedTestEngine createInternalImpactedTestEngine(ITestExecutor testExecutor) {
-		return new InternalImpactedTestEngine(testEngineRegistry, testExecutor, testDataWriter);
+		return new InternalImpactedTestEngine(testEngineRegistry, testExecutor, testDataWriter,
+				impactedTestsProvider.partition);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -280,8 +281,8 @@ class InternalImpactedTestEngineTest {
 		}
 
 		/**
-		 * Discovery when executing both previously skipped and therefore impacted tests cases {@link
-		 * #impactedTestCase3Id} and {@link #impactedTestCase3Id}.
+		 * Discovery when executing both previously skipped and therefore impacted tests cases
+		 * {@link #impactedTestCase3Id} and {@link #impactedTestCase3Id}.
 		 */
 		private static class SecondTestClassDiscovery {
 			private static final TestDescriptor impactedTestCase = testCase(impactedTestCase3Id);
