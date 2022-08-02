@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 - [fix] _impacted-test-engine_: Handle tests with trailing whitespaces correctly
+- [breaking] _impacted-test-engine_: Now requires Teamscale 8.0 as minimum version
 
 # 25.0.0
  - [breaking] Find git.properties files recursively in folders, all types of archive files (jar, war, ear, aar, ...) and arbitrary depth. This was only possible for nested jar and war files and up to nesting depth 1. If you'd like to disable recursive search, e.g. due to performance issues, please use `search-git-properties-recursively=false`.  

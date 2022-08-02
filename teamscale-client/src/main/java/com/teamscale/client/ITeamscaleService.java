@@ -105,7 +105,7 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
-	@PUT("api/v8.0.0/projects/{projectName}/impacted-tests?prioritization-strategy=CHEAP_ADDITIONAL_COVERAGE_PER_TIME")
+	@PUT("api/v8.0.0/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") String baseline,
@@ -119,7 +119,7 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
-	@GET("api/v8.0.0/projects/{projectName}/impacted-tests?prioritization-strategy=CHEAP_ADDITIONAL_COVERAGE_PER_TIME")
+	@GET("api/v8.0.0/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") String baseline,
