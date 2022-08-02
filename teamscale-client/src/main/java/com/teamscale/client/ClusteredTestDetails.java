@@ -12,6 +12,10 @@ public class ClusteredTestDetails extends TestDetails {
 	 */
 	public String clusterId;
 
+	/**
+	 * The partition for the cluster this test should be prioritized within and the result will be uploaded to. If null
+	 * all partitions will be considered.
+	 */
 	public String partition;
 
 	public ClusteredTestDetails(String uniformPath, String sourcePath, String content, String clusterId,

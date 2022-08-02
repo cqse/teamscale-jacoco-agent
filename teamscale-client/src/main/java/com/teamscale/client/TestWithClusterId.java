@@ -33,6 +33,9 @@ public class TestWithClusterId {
 		this.clusterId = clusterId;
 	}
 
+	/**
+	 * Creates a #TestWithClusterId from a #ClusteredTestDetails object.
+	 */
 	public static TestWithClusterId fromClusteredTestDetails(ClusteredTestDetails clusteredTestDetails) {
 		return new TestWithClusterId(clusteredTestDetails.uniformPath, clusteredTestDetails.content,
 				clusteredTestDetails.partition, clusteredTestDetails.clusterId);

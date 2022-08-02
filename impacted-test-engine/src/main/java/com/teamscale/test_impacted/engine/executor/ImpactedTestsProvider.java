@@ -27,6 +27,9 @@ public class ImpactedTestsProvider {
 
 	private final CommitDescriptor endCommit;
 
+	/**
+	 * The partition for the tests provided.
+	 */
 	public final String partition;
 
 	private final boolean includeNonImpacted;
