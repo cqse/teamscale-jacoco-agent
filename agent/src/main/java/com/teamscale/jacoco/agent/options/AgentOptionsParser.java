@@ -195,6 +195,9 @@ public class AgentOptionsParser {
 			case "dump-on-exit":
 				options.shouldDumpOnExit = Boolean.parseBoolean(value);
 				return true;
+			case "search-git-properties-recursively":
+				options.searchGitPropertiesRecursively = Boolean.parseBoolean(value);
+				return true;
 			case "mode":
 				options.mode = parseEnumValue(key, value, EMode.class);
 				return true;
