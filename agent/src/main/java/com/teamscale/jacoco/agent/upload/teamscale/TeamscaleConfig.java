@@ -3,8 +3,6 @@ package com.teamscale.jacoco.agent.upload.teamscale;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleServer;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
@@ -14,7 +12,6 @@ import com.teamscale.report.util.ILogger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
@@ -32,9 +29,6 @@ public class TeamscaleConfig {
 
 	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
 	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
-
-	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
-	public static final String TEAMSCALE_GIT_PROPERTIES_JAR_OPTION = "teamscale-git-properties-jar";
 
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
@@ -155,27 +149,6 @@ public class TeamscaleConfig {
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Reading jar " + jarFile.getAbsolutePath() + " for obtaining commit "
 					+ "descriptor from MANIFEST failed", e);
-		}
-	}
-
-	private String getRevisionFromGitProperties(String optionName,
-												String value) throws AgentOptionParseException {
-		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
-		try {
-			// We can't be sure that the search-git-properties-recursively option is parsed already.
-			// Since we only support one git.properties file here anyway, recursive search is disabled.
-			List<String> revisions = GitPropertiesLocatorUtils.getRevisionsFromGitProperties(jarFile, true, false);
-			if (revisions.isEmpty()) {
-				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
-			}
-			if (revisions.size() > 1) {
-				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile +
-						". Uploading to multiple projects is currently not possible with the option teamscale-git-properties-jar. " +
-						"Please contact CQSE if you need this feature.");
-			}
-			return revisions.get(0);
-		} catch (IOException | InvalidGitPropertiesException e) {
-			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile, e);
 		}
 	}
 }
