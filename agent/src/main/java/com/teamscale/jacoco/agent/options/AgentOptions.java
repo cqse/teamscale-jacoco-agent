@@ -74,6 +74,8 @@ public class AgentOptions {
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
+	/** TODO documentation */
+	/* package */ public File gitPropertiesJar;
 
 	/**
 	 * The original options passed to the agent.
@@ -388,6 +390,10 @@ public class AgentOptions {
 			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
 					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
 					" with the 'teamscale.project' field set.");
+			if (gitPropertiesJar != null) {
+				return createDelayedMultiProjectTeamscaleUploader(gitPropertiesJar);
+				// TODO make the git-properties-option also applicable for single project upload (i.e. if teamscale-project is set in the options)
+			}
 			return createDelayedMultiProjectTeamscaleUploader(instrumentation);
 		}
 
@@ -441,6 +447,17 @@ public class AgentOptions {
 		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
+		return uploader;
+	}
+
+	private IUploader createDelayedMultiProjectTeamscaleUploader(File gitPropertiesJar) {
+		logger.debug("Creating delayed uploader and locator searching in {}",
+				gitPropertiesJar.getAbsolutePath()); // TODO remove this log again (just for initial test)
+		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader((project, revision) ->
+				new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
+				this.searchGitPropertiesRecursively);
+		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 		return uploader;
 	}
 

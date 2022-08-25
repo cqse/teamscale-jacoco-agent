@@ -198,6 +198,10 @@ public class AgentOptionsParser {
 			case "search-git-properties-recursively":
 				options.searchGitPropertiesRecursively = Boolean.parseBoolean(value);
 				return true;
+			case "git-properties-jar":
+				options.gitPropertiesJar = new File(value);
+				// TODO make sure path actually exists + proper error handling
+				return true;
 			case "mode":
 				options.mode = parseEnumValue(key, value, EMode.class);
 				return true;
