@@ -75,9 +75,6 @@ public class TeamscaleConfig {
 				teamscaleServer.commit = getCommitFromManifest(
 						filePatternResolver.parsePath(key, value).toFile());
 				return true;
-			case TEAMSCALE_GIT_PROPERTIES_JAR_OPTION:
-				teamscaleServer.revision = getRevisionFromGitProperties(key, value);
-				return true;
 			case "teamscale-message":
 				teamscaleServer.setMessage(value);
 				return true;
