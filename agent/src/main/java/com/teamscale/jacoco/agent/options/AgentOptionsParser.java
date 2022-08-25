@@ -198,9 +198,8 @@ public class AgentOptionsParser {
 			case "search-git-properties-recursively":
 				options.searchGitPropertiesRecursively = Boolean.parseBoolean(value);
 				return true;
-			case "git-properties-jar":
-				options.gitPropertiesJar = new File(value);
-				// TODO make sure path actually exists + proper error handling
+			case AgentOptions.GIT_PROPERTIES_JAR_OPTION:
+				options.gitPropertiesJar = getGitPropertiesJarFile(value);
 				return true;
 			case "mode":
 				options.mode = parseEnumValue(key, value, EMode.class);
@@ -225,6 +224,21 @@ public class AgentOptionsParser {
 			default:
 				return false;
 		}
+	}
+
+	private File getGitPropertiesJarFile(String path) {
+		File jarFile = new File(path);
+		if (!jarFile.exists()) {
+			logger.warn(
+					"The path provided with the " + AgentOptions.GIT_PROPERTIES_JAR_OPTION + " option does not exist: " + path + ". Continuing without searching it for git.properties files.");
+			return null;
+		}
+		if (!jarFile.isFile()) {
+			logger.warn(
+					"The path provided with the " + AgentOptions.GIT_PROPERTIES_JAR_OPTION + " option is not a regular file (probably a folder instead): " + path + ". Continuing without searching it for git.properties files.");
+			return null;
+		}
+		return jarFile;
 	}
 
 	/**

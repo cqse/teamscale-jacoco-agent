@@ -74,8 +74,11 @@ public class AgentOptions {
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
-	/** TODO documentation */
-	/* package */ public File gitPropertiesJar;
+	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
+	/* package */ File gitPropertiesJar;
+
+	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
+	public static final String GIT_PROPERTIES_JAR_OPTION = "git-properties-jar";
 
 	/**
 	 * The original options passed to the agent.
