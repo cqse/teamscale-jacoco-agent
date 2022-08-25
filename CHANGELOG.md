@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # next release
+- [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you change this behavior with `search-git-properties-recursively`.
 
 # 26.0.0
 
