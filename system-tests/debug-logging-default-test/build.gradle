@@ -1,0 +1,14 @@
+plugins {
+	id 'com.teamscale.java-convention'
+}
+
+test {
+	def agentJar = project(':agent').tasks.shadowJar.outputs.files.files.first()
+	jvmArgs "-javaagent:$agentJar=debug=true"
+}
+
+tasks.test.dependsOn(":agent:shadowJar")
+
+dependencies {
+	testImplementation project(':common-system-test')
+}

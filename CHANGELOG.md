@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+- [fix] The agent could not be started with the `debug=true` command line option
+
 # 26.0.0
 
 - [fix] _impacted-test-engine_: Handle tests with trailing whitespaces correctly
