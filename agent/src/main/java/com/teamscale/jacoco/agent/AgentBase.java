@@ -10,6 +10,7 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
+import com.teamscale.jacoco.agent.util.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
@@ -30,6 +31,7 @@ import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -168,16 +170,24 @@ public abstract class AgentBase {
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
 	private static void initializeLogging(AgentOptions agentOptions, DelayedLogger logger) throws IOException {
 		if (agentOptions.isDebugLogging()) {
-			loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
-			Path logDirectory = agentOptions.getDebugLogDirectory().resolve("logs");
-			if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
-				logger.info("Logging to " + logDirectory);
-			} else {
-				logger.warn("Could not create " + logDirectory + ". Logging to console only.");
-			}
+			initializeDebugLogging(agentOptions, logger);
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
+		}
+	}
+
+	/**
+	 * Initializes debug logging during {@link #premain(String, Instrumentation)} and also logs the log directory if
+	 * given.
+	 */
+	private static void initializeDebugLogging(AgentOptions agentOptions, DelayedLogger logger) {
+		loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
+		Path logDirectory = Paths.get(new DebugLogDirectoryPropertyDefiner().getPropertyValue());
+		if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
+			logger.info("Logging to " + logDirectory);
+		} else {
+			logger.warn("Could not create " + logDirectory + ". Logging to console only.");
 		}
 	}
 

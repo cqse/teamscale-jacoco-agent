@@ -7,6 +7,10 @@ We use [semantic versioning](http://semver.org/):
 # next release
 - [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you change this behavior with `search-git-properties-recursively`.
 
+# 26.0.1
+
+- [fix] The agent could not be started with the `debug=true` command line option
+
 # 26.0.0
 
 - [fix] _impacted-test-engine_: Handle tests with trailing whitespaces correctly
