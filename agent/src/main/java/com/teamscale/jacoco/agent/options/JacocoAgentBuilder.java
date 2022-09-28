@@ -83,7 +83,7 @@ public class JacocoAgentBuilder {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException, IOException, CoverageGenerationException {
+	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException, IOException {
 		if (agentOptions.useTestwiseCoverageMode()) {
 			JaCoCoTestwiseReportGenerator reportGenerator = new JaCoCoTestwiseReportGenerator(
 					agentOptions.getClassDirectoriesOrZips(), agentOptions.getLocationIncludeFilter(),

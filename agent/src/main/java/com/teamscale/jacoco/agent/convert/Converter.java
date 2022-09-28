@@ -67,7 +67,7 @@ public class Converter {
 	}
 
 	/** Converts one .exec binary coverage file, test details and test execution files to JSON testwise coverage. */
-	public void runTestwiseCoverageReportGeneration() throws IOException, CoverageGenerationException, AgentOptionParseException {
+	public void runTestwiseCoverageReportGeneration() throws IOException, AgentOptionParseException {
 		List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST,
 				TestDetails[].class, arguments.getInputFiles());
 		List<TestExecution> testExecutions = ReportUtils.readObjects(ETestArtifactFormat.TEST_EXECUTION,
