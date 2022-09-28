@@ -47,10 +47,11 @@ public class JaCoCoTestwiseReportGenerator {
 	public JaCoCoTestwiseReportGenerator(Collection<File> codeDirectoriesOrArchives,
 										 ClasspathWildcardIncludeFilter locationIncludeFilter,
 										 EDuplicateClassFileBehavior duplicateClassFileBehavior,
-										 ILogger logger) {
+										 ILogger logger) throws CoverageGenerationException {
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.executionDataReader = new CachingExecutionDataReader(logger, codeDirectoriesOrArchives,
 				locationIncludeFilter, duplicateClassFileBehavior);
+		executionDataReader.analyzeClassDirs();
 	}
 
 	/** Converts the given dumps to a report. */
@@ -77,7 +78,7 @@ public class JaCoCoTestwiseReportGenerator {
 
 	/** Converts the given dumps to a report. */
 	public void convertAndConsume(File executionDataFile,
-								  Consumer<TestCoverageBuilder> consumer) throws IOException, CoverageGenerationException {
+								  Consumer<TestCoverageBuilder> consumer) throws IOException {
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
 				.buildCoverageConsumer(locationIncludeFilter, consumer);
 		readAndConsumeDumps(executionDataFile, dumpConsumer);

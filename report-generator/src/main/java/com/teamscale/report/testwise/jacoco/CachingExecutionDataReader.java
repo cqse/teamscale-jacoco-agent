@@ -40,7 +40,7 @@ class CachingExecutionDataReader {
 	/**
 	 * Analyzes the class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	private void analyzeClassDirs() throws CoverageGenerationException {
+	public void analyzeClassDirs() throws CoverageGenerationException {
 		if (probesCache == null) {
 			probesCache = new ProbesCache(logger, duplicateClassFileBehavior);
 		}
@@ -66,8 +66,7 @@ class CachingExecutionDataReader {
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
 	public DumpConsumer buildCoverageConsumer(ClasspathWildcardIncludeFilter locationIncludeFilter,
-											  Consumer<TestCoverageBuilder> nextConsumer) throws CoverageGenerationException {
-		analyzeClassDirs();
+											  Consumer<TestCoverageBuilder> nextConsumer) {
 		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
 
