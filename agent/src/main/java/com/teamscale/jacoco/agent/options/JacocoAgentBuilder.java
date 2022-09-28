@@ -8,7 +8,6 @@ import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import org.slf4j.Logger;
 
 import java.io.IOException;
