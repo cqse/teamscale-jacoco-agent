@@ -66,10 +66,16 @@ public class ProbesCache {
 		return classCoverageLookups.containsKey(classId);
 	}
 
+	/**
+	 * Returns the number of found class files in a cached jar file. Otherwise 0.
+	 */
 	public int countForJarId(long jarId) {
 		return containedJars.getOrDefault(jarId, 0);
 	}
 
+	/**
+	 * Adds a jar id along with the count of class files found in the jar.
+	 */
 	public void addJarId(long jarId, int count) {
 		containedJars.put(jarId, count);
 	}

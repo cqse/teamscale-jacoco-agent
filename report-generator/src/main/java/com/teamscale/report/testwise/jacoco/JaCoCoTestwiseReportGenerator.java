@@ -54,6 +54,9 @@ public class JaCoCoTestwiseReportGenerator {
 		updateClassDirCache();
 	}
 
+	/**
+	 * Updates the probe cache of the {@link ExecutionDataReader}.
+	 */
 	public void updateClassDirCache() {
 		executionDataReader.analyzeClassDirs();
 	}
