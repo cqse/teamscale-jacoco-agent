@@ -51,6 +51,10 @@ public class JaCoCoTestwiseReportGenerator {
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.executionDataReader = new CachingExecutionDataReader(logger, codeDirectoriesOrArchives,
 				locationIncludeFilter, duplicateClassFileBehavior);
+		updateClassDirCache();
+	}
+
+	public void updateClassDirCache() {
 		executionDataReader.analyzeClassDirs();
 	}
 

@@ -39,6 +39,7 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 
 		TestInfoBuilder builder = new TestInfoBuilder(test);
 		Dump dump = controller.dumpAndReset();
+		reportGenerator.updateClassDirCache();
 		builder.setCoverage(reportGenerator.convert(dump));
 		if (testExecution != null) {
 			builder.setExecution(testExecution);
