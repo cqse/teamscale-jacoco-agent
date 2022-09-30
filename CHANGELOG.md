@@ -6,7 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
-- [fix] Testwise coverage conversion was slow when many .exec files where included.
+- [fix] Testwise coverage conversion was slow when many .exec files are included.
 
 # 26.0.1
 
