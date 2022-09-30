@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # next release
 
+- [fix] Testwise coverage conversion was slow when many .exec files are included.
+
 # 26.0.1
 
 - [fix] The agent could not be started with the `debug=true` command line option

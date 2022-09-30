@@ -43,7 +43,7 @@ public class JacocoAgentBuilder {
 		if (agentOptions.classDirectoriesOrZips.isEmpty() && needsClassFiles) {
 			Path tempDir = createTemporaryDumpDirectory();
 			tempDir.toFile().deleteOnExit();
-			builder.append(",classdumpdir=").append(tempDir.toAbsolutePath().toString());
+			builder.append(",classdumpdir=").append(tempDir.toAbsolutePath());
 
 			agentOptions.classDirectoriesOrZips = Collections.singletonList(tempDir.toFile());
 		}

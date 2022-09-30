@@ -9,6 +9,7 @@ import org.jacoco.report.JavaNames;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -24,6 +25,8 @@ public class ProbesCache {
 
 	/** Holds all fully-qualified class names that are already contained in the cache. */
 	private final Set<String> containedClasses = new HashSet<>();
+
+	private final Map<Long, Integer> containedJars = new HashMap<>();
 
 	/** Whether to ignore non-identical duplicates of class files. */
 	private final EDuplicateClassFileBehavior duplicateClassFileBehavior;
@@ -61,6 +64,20 @@ public class ProbesCache {
 	/** Returns whether a class with the given class ID has already been analyzed. */
 	public boolean containsClassId(long classId) {
 		return classCoverageLookups.containsKey(classId);
+	}
+
+	/**
+	 * Returns the number of found class files in a cached jar file. Otherwise 0.
+	 */
+	public int countForJarId(long jarId) {
+		return containedJars.getOrDefault(jarId, 0);
+	}
+
+	/**
+	 * Adds a jar id along with the count of class files found in the jar.
+	 */
+	public void addJarId(long jarId, int count) {
+		containedJars.put(jarId, count);
 	}
 
 	/**

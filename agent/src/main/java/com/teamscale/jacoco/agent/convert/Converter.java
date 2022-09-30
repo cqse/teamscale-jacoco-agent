@@ -11,13 +11,11 @@ import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.testwise.ETestArtifactFormat;
 import com.teamscale.report.testwise.TestwiseCoverageReportWriter;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.factory.TestInfoFactory;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.report.util.ILogger;
-
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.tools.ExecFileLoader;
@@ -67,7 +65,7 @@ public class Converter {
 	}
 
 	/** Converts one .exec binary coverage file, test details and test execution files to JSON testwise coverage. */
-	public void runTestwiseCoverageReportGeneration() throws IOException, CoverageGenerationException, AgentOptionParseException {
+	public void runTestwiseCoverageReportGeneration() throws IOException, AgentOptionParseException {
 		List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST,
 				TestDetails[].class, arguments.getInputFiles());
 		List<TestExecution> testExecutions = ReportUtils.readObjects(ETestArtifactFormat.TEST_EXECUTION,

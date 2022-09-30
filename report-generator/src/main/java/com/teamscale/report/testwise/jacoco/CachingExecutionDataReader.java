@@ -40,9 +40,13 @@ class CachingExecutionDataReader {
 	/**
 	 * Analyzes the class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	private void analyzeClassDirs() throws CoverageGenerationException {
+	public void analyzeClassDirs() {
 		if (probesCache == null) {
 			probesCache = new ProbesCache(logger, duplicateClassFileBehavior);
+		}
+		if (classesDirectories.isEmpty()) {
+			logger.warn("No class directories found for caching.");
+			return;
 		}
 		AnalyzerCache analyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
 		for (File classDir : classesDirectories) {
@@ -58,7 +62,7 @@ class CachingExecutionDataReader {
 		}
 		if (probesCache.isEmpty()) {
 			String directoryList = classesDirectories.stream().map(File::getPath).collect(Collectors.joining(","));
-			throw new CoverageGenerationException("No class files found in the given directories! " + directoryList);
+			logger.error("No class files found in the given directories! " + directoryList);
 		}
 	}
 
@@ -66,8 +70,7 @@ class CachingExecutionDataReader {
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
 	public DumpConsumer buildCoverageConsumer(ClasspathWildcardIncludeFilter locationIncludeFilter,
-											  Consumer<TestCoverageBuilder> nextConsumer) throws CoverageGenerationException {
-		analyzeClassDirs();
+											  Consumer<TestCoverageBuilder> nextConsumer) {
 		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
 

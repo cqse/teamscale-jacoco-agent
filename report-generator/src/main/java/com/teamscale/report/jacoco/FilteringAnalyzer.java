@@ -50,15 +50,14 @@ import java.util.zip.ZipInputStream;
 	/** Copied from Analyzer.analyzerError */
 	private IOException analyzerError(final String location,
 									  final Exception cause) {
-		final IOException ex = new IOException(
+		return new IOException(
 				String.format("Error while analyzing %s.", location), cause);
-		return ex;
 	}
 
 	/**
 	 * Copied from Analyzer.analyzeZip renamed to analyzeJar and added wrapping BashFileSkippingInputStream.
 	 */
-	private int analyzeJar(final InputStream input, final String location)
+	protected int analyzeJar(final InputStream input, final String location)
 			throws IOException {
 		ZipInputStream zip = new ZipInputStream(new BashFileSkippingInputStream(input));
 		ZipEntry entry;

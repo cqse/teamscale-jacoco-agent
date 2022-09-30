@@ -145,6 +145,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 		logger.debug("Creating testwise coverage form available tests `{}`, test executions `{}` and exec file",
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
 				executionUniformPaths);
+		reportGenerator.updateClassDirCache();
 		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
 		logger.debug("Created testwise coverage report (containing coverage for tests `{}`)",
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
