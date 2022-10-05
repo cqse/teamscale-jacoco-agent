@@ -1,13 +1,11 @@
 package com.teamscale
 
-import com.teamscale.config.ReportConfigurationBase
 import com.teamscale.config.extension.TeamscaleJacocoReportTaskExtension
 import com.teamscale.config.extension.TeamscaleTestTaskExtension
 import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
@@ -110,7 +108,7 @@ open class TeamscalePlugin : Plugin<Project> {
                 configuration = extension
             }
             teamscaleReportTask.uploadTask = teamscaleUploadTask
-            registerReportAfterTask(testImpactedTask, extension.report)
+            teamscaleUploadTask.reports.add(extension.report.getReport())
         }
     }
 
@@ -129,7 +127,7 @@ open class TeamscalePlugin : Plugin<Project> {
                     project,
                     reportTask
                 )
-            registerReportAfterTask(reportTask, extension.report)
+            teamscaleUploadTask.reports.add(extension.report.getReport())
         }
     }
 
@@ -149,18 +147,8 @@ open class TeamscalePlugin : Plugin<Project> {
                     project,
                     testTask
                 )
-            registerReportAfterTask(testTask, extension.report)
+            teamscaleUploadTask.reports.add(extension.report.getReport())
         }
     }
 
-    private fun registerReportAfterTask(
-        task: Task,
-        reportConfig: ReportConfigurationBase
-    ) {
-        task.doLast {
-            if (reportConfig.upload.get()) {
-                teamscaleUploadTask.reports.add(reportConfig.getReport())
-            }
-        }
-    }
 }
