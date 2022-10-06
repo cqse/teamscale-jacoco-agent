@@ -5,9 +5,7 @@ import com.teamscale.client.EReportFormat
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Property
-import java.io.File
 
 /** Base configuration for all kinds of reports that we want to upload from Gradle. */
 abstract class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
@@ -47,6 +45,10 @@ abstract class ReportConfigurationBase(private val format: EReportFormat, val pr
         )
     }
 
+    /**
+     * Constructs a lazy evaluated FileCollection with the actual report files that should be uploaded to Teamscale.
+     *  i.e. for JUnit where the destination is a directory a file tree for all included xml files should be returned.
+     */
     abstract fun getReportFiles(): FileCollection
 }
 

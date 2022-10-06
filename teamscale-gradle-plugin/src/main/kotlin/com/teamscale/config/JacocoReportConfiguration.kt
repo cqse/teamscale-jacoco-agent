@@ -13,6 +13,7 @@ open class JacocoReportConfiguration(project: Project, task: JacocoReport) :
     /** The destination where the report should be written to/read from. */
     var destination: RegularFileProperty = task.reports.xml.outputLocation
 
+    /** Allows to set the destination as a string, which is resolved as File internally. */
     fun setDestination(destination: String) {
         this.destination.set(project.objects.fileProperty().fileValue(File(destination)))
     }

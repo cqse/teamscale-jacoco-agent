@@ -14,6 +14,7 @@ open class JUnitReportConfiguration(project: Project, task: Test) :
     /** The destination where the report should be written to/read from. */
     var destination: DirectoryProperty = task.reports.junitXml.outputLocation
 
+    /** Allows to set the destination as a string, which is resolved as File internally. */
     fun setDestination(destination: String) {
         this.destination.set(project.objects.directoryProperty().fileValue(File(destination)))
     }

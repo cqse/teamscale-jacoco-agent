@@ -21,7 +21,7 @@ data class Report(
     @Input
     val format: EReportFormat,
 
-    /** The report file. */
+    /** The report files. */
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     val reportFiles: FileCollection,

@@ -4,9 +4,7 @@ import com.teamscale.TestImpacted
 import com.teamscale.client.EReportFormat
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
 import java.io.File
 
 /** Configuration for the testwise coverage report. */
@@ -17,6 +15,7 @@ open class TestwiseCoverageConfiguration(project: Project, task: TestImpacted) :
     /** The destination where the report should be written to/read from. */
     var destination: RegularFileProperty = project.objects.fileProperty()
 
+    /** Allows to set the destination as a string, which is resolved as File internally. */
     fun setDestination(destination: String) {
         this.destination.set(project.objects.fileProperty().fileValue(File(destination)))
     }
