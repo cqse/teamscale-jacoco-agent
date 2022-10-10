@@ -57,8 +57,8 @@ open class TestwiseCoverageReportTask : DefaultTask() {
 
     /** The report files that will be produced by the task. */
     val reportFiles
-        @OutputDirectories
-        get() = reportsToArtifacts.keys.map { it.reportFile.parentFile }
+        @OutputFiles
+        get() = reportsToArtifacts.keys.map { it.reportFiles }
 
     init {
         group = "Teamscale"
@@ -120,8 +120,8 @@ open class TestwiseCoverageReportTask : DefaultTask() {
         logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
         val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
-        logger.info("Writing report to ${reportConfig.reportFile}")
-        ReportUtils.writeTestwiseCoverageReport(reportConfig.reportFile, report)
+        logger.info("Writing report to ${reportConfig.reportFiles}")
+        ReportUtils.writeTestwiseCoverageReport(reportConfig.reportFiles.singleFile, report)
     }
 
     /** Collects JaCoCo's exec files from the artifacts folders and merges it with js coverage. */

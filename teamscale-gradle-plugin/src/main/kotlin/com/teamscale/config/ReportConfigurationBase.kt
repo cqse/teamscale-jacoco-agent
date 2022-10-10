@@ -4,14 +4,11 @@ import com.teamscale.Report
 import com.teamscale.client.EReportFormat
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
-import java.io.File
-import java.io.Serializable
 
 /** Base configuration for all kinds of reports that we want to upload from Gradle. */
-open class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
+abstract class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
 
     /** The partition for which artifacts are uploaded. */
     var partition: Property<String> = project.objects.property(String::class.java).convention(task.name)
@@ -37,21 +34,21 @@ open class ReportConfigurationBase(private val format: EReportFormat, val projec
         this.upload.set(upload)
     }
 
-    /** The destination where the report should be written to/read from. */
-    var destination: Property<FileSystemLocation> = project.objects.property(FileSystemLocation::class.java)
-
-    fun setDestination(destination: String) {
-        this.destination.set(project.objects.fileProperty().fileValue(File(destination)))
-    }
-
     /** Returns a report specification used in the TeamscaleUploadTask. */
     fun getReport(): Report {
         return Report(
+            upload = upload,
             format = format,
-            reportFile = destination.get().asFile,
+            reportFiles = getReportFiles(),
             message = message.get(),
             partition = partition.get()
         )
     }
+
+    /**
+     * Constructs a lazy evaluated FileCollection with the actual report files that should be uploaded to Teamscale.
+     *  i.e. for JUnit where the destination is a directory a file tree for all included xml files should be returned.
+     */
+    abstract fun getReportFiles(): FileCollection
 }
 

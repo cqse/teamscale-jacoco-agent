@@ -4,7 +4,10 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# next release
+# Next Release
+- [fix] _teamscale-gradle-plugin_: Failed to upload JUnit reports
+- [breaking change] _teamscale-gradle-plugin_: Setting the destination within test.teamscale.reports.jacoco/junit transparently sets the report destination in the corresponding jacoco/junit plugins
+- [breaking change] _teamscale-gradle-plugin_: TestwiseCoverageReportTask no longer clears the parent folder of the written testwise coverage report
 
 # 26.0.2
 

@@ -81,7 +81,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
     lateinit var taskExtension: TeamscaleTestImpactedTaskExtension
 
     val reportConfiguration
-        @Input
+        @Nested
         get() = taskExtension.report.getReport()
 
     val agentFilterConfiguration
