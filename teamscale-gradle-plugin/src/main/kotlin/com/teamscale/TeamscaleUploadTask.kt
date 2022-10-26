@@ -40,6 +40,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     @get:Nested
     abstract val reports: SetProperty<Report>
 
+    /** The report files. See Report.reportFiles for details. */
     @get:Input
     val reportFiles
         get() = reports.get().map { it.reportFiles }
