@@ -16,7 +16,7 @@ open class JUnitReportConfiguration(project: Project, task: Test) :
 
     /** Allows to set the destination as a string, which is resolved as File internally. */
     fun setDestination(destination: String) {
-        this.destination.set(project.objects.directoryProperty().fileValue(File(destination)))
+        this.destination.set(project.objects.directoryProperty().fileValue(project.file(destination)))
     }
 
     override fun getReportFiles(): FileCollection {

@@ -23,6 +23,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
 
     /** The commit for which the reports should be uploaded. */
     @get:Input
+    @get:Optional
     val commitDescriptor
         get() = extension.commit.getOrResolveCommitDescriptor(project).first
 
@@ -31,6 +32,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
      * If set it is preferred over commitDescriptor.
      */
     @get:Input
+    @get:Optional
     val revision
         get() = extension.commit.getOrResolveCommitDescriptor(project).second
 
