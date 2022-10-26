@@ -5,10 +5,7 @@ import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.provider.SetProperty
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 
@@ -40,6 +37,10 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     /** The list of reports to be uploaded. */
     @get:Nested
     abstract val reports: SetProperty<Report>
+
+    @get:Input
+    val reportFiles
+        get() = reports.get().map { it.reportFiles }
 
     @Input
     var ignoreFailures: Boolean = false
