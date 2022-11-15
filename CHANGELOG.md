@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 27.0.1
 - [fix] _teamscale-gradle-plugin_: Property 'outputLocation' is declared as an output property of Report xml (type TaskGeneratedSingleFileReport) but does not have a task associated with it.
 
 # 27.0.0
