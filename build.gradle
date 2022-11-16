@@ -35,6 +35,12 @@ subprojects {
 	}
 }
 
+nexusPublishing {
+	repositories {
+		sonatype()
+	}
+}
+
 dependencyUpdates.resolutionStrategy {
 	componentSelection { rules ->
 		rules.all { ComponentSelection selection ->
