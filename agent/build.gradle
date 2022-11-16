@@ -30,12 +30,12 @@ dependencies {
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
 	// We need to stay on the 1.3.x release line as 1.4.x requires Java 11
-	implementation 'ch.qos.logback:logback-core:1.3.3'
-	implementation 'ch.qos.logback:logback-classic:1.3.3'
+	implementation 'ch.qos.logback:logback-core:1.3.4'
+	implementation 'ch.qos.logback:logback-classic:1.3.4'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 	implementation 'com.beust:jcommander:1.82'
-	implementation 'com.teamscale:teamscale-lib-commons:8.3.2'
+	implementation 'com.teamscale:teamscale-lib-commons:8.4.2'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 	implementation 'com.sparkjava:spark-core:2.9.4'
