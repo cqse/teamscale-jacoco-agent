@@ -36,9 +36,7 @@ jobs:
           -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG_SIGNATURE }} \
           -Psigning.keyId=4FB80B8E \
           -PsonatypeUsername=${{ secrets.SONATYPE_USER }} \
-          -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} \
-          -Porg.gradle.internal.http.connectionTimeout=500000 \
-          -Porg.gradle.internal.http.socketTimeout=500000
+          -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
     - name: Publish to Gradle Plugin Portal
       if: startsWith(github.ref, 'refs/tags/v')
       run: |
