@@ -63,9 +63,6 @@ When master has accumulated changes you want to release, please perform the foll
 - Update the [build.gradle](build.gradle)'s `appVersion` accordingly.
 - Commit and push your changes.
 - Create a GitHub Release tag with the same version number and the text from the changelog.
-- Once the [build for the tag](https://github.com/cqse/teamscale-jacoco-agent/actions/workflows/actions.yml) is successful, inform the release crew on Slack ([`#release-crew` via Slack](https://app.slack.com/client/T02FWLRP9/C9BPT4Y2W)) that the artifacts can now be promoted to Maven Central.
-- The release crew will then _Close_ and _Release_ the [staging repository](https://oss.sonatype.org/#stagingRepositories).
-  The credentials are stored in 1Password.
 
 Releases are numbered according to semantic versioning (see full [changelog](CHANGELOG.md)).
 

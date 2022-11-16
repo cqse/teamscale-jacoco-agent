@@ -1,6 +1,9 @@
 plugins {
 	id 'com.github.ben-manes.versions'
+	id 'io.github.gradle-nexus.publish-plugin'
 }
+
+group = "com.teamscale"
 
 ext {
 	appVersion = '27.0.1'
@@ -17,7 +20,7 @@ ext {
 	}
 }
 
-subprojects {
+allprojects {
 	version snapshotVersion
 }
 
@@ -31,6 +34,12 @@ subprojects {
 		if (publishTask != null) {
 			rootProject.tasks.publishToMavenLocal.dependsOn(publishTask)
 		}
+	}
+}
+
+nexusPublishing {
+	repositories {
+		sonatype()
 	}
 }
 

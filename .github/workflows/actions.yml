@@ -30,15 +30,13 @@ jobs:
         overwrite: true
     - name: Publish to Maven Central
       run: |
-        ./gradlew publishMavenPublicationToMavenRepository \
+        ./gradlew publishMavenPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository \
           -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
           -PgpgDirectory=${{ github.workspace }}/.gnupg \
           -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG_SIGNATURE }} \
           -Psigning.keyId=4FB80B8E \
           -PsonatypeUsername=${{ secrets.SONATYPE_USER }} \
-          -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} \
-          -Porg.gradle.internal.http.connectionTimeout=500000 \
-          -Porg.gradle.internal.http.socketTimeout=500000
+          -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
     - name: Publish to Gradle Plugin Portal
       if: startsWith(github.ref, 'refs/tags/v')
       run: |
@@ -68,17 +66,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@v4
       with:
         images: cqse/teamscale-jacoco-agent
     - name: Login to DockerHub
       if: github.event_name != 'pull_request'
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USER }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
