@@ -10,7 +10,6 @@ pluginManagement {
  * The settings file is used to specify which projects to include in your build.
  */
 include ':agent'
-include ':javaws-wrapper'
 include ':report-generator'
 include ':teamscale-gradle-plugin'
 include ':teamscale-client'

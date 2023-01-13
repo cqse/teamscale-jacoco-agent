@@ -8,7 +8,6 @@
 ## Documentation
 
 * [Teamscale JaCoCo Agent](agent/README.md)
-* [Java Web Start Wrapper](javaws-wrapper/README.md)
 
 ## Development
 
