@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [deprecation] removed support for JavaWS
 
 # 27.0.2
 - [fix] Updated dependencies (Fixes #225, CVE-2022-42889)
