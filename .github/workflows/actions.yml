@@ -48,19 +48,16 @@ jobs:
           -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
     - name: Upload coverage to Teamscale
       if: always() && github.event_name == 'push'
-      run: |
-        curl -L -o teamscale-upload.zip https://github.com/cqse/teamscale-upload/releases/download/v1.0.0/teamscale-upload-linux.zip
-        unzip teamscale-upload.zip
-        ./teamscale-upload \
-          -s ${{ secrets.TS_DEMO_URL }} \
-          -p teamscale-jacoco-agent \
-          -u ${{ secrets.TS_DEMO_USER }} \
-          -a ${{ secrets.TS_DEMO_ACCESSKEY }} \
-          -t Coverage \
-          -f JACOCO \
-          --message Coverage \
-          --detect-commit \
-          **/jacocoTestReport.xml
+      uses: cqse/teamscale-upload-action@v2.4.0
+      with:
+        server: 'https://cqse.teamscale.io'
+        project: 'teamscale-jacoco-agent'
+        user: ${{ secrets.CQSE_TEAMSCALE_IO_USER }}
+        accesskey: ${{ secrets.CQSE_TEAMSCALE_IO_ACCESSKEY }}
+        partition: 'Coverage'
+        format: 'JACOCO'
+        message: 'Coverage'
+        files: '**/jacocoTestReport.xml'
 
   docker:
     runs-on: ubuntu-latest
