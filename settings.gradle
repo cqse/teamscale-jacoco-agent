@@ -18,16 +18,10 @@ include ':impacted-test-engine'
 include ':tia-client'
 include ':tia-runlisteners'
 include ':common-system-test'
-include ':system-tests:tia-client-test'
-include ':system-tests:default-excludes-test'
-include ':system-tests:http-redirect-test'
-include ':system-tests:tia-client-tia-mode-http'
-include ':system-tests:junit-run-listener-test'
-include ':system-tests:debug-logging-test'
-include ':system-tests:debug-logging-default-test'
-include ':system-tests:tia-maven'
-include ':system-tests:multiple-agents-test'
 include ':sample-debugging-app'
 include ':teamscale-surefire-provider'
-include ':system-tests:mutliple-agents-test'
 include ':teamscale-maven-plugin'
+
+file('system-tests').eachDir { folder ->
+	include ":system-tests:$folder.name"
+}

@@ -3,6 +3,9 @@ package com.teamscale.test.commons;
 import com.teamscale.report.testwise.model.TestInfo;
 import org.conqat.lib.commons.io.ProcessUtils;
 import org.conqat.lib.commons.system.SystemUtils;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.POST;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +56,17 @@ public class SystemTestUtils {
 		if (!result.isNormalTermination()) {
 			throw new IOException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
+	}
+
+	private interface AgentService {
+		/** Dumps coverage */
+		@POST("/dump")
+		Call<Void> dump();
+	}
+
+	public static void dumpCoverage(int agentPort) throws IOException {
+		new Retrofit.Builder().baseUrl("http://localhost:" + agentPort).build()
+				.create(AgentService.class).dump().execute();
 	}
 
 }
