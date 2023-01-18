@@ -5,7 +5,9 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
-- [deprecation] removed support for JavaWS
+
+# 28.0.0
+- [breaking change] removed support for JavaWS
 - [fix] Fixed git.properties detection when directories are on the classpath
 
 # 27.0.2
