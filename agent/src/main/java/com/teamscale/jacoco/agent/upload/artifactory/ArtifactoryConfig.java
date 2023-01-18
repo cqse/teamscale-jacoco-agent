@@ -181,7 +181,7 @@ public class ArtifactoryConfig {
 		try {
 			// We can't be sure that the search-git-properties-recursively option is parsed already.
 			// Since we only support one git.properties file for artifactory anyway, recursive search is disabled here.
-			List<CommitInfo> commitInfo = parseGitProperties(jarFile, gitPropertiesCommitTimeFormat, false);
+			List<CommitInfo> commitInfo = parseGitProperties(jarFile, true, gitPropertiesCommitTimeFormat, false);
 			if (commitInfo.isEmpty()) {
 				throw new AgentOptionParseException(
 						"Found no git.properties files in " + jarFile);
@@ -198,12 +198,12 @@ public class ArtifactoryConfig {
 		}
 	}
 
-	/** Parses the commit information form a git.properties file. */
-	public static List<CommitInfo> parseGitProperties(File jarFile,
-													  DateTimeFormatter gitPropertiesCommitTimeFormat,
+	/** Parses the commit information from a git.properties file. */
+	public static List<CommitInfo> parseGitProperties(File file,
+													  boolean isJarFile, DateTimeFormatter gitPropertiesCommitTimeFormat,
 													  boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(
-				jarFile, true, recursiveSearch);
+				file, isJarFile, recursiveSearch);
 		List<CommitInfo> result = new ArrayList<>();
 
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
@@ -212,14 +212,14 @@ public class ArtifactoryConfig {
 
 			String revision = GitPropertiesLocatorUtils
 					.getGitPropertiesValue(properties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
-							jarFile);
+							file);
 			String branchName = GitPropertiesLocatorUtils
 					.getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH,
-							entry, jarFile);
+							entry, file);
 			long timestamp = ZonedDateTime.parse(GitPropertiesLocatorUtils
 							.getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME,
 									entry,
-									jarFile),
+									file),
 					gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
 			result.add(new CommitInfo(revision, new CommitDescriptor(branchName, timestamp)));
 

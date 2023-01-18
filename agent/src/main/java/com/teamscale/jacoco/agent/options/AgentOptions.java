@@ -463,7 +463,7 @@ public class AgentOptions {
 		GitSingleProjectPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
 				uploader,
 				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
-						file, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
+						file, isJarFile, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
 				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
