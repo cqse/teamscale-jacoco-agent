@@ -3,12 +3,7 @@ package com.teamscale.tia.client;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.Test;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.http.POST;
 import systemundertest.SystemUnderTest;
-
-import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

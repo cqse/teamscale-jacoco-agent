@@ -41,6 +41,7 @@ public class ArtifactoryGitPropertiesDetectionTest {
 		assertThat(artifactoryMockServer.uploadedReports).hasSize(1);
 		PairList<String, String> reports = artifactoryMockServer.uploadedReports;
 		assertThat(reports).hasSize(1);
-		assertThat(reports.getFirst(0)).startsWith("uploads/master/1645713803000-86f9d655bf8a204d98bc3542e0d15cea38cc7c74/some-test/jacoco/jacoco-");
+		// Ensure infos from src/main/resources/git.properties are picked up
+		assertThat(reports.getFirst(0)).startsWith("uploads/master/1645713803000-86f9d655bf8a204d98bc3542e0d15cea38cc7c74/");
 	}
 }

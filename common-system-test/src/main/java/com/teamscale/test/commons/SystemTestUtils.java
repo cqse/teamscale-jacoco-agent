@@ -64,6 +64,7 @@ public class SystemTestUtils {
 		Call<Void> dump();
 	}
 
+	/** Instructs the agent via HTTP to dump the currently collected coverage. */
 	public static void dumpCoverage(int agentPort) throws IOException {
 		new Retrofit.Builder().baseUrl("http://localhost:" + agentPort).build()
 				.create(AgentService.class).dump().execute();
