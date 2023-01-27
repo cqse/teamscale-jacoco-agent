@@ -211,12 +211,12 @@ directories, you can get the commit info via
 
 The following options must be set in the Teamscale Artifactory Connector to import reports stored with the new standard upload schema (will get the default with one of the upcoming releases):
 - Path Search Pattern: `uploads/**` or `**/uploads/**` when directories before the upload root are present
-- Branch Extraction Pattern: `uploads\/([^/]+)\/\d+(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*`
-- Timestamp Extraction Pattern: `uploads\/[^/]+\/(\d+)(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*`
-- Timestamp Interpretation: `timestamp:millis`
-- Prefix Extraction Pattern: `uploads\/[^/]+\/\d+(?:-[abcdef0-9]+)?\/[^/]+\/([^/]+\/.*)`
-- Partition Pattern (expert option): `uploads\/[^/]+\/\d+(?:-[abcdef0-9]+)?\/([^/]+)\/[^/]+\/.*`
-- Analysis report mapping (expert option): `**/jacoco/**->JACOCO`
+- Branch Extraction Pattern: `uploads\/([^/]+)\/\d+(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*` (default since Teamscale 8.2)
+- Timestamp Extraction Pattern: `uploads\/[^/]+\/(\d+)(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*` (default since Teamscale 8.2)
+- Timestamp Interpretation: `timestamp:millis` (default since Teamscale 8.2)
+- Prefix Extraction Pattern: `uploads\/[^/]+\/\d+(?:-[abcdef0-9]+)?\/([^/]+\/[^/]+\/.*)` (default since Teamscale 8.2)
+- Partition Pattern (expert option): `([^/]+)\/[^/]+\/.*` (default since Teamscale 8.2)
+- Analysis report mapping (expert option): `**/jacoco/**->JACOCO` (part of the default since Teamscale 8.2)
 
 ### The legacy standard upload schema
 ```
