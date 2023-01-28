@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] Fixed the prefix extraction pattern and the partition pattern for Artifactory in the agent's documentation
 
 # 28.0.0
 - [breaking change] removed support for JavaWS
