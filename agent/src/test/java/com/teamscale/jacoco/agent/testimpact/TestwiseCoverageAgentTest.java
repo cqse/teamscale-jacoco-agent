@@ -86,9 +86,9 @@ public class TestwiseCoverageAgentTest {
 		assertThat(testRun.getPrioritizedClusters()).hasSize(1);
 		assertThat(testRun.getPrioritizedClusters().get(0).tests).hasSize(1);
 		PrioritizableTest test = testRun.getPrioritizedClusters().get(0).tests.get(0);
-		assertThat(test.uniformPath).isEqualTo("test2");
+		assertThat(test.testName).isEqualTo("test2");
 
-		RunningTest runningTest = testRun.startTest(test.uniformPath);
+		RunningTest runningTest = testRun.startTest(test.testName);
 		runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
 		testRun.endTestRun();

@@ -46,8 +46,8 @@ public class CustomTestFramework {
 
 		for (PrioritizableTestCluster cluster : testRun.getPrioritizedClusters()) {
 			for (PrioritizableTest test : cluster.tests) {
-				Runnable runnable = allTests.get(test.uniformPath);
-				RunningTest runningTest = testRun.startTest(test.uniformPath);
+				Runnable runnable = allTests.get(test.testName);
+				RunningTest runningTest = testRun.startTest(test.testName);
 				try {
 					runnable.run();
 					runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, ""));
