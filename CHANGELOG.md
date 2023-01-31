@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [fix] Fixed the prefix extraction pattern and the partition pattern for Artifactory in the agent's documentation
+- [fix/breaking change] _teamscale-client_, _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Teamscale 8.0 introduced the concept of execution units. To distinguish them from normal, singular test executions, the `-test-exection-` and `-execution-unit-` uniform path prefixes were introduced. This broke gradle and maven test runner plugins because the actual test paths and Teamscale's uniform paths did not match anymore. To prevent this, `testName` is now exposed by the teamscale client and used by the plugins which corresponds to the uniform path without the prefixes. **If you're using the client, or listen to the `/testrun/start` API from the Teamscale JaCoCo agent, this is a breaking change.** You now need to use `testName` in your runner, not the `uniformPath`.
 
 # 28.0.0
 - [breaking change] removed support for JavaWS
