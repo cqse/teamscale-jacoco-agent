@@ -65,7 +65,7 @@ public class CoverageToTeamscaleStrategyTest {
 		strategy.testRunEnd();
 
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"tests\":[{\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
+				matches("\\Q{\"partial\":true,\"tests\":[{\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
 				any(), any(), any(), any());
 	}
 
@@ -94,7 +94,7 @@ public class CoverageToTeamscaleStrategyTest {
 		strategy.testRunEnd();
 
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"tests\":[{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
+				matches("\\Q{\"partial\":true,\"tests\":[{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"mytest\",\"uniformPath\":\"mytest\"}]}\\E"),
 				any(), any(), any(), any());
 	}
 
