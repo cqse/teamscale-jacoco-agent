@@ -19,9 +19,21 @@ publishAs {
 
 ext {
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
+	jettyVersion = '9.4.28.v20200408'
+	jerseyVersion = '2.31'
 }
 
 dependencies {
+
+	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
+	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+
+	implementation "org.glassfish.jersey.core:jersey-server:${jerseyVersion}"
+	implementation "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}"
+	implementation "org.glassfish.jersey.containers:jersey-container-jetty-http:${jerseyVersion}"
+	implementation "org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}"
+	implementation "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}"
+
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 
