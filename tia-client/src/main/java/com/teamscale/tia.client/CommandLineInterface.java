@@ -81,7 +81,13 @@ public class CommandLineInterface {
 	}
 
 	private void endTestRun() throws Exception {
-		AgentCommunicationUtils.handleRequestError(api::testRunFinished,
+		boolean partial;
+		if (arguments.size() == 1) {
+			partial = Boolean.parseBoolean(arguments.remove(0));
+		} else {
+			partial = false;
+		}
+		AgentCommunicationUtils.handleRequestError(() -> api.testRunFinished(partial),
 				"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 	}
 

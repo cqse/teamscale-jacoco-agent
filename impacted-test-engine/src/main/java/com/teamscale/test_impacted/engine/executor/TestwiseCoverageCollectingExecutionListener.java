@@ -46,15 +46,17 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private final ITestDescriptorResolver testDescriptorResolver;
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
+	private final boolean partial;
 
 	private final Map<UniqueId, TestExecutionResult> testResultCache = new HashMap<>();
 
 	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
 												ITestDescriptorResolver testDescriptorResolver,
-												EngineExecutionListener engineExecutionListener) {
+												EngineExecutionListener engineExecutionListener, boolean partial) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
+		this.partial = partial;
 	}
 
 	@Override
@@ -187,7 +189,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private void endTestRun() {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testRunFinished().execute();
+				apiService.testRunFinished(partial).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");

@@ -11,9 +11,12 @@ public class TestwiseCoverageReport {
 	 * partition. These tests are added or updated in Teamscale, but no tests or executable units that are missing in
 	 * the report will be deleted.
 	 */
-	public final boolean partial = true;
+	public final boolean partial;
 
 	/** The tests contained in the report. */
 	public final List<TestInfo> tests = new ArrayList<>();
 
+	public TestwiseCoverageReport(boolean partial) {
+		this.partial = partial;
+	}
 }

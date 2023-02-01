@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Tooling did not provide a way to set the partial flag
 
 # 29.0.0
 - [fix] Fixed the prefix extraction pattern and the partition pattern for Artifactory in the agent's documentation

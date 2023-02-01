@@ -119,7 +119,7 @@ open class TestwiseCoverageReportTask : DefaultTask() {
 
         logger.info("Merging report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
-        val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions)
+        val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions, reportConfig.partial)
         logger.info("Writing report to ${reportConfig.reportFiles}")
         ReportUtils.writeTestwiseCoverageReport(reportConfig.reportFiles.singleFile, report)
     }

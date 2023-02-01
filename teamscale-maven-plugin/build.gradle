@@ -6,6 +6,7 @@ class MavenExec extends Exec {
 		def mavenExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvnw.cmd" : "./mvnw"
 		setExecutable(mavenExecutable)
 		workingDir('.')
+		environment("AGENT_VERSION", project.version)
 		super.exec()
 	}
 }

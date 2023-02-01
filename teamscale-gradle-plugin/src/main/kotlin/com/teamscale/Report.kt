@@ -35,5 +35,9 @@ data class Report(
 
     /** The commit message shown in Teamscale for the upload. */
     @Input
-    var message: String
+    var message: String,
+
+    /** Whether the report only contains partial data (subset of tests). Only relevant for TESTWISE_COVERAGE. */
+    @Input
+    var partial: Boolean = false
 )

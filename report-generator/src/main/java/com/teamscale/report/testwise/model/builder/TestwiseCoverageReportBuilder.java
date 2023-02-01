@@ -25,7 +25,8 @@ public class TestwiseCoverageReportBuilder {
 	public static TestwiseCoverageReport createFrom(
 			Collection<? extends TestDetails> testDetailsList,
 			Collection<TestCoverageBuilder> testCoverage,
-			Collection<TestExecution> testExecutions
+			Collection<TestExecution> testExecutions,
+			boolean partial
 	) {
 		TestwiseCoverageReportBuilder report = new TestwiseCoverageReportBuilder();
 		for (TestDetails testDetails : testDetailsList) {
@@ -47,7 +48,7 @@ public class TestwiseCoverageReportBuilder {
 			}
 			container.setExecution(testExecution);
 		}
-		return report.build();
+		return report.build(partial);
 	}
 
 	private static TestInfoBuilder resolveUniformPath(TestwiseCoverageReportBuilder report, String uniformPath) {
@@ -70,8 +71,8 @@ public class TestwiseCoverageReportBuilder {
 		return uniformPath.replaceFirst("(.*\\))\\[.*]", "$1");
 	}
 
-	private TestwiseCoverageReport build() {
-		TestwiseCoverageReport report = new TestwiseCoverageReport();
+	private TestwiseCoverageReport build(boolean partial) {
+		TestwiseCoverageReport report = new TestwiseCoverageReport(partial);
 		List<TestInfoBuilder> testInfoBuilders = new ArrayList<>(tests.values());
 		testInfoBuilders.sort(Comparator.comparing(TestInfoBuilder::getUniformPath));
 		for (TestInfoBuilder testInfoBuilder : testInfoBuilders) {

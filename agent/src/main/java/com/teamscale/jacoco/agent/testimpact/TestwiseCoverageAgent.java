@@ -125,7 +125,8 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 	private String handleTestRunEnd(Request request,
 									Response response) throws IOException, CoverageGenerationException {
-		testEventHandler.testRunEnd();
+		boolean partial = Boolean.parseBoolean(request.queryParamOrDefault("partial", "false"));
+		testEventHandler.testRunEnd(partial);
 		response.status(SC_NO_CONTENT);
 		return "";
 	}

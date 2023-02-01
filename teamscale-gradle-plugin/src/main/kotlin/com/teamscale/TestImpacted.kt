@@ -2,9 +2,6 @@ package com.teamscale
 
 import com.teamscale.config.extension.TeamscalePluginExtension
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
-import groovy.lang.Closure
-import org.gradle.api.Action
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
@@ -13,9 +10,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
-import org.gradle.api.tasks.testing.junit.JUnitOptions
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
-import org.gradle.api.tasks.testing.testng.TestNGOptions
 import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
@@ -147,7 +142,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
             }
 
             val reportConfig = taskExtension.report
-            val report = reportConfig.getReport()
+            val report = reportConfig.getReport().copy(partial = runImpacted && !runAllTests)
 
             reportTask.addTestArtifactsDirs(report, reportOutputDir)
 

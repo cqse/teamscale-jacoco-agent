@@ -95,7 +95,7 @@ public class TestEngineOptions {
 
 	private ITestExecutor createTestExecutor() {
 		if (!isRunImpacted()) {
-			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis);
+			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis, false);
 		}
 
 		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),

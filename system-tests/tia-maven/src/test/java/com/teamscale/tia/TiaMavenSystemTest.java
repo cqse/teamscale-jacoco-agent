@@ -41,6 +41,7 @@ public class TiaMavenSystemTest {
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(unitTestReport.tests).hasSize(2);
+		assertThat(unitTestReport.partial).isTrue();
 		assertAll(() -> {
 			assertThat(unitTestReport.tests).extracting(test -> test.uniformPath)
 					.containsExactlyInAnyOrder("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()");

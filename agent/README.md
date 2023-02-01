@@ -323,8 +323,10 @@ The agent's REST API has the following endpoints:
     If not given, the time since the last uploaded testwise coverage report is used (i.e. the last time you
     ran the TIA).
 
-- `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled
-  `teamscale-testwise-upload`, this will upload a testwise coverage report to Teamscale.
+- `[POST] /testrun/end?partial=true` If you configured a connection to Teamscale via the `teamscale-` options and enabled
+  `tia-mode=teamscale-upload`, this will upload a testwise coverage report to Teamscale. `partial` describes whether the 
+  recorded tests represent a subset of all tests i.e. only impacted tests were executed. This tells Teamscale to keep 
+- tests even if they are not present in the latest report. Defaults to `false`.
 - `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
 - `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
   The body of the request may optionally contain the test execution result in json format:
