@@ -1,12 +1,13 @@
 package com.teamscale
 
 import com.teamscale.config.extension.TeamscaleJacocoReportTaskExtension
-import com.teamscale.config.extension.TeamscaleTestTaskExtension
 import com.teamscale.config.extension.TeamscalePluginExtension
+import com.teamscale.config.extension.TeamscaleTestTaskExtension
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.tasks.JacocoReport
@@ -85,6 +86,10 @@ open class TeamscalePlugin : Plugin<Project> {
         project: Project,
         pluginExtension: TeamscalePluginExtension
     ) {
+        val agentPortGenerator: Provider<AgentPortGenerator> = project.gradle.sharedServices.registerIfAbsent(
+            "agent-port-generator",
+            AgentPortGenerator::class.java
+        ) {}
         project.tasks.withType(TestImpacted::class.java) { testImpactedTask ->
             /** Configures the given impacted test executor. */
             project.logger.info(
@@ -94,6 +99,8 @@ open class TeamscalePlugin : Plugin<Project> {
                 }"
             )
             val extension = pluginExtension.applyTo(testImpactedTask)
+            val port = agentPortGenerator.get().getNextPort()
+            extension.agent.useLocalAgent( "http://127.0.0.1:${port}/")
             testImpactedTask.apply {
                 taskExtension = extension
                 this.pluginExtension = pluginExtension

@@ -2,6 +2,7 @@ plugins {
 	id 'com.teamscale.java-convention'
 	id 'java-library'
 	id 'com.teamscale.coverage'
+	id 'com.teamscale.shadow-convention'
 	id 'com.teamscale.publish'
 }
 

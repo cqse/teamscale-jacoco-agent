@@ -13,7 +13,3 @@ dependencies {
 	api 'com.squareup.moshi:moshi:1.14.0'
 	api 'com.teamscale:teamscale-lib-commons:8.3.2'
 }
-
-repositories {
-	mavenCentral()
-}
