@@ -5,6 +5,7 @@ import org.gradle.api.publish.Publication
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 
+/** Extension that holds the information that will end up in the POM file published to Maven Central. */
 open class PublicationInfoExtension(objects: ObjectFactory, val project: Project) {
     val artifactId: Property<String> = objects.property(String::class.java).convention(project.name)
     val readableName: Property<String> = objects.property(String::class.java)

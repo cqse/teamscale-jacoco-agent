@@ -5,6 +5,8 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
+// Automatic configures dependency relocation
+// see https://imperceptiblethoughts.com/shadow/configuration/relocation/#automatically-relocating-dependencies
 tasks.register<ConfigureShadowRelocation>("relocateShadowJar") {
     target = tasks.getByName<ShadowJar>("shadowJar")
     onlyIf {

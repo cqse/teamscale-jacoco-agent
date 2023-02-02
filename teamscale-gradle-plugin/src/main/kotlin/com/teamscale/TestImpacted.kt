@@ -160,6 +160,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
     }
 
     private fun collectAllDependentJavaProjects(project: Project, seenProjects: MutableSet<Project> = mutableSetOf()): Set<Project> {
+        // seenProjects helps to detect cycles in the dependency graph
         if (seenProjects.contains(project) || !project.pluginManager.hasPlugin("java")) {
             return setOf()
         }
