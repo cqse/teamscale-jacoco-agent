@@ -7,6 +7,7 @@ import org.gradle.api.services.BuildServiceParameters
 abstract class AgentPortGenerator : BuildService<BuildServiceParameters.None> {
     private var nextPort = 8123
 
+    /** Generates a new unique port number to be used by a JaCoCo agent. */
     @Synchronized
     fun getNextPort(): Int {
         return nextPort++
