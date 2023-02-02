@@ -2,9 +2,6 @@ package com.teamscale
 
 import com.teamscale.config.extension.TeamscalePluginExtension
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
-import groovy.lang.Closure
-import org.gradle.api.Action
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.FileCollection
@@ -13,9 +10,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
-import org.gradle.api.tasks.testing.junit.JUnitOptions
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
-import org.gradle.api.tasks.testing.testng.TestNGOptions
 import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
@@ -151,7 +146,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
 
             reportTask.addTestArtifactsDirs(report, reportOutputDir)
 
-            getAllDependentJavaProjects(project).forEach { subProject ->
+            collectAllDependentJavaProjects(project).forEach { subProject ->
                 val sourceSets = subProject.property("sourceSets") as SourceSetContainer
                 reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
             }
@@ -162,15 +157,17 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         super.executeTests()
     }
 
-    private fun getAllDependentJavaProjects(project: Project): Set<Project> {
+    private fun collectAllDependentJavaProjects(project: Project, seenProjects: MutableSet<Project> = mutableSetOf()): Set<Project> {
+        if (seenProjects.contains(project) || !project.pluginManager.hasPlugin("java")) {
+            return setOf()
+        }
+        seenProjects.add(project)
         return project.configurations
             .getByName("testRuntimeClasspath")
             .allDependencies
             .withType(ProjectDependency::class.java)
             .map { it.dependencyProject }
-            .filter { it != project }
-            .filter { it.pluginManager.hasPlugin("java") }
-            .flatMap { getAllDependentJavaProjects(it) }
+            .flatMap { collectAllDependentJavaProjects(it, seenProjects) }
             .union(listOf(project))
     }
 
