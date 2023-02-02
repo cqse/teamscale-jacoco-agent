@@ -1,19 +1,24 @@
 import org.gradle.api.Project
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.publish.Publication
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 
 open class PublicationInfoExtension(objects: ObjectFactory, val project: Project) {
-    val artifactId: Property<String> = objects.property(String::class.java)
+    val artifactId: Property<String> = objects.property(String::class.java).convention(project.name)
     val readableName: Property<String> = objects.property(String::class.java)
     val description: Property<String> = objects.property(String::class.java)
 
-    fun applyTo(mavenPublication: MavenPublication) {
-        project.afterEvaluate {
-            mavenPublication.artifactId = artifactId.get()
+    fun applyTo(publication: Publication) {
+        if (publication is MavenPublication) {
+            if (!publication.name.contains("PluginMarkerMaven")) {
+                project.afterEvaluate {
+                    publication.artifactId = artifactId.get()
+                }
+            }
+            publication.pom.configureGeneralPomInfo(this)
         }
-        mavenPublication.pom.configureGeneralPomInfo(this)
     }
 }
 
