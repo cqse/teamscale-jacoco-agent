@@ -23,6 +23,3 @@ dependencies {
 	testImplementation 'com.teamscale:teamscale-lib-commons:8.3.2'
 }
 
-repositories {
-	mavenCentral()
-}
