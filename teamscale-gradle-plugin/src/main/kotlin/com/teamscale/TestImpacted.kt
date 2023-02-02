@@ -133,6 +133,8 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         val testFrameworkOptions = options
         require(testFrameworkOptions is JUnitPlatformOptions) { "Only JUnit Platform is supported as test framework!" }
         if (collectTestwiseCoverage.get()) {
+            require(maxParallelForks == 1) { "maxParallelForks is ${maxParallelForks}. Testwise coverage collection is only supported for maxParallelForks=1!" }
+
             classpath = classpath.plus(testEngineConfiguration)
 
             jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
