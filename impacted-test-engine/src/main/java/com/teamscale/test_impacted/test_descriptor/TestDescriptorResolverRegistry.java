@@ -1,5 +1,7 @@
 package com.teamscale.test_impacted.test_descriptor;
 
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ClassLoaderUtils;
 import org.junit.platform.engine.TestEngine;
 
@@ -8,10 +10,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
- * Registry containing the default and custom {@link ITestDescriptorResolver}s discovered by the java {@link
- * ServiceLoader}.
+ * Registry containing the default and custom {@link ITestDescriptorResolver}s discovered by the java
+ * {@link ServiceLoader}.
  */
 public class TestDescriptorResolverRegistry {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(TestDescriptorResolverRegistry.class);
 
 	private static final Map<String, ITestDescriptorResolver> TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID = new HashMap<>();
 
@@ -33,7 +37,13 @@ public class TestDescriptorResolverRegistry {
 
 	/** Returns the test descriptor resolver or null if none exists for the test engine. */
 	public static ITestDescriptorResolver getTestDescriptorResolver(TestEngine testEngine) {
-		return TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.get(testEngine.getId());
+		String testEngineId = testEngine.getId();
+		if (!TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.containsKey(testEngineId)) {
+			LOGGER.warn(() -> testEngineId + " is not officially supported! You can add support by " +
+					"implementing the ITestDescriptorResolver interface and making the implementation via the Java Service Loader mechanism!");
+			return TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.get("junit-jupiter");
+		}
+		return TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.get(testEngineId);
 	}
 
 }
