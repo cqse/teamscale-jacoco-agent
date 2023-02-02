@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 29.1.0
 - [feature] _teamscale-gradle-plugin_: Allow parallel test execution with testwise coverage collection
 - [fix] _teamscale-gradle-plugin_: Verify that maxParallelForks is 1
 - [fix] _impacted-test-engine_: Provide sane fallback for non-supported test engines
