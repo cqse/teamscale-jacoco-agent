@@ -144,7 +144,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
             }
 
             val reportConfig = taskExtension.report
-            val report = reportConfig.getReport()
+            val report = reportConfig.getReport().copy(partial = runImpacted && !runAllTests)
 
             reportTask.addTestArtifactsDirs(report, reportOutputDir)
 

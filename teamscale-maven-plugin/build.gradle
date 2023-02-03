@@ -6,7 +6,9 @@ class MavenExec extends Exec {
 		def mavenExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvnw.cmd" : "./mvnw"
 		setExecutable(mavenExecutable)
 		workingDir('.')
+		project.file('pom.xml').text = project.file('pom.xml').text.replaceAll("<teamscale.agent.version>[^<]+</teamscale.agent.version>", "<teamscale.agent.version>$project.version</teamscale.agent.version>")
 		super.exec()
+		project.file('pom.xml').text = project.file('pom.xml').text.replaceAll("<teamscale.agent.version>[^<]+</teamscale.agent.version>", "<teamscale.agent.version>29.0.0</teamscale.agent.version>")
 	}
 }
 

@@ -12,9 +12,11 @@ import java.util.List;
 public class TestwiseCoverageCollectingTestExecutor implements ITestExecutor {
 
 	private final List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
+	private final boolean partial;
 
-	public TestwiseCoverageCollectingTestExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis) {
+	public TestwiseCoverageCollectingTestExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis, boolean partial) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
+		this.partial = partial;
 	}
 
 	@Override
@@ -23,7 +25,7 @@ public class TestwiseCoverageCollectingTestExecutor implements ITestExecutor {
 				.getTestDescriptorResolver(testExecutorRequest.testEngine);
 		TestwiseCoverageCollectingExecutionListener executionListener =
 				new TestwiseCoverageCollectingExecutionListener(testwiseCoverageAgentApis, testDescriptorResolver,
-						testExecutorRequest.engineExecutionListener);
+						testExecutorRequest.engineExecutionListener, partial);
 
 		testExecutorRequest.testEngine.execute(new ExecutionRequest(testExecutorRequest.engineTestDescriptor,
 				executionListener, testExecutorRequest.configurationParameters));

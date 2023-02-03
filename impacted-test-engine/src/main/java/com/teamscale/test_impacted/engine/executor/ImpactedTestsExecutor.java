@@ -23,7 +23,7 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 
 	public ImpactedTestsExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
 								 ImpactedTestsProvider impactedTestsProvider) {
-		super(testwiseCoverageAgentApis);
+		super(testwiseCoverageAgentApis, !impactedTestsProvider.isIncludeNonImpacted());
 		this.impactedTestsProvider = impactedTestsProvider;
 	}
 

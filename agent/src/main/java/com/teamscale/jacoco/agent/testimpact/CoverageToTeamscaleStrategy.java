@@ -43,6 +43,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	private File testExecFile;
 	private final List<TestExecution> testExecutions = new ArrayList<>();
 	private List<ClusteredTestDetails> availableTests = new ArrayList<>();
+
 	private final JaCoCoTestwiseReportGenerator reportGenerator;
 
 	public CoverageToTeamscaleStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
@@ -106,13 +107,13 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public void testRunEnd() throws IOException, CoverageGenerationException {
+	public void testRunEnd(boolean partial) throws IOException, CoverageGenerationException {
 		if (testExecFile == null) {
 			logger.warn("Tried to end a test run that contained no tests!");
 			return;
 		}
 
-		String testwiseCoverageJson = createTestwiseCoverageReport();
+		String testwiseCoverageJson = createTestwiseCoverageReport(partial);
 		try {
 			teamscaleClient
 					.uploadReport(EReportFormat.TESTWISE_COVERAGE, testwiseCoverageJson,
@@ -133,7 +134,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	 * Creates a testwise coverage report from the coverage collected in {@link #testExecFile} and the test execution
 	 * information in {@link #testExecutions}.
 	 */
-	private String createTestwiseCoverageReport() throws IOException, CoverageGenerationException {
+	private String createTestwiseCoverageReport(boolean partial) throws IOException, CoverageGenerationException {
 		List<String> executionUniformPaths = testExecutions.stream().map(execution -> {
 			if (execution == null) {
 				return null;
@@ -142,16 +143,16 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 			}
 		}).collect(toList());
 
-		logger.debug("Creating testwise coverage form available tests `{}`, test executions `{}` and exec file",
+		logger.debug("Creating testwise coverage from available tests `{}`, test executions `{}`, exec file and partial {}",
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
-				executionUniformPaths);
+				executionUniformPaths, partial);
 		reportGenerator.updateClassDirCache();
 		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
 		logger.debug("Created testwise coverage report (containing coverage for tests `{}`)",
 				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
 
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
-				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions);
+				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions, partial);
 
 		testExecFile.delete();
 		testExecFile = null;

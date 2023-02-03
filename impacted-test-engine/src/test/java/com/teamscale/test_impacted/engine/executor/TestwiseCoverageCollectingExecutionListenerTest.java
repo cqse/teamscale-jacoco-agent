@@ -38,7 +38,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 	private final EngineExecutionListener executionListenerMock = mock(EngineExecutionListener.class);
 
 	private final TestwiseCoverageCollectingExecutionListener executionListener = new TestwiseCoverageCollectingExecutionListener(
-			singletonList(mockApi), resolver, executionListenerMock);
+			singletonList(mockApi), resolver, executionListenerMock, true);
 
 	private final UniqueId rootId = UniqueId.forEngine("dummy");
 
@@ -48,7 +48,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		when(mockApi.testStarted(anyString())).thenReturn(mock(Call.class));
 		when(mockApi.testFinished(anyString())).thenReturn(mock(Call.class));
 		when(mockApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
-		when(mockApi.testRunFinished()).thenReturn(mock(Call.class));
+		when(mockApi.testRunFinished(any())).thenReturn(mock(Call.class));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -102,7 +102,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(executionListenerMock).executionFinished(testClass, successful());
 		executionListener.executionFinished(testRoot, successful());
 		verify(executionListenerMock).executionFinished(testRoot, successful());
-		verify(mockApi).testRunFinished();
+		verify(mockApi).testRunFinished(true);
 
 		verifyNoMoreInteractions(mockApi);
 		verifyNoMoreInteractions(executionListenerMock);

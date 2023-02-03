@@ -91,9 +91,9 @@ public class TestwiseCoverageAgentTest {
 		RunningTest runningTest = testRun.startTest(test.testName);
 		runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
-		testRun.endTestRun();
+		testRun.endTestRun(true);
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
+				matches("\\Q{\"partial\":true,\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
 				any(), any(), any(), any());
 	}
 

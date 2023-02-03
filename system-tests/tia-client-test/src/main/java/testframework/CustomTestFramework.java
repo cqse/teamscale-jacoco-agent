@@ -58,7 +58,7 @@ public class CustomTestFramework {
 			}
 		}
 
-		testRun.endTestRun();
+		testRun.endTestRun(true);
 	}
 
 }
