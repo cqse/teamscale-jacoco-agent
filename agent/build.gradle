@@ -56,16 +56,7 @@ shadowJar {
 	archiveFileName.set('teamscale-jacoco-agent.jar')
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
-
-		// The jaxb library, which we are shading is a multi release jar, so we have to explicitly "inherit" this attribute
-		attributes 'Multi-Release': 'true'
 	}
-
-	// Fix relocation of multi version jar
-	// Default would be shadow/META-INF/versions/9/, which is wrong
-	// See http://openjdk.java.net/jeps/238
-	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
-	relocate 'META-INF/versions/16/', 'META-INF/versions/16/shadow/'
 }
 
 startShadowScripts {
@@ -100,8 +91,4 @@ processResources {
 			it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
 		}
 	}
-}
-
-repositories {
-	mavenCentral()
 }

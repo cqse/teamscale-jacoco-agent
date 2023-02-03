@@ -133,6 +133,8 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         val testFrameworkOptions = options
         require(testFrameworkOptions is JUnitPlatformOptions) { "Only JUnit Platform is supported as test framework!" }
         if (collectTestwiseCoverage.get()) {
+            require(maxParallelForks == 1) { "maxParallelForks is ${maxParallelForks}. Testwise coverage collection is only supported for maxParallelForks=1!" }
+
             classpath = classpath.plus(testEngineConfiguration)
 
             jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
@@ -146,7 +148,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
 
             reportTask.addTestArtifactsDirs(report, reportOutputDir)
 
-            getAllDependentJavaProjects(project).forEach { subProject ->
+            collectAllDependentJavaProjects(project).forEach { subProject ->
                 val sourceSets = subProject.property("sourceSets") as SourceSetContainer
                 reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
             }
@@ -157,15 +159,18 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         super.executeTests()
     }
 
-    private fun getAllDependentJavaProjects(project: Project): Set<Project> {
+    private fun collectAllDependentJavaProjects(project: Project, seenProjects: MutableSet<Project> = mutableSetOf()): Set<Project> {
+        // seenProjects helps to detect cycles in the dependency graph
+        if (seenProjects.contains(project) || !project.pluginManager.hasPlugin("java")) {
+            return setOf()
+        }
+        seenProjects.add(project)
         return project.configurations
             .getByName("testRuntimeClasspath")
             .allDependencies
             .withType(ProjectDependency::class.java)
             .map { it.dependencyProject }
-            .filter { it != project }
-            .filter { it.pluginManager.hasPlugin("java") }
-            .flatMap { getAllDependentJavaProjects(it) }
+            .flatMap { collectAllDependentJavaProjects(it, seenProjects) }
             .union(listOf(project))
     }
 

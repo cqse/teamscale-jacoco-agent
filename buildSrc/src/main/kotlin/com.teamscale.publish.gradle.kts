@@ -7,7 +7,6 @@ plugins {
 }
 
 val extension = extensions.create<PublicationInfoExtension>("publishAs", project)
-extension.artifactId.set(name)
 
 java {
     withJavadocJar()
@@ -20,25 +19,12 @@ tasks.named<Javadoc>("javadoc") {
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
+        configureEach {
             extension.applyTo(this)
-
-            val publication = this
-            var hasShadow = false
-            pluginManager.withPlugin("com.github.johnrengelman.shadow") {
-                val shadowExtension = extensions.getByName<ShadowExtension>("shadow")
-                shadowExtension.component(publication)
-                artifact(tasks["sourcesJar"])
-                artifact(tasks["javadocJar"])
-                hasShadow = true
-            }
-
-            // we do not want to publish both the shadow and the normal jar (this causes errors during publishing)
-            if (!hasShadow) {
-                pluginManager.withPlugin("java-library") {
-                    from(components["java"])
-                }
-            }
+        }
+        // We don't want to create the publication for the Gradle plugin project as it creates its own publication
+        if (project.name != "teamscale-gradle-plugin") {
+            configureMavenPublication()
         }
     }
 }
@@ -48,5 +34,26 @@ signing {
         // Do not require signing for deployment to maven local
         gradle.taskGraph.hasTask("publish")
     })
-    sign(publishing.publications["maven"])
+    sign(publishing.publications)
+}
+
+fun PublicationContainer.configureMavenPublication() {
+    create<MavenPublication>("maven") {
+        val publication = this
+        var hasShadow = false
+        pluginManager.withPlugin("com.github.johnrengelman.shadow") {
+            val shadowExtension = extensions.getByName<ShadowExtension>("shadow")
+            shadowExtension.component(publication)
+            artifact(tasks["sourcesJar"])
+            artifact(tasks["javadocJar"])
+            hasShadow = true
+        }
+
+        // we do not want to publish both the shadow and the normal jar (this causes errors during publishing)
+        if (!hasShadow) {
+            pluginManager.withPlugin("java-library") {
+                from(components["java"])
+            }
+        }
+    }
 }
