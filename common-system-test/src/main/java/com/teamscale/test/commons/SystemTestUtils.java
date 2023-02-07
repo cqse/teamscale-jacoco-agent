@@ -18,7 +18,7 @@ public class SystemTestUtils {
 
 	/**
 	 * Turns the coverage of the given {@link TestInfo} into a string for simple assertions.
-	 *
+	 * <p>
 	 * Example: {@code file1.java:1,7-12;file2.java:9-22,33}
 	 */
 	public static String getCoverageString(TestInfo info) {
@@ -41,7 +41,10 @@ public class SystemTestUtils {
 			if (SystemUtils.isWindows()) {
 				executable = "./mvnw.cmd";
 			}
-			result = ProcessUtils.execute(new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
+			// TODO Remove debug parameter
+			result = ProcessUtils.execute(
+					new ProcessBuilder(executable, "clean", "verify", "-Dmaven.surefire.debug").directory(
+							workingDirectory));
 		} catch (IOException e) {
 			throw new IOException(
 					"Failed to run ./mvnw clean verify in directory " + workingDirectory.getAbsolutePath(),
