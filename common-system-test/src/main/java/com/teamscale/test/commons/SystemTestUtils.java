@@ -41,10 +41,7 @@ public class SystemTestUtils {
 			if (SystemUtils.isWindows()) {
 				executable = "./mvnw.cmd";
 			}
-			// TODO Remove debug parameter
-			result = ProcessUtils.execute(
-					new ProcessBuilder(executable, "clean", "verify", "-Dmaven.surefire.debug").directory(
-							workingDirectory));
+			result = ProcessUtils.execute(new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
 		} catch (IOException e) {
 			throw new IOException(
 					"Failed to run ./mvnw clean verify in directory " + workingDirectory.getAbsolutePath(),

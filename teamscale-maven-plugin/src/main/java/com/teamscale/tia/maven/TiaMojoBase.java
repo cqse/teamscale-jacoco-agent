@@ -184,6 +184,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedEndCommit);
+		setTiaProperty("partition", getPartition());
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 
 		Path agentConfigFile = createAgentConfigFiles();

@@ -7,7 +7,7 @@ package com.teamscale.client;
 public class ClusteredTestDetails extends TestDetails {
 
 	/**
-	 * A unique identifier for the cluster this test should be prioritized within. If null the test gets assigned it's
+	 * A unique identifier for the cluster this test should be prioritized within. If null the test gets assigned its
 	 * own unique cluster.
 	 */
 	public String clusterId;
