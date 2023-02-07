@@ -47,6 +47,8 @@ public class TeamscaleMockServer {
 	public final List<String> uploadedReports = new ArrayList<>();
 	/** All user agents that were present in the received requests. */
 	public final Set<String> collectedUserAgents = new HashSet<>();
+
+	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
 	public final Set<ClusteredTestDetails> availableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
