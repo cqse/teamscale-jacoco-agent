@@ -29,7 +29,7 @@ if (project.hasProperty("sonatypeUsername") &&
 		project.hasProperty("signing.keyId") &&
 		project.hasProperty("gpgDirectory")) {
 
-	task publishMavenPublicationToMavenRepository(type: MavenExec, dependsOn: [':agent:publishToMavenLocal']) {
+	task publishMavenPublicationToSonatypeRepository(type: MavenExec, dependsOn: [':agent:publishToMavenLocal']) {
 		doFirst {
 			file("/tmp/maven-settings.xml").write("""
 <settings>
