@@ -6,6 +6,7 @@ import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
+import com.teamscale.tia.client.UrlUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -92,7 +93,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private void startTest(String testUniformPath) {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testStarted(testUniformPath).execute();
+				apiService.testStarted(UrlUtils.percentEncode(testUniformPath)).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error while calling service api.");
@@ -176,9 +177,9 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
 				if (testExecution == null) {
-					apiService.testFinished(testUniformPath).execute();
+					apiService.testFinished(UrlUtils.percentEncode(testUniformPath)).execute();
 				} else {
-					apiService.testFinished(testUniformPath, testExecution).execute();
+					apiService.testFinished(UrlUtils.percentEncode(testUniformPath), testExecution).execute();
 				}
 			}
 		} catch (IOException e) {

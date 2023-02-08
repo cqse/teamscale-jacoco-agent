@@ -37,6 +37,8 @@ public class TiaMavenSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project");
 
+		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
+
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(2);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);

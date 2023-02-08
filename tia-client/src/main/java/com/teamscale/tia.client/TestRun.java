@@ -47,7 +47,7 @@ public class TestRun {
 	 *                                         start and end events.
 	 */
 	public RunningTest startTest(String uniformPath) throws AgentHttpRequestFailedException {
-		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(uniformPath),
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(UrlUtils.percentEncode(uniformPath)),
 				"Failed to start coverage recording for test case " + uniformPath);
 		return new RunningTest(uniformPath, api);
 	}
