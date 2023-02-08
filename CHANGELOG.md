@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 29.1.2
 - [fix] _teamscale-maven-plugin_: Partition was not correctly provided to the impacted test engine
 - [fix] _tia-client_: Semicolons in test names were not correctly sent to the Teamscale JaCoCo Agent
 
