@@ -1,10 +1,12 @@
 package com.teamscale.tia.client;
 
+/** Utils for URL encoding as the Java internal URLEncoder does not handle all escape-worthy symbols for path segments. */
 public class UrlUtils {
 
 	/**
 	 * Percent-decodes a string, such as used in a URL Path (not a query string / form encode, which uses + for spaces,
-	 * etc)
+	 * etc).
+	 * Source: https://stackoverflow.com/a/44076794
 	 */
 	public static String percentEncode(String encodeMe) {
 		if (encodeMe == null) {

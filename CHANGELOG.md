@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [fix] _teamscale-maven-plugin_: Partition was not correctly provided to the impacted test engine
+- [fix] _tia-client_: Semicolons in test names were not correctly sent to the Teamscale JaCoCo Agent
 
 # 29.1.1
 - [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Tooling did not provide a way to set the partial flag
