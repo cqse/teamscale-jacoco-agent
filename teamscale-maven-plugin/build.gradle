@@ -35,12 +35,7 @@ if (project.hasProperty("sonatypeUsername") &&
 <settings>
 	<servers>
 		<server>
-			<id>sonatype-nexus-snapshots</id>
-			<username>${project.property("sonatypeUsername")}</username>
-			<password>${project.property("sonatypePassword")}</password>
-		</server>
-		<server>
-			<id>sonatype-nexus-staging</id>
+			<id>ossrh</id>
 			<username>${project.property("sonatypeUsername")}</username>
 			<password>${project.property("sonatypePassword")}</password>
 		</server>
