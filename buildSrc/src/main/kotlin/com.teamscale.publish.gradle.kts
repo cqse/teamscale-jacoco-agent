@@ -32,7 +32,7 @@ publishing {
 signing {
     setRequired({
         // Do not require signing for deployment to maven local
-        gradle.taskGraph.hasTask("publish")
+        project.findProperty("signing.password") != null && project.findProperty("signing.secretKeyRingFile") != null
     })
     sign(publishing.publications)
 }
