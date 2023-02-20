@@ -34,7 +34,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
     }
 
     /** The local agent's server url to connect to. */
-    var localAgent: TeamscaleAgent? = TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:8123/")!!)
+    var localAgent: TeamscaleAgent? = null
 
     /** A remote agent's server url to connect to. */
     var remoteAgent: TeamscaleAgent? = null

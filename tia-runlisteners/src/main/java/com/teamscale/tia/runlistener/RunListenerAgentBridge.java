@@ -107,6 +107,6 @@ public class RunListenerAgentBridge {
 	 */
 	public void testRunFinished() {
 		logger.debug("Finished test run");
-		handleErrors(testRun::endTestRun, "Finishing the test run");
+		handleErrors(() -> testRun.endTestRun(false), "Finishing the test run");
 	}
 }

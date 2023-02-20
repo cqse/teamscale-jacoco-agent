@@ -6,7 +6,9 @@ class MavenExec extends Exec {
 		def mavenExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvnw.cmd" : "./mvnw"
 		setExecutable(mavenExecutable)
 		workingDir('.')
+		project.file('pom.xml').text = project.file('pom.xml').text.replaceAll("<teamscale.agent.version>[^<]+</teamscale.agent.version>", "<teamscale.agent.version>$project.version</teamscale.agent.version>")
 		super.exec()
+		project.file('pom.xml').text = project.file('pom.xml').text.replaceAll("<teamscale.agent.version>[^<]+</teamscale.agent.version>", "<teamscale.agent.version>29.0.0</teamscale.agent.version>")
 	}
 }
 
@@ -27,18 +29,13 @@ if (project.hasProperty("sonatypeUsername") &&
 		project.hasProperty("signing.keyId") &&
 		project.hasProperty("gpgDirectory")) {
 
-	task publishMavenPublicationToMavenRepository(type: MavenExec, dependsOn: [':agent:publishToMavenLocal']) {
+	task publishMavenPublicationToSonatypeRepository(type: MavenExec, dependsOn: [':agent:publishToMavenLocal']) {
 		doFirst {
 			file("/tmp/maven-settings.xml").write("""
 <settings>
 	<servers>
 		<server>
-			<id>sonatype-nexus-snapshots</id>
-			<username>${project.property("sonatypeUsername")}</username>
-			<password>${project.property("sonatypePassword")}</password>
-		</server>
-		<server>
-			<id>sonatype-nexus-staging</id>
+			<id>ossrh</id>
 			<username>${project.property("sonatypeUsername")}</username>
 			<password>${project.property("sonatypePassword")}</password>
 		</server>

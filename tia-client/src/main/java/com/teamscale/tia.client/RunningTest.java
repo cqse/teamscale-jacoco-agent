@@ -11,9 +11,9 @@ import okhttp3.ResponseBody;
 import java.io.IOException;
 
 /**
- * Represents a single test that is currently being executed by the caller of this library. Use {@link
- * #endTest(TestRun.TestResultWithMessage)} or {@link #endTestAndRetrieveCoverage(TestRun.TestResultWithMessage)} to
- * signal that executing the test case has finished and test-wise coverage for this test should be stored.
+ * Represents a single test that is currently being executed by the caller of this library. Use
+ * {@link #endTest(TestRun.TestResultWithMessage)} or {@link #endTestAndRetrieveCoverage(TestRun.TestResultWithMessage)}
+ * to signal that executing the test case has finished and test-wise coverage for this test should be stored.
  */
 @SuppressWarnings("unused")
 public class RunningTest {
@@ -48,7 +48,7 @@ public class RunningTest {
 		TestExecution execution = new TestExecution(uniformPath, 0L, result.result,
 				result.message);
 		ResponseBody body = AgentCommunicationUtils
-				.handleRequestError(() -> api.testFinished(uniformPath, execution),
+				.handleRequestError(() -> api.testFinished(UrlUtils.percentEncode(uniformPath), execution),
 						"Failed to end coverage recording for test case " + uniformPath +
 								". Coverage for that test case is most likely lost.");
 
@@ -81,8 +81,8 @@ public class RunningTest {
 	 * yourself.
 	 * <p>
 	 * This method assumes that the agent is configured to return each test's coverage data via HTTP. It will receive
-	 * and parse the data. If the agent is configured differently, this method will throw a terminal {@link
-	 * RuntimeException}. In this case, you must reconfigure the agent with the `tia-mode=http` option enabled.
+	 * and parse the data. If the agent is configured differently, this method will throw a terminal
+	 * {@link RuntimeException}. In this case, you must reconfigure the agent with the `tia-mode=http` option enabled.
 	 *
 	 * @throws AgentHttpRequestFailedException if communicating with the agent fails or in case of internal errors. This
 	 *                                         method already retries the request once, so this is likely a terminal
@@ -94,7 +94,8 @@ public class RunningTest {
 		// the agent already records test duration, so we can simply provide a dummy value here
 		TestExecution execution = new TestExecution(uniformPath, 0L, result.result,
 				result.message);
-		ResponseBody body = AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
+		ResponseBody body = AgentCommunicationUtils.handleRequestError(
+				() -> api.testFinished(UrlUtils.percentEncode(uniformPath), execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 

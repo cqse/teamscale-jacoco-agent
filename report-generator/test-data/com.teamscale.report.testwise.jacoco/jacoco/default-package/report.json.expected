@@ -1,4 +1,5 @@
 {
+  "partial": true,
 	"tests": [
 		{
 			"duration": 0.026,

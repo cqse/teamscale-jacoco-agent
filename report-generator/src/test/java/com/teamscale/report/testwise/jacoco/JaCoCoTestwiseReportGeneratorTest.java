@@ -68,7 +68,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends TestDataBase {
 			testExecutions.add(new TestExecution(test.getUniformPath(), test.getUniformPath().length(),
 					ETestExecutionResult.PASSED));
 		}
-		return TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.getTests(), testExecutions);
+		return TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.getTests(), testExecutions, true);
 	}
 
 }

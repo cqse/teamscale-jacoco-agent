@@ -11,6 +11,7 @@ import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -115,8 +116,9 @@ public class TestwiseCoverageResource extends ResourceBase {
 
 	@POST
 	@Path("/testrun/end")
-	public Response handleTestRunEnd() throws IOException, CoverageGenerationException {
-		TESTWISE_COVERAGE_AGENT.testEventHandler.testRunEnd();
+	public Response handleTestRunEnd(
+			@DefaultValue("false") @QueryParam("partial") boolean partial) throws IOException, CoverageGenerationException {
+		TESTWISE_COVERAGE_AGENT.testEventHandler.testRunEnd(partial);
 		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
 	}
 

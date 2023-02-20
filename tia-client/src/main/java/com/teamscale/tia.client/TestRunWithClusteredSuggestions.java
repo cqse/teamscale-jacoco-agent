@@ -11,7 +11,7 @@ import java.util.List;
  * The caller of this class should retrieve the test clusters to execute from {@link #getPrioritizedClusters()}, run
  * them (in the given order if possible) and report test start and end events via {@link #startTest(String)} )}.
  * <p>
- * After having run all tests, call {@link #endTestRun()} to create a testwise coverage report and upload it to
+ * After having run all tests, call {@link #endTestRun(boolean)} to create a testwise coverage report and upload it to
  * Teamscale.
  */
 public class TestRunWithClusteredSuggestions extends TestRun {

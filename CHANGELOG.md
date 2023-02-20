@@ -6,6 +6,32 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 29.1.2
+- [fix] _teamscale-maven-plugin_: Partition was not correctly provided to the impacted test engine
+- [fix] _tia-client_: Semicolons in test names were not correctly sent to the Teamscale JaCoCo Agent
+
+# 29.1.1
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Tooling did not provide a way to set the partial flag
+
+# 29.1.0
+- [feature] _teamscale-gradle-plugin_: Allow parallel test execution with testwise coverage collection
+- [fix] _teamscale-gradle-plugin_: Verify that maxParallelForks is 1
+- [fix] _impacted-test-engine_: Provide sane fallback for non-supported test engines
+
+# 29.0.0
+- [fix] Fixed the prefix extraction pattern and the partition pattern for Artifactory in the agent's documentation
+- [fix/breaking change] _teamscale-client_, _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Teamscale 8.0 introduced the concept of execution units. To distinguish them from normal, singular test executions, the `-test-exection-` and `-execution-unit-` uniform path prefixes were introduced. This broke gradle and maven test runner plugins because the actual test paths and Teamscale's uniform paths did not match anymore. To prevent this, `testName` is now exposed by the teamscale client and used by the plugins which corresponds to the uniform path without the prefixes. **If you're using the client, or listen to the `/testrun/start` API from the Teamscale JaCoCo agent, this is a breaking change.** You now need to use `testName` in your runner, not the `uniformPath`.
+
+# 28.0.0
+- [breaking change] removed support for JavaWS
+- [fix] Fixed git.properties detection when directories are on the classpath
+
+# 27.0.2
+- [fix] Updated dependencies (Fixes #225, CVE-2022-42889)
+
+# 27.0.1
+- [fix] _teamscale-gradle-plugin_: Property 'outputLocation' is declared as an output property of Report xml (type TaskGeneratedSingleFileReport) but does not have a task associated with it.
+
 # 27.0.0
 
 - [fix] _teamscale-gradle-plugin_: Failed to upload JUnit reports

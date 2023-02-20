@@ -1,10 +1,10 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version "1.7.20"
+	id 'org.jetbrains.kotlin.jvm' version "1.7.21"
 	id 'com.teamscale.java-convention'
 	id 'java-gradle-plugin'
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
-	id "com.gradle.plugin-publish" version "1.0.0"
+	id "com.gradle.plugin-publish" version "1.1.0"
 }
 
 java {
@@ -59,8 +59,4 @@ test {
 	dependsOn ':teamscale-client:publishToMavenLocal'
 	dependsOn ':tia-client:publishToMavenLocal'
 	dependsOn ':report-generator:publishToMavenLocal'
-}
-
-repositories {
-	mavenCentral()
 }

@@ -4,6 +4,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
+import com.teamscale.tia.client.UrlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -38,17 +39,17 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 	private final EngineExecutionListener executionListenerMock = mock(EngineExecutionListener.class);
 
 	private final TestwiseCoverageCollectingExecutionListener executionListener = new TestwiseCoverageCollectingExecutionListener(
-			singletonList(mockApi), resolver, executionListenerMock);
+			singletonList(mockApi), resolver, executionListenerMock, true);
 
 	private final UniqueId rootId = UniqueId.forEngine("dummy");
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	void setupMockApi() {
-		when(mockApi.testStarted(anyString())).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(anyString())).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
-		when(mockApi.testRunFinished()).thenReturn(mock(Call.class));
+		when(mockApi.testStarted(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
+		when(mockApi.testFinished(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
+		when(mockApi.testFinished(UrlUtils.percentEncode(anyString()), any())).thenReturn(mock(Call.class));
+		when(mockApi.testRunFinished(any())).thenReturn(mock(Call.class));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -83,10 +84,10 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 
 		// Execution of impacted test case.
 		executionListener.executionStarted(impactedTestCase);
-		verify(mockApi).testStarted("MyClass/impactedTestCase()");
+		verify(mockApi).testStarted(UrlUtils.percentEncode("MyClass/impactedTestCase()"));
 		verify(executionListenerMock).executionStarted(impactedTestCase);
 		executionListener.executionFinished(impactedTestCase, successful());
-		verify(mockApi).testFinished(eq("MyClass/impactedTestCase()"), any());
+		verify(mockApi).testFinished(eq(UrlUtils.percentEncode("MyClass/impactedTestCase()")), any());
 		verify(executionListenerMock).executionFinished(impactedTestCase, successful());
 
 		// Non impacted test case is skipped.
@@ -102,7 +103,7 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(executionListenerMock).executionFinished(testClass, successful());
 		executionListener.executionFinished(testRoot, successful());
 		verify(executionListenerMock).executionFinished(testRoot, successful());
-		verify(mockApi).testRunFinished();
+		verify(mockApi).testRunFinished(true);
 
 		verifyNoMoreInteractions(mockApi);
 		verifyNoMoreInteractions(executionListenerMock);

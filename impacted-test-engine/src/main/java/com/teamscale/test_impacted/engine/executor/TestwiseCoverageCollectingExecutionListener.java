@@ -6,6 +6,7 @@ import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
+import com.teamscale.tia.client.UrlUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -46,15 +47,17 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private final ITestDescriptorResolver testDescriptorResolver;
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
+	private final boolean partial;
 
 	private final Map<UniqueId, TestExecutionResult> testResultCache = new HashMap<>();
 
 	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
 												ITestDescriptorResolver testDescriptorResolver,
-												EngineExecutionListener engineExecutionListener) {
+												EngineExecutionListener engineExecutionListener, boolean partial) {
 		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
+		this.partial = partial;
 	}
 
 	@Override
@@ -90,7 +93,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private void startTest(String testUniformPath) {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testStarted(testUniformPath).execute();
+				apiService.testStarted(UrlUtils.percentEncode(testUniformPath)).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error while calling service api.");
@@ -174,9 +177,9 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
 				if (testExecution == null) {
-					apiService.testFinished(testUniformPath).execute();
+					apiService.testFinished(UrlUtils.percentEncode(testUniformPath)).execute();
 				} else {
-					apiService.testFinished(testUniformPath, testExecution).execute();
+					apiService.testFinished(UrlUtils.percentEncode(testUniformPath), testExecution).execute();
 				}
 			}
 		} catch (IOException e) {
@@ -187,7 +190,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private void endTestRun() {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testRunFinished().execute();
+				apiService.testRunFinished(partial).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");

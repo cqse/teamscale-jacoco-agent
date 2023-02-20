@@ -53,14 +53,14 @@ public class AvailableTests {
 	public Set<UniqueId> convertToUniqueIds(List<PrioritizableTest> impactedTests) {
 		Set<UniqueId> list = new HashSet<>();
 		for (PrioritizableTest impactedTest : impactedTests) {
-			LOGGER.info(() -> impactedTest.uniformPath + " " + impactedTest.selectionReason);
+			LOGGER.info(() -> impactedTest.testName + " " + impactedTest.selectionReason);
 
-			UniqueId testUniqueId = uniformPathToUniqueIdMapping.get(impactedTest.uniformPath);
+			UniqueId testUniqueId = uniformPathToUniqueIdMapping.get(impactedTest.testName);
 			if (testUniqueId == null) {
-				LOGGER.error(() -> "Retrieved invalid test '" + impactedTest.uniformPath + "' from Teamscale server!");
+				LOGGER.error(() -> "Retrieved invalid test '" + impactedTest.testName + "' from Teamscale server!");
 				LOGGER.error(() -> "The following seem related:");
 				uniformPathToUniqueIdMapping.keySet().stream().sorted(Comparator
-						.comparing(testPath -> StringUtils.editDistance(impactedTest.uniformPath, testPath))).limit(5)
+								.comparing(testPath -> StringUtils.editDistance(impactedTest.testName, testPath))).limit(5)
 						.forEach(testAlternative -> LOGGER.error(() -> " - " + testAlternative));
 
 				LOGGER.error(() -> "Falling back to execute all...");

@@ -42,12 +42,12 @@ dependencies {
 	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
 	// We need to stay on the 1.3.x release line as 1.4.x requires Java 11
-	implementation 'ch.qos.logback:logback-core:1.3.3'
-	implementation 'ch.qos.logback:logback-classic:1.3.3'
+	implementation 'ch.qos.logback:logback-core:1.3.4'
+	implementation 'ch.qos.logback:logback-classic:1.3.4'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 	implementation 'com.beust:jcommander:1.82'
-	implementation 'com.teamscale:teamscale-lib-commons:8.3.2'
+	implementation 'com.teamscale:teamscale-lib-commons:8.4.2'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 	implementation 'com.sparkjava:spark-core:2.9.4'
@@ -68,16 +68,7 @@ shadowJar {
 	archiveFileName.set('teamscale-jacoco-agent.jar')
 	manifest {
 		attributes 'Premain-Class': 'com.teamscale.jacoco.agent.PreMain'
-
-		// The jaxb library, which we are shading is a multi release jar, so we have to explicitly "inherit" this attribute
-		attributes 'Multi-Release': 'true'
 	}
-
-	// Fix relocation of multi version jar
-	// Default would be shadow/META-INF/versions/9/, which is wrong
-	// See http://openjdk.java.net/jeps/238
-	relocate 'META-INF/versions/9/', 'META-INF/versions/9/shadow/'
-	relocate 'META-INF/versions/16/', 'META-INF/versions/16/shadow/'
 }
 
 startShadowScripts {
@@ -112,8 +103,4 @@ processResources {
 			it.replace('%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%', rootProject.appVersion)
 		}
 	}
-}
-
-repositories {
-	mavenCentral()
 }

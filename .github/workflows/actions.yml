@@ -28,17 +28,6 @@ jobs:
         file: '{agent/build/distributions/teamscale-jacoco-agent.zip,javaws-wrapper/build/distributions/javaws.zip}'
         file_glob: true
         overwrite: true
-    - name: Publish to Maven Central
-      run: |
-        ./gradlew publishMavenPublicationToMavenRepository \
-          -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
-          -PgpgDirectory=${{ github.workspace }}/.gnupg \
-          -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG_SIGNATURE }} \
-          -Psigning.keyId=4FB80B8E \
-          -PsonatypeUsername=${{ secrets.SONATYPE_USER }} \
-          -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} \
-          -Porg.gradle.internal.http.connectionTimeout=500000 \
-          -Porg.gradle.internal.http.socketTimeout=500000
     - name: Publish to Gradle Plugin Portal
       if: startsWith(github.ref, 'refs/tags/v')
       run: |
@@ -48,37 +37,43 @@ jobs:
           -Psigning.keyId=4FB80B8E \
           -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} \
           -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
+    - name: Publish to Maven Central
+      run: |
+        ./gradlew publishMavenPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository \
+          -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
+          -PgpgDirectory=${{ github.workspace }}/.gnupg \
+          -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG_SIGNATURE }} \
+          -Psigning.keyId=4FB80B8E \
+          -PsonatypeUsername=${{ secrets.SONATYPE_USER }} \
+          -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
     - name: Upload coverage to Teamscale
       if: always() && github.event_name == 'push'
-      run: |
-        curl -L -o teamscale-upload.zip https://github.com/cqse/teamscale-upload/releases/download/v1.0.0/teamscale-upload-linux.zip
-        unzip teamscale-upload.zip
-        ./teamscale-upload \
-          -s ${{ secrets.TS_DEMO_URL }} \
-          -p teamscale-jacoco-agent \
-          -u ${{ secrets.TS_DEMO_USER }} \
-          -a ${{ secrets.TS_DEMO_ACCESSKEY }} \
-          -t Coverage \
-          -f JACOCO \
-          --message Coverage \
-          --detect-commit \
-          **/jacocoTestReport.xml
+      uses: cqse/teamscale-upload-action@v2.4.0
+      with:
+        server: 'https://cqse.teamscale.io'
+        project: 'teamscale-jacoco-agent'
+        user: ${{ secrets.CQSE_TEAMSCALE_IO_USER }}
+        accesskey: ${{ secrets.CQSE_TEAMSCALE_IO_ACCESSKEY }}
+        partition: 'Coverage'
+        format: 'JACOCO'
+        message: 'Coverage'
+        files: '**/jacocoTestReport.xml'
 
   docker:
     runs-on: ubuntu-latest
     steps:
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@v4
       with:
         images: cqse/teamscale-jacoco-agent
     - name: Login to DockerHub
       if: github.event_name != 'pull_request'
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USER }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}

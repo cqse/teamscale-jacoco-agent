@@ -1,4 +1,5 @@
 {
+  "partial": true,
   "tests": [
     {
       "uniformPath": "com/example/project/JUnit4Test/testMul",

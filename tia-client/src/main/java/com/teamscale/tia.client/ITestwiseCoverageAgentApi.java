@@ -39,18 +39,18 @@ public interface ITestwiseCoverageAgentApi {
 
 	/** Test start. */
 	@POST("test/start/{testUniformPath}")
-	Call<ResponseBody> testStarted(@Path("testUniformPath") String testUniformPath);
+	Call<ResponseBody> testStarted(@Path(value = "testUniformPath", encoded = true) String testUniformPath);
 
 	/** Test finished. */
 	@POST("test/end/{testUniformPath}")
 	Call<ResponseBody> testFinished(
-			@Path("testUniformPath") String testUniformPath
+			@Path(value = "testUniformPath", encoded = true) String testUniformPath
 	);
 
 	/** Test finished. */
 	@POST("test/end/{testUniformPath}")
 	Call<ResponseBody> testFinished(
-			@Path("testUniformPath") String testUniformPath,
+			@Path(value = "testUniformPath", encoded = true) String testUniformPath,
 			@Body TestExecution testExecution
 	);
 
@@ -66,9 +66,13 @@ public interface ITestwiseCoverageAgentApi {
 			@Body List<ClusteredTestDetails> availableTests
 	);
 
-	/** Test run finished. Generate test-wise coverage report and upload to Teamscale. */
+	/**
+	 * Test run finished. Generate test-wise coverage report and upload to Teamscale.
+	 *
+	 * @param partial Whether the test recording only contains a subset of the available tests.
+	 */
 	@POST("testrun/end")
-	Call<ResponseBody> testRunFinished();
+	Call<ResponseBody> testRunFinished(@Query("partial") Boolean partial);
 
 	/**
 	 * Generates a {@link Retrofit} instance for this service, which uses basic auth to authenticate against the server

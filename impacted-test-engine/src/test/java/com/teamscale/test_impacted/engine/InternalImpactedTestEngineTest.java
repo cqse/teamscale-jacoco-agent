@@ -7,6 +7,7 @@ import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
+import com.teamscale.tia.client.UrlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -73,10 +74,11 @@ class InternalImpactedTestEngineTest {
 		when(testEngineRegistry.getTestEngine(any())).thenReturn(testEngine);
 		when(testEngineRegistry.iterator()).thenReturn(singletonList(testEngine).iterator());
 		when(testEngine.getId()).thenReturn("junit-jupiter");
-		when(testwiseCoverageAgentApi.testStarted(anyString())).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testFinished(anyString())).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testFinished(anyString(), any())).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testRunFinished()).thenReturn(mock(Call.class));
+		when(testwiseCoverageAgentApi.testStarted(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
+		when(testwiseCoverageAgentApi.testFinished(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
+		when(testwiseCoverageAgentApi.testFinished(UrlUtils.percentEncode(anyString()), any())).thenReturn(
+				mock(Call.class));
+		when(testwiseCoverageAgentApi.testRunFinished(any())).thenReturn(mock(Call.class));
 	}
 
 	@SafeVarargs

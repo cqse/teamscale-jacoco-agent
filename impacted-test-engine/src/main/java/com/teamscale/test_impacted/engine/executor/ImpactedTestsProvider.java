@@ -50,6 +50,11 @@ public class ImpactedTestsProvider {
 		this.includeFailedAndSkipped = includeFailedAndSkipped;
 	}
 
+	/** @see #includeNonImpacted  */
+	public boolean isIncludeNonImpacted() {
+		return includeNonImpacted;
+	}
+
 	/** Queries Teamscale for impacted tests. */
 	public List<PrioritizableTestCluster> getImpactedTestsFromTeamscale(
 			List<ClusteredTestDetails> availableTestDetails) {

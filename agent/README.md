@@ -211,12 +211,12 @@ directories, you can get the commit info via
 
 The following options must be set in the Teamscale Artifactory Connector to import reports stored with the new standard upload schema (will get the default with one of the upcoming releases):
 - Path Search Pattern: `uploads/**` or `**/uploads/**` when directories before the upload root are present
-- Branch Extraction Pattern: `uploads\/([^/]+)\/\d+(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*`
-- Timestamp Extraction Pattern: `uploads\/[^/]+\/(\d+)(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*`
-- Timestamp Interpretation: `timestamp:millis`
-- Prefix Extraction Pattern: `uploads\/[^/]+\/\d+(?:-[abcdef0-9]+)?\/[^/]+\/([^/]+\/.*)`
-- Partition Pattern (expert option): `uploads\/[^/]+\/\d+(?:-[abcdef0-9]+)?\/([^/]+)\/[^/]+\/.*`
-- Analysis report mapping (expert option): `**/jacoco/**->JACOCO`
+- Branch Extraction Pattern: `uploads\/([^/]+)\/\d+(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*` (default since Teamscale 8.2)
+- Timestamp Extraction Pattern: `uploads\/[^/]+\/(\d+)(?:-[abcdef0-9]+)?\/[^/]+\/[^/]+\/.*` (default since Teamscale 8.2)
+- Timestamp Interpretation: `timestamp:millis` (default since Teamscale 8.2)
+- Prefix Extraction Pattern: `uploads\/[^/]+\/\d+(?:-[abcdef0-9]+)?\/([^/]+\/[^/]+\/.*)` (default since Teamscale 8.2)
+- Partition Pattern (expert option): `([^/]+)\/[^/]+\/.*` (default since Teamscale 8.2)
+- Analysis report mapping (expert option): `**/jacoco/**->JACOCO` (part of the default since Teamscale 8.2)
 
 ### The legacy standard upload schema
 ```
@@ -323,8 +323,10 @@ The agent's REST API has the following endpoints:
     If not given, the time since the last uploaded testwise coverage report is used (i.e. the last time you
     ran the TIA).
 
-- `[POST] /testrun/end` If you configured a connection to Teamscale via the `teamscale-` options and enabled
-  `teamscale-testwise-upload`, this will upload a testwise coverage report to Teamscale.
+- `[POST] /testrun/end?partial=true` If you configured a connection to Teamscale via the `teamscale-` options and enabled
+  `tia-mode=teamscale-upload`, this will upload a testwise coverage report to Teamscale. `partial` describes whether the 
+  recorded tests represent a subset of all tests i.e. only impacted tests were executed. This tells Teamscale to keep 
+- tests even if they are not present in the latest report. Defaults to `false`.
 - `[POST] /test/start/{uniformPath}` Signals to the agent that the test with the given uniformPath is about to start.
 - `[POST] /test/end/{uniformPath}` Signals to the agent that the test with the given uniformPath has just finished.
   The body of the request may optionally contain the test execution result in json format:

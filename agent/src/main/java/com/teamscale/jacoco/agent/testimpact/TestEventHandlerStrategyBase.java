@@ -133,7 +133,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 * Signals that the test run has ended. Strategies that support this can upload a report via the {@link
 	 * #teamscaleClient} here.
 	 */
-	public void testRunEnd() throws IOException, CoverageGenerationException {
+	public void testRunEnd(boolean partial) throws IOException, CoverageGenerationException {
 		throw new UnsupportedOperationException("You configured the agent in a mode that does not support uploading " +
 				"reports to Teamscale. Please configure 'tia-mode=teamscale-upload' or simply don't call" +
 				"POST /testrun/end.");

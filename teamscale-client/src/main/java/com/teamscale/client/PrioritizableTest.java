@@ -8,7 +8,10 @@ import com.squareup.moshi.Json;
  */
 public class PrioritizableTest {
 
-	/** The uniform path the test (without -test- prefix). */
+	/** The uniform path without the "-test-execution" or "-execution-unit-" prefix */
+	public String testName;
+
+	/** The uniform path of the test including the "-test-execution" or "-execution-unit-" prefix. */
 	public String uniformPath;
 
 	/** The reason the test has been selected. */
@@ -32,14 +35,13 @@ public class PrioritizableTest {
 	public double score;
 
 	/**
-	 * Field for storing the tests rank. The rank is the 1-based index of the test
-	 * in the prioritized list.
+	 * Field for storing the tests rank. The rank is the 1-based index of the test in the prioritized list.
 	 */
 	@Json(name = "rank")
 	public int rank;
 
-	public PrioritizableTest(String uniformPath) {
-		this.uniformPath = uniformPath;
+	public PrioritizableTest(String testName) {
+		this.testName = testName;
 	}
 
 }
