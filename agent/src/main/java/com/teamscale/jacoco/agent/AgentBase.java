@@ -98,12 +98,7 @@ public abstract class AgentBase {
 		ServletContextHandler handler = buildUsingResourceConfig();
 		server = new Server(options.getHttpServerPort());
 		server.setHandler(handler);
-		try {
-			server.start();
-			server.join();
-		} finally {
-			server.destroy();
-		}
+		server.start();
 	}
 
 	private ServletContextHandler buildUsingResourceConfig() {

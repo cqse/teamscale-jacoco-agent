@@ -24,10 +24,11 @@ import java.util.Optional;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 
+@Path("/")
 public class TestwiseCoverageResource extends ResourceBase {
 
 	/** Path parameter placeholder used in the HTTP requests. */
-	private static final String TEST_ID_PARAMETER = "{testId}";
+	private static final String TEST_ID_PARAMETER = "testId";
 
 	/** JSON adapter for test executions. */
 	private final JsonAdapter<TestExecution> testExecutionJsonAdapter = new Moshi.Builder().build()
@@ -52,7 +53,7 @@ public class TestwiseCoverageResource extends ResourceBase {
 
 
 	@POST
-	@Path("/test/start/" + TEST_ID_PARAMETER)
+	@Path("/test/start/{" + TEST_ID_PARAMETER + "}")
 	public Response handleTestStart(@PathParam(TEST_ID_PARAMETER) String testId) {
 		if (testId == null || testId.isEmpty()) {
 			handleBadRequest("Test name is missing!");
@@ -65,7 +66,7 @@ public class TestwiseCoverageResource extends ResourceBase {
 	}
 
 	@POST
-	@Path("/test/end/" + TEST_ID_PARAMETER)
+	@Path("/test/end/{" + TEST_ID_PARAMETER + "}")
 	public Response handleTestEnd(@PathParam(TEST_ID_PARAMETER) String testId,
 								  String requestBody) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		if (testId == null || testId.isEmpty()) {
