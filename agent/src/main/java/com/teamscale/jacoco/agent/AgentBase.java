@@ -13,8 +13,10 @@ import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.jacoco.agent.rt.RT;
@@ -96,7 +98,17 @@ public abstract class AgentBase {
 
 		//Jersey Implementation
 		ServletContextHandler handler = buildUsingResourceConfig();
-		server = new Server(options.getHttpServerPort());
+		QueuedThreadPool threadPool = new QueuedThreadPool();
+		threadPool.setMaxThreads(10);
+		threadPool.setDaemon(true);
+
+		// Create a server instance
+		server = new Server(threadPool);
+
+		// Create a server connector and set the thread pool
+		ServerConnector connector = new ServerConnector(server);
+		connector.setPort(options.getHttpServerPort());
+		server.addConnector(connector);
 		server.setHandler(handler);
 		server.start();
 	}
