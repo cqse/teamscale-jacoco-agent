@@ -25,6 +25,10 @@ import java.util.Optional;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.eclipse.jetty.http.MimeTypes.Type.APPLICATION_JSON;
 
+/**
+ * The resource of the Jersey + Jetty http server holding all the endpoints specific for the
+ * {@link TestwiseCoverageAgent}.
+ */
 @Path("/")
 public class TestwiseCoverageResource extends ResourceBase {
 
@@ -39,20 +43,25 @@ public class TestwiseCoverageResource extends ResourceBase {
 	private final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsAdapter = new Moshi.Builder().build()
 			.adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
 
-	private static TestwiseCoverageAgent TESTWISE_COVERAGE_AGENT;
+	private static TestwiseCoverageAgent testwiseCoverageAgent;
 
+	/**
+	 * Static setter to inject the {@link TestwiseCoverageAgent} to the resource.
+	 */
 	public static void setAgent(TestwiseCoverageAgent agent) {
-		TestwiseCoverageResource.TESTWISE_COVERAGE_AGENT = agent;
-		ResourceBase.AGENT_BASE = agent;
+		TestwiseCoverageResource.testwiseCoverageAgent = agent;
+		ResourceBase.agentBase = agent;
 	}
 
+	/** Returns the session ID of the current test. */
 	@GET
 	@Path("/test")
 	public String getTest() {
-		return TESTWISE_COVERAGE_AGENT.controller.getSessionId();
+		return testwiseCoverageAgent.controller.getSessionId();
 	}
 
 
+	/** Handles the start of a new test case by setting the session ID. */
 	@POST
 	@Path("/test/start/{" + TEST_ID_PARAMETER + "}")
 	public Response handleTestStart(@PathParam(TEST_ID_PARAMETER) String testId) {
@@ -62,10 +71,11 @@ public class TestwiseCoverageResource extends ResourceBase {
 
 		logger.debug("Start test " + testId);
 
-		TESTWISE_COVERAGE_AGENT.testEventHandler.testStart(testId);
+		testwiseCoverageAgent.testEventHandler.testStart(testId);
 		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
 	}
 
+	/** Handles the end of a test case by resetting the session ID. */
 	@POST
 	@Path("/test/end/{" + TEST_ID_PARAMETER + "}")
 	public Response handleTestEnd(@PathParam(TEST_ID_PARAMETER) String testId,
@@ -77,13 +87,14 @@ public class TestwiseCoverageResource extends ResourceBase {
 		logger.debug("End test " + testId);
 		Optional<TestExecution> testExecution = getTestExecution(testId, requestBody);
 
-		String responseBody = TESTWISE_COVERAGE_AGENT.testEventHandler.testEnd(testId, testExecution.orElse(null));
+		String responseBody = testwiseCoverageAgent.testEventHandler.testEnd(testId, testExecution.orElse(null));
 		if (responseBody == null) {
 			return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
 		}
 		return Response.status(SC_OK).entity(responseBody).type(APPLICATION_JSON.asString()).build();
 	}
 
+	/** Handles the start of a new testrun. */
 	@POST
 	@Path("/testrun/start")
 	public Response handleTestRunStart(@QueryParam("include-non-impacted") boolean includeNonImpactedTests,
@@ -108,17 +119,18 @@ public class TestwiseCoverageResource extends ResourceBase {
 			}
 		}
 
-		String responseBody = TESTWISE_COVERAGE_AGENT.testEventHandler.testRunStart(availableTests,
+		String responseBody = testwiseCoverageAgent.testEventHandler.testRunStart(availableTests,
 				includeNonImpactedTests, includeAddedTests,
 				includeFailedAndSkipped, baseline);
 		return Response.status(SC_OK).entity(responseBody).type(APPLICATION_JSON.asString()).build();
 	}
 
+	/** Handles the end of a new testrun. */
 	@POST
 	@Path("/testrun/end")
 	public Response handleTestRunEnd(
 			@DefaultValue("false") @QueryParam("partial") boolean partial) throws IOException, CoverageGenerationException {
-		TESTWISE_COVERAGE_AGENT.testEventHandler.testRunEnd(partial);
+		testwiseCoverageAgent.testEventHandler.testRunEnd(partial);
 		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
 	}
 

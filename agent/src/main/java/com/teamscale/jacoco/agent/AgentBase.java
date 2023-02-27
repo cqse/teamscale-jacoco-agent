@@ -122,6 +122,9 @@ public abstract class AgentBase {
 		return handler;
 	}
 
+	/**
+	 * Initializes the {@link ResourceConfig} needed for the Jetty + Jersey Server
+	 */
 	protected abstract ResourceConfig initResourceConfig();
 
 	/**

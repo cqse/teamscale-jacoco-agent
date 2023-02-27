@@ -15,6 +15,9 @@ import org.glassfish.jersey.server.ResourceConfig;
  */
 public class TestwiseCoverageAgent extends AgentBase {
 
+	/**
+	 * The test event strategy handler.
+	 */
 	protected final TestEventHandlerStrategyBase testEventHandler;
 
 
