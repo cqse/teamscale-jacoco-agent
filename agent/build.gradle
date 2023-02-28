@@ -19,8 +19,8 @@ publishAs {
 
 ext {
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
-	jettyVersion = '9.4.28.v20200408'
-	jerseyVersion = '2.31'
+	jettyVersion = '9.4.51.v20230217'
+	jerseyVersion = '2.39'
 }
 
 dependencies {

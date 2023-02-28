@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -27,7 +26,7 @@ public class AgentResource extends ResourceBase {
 	public Response handleDump() {
 		logger.debug("Dumping report triggered via HTTP request");
 		agent.dumpReport();
-		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
+		return Response.noContent().build();
 	}
 
 	/** Handles resetting of coverage. */
@@ -36,7 +35,7 @@ public class AgentResource extends ResourceBase {
 	public Response handleReset() {
 		logger.debug("Resetting coverage triggered via HTTP request");
 		agent.controller.reset();
-		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
+		return Response.noContent().build();
 	}
 
 }

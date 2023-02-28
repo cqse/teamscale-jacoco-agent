@@ -1,7 +1,5 @@
 package com.teamscale.jacoco.agent;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
@@ -10,7 +8,6 @@ import com.teamscale.report.testwise.model.RevisionInfo;
 import org.conqat.lib.commons.string.StringUtils;
 import org.slf4j.Logger;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -33,10 +30,6 @@ public abstract class ResourceBase {
 	 */
 	protected static AgentBase agentBase;
 
-	/** JSON adapter for revision information. */
-	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
-			.adapter(RevisionInfo.class);
-
 	/** Returns the partition for the Teamscale upload. */
 	@GET
 	@Path("/partition")
@@ -55,14 +48,14 @@ public abstract class ResourceBase {
 	/** Returns revision information for the Teamscale upload. */
 	@GET
 	@Path("/revision")
-	public String getRevision() {
+	public RevisionInfo getRevision() {
 		return this.getRevisionInfo();
 	}
 
 	/** Returns revision information for the Teamscale upload. */
 	@GET
 	@Path("/commit")
-	public String getCommit() {
+	public RevisionInfo getCommit() {
 		return this.getRevisionInfo();
 	}
 
@@ -78,7 +71,7 @@ public abstract class ResourceBase {
 		logger.debug("Changing partition name to " + partition);
 		agentBase.controller.setSessionId(partition);
 		agentBase.options.getTeamscaleServerOptions().partition = partition;
-		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
+		return Response.noContent().build();
 	}
 
 	/** Handles setting the upload message. */
@@ -93,7 +86,7 @@ public abstract class ResourceBase {
 		logger.debug("Changing message to " + message);
 		agentBase.options.getTeamscaleServerOptions().setMessage(message);
 
-		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
+		return Response.noContent().build();
 	}
 
 	/** Handles setting the revision. */
@@ -107,7 +100,7 @@ public abstract class ResourceBase {
 		logger.debug("Changing revision name to " + revision);
 		agentBase.options.getTeamscaleServerOptions().revision = revision;
 
-		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
+		return Response.noContent().build();
 	}
 
 	/** Handles setting the upload commit. */
@@ -121,13 +114,13 @@ public abstract class ResourceBase {
 		agentBase.options.getTeamscaleServerOptions().commit = CommitDescriptor.parse(commit);
 
 
-		return Response.status(HttpServletResponse.SC_NO_CONTENT, "").build();
+		return Response.noContent().build();
 	}
 
 	/** Returns revision information for the Teamscale upload. */
-	private String getRevisionInfo() {
+	private RevisionInfo getRevisionInfo() {
 		TeamscaleServer server = agentBase.options.getTeamscaleServerOptions();
-		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
+		return new RevisionInfo(server.commit, server.revision);
 	}
 
 	/**

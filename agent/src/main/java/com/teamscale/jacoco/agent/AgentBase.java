@@ -102,10 +102,10 @@ public abstract class AgentBase {
 		threadPool.setMaxThreads(10);
 		threadPool.setDaemon(true);
 
-		// Create a server instance
+		// Create a server instance and set the thread pool
 		server = new Server(threadPool);
 
-		// Create a server connector and set the thread pool
+		// Create a server connector, set the port and add it to the server
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(options.getHttpServerPort());
 		server.addConnector(connector);
