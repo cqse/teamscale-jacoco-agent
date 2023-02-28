@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.EReportFormat;
+import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
@@ -11,6 +12,7 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
@@ -63,9 +65,10 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
-							   boolean includeAddedTests, boolean includeFailedAndSkipped,
-							   String baseline) throws IOException {
+	public List<PrioritizableTestCluster> testRunStart(List<ClusteredTestDetails> availableTests,
+													   boolean includeNonImpactedTests,
+													   boolean includeAddedTests, boolean includeFailedAndSkipped,
+													   String baseline) throws IOException {
 		if (availableTests != null) {
 			this.availableTests = new ArrayList<>(availableTests);
 		}
@@ -85,8 +88,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public String testEnd(String test,
-						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
+	public TestInfo testEnd(String test,
+							TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
 		if (testExecution != null) {
 			testExecutions.add(testExecution);
@@ -143,7 +146,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 			}
 		}).collect(toList());
 
-		logger.debug("Creating testwise coverage from available tests `{}`, test executions `{}`, exec file and partial {}",
+		logger.debug(
+				"Creating testwise coverage from available tests `{}`, test executions `{}`, exec file and partial {}",
 				availableTests.stream().map(test -> test.uniformPath).collect(toList()),
 				executionUniformPaths, partial);
 		reportGenerator.updateClassDirCache();
