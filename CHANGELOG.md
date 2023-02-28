@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 29.1.3
 - [fix] http control server was not correctly shut down after the tests ended
 
 # 29.1.2
