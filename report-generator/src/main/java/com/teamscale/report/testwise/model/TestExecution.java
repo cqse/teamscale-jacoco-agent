@@ -47,6 +47,13 @@ public class TestExecution implements Serializable {
 	 */
 	private String message;
 
+	/**
+	 * Needed for Jackson deserialization.
+	 */
+	public TestExecution() {
+		//Needed for Jackson
+	}
+
 	public TestExecution(String name, long durationMillis, ETestExecutionResult result) {
 		this(name, durationMillis, result, null);
 	}

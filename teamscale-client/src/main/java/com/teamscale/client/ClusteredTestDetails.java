@@ -17,6 +17,13 @@ public class ClusteredTestDetails extends TestDetails {
 	 */
 	public String partition;
 
+	/**
+	 * Needed for Jackson deserialization.
+	 */
+	public ClusteredTestDetails() {
+		//Needed for Jackson
+	}
+
 	public ClusteredTestDetails(String uniformPath, String sourcePath, String content, String clusterId,
 								String partition) {
 		super(uniformPath, sourcePath, content);

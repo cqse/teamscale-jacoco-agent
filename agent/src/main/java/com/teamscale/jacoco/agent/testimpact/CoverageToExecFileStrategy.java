@@ -5,6 +5,7 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestInfo;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -27,8 +28,8 @@ public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public String testEnd(String test,
-						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
+	public TestInfo testEnd(String test,
+							TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		logger.debug("Test {} ended with execution {}. Writing exec file and test execution", test, testExecution);
 		super.testEnd(test, testExecution);
 		controller.dump();

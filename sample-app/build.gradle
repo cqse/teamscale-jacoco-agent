@@ -18,7 +18,16 @@ plugins {
 }
 
 version 'unspecified'
-mainClassName = 'Main'
+
+jar {
+	manifest {
+		attributes 'Main-Class': 'Main'
+	}
+	// make it a fat jar
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+}
 
 dependencies {
 	// this logback version is the oldest one available that I could get to work and possibly incompatible

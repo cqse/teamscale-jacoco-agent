@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] http control server was not correctly shut down after the tests ended
 
 # 29.1.2
 - [fix] _teamscale-maven-plugin_: Partition was not correctly provided to the impacted test engine

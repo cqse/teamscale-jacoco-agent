@@ -14,11 +14,8 @@ import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
-import spark.Request;
-import spark.Response;
-import spark.Service;
+import org.glassfish.jersey.server.ResourceConfig;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -33,7 +30,7 @@ import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 public class Agent extends AgentBase {
 
 	/** Converts binary data to XML. */
-	private JaCoCoXmlReportGenerator generator;
+	private final JaCoCoXmlReportGenerator generator;
 
 	/** Regular dump task. */
 	private Timer timer;
@@ -64,26 +61,10 @@ public class Agent extends AgentBase {
 	}
 
 	@Override
-	protected void initServerEndpoints(Service spark) {
-		super.initServerEndpoints(spark);
-		spark.post("/dump", this::handleDump);
-		spark.post("/reset", this::handleReset);
-	}
-
-	/** Handles dumping a XML coverage report for coverage collected until now. */
-	private String handleDump(Request request, Response response) {
-		logger.debug("Dumping report triggered via HTTP request");
-		dumpReport();
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	/** Handles resetting of coverage. */
-	private String handleReset(Request request, Response response) {
-		logger.debug("Resetting coverage triggered via HTTP request");
-		controller.reset();
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
+	protected ResourceConfig initResourceConfig() {
+		ResourceConfig resourceConfig = new ResourceConfig();
+		AgentResource.setAgent(this);
+		return resourceConfig.register(AgentResource.class);
 	}
 
 	@Override
@@ -109,7 +90,7 @@ public class Agent extends AgentBase {
 	 * Dumps the current execution data, converts it, writes it to the output directory defined in {@link #options} and
 	 * uploads it if an uploader is configured. Logs any errors, never throws an exception.
 	 */
-	private void dumpReport() {
+	public void dumpReport() {
 		logger.debug("Starting dump");
 
 		try {

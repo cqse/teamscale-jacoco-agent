@@ -8,21 +8,28 @@ import java.util.Objects;
 public class TestDetails {
 
 	/** Unique name of the test case by using a path like hierarchical description, which can be shown in the UI. */
-	public final String uniformPath;
+	public String uniformPath;
 
 	/**
 	 * Path to the source of the method. Will be equal to uniformPath in most cases, but e.g. @Test methods in a base
 	 * class will have the sourcePath pointing to the base class which contains the actual implementation whereas
 	 * uniformPath will contain the the class name of the most specific subclass, from where it was actually executed.
 	 */
-	public final String sourcePath;
+	public String sourcePath;
 
 	/**
 	 * Some kind of content to tell whether the test specification has changed. Can be revision number or hash over the
 	 * specification or similar. You can include e.g. a hash of each test's test data so that whenever the test data
 	 * changes, the corresponding test is re-run.
 	 */
-	public final String content;
+	public String content;
+
+	/**
+	 * Needed for Jackson deserialization.
+	 */
+	public TestDetails() {
+		//Needed for Jackson
+	}
 
 	public TestDetails(String uniformPath, String sourcePath, String content) {
 		this.uniformPath = uniformPath;

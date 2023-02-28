@@ -19,9 +19,21 @@ publishAs {
 
 ext {
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
+	jettyVersion = '9.4.51.v20230217'
+	jerseyVersion = '2.39'
 }
 
 dependencies {
+
+	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
+	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+
+	implementation "org.glassfish.jersey.core:jersey-server:${jerseyVersion}"
+	implementation "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}"
+	implementation "org.glassfish.jersey.containers:jersey-container-jetty-http:${jerseyVersion}"
+	implementation "org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}"
+	implementation "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}"
+
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 
@@ -38,7 +50,6 @@ dependencies {
 	implementation 'com.teamscale:teamscale-lib-commons:8.4.2'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-	implementation 'com.sparkjava:spark-core:2.9.4'
 
 	implementation 'com.squareup.moshi:moshi:1.14.0'
 
