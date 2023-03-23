@@ -35,8 +35,7 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
-	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
-			.adapter(TestwiseCoverageReport.class);
+	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter;
 
 	/**
 	 * The path to the exec file into which the coverage of the current test run is appended to. Will be null if there
@@ -51,6 +50,8 @@ public class CoverageToTeamscaleStrategy extends TestEventHandlerStrategyBase {
 	public CoverageToTeamscaleStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
 									   JaCoCoTestwiseReportGenerator reportGenerator) {
 		super(agentOptions, controller);
+		testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
+				.adapter(TestwiseCoverageReport.class);
 		this.reportGenerator = reportGenerator;
 
 		if (!agentOptions.getTeamscaleServerOptions().hasCommitOrRevision()) {

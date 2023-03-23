@@ -1,8 +1,9 @@
-package com.teamscale.report.testwise.model;
+package com.teamscale.jacoco.agent.options;
 
 import java.io.Serializable;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.report.testwise.model.ERevisionType;
 
 /** Revision information necessary for uploading reports to Teamscale. */
 public class RevisionInfo implements Serializable {
