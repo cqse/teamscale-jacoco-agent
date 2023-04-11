@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [breaking change] _teamscale-maven-plugin_: Made plugin compatible with surefire 3.0.0. Replace the `teamscale-surefire-provider` dependency with `impacted-test-engine` in your pom.xml files.
+- [feature] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Added ability to pass excluded test engines to impacted test engine
 
 # 29.1.3
 - [fix] http control server was not correctly shut down after the tests ended

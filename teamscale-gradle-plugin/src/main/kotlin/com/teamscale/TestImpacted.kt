@@ -198,6 +198,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
         writeEngineProperty("runAllTests", runAllTests.toString())
         writeEngineProperty("includeAddedTests", includeAddedTests.toString())
         writeEngineProperty("includeFailedAndSkipped", includeFailedAndSkipped.toString())
-        writeEngineProperty("engines", options.includeEngines.joinToString(","))
+        writeEngineProperty("includedEngines", options.includeEngines.joinToString(","))
+        writeEngineProperty("excludedEngines", options.excludeEngines.joinToString(","))
     }
 }
