@@ -3,9 +3,12 @@ package com.teamscale.maven;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -89,5 +92,16 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
 					" and I could also not determine the checked out commit in " + basedir + " from Git", e);
 		}
+	}
+
+	@Nullable
+	protected Xpp3Dom getConfigurationDom(String pluginArtifact) {
+		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
+		Plugin testPlugin = plugins.get(pluginArtifact);
+		if (testPlugin == null) {
+			return null;
+		}
+
+		return (Xpp3Dom) testPlugin.getConfiguration();
 	}
 }

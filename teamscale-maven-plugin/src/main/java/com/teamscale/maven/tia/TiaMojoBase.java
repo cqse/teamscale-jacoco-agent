@@ -10,6 +10,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -133,16 +134,8 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	}
 
 	private void validateTestPluginConfiguration(String testPluginArtifact) throws MojoFailureException {
-		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
-		Plugin testPlugin = plugins.get(testPluginArtifact);
-		if (testPlugin == null) {
-			return;
-		}
-
-		Xpp3Dom configurationDom = (Xpp3Dom) testPlugin.getConfiguration();
-		if (configurationDom == null) {
-			return;
-		}
+		Xpp3Dom configurationDom = getConfigurationDom(testPluginArtifact);
+		if (configurationDom == null) return;
 
 		validateParallelizationParameter(testPluginArtifact, configurationDom, "threadCount");
 		validateParallelizationParameter(testPluginArtifact, configurationDom, "forkCount");
