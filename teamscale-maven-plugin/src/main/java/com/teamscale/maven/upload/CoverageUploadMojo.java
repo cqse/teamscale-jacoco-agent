@@ -1,11 +1,11 @@
 package com.teamscale.maven.upload;
 
 import com.teamscale.maven.TeamscaleMojoBase;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 /**
  * Binds to the VERIFY phase in which the Jacoco plugin generates its report.
@@ -21,10 +21,22 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 		threadSafe = true)
 public class CoverageUploadMojo extends TeamscaleMojoBase {
 
+	private final static String JACOCO_PLUGIN_NAME = "org.jacoco:jacoco-maven-plugin";
+
 	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
+	public void execute() throws MojoFailureException {
 		if (skip) {
 			return;
 		}
+		validateJacocoConfiguration();
+	}
+
+	private void validateJacocoConfiguration() throws MojoFailureException {
+		Xpp3Dom configurationDom = getConfigurationDom(JACOCO_PLUGIN_NAME);
+		if (configurationDom == null) {
+			throw new MojoFailureException("Could not find configuration for " + JACOCO_PLUGIN_NAME);
+		}
+		Xpp3Dom reportFormats = configurationDom.getChild("formats");
+		System.out.println(reportFormats.getValue());
 	}
 }
