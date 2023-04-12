@@ -1,4 +1,4 @@
-package com.teamscale.tia.maven;
+package com.teamscale.maven.tia;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;

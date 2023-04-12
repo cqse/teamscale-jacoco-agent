@@ -1,4 +1,4 @@
-package com.teamscale.tia.maven;
+package com.teamscale.maven;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;

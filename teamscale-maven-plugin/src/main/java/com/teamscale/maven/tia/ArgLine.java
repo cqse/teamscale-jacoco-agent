@@ -1,4 +1,4 @@
-package com.teamscale.tia.maven;
+package com.teamscale.maven.tia;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

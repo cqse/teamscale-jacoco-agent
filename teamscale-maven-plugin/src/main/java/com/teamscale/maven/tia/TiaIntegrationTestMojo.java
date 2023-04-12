@@ -1,4 +1,4 @@
-package com.teamscale.tia.maven;
+package com.teamscale.maven.tia;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;

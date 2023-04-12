@@ -1,4 +1,4 @@
-package com.teamscale.tia.maven;
+package com.teamscale.maven.tia;
 
 import org.junit.jupiter.api.Test;
 
