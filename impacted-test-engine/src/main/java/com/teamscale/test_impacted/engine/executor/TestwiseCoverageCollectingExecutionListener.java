@@ -2,10 +2,8 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
-import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
@@ -20,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.isTestRepresentative;
 
@@ -29,7 +28,8 @@ import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.is
  */
 class TestwiseCoverageCollectingExecutionListener implements EngineExecutionListener {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestwiseCoverageCollectingExecutionListener.class);
+
+	private static final Logger LOGGER = LoggerUtils.getLogger(TestwiseCoverageCollectingExecutionListener.class);
 
 	/** An API to signal test start and end to the agent. */
 	private final TeamscaleAgentNotifier teamscaleAgentNotifier;
@@ -61,7 +61,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
-		if (!TestDescriptorUtils.isTestRepresentative(testDescriptor)) {
+		if (!isTestRepresentative(testDescriptor)) {
 			delegateEngineExecutionListener.executionStarted(testDescriptor);
 			testDescriptor.getChildren().forEach(child -> this.executionSkipped(child, reason));
 			delegateEngineExecutionListener.executionFinished(testDescriptor, TestExecutionResult.successful());
@@ -136,7 +136,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 			if (childTestExecutionResult != null) {
 				testExecutionResults.add(childTestExecutionResult);
 			} else {
-				LOGGER.warn(() -> "No test execution found for " + child.getUniqueId());
+				LOGGER.warning(() -> "No test execution found for " + child.getUniqueId());
 			}
 		}
 		testExecutionResults.add(testExecutionResult);
@@ -155,7 +155,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 				return new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE,
 						message);
 			default:
-				LOGGER.error(() -> "Got unexpected test execution result status: " + status);
+				LOGGER.severe(() -> "Got unexpected test execution result status: " + status);
 				return null;
 		}
 	}

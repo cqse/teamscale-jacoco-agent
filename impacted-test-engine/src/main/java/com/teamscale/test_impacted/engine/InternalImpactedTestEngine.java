@@ -2,13 +2,12 @@ package com.teamscale.test_impacted.engine;
 
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
 import com.teamscale.test_impacted.engine.executor.TestExecutorRequest;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineDiscoveryRequest;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.logging.Logger;
 
 import static com.teamscale.test_impacted.engine.ImpactedTestEngine.ENGINE_ID;
 
@@ -30,7 +30,7 @@ import static com.teamscale.test_impacted.engine.ImpactedTestEngine.ENGINE_ID;
  */
 class InternalImpactedTestEngine {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(InternalImpactedTestEngine.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(InternalImpactedTestEngine.class);
 
 	private final TestEngineRegistry testEngineRegistry;
 

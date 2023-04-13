@@ -5,8 +5,7 @@ import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TestDetails;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.UniqueId;
 
@@ -17,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths returned
@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class AvailableTests {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestEngine.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(AvailableTests.class);
 
 	/**
 	 * A mapping from the tests uniform path (Teamscale internal representation) to unique id (JUnit internal
@@ -53,17 +53,17 @@ public class AvailableTests {
 	public Set<UniqueId> convertToUniqueIds(List<PrioritizableTest> impactedTests) {
 		Set<UniqueId> list = new HashSet<>();
 		for (PrioritizableTest impactedTest : impactedTests) {
-			LOGGER.info(() -> impactedTest.testName + " " + impactedTest.selectionReason);
+			LOGGER.fine(() -> impactedTest.testName + " " + impactedTest.selectionReason);
 
 			UniqueId testUniqueId = uniformPathToUniqueIdMapping.get(impactedTest.testName);
 			if (testUniqueId == null) {
-				LOGGER.error(() -> "Retrieved invalid test '" + impactedTest.testName + "' from Teamscale server!");
-				LOGGER.error(() -> "The following seem related:");
+				LOGGER.severe(() -> "Retrieved invalid test '" + impactedTest.testName + "' from Teamscale server!");
+				LOGGER.severe(() -> "The following seem related:");
 				uniformPathToUniqueIdMapping.keySet().stream().sorted(Comparator
 								.comparing(testPath -> StringUtils.editDistance(impactedTest.testName, testPath))).limit(5)
-						.forEach(testAlternative -> LOGGER.error(() -> " - " + testAlternative));
+						.forEach(testAlternative -> LOGGER.severe(() -> " - " + testAlternative));
 
-				LOGGER.error(() -> "Falling back to execute all...");
+				LOGGER.severe(() -> "Falling back to execute all...");
 				return new HashSet<>(uniformPathToUniqueIdMapping.values());
 			}
 			list.add(testUniqueId);

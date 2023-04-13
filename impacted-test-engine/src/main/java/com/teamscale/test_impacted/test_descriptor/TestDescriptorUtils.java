@@ -3,9 +3,8 @@ package com.teamscale.test_impacted.test_descriptor;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.TestDetails;
 import com.teamscale.test_impacted.commons.IndentingWriter;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
@@ -16,12 +15,13 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /** Class containing utility methods for {@link TestDescriptor}s. */
 public class TestDescriptorUtils {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestDescriptorUtils.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(TestDescriptorUtils.class);
 
 	/** Returns the test descriptor as a formatted string with indented children. */
 	public static String getTestDescriptorAsString(TestDescriptor testDescriptor) {
@@ -119,12 +119,12 @@ public class TestDescriptorUtils {
 					String source = TestDescriptorUtils.getSource(testDescriptor);
 
 					if (!uniformPath.isPresent()) {
-						LOGGER.error(() -> "Unable to determine uniform path for test descriptor: " + testDescriptor);
+						LOGGER.severe(() -> "Unable to determine uniform path for test descriptor: " + testDescriptor);
 						return;
 					}
 
 					if (!clusterId.isPresent()) {
-						LOGGER.error(
+						LOGGER.severe(
 								() -> "Unable to determine cluster id path for test descriptor: " + testDescriptor);
 						return;
 					}

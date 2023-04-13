@@ -1,17 +1,19 @@
 package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import com.teamscale.tia.client.UrlUtils;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Communicates test start and end to the agent and the end of the overall test execution. */
 public class TeamscaleAgentNotifier {
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestwiseCoverageCollectingTestExecutor.class);
+
+	private static final Logger LOGGER = LoggerUtils.getLogger(TeamscaleAgentNotifier.class);
 
 	/** A list of API services to signal test start and end to the agent. */
 	private final List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
@@ -34,7 +36,7 @@ public class TeamscaleAgentNotifier {
 				apiService.testStarted(UrlUtils.percentEncode(testUniformPath)).execute();
 			}
 		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error while calling service api.");
+			LOGGER.log(Level.SEVERE, e, () -> "Error while calling service api.");
 		}
 	}
 
@@ -49,7 +51,7 @@ public class TeamscaleAgentNotifier {
 				}
 			}
 		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
+			LOGGER.log(Level.SEVERE, e, () -> "Error contacting test wise coverage agent.");
 		}
 	}
 
@@ -60,7 +62,7 @@ public class TeamscaleAgentNotifier {
 				apiService.testRunFinished(partial).execute();
 			}
 		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
+			LOGGER.log(Level.SEVERE, e, () -> "Error contacting test wise coverage agent.");
 		}
 	}
 }

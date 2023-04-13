@@ -1,8 +1,6 @@
 package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.Preconditions;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
@@ -17,6 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.teamscale.test_impacted.engine.ImpactedTestEngine.LOGGER;
+
 /**
  * {@link EngineExecutionListener} which tracks which impacted child {@link TestDescriptor}s of a container {@link
  * TestDescriptor} have already been executed. Will skip remaining non-impacted child {@link TestDescriptor}s once all
@@ -28,7 +28,6 @@ class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
 	/** Skip reason message if a test case is not impacted. */
 	static final String TEST_NOT_IMPACTED_REASON = "Test not impacted by code changes.";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AutoSkippingEngineExecutionListener.class);
 
 	/**
 	 * All test descriptors for which we have triggered a start event. Needed to ensure that only a single start event
@@ -97,7 +96,7 @@ class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
 			return requestedTestDescriptor;
 		}
 
-		LOGGER.error(() -> "Encountered test descriptor which isn't dynamically registered and can't be resolved to " +
+		LOGGER.severe(() -> "Encountered test descriptor which isn't dynamically registered and can't be resolved to " +
 				"an original test descriptor found during discovery: " + testDescriptor);
 		return testDescriptor;
 	}
