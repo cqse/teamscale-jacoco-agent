@@ -17,15 +17,19 @@ public class TestExecutorRequest {
 	/** The execution listener to pass test events to. */
 	public final EngineExecutionListener engineExecutionListener;
 
+	/** Listens for when a test starts and ends. In contrast to EngineExecutionListener this is only called for uniform paths. */
+	public final TeamscaleAgentNotifier teamscaleAgentNotifier;
+
 	/** Configuration parameters. */
 	public final ConfigurationParameters configurationParameters;
 
 	public TestExecutorRequest(TestEngine testEngine, TestDescriptor engineTestDescriptor,
 							   EngineExecutionListener engineExecutionListener,
-							   ConfigurationParameters configurationParameters) {
+							   TeamscaleAgentNotifier teamscaleAgentNotifier, ConfigurationParameters configurationParameters) {
 		this.testEngine = testEngine;
 		this.engineTestDescriptor = engineTestDescriptor;
 		this.engineExecutionListener = engineExecutionListener;
+		this.teamscaleAgentNotifier = teamscaleAgentNotifier;
 		this.configurationParameters = configurationParameters;
 	}
 }

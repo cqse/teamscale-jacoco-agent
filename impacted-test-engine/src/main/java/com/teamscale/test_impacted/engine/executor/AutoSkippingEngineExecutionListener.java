@@ -120,7 +120,7 @@ class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
 	}
 
 	/**
-	 * Wraps the dynamicall registered {@link TestDescriptor} into a new one which is part of the parent-child hierarchy
+	 * Wraps the dynamically registered {@link TestDescriptor} into a new one which is part of the parent-child hierarchy
 	 * of the requested {@link TestDescriptor}s in {@link #requestedTestDescriptorsById}.
 	 */
 	@Override

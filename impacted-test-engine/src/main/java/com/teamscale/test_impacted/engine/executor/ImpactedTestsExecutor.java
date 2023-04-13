@@ -3,7 +3,6 @@ package com.teamscale.test_impacted.engine.executor;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
-import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
@@ -21,9 +20,7 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 
 	private final ImpactedTestsProvider impactedTestsProvider;
 
-	public ImpactedTestsExecutor(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
-								 ImpactedTestsProvider impactedTestsProvider) {
-		super(testwiseCoverageAgentApis, !impactedTestsProvider.isIncludeNonImpacted());
+	public ImpactedTestsExecutor(ImpactedTestsProvider impactedTestsProvider) {
 		this.impactedTestsProvider = impactedTestsProvider;
 	}
 
@@ -59,9 +56,8 @@ public class ImpactedTestsExecutor extends TestwiseCoverageCollectingTestExecuto
 			executorRequest.engineTestDescriptor.getParent().ifPresent(testDescriptor::setParent);
 
 			TestExecutorRequest impactedExecutorRequest = new TestExecutorRequest(executorRequest.testEngine,
-					testDescriptor, executionListener, executorRequest.configurationParameters);
-			List<TestExecution> testExecutionsForCluster = super
-					.execute(impactedExecutorRequest);
+					testDescriptor, executionListener, executorRequest.teamscaleAgentNotifier, executorRequest.configurationParameters);
+			List<TestExecution> testExecutionsForCluster = super.execute(impactedExecutorRequest);
 
 			testExecutions.addAll(testExecutionsForCluster);
 		}

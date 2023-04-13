@@ -11,13 +11,13 @@ import java.io.IOException;
 import java.util.List;
 
 /** Class for writing test data to a report directory. */
-class TestDataWriter {
+public class TestDataWriter {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestDataWriter.class);
 
 	private final File reportDirectory;
 
-	TestDataWriter(File reportDirectory) {
+	public TestDataWriter(File reportDirectory) {
 		this.reportDirectory = reportDirectory;
 	}
 

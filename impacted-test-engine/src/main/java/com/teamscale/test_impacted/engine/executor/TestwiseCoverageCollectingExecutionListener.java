@@ -2,11 +2,8 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
-import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
-import com.teamscale.tia.client.UrlUtils;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
@@ -16,7 +13,6 @@ import org.junit.platform.engine.TestExecutionResult.Status;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.reporting.ReportEntry;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -35,8 +31,8 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestwiseCoverageCollectingExecutionListener.class);
 
-	/** An API service to signal test start and end to the agent. */
-	private final List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
+	/** An API to signal test start and end to the agent. */
+	private final TeamscaleAgentNotifier teamscaleAgentNotifier;
 
 	/** List of tests that have been executed, skipped or failed. */
 	private final List<TestExecution> testExecutions = new ArrayList<>();
@@ -47,17 +43,15 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private final ITestDescriptorResolver testDescriptorResolver;
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
-	private final boolean partial;
 
 	private final Map<UniqueId, TestExecutionResult> testResultCache = new HashMap<>();
 
-	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
+	TestwiseCoverageCollectingExecutionListener(TeamscaleAgentNotifier teamscaleAgentNotifier,
 												ITestDescriptorResolver testDescriptorResolver,
-												EngineExecutionListener engineExecutionListener, boolean partial) {
-		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
+												EngineExecutionListener engineExecutionListener) {
+		this.teamscaleAgentNotifier = teamscaleAgentNotifier;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
-		this.partial = partial;
 	}
 
 	@Override
@@ -85,20 +79,10 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	@Override
 	public void executionStarted(TestDescriptor testDescriptor) {
 		if (isTestRepresentative(testDescriptor)) {
-			testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(this::startTest);
+			testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(teamscaleAgentNotifier::startTest);
+			executionStartTime = System.currentTimeMillis();
 		}
 		delegateEngineExecutionListener.executionStarted(testDescriptor);
-	}
-
-	private void startTest(String testUniformPath) {
-		try {
-			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testStarted(UrlUtils.percentEncode(testUniformPath)).execute();
-			}
-		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error while calling service api.");
-		}
-		executionStartTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -114,26 +98,12 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 			if (testExecution != null) {
 				testExecutions.add(testExecution);
 			}
-			endTest(uniformPath.get(), testExecution);
+			teamscaleAgentNotifier.endTest(uniformPath.get(), testExecution);
 		} else {
 			testResultCache.put(testDescriptor.getUniqueId(), testExecutionResult);
-
-			if (isLastDescriptor(testDescriptor)) {
-				// this is the root node, i.e. test execution is completely finished now
-				endTestRun();
-			}
 		}
 
 		delegateEngineExecutionListener.executionFinished(testDescriptor, testExecutionResult);
-	}
-
-	private static boolean isLastDescriptor(TestDescriptor descriptor) {
-		return descriptor.isRoot() || descriptor.getParent().map(
-				TestwiseCoverageCollectingExecutionListener::isImpactedTestEngineDescriptor).orElse(false);
-	}
-
-	private static boolean isImpactedTestEngineDescriptor(TestDescriptor descriptor) {
-		return UniqueId.forEngine(ImpactedTestEngine.ENGINE_ID).equals(descriptor.getUniqueId());
 	}
 
 	private TestExecution getTestExecution(TestDescriptor testDescriptor,
@@ -172,31 +142,6 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		testExecutionResults.add(testExecutionResult);
 		return testExecutionResults;
 	}
-
-	private void endTest(String testUniformPath, TestExecution testExecution) {
-		try {
-			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				if (testExecution == null) {
-					apiService.testFinished(UrlUtils.percentEncode(testUniformPath)).execute();
-				} else {
-					apiService.testFinished(UrlUtils.percentEncode(testUniformPath), testExecution).execute();
-				}
-			}
-		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
-		}
-	}
-
-	private void endTestRun() {
-		try {
-			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testRunFinished(partial).execute();
-			}
-		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
-		}
-	}
-
 
 	private TestExecution buildTestExecution(String testUniformPath, long duration,
 											 Status status, String message) {

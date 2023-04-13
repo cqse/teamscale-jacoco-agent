@@ -12,4 +12,5 @@ public interface ITestExecutor {
 	 * {@link ITestExecutor}.
 	 */
 	List<TestExecution> execute(TestExecutorRequest testExecutorRequest);
+
 }

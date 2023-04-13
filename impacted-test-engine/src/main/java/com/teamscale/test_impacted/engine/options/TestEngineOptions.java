@@ -4,10 +4,12 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration;
+import com.teamscale.test_impacted.engine.TestDataWriter;
 import com.teamscale.test_impacted.engine.TestEngineRegistry;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
+import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
 import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import okhttp3.HttpUrl;
@@ -91,14 +93,16 @@ public class TestEngineOptions {
 
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
 		ITestExecutor testExecutor = createTestExecutor();
+		TeamscaleAgentNotifier teamscaleAgentNotifier = createTeamscaleAgentNotifier();
 		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(includedTestEngineIds, excludedTestEngineIds);
+		TestDataWriter testDataWriter = new TestDataWriter(reportDirectory);
 
-		return new ImpactedTestEngineConfiguration(reportDirectory, testEngineRegistry, testExecutor);
+		return new ImpactedTestEngineConfiguration(testDataWriter, testEngineRegistry, testExecutor, teamscaleAgentNotifier);
 	}
 
 	private ITestExecutor createTestExecutor() {
 		if (!isRunImpacted()) {
-			return new TestwiseCoverageCollectingTestExecutor(testwiseCoverageAgentApis, false);
+			return new TestwiseCoverageCollectingTestExecutor();
 		}
 
 		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
@@ -106,7 +110,12 @@ public class TestEngineOptions {
 				new File(reportDirectory, "server-request.txt"));
 		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition,
 				isRunAllTests(), isIncludeAddedTests(), isIncludeFailedAndSkipped());
-		return new ImpactedTestsExecutor(testwiseCoverageAgentApis, testsProvider);
+		return new ImpactedTestsExecutor(testsProvider);
+	}
+
+	private TeamscaleAgentNotifier createTeamscaleAgentNotifier() {
+		return new TeamscaleAgentNotifier(testwiseCoverageAgentApis,
+				runImpacted && !runAllTests);
 	}
 
 	/** Returns the builder for {@link TestEngineOptions}. */

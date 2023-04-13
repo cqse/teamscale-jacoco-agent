@@ -4,6 +4,7 @@ import com.teamscale.client.TestDetails;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
+import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
 import com.teamscale.test_impacted.engine.executor.TestExecutorRequest;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.commons.logging.Logger;
@@ -35,16 +36,17 @@ class InternalImpactedTestEngine {
 
 	private final ITestExecutor testExecutor;
 
+	private final TeamscaleAgentNotifier teamscaleAgentNotifier;
+
 	private final TestDataWriter testDataWriter;
 
 	private final String partition;
 
-	InternalImpactedTestEngine(TestEngineRegistry testEngineRegistry,
-							   ITestExecutor testExecutor,
-							   TestDataWriter testDataWriter, String partition) {
-		this.testEngineRegistry = testEngineRegistry;
-		this.testExecutor = testExecutor;
-		this.testDataWriter = testDataWriter;
+	InternalImpactedTestEngine(ImpactedTestEngineConfiguration configuration, String partition) {
+		this.testEngineRegistry = configuration.testEngineRegistry;
+		this.testExecutor = configuration.testExecutor;
+		this.testDataWriter = configuration.testDataWriter;
+		this.teamscaleAgentNotifier = configuration.teamscaleAgentNotifier;
 		this.partition = partition;
 	}
 
@@ -87,6 +89,7 @@ class InternalImpactedTestEngine {
 		engineExecutionListener.executionFinished(engineDescriptor, TestExecutionResult.successful());
 	}
 
+
 	private void runTestExecutor(ExecutionRequest request) {
 		List<TestDetails> availableTests = new ArrayList<>();
 		List<TestExecution> testExecutions = new ArrayList<>();
@@ -104,7 +107,7 @@ class InternalImpactedTestEngine {
 			AvailableTests availableTestsForEngine = TestDescriptorUtils
 					.getAvailableTests(testEngine, engineTestDescriptor, partition);
 			TestExecutorRequest testExecutorRequest = new TestExecutorRequest(testEngine, engineTestDescriptor,
-					request.getEngineExecutionListener(), request.getConfigurationParameters());
+					request.getEngineExecutionListener(), teamscaleAgentNotifier, request.getConfigurationParameters());
 			List<TestExecution> testExecutionsOfEngine = testExecutor.execute(testExecutorRequest);
 
 			testExecutions.addAll(testExecutionsOfEngine);
@@ -113,5 +116,6 @@ class InternalImpactedTestEngine {
 
 		testDataWriter.dumpTestDetails(availableTests);
 		testDataWriter.dumpTestExecutions(testExecutions);
+		teamscaleAgentNotifier.testRunEnded();
 	}
 }

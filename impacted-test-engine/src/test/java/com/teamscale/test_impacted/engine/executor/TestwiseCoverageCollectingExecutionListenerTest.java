@@ -3,14 +3,10 @@ package com.teamscale.test_impacted.engine.executor;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
-import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
-import com.teamscale.tia.client.UrlUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.UniqueId;
-import retrofit2.Call;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +14,9 @@ import java.util.Optional;
 import static com.teamscale.test_impacted.engine.executor.AutoSkippingEngineExecutionListener.TEST_NOT_IMPACTED_REASON;
 import static com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor.testCase;
 import static com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor.testContainer;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.platform.engine.TestExecutionResult.successful;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,27 +26,17 @@ import static org.mockito.Mockito.when;
 /** Tests for {@link TestwiseCoverageCollectingExecutionListener}. */
 class TestwiseCoverageCollectingExecutionListenerTest {
 
-	private final ITestwiseCoverageAgentApi mockApi = mock(ITestwiseCoverageAgentApi.class);
+	private final TeamscaleAgentNotifier mockApi = mock(TeamscaleAgentNotifier.class);
 
 	private final ITestDescriptorResolver resolver = mock(ITestDescriptorResolver.class);
 
 	private final EngineExecutionListener executionListenerMock = mock(EngineExecutionListener.class);
 
 	private final TestwiseCoverageCollectingExecutionListener executionListener = new TestwiseCoverageCollectingExecutionListener(
-			singletonList(mockApi), resolver, executionListenerMock, true);
+			mockApi, resolver, executionListenerMock);
 
 	private final UniqueId rootId = UniqueId.forEngine("dummy");
 
-	@SuppressWarnings("unchecked")
-	@BeforeEach
-	void setupMockApi() {
-		when(mockApi.testStarted(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
-		when(mockApi.testFinished(UrlUtils.percentEncode(anyString()), any())).thenReturn(mock(Call.class));
-		when(mockApi.testRunFinished(any())).thenReturn(mock(Call.class));
-	}
-
-	@SuppressWarnings("unchecked")
 	@Test
 	void testInteractionWithListenersAndCoverageApi() {
 		UniqueId testClassId = rootId.append("TEST_CONTAINER", "MyClass");
@@ -84,10 +68,10 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 
 		// Execution of impacted test case.
 		executionListener.executionStarted(impactedTestCase);
-		verify(mockApi).testStarted(UrlUtils.percentEncode("MyClass/impactedTestCase()"));
+		verify(mockApi).startTest("MyClass/impactedTestCase()");
 		verify(executionListenerMock).executionStarted(impactedTestCase);
 		executionListener.executionFinished(impactedTestCase, successful());
-		verify(mockApi).testFinished(eq(UrlUtils.percentEncode("MyClass/impactedTestCase()")), any());
+		verify(mockApi).endTest(eq("MyClass/impactedTestCase()"), any());
 		verify(executionListenerMock).executionFinished(impactedTestCase, successful());
 
 		// Non impacted test case is skipped.
@@ -103,7 +87,6 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 		verify(executionListenerMock).executionFinished(testClass, successful());
 		executionListener.executionFinished(testRoot, successful());
 		verify(executionListenerMock).executionFinished(testRoot, successful());
-		verify(mockApi).testRunFinished(true);
 
 		verifyNoMoreInteractions(mockApi);
 		verifyNoMoreInteractions(executionListenerMock);

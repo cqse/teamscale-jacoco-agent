@@ -5,9 +5,8 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.test_impacted.engine.executor.ITestExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
+import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver;
-import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
-import com.teamscale.tia.client.UrlUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
-import retrofit2.Call;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.platform.engine.TestExecutionResult.failed;
 import static org.junit.platform.engine.TestExecutionResult.successful;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -61,24 +58,20 @@ class InternalImpactedTestEngineTest {
 
 	private final EngineExecutionListener executionListener = mock(EngineExecutionListener.class);
 
-	private final ITestwiseCoverageAgentApi testwiseCoverageAgentApi = mock(ITestwiseCoverageAgentApi.class);
+	private final TeamscaleAgentNotifier teamscaleAgentNotifier = mock(TeamscaleAgentNotifier.class);
 
 	private InternalImpactedTestEngine createInternalImpactedTestEngine(ITestExecutor testExecutor) {
-		return new InternalImpactedTestEngine(testEngineRegistry, testExecutor, testDataWriter,
+		return new InternalImpactedTestEngine(
+				new ImpactedTestEngineConfiguration(testDataWriter, testEngineRegistry, testExecutor,
+						teamscaleAgentNotifier),
 				impactedTestsProvider.partition);
 	}
 
-	@SuppressWarnings("unchecked")
 	@BeforeEach
 	void setupTestEngineAndCoverageAgent() {
 		when(testEngineRegistry.getTestEngine(any())).thenReturn(testEngine);
 		when(testEngineRegistry.iterator()).thenReturn(singletonList(testEngine).iterator());
 		when(testEngine.getId()).thenReturn("junit-jupiter");
-		when(testwiseCoverageAgentApi.testStarted(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testFinished(UrlUtils.percentEncode(anyString()))).thenReturn(mock(Call.class));
-		when(testwiseCoverageAgentApi.testFinished(UrlUtils.percentEncode(anyString()), any())).thenReturn(
-				mock(Call.class));
-		when(testwiseCoverageAgentApi.testRunFinished(any())).thenReturn(mock(Call.class));
 	}
 
 	@SafeVarargs
@@ -101,8 +94,7 @@ class InternalImpactedTestEngineTest {
 
 	@Test
 	void impactedTestsAreExecutedCorrectly() {
-		ImpactedTestsExecutor testExecutor = new ImpactedTestsExecutor(
-				singletonList(testwiseCoverageAgentApi), impactedTestsProvider);
+		ImpactedTestsExecutor testExecutor = new ImpactedTestsExecutor(impactedTestsProvider);
 		InternalImpactedTestEngine internalImpactedTestEngine = createInternalImpactedTestEngine(testExecutor);
 
 		setupTestEngineDiscoveries(
