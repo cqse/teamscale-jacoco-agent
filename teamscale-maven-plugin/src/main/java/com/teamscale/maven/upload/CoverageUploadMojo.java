@@ -32,11 +32,33 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 	}
 
 	private void validateJacocoConfiguration() throws MojoFailureException {
-		Xpp3Dom configurationDom = getConfigurationDom(JACOCO_PLUGIN_NAME);
-		if (configurationDom == null) {
-			throw new MojoFailureException("Could not find configuration for " + JACOCO_PLUGIN_NAME);
+		// If a Dom is null it means the execution goal uses default parameters which work correctly
+		Xpp3Dom reportConfigurationDom = getExecutionConfigurationDom(JACOCO_PLUGIN_NAME, "report");
+		validateReportFormat(reportConfigurationDom, "report");
+		Xpp3Dom reportIntegrationConfigurationDom = getExecutionConfigurationDom(JACOCO_PLUGIN_NAME, "report-integration");
+		validateReportFormat(reportIntegrationConfigurationDom, "report-integration");
+		Xpp3Dom reportAggregateConfigurationDom = getExecutionConfigurationDom(JACOCO_PLUGIN_NAME, "report-aggregate");
+		validateReportFormat(reportAggregateConfigurationDom, "report-aggregate");
+	}
+
+	/**
+	 * Validates that a configuration Dom is set up to generate XML reports
+	 * @param configurationDom The configuration Dom of a goal execution
+	 * @param pluginGoal The name of the goal
+	 * @throws MojoFailureException If the goal is not set up to generate XML reports
+	 */
+	private void validateReportFormat(Xpp3Dom configurationDom, String pluginGoal) throws MojoFailureException {
+		if (configurationDom != null && configurationDom.getChild("formats") != null) {
+			boolean producesXMLReport = false;
+			for (Xpp3Dom format : configurationDom.getChild("formats").getChildren()) {
+				if (format.getValue().equals("XML")) {
+					producesXMLReport = true;
+					break;
+				}
+			}
+			if (!producesXMLReport) {
+				throw new MojoFailureException(JACOCO_PLUGIN_NAME + " is not configured to produce XML reports for goal " + pluginGoal);
+			}
 		}
-		Xpp3Dom reportFormats = configurationDom.getChild("formats");
-		System.out.println(reportFormats.getValue());
 	}
 }

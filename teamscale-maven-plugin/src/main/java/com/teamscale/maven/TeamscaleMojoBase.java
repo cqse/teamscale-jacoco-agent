@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -97,11 +98,32 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	@Nullable
 	protected Xpp3Dom getConfigurationDom(String pluginArtifact) {
 		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
-		Plugin testPlugin = plugins.get(pluginArtifact);
-		if (testPlugin == null) {
+		Plugin plugin = plugins.get(pluginArtifact);
+		if (plugin == null) {
 			return null;
 		}
 
-		return (Xpp3Dom) testPlugin.getConfiguration();
+		return (Xpp3Dom) plugin.getConfiguration();
+	}
+
+	/**
+	 * Retrieves the configuration of a goal execution for the given plugin
+	 * @param pluginArtifact The id of the plugin
+	 * @param pluginGoal The name of the goal
+	 * @return The configuration DOM if present, otherwise <code>null</code>
+	 */
+	protected Xpp3Dom getExecutionConfigurationDom(String pluginArtifact, String pluginGoal) {
+		Plugin plugin = session.getCurrentProject().getPlugin(pluginArtifact);
+		if (plugin == null) {
+			return null;
+		}
+
+		for (PluginExecution pluginExecution : plugin.getExecutions()) {
+			if (pluginExecution.getGoals().contains(pluginGoal)) {
+				return (Xpp3Dom) pluginExecution.getConfiguration();
+			}
+		}
+
+		return null;
 	}
 }
