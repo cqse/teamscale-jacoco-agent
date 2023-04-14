@@ -40,7 +40,8 @@ public class TestDescriptorResolverRegistry {
 		String testEngineId = testEngine.getId();
 		if (!TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.containsKey(testEngineId)) {
 			LOGGER.warning(() -> testEngineId + " is not officially supported! You can add support by " +
-					"implementing the ITestDescriptorResolver interface and making the implementation via the Java Service Loader mechanism!");
+					"implementing the ITestDescriptorResolver interface and making the implementation " +
+					"discoverable via the Java Service Loader mechanism!");
 			return TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.get("junit-jupiter");
 		}
 		return TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.get(testEngineId);

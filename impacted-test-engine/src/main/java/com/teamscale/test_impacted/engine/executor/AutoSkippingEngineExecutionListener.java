@@ -68,7 +68,7 @@ class AutoSkippingEngineExecutionListener implements EngineExecutionListener {
 	}
 
 	/**
-	 * Registers the open impacted {@link TestDescriptor}s at {@link #openImpactedTestDescriptorIds} and the the
+	 * Registers the open impacted {@link TestDescriptor}s at {@link #openImpactedTestDescriptorIds} and the
 	 * requested {@link TestDescriptor}s from the {@link ExecutionRequest} at {@link #requestedTestDescriptorsById}.
 	 */
 	private void registerTestDescriptors(TestDescriptor testDescriptor) {
