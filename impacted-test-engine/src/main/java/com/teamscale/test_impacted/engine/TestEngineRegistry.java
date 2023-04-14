@@ -34,7 +34,10 @@ public class TestEngineRegistry implements Iterable<TestEngine> {
 		testEnginesById = unmodifiableMap(otherTestEngines.stream().collect(toMap(TestEngine::getId, identity())));
 	}
 
-	/** Uses the {@link ServiceLoader} to discover all {@link TestEngine}s but the {@link ImpactedTestEngine}. */
+	/**
+	 * Uses the {@link ServiceLoader} to discover all {@link TestEngine}s but the {@link ImpactedTestEngine} and the
+	 * excluded test engines.
+	 */
 	private List<TestEngine> loadOtherTestEngines(Set<String> excludedTestEngineIds) {
 		List<TestEngine> testEngines = new ArrayList<>();
 

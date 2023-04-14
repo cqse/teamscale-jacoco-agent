@@ -35,22 +35,17 @@ import java.util.Properties;
  *     <li>Send test start and end events to the Java agent themselves</li>
  * </ul>
  * <p>
- * To use our JUnit 5 impacted-test-engine, you must declare it as a dependency of the maven-surefire-plugin and/or the
- * maven-failsafe-plugin. Example:
+ * To use our JUnit 5 impacted-test-engine, you must declare it as a test dependency. Example:
  *
  * <pre>{@code
- * <plugin>
- *     <groupId>org.apache.maven.plugins</groupId>
- *     <artifactId>maven-surefire-plugin</artifactId>
- *     <version>3.0.0</version>
- *     <dependencies>
- *         <dependency>
- *             <groupId>com.teamscale</groupId>
- *             <artifactId>impacted-test-engine</artifactId>
- *             <version>29.1.3</version>
- *         </dependency>
- *     </dependencies>
- * </plugin>
+<dependencies>
+	<dependency>
+		<groupId>com.teamscale</groupId>
+		<artifactId>impacted-test-engine</artifactId>
+		<version>30.0.0</version>
+		<scope>test</scope>
+	</dependency>
+</dependencies>
  * }</pre>
  * <p>
  * To send test events yourself, you can use our TIA client library (Maven coordinates: com.teamscale:tia-client).
