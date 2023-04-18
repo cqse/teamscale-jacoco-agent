@@ -8,6 +8,8 @@ import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.UniqueId;
 
+import java.util.Optional;
+
 /** Test engine for executing impacted tests. */
 public class ImpactedTestEngine implements TestEngine {
 
@@ -43,5 +45,15 @@ public class ImpactedTestEngine implements TestEngine {
 			throw new AssertionError("Can't execute request without discovering it first.");
 		}
 		internalImpactedTestEngine.execute(request);
+	}
+
+	@Override
+	public Optional<String> getGroupId() {
+		return Optional.of("com.teamscale");
+	}
+
+	@Override
+	public Optional<String> getArtifactId() {
+		return Optional.of("impacted-test-engine");
 	}
 }

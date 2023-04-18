@@ -38,7 +38,8 @@ public class TestEngineOptionUtils {
 				.endCommit(propertyReader.getCommitDescriptor("endCommit"))
 				.baseline(propertyReader.getString("baseline"))
 				.agentUrls(propertyReader.getStringList("agentsUrls"))
-				.testEngineIds(propertyReader.getStringList("engines"))
+				.includedTestEngineIds(propertyReader.getStringList("includedEngines"))
+				.excludedTestEngineIds(propertyReader.getStringList("excludedEngines"))
 				.reportDirectory(propertyReader.getString("reportDirectory"))
 				.build();
 	}

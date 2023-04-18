@@ -56,7 +56,10 @@ public class TestEngineOptions {
 	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis = Collections.emptyList();
 
 	/** The test engine ids of all {@link TestEngine}s to use. If empty all available {@link TestEngine}s are used. */
-	private Set<String> testEngineIds = Collections.emptySet();
+	private Set<String> includedTestEngineIds = Collections.emptySet();
+
+	/** The test engine ids of all {@link TestEngine}s to exclude. */
+	private Set<String> excludedTestEngineIds = Collections.emptySet();
 
 	/** The directory used to store test-wise coverage reports. Must be a writeable directory. */
 	private File reportDirectory;
@@ -88,7 +91,7 @@ public class TestEngineOptions {
 
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
 		ITestExecutor testExecutor = createTestExecutor();
-		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(testEngineIds);
+		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(includedTestEngineIds, excludedTestEngineIds);
 
 		return new ImpactedTestEngineConfiguration(reportDirectory, testEngineRegistry, testExecutor);
 	}
@@ -177,9 +180,15 @@ public class TestEngineOptions {
 			return this;
 		}
 
-		/** @see #testEngineIds */
-		public Builder testEngineIds(List<String> testEngineIds) {
-			testEngineOptions.testEngineIds = new HashSet<>(testEngineIds);
+		/** @see #includedTestEngineIds */
+		public Builder includedTestEngineIds(List<String> testEngineIds) {
+			testEngineOptions.includedTestEngineIds = new HashSet<>(testEngineIds);
+			return this;
+		}
+
+		/** @see #excludedTestEngineIds */
+		public Builder excludedTestEngineIds(List<String> testEngineIds) {
+			testEngineOptions.excludedTestEngineIds = new HashSet<>(testEngineIds);
 			return this;
 		}
 
