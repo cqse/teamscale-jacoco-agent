@@ -19,7 +19,7 @@ import static java.util.stream.Collectors.toMap;
 /** The test engine registry containing all */
 public class TestEngineRegistry implements Iterable<TestEngine> {
 
-	private Map<String, TestEngine> testEnginesById;
+	private final Map<String, TestEngine> testEnginesById;
 
 	public TestEngineRegistry(Set<String> includedTestEngineIds, Set<String> excludedTestEngineIds) {
 		List<TestEngine> otherTestEngines = loadOtherTestEngines(excludedTestEngineIds);

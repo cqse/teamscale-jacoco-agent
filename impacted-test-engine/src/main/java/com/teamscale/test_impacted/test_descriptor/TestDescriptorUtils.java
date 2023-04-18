@@ -6,7 +6,6 @@ import com.teamscale.test_impacted.commons.IndentingWriter;
 import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
 import org.junit.platform.engine.TestDescriptor;
-import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.UniqueId.Segment;
@@ -106,14 +105,20 @@ public class TestDescriptorUtils {
 	}
 
 	/** Returns the {@link AvailableTests} contained within the root {@link TestDescriptor}. */
-	public static AvailableTests getAvailableTests(TestEngine testEngine, TestDescriptor rootTestDescriptor,
+	public static AvailableTests getAvailableTests(TestDescriptor rootTestDescriptor,
 												   String partition) {
 		AvailableTests availableTests = new AvailableTests();
-		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
-				.getTestDescriptorResolver(testEngine);
 
 		TestDescriptorUtils.streamTestRepresentatives(rootTestDescriptor)
 				.forEach(testDescriptor -> {
+					Optional<String> engineId = testDescriptor.getUniqueId().getEngineId();
+					if (!engineId.isPresent()) {
+						LOGGER.severe(() -> "Unable to determine engine ID for " + testDescriptor + "!");
+						return;
+					}
+
+					ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
+							.getTestDescriptorResolver(engineId.get());
 					Optional<String> clusterId = testDescriptorResolver.getClusterId(testDescriptor);
 					Optional<String> uniformPath = testDescriptorResolver.getUniformPath(testDescriptor);
 					String source = TestDescriptorUtils.getSource(testDescriptor);
@@ -136,5 +141,18 @@ public class TestDescriptorUtils {
 
 
 		return availableTests;
+	}
+
+	/**
+	 * Removes the test descriptor from its parent and inserts it again. The TestDescriptor internally uses a
+	 * {@link java.util.LinkedHashSet} so remove and insert moves the testDescriptor to the last position in the
+	 * iteration order. By doing this in order with all tests we end up with our intended order.
+	 */
+	public static void reinsertIntoParent(TestDescriptor testDescriptor) {
+		Optional<TestDescriptor> parent = testDescriptor.getParent();
+		if (parent.isPresent()) {
+			parent.get().removeChild(testDescriptor);
+			parent.get().addChild(testDescriptor);
+		}
 	}
 }

@@ -6,11 +6,11 @@ import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration;
 import com.teamscale.test_impacted.engine.TestDataWriter;
 import com.teamscale.test_impacted.engine.TestEngineRegistry;
-import com.teamscale.test_impacted.engine.executor.ITestExecutor;
-import com.teamscale.test_impacted.engine.executor.ImpactedTestsExecutor;
+import com.teamscale.test_impacted.engine.executor.ITestSorter;
+import com.teamscale.test_impacted.engine.executor.ImpactedTestsSorter;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
+import com.teamscale.test_impacted.engine.executor.NOPTestSorter;
 import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
-import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingTestExecutor;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
 import okhttp3.HttpUrl;
 import org.junit.platform.engine.TestEngine;
@@ -66,11 +66,6 @@ public class TestEngineOptions {
 	/** The directory used to store test-wise coverage reports. Must be a writeable directory. */
 	private File reportDirectory;
 
-	/** @see #runImpacted */
-	private boolean isRunImpacted() {
-		return runImpacted;
-	}
-
 	/** @see #runAllTests */
 	private boolean isRunAllTests() {
 		return runAllTests;
@@ -92,25 +87,29 @@ public class TestEngineOptions {
 	}
 
 	public ImpactedTestEngineConfiguration createTestEngineConfiguration() {
-		ITestExecutor testExecutor = createTestExecutor();
+		ITestSorter testSorter = createTestSorter();
 		TeamscaleAgentNotifier teamscaleAgentNotifier = createTeamscaleAgentNotifier();
 		TestEngineRegistry testEngineRegistry = new TestEngineRegistry(includedTestEngineIds, excludedTestEngineIds);
 		TestDataWriter testDataWriter = new TestDataWriter(reportDirectory);
 
-		return new ImpactedTestEngineConfiguration(testDataWriter, testEngineRegistry, testExecutor, teamscaleAgentNotifier);
+		return new ImpactedTestEngineConfiguration(testDataWriter, testEngineRegistry, testSorter, teamscaleAgentNotifier);
 	}
 
-	private ITestExecutor createTestExecutor() {
-		if (!isRunImpacted()) {
-			return new TestwiseCoverageCollectingTestExecutor();
+	private ITestSorter createTestSorter() {
+		if (!runImpacted) {
+			return new NOPTestSorter();
 		}
 
+		ImpactedTestsProvider testsProvider = createImpactedTestsProvider();
+		return new ImpactedTestsSorter(testsProvider);
+	}
+
+	private ImpactedTestsProvider createImpactedTestsProvider() {
 		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
 				serverOptions.getUserAccessToken(), serverOptions.getProject(),
 				new File(reportDirectory, "server-request.txt"));
-		ImpactedTestsProvider testsProvider = new ImpactedTestsProvider(client, baseline, endCommit, partition,
+		return new ImpactedTestsProvider(client, baseline, endCommit, partition,
 				isRunAllTests(), isIncludeAddedTests(), isIncludeFailedAndSkipped());
-		return new ImpactedTestsExecutor(testsProvider);
 	}
 
 	private TeamscaleAgentNotifier createTeamscaleAgentNotifier() {

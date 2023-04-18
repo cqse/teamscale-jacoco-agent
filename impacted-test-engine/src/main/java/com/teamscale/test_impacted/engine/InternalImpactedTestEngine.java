@@ -1,19 +1,18 @@
 package com.teamscale.test_impacted.engine;
 
-import com.teamscale.client.TestDetails;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
-import com.teamscale.test_impacted.engine.executor.ITestExecutor;
+import com.teamscale.test_impacted.engine.executor.ITestSorter;
 import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
-import com.teamscale.test_impacted.engine.executor.TestExecutorRequest;
+import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingExecutionListener;
+import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorResolverRegistry;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.engine.EngineDiscoveryRequest;
-import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.ExecutionRequest;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
-import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.EngineDescriptor;
 
@@ -34,7 +33,7 @@ class InternalImpactedTestEngine {
 
 	private final TestEngineRegistry testEngineRegistry;
 
-	private final ITestExecutor testExecutor;
+	private final ITestSorter testSorter;
 
 	private final TeamscaleAgentNotifier teamscaleAgentNotifier;
 
@@ -44,7 +43,7 @@ class InternalImpactedTestEngine {
 
 	InternalImpactedTestEngine(ImpactedTestEngineConfiguration configuration, String partition) {
 		this.testEngineRegistry = configuration.testEngineRegistry;
-		this.testExecutor = configuration.testExecutor;
+		this.testSorter = configuration.testSorter;
 		this.testDataWriter = configuration.testDataWriter;
 		this.teamscaleAgentNotifier = configuration.teamscaleAgentNotifier;
 		this.partition = partition;
@@ -57,17 +56,17 @@ class InternalImpactedTestEngine {
 	TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
 		EngineDescriptor engineDescriptor = new EngineDescriptor(uniqueId, "Teamscale Impacted Tests");
 
-		LOGGER.debug(() -> "Starting test discovery for engine " + ENGINE_ID);
+		LOGGER.fine(() -> "Starting test discovery for engine " + ENGINE_ID);
 
 		for (TestEngine delegateTestEngine : testEngineRegistry) {
-			LOGGER.debug(() -> "Starting test discovery for delegate engine: " + delegateTestEngine.getId());
+			LOGGER.fine(() -> "Starting test discovery for delegate engine: " + delegateTestEngine.getId());
 			TestDescriptor delegateEngineDescriptor = delegateTestEngine.discover(discoveryRequest,
 					UniqueId.forEngine(delegateTestEngine.getId()));
 
 			engineDescriptor.addChild(delegateEngineDescriptor);
 		}
 
-		LOGGER.debug(() -> "Discovered test descriptor for engine " + ENGINE_ID + ":\n" + TestDescriptorUtils
+		LOGGER.fine(() -> "Discovered test descriptor for engine " + ENGINE_ID + ":\n" + TestDescriptorUtils
 				.getTestDescriptorAsString(engineDescriptor));
 
 		return engineDescriptor;
@@ -78,44 +77,47 @@ class InternalImpactedTestEngine {
 	 * {@link #discover(EngineDiscoveryRequest, UniqueId)} with the corresponding {@link TestEngine}.
 	 */
 	void execute(ExecutionRequest request) {
-		EngineExecutionListener engineExecutionListener = request.getEngineExecutionListener();
-		EngineDescriptor engineDescriptor = (EngineDescriptor) request.getRootTestDescriptor();
+		TestDescriptor rootTestDescriptor = request.getRootTestDescriptor();
+		AvailableTests availableTests = TestDescriptorUtils.getAvailableTests(rootTestDescriptor, partition);
 
-		LOGGER.debug(() -> "Starting execution of request for engine " + ENGINE_ID + ":\n" + TestDescriptorUtils
-				.getTestDescriptorAsString(engineDescriptor));
+		LOGGER.fine(() -> "Starting selection and sorting " + ENGINE_ID + ":\n" + TestDescriptorUtils
+				.getTestDescriptorAsString(rootTestDescriptor));
 
-		engineExecutionListener.executionStarted(engineDescriptor);
-		runTestExecutor(request);
-		engineExecutionListener.executionFinished(engineDescriptor, TestExecutionResult.successful());
+		testSorter.selectAndSort(rootTestDescriptor);
+
+		LOGGER.fine(() -> "Starting execution of request for engine " + ENGINE_ID + ":\n" + TestDescriptorUtils
+				.getTestDescriptorAsString(rootTestDescriptor));
+
+		List<TestExecution> testExecutions = executeTests(request, rootTestDescriptor);
+
+		testDataWriter.dumpTestExecutions(testExecutions);
+		testDataWriter.dumpTestDetails(availableTests.getTestList());
+		teamscaleAgentNotifier.testRunEnded();
 	}
 
-
-	private void runTestExecutor(ExecutionRequest request) {
-		List<TestDetails> availableTests = new ArrayList<>();
+	private List<TestExecution> executeTests(ExecutionRequest request, TestDescriptor rootTestDescriptor) {
 		List<TestExecution> testExecutions = new ArrayList<>();
-
-		for (TestDescriptor engineTestDescriptor : request.getRootTestDescriptor().getChildren()) {
+		for (TestDescriptor engineTestDescriptor : rootTestDescriptor.getChildren()) {
 			Optional<String> engineId = engineTestDescriptor.getUniqueId().getEngineId();
-
 			if (!engineId.isPresent()) {
-				LOGGER.error(
-						() -> "Engine id for test descriptor " + engineTestDescriptor + " not present. Skipping execution of the engine.");
+				LOGGER.severe(
+						() -> "Engine ID for test descriptor " + engineTestDescriptor + " not present. Skipping execution of the engine.");
 				continue;
 			}
 
 			TestEngine testEngine = testEngineRegistry.getTestEngine(engineId.get());
-			AvailableTests availableTestsForEngine = TestDescriptorUtils
-					.getAvailableTests(testEngine, engineTestDescriptor, partition);
-			TestExecutorRequest testExecutorRequest = new TestExecutorRequest(testEngine, engineTestDescriptor,
-					request.getEngineExecutionListener(), teamscaleAgentNotifier, request.getConfigurationParameters());
-			List<TestExecution> testExecutionsOfEngine = testExecutor.execute(testExecutorRequest);
+			ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
+					.getTestDescriptorResolver(testEngine.getId());
+			TestwiseCoverageCollectingExecutionListener executionListener =
+					new TestwiseCoverageCollectingExecutionListener(teamscaleAgentNotifier,
+							testDescriptorResolver,
+							request.getEngineExecutionListener());
 
-			testExecutions.addAll(testExecutionsOfEngine);
-			availableTests.addAll(availableTestsForEngine.getTestList());
+			testEngine.execute(new ExecutionRequest(engineTestDescriptor, executionListener,
+					request.getConfigurationParameters()));
+
+			testExecutions.addAll(executionListener.getTestExecutions());
 		}
-
-		testDataWriter.dumpTestDetails(availableTests);
-		testDataWriter.dumpTestExecutions(testExecutions);
-		teamscaleAgentNotifier.testRunEnded();
+		return testExecutions;
 	}
 }

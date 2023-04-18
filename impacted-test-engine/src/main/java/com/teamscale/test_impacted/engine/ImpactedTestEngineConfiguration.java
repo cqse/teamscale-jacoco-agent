@@ -1,6 +1,6 @@
 package com.teamscale.test_impacted.engine;
 
-import com.teamscale.test_impacted.engine.executor.ITestExecutor;
+import com.teamscale.test_impacted.engine.executor.ITestSorter;
 import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
 import org.junit.platform.engine.TestEngine;
 
@@ -13,8 +13,8 @@ public class ImpactedTestEngineConfiguration {
 	/** The test engine registry used to determine the {@link TestEngine}s to use. */
 	final TestEngineRegistry testEngineRegistry;
 
-	/** The {@link ITestExecutor} to use for execution of tests. */
-	final ITestExecutor testExecutor;
+	/** The {@link ITestSorter} to use for execution of tests. */
+	final ITestSorter testSorter;
 
 	/** An API to signal test start and end to the agent. */
 	final TeamscaleAgentNotifier teamscaleAgentNotifier;
@@ -22,10 +22,10 @@ public class ImpactedTestEngineConfiguration {
 	public ImpactedTestEngineConfiguration(
 			TestDataWriter testDataWriter,
 			TestEngineRegistry testEngineRegistry,
-			ITestExecutor testExecutor, TeamscaleAgentNotifier teamscaleAgentNotifier) {
+			ITestSorter testSorter, TeamscaleAgentNotifier teamscaleAgentNotifier ) {
 		this.testDataWriter = testDataWriter;
 		this.testEngineRegistry = testEngineRegistry;
-		this.testExecutor = testExecutor;
+		this.testSorter = testSorter;
 		this.teamscaleAgentNotifier = teamscaleAgentNotifier;
 	}
 }

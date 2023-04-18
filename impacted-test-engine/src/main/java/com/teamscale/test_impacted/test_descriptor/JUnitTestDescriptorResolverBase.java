@@ -26,10 +26,10 @@ public abstract class JUnitTestDescriptorResolverBase implements ITestDescriptor
 
 		if (!classSegmentName.isPresent()) {
 			LOGGER.severe(
-					() -> "Falling back to test uniform path as cluster id because class segement name could not be " +
+					() -> "Falling back to unique ID as cluster id because class segment name could not be " +
 							"determined for test descriptor: " + testDescriptor);
 			// Default to uniform path.
-			return getUniformPath(testDescriptor);
+			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
 		return classSegmentName;

@@ -7,6 +7,7 @@ import com.teamscale.test_impacted.commons.LoggerUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,10 +34,10 @@ public class TestDataWriter {
 	}
 
 	/** Writes the given test details to a report file. */
-	void dumpTestDetails(List<TestDetails> testDetails) {
+	void dumpTestDetails(List<? extends TestDetails> testDetails) {
 		File file = new File(reportDirectory, "test-list.json");
 		try {
-			ReportUtils.writeTestListReport(file, testDetails);
+			ReportUtils.writeTestListReport(file, new ArrayList<>(testDetails));
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> "Error while writing report to file: " + file);
 		}

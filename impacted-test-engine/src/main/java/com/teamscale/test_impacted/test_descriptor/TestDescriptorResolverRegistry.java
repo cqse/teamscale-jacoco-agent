@@ -2,7 +2,6 @@ package com.teamscale.test_impacted.test_descriptor;
 
 import com.teamscale.test_impacted.commons.LoggerUtils;
 import org.junit.platform.commons.util.ClassLoaderUtils;
-import org.junit.platform.engine.TestEngine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +35,7 @@ public class TestDescriptorResolverRegistry {
 	}
 
 	/** Returns the test descriptor resolver or null if none exists for the test engine. */
-	public static ITestDescriptorResolver getTestDescriptorResolver(TestEngine testEngine) {
-		String testEngineId = testEngine.getId();
+	public static ITestDescriptorResolver getTestDescriptorResolver(String testEngineId) {
 		if (!TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.containsKey(testEngineId)) {
 			LOGGER.warning(() -> testEngineId + " is not officially supported! You can add support by " +
 					"implementing the ITestDescriptorResolver interface and making the implementation " +

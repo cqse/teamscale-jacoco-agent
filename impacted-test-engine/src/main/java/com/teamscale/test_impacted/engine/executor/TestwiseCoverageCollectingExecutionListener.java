@@ -4,6 +4,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
@@ -26,8 +27,7 @@ import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.is
  * An execution listener which delegates events to another {@link EngineExecutionListener} and notifies Teamscale agents
  * collecting test wise coverage.
  */
-class TestwiseCoverageCollectingExecutionListener implements EngineExecutionListener {
-
+public class TestwiseCoverageCollectingExecutionListener implements EngineExecutionListener {
 
 	private static final Logger LOGGER = LoggerUtils.getLogger(TestwiseCoverageCollectingExecutionListener.class);
 
@@ -46,9 +46,9 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	private final Map<UniqueId, TestExecutionResult> testResultCache = new HashMap<>();
 
-	TestwiseCoverageCollectingExecutionListener(TeamscaleAgentNotifier teamscaleAgentNotifier,
-												ITestDescriptorResolver testDescriptorResolver,
-												EngineExecutionListener engineExecutionListener) {
+	public TestwiseCoverageCollectingExecutionListener(TeamscaleAgentNotifier teamscaleAgentNotifier,
+													   ITestDescriptorResolver testDescriptorResolver,
+													   EngineExecutionListener engineExecutionListener) {
 		this.teamscaleAgentNotifier = teamscaleAgentNotifier;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
@@ -61,7 +61,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
-		if (!isTestRepresentative(testDescriptor)) {
+		if (!TestDescriptorUtils.isTestRepresentative(testDescriptor)) {
 			delegateEngineExecutionListener.executionStarted(testDescriptor);
 			testDescriptor.getChildren().forEach(child -> this.executionSkipped(child, reason));
 			delegateEngineExecutionListener.executionFinished(testDescriptor, TestExecutionResult.successful());
@@ -69,9 +69,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		}
 
 		testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(testUniformPath -> {
-			if (!AutoSkippingEngineExecutionListener.TEST_NOT_IMPACTED_REASON.equals(reason)) {
-				testExecutions.add(new TestExecution(testUniformPath, 0L, ETestExecutionResult.SKIPPED, reason));
-			}
+			testExecutions.add(new TestExecution(testUniformPath, 0L, ETestExecutionResult.SKIPPED, reason));
 			delegateEngineExecutionListener.executionSkipped(testDescriptor, reason);
 		});
 	}
@@ -179,7 +177,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	}
 
 	/** @see #testExecutions */
-	List<TestExecution> getTestExecutions() {
+	public List<TestExecution> getTestExecutions() {
 		return testExecutions;
 	}
 }
