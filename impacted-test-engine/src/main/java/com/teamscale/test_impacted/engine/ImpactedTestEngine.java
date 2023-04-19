@@ -18,7 +18,7 @@ public class ImpactedTestEngine implements TestEngine {
 	/** The id of the {@link ImpactedTestEngine}. */
 	public static final String ENGINE_ID = "teamscale-test-impacted";
 
-	public static Logger LOGGER = LoggerUtils.getLogger(ImpactedTestEngine.class);
+	public static final Logger LOGGER = LoggerUtils.getLogger(ImpactedTestEngine.class);
 
 	private InternalImpactedTestEngine internalImpactedTestEngine = null;
 
