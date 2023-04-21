@@ -98,6 +98,13 @@
             <artifactId>teamscale-lib-commons</artifactId>
             <version>7.8.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.teamscale</groupId>
+            <artifactId>teamscale-client</artifactId>
+            <version>22.2.0</version>
+            <scope>runtime</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
