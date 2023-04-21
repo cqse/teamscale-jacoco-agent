@@ -80,6 +80,8 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	@Parameter(defaultValue = "${session}")
 	public MavenSession session;
 
+	protected String resolvedEndCommit;
+
 	protected String resolveEndCommit() throws MojoFailureException {
 		if (StringUtils.isNotBlank(endCommit)) {
 			return endCommit;

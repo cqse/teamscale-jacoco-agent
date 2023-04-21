@@ -104,7 +104,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	public boolean debugLogging;
 
 	private Path targetDirectory;
-	private String resolvedEndCommit;
 
 	@Override
 	public void execute() throws MojoFailureException {
