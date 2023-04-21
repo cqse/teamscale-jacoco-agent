@@ -116,7 +116,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
-		resolvedEndCommit = resolveEndCommit();
+		resolveEndCommit();
 
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);

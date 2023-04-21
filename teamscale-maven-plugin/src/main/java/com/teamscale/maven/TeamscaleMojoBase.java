@@ -57,6 +57,13 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	public String endCommit;
 
 	/**
+	 * You can optionally use this property to override the revision to which the coverage will be uploaded.
+	 * If no revision is manually specified, the plugin will try to determine the current git revision.
+	 */
+	@Parameter
+	public String revision;
+
+	/**
 	 * Whether to skip the execution of this Mojo.
 	 */
 	@Parameter(defaultValue = "false")
@@ -82,15 +89,18 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 
 	protected String resolvedEndCommit;
 
-	protected String resolveEndCommit() throws MojoFailureException {
-		if (StringUtils.isNotBlank(endCommit)) {
-			return endCommit;
-		}
+	protected String resolvedRevision;
 
+	protected void resolveEndCommit() throws MojoFailureException {
 		Path basedir = session.getCurrentProject().getBasedir().toPath();
 		try {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
-			return commit.branch + ":" + commit.timestamp;
+			if (StringUtils.isNotBlank(endCommit)) {
+				resolvedEndCommit = commit.branch + ":" + commit.timestamp;
+			}
+			if (StringUtils.isNotBlank(revision)) {
+				resolvedRevision = commit.sha1;
+			}
 		} catch (IOException e) {
 			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
 					" and I could also not determine the checked out commit in " + basedir + " from Git", e);

@@ -71,7 +71,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		}
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
-		resolvedEndCommit = resolveEndCommit();
+		resolveEndCommit();
 		getLog().debug("Parsing Jacoco plugin configuration");
 		parseJacocoConfiguration();
 		try {
@@ -115,7 +115,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		}
 		String report = Arrays.toString(Files.readAllBytes(jacocoReport.toPath()));
 		getLog().debug(String.format("Uploading Jacoco report for project %s to %s", projectId, partition));
-		teamscaleClient.uploadReport(EReportFormat.JACOCO, report, CommitDescriptor.parse(endCommit), "asdf", partition, "External upload via Teamscale Maven plugin");
+		teamscaleClient.uploadReport(EReportFormat.JACOCO, report, CommitDescriptor.parse(resolvedEndCommit), revision, partition, "External upload via Teamscale Maven plugin");
 	}
 
 	/**
