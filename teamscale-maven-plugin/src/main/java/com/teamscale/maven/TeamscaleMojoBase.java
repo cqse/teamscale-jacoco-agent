@@ -8,6 +8,7 @@ import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,8 +125,8 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 * @param pluginGoal The name of the goal
 	 * @return The configuration DOM if present, otherwise <code>null</code>
 	 */
-	protected Xpp3Dom getExecutionConfigurationDom(String pluginArtifact, String pluginGoal) {
-		Plugin plugin = session.getCurrentProject().getPlugin(pluginArtifact);
+	protected Xpp3Dom getExecutionConfigurationDom(MavenProject project, String pluginArtifact, String pluginGoal) {
+		Plugin plugin = project.getPlugin(pluginArtifact);
 		if (plugin == null) {
 			return null;
 		}
