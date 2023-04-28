@@ -72,10 +72,10 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
 		resolveEndCommit();
-		getLog().debug("Parsing Jacoco plugin configuration");
+		getLog().info("Parsing Jacoco plugin configuration");
 		parseJacocoConfiguration();
 		try {
-			getLog().debug("Uploading coverage reports");
+			getLog().info("Uploading coverage reports");
 			uploadCoverageReports();
 		} catch (IOException e) {
 			throw new MojoFailureException("Uploading coverage reports failed: " + e);
@@ -113,7 +113,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			getLog().debug(String.format("%s does not exist or is not accessible", jacocoReport.toPath()));
 			return;
 		}
-		String report = Arrays.toString(Files.readAllBytes(jacocoReport.toPath()));
+		String report = new String(Files.readAllBytes(jacocoReport.toPath()));
 		getLog().debug(String.format("Uploading Jacoco report for project %s to %s", projectId, partition));
 		teamscaleClient.uploadReport(EReportFormat.JACOCO, report, CommitDescriptor.parse(resolvedEndCommit), revision, partition, "External upload via Teamscale Maven plugin");
 	}
