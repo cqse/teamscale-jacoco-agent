@@ -32,8 +32,8 @@ public class MavenExternalUploadSystemTest {
 
 	@Test
 	public void testMavenExternalUpload() throws Exception {
-		SystemTestUtils.runMavenTests("maven-project");
-		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(2);
+		SystemTestUtils.runMavenTests("root-project");
+		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(4);
 	}
 
 }
