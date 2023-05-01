@@ -62,13 +62,13 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 
 	@Override
 	public void execute() throws MojoFailureException {
-		if (skip) {
+		if (skip || !session.getCurrentProject().equals(session.getTopLevelProject())) {
 			return;
 		}
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
 		resolveEndCommit();
-		getLog().info("Parsing Jacoco plugin configuration");
+		getLog().info("Parsing Jacoco plugin configurations");
 		parseJacocoConfiguration();
 		try {
 			getLog().info("Uploading coverage reports");
