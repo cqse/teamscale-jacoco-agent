@@ -4,15 +4,11 @@
 
 
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>org.example</groupId>
-
     <artifactId>root-project</artifactId>
-
     <version>1.0-SNAPSHOT</version>
 
     <name>root-project</name>
-
     <packaging>pom</packaging>
 
     <properties>
@@ -103,15 +99,12 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <teamscaleUrl>http://localhost:${tia.teamscale.fake.port}</teamscaleUrl>
-                        <projectId>m</projectId>
-                        <username>build</username>
-                        <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
+                        <teamscaleUrl>http://localhost:8080</teamscaleUrl>
+                        <projectId>mavensystemtestroot</projectId>
+                        <username>admin</username>
+                        <accessToken>LiNbRhi2KtGvlQX8Oli05K3LKMgO5jS4</accessToken>
                         <endCommit>master:HEAD</endCommit>
                         <partition>MyPartition</partition>
-                        <includes>
-                            <include>*foo.*</include>
-                        </includes>
                     </configuration>
                 </plugin>
             </plugins>

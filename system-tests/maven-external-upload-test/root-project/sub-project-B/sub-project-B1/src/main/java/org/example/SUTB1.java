@@ -4,7 +4,7 @@ package org.example;
  * Hello world!
  *
  */
-public class SUTB
+public class SUTB1
 {
     public void goo() {
         System.out.println("goo");
