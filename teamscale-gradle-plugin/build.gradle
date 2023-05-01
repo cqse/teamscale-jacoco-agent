@@ -4,7 +4,7 @@ plugins {
 	id 'java-gradle-plugin'
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
-	id "com.gradle.plugin-publish" version "1.2.0"
+	alias(libs.plugins.pluginPublish)
 }
 
 java {
@@ -36,9 +36,9 @@ dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 	implementation gradleApi()
-	implementation 'org.eclipse.jgit:org.eclipse.jgit:6.5.0.202303070854-r'
-	implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-	testImplementation 'com.squareup.okio:okio:3.3.0'
+	implementation(libs.jgit)
+	implementation(libs.retrofit.converter.moshi)
+	testImplementation(libs.okio)
 }
 
 processResources {

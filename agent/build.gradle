@@ -1,6 +1,6 @@
 plugins {
 	id 'com.teamscale.java-convention'
-	id 'de.fntsoftware.gradle.markdown-to-pdf'
+	alias(libs.plugins.markdownToPdf)
 	id 'application'
 
 	// we don't want to cause conflicts between our dependencies and the target application
@@ -19,42 +19,42 @@ publishAs {
 
 ext {
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
-	jettyVersion = '9.4.51.v20230217'
-	jerseyVersion = '2.39.1'
 }
 
 dependencies {
+	implementation(libs.jetty.server)
+	implementation(libs.jetty.servlet)
 
-	implementation "org.eclipse.jetty:jetty-server:${jettyVersion}"
-	implementation "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
-
-	implementation "org.glassfish.jersey.core:jersey-server:${jerseyVersion}"
-	implementation "org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}"
-	implementation "org.glassfish.jersey.containers:jersey-container-jetty-http:${jerseyVersion}"
-	implementation "org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}"
-	implementation "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}"
+	implementation(libs.jersey.server)
+	implementation(libs.jersey.containerServletCore)
+	implementation(libs.jersey.containerJettyHttp)
+	implementation(libs.jersey.mediaJsonJackson)
+	implementation(libs.jersey.hk2)
 
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 
-	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+	implementation(libs.jacoco.core)
+	implementation(libs.jacoco.report)
+	implementation(libs.jacoco.agent) {
+		artifact {
+			classifier = 'runtime'
+		}
+	}
 
-	// We need to stay on the 1.3.x release line as 1.4.x requires Java 11
-	implementation 'ch.qos.logback:logback-core:1.3.4'
-	implementation 'ch.qos.logback:logback-classic:1.3.4'
+	implementation(libs.logback.core)
+	implementation(libs.logback.classic)
 
-	implementation 'com.beust:jcommander:1.82'
-	implementation 'com.teamscale:teamscale-lib-commons:8.8.1'
+	implementation(libs.jcommander)
+	implementation(libs.teamscaleLibCommons)
 
-	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+	implementation(libs.retrofit.core)
 
-	implementation 'com.squareup.moshi:moshi:1.14.0'
+	implementation(libs.moshi)
 
 	testImplementation project(':tia-client')
-	testImplementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-	testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
+	testImplementation(libs.retrofit.converter.moshi)
+	testImplementation(libs.okhttp.mockwebserver)
 }
 
 mainClassName = 'com.teamscale.jacoco.agent.Main'

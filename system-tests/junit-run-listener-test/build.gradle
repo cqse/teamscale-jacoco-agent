@@ -13,12 +13,12 @@ dependencies {
     testImplementation project(':tia-client')
     testImplementation project(':common-system-test')
 
-    testImplementation 'com.sparkjava:spark-core:2.9.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
-    testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation 'com.squareup.moshi:moshi:1.14.0'
-    testImplementation 'com.teamscale:teamscale-lib-commons:8.8.1'
+    testImplementation(libs.spark)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.assertj)
+    testImplementation(libs.moshi)
+    testImplementation(libs.teamscaleLibCommons)
 }
 
 tasks.test.dependsOn(project(':agent').tasks.shadowJar)

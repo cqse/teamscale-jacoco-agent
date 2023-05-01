@@ -2,7 +2,7 @@
 // see https://github.com/n0mer/gradle-git-properties/issues/195#issuecomment-982326268
 buildscript {
 	dependencies {
-		classpath ('org.eclipse.jgit:org.eclipse.jgit:') {
+		classpath ('org.eclipse.jgit:org.eclipse.jgit') {
 			version {
 				strictly '5.13.0.202109080827-r'
 			}
@@ -14,7 +14,7 @@ plugins {
 	id 'com.teamscale.java-convention'
 	id 'application'
 	id 'com.teamscale.coverage'
-	id "com.gorylenko.gradle-git-properties" version "2.4.1"
+	alias(libs.plugins.gitProperties)
 }
 
 version 'unspecified'

@@ -12,14 +12,19 @@ publishAs {
 
 dependencies {
 	implementation project(':teamscale-client')
-	implementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.report:$jacocoVersion"
-	implementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+
+	implementation(libs.jacoco.core)
+	implementation(libs.jacoco.report)
+	implementation(libs.jacoco.agent) {
+		artifact {
+			classifier = 'runtime'
+		}
+	}
 
 	// Need to stay at 1.12.0 because 1.13.0 upwards uses multi release jars which breaks the gradle plugin tests
 	implementation 'com.squareup.moshi:moshi:1.12.0'
 
-	testImplementation 'org.skyscreamer:jsonassert:1.5.1'
-	testImplementation 'com.teamscale:teamscale-lib-commons:8.8.1'
+	testImplementation (libs.jsonassert)
+	testImplementation (libs.teamscaleLibCommons)
 }
 

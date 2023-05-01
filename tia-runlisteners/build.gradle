@@ -18,6 +18,6 @@ jar {
 
 dependencies {
 	implementation project(':tia-client')
-	api 'junit:junit:4.13.2'
-	api 'org.junit.platform:junit-platform-launcher:1.9.3'
+	api(libs.junit4)
+	api(libs.junit.platform.launcher)
 }

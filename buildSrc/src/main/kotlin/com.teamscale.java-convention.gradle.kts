@@ -21,14 +21,17 @@ tasks.named<Test>("test") {
     testLogging.exceptionFormat = TestExceptionFormat.FULL
 }
 
-dependencies {
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:4.9.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:4.9.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testImplementation("org.assertj:assertj-core:3.24.2")
+// Workaround until https://github.com/gradle/gradle/issues/15383 is fixed
+val catalogs = extensions.getByType<VersionCatalogsExtension>()
+val libs = catalogs.named("libs")
+fun lib(alias: String) = libs.findLibrary(alias).get()
 
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
+dependencies {
+    testImplementation(lib("junit-jupiter-api"))
+    testImplementation(lib("assertj"))
+    testImplementation(lib("mockito-core"))
+    testImplementation(lib("mockito-junit"))
+
+    testRuntimeOnly(lib("junit-platform-launcher"))
+    testRuntimeOnly(lib("junit-jupiter-engine"))
 }

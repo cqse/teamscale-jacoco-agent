@@ -22,7 +22,7 @@ dependencies {
 	implementation project(':report-generator')
 	implementation project(':tia-client')
 
-	compileOnly 'org.junit.platform:junit-platform-engine:1.9.3'
-	compileOnly 'org.junit.platform:junit-platform-commons:1.9.3'
-	testImplementation 'org.junit.platform:junit-platform-engine:1.9.3'
+	compileOnly(libs.junit.platform.engine)
+	compileOnly(libs.junit.platform.commons)
+	testImplementation(libs.junit.platform.engine)
 }

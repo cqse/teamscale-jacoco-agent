@@ -19,8 +19,8 @@ dependencies {
 	implementation project(':tia-client')
 	implementation project(':common-system-test')
 
-	testImplementation 'com.sparkjava:spark-core:2.9.4'
-	testImplementation 'com.squareup.moshi:moshi:1.14.0'
+	testImplementation(libs.spark)
+	testImplementation(libs.moshi)
 }
 
 tasks.test.dependsOn(project(':agent').tasks.shadowJar)

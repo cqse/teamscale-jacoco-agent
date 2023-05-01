@@ -11,9 +11,9 @@ publishAs {
 }
 
 dependencies {
-    api 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
-    implementation 'commons-codec:commons-codec:1.15'
-    implementation 'org.slf4j:slf4j-api:2.0.7'
-    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    api(libs.retrofit.core)
+    implementation(libs.okhttp.core)
+    implementation(libs.commonsCodec)
+    implementation(libs.slf4j.api)
+    implementation(libs.retrofit.converter.moshi)
 }
