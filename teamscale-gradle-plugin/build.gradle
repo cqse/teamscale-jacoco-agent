@@ -1,10 +1,10 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version "1.7.21"
+	id 'org.jetbrains.kotlin.jvm' version "1.8.21"
 	id 'com.teamscale.java-convention'
 	id 'java-gradle-plugin'
 	id 'com.teamscale.coverage'
 	id 'com.teamscale.publish'
-	id "com.gradle.plugin-publish" version "1.1.0"
+	id "com.gradle.plugin-publish" version "1.2.0"
 }
 
 java {
@@ -18,19 +18,16 @@ publishAs {
 	description = "A Gradle plugin that supports collecting Testwise Coverage and uploading reports to Teamscale."
 }
 
-pluginBundle {
+gradlePlugin {
 	website = 'https://www.teamscale.com/'
 	vcsUrl = 'https://github.com/cqse/teamscale-jacoco-agent'
-	tags = ['teamscale', 'coverage', 'tga', 'test', 'gap', 'junit', 'upload']
-}
-
-gradlePlugin {
 	plugins {
 		teamscalePlugin {
 			id = "com.teamscale"
 			displayName = 'Teamscale Gradle plugin'
 			implementationClass = "com.teamscale.TeamscalePlugin"
 			description = 'Supports collecting Testwise Coverage and uploading reports to Teamscale.'
+			tags.set(['teamscale', 'coverage', 'tga', 'test', 'gap', 'junit', 'upload'])
 		}
 	}
 }
@@ -39,9 +36,9 @@ dependencies {
 	implementation project(':teamscale-client')
 	implementation project(':report-generator')
 	implementation gradleApi()
-	implementation 'org.eclipse.jgit:org.eclipse.jgit:6.3.0.202209071007-r'
+	implementation 'org.eclipse.jgit:org.eclipse.jgit:6.5.0.202303070854-r'
 	implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-	testImplementation 'com.squareup.okio:okio:3.2.0'
+	testImplementation 'com.squareup.okio:okio:3.3.0'
 }
 
 processResources {

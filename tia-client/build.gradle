@@ -24,5 +24,5 @@ dependencies {
 	implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
 
 	testImplementation 'org.mockito:mockito-core:4.9.0'
-	testImplementation 'com.squareup.okhttp3:mockwebserver:4.10.0'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
 }

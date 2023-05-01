@@ -20,7 +20,7 @@ publishAs {
 ext {
 	outputVersion = rootProject.appVersion + '-jacoco-' + jacocoVersion
 	jettyVersion = '9.4.51.v20230217'
-	jerseyVersion = '2.39'
+	jerseyVersion = '2.39.1'
 }
 
 dependencies {
@@ -45,9 +45,8 @@ dependencies {
 	implementation 'ch.qos.logback:logback-core:1.3.4'
 	implementation 'ch.qos.logback:logback-classic:1.3.4'
 
-	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 	implementation 'com.beust:jcommander:1.82'
-	implementation 'com.teamscale:teamscale-lib-commons:8.4.2'
+	implementation 'com.teamscale:teamscale-lib-commons:8.8.1'
 
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
@@ -55,7 +54,7 @@ dependencies {
 
 	testImplementation project(':tia-client')
 	testImplementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
-	testImplementation 'com.squareup.okhttp3:mockwebserver:4.10.0'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
 }
 
 mainClassName = 'com.teamscale.jacoco.agent.Main'

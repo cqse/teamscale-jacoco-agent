@@ -5,13 +5,9 @@ import org.conqat.lib.commons.collections.PairList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import systemundertest.SystemUnderTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 public class ArtifactoryGitPropertiesDetectionTest {
 
@@ -19,7 +15,7 @@ public class ArtifactoryGitPropertiesDetectionTest {
 	 * This port must match what is configured for the -javaagent line in the build.gradle file.
 	 */
 	private static final int FAKE_ARTIFACTORY_PORT = 65432;
-	private static final int AGENT_PORT = 65433;
+	private static final int AGENT_PORT = 65434;
 	private ArtifactoryMockServer artifactoryMockServer = null;
 
 	@BeforeEach
