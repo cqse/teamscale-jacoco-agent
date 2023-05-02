@@ -52,8 +52,8 @@ public class SimpleTestDescriptor extends AbstractTestDescriptor {
 	}
 
 	/** Sets the execution result that the engine should report when simulating the test's execution. */
-	public SimpleTestDescriptor result(TestExecutionResult failed) {
-		this.executionResult = failed;
+	public SimpleTestDescriptor result(TestExecutionResult executionResult) {
+		this.executionResult = executionResult;
 		return this;
 	}
 

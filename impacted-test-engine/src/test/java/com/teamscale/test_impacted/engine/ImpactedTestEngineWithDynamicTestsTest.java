@@ -26,9 +26,9 @@ class ImpactedTestEngineWithDynamicTestsTest extends ImpactedTestEngineTestBase 
 	 */
 	private final UniqueId engineRootId = UniqueId.forEngine("junit-jupiter");
 
-	private final UniqueId dynamicTestClassId = engineRootId.append("class", "example.DynamicTest");
-	private final UniqueId dynamicTestId = dynamicTestClassId.append("test-factory", "testFactory()");
-	private final UniqueId dynamicallyRegisteredTestId = dynamicTestId.append("dynamic-test", "#1");
+	private final UniqueId dynamicTestClassId = engineRootId.append(JUnitJupiterTestDescriptorResolver.CLASS_SEGMENT_TYPE, "example.DynamicTest");
+	private final UniqueId dynamicTestId = dynamicTestClassId.append(JUnitJupiterTestDescriptorResolver.TEST_FACTORY_SEGMENT_TYPE, "testFactory()");
+	private final UniqueId dynamicallyRegisteredTestId = dynamicTestId.append(JUnitJupiterTestDescriptorResolver.DYNAMIC_TEST_SEGMENT_TYPE, "#1");
 
 	private final TestDescriptor dynamicallyRegisteredTestCase = testCase(dynamicallyRegisteredTestId);
 	private final TestDescriptor dynamicTestCase = dynamicTestCase(dynamicTestId,

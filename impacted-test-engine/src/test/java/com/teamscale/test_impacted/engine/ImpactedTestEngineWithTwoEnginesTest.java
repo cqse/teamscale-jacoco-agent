@@ -27,6 +27,17 @@ import static org.mockito.Mockito.verify;
 /** Test setup for a mixture of impacted and no impacted tests and two test engines. */
 class ImpactedTestEngineWithTwoEnginesTest extends ImpactedTestEngineTestBase {
 
+	private static final String FIRST_TEST_CLASS = "FirstTestClass";
+	private static final String OTHER_TEST_CLASS = "OtherTestClass";
+	private static final String IGNORED_TEST_CLASS = "IgnoredTestClass";
+	private static final String SECOND_TEST_CLASS = "SecondTestClass";
+	private static final String IMPACTED_TEST_CASE_1 = "impactedTestCase1()";
+	private static final String IMPACTED_TEST_CASE_2 = "impactedTestCase2()";
+	private static final String IMPACTED_TEST_CASE_3 = "impactedTestCase3()";
+	private static final String IMPACTED_TEST_CASE_4 = "impactedTestCase4()";
+	private static final String SKIPPED_IMPACTED_TEST_CASE_ID = "skippedImpactedTestCaseId()";
+	private static final String NON_IMPACTED_TEST_CASE_1 = "nonImpactedTestCase1()";
+	private static final String NON_IMPACTED_TEST_CASE_2 = "nonImpactedTestCase2()";
 	/**
 	 * For this test setup we rely on the {@link JUnitJupiterTestDescriptorResolver} for resolving uniform paths and
 	 * cluster ids. Therefore, the engine root is set accordingly.
@@ -34,36 +45,44 @@ class ImpactedTestEngineWithTwoEnginesTest extends ImpactedTestEngineTestBase {
 	private final UniqueId engine1RootId = UniqueId.forEngine("junit-jupiter");
 	private final UniqueId engine2RootId = UniqueId.forEngine("exotic-engine");
 
-	/** FirstTestClassDiscovery contains a one impacted and one non-impacted test. */
-	private final UniqueId firstTestClassId = engine1RootId.append("class", "FirstTestClass");
-	private final UniqueId impactedTestCase1Id = firstTestClassId.append("method",
-			"impactedTestCase1()");
+	/** FirstTestClass contains one impacted and one non-impacted test. */
+	private final UniqueId firstTestClassId = engine1RootId.append(
+			JUnitJupiterTestDescriptorResolver.CLASS_SEGMENT_TYPE, FIRST_TEST_CLASS);
+	private final UniqueId impactedTestCase1Id = firstTestClassId.append(
+			JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE,
+			IMPACTED_TEST_CASE_1);
 	private final UniqueId nonImpactedTestCase1Id = firstTestClassId
-			.append("method", "nonImpactedTestCase1()");
+			.append(JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE, NON_IMPACTED_TEST_CASE_1);
 
 	/**
 	 * IgnoredTestClass is ignored (e.g. class is annotated with {@link Disabled}). Hence, it'll be impacted since it
 	 * was previously skipped.
 	 */
-	private final UniqueId ignoredTestClassId = engine1RootId.append("class", "IgnoredTestClass");
-	private final UniqueId impactedTestCase2Id = ignoredTestClassId.append("method",
-			"impactedTestCase2()");
+	private final UniqueId ignoredTestClassId = engine1RootId.append(
+			JUnitJupiterTestDescriptorResolver.CLASS_SEGMENT_TYPE, IGNORED_TEST_CLASS);
+	private final UniqueId impactedTestCase2Id = ignoredTestClassId.append(
+			JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE,
+			IMPACTED_TEST_CASE_2);
 	private final UniqueId nonImpactedTestCase2Id = ignoredTestClassId
-			.append("method", "nonImpactedTestCase2()");
+			.append(JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE, NON_IMPACTED_TEST_CASE_2);
 
 	/**
 	 * ImpactedTestClassWithSkippedTest contains two impacted tests of which one is skipped.
 	 */
-	private final UniqueId secondTestClassId = engine1RootId.append("class", "SecondTestClass");
-	private final UniqueId impactedTestCase3Id = secondTestClassId.append("method",
-			"impactedTestCase3()");
+	private final UniqueId secondTestClassId = engine1RootId.append(
+			JUnitJupiterTestDescriptorResolver.CLASS_SEGMENT_TYPE, SECOND_TEST_CLASS);
+	private final UniqueId impactedTestCase3Id = secondTestClassId.append(
+			JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE,
+			IMPACTED_TEST_CASE_3);
 	private final UniqueId skippedImpactedTestCaseId = secondTestClassId
-			.append("method", "skippedImpactedTestCaseId()");
+			.append(JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE, SKIPPED_IMPACTED_TEST_CASE_ID);
 
-	/** FirstTestClassDiscovery contains a one impacted and one non-impacted test. */
-	private final UniqueId otherTestClassId = engine2RootId.append("class", "OtherTestClass");
-	private final UniqueId impactedTestCase4Id = otherTestClassId.append("method",
-			"impactedTestCase4()");
+	/** OtherTestClass contains one impacted and one non-impacted test. */
+	private final UniqueId otherTestClassId = engine2RootId.append(
+			JUnitJupiterTestDescriptorResolver.CLASS_SEGMENT_TYPE, OTHER_TEST_CLASS);
+	private final UniqueId impactedTestCase4Id = otherTestClassId.append(
+			JUnitJupiterTestDescriptorResolver.METHOD_SEGMENT_TYPE,
+			IMPACTED_TEST_CASE_4);
 
 	private final TestDescriptor impactedTestCase1 = testCase(impactedTestCase1Id);
 	private final TestDescriptor nonImpactedTestCase1 = testCase(nonImpactedTestCase1Id);
@@ -99,15 +118,15 @@ class ImpactedTestEngineWithTwoEnginesTest extends ImpactedTestEngineTestBase {
 	@Override
 	public List<PrioritizableTestCluster> getImpactedTests() {
 		return Arrays.asList(
-				new PrioritizableTestCluster("FirstTestClass",
-						singletonList(new PrioritizableTest("FirstTestClass/impactedTestCase1()"))),
-				new PrioritizableTestCluster("OtherTestClass",
-						singletonList(new PrioritizableTest("OtherTestClass/impactedTestCase4()"))),
-				new PrioritizableTestCluster("IgnoredTestClass",
-						singletonList(new PrioritizableTest("IgnoredTestClass/impactedTestCase2()"))),
-				new PrioritizableTestCluster("SecondTestClass",
-						asList(new PrioritizableTest("SecondTestClass/impactedTestCase3()"),
-								new PrioritizableTest("SecondTestClass/skippedImpactedTestCaseId()"))));
+				new PrioritizableTestCluster(FIRST_TEST_CLASS,
+						singletonList(new PrioritizableTest(FIRST_TEST_CLASS + "/" + IMPACTED_TEST_CASE_1))),
+				new PrioritizableTestCluster(OTHER_TEST_CLASS,
+						singletonList(new PrioritizableTest(OTHER_TEST_CLASS + "/" + IMPACTED_TEST_CASE_4))),
+				new PrioritizableTestCluster(IGNORED_TEST_CLASS,
+						singletonList(new PrioritizableTest(IGNORED_TEST_CLASS + "/" + IMPACTED_TEST_CASE_2))),
+				new PrioritizableTestCluster(SECOND_TEST_CLASS,
+						asList(new PrioritizableTest(SECOND_TEST_CLASS + "/" + IMPACTED_TEST_CASE_3),
+								new PrioritizableTest(SECOND_TEST_CLASS + "/" + SKIPPED_IMPACTED_TEST_CASE_ID))));
 	}
 
 	@Override

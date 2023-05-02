@@ -69,7 +69,9 @@ public class TestDescriptorUtils {
 		}
 
 		String lastSegmentType = segments.get(segments.size() - 1).getType();
-		return "test-template".equals(lastSegmentType) || "test-factory".equals(lastSegmentType);
+		return JUnitJupiterTestDescriptorResolver.TEST_TEMPLATE_SEGMENT_TYPE.equals(
+				lastSegmentType) || JUnitJupiterTestDescriptorResolver.TEST_FACTORY_SEGMENT_TYPE.equals(
+				lastSegmentType);
 	}
 
 	/** Creates a stream of the test representatives contained by the {@link TestDescriptor}. */
@@ -141,18 +143,5 @@ public class TestDescriptorUtils {
 
 
 		return availableTests;
-	}
-
-	/**
-	 * Removes the test descriptor from its parent and inserts it again. The TestDescriptor internally uses a
-	 * {@link java.util.LinkedHashSet} so remove and insert moves the testDescriptor to the last position in the
-	 * iteration order. By doing this in order with all tests we end up with our intended order.
-	 */
-	public static void reinsertIntoParent(TestDescriptor testDescriptor) {
-		Optional<TestDescriptor> parent = testDescriptor.getParent();
-		if (parent.isPresent()) {
-			parent.get().removeChild(testDescriptor);
-			parent.get().addChild(testDescriptor);
-		}
 	}
 }

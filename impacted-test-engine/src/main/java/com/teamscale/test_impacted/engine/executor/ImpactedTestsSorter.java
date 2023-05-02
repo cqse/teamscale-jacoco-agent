@@ -73,8 +73,21 @@ public class ImpactedTestsSorter implements ITestSorter {
 		Optional<? extends TestDescriptor> currentTestDescriptor = Optional.of(testDescriptor);
 		while (currentTestDescriptor.isPresent() && !seenDescriptors.contains(currentTestDescriptor.get())) {
 			seenDescriptors.add(currentTestDescriptor.get());
-			TestDescriptorUtils.reinsertIntoParent(currentTestDescriptor.get());
+			reinsertIntoParent(currentTestDescriptor.get());
 			currentTestDescriptor = currentTestDescriptor.get().getParent();
+		}
+	}
+
+	/**
+	 * Removes the test descriptor from its parent and inserts it again. The TestDescriptor internally uses a
+	 * {@link java.util.LinkedHashSet} so remove and insert moves the testDescriptor to the last position in the
+	 * iteration order. By doing this in order with all tests we end up with our intended order.
+	 */
+	private static void reinsertIntoParent(TestDescriptor testDescriptor) {
+		Optional<TestDescriptor> parent = testDescriptor.getParent();
+		if (parent.isPresent()) {
+			parent.get().removeChild(testDescriptor);
+			parent.get().addChild(testDescriptor);
 		}
 	}
 
