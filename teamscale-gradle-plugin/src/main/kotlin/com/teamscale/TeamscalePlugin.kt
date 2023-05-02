@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.withType
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.util.GradleVersion
@@ -59,15 +60,15 @@ open class TeamscalePlugin : Plugin<Project> {
         // Add impacted tests executor to a custom configuration that will later be used to
         // create the classpath for the TestImpacted created by this plugin.
         project.configurations.maybeCreate(impactedTestEngineConfiguration)
-            .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("com.teamscale:impacted-test-engine:$pluginVersion"))
+            .defaultDependencies {
+                add(project.dependencies.create("com.teamscale:impacted-test-engine:$pluginVersion"))
             }
 
         // Add teamscale jacoco agent to a custom configuration that will later be used to
         // to generate testwise coverage if enabled.
         project.configurations.maybeCreate(teamscaleJaCoCoAgentConfiguration)
-            .defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$pluginVersion"))
+            .defaultDependencies {
+                add(project.dependencies.create("com.teamscale:teamscale-jacoco-agent:$pluginVersion"))
             }
 
         teamscaleUploadTask =
@@ -90,7 +91,8 @@ open class TeamscalePlugin : Plugin<Project> {
             "agent-port-generator",
             AgentPortGenerator::class.java
         ) {}
-        project.tasks.withType(TestImpacted::class.java) { testImpactedTask ->
+        project.tasks.withType<TestImpacted> {
+            val testImpactedTask = this
             /** Configures the given impacted test executor. */
             project.logger.info(
                 "Configuring impacted tests executor task for ${project.name}:${
@@ -100,7 +102,7 @@ open class TeamscalePlugin : Plugin<Project> {
             )
             val extension = pluginExtension.applyTo(testImpactedTask)
             val port = agentPortGenerator.get().getNextPort()
-            extension.agent.useLocalAgent( "http://127.0.0.1:${port}/")
+            extension.agent.useLocalAgent("http://127.0.0.1:${port}/")
             testImpactedTask.apply {
                 taskExtension = extension
                 this.pluginExtension = pluginExtension
@@ -124,7 +126,8 @@ open class TeamscalePlugin : Plugin<Project> {
      * to the upload task when the extension has been configured.
      */
     private fun extendJacocoReportTasks(project: Project) {
-        project.tasks.withType(JacocoReport::class.java) { reportTask ->
+        project.tasks.withType<JacocoReport> {
+            val reportTask = this
             teamscaleUploadTask.mustRunAfter(reportTask)
 
             val extension =
@@ -143,16 +146,16 @@ open class TeamscalePlugin : Plugin<Project> {
      * to the upload task when the extension has been configured.
      */
     private fun extendTestTasks(project: Project) {
-        project.tasks.withType(Test::class.java) { testTask ->
-            if (testTask is TestImpacted) {
+        project.tasks.withType<Test> {
+            if (this is TestImpacted) {
                 return@withType
             }
             val extension =
-                testTask.extensions.create(
+                extensions.create(
                     teamscaleExtensionName,
                     TeamscaleTestTaskExtension::class.java,
                     project,
-                    testTask
+                    this
                 )
             teamscaleUploadTask.reports.add(extension.report.getReport())
         }

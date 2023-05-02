@@ -17,7 +17,9 @@ java {
 }
 
 tasks.named<Test>("test") {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeEngines("teamscale-test-impacted")
+    }
     testLogging.exceptionFormat = TestExceptionFormat.FULL
 }
 

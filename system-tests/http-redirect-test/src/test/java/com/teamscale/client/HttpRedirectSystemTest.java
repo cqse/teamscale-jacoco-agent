@@ -17,8 +17,8 @@ public class HttpRedirectSystemTest {
 
 	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
 	private static final int FAKE_TEAMSCALE_PORT = 65438;
-	private static final int FAKE_REDIRECT_PORT = 65437;
-	private static final int AGENT_PORT = 65436;
+	private static final int FAKE_REDIRECT_PORT = 65440;
+	private static final int AGENT_PORT = 65439;
 
 	@Test
 	public void systemTest() throws Exception {
