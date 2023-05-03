@@ -9,8 +9,8 @@ sourceSets {
 }
 
 tasks.test {
-    val artifactoryPort = 65432
-    val agentPort = 65434
+    val artifactoryPort = 63100
+    val agentPort = 63101
     teamscaleAgent(
         mapOf(
             "http-server-port" to "$agentPort",

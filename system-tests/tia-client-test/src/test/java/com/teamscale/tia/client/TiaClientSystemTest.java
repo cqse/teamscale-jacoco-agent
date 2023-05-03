@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 public class TiaClientSystemTest {
 
 	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
-	private static final int FAKE_TEAMSCALE_PORT = 65432;
-	private static final int AGENT_PORT = 65433;
+	private static final int FAKE_TEAMSCALE_PORT = 63500;
+	private static final int AGENT_PORT = 63501;
 
 	private static TeamscaleMockServer teamscaleMockServer = null;
 

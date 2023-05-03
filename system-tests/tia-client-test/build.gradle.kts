@@ -4,8 +4,8 @@ plugins {
 
 tasks.test {
 	/** These ports must match what is configured in the SystemTest class. */
-	val fakeTeamscalePort = 65432
-	val agentPort = 65433
+	val fakeTeamscalePort = 63500
+	val agentPort = 63501
 	teamscaleAgent(
 		mapOf(
 			"http-server-port" to "$agentPort",

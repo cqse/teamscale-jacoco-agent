@@ -14,8 +14,8 @@ public class ArtifactoryGitPropertiesDetectionTest {
 	/**
 	 * This port must match what is configured for the -javaagent line in the build.gradle file.
 	 */
-	private static final int FAKE_ARTIFACTORY_PORT = 65432;
-	private static final int AGENT_PORT = 65434;
+	private static final int FAKE_ARTIFACTORY_PORT = 63100;
+	private static final int AGENT_PORT = 63101;
 	private ArtifactoryMockServer artifactoryMockServer = null;
 
 	@BeforeEach

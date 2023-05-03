@@ -11,8 +11,8 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <tia.agent.port>65433</tia.agent.port>
-        <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
+        <tia.agent.port>${env.AGENT_PORT}</tia.agent.port>
+        <tia.teamscale.fake.port>${env.TEAMSCALE_PORT}</tia.teamscale.fake.port>
         <tia.agent.path>${env.AGENT_PATH}</tia.agent.path>
         <tia.agent.version>${env.AGENT_VERSION}</tia.agent.version>
     </properties>
