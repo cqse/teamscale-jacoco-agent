@@ -20,13 +20,14 @@ public class TestExecutionWriter {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
-	private final JsonAdapter<TestExecution> testExecutionAdapter = new Moshi.Builder().build()
-			.adapter(TestExecution.class);
+	private final JsonAdapter<TestExecution> testExecutionAdapter;
 
 	private final File testExecutionFile;
 	private boolean hasWrittenAtLeastOneExecution = false;
 
 	public TestExecutionWriter(File testExecutionFile) {
+		testExecutionAdapter = new Moshi.Builder().build()
+				.adapter(TestExecution.class);
 		this.testExecutionFile = testExecutionFile;
 		logger.debug("Writing test executions to {}", testExecutionFile);
 	}
