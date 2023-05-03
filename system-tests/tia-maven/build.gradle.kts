@@ -1,6 +1,6 @@
 plugins {
-    id("com.teamscale.system-test-convention")
-    id("com.teamscale.coverage")
+    com.teamscale.`system-test-convention`
+    com.teamscale.coverage
 }
 
 tasks.test {

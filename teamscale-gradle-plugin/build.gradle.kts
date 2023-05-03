@@ -1,9 +1,9 @@
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    id("com.teamscale.java-convention")
-    id("com.teamscale.coverage")
-    id("com.teamscale.publish")
+    com.teamscale.`java-convention`
+    com.teamscale.coverage
+    com.teamscale.publish
     alias(libs.plugins.pluginPublish)
 }
 

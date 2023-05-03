@@ -1,5 +1,5 @@
 plugins {
-	id("com.teamscale.java-convention")
+	com.teamscale.`java-convention`
 }
 
 version = "unspecified"

@@ -12,8 +12,8 @@ buildscript {
 
 plugins {
     application
-    id("com.teamscale.java-convention")
-    id("com.teamscale.coverage")
+    com.teamscale.`java-convention`
+    com.teamscale.coverage
     alias(libs.plugins.gitProperties)
 }
 

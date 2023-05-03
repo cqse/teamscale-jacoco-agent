@@ -1,5 +1,5 @@
 plugins {
-    id("com.teamscale.system-test-convention")
+    com.teamscale.`system-test-convention`
 }
 
 val jacocoAgent by configurations.creating

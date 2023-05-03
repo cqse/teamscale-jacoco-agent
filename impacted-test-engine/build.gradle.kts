@@ -1,9 +1,9 @@
 plugins {
     `java-library`
-    id("com.teamscale.java-convention")
-    id("com.teamscale.coverage")
-    id("com.teamscale.shadow-convention")
-    id("com.teamscale.publish")
+    com.teamscale.`java-convention`
+    com.teamscale.coverage
+    com.teamscale.`shadow-convention`
+    com.teamscale.publish
 }
 
 publishAs {

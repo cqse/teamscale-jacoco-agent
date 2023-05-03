@@ -1,14 +1,14 @@
 plugins {
-    id("com.teamscale.java-convention")
+    com.teamscale.`java-convention`
     alias(libs.plugins.markdownToPdf)
     application
 
     // we don't want to cause conflicts between our dependencies and the target application
     // since the agent will be loaded with the same class loader as the profiled application
     // so we use the shadow plugin to relocate our dependencies
-    id("com.teamscale.shadow-convention")
-    id("com.teamscale.coverage")
-    id("com.teamscale.publish")
+    com.teamscale.`shadow-convention`
+    com.teamscale.coverage
+    com.teamscale.publish
 }
 
 publishAs {
