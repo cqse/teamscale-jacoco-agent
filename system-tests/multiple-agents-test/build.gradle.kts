@@ -10,7 +10,7 @@ dependencies {
 }
 
 tasks.test {
-    val otherJacocoAgent = jacocoAgent.files.first()
+    val otherJacocoAgent = jacocoAgent.singleFile
     jvmArgs("-javaagent:$otherJacocoAgent")
 
     val logFilePath = "logTest"

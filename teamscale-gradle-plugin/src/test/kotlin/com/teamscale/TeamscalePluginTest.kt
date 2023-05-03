@@ -16,9 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File
 
 /**
- * You must run
- * ./gradlew pluginUnderTestMetadata
- * each time before running the tests in IntelliJ.
+ * Integration tests for the Teamscale Gradle plugin.
  */
 class TeamscalePluginTest {
 
@@ -31,6 +29,7 @@ class TeamscalePluginTest {
         private const val DEBUG_TEST_ENGINE = false
     }
 
+    /** The temp dir in which the simulated checkout and test execution will happen. */
     @field:TempDir
     lateinit var temporaryFolder: File
 

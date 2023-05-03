@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.maybeCreate
 import org.gradle.kotlin.dsl.withType
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.tasks.JacocoReport
@@ -109,7 +110,7 @@ open class TeamscalePlugin : Plugin<Project> {
                 dependsOn.add(project.configurations.getByName(impactedTestEngineConfiguration))
             }
             val teamscaleReportTask = project.rootProject.tasks
-                .maybeCreate("${testImpactedTask.name}Report", TestwiseCoverageReportTask::class.java)
+                .maybeCreate<TestwiseCoverageReportTask>("${testImpactedTask.name}Report")
             testImpactedTask.finalizedBy(teamscaleReportTask)
             testImpactedTask.reportTask = teamscaleReportTask
             teamscaleReportTask.apply {
