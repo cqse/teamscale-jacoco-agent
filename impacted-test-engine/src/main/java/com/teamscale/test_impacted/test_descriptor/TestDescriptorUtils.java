@@ -3,11 +3,9 @@ package com.teamscale.test_impacted.test_descriptor;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.TestDetails;
 import com.teamscale.test_impacted.commons.IndentingWriter;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.engine.executor.AvailableTests;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.TestDescriptor;
-import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.UniqueId.Segment;
@@ -16,12 +14,13 @@ import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /** Class containing utility methods for {@link TestDescriptor}s. */
 public class TestDescriptorUtils {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestDescriptorUtils.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(TestDescriptorUtils.class);
 
 	/** Returns the test descriptor as a formatted string with indented children. */
 	public static String getTestDescriptorAsString(TestDescriptor testDescriptor) {
@@ -70,7 +69,9 @@ public class TestDescriptorUtils {
 		}
 
 		String lastSegmentType = segments.get(segments.size() - 1).getType();
-		return "test-template".equals(lastSegmentType) || "test-factory".equals(lastSegmentType);
+		return JUnitJupiterTestDescriptorResolver.TEST_TEMPLATE_SEGMENT_TYPE.equals(
+				lastSegmentType) || JUnitJupiterTestDescriptorResolver.TEST_FACTORY_SEGMENT_TYPE.equals(
+				lastSegmentType);
 	}
 
 	/** Creates a stream of the test representatives contained by the {@link TestDescriptor}. */
@@ -106,25 +107,31 @@ public class TestDescriptorUtils {
 	}
 
 	/** Returns the {@link AvailableTests} contained within the root {@link TestDescriptor}. */
-	public static AvailableTests getAvailableTests(TestEngine testEngine, TestDescriptor rootTestDescriptor,
+	public static AvailableTests getAvailableTests(TestDescriptor rootTestDescriptor,
 												   String partition) {
 		AvailableTests availableTests = new AvailableTests();
-		ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
-				.getTestDescriptorResolver(testEngine);
 
 		TestDescriptorUtils.streamTestRepresentatives(rootTestDescriptor)
 				.forEach(testDescriptor -> {
+					Optional<String> engineId = testDescriptor.getUniqueId().getEngineId();
+					if (!engineId.isPresent()) {
+						LOGGER.severe(() -> "Unable to determine engine ID for " + testDescriptor + "!");
+						return;
+					}
+
+					ITestDescriptorResolver testDescriptorResolver = TestDescriptorResolverRegistry
+							.getTestDescriptorResolver(engineId.get());
 					Optional<String> clusterId = testDescriptorResolver.getClusterId(testDescriptor);
 					Optional<String> uniformPath = testDescriptorResolver.getUniformPath(testDescriptor);
 					String source = TestDescriptorUtils.getSource(testDescriptor);
 
 					if (!uniformPath.isPresent()) {
-						LOGGER.error(() -> "Unable to determine uniform path for test descriptor: " + testDescriptor);
+						LOGGER.severe(() -> "Unable to determine uniform path for test descriptor: " + testDescriptor);
 						return;
 					}
 
 					if (!clusterId.isPresent()) {
-						LOGGER.error(
+						LOGGER.severe(
 								() -> "Unable to determine cluster id path for test descriptor: " + testDescriptor);
 						return;
 					}
