@@ -19,4 +19,5 @@ dependencies {
     compileOnly(libs.junit.platform.engine)
     compileOnly(libs.junit.platform.commons)
     testImplementation(libs.junit.platform.engine)
+    testImplementation(libs.junit.jupiter.params)
 }
