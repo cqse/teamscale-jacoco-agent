@@ -10,16 +10,13 @@ import okio.source
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import java.io.File
 
 /**
- * You must run
- * ./gradlew pluginUnderTestMetadata
- * each time before running the tests in IntelliJ.
+ * Integration tests for the Teamscale Gradle plugin.
  */
 class TeamscalePluginTest {
 
@@ -32,13 +29,13 @@ class TeamscalePluginTest {
         private const val DEBUG_TEST_ENGINE = false
     }
 
-    @Rule
-    @JvmField
-    val temporaryFolder = TemporaryFolder()
+    /** The temp dir in which the simulated checkout and test execution will happen. */
+    @field:TempDir
+    lateinit var temporaryFolder: File
 
-    @Before
+    @BeforeEach
     fun setup() {
-        File("src/test/resources/calculator_groovy").copyRecursively(temporaryFolder.root)
+        File("src/test/resources/calculator_groovy").copyRecursively(temporaryFolder)
     }
 
     @Test
@@ -70,7 +67,7 @@ class TeamscalePluginTest {
         assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
-            File(temporaryFolder.root, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
+            File(temporaryFolder, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
         assertThat(testwiseCoverageReportFile).exists()
 
         val source: BufferedSource = testwiseCoverageReportFile.source().buffer()
@@ -105,7 +102,7 @@ class TeamscalePluginTest {
         assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
             .doesNotContain("you did not provide all relevant class files")
         val testwiseCoverageReportFile =
-            File(temporaryFolder.root, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
+            File(temporaryFolder, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
         assertThat(testwiseCoverageReportFile).exists()
 
         val source = testwiseCoverageReportFile.source().buffer()
@@ -144,7 +141,7 @@ class TeamscalePluginTest {
         }
 
         runner
-            .withProjectDir(temporaryFolder.root)
+            .withProjectDir(temporaryFolder)
             .withPluginClasspath()
             .withArguments(runnerArgs)
             .withGradleVersion("6.5")

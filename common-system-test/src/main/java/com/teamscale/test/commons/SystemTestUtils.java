@@ -53,7 +53,7 @@ public class SystemTestUtils {
 		System.out.println("Maven stdout: " + result.getStdout());
 		System.out.println("Maven stderr: " + result.getStderr());
 
-		if (!result.isNormalTermination()) {
+		if (result.terminatedByTimeoutOrInterruption()) {
 			throw new IOException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
 	}

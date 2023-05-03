@@ -5,7 +5,6 @@ import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.testing.Test
-import java.io.File
 
 /** Configuration for the JUnit results report. */
 open class JUnitReportConfiguration(project: Project, task: Test) :
@@ -21,7 +20,7 @@ open class JUnitReportConfiguration(project: Project, task: Test) :
 
     override fun getReportFiles(): FileCollection {
         return destination.asFileTree.matching {
-            it.include("**/*.xml")
+            include("**/*.xml")
         }
     }
 }
