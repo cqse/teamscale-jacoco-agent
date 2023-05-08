@@ -19,6 +19,7 @@ dependencies {
         artifact {
             classifier = "runtime"
             // Needs to be explicitly specified to end up in the Gradle Module metadata
+            // https://github.com/gradle/gradle/issues/21526
             extension = "jar"
         }
     }
