@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _report-generator_: Fixed Gradle module metadata which resulted in `Could not find org.jacoco.agent-0.8.8-runtime`
 
 # 30.0.0
 - [breaking change] _teamscale-maven-plugin_: Made plugin compatible with surefire 3.0.0. Replace the `teamscale-surefire-provider` dependency with `impacted-test-engine` in your pom.xml files.
