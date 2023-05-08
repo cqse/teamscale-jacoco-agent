@@ -18,6 +18,8 @@ dependencies {
     implementation(libs.jacoco.agent) {
         artifact {
             classifier = "runtime"
+            // Needs to be explicitly specified to end up in the Gradle Module metadata
+            extension = "jar"
         }
     }
 
