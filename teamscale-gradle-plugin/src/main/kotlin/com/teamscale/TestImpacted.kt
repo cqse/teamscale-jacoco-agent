@@ -189,7 +189,7 @@ open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
             writeEngineProperty("server.userName", serverConfiguration.userName!!)
             writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
         }
-        writeEngineProperty("partition", report.partition)
+        writeEngineProperty("partition", report.partition.get())
         writeEngineProperty("endCommit", endCommit?.toString())
         writeEngineProperty("baseline", baseline?.toString())
         writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)

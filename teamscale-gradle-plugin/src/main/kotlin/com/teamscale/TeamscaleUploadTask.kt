@@ -81,7 +81,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     private fun uploadReports(enabledReports: List<Report>) {
         // We want to upload e.g. all JUnit test reports that go to the same partition
         // as one commit, so we group them before uploading them
-        for ((key, reports) in enabledReports.groupBy { Triple(it.format, it.partition, it.message) }) {
+        for ((key, reports) in enabledReports.groupBy { Triple(it.format, it.partition.get(), it.message.get()) }) {
             val (format, partition, message) = key
             val reportFiles = reports.flatMap { it.reportFiles.files }.filter { it.exists() }.distinct()
             logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")

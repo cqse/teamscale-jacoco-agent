@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.jgit)
     implementation(libs.retrofit.converter.moshi)
     testImplementation(libs.okio)
+    testImplementation(project(":common-system-test"))
 }
 
 tasks.processResources {

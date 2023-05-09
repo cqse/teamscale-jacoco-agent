@@ -98,7 +98,7 @@ public class ImpactedTestsSorter implements ITestSorter {
 		for (TestDescriptor descriptor : new ArrayList<>(testDescriptor.getChildren())) {
 			removeNonImpactedTests(descriptor, testDescriptors);
 		}
-		if (testDescriptor.getChildren().isEmpty()) {
+		if (testDescriptor.getChildren().isEmpty() && !testDescriptor.isRoot()) {
 			testDescriptor.removeFromHierarchy();
 		}
 	}
