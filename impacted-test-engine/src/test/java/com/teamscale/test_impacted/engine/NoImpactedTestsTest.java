@@ -26,7 +26,7 @@ class NoImpactedTestsTest extends ImpactedTestEngineTestBase {
 	 */
 	private final UniqueId engine1RootId = UniqueId.forEngine("junit-jupiter");
 
-	/** FirstTestClass contains one impacted and one non-impacted test. */
+	/** FirstTestClass contains one non-impacted test. */
 	private final UniqueId firstTestClassId = engine1RootId.append(
 			JUnitJupiterTestDescriptorResolver.CLASS_SEGMENT_TYPE, FIRST_TEST_CLASS);
 	private final UniqueId nonImpactedTestCase1Id = firstTestClassId
