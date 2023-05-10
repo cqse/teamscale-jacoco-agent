@@ -31,13 +31,13 @@ data class Report(
 
     /** The partition to upload the report to. */
     @Input
-    var partition: String,
+    val partition: Property<String>,
 
     /** The commit message shown in Teamscale for the upload. */
     @Input
-    var message: String,
+    val message: Property<String>,
 
     /** Whether the report only contains partial data (subset of tests). Only relevant for TESTWISE_COVERAGE. */
     @Input
-    var partial: Boolean = false
+    val partial: Boolean = false
 )

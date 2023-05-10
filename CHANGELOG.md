@@ -6,6 +6,9 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+- [fix] _teamscale-gradle-plugin_: Reports uploaded by `teamscaleReportUpload` ended up in wrong partition
+- [fix] _impacted-test-engine_: Failure when no tests were impacted
+
 # 30.0.1
 - [fix] _report-generator_: Fixed Gradle module metadata which resulted in `Could not find org.jacoco.agent-0.8.8-runtime`
 

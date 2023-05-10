@@ -12,6 +12,21 @@ class TestwiseCoverageReportAssert(actual: TestwiseCoverageReport) :
         TestwiseCoverageReportAssert::class.java
     ) {
 
+    /** Asserts that the report has the partial flag set to the given value. */
+    fun hasPartial(expectedPartial: Boolean): TestwiseCoverageReportAssert {
+        isNotNull
+
+        if (actual.partial != expectedPartial) {
+            failWithMessage(
+                "Expected partial flag to be <%s> but was <%s>",
+                expectedPartial,
+                actual.partial
+            )
+        }
+
+        return this
+    }
+
     fun containsExecutionResult(testUniformPath: String, result: ETestExecutionResult): TestwiseCoverageReportAssert {
         isNotNull
 
@@ -30,6 +45,17 @@ class TestwiseCoverageReportAssert(actual: TestwiseCoverageReport) :
 
     private fun getTest(test: String): TestInfo {
         return actual.tests.single { it.uniformPath == test }
+    }
+
+    /** Asserts that the given number of tests have non-empty coverage */
+    fun hasTestsWithCoverage(size: Int): TestwiseCoverageReportAssert {
+        isNotNull
+
+        if (actual.tests.count { it.paths.isNotEmpty() } != size) {
+            failWithMessage("Expected <%s> test(s) with coverage but got <%s>", size, actual.tests.size)
+        }
+
+        return this
     }
 
     fun hasSize(size: Int): TestwiseCoverageReportAssert {

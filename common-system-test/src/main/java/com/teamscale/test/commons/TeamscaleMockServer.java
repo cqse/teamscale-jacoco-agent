@@ -44,7 +44,7 @@ public class TeamscaleMockServer {
 			.adapter(TestwiseCoverageReport.class);
 
 	/** All reports uploaded to this Teamscale instance. */
-	public final List<String> uploadedReports = new ArrayList<>();
+	public final List<ExternalReport> uploadedReports = new ArrayList<>();
 	/** All user agents that were present in the received requests. */
 	public final Set<String> collectedUserAgents = new HashSet<>();
 
@@ -77,7 +77,7 @@ public class TeamscaleMockServer {
 	 * @throws IOException when parsing the report fails.
 	 */
 	public TestwiseCoverageReport parseUploadedTestwiseCoverageReport(int index) throws IOException {
-		return testwiseCoverageReportJsonAdapter.fromJson(uploadedReports.get(index));
+		return testwiseCoverageReportJsonAdapter.fromJson(uploadedReports.get(index).getReportString());
 	}
 
 	private String handleImpactedTests(Request request, Response response) throws IOException {
@@ -93,8 +93,9 @@ public class TeamscaleMockServer {
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
 		Part file = request.raw().getPart("report");
+		String partition = request.queryParams("partition");
 		String reportString = IOUtils.toString(file.getInputStream());
-		uploadedReports.add(reportString);
+		uploadedReports.add(new ExternalReport(reportString, partition));
 		file.delete();
 
 		return "success";
@@ -107,5 +108,4 @@ public class TeamscaleMockServer {
 		service.stop();
 		service.awaitStop();
 	}
-
 }
