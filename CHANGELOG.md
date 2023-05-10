@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 30.0.2
 - [fix] _teamscale-gradle-plugin_: Reports uploaded by `teamscaleReportUpload` ended up in wrong partition
 - [fix] _impacted-test-engine_: Failure when no tests were impacted
 
