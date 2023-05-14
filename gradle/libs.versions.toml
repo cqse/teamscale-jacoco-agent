@@ -37,7 +37,7 @@ okhttp-core = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 
 spark = { module = "com.sparkjava:spark-core", version = "2.9.4" }
-moshi = { module = "com.squareup.moshi:moshi", version = "1.14.0" }
+moshi = { module = "com.squareup.moshi:moshi", version = "1.15.0" }
 jcommander = { module = "com.beust:jcommander", version = "1.82" }
 teamscaleLibCommons = { module = "com.teamscale:teamscale-lib-commons", version = "8.8.1" }
 commonsCodec = { module = "commons-codec:commons-codec", version = "1.15" }
