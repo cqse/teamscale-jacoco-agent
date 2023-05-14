@@ -49,7 +49,7 @@ jobs:
           -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
     - name: Upload coverage to Teamscale
       if: always() && github.event_name == 'push'
-      uses: cqse/teamscale-upload-action@v2.4.0
+      uses: cqse/teamscale-upload-action@v2.7.1
       with:
         server: 'https://cqse.teamscale.io'
         project: 'teamscale-jacoco-agent'
