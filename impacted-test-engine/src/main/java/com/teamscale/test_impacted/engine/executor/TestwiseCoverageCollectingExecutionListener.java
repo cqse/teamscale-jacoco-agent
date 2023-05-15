@@ -44,7 +44,7 @@ public class TestwiseCoverageCollectingExecutionListener implements EngineExecut
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
 
-	private final Map<UniqueId, TestExecutionResult> testResultCache = new HashMap<>();
+	private final Map<UniqueId, List<TestExecutionResult>> testResultCache = new HashMap<>();
 
 	public TestwiseCoverageCollectingExecutionListener(TeamscaleAgentNotifier teamscaleAgentNotifier,
 													   ITestDescriptorResolver testDescriptorResolver,
@@ -97,8 +97,10 @@ public class TestwiseCoverageCollectingExecutionListener implements EngineExecut
 				testExecutions.add(testExecution);
 			}
 			teamscaleAgentNotifier.endTest(uniformPath.get(), testExecution);
-		} else {
-			testResultCache.put(testDescriptor.getUniqueId(), testExecutionResult);
+		} else if (testDescriptor.getParent().isPresent()) {
+			List<TestExecutionResult> testExecutionResults = testResultCache.computeIfAbsent(
+					testDescriptor.getParent().get().getUniqueId(), (key) -> new ArrayList<>());
+			testExecutionResults.add(testExecutionResult);
 		}
 
 		delegateEngineExecutionListener.executionFinished(testDescriptor, testExecutionResult);
@@ -129,13 +131,9 @@ public class TestwiseCoverageCollectingExecutionListener implements EngineExecut
 	private List<TestExecutionResult> getTestExecutionResults(TestDescriptor testDescriptor,
 															  TestExecutionResult testExecutionResult) {
 		List<TestExecutionResult> testExecutionResults = new ArrayList<>();
-		for (TestDescriptor child : testDescriptor.getChildren()) {
-			TestExecutionResult childTestExecutionResult = testResultCache.remove(child.getUniqueId());
-			if (childTestExecutionResult != null) {
-				testExecutionResults.add(childTestExecutionResult);
-			} else {
-				LOGGER.warning(() -> "No test execution found for " + child.getUniqueId());
-			}
+		List<TestExecutionResult> childTestExecutionResult = testResultCache.remove(testDescriptor.getUniqueId());
+		if (childTestExecutionResult != null) {
+			testExecutionResults.addAll(childTestExecutionResult);
 		}
 		testExecutionResults.add(testExecutionResult);
 		return testExecutionResults;
