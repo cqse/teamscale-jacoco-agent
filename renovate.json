@@ -11,7 +11,8 @@
   "ignorePaths": [
     "system-tests/**",
     "sample-app/**",
-    "agent/src/docker/Dockerfile"
+    "agent/src/docker/Dockerfile",
+    "report-generator/build.gradle.kts"
   ],
   "packageRules": [
     {
