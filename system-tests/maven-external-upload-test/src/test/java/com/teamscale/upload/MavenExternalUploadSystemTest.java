@@ -1,6 +1,6 @@
 package com.teamscale.upload;
 
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.ExternalReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.conqat.lib.commons.io.ProcessUtils;
@@ -52,9 +52,11 @@ public class MavenExternalUploadSystemTest {
 	public void testMavenExternalUpload() throws Exception {
 		SystemTestUtils.runMavenTests(MAVEN_PROJFECT_PATH);
 		runCoverageUploadGoal();
-		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(3);
-		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(report.tests.size()).isEqualTo(2);
+		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(2);
+		ExternalReport unitTests = teamscaleMockServer.uploadedReports.get(0);
+		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(1);
+		assertThat(unitTests.getPartition()).isEqualTo("My Custom Unit Tests Partition");
+		assertThat(integrationTests.getPartition()).isEqualTo("Integration Tests");
 	}
 
 }
