@@ -71,6 +71,6 @@ Only use GitHub releases in production. This ensures that we always know which c
 
 ### Compiling for a different JaCoCo version
 
-* change `ext.jacocoVersion` in the build script
+* change `jacoco` in `gradle/libs.versions.toml`
 * `./gradlew dist`
 * **Do not commit unless you are upgrading to a newer version!**

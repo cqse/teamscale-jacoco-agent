@@ -27,7 +27,7 @@ open class TeamscaleTestImpactedTaskExtension(
 
     /** Overload for Groovy DSL compatibility. */
     fun report(closure: Closure<*>) {
-        report { o -> project.configure(o, closure) }
+        report { project.configure(this, closure) }
     }
 
     /** Settings regarding the teamscale jacoco agent. */
@@ -40,7 +40,7 @@ open class TeamscaleTestImpactedTaskExtension(
 
     /** Overload for Groovy DSL compatibility. */
     fun agent(closure: Closure<*>) {
-        agent { o -> project.configure(o, closure) }
+        agent { project.configure(this, closure) }
     }
 }
 

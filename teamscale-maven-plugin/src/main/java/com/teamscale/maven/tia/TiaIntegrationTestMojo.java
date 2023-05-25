@@ -32,4 +32,9 @@ public class TiaIntegrationTestMojo extends TiaMojoBase {
 	protected String getTestPluginArtifact() {
 		return "org.apache.maven.plugins:maven-failsafe-plugin";
 	}
+
+	@Override
+	protected String getTestPluginPropertyPrefix() {
+		return "failsafe";
+	}
 }

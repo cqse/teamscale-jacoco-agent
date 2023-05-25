@@ -1,16 +1,16 @@
 package com.teamscale.test_impacted.test_descriptor;
 
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestEngine;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
 /** Test descriptor resolver for JUnit based {@link TestEngine}s. */
 public abstract class JUnitTestDescriptorResolverBase implements ITestDescriptorResolver {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(JUnitTestDescriptorResolverBase.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(JUnitTestDescriptorResolverBase.class);
 
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
@@ -25,11 +25,11 @@ public abstract class JUnitTestDescriptorResolverBase implements ITestDescriptor
 		Optional<String> classSegmentName = getClassName(testDescriptor);
 
 		if (!classSegmentName.isPresent()) {
-			LOGGER.error(
-					() -> "Falling back to test uniform path as cluster id because class segement name could not be " +
+			LOGGER.severe(
+					() -> "Falling back to unique ID as cluster id because class segment name could not be " +
 							"determined for test descriptor: " + testDescriptor);
 			// Default to uniform path.
-			return getUniformPath(testDescriptor);
+			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
 		return classSegmentName;

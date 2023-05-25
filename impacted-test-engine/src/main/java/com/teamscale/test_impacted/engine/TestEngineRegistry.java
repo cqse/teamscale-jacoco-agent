@@ -19,27 +19,31 @@ import static java.util.stream.Collectors.toMap;
 /** The test engine registry containing all */
 public class TestEngineRegistry implements Iterable<TestEngine> {
 
-	private Map<String, TestEngine> testEnginesById;
+	private final Map<String, TestEngine> testEnginesById;
 
-	public TestEngineRegistry(Set<String> testEngineIds) {
-		List<TestEngine> otherTestEngines = loadOtherTestEngines();
+	public TestEngineRegistry(Set<String> includedTestEngineIds, Set<String> excludedTestEngineIds) {
+		List<TestEngine> otherTestEngines = loadOtherTestEngines(excludedTestEngineIds);
 
 		// If there are no test engines set we don't need to filter but simply use all other test engines.
-		if (!testEngineIds.isEmpty()) {
+		if (!includedTestEngineIds.isEmpty()) {
 			otherTestEngines = otherTestEngines.stream()
-					.filter(testEngine -> testEngineIds.contains(testEngine.getId())).collect(
+					.filter(testEngine -> includedTestEngineIds.contains(testEngine.getId())).collect(
 							Collectors.toList());
 		}
 
 		testEnginesById = unmodifiableMap(otherTestEngines.stream().collect(toMap(TestEngine::getId, identity())));
 	}
 
-	/** Uses the {@link ServiceLoader} to discover all {@link TestEngine}s but the {@link ImpactedTestEngine}. */
-	private List<TestEngine> loadOtherTestEngines() {
+	/**
+	 * Uses the {@link ServiceLoader} to discover all {@link TestEngine}s but the {@link ImpactedTestEngine} and the
+	 * excluded test engines.
+	 */
+	private List<TestEngine> loadOtherTestEngines(Set<String> excludedTestEngineIds) {
 		List<TestEngine> testEngines = new ArrayList<>();
 
 		for (TestEngine testEngine : ServiceLoader.load(TestEngine.class, ClassLoaderUtils.getDefaultClassLoader())) {
-			if (!ImpactedTestEngine.ENGINE_ID.equals(testEngine.getId())) {
+			if (!ImpactedTestEngine.ENGINE_ID.equals(testEngine.getId()) && !excludedTestEngineIds.contains(
+					testEngine.getId())) {
 				testEngines.add(testEngine);
 			}
 		}

@@ -4,14 +4,14 @@ import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import retrofit2.Response;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class for retrieving the impacted {@link PrioritizableTestCluster}s corresponding to {@link ClusteredTestDetails}
@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ImpactedTestsProvider {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ImpactedTestsProvider.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(ImpactedTestsProvider.class);
 
 	private final TeamscaleClient client;
 
@@ -50,11 +50,6 @@ public class ImpactedTestsProvider {
 		this.includeFailedAndSkipped = includeFailedAndSkipped;
 	}
 
-	/** @see #includeNonImpacted  */
-	public boolean isIncludeNonImpacted() {
-		return includeNonImpacted;
-	}
-
 	/** Queries Teamscale for impacted tests. */
 	public List<PrioritizableTestCluster> getImpactedTestsFromTeamscale(
 			List<ClusteredTestDetails> availableTestDetails) {
@@ -69,13 +64,13 @@ public class ImpactedTestsProvider {
 					return testClusters;
 
 				}
-				LOGGER.error(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
+				LOGGER.severe(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
 			} else {
-				LOGGER.error(() -> "Retrieval of impacted tests failed: " + response.code() + " " + response
+				LOGGER.severe(() -> "Retrieval of impacted tests failed: " + response.code() + " " + response
 						.message() + "\n" + response.errorBody());
 			}
 		} catch (IOException e) {
-			LOGGER.error(e, () -> "Retrieval of impacted tests failed.");
+			LOGGER.log(Level.SEVERE, e, () -> "Retrieval of impacted tests failed.");
 		}
 		return null;
 	}
@@ -86,14 +81,16 @@ public class ImpactedTestsProvider {
 	 */
 	private boolean testCountIsPlausible(List<PrioritizableTestCluster> testClusters,
 										 List<ClusteredTestDetails> availableTestDetails) {
+		long returnedTests = testClusters.stream().mapToLong(g -> g.tests.size()).sum();
 		if (!this.includeNonImpacted) {
+			LOGGER.info(
+					() -> "Received " + returnedTests + " impacted tests of " + availableTestDetails.size() + " available tests.");
 			return true;
 		}
-		long returnedTests = testClusters.stream().mapToLong(g -> g.tests.size()).sum();
 		if (returnedTests == availableTestDetails.size()) {
 			return true;
 		} else {
-			LOGGER.error(
+			LOGGER.severe(
 					() -> "Retrieved " + returnedTests + " tests from Teamscale, but expected " + availableTestDetails
 							.size() + ".");
 			return false;

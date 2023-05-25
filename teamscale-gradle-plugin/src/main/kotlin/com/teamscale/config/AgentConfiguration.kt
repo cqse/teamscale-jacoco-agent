@@ -80,8 +80,8 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
             val builder = StringBuilder()
             val argument = ArgumentAppender(builder)
             builder.append("-javaagent:")
-            val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
-                .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
+            val agentJar =
+                project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration).singleFile
             builder.append(agentJar.canonicalPath)
             builder.append("=")
 

@@ -5,6 +5,21 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
+
+# 30.0.2
+- [fix] _teamscale-gradle-plugin_: Reports uploaded by `teamscaleReportUpload` ended up in wrong partition
+- [fix] _impacted-test-engine_: Failure when no tests were impacted
+
+# 30.0.1
+- [fix] _report-generator_: Fixed Gradle module metadata which resulted in `Could not find org.jacoco.agent-0.8.8-runtime`
+
+# 30.0.0
+- [breaking change] _teamscale-maven-plugin_: Made plugin compatible with surefire 3.0.0. Replace the `teamscale-surefire-provider` dependency with `impacted-test-engine` in your pom.xml files.
+- [feature] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Added ability to pass excluded test engines to impacted test engine
+- [fix] _teamscale-maven-plugin_: Testwise coverage uploads were performed per test cluster instead of one upload after all tests
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Impacted tests were requested once for each test engine
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Execution of impacted tests failed when test names were unstable i.e. parameterized tests with parameters that are not serializeable
 
 # 29.1.3
 - [fix] http control server was not correctly shut down after the tests ended

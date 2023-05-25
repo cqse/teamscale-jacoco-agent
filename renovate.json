@@ -1,0 +1,56 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "workarounds:all"
+  ],
+  "reviewers": [
+    "DreierF"
+  ],
+  "rangeStrategy": "bump",
+  "separateMajorMinor": false,
+  "ignorePaths": [
+    "system-tests/**",
+    "sample-app/**",
+    "agent/src/docker/Dockerfile",
+    "report-generator/build.gradle.kts"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePrefixes": [
+        "ch.qos.logback"
+      ],
+      "allowedVersions": "< 1.4.0"
+    },
+    {
+      "matchPackagePrefixes": [
+        "org.eclipse.jetty"
+      ],
+      "allowedVersions": "< 10"
+    },
+    {
+      "matchPackagePrefixes": [
+        "org.glassfish.jersey"
+      ],
+      "allowedVersions": "< 3"
+    },
+    {
+      "matchPackagePrefixes": [
+        "org.mockito"
+      ],
+      "allowedVersions": "< 5"
+    },
+    {
+      "matchPackageNames": [
+        "com.teamscale:teamscale-lib-commons"
+      ],
+      "matchUpdateTypes": ["patch"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": [
+        "com.teamscale:teamscale-jacoco-agent"
+      ],
+      "enabled": false
+    }
+  ]
+}

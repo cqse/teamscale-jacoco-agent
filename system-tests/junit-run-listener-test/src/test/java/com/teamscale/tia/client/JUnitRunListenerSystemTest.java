@@ -20,7 +20,7 @@ public class JUnitRunListenerSystemTest {
 	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
 	 * project.
 	 */
-	private static final int FAKE_TEAMSCALE_PORT = 65432;
+	private static final int FAKE_TEAMSCALE_PORT = 63401;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	@BeforeEach

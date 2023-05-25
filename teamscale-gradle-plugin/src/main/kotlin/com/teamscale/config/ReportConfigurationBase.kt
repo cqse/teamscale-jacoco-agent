@@ -40,8 +40,8 @@ abstract class ReportConfigurationBase(private val format: EReportFormat, val pr
             upload = upload,
             format = format,
             reportFiles = getReportFiles(),
-            message = message.get(),
-            partition = partition.get()
+            message = message,
+            partition = partition
         )
     }
 

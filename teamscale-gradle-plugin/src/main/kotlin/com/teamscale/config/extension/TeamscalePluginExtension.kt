@@ -8,6 +8,8 @@ import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.process.JavaForkOptions
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 
@@ -26,7 +28,7 @@ open class TeamscalePluginExtension(val project: Project) {
 
     /** Overload for Groovy DSL compatibility. */
     fun server(closure: Closure<*>) {
-        server { o -> project.configure(o, closure) }
+        server { this@TeamscalePluginExtension.project.configure(this, closure) }
     }
 
     val commit = Commit()
@@ -38,7 +40,7 @@ open class TeamscalePluginExtension(val project: Project) {
 
     /** Overload for Groovy DSL compatibility. */
     fun commit(closure: Closure<*>) {
-        commit { o -> project.configure(o, closure) }
+        commit { project.configure(this, closure) }
     }
 
     var baseline: Long? = null
@@ -50,7 +52,7 @@ open class TeamscalePluginExtension(val project: Project) {
 
     /** Overload for Groovy DSL compatibility. */
     fun baseline(closure: Closure<*>) {
-        baseline { o -> project.configure(o, closure) }
+        baseline { project.configure(this, closure) }
     }
 
     val report = TopLevelReportConfiguration(project)
@@ -62,17 +64,16 @@ open class TeamscalePluginExtension(val project: Project) {
 
     /** Overload for Groovy DSL compatibility. */
     fun report(closure: Closure<*>) {
-        report { o -> project.configure(o, closure) }
+        report { project.configure(this, closure) }
     }
 
     fun <T> applyTo(task: T): TeamscaleTestImpactedTaskExtension where T : Task, T : JavaForkOptions {
-        val jacocoTaskExtension: JacocoTaskExtension = task.extensions.getByType(JacocoTaskExtension::class.java)
+        val jacocoTaskExtension: JacocoTaskExtension = task.extensions.getByType<JacocoTaskExtension>()
         jacocoTaskExtension.excludes?.addAll(DEFAULT_EXCLUDES)
 
         val extension =
-            task.extensions.create(
+            task.extensions.create<TeamscaleTestImpactedTaskExtension>(
                 TeamscalePlugin.teamscaleExtensionName,
-                TeamscaleTestImpactedTaskExtension::class.java,
                 project,
                 jacocoTaskExtension,
                 task

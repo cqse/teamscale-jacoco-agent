@@ -11,8 +11,9 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
+        <tia.teamscale.fake.port>${env.TEAMSCALE_PORT}</tia.teamscale.fake.port>
         <tia.agent.version>${env.AGENT_VERSION}</tia.agent.version>
+        <surefire.includeJUnit5Engines>junit-jupiter</surefire.includeJUnit5Engines>
     </properties>
 
     <dependencies>
@@ -20,6 +21,13 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.teamscale</groupId>
+            <artifactId>impacted-test-engine</artifactId>
+            <version>${tia.agent.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -53,26 +61,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.teamscale</groupId>
-                        <artifactId>teamscale-surefire-provider</artifactId>
-                        <version>${tia.agent.version}</version>
-                    </dependency>
-                </dependencies>
+                <version>3.1.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M5</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.teamscale</groupId>
-                        <artifactId>teamscale-surefire-provider</artifactId>
-                        <version>${tia.agent.version}</version>
-                    </dependency>
-                </dependencies>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <goals>

@@ -3,21 +3,23 @@ package com.teamscale.test_impacted.engine;
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.TestExecution;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Class for writing test data to a report directory. */
-class TestDataWriter {
+public class TestDataWriter {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestDataWriter.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(TestDataWriter.class);
 
 	private final File reportDirectory;
 
-	TestDataWriter(File reportDirectory) {
+	public TestDataWriter(File reportDirectory) {
 		this.reportDirectory = reportDirectory;
 	}
 
@@ -27,17 +29,17 @@ class TestDataWriter {
 		try {
 			ReportUtils.writeTestExecutionReport(file, testExecutions);
 		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error while writing report to file: " + file);
+			LOGGER.log(Level.SEVERE, e, () -> "Error while writing report to file: " + file);
 		}
 	}
 
 	/** Writes the given test details to a report file. */
-	void dumpTestDetails(List<TestDetails> testDetails) {
+	void dumpTestDetails(List<? extends TestDetails> testDetails) {
 		File file = new File(reportDirectory, "test-list.json");
 		try {
-			ReportUtils.writeTestListReport(file, testDetails);
+			ReportUtils.writeTestListReport(file, new ArrayList<>(testDetails));
 		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error while writing report to file: " + file);
+			LOGGER.log(Level.SEVERE, e, () -> "Error while writing report to file: " + file);
 		}
 	}
 }
