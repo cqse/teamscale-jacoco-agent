@@ -38,12 +38,21 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 
 	private final static String JACOCO_PLUGIN_NAME = "org.jacoco:jacoco-maven-plugin";
 
+	/**
+	 * The Teamscale partition name to which unit test reports will be uploaded
+	 */
 	@Parameter(property = "teamscale.unitTestPartition", defaultValue = "Unit Tests")
 	public String unitTestPartition;
 
+	/**
+	 * The Teamscale partition name to which integration test reports will be uploaded
+	 */
 	@Parameter(property = "teamscale.integrationTestPartition", defaultValue = "Integration Tests")
 	public String integrationTestPartition;
 
+	/**
+	 * The Teamscale partition name to which aggregated test reports will be uploaded
+	 */
 	@Parameter(property = "teamscale.aggregatedTestPartition", defaultValue = "Aggregated Tests")
 	public String aggregatedTestPartition;
 

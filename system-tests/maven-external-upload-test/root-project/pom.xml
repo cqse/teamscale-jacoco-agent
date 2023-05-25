@@ -104,8 +104,19 @@
                         <username>admin</username>
                         <accessToken>LiNbRhi2KtGvlQX8Oli05K3LKMgO5jS4</accessToken>
                         <endCommit>master:HEAD</endCommit>
-                        <partition>MyPartition</partition>
+                        <unitTestPartition>My Unit Tests</unitTestPartition>
                     </configuration>
+                    <!-->
+                    <configuration>
+                        <teamscaleUrl>http://localhost:${tia.teamscale.fake.port}</teamscaleUrl>
+                        <projectId>m</projectId>
+                        <username>build</username>
+                        <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
+                        <endCommit>master:HEAD</endCommit>
+                        <unitTestPartition>My Unit Tests</unitTestPartition>
+                    </configuration>
+
+                    <!-->
                 </plugin>
             </plugins>
         </pluginManagement>
