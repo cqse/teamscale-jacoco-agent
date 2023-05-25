@@ -2,18 +2,14 @@ package com.teamscale.maven.tia;
 
 import com.teamscale.maven.TeamscaleMojoBase;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -180,9 +176,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		if (configurationDom == null) {
 			return;
 		}
-	private void validateTestPluginConfiguration(String testPluginArtifact) throws MojoFailureException {
-		Xpp3Dom configurationDom = getConfigurationDom(testPluginArtifact);
-		if (configurationDom == null) return;
 
 		validateEngineNotConfigured(configurationDom, INCLUDE_JUNIT5_ENGINES_OPTION);
 		validateEngineNotConfigured(configurationDom, EXCLUDE_JUNIT5_ENGINES_OPTION);
