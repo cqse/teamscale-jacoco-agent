@@ -23,8 +23,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Binds to the VERIFY phase in which the Jacoco plugin generates its report.
- * Needs to be specified after the Jacoco goal to ensure that it is run once the Jacoco report goal has completed.
+ * Run this goal after the Jacoco report generation to upload them to a configured Teamscale instance.
+ * The configuration can be specified in the root Maven project.
  * Offers the following functionality:
  * <ol>
  *     <li>Validate Jacoco Maven plugin configuration</li>
@@ -150,14 +150,12 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		if (configurationDom == null || configurationDom.getChild("formats") == null) {
 			return true;
 		}
-		boolean producesXMLReport = false;
 		for (Xpp3Dom format : configurationDom.getChild("formats").getChildren()) {
 			if (format.getValue().equals("XML")) {
-				producesXMLReport = true;
-				break;
+				return true;
 			}
 		}
-		return producesXMLReport;
+		return false;
 	}
 
 	private Optional<Path> getCustomOutputDirectory(Xpp3Dom configurationDom) {

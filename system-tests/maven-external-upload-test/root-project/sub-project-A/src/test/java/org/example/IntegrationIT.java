@@ -3,7 +3,7 @@ package bar;
 import org.junit.jupiter.api.Test;
 import org.example.SUTA;
 
-public class IntegrationTest {
+public class IntegrationIT {
 
     @Test
     public void itBla() throws Exception {
