@@ -3,7 +3,7 @@ package bar;
 import org.junit.jupiter.api.Test;
 import org.example.SUTA;
 
-public class UnitTests {
+public class UnitTest {
 
     @Test
     public void utBla() {

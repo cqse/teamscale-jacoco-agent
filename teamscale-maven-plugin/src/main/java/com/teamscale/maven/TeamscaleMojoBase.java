@@ -88,10 +88,20 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	@Parameter(defaultValue = "${session}")
 	public MavenSession session;
 
+	/**
+	 * The resolved end commit, either provided by the user or determined via the GitCommit class
+	 */
 	protected String resolvedEndCommit;
 
+	/**
+	 * The resolved revision, either provided by the user or determined via the GitCommit class
+	 */
 	protected String resolvedRevision;
 
+	/**
+	 * Sets the <code>resolvedEndCommit</code> and <code>resolvedRevision</code>, if not provided, via the GitCommit class
+	 * @see GitCommit
+	 */
 	protected void resolveEndCommit() throws MojoFailureException {
 		Path basedir = session.getCurrentProject().getBasedir().toPath();
 		try {
@@ -106,17 +116,6 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
 					" and I could also not determine the checked out commit in " + basedir + " from Git", e);
 		}
-	}
-
-	@Nullable
-	protected Xpp3Dom getConfigurationDom(String pluginArtifact) {
-		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
-		Plugin plugin = plugins.get(pluginArtifact);
-		if (plugin == null) {
-			return null;
-		}
-
-		return (Xpp3Dom) plugin.getConfiguration();
 	}
 
 	/**
