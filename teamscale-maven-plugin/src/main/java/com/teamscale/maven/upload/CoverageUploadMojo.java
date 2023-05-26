@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 		threadSafe = true)
 public class CoverageUploadMojo extends TeamscaleMojoBase {
 
-	private final static String JACOCO_PLUGIN_NAME = "org.jacoco:jacoco-maven-plugin";
+	private static final String JACOCO_PLUGIN_NAME = "org.jacoco:jacoco-maven-plugin";
 
 	/**
 	 * The Teamscale partition name to which unit test reports will be uploaded
@@ -94,7 +94,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			getLog().debug("Uploading coverage reports");
 			uploadCoverageReports();
 		} catch (IOException e) {
-			throw new MojoFailureException("Uploading coverage reports failed: " + e);
+			throw new MojoFailureException("Uploading coverage reports failed", e);
 		}
 	}
 

@@ -3,15 +3,15 @@ package bar;
 import org.junit.jupiter.api.Test;
 import org.example.SUTA;
 
-public class UnitTest {
+public class IntegrationTests {
 
     @Test
-    public void utBla() {
+    public void itBla() throws Exception {
         new SUTA().bla();
     }
 
     @Test
-    public void utFoo() {
+    public void itFoo() {
         new SUTA().foo();
     }
 }
