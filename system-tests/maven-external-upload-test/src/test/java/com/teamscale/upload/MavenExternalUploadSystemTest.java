@@ -32,9 +32,7 @@ public class MavenExternalUploadSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT,
-					"bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
-					"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT);
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}

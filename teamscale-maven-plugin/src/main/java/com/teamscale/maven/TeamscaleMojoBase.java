@@ -88,9 +88,9 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	public MavenSession session;
 
 	/**
-	 * The resolved end commit, either provided by the user or determined via the GitCommit class
+	 * The resolved commit, either provided by the user or determined via the GitCommit class
 	 */
-	protected String resolvedEndCommit;
+	protected String resolvedCommit;
 
 	/**
 	 * The resolved revision, either provided by the user or determined via the GitCommit class
@@ -106,7 +106,7 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 		try {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
 			if (StringUtils.isNotBlank(endCommit)) {
-				resolvedEndCommit = commit.branch + ":" + commit.timestamp;
+				resolvedCommit = commit.branch + ":" + commit.timestamp;
 			}
 			if (StringUtils.isNotBlank(revision)) {
 				resolvedRevision = commit.sha1;

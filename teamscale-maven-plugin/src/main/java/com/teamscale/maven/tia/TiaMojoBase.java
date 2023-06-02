@@ -138,7 +138,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("server.project", projectId);
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
-		setTiaProperty("endCommit", resolvedEndCommit);
+		setTiaProperty("endCommit", resolvedCommit);
 		setTiaProperty("partition", getPartition());
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 
@@ -309,7 +309,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
 				"\nteamscale-access-token=" + accessToken +
-				"\nteamscale-commit=" + resolvedEndCommit +
+				"\nteamscale-commit=" + resolvedCommit +
 				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath +

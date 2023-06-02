@@ -81,8 +81,12 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 
 	@Override
 	public void execute() throws MojoFailureException {
-		if (skip || !session.getCurrentProject().equals(session.getTopLevelProject())) {
-			getLog().debug("Skipping!");
+		if (skip) {
+			getLog().debug("Skipping since skip is set to true");
+			return;
+		}
+		if (!session.getCurrentProject().equals(session.getTopLevelProject())) {
+			getLog().debug("Skipping since upload should only happen in top project");
 			return;
 		}
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
@@ -94,7 +98,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			getLog().debug("Uploading coverage reports");
 			uploadCoverageReports();
 		} catch (IOException e) {
-			throw new MojoFailureException("Uploading coverage reports failed", e);
+			throw new MojoFailureException("Uploading coverage reports failed. No upload to Teamscale was performed. You can try again or upload the XML coverage reports manually, see https://docs.teamscale.com/reference/ui/project/project/#manual-report-upload", e);
 		}
 	}
 
@@ -103,26 +107,28 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 	 * @throws MojoFailureException If Jacoco is not set up correctly
 	 */
 	private void parseJacocoConfiguration() throws MojoFailureException {
+		final String JACOCO_XML = "jacoco.xml";
 		for (MavenProject subProject : session.getTopLevelProject().getCollectedProjects()) {
 			Path defaultOutputDirectory = Paths.get(subProject.getReporting().getOutputDirectory());
 			// If a Dom is null it means the execution goal uses default parameters which work correctly
 			Xpp3Dom reportConfigurationDom = getJacocoGoalExecutionConfiguration(subProject,"report");
+			String errorMessage = "Skipping upload for %s as %s is not configured to produce XML reports for goal %s. See https://www.jacoco.org/jacoco/trunk/doc/report-mojo.html#formats";
 			if (!validateReportFormat(reportConfigurationDom)) {
-				throw new MojoFailureException(String.format("%s in %s is not configured to produce XML reports for goal %s", JACOCO_PLUGIN_NAME, subProject.getName(), "report"));
+				throw new MojoFailureException(String.format(errorMessage, subProject.getName(), JACOCO_PLUGIN_NAME, "report"));
 			}
-			reportGoalOutputFiles.add(getCustomOutputDirectory(reportConfigurationDom).orElse(defaultOutputDirectory.resolve("jacoco").resolve("jacoco.xml")));
+			reportGoalOutputFiles.add(getCustomOutputDirectory(reportConfigurationDom).orElse(defaultOutputDirectory.resolve("jacoco").resolve(JACOCO_XML)));
 
 			Xpp3Dom reportIntegrationConfigurationDom = getJacocoGoalExecutionConfiguration(subProject,"report-integration");
 			if (!validateReportFormat(reportIntegrationConfigurationDom)) {
-				throw new MojoFailureException(String.format("%s in %s is not configured to produce XML reports for goal %s", JACOCO_PLUGIN_NAME, subProject.getName(), "report-integration"));
+				throw new MojoFailureException(String.format(errorMessage, subProject.getName(), JACOCO_PLUGIN_NAME, "report-integration"));
 			}
-			reportIntegrationGoalOutputFiles.add(getCustomOutputDirectory(reportConfigurationDom).orElse(defaultOutputDirectory.resolve("jacoco-it").resolve("jacoco.xml")));
+			reportIntegrationGoalOutputFiles.add(getCustomOutputDirectory(reportConfigurationDom).orElse(defaultOutputDirectory.resolve("jacoco-it").resolve(JACOCO_XML)));
 
 			Xpp3Dom reportAggregateConfigurationDom = getJacocoGoalExecutionConfiguration(subProject,"report-aggregate");
 			if (!validateReportFormat(reportAggregateConfigurationDom)) {
-				throw new MojoFailureException(String.format("%s in %s is not configured to produce XML reports for goal %s", JACOCO_PLUGIN_NAME, subProject.getName(), "report-aggregate"));
+				throw new MojoFailureException(String.format(errorMessage, subProject.getName(), JACOCO_PLUGIN_NAME, "report-aggregate"));
 			}
-			reportAggregateGoalOutputFiles.add(getCustomOutputDirectory(reportConfigurationDom).orElse(defaultOutputDirectory.resolve("jacoco-aggregate").resolve("jacoco.xml")));
+			reportAggregateGoalOutputFiles.add(getCustomOutputDirectory(reportConfigurationDom).orElse(defaultOutputDirectory.resolve("jacoco-aggregate").resolve(JACOCO_XML)));
 		}
 	}
 
@@ -136,7 +142,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		Collection<File> reports = reportOutputFiles.stream().map(Path::toFile).filter(File::canRead).collect(Collectors.toList());
 		if (!reports.isEmpty()) {
 			getLog().info(String.format("Uploading %d Jacoco report for project %s to %s", reports.size(), projectId, partition));
-			teamscaleClient.uploadReports(EReportFormat.JACOCO, reports, CommitDescriptor.parse(resolvedEndCommit), revision, partition, "External upload via Teamscale Maven plugin");
+			teamscaleClient.uploadReports(EReportFormat.JACOCO, reports, CommitDescriptor.parse(resolvedCommit), revision, partition, "External upload via Teamscale Maven plugin");
 		} else {
 			getLog().info(String.format("Found no reports for %s", partition));
 		}
