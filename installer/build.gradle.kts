@@ -13,4 +13,5 @@ tasks.jar {
 
 dependencies {
     implementation(libs.okhttp.core)
+    implementation(libs.teamscaleLibCommons)
 }

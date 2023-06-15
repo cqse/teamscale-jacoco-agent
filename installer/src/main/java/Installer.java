@@ -3,14 +3,25 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Properties;
 
 public class Installer {
+
+	private static final Path SOURCE_DIRECTORY = Paths.get(".");
+	private static final Path INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
+	private static final Path TEAMSCALE_PROPERTIES_PATH = INSTALL_DIRECTORY.resolve("teamscale.properties");
 
 	public static void main(String[] args) {
 		new Installer().run(args);
@@ -59,13 +70,39 @@ public class Installer {
 	private void setPermissions() {
 	}
 
-	private void writeTeamscaleProperties(TeamscaleCredentials credentials) {
+	private void writeTeamscaleProperties(TeamscaleCredentials credentials) throws FatalInstallerError {
+		Properties properties = new Properties();
+		properties.setProperty("url", credentials.url.toString());
+		properties.setProperty("username", credentials.username);
+		properties.setProperty("accesskey", credentials.accessKey);
+
+		try (OutputStream out = Files.newOutputStream(TEAMSCALE_PROPERTIES_PATH, StandardOpenOption.WRITE,
+				StandardOpenOption.CREATE)) {
+			properties.store(out, null);
+		} catch (IOException e) {
+			throw new FatalInstallerError("Failed to write " + TEAMSCALE_PROPERTIES_PATH + ".", e);
+		}
 	}
 
-	private void copyAgentFiles() {
+	private void copyAgentFiles() throws FatalInstallerError {
+		try {
+			FileSystemUtils.copyFiles(SOURCE_DIRECTORY.toFile(), INSTALL_DIRECTORY.toFile(), null);
+		} catch (IOException e) {
+			throw new FatalInstallerError("Failed to copy some files to " + INSTALL_DIRECTORY + "."
+					+ " Please manually clean up " + INSTALL_DIRECTORY, e);
+		}
 	}
 
-	private void createAgentDirectory() {
+	private void createAgentDirectory() throws FatalInstallerError {
+		if (Files.exists(INSTALL_DIRECTORY)) {
+			throw new FatalInstallerError("Cannot install to " + INSTALL_DIRECTORY + ": Path already exists");
+		}
+
+		try {
+			Files.createDirectories(INSTALL_DIRECTORY);
+		} catch (IOException e) {
+			throw new FatalInstallerError("Cannot create installation directory " + INSTALL_DIRECTORY, e);
+		}
 	}
 
 	private void checkTeamscaleConnection(TeamscaleCredentials credentials) throws FatalInstallerError {
@@ -140,9 +177,8 @@ public class Installer {
 	}
 
 	/**
-	 * Teamscale requires that the fragment be present before the query parameters.
-	 * OkHttp always encodes the fragment after the query parameters. So we have to
-	 * encode the fragment in the path, which unfortunately escapes the "#"
+	 * Teamscale requires that the fragment be present before the query parameters. OkHttp always encodes the fragment
+	 * after the query parameters. So we have to encode the fragment in the path, which unfortunately escapes the "#"
 	 * separator. This function undoes this unwanted encoding.
 	 */
 	private static String fixFragment(HttpUrl.Builder url) {
