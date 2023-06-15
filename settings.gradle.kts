@@ -9,6 +9,7 @@ include(":tia-runlisteners")
 include(":common-system-test")
 include(":sample-debugging-app")
 include(":teamscale-maven-plugin")
+include(":installer")
 
 file("system-tests").listFiles()?.forEach { folder ->
     include(":system-tests:${folder.name}")
