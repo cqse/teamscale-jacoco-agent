@@ -12,4 +12,5 @@ tasks.jar {
 
 
 dependencies {
+    implementation(libs.okhttp.core)
 }

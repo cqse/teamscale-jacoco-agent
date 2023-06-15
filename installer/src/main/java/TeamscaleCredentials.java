@@ -1,14 +1,16 @@
+import okhttp3.HttpUrl;
+
 public class TeamscaleCredentials {
 
-	public final String url;
+	public final HttpUrl url;
 
-	public final String user;
+	public final String username;
 
 	public final String accessKey;
 
-	public TeamscaleCredentials(String url, String user, String accessKey) {
+	public TeamscaleCredentials(HttpUrl url, String user, String accessKey) {
 		this.url = url;
-		this.user = user;
+		this.username = user;
 		this.accessKey = accessKey;
 	}
 }
