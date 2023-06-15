@@ -15,12 +15,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 public class Installer {
 
 	private static final Path SOURCE_DIRECTORY = Paths.get(".");
 	private static final Path INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
+	private static final Path COVERAGE_DIRECTORY = INSTALL_DIRECTORY.resolve("coverage");
+	private static final Path LOG_DIRECTORY = INSTALL_DIRECTORY.resolve("logs");
 	private static final Path TEAMSCALE_PROPERTIES_PATH = INSTALL_DIRECTORY.resolve("teamscale.properties");
 
 	public static void main(String[] args) {
@@ -42,7 +46,8 @@ public class Installer {
 			createAgentDirectory();
 			copyAgentFiles();
 			writeTeamscaleProperties(credentials);
-			setPermissions();
+			makeCoverageAndLogDirectoriesWorldWritable();
+			makeAllProfilerFilesWorldReadable();
 			enableSystemWide();
 			printSuccessMessage();
 			System.exit(0);
@@ -67,7 +72,24 @@ public class Installer {
 	private void enableSystemWide() {
 	}
 
-	private void setPermissions() {
+	private void makeAllProfilerFilesWorldReadable() throws FatalInstallerError {
+		try (Stream<Path> fileStream = Files.walk(INSTALL_DIRECTORY)) {
+			for (Iterator<Path> it = fileStream.iterator(); it.hasNext(); ) {
+				Path path = it.next();
+				InstallUtils.makeReadable(path);
+			}
+		} catch (IOException e) {
+			throw new FatalInstallerError("Failed to list all files in " + INSTALL_DIRECTORY + ".", e);
+		}
+	}
+
+	private void makeCoverageAndLogDirectoriesWorldWritable() throws FatalInstallerError {
+		InstallUtils.createDirectory(COVERAGE_DIRECTORY);
+		InstallUtils.makeWritable(COVERAGE_DIRECTORY);
+
+		InstallUtils.createDirectory(LOG_DIRECTORY);
+		InstallUtils.makeWritable(LOG_DIRECTORY);
+
 	}
 
 	private void writeTeamscaleProperties(TeamscaleCredentials credentials) throws FatalInstallerError {
@@ -98,11 +120,7 @@ public class Installer {
 			throw new FatalInstallerError("Cannot install to " + INSTALL_DIRECTORY + ": Path already exists");
 		}
 
-		try {
-			Files.createDirectories(INSTALL_DIRECTORY);
-		} catch (IOException e) {
-			throw new FatalInstallerError("Cannot create installation directory " + INSTALL_DIRECTORY, e);
-		}
+		InstallUtils.createDirectory(INSTALL_DIRECTORY);
 	}
 
 	private void checkTeamscaleConnection(TeamscaleCredentials credentials) throws FatalInstallerError {
@@ -111,6 +129,10 @@ public class Installer {
 		// we use the project list as a test to see if the Teamscale credentials are valid.
 		// any other API that requires a logged-in user would be fine as well.
 		HttpUrl url = credentials.url.resolve("api/v8.8/projects");
+		if (url == null) {
+			// this should never happen but the API forces us to handle this
+			throw new RuntimeException("Cannot resolve API endpoint against URL " + credentials.url);
+		}
 
 		Request request = new Request.Builder()
 				.url(url)
