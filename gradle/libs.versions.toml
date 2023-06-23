@@ -1,6 +1,6 @@
 [versions]
 jetty = "9.4.51.v20230217"
-jersey = "2.39.1"
+jersey = "2.40"
 # When upgrading JaCoCo to a newer version make sure to
 # check the comment in the AnalyzerCache.java and CachingInstructionsBuilder.java
 # and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.java.
