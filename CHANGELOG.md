@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
+- [fix] The option `ignore-uncovered-classes` did not filter out empty interface nodes from the XML report 
 
 # 30.0.2
 - [fix] _teamscale-gradle-plugin_: Reports uploaded by `teamscaleReportUpload` ended up in wrong partition
