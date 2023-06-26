@@ -10,6 +10,7 @@ include(":common-system-test")
 include(":sample-debugging-app")
 include(":teamscale-maven-plugin")
 include(":installer")
+include(":testagent")
 
 file("system-tests").listFiles()?.forEach { folder ->
     include(":system-tests:${folder.name}")

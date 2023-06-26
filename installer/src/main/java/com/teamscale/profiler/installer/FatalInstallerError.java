@@ -1,3 +1,5 @@
+package com.teamscale.profiler.installer;
+
 public class FatalInstallerError extends Exception {
 
 	public FatalInstallerError(String message) {

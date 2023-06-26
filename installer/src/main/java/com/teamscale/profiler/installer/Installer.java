@@ -1,3 +1,5 @@
+package com.teamscale.profiler.installer;
+
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
