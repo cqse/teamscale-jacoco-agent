@@ -15,35 +15,20 @@ import java.util.stream.Stream;
 
 public class Installer {
 
-	private static final Path SOURCE_DIRECTORY = Paths.get(".");
-	private static final Path INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
-	private static final Path COVERAGE_DIRECTORY = INSTALL_DIRECTORY.resolve("coverage");
-	private static final Path LOG_DIRECTORY = INSTALL_DIRECTORY.resolve("logs");
-	private static final Path TEAMSCALE_PROPERTIES_PATH = INSTALL_DIRECTORY.resolve("teamscale.properties");
+	private static final Path DEFAULT_SOURCE_DIRECTORY = Paths.get(".");
+	private static final Path DEFAULT_INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
+
+	private final Path sourceDirectory;
+	private final Path installDirectory;
+
+	public Installer(Path sourceDirectory, Path installDirectory) {
+		this.sourceDirectory = sourceDirectory;
+		this.installDirectory = installDirectory;
+	}
 
 	public static void main(String[] args) {
-		new Installer().run(args);
-	}
-
-	private static class CommandlineUsageError extends FatalInstallerError {
-
-		public CommandlineUsageError(String cause) {
-			super(cause + "\n\nUSAGE: install-profiler [TEAMSCALE URL] [TEAMSCALE USER] [ACCESS KEY]");
-		}
-
-	}
-
-	public void run(String[] args) {
 		try {
-			TeamscaleCredentials credentials = parseCredentials(args);
-			TeamscaleUtils.checkTeamscaleConnection(credentials);
-			createAgentDirectory();
-			copyAgentFiles();
-			writeTeamscaleProperties(credentials);
-			makeCoverageAndLogDirectoriesWorldWritable();
-			makeAllProfilerFilesWorldReadable();
-			enableSystemWide();
-			printSuccessMessage();
+			new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY).run(args);
 			System.exit(0);
 		} catch (FatalInstallerError e) {
 			System.err.println("\n\nInstallation failed: " + e.getMessage());
@@ -59,30 +44,63 @@ public class Installer {
 		}
 	}
 
+	private static class CommandlineUsageError extends FatalInstallerError {
+
+		public CommandlineUsageError(String cause) {
+			super(cause + "\n\nUSAGE: install-profiler [TEAMSCALE URL] [TEAMSCALE USER] [ACCESS KEY]");
+		}
+
+	}
+
+	private Path getCoverageDirectory() {
+		return installDirectory.resolve("coverage");
+	}
+
+	private Path getLogDirectory() {
+		return installDirectory.resolve("logs");
+	}
+
+	private Path getTeamscalePropertiesPath() {
+		return installDirectory.resolve("teamscale.properties");
+	}
+
+	public void run(String[] args) throws FatalInstallerError {
+		TeamscaleCredentials credentials = parseCredentials(args);
+		TeamscaleUtils.checkTeamscaleConnection(credentials);
+		createAgentDirectory();
+		copyAgentFiles();
+		writeTeamscaleProperties(credentials);
+		makeCoverageAndLogDirectoriesWorldWritable();
+		makeAllProfilerFilesWorldReadable();
+		enableSystemWide();
+		printSuccessMessage();
+	}
+
 	private void printSuccessMessage() {
 		System.out.println("Installation successful. Profiler installed to ???"); // TODO (FS)
 	}
 
 	private void enableSystemWide() {
+		// TODO (FS)
 	}
 
 	private void makeAllProfilerFilesWorldReadable() throws FatalInstallerError {
-		try (Stream<Path> fileStream = Files.walk(INSTALL_DIRECTORY)) {
+		try (Stream<Path> fileStream = Files.walk(installDirectory)) {
 			for (Iterator<Path> it = fileStream.iterator(); it.hasNext(); ) {
 				Path path = it.next();
 				InstallFileUtils.makeReadable(path);
 			}
 		} catch (IOException e) {
-			throw new FatalInstallerError("Failed to list all files in " + INSTALL_DIRECTORY + ".", e);
+			throw new FatalInstallerError("Failed to list all files in " + installDirectory + ".", e);
 		}
 	}
 
 	private void makeCoverageAndLogDirectoriesWorldWritable() throws FatalInstallerError {
-		InstallFileUtils.createDirectory(COVERAGE_DIRECTORY);
-		InstallFileUtils.makeWritable(COVERAGE_DIRECTORY);
+		InstallFileUtils.createDirectory(getCoverageDirectory());
+		InstallFileUtils.makeWritable(getCoverageDirectory());
 
-		InstallFileUtils.createDirectory(LOG_DIRECTORY);
-		InstallFileUtils.makeWritable(LOG_DIRECTORY);
+		InstallFileUtils.createDirectory(getLogDirectory());
+		InstallFileUtils.makeWritable(getLogDirectory());
 
 	}
 
@@ -92,29 +110,29 @@ public class Installer {
 		properties.setProperty("username", credentials.username);
 		properties.setProperty("accesskey", credentials.accessKey);
 
-		try (OutputStream out = Files.newOutputStream(TEAMSCALE_PROPERTIES_PATH, StandardOpenOption.WRITE,
+		try (OutputStream out = Files.newOutputStream(getTeamscalePropertiesPath(), StandardOpenOption.WRITE,
 				StandardOpenOption.CREATE)) {
 			properties.store(out, null);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Failed to write " + TEAMSCALE_PROPERTIES_PATH + ".", e);
+			throw new FatalInstallerError("Failed to write " + getTeamscalePropertiesPath() + ".", e);
 		}
 	}
 
 	private void copyAgentFiles() throws FatalInstallerError {
 		try {
-			FileSystemUtils.copyFiles(SOURCE_DIRECTORY.toFile(), INSTALL_DIRECTORY.toFile(), null);
+			FileSystemUtils.copyFiles(sourceDirectory.toFile(), installDirectory.toFile(), null);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Failed to copy some files to " + INSTALL_DIRECTORY + "."
-					+ " Please manually clean up " + INSTALL_DIRECTORY, e);
+			throw new FatalInstallerError("Failed to copy some files to " + installDirectory + "."
+					+ " Please manually clean up " + installDirectory, e);
 		}
 	}
 
 	private void createAgentDirectory() throws FatalInstallerError {
-		if (Files.exists(INSTALL_DIRECTORY)) {
-			throw new FatalInstallerError("Cannot install to " + INSTALL_DIRECTORY + ": Path already exists");
+		if (Files.exists(installDirectory)) {
+			throw new FatalInstallerError("Cannot install to " + installDirectory + ": Path already exists");
 		}
 
-		InstallFileUtils.createDirectory(INSTALL_DIRECTORY);
+		InstallFileUtils.createDirectory(installDirectory);
 	}
 
 	private TeamscaleCredentials parseCredentials(String[] args) throws FatalInstallerError {
