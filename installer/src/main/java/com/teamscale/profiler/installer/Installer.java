@@ -29,6 +29,7 @@ public class Installer {
 	public static void main(String[] args) {
 		try {
 			new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY).run(args);
+			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
 			System.exit(0);
 		} catch (FatalInstallerError e) {
 			System.err.println("\n\nInstallation failed: " + e.getMessage());
@@ -73,11 +74,6 @@ public class Installer {
 		makeCoverageAndLogDirectoriesWorldWritable();
 		makeAllProfilerFilesWorldReadable();
 		enableSystemWide();
-		printSuccessMessage();
-	}
-
-	private void printSuccessMessage() {
-		System.out.println("Installation successful. Profiler installed to ???"); // TODO (FS)
 	}
 
 	private void enableSystemWide() {

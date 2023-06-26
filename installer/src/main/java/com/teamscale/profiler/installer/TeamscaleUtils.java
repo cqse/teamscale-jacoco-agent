@@ -6,7 +6,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
@@ -32,7 +32,7 @@ public class TeamscaleUtils {
 
 		try (Response response = client.newCall(request).execute()) {
 			handleErrors(response, credentials);
-		} catch (SSLHandshakeException e) {
+		} catch (SSLException e) {
 			throw new FatalInstallerError("Failed to connect via HTTPS to " + credentials.url
 					+ "\nPlease ensure that your Teamscale instance is reachable under " + credentials.url
 					+ " and that it is configured for HTTPS, not HTTP. E.g. open that URL in your"
@@ -79,7 +79,8 @@ public class TeamscaleUtils {
 		}
 
 		if (!response.isSuccessful()) {
-			throw new FatalInstallerError("Unexpected response from Teamscale");
+			throw new FatalInstallerError(
+					"Unexpected response from Teamscale, HTTP status " + response.code() + " " + response.message());
 		}
 	}
 

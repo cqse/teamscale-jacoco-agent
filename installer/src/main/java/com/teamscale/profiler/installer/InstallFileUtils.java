@@ -8,14 +8,14 @@ public class InstallFileUtils {
 
 
 	public static void makeReadable(Path path) throws FatalInstallerError {
-		if (!path.toFile().setReadable(true)) {
+		if (!path.toFile().setReadable(true, false)) {
 			throw new FatalInstallerError(
 					"Failed to make " + path + " readable. Please check file permissions.");
 		}
 	}
 
 	public static void makeWritable(Path path) throws FatalInstallerError {
-		if (!path.toFile().setWritable(true)) {
+		if (!path.toFile().setWritable(true, false)) {
 			throw new FatalInstallerError(
 					"Failed to make " + path + " writable. Please check file permissions.");
 		}
