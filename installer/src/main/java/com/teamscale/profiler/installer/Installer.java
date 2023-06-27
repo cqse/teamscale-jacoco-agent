@@ -45,7 +45,7 @@ public class Installer {
 		}
 	}
 
-	private static class CommandlineUsageError extends FatalInstallerError {
+	public static class CommandlineUsageError extends FatalInstallerError {
 
 		public CommandlineUsageError(String cause) {
 			super(cause + "\n\nUSAGE: install-profiler [TEAMSCALE URL] [TEAMSCALE USER] [ACCESS KEY]");
@@ -112,6 +112,8 @@ public class Installer {
 		} catch (IOException e) {
 			throw new FatalInstallerError("Failed to write " + getTeamscalePropertiesPath() + ".", e);
 		}
+
+		InstallFileUtils.makeReadable(getTeamscalePropertiesPath());
 	}
 
 	private void copyAgentFiles() throws FatalInstallerError {

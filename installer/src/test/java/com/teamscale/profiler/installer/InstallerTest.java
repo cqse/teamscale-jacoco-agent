@@ -72,6 +72,23 @@ class InstallerTest {
 	}
 
 	@Test
+	void insufficientCommandLineParameters() {
+		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory).run(new String[]{}))
+				.isInstanceOf(Installer.CommandlineUsageError.class);
+		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory).run(new String[]{TEAMSCALE_URL}))
+				.isInstanceOf(Installer.CommandlineUsageError.class);
+		assertThatThrownBy(
+				() -> new Installer(sourceDirectory, targetDirectory).run(new String[]{TEAMSCALE_URL, "user"}))
+				.isInstanceOf(Installer.CommandlineUsageError.class);
+
+		assertThatThrownBy(() ->
+				new Installer(sourceDirectory, targetDirectory).run(new String[]{"not-a-url!", "user", "accesskey"})
+		).hasMessageContaining("This is not a valid URL");
+
+		assertThat(targetDirectory).doesNotExist();
+	}
+
+	@Test
 	void successfulInstallation() throws FatalInstallerError, IOException {
 		install();
 
@@ -89,11 +106,12 @@ class InstallerTest {
 		assertThat(installedLogsDirectory).exists().isReadable().isWritable();
 
 		if (SystemUtils.isLinux()) {
+			assertThat(Files.getPosixFilePermissions(installedTeamscaleProperties)).contains(OTHERS_READ);
 			assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
 			assertThat(Files.getPosixFilePermissions(installedLogsDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
 			assertThat(Files.getPosixFilePermissions(installedCoverageDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
 		}
-		// TODO (FS) windows
+		// TODO (FS) windows: use cacls to check Everyone SID?
 	}
 
 	@Test
