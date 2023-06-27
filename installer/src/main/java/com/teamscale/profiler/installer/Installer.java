@@ -2,9 +2,11 @@ package com.teamscale.profiler.installer;
 
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.system.SystemUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,18 +19,21 @@ public class Installer {
 
 	private static final Path DEFAULT_SOURCE_DIRECTORY = Paths.get(".");
 	private static final Path DEFAULT_INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
+	private static final Path DEFAULT_ETC_DIRECTORY = Paths.get("/etc");
 
 	private final Path sourceDirectory;
 	private final Path installDirectory;
+	private final Path etcDirectory;
 
-	public Installer(Path sourceDirectory, Path installDirectory) {
+	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory) {
 		this.sourceDirectory = sourceDirectory;
 		this.installDirectory = installDirectory;
+		this.etcDirectory = etcDirectory;
 	}
 
 	public static void main(String[] args) {
 		try {
-			new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY).run(args);
+			new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY).run(args);
 			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
 			System.exit(0);
 		} catch (FatalInstallerError e) {
@@ -65,6 +70,11 @@ public class Installer {
 		return installDirectory.resolve("teamscale.properties");
 	}
 
+	private Path getAgentJarPath() {
+		return installDirectory.resolve("lib/teamscale-jacoco-agent.jar");
+	}
+
+	// TODO (FS) add uninstall
 	public void run(String[] args) throws FatalInstallerError {
 		TeamscaleCredentials credentials = parseCredentials(args);
 		TeamscaleUtils.checkTeamscaleConnection(credentials);
@@ -76,8 +86,43 @@ public class Installer {
 		enableSystemWide();
 	}
 
-	private void enableSystemWide() {
-		// TODO (FS)
+	private void enableSystemWide() throws FatalInstallerError {
+		if (SystemUtils.isLinux()) {
+			addToEtcEnvironment();
+		}
+		// TODO (FS) systemd
+		// TODO (FS) windows
+	}
+
+	/**
+	 * Returns the environment variables to set system-wide to register the agent. We currently set two options:
+	 * <ul>
+	 * <li>JAVA_TOOL_OPTIONS is recognized by all JVMs but may be overridden by application start scripts
+	 * <li>_JAVA_OPTIONS is not officially documented but currently well-supported and unlikely to be used
+	 * by application start scripts
+	 * </ul>
+	 */
+	private String getEnvironmentVariables() {
+		return "JAVA_TOOL_OPTIONS=\"-javaagent:" + getAgentJarPath() + "\""
+				+ "\n_JAVA_OPTIONS=\"-javaagent:" + getAgentJarPath() + "\"";
+	}
+
+	private void addToEtcEnvironment() throws FatalInstallerError {
+		Path environmentFile = etcDirectory.resolve("environment");
+		if (!Files.exists(environmentFile)) {
+			System.out.println(
+					environmentFile + " does not exist. Skipping global registration of the profiler there.");
+			return;
+		}
+
+		String content = "\n" + getEnvironmentVariables();
+
+		try {
+			Files.write(environmentFile, content.getBytes(StandardCharsets.US_ASCII),
+					StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			throw new FatalInstallerError("Could not change " + environmentFile, e);
+		}
 	}
 
 	private void makeAllProfilerFilesWorldReadable() throws FatalInstallerError {

@@ -24,11 +24,13 @@ class InstallerTest {
 	private static final int TEAMSCALE_PORT = 8054;
 	private static final String FILE_TO_INSTALL_CONTENT = "install-me";
 	private static final String NESTED_FILE_CONTENT = "nested-file";
+	private static final String ENVIRONMENT_CONTENT = "PATH=/usr/bin";
 	private static final String TEAMSCALE_URL = "http://localhost:" + TEAMSCALE_PORT + "/";
 
 
 	private Path sourceDirectory;
 	private Path targetDirectory;
+	private Path etcDirectory;
 
 	private Path fileToInstall;
 	private Path nestedFileToInstall;
@@ -38,6 +40,9 @@ class InstallerTest {
 	private Path installedTeamscaleProperties;
 	private Path installedCoverageDirectory;
 	private Path installedLogsDirectory;
+	private Path installedAgentLibrary;
+
+	private Path environmentFile;
 
 	private static MockTeamscale TEAMSCALE;
 
@@ -45,11 +50,15 @@ class InstallerTest {
 	void setUpSourceDirectory() throws IOException {
 		sourceDirectory = Files.createTempDirectory("InstallerTest-source");
 		targetDirectory = Files.createTempDirectory("InstallerTest-target").resolve("profiler");
+		etcDirectory = Files.createTempDirectory("InstallerTest-etc");
+
+		environmentFile = etcDirectory.resolve("environment");
+		Files.write(environmentFile, ENVIRONMENT_CONTENT.getBytes(StandardCharsets.UTF_8));
 
 		fileToInstall = sourceDirectory.resolve("install-me.txt");
 		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
-		nestedFileToInstall = sourceDirectory.resolve("subfolder/nested-file.txt");
+		nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 		Files.createDirectories(nestedFileToInstall.getParent());
 		Files.write(nestedFileToInstall, NESTED_FILE_CONTENT.getBytes(StandardCharsets.UTF_8),
 				StandardOpenOption.CREATE);
@@ -59,6 +68,7 @@ class InstallerTest {
 		installedTeamscaleProperties = targetDirectory.resolve("teamscale.properties");
 		installedCoverageDirectory = targetDirectory.resolve("coverage");
 		installedLogsDirectory = targetDirectory.resolve("logs");
+		installedAgentLibrary = targetDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 	}
 
 	@BeforeAll
@@ -73,16 +83,19 @@ class InstallerTest {
 
 	@Test
 	void insufficientCommandLineParameters() {
-		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory).run(new String[]{}))
-				.isInstanceOf(Installer.CommandlineUsageError.class);
-		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory).run(new String[]{TEAMSCALE_URL}))
+		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).run(new String[]{}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 		assertThatThrownBy(
-				() -> new Installer(sourceDirectory, targetDirectory).run(new String[]{TEAMSCALE_URL, "user"}))
+				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).run(new String[]{TEAMSCALE_URL}))
+				.isInstanceOf(Installer.CommandlineUsageError.class);
+		assertThatThrownBy(
+				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).run(
+						new String[]{TEAMSCALE_URL, "user"}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 
 		assertThatThrownBy(() ->
-				new Installer(sourceDirectory, targetDirectory).run(new String[]{"not-a-url!", "user", "accesskey"})
+				new Installer(sourceDirectory, targetDirectory, etcDirectory).run(
+						new String[]{"not-a-url!", "user", "accesskey"})
 		).hasMessageContaining("This is not a valid URL");
 
 		assertThat(targetDirectory).doesNotExist();
@@ -110,8 +123,20 @@ class InstallerTest {
 			assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
 			assertThat(Files.getPosixFilePermissions(installedLogsDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
 			assertThat(Files.getPosixFilePermissions(installedCoverageDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
+
+			assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
+					+ "\nJAVA_TOOL_OPTIONS=\"-javaagent:" + installedAgentLibrary + "\""
+					+ "\n_JAVA_OPTIONS=\"-javaagent:" + installedAgentLibrary + "\"");
 		}
 		// TODO (FS) windows: use cacls to check Everyone SID?
+	}
+
+	@Test
+	void noEtcEnvironment() throws FatalInstallerError, IOException {
+		Files.delete(environmentFile);
+		install();
+
+		assertThat(environmentFile).doesNotExist();
 	}
 
 	@Test
@@ -152,7 +177,8 @@ class InstallerTest {
 	}
 
 	private void install(String teamscaleUrl) throws FatalInstallerError {
-		new Installer(sourceDirectory, targetDirectory).run(new String[]{teamscaleUrl, "user", "accesskey"});
+		new Installer(sourceDirectory, targetDirectory, etcDirectory).run(
+				new String[]{teamscaleUrl, "user", "accesskey"});
 	}
 
 }
