@@ -39,7 +39,7 @@ import java.util.zip.ZipInputStream;
 	public int analyzeAll(InputStream input, String location) throws IOException {
 		if (location.endsWith(".class") && !locationIncludeFilter.isIncluded(location)) {
 			logger.debug("Excluding class file " + location);
-			return 0;
+			return 1;
 		}
 		if (location.endsWith(".jar")) {
 			return analyzeJar(input, location);

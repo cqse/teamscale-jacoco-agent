@@ -45,7 +45,7 @@ task unitTest(type: TestImpacted) {
 	useJUnitPlatform {
 		excludeTags 'integration'
 	}
-	jacoco.includes = [ 'com.example.project.*' ]
+	jacoco.includes = [ project.findProperty('jacocoIncludePattern') ?: 'com.example.project.*' ]
 	testLogging {
 		// events "started", "skipped", "failed"
 		exceptionFormat "short"
