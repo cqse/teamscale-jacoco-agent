@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
+- [fix] The option `ignore-uncovered-classes` did not filter out empty interface nodes from the XML report 
 - [fix] _teamscale-gradle-plugin_: The plugin failed to log the `No class files found in the given directories!` error message
 
 # 30.0.2
