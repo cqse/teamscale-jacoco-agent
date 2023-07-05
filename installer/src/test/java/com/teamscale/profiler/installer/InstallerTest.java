@@ -43,6 +43,8 @@ class InstallerTest {
 	private Path installedAgentLibrary;
 
 	private Path environmentFile;
+	private Path systemdDirectory;
+	private Path systemdConfig;
 
 	private static MockTeamscale TEAMSCALE;
 
@@ -54,6 +56,10 @@ class InstallerTest {
 
 		environmentFile = etcDirectory.resolve("environment");
 		Files.write(environmentFile, ENVIRONMENT_CONTENT.getBytes(StandardCharsets.UTF_8));
+
+		systemdDirectory = etcDirectory.resolve("systemd");
+		Files.createDirectory(systemdDirectory);
+		systemdConfig = systemdDirectory.resolve("teamscale-profiler.conf");
 
 		fileToInstall = sourceDirectory.resolve("install-me.txt");
 		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
@@ -125,8 +131,12 @@ class InstallerTest {
 			assertThat(Files.getPosixFilePermissions(installedCoverageDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
 
 			assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
-					+ "\nJAVA_TOOL_OPTIONS=\"-javaagent:" + installedAgentLibrary + "\""
-					+ "\n_JAVA_OPTIONS=\"-javaagent:" + installedAgentLibrary + "\"");
+					+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+					+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
+
+			assertThat(systemdConfig).content().isEqualTo("[Manager]"
+					+ "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+					+ " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 		}
 		// TODO (FS) windows: use cacls to check Everyone SID?
 	}
@@ -137,6 +147,14 @@ class InstallerTest {
 		install();
 
 		assertThat(environmentFile).doesNotExist();
+	}
+
+	@Test
+	void noSystemd() throws FatalInstallerError, IOException {
+		Files.delete(systemdDirectory);
+		install();
+
+		assertThat(systemdConfig).doesNotExist();
 	}
 
 	@Test
