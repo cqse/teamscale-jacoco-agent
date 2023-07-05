@@ -314,7 +314,7 @@ public class AgentOptionsTest {
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new CommandLineLogger());
+		return new AgentOptionsParser(new CommandLineLogger(), null);
 	}
 
 	/**

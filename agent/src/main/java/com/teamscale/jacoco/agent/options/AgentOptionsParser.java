@@ -46,18 +46,21 @@ public class AgentOptionsParser {
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
 	private final TeamscaleConfig teamscaleConfig;
+	private final String environmentConfigFile;
 
-	public AgentOptionsParser(ILogger logger) {
+	public AgentOptionsParser(ILogger logger, String environmentConfigFile) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
+		this.environmentConfigFile = environmentConfigFile;
 	}
 
 	/**
 	 * Parses the given command-line options.
 	 */
-	public static AgentOptions parse(String optionsString, ILogger logger) throws AgentOptionParseException {
-		return new AgentOptionsParser(logger).parse(optionsString);
+	public static AgentOptions parse(String optionsString, String environmentConfigFile,
+									 ILogger logger) throws AgentOptionParseException {
+		return new AgentOptionsParser(logger, environmentConfigFile).parse(optionsString);
 	}
 
 	/**
@@ -76,6 +79,10 @@ public class AgentOptionsParser {
 			for (String optionPart : optionParts) {
 				handleOption(options, optionPart);
 			}
+		}
+
+		if (environmentConfigFile != null) {
+			handleOption(options, "config-file=" + environmentConfigFile);
 		}
 
 		Validator validator = options.getValidator();

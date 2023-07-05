@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
+import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -33,8 +34,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
- * {@link JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the {@link
+ * JacocoRuntimeController}.
  * <p>
  * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
@@ -131,6 +132,13 @@ public abstract class AgentBase {
 	 * Called by the actual premain method once the agent is isolated from the rest of the application.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
+		String environmentConfigFile = System.getenv("TEAMSCALE_JAVA_PROFILER_CONFIG");
+		if (StringUtils.isEmpty(options) && environmentConfigFile == null) {
+			// profiler was registered globally and no config was set explicitly by the user, thus ignore this process
+			// and don't profile anything
+			return;
+		}
+
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
 
@@ -144,7 +152,7 @@ public abstract class AgentBase {
 		}
 
 		try {
-			agentOptions = AgentOptionsParser.parse(options, delayedLogger);
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigFile, delayedLogger);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.error("Failed to parse agent options: " + e.getMessage(), e);
@@ -198,9 +206,9 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Initializes fallback logging in case of an error during the parsing of the options to
-	 * {@link #premain(String, Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use
-	 * this and falls back to the default logger.
+	 * Initializes fallback logging in case of an error during the parsing of the options to {@link #premain(String,
+	 * Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use this and falls back to
+	 * the default logger.
 	 */
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {

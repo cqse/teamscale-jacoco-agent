@@ -12,7 +12,17 @@ import java.io.IOException;
 /** Tests parsing of the agent's command line options. */
 public class AgentOptionsParserTest {
 
-	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger());
+	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null);
+
+	@Test
+	public void environmentConfigOverridesCommandLineOptions() {
+		// TODO (FS)
+	}
+
+	@Test
+	public void environmentConfigPathDoesNotExist() {
+		// TODO (FS)
+	}
 
 	@Test
 	public void notGivingAnyOptionsShouldBeOK() throws Exception {
