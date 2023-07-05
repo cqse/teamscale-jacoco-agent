@@ -89,8 +89,8 @@ public class Installer {
 	private void enableSystemWide() throws FatalInstallerError {
 		if (SystemUtils.isLinux()) {
 			addToEtcEnvironment();
+			addToSystemdDefaultEnvironment();
 		}
-		// TODO (FS) systemd
 		// TODO (FS) windows
 	}
 
@@ -102,9 +102,10 @@ public class Installer {
 	 * by application start scripts
 	 * </ul>
 	 */
-	private String getEnvironmentVariables() {
-		return "JAVA_TOOL_OPTIONS=\"-javaagent:" + getAgentJarPath() + "\""
-				+ "\n_JAVA_OPTIONS=\"-javaagent:" + getAgentJarPath() + "\"";
+	private EnvironmentMap getEnvironmentVariables() {
+		String javaAgentArgument = "-javaagent:" + getAgentJarPath();
+		return new EnvironmentMap("JAVA_TOOL_OPTIONS", javaAgentArgument,
+				"_JAVA_OPTIONS", javaAgentArgument);
 	}
 
 	private void addToEtcEnvironment() throws FatalInstallerError {
@@ -115,13 +116,32 @@ public class Installer {
 			return;
 		}
 
-		String content = "\n" + getEnvironmentVariables();
+		String content = "\n" + getEnvironmentVariables().getEtcEnvironmentString();
 
 		try {
 			Files.write(environmentFile, content.getBytes(StandardCharsets.US_ASCII),
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Could not change " + environmentFile, e);
+			throw new FatalInstallerError("Could not change contents of " + environmentFile, e);
+		}
+	}
+
+	private void addToSystemdDefaultEnvironment() throws FatalInstallerError {
+		Path systemdEtcDirectory = etcDirectory.resolve("systemd");
+		if (!Files.exists(systemdEtcDirectory)) {
+			return;
+		}
+
+		Path systemdConfig = systemdEtcDirectory.resolve("teamscale-profiler.conf");
+		if (Files.exists(systemdConfig)) {
+			throw new FatalInstallerError("Cannot create systemd configuration file " + systemdConfig);
+		}
+
+		String content = "[Manager]\nDefaultEnvironment=" + getEnvironmentVariables().getSystemdString() + "\n";
+		try {
+			Files.write(systemdConfig, content.getBytes(StandardCharsets.UTF_8));
+		} catch (IOException e) {
+			throw new FatalInstallerError("Could not create " + systemdConfig, e);
 		}
 	}
 
