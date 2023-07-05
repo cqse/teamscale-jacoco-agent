@@ -3,6 +3,7 @@ package com.teamscale.profiler.installer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class EnvironmentMap {
 
@@ -15,7 +16,7 @@ public class EnvironmentMap {
 	}
 
 	private String escape(String value) {
-		return value.replaceAll("\\\\", "\\\\").replaceAll("\"", "\\\"");
+		return value.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"");
 	}
 
 	private String quoteIfNecessary(String value) {
@@ -26,13 +27,17 @@ public class EnvironmentMap {
 		return "\"" + escaped + "\"";
 	}
 
+	private Stream<Map.Entry<String, String>> sortedEntryStream() {
+		return environment.entrySet().stream().sorted(Map.Entry.comparingByKey());
+	}
+
 	public String getEtcEnvironmentString() {
-		return environment.entrySet().stream().map(entry -> entry.getKey() + "=" + quoteIfNecessary(entry.getValue()))
+		return sortedEntryStream().map(entry -> entry.getKey() + "=" + quoteIfNecessary(entry.getValue()))
 				.collect(Collectors.joining("\n")) + "\n";
 	}
 
 	public String getSystemdString() {
-		return environment.entrySet().stream().map(entry -> quoteIfNecessary(entry.getKey() + "=" + entry.getValue()))
+		return sortedEntryStream().map(entry -> quoteIfNecessary(entry.getKey() + "=" + entry.getValue()))
 				.collect(Collectors.joining(" "));
 	}
 
