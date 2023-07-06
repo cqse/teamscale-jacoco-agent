@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+/** Installs the agent system-globally. */
 public class Installer {
 
 	private static final Path DEFAULT_SOURCE_DIRECTORY = Paths.get(".");
@@ -25,16 +26,31 @@ public class Installer {
 	private final Path installDirectory;
 	private final Path etcDirectory;
 
+	/**
+	 * Constructor. Making the following directories configurable allows testing the installer without admin
+	 * permissions.
+	 *
+	 * @param sourceDirectory  directory that contains the profiler binaries and support files to install.
+	 * @param installDirectory directory to which to install the profiler.
+	 * @param etcDirectory     on Linux: the /etc directory
+	 */
 	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory) {
 		this.sourceDirectory = sourceDirectory;
 		this.installDirectory = installDirectory;
 		this.etcDirectory = etcDirectory;
 	}
 
+	/**
+	 * Runs the installer. Expected command-line arguments: [TEAMSCALE URL] [TEAMSCALE USER] [ACCESS KEY] Alternatively,
+	 * running with --uninstall will uninstall the profiler.
+	 */
 	public static void main(String[] args) {
+		Installer installer = new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
+
 		try {
-			new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY).run(args);
-			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
+			runInstaller(args, installer);
+			// we use System.exit here to make sure that no background threads spawned by libraries we use prevent the
+			// program from exiting. May e.g. happen with okhttp
 			System.exit(0);
 		} catch (FatalInstallerError e) {
 			System.err.println("\n\nInstallation failed: " + e.getMessage());
@@ -50,6 +66,20 @@ public class Installer {
 		}
 	}
 
+	private static void runInstaller(String[] args, Installer installer) throws FatalInstallerError {
+		if (args.length == 1 && args[0].equals("--uninstall")) {
+			installer.uninstall();
+			System.out.println("Profiler successfully uninstalled");
+		} else {
+			installer.run(args);
+			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
+		}
+	}
+
+	/**
+	 * Thrown when the users command-line parameters are invalid. Includes a helpful message how to supply correct
+	 * command-line arguments.
+	 */
 	public static class CommandlineUsageError extends FatalInstallerError {
 
 		public CommandlineUsageError(String cause) {
@@ -74,7 +104,13 @@ public class Installer {
 		return installDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 	}
 
-	// TODO (FS) add uninstall
+	public void uninstall() throws FatalInstallerError {
+		// TODO (FS) add uninstall
+	}
+
+	/**
+	 * Installs the profiler.
+	 */
 	public void run(String[] args) throws FatalInstallerError {
 		TeamscaleCredentials credentials = parseCredentials(args);
 		TeamscaleUtils.checkTeamscaleConnection(credentials);
@@ -86,6 +122,10 @@ public class Installer {
 		enableSystemWide();
 	}
 
+	/**
+	 * Enables the profiler system-wide by setting environment variables system-wide that enable it for all Java
+	 * applications.
+	 */
 	private void enableSystemWide() throws FatalInstallerError {
 		if (SystemUtils.isLinux()) {
 			addToEtcEnvironment();

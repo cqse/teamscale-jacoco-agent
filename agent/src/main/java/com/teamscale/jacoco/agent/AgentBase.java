@@ -41,6 +41,9 @@ import java.util.Optional;
  */
 public abstract class AgentBase {
 
+	/** Environment variable from which to read the config file to use. */
+	public static final String CONFIG_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG";
+
 	/** The logger. */
 	protected final Logger logger = LoggingUtils.getLogger(this);
 
@@ -132,7 +135,7 @@ public abstract class AgentBase {
 	 * Called by the actual premain method once the agent is isolated from the rest of the application.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		String environmentConfigFile = System.getenv("TEAMSCALE_JAVA_PROFILER_CONFIG");
+		String environmentConfigFile = System.getenv(CONFIG_ENVIRONMENT_VARIABLE);
 		if (StringUtils.isEmpty(options) && environmentConfigFile == null) {
 			// profiler was registered globally and no config was set explicitly by the user, thus ignore this process
 			// and don't profile anything

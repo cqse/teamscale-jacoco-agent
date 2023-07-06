@@ -12,8 +12,10 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
+/** Utilities for interacting with a Teamscale instance. */
 public class TeamscaleUtils {
 
+	/** Ensures that we can connect to Teamscale with the given credentials. */
 	public static void checkTeamscaleConnection(TeamscaleCredentials credentials) throws FatalInstallerError {
 		OkHttpClient client = new OkHttpClient();
 
