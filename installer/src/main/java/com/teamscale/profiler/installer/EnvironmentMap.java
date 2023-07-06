@@ -41,7 +41,7 @@ public class EnvironmentMap {
 	 */
 	public String getEtcEnvironmentString() {
 		return sortedEntryStream().map(entry -> entry.getKey() + "=" + quoteIfNecessary(entry.getValue()))
-				.collect(Collectors.joining("\n")) + "\n";
+				.collect(Collectors.joining("\n"));
 	}
 
 	/**

@@ -59,7 +59,7 @@ class InstallerTest {
 
 		systemdDirectory = etcDirectory.resolve("systemd");
 		Files.createDirectory(systemdDirectory);
-		systemdConfig = systemdDirectory.resolve("teamscale-profiler.conf");
+		systemdConfig = systemdDirectory.resolve("teamscale-java-profiler.conf");
 
 		fileToInstall = sourceDirectory.resolve("install-me.txt");
 		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
@@ -89,18 +89,18 @@ class InstallerTest {
 
 	@Test
 	void insufficientCommandLineParameters() {
-		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).run(new String[]{}))
+		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(new String[]{}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 		assertThatThrownBy(
-				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).run(new String[]{TEAMSCALE_URL}))
+				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(new String[]{TEAMSCALE_URL}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 		assertThatThrownBy(
-				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).run(
+				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
 						new String[]{TEAMSCALE_URL, "user"}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 
 		assertThatThrownBy(() ->
-				new Installer(sourceDirectory, targetDirectory, etcDirectory).run(
+				new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
 						new String[]{"not-a-url!", "user", "accesskey"})
 		).hasMessageContaining("This is not a valid URL");
 
@@ -195,7 +195,7 @@ class InstallerTest {
 	}
 
 	private void install(String teamscaleUrl) throws FatalInstallerError {
-		new Installer(sourceDirectory, targetDirectory, etcDirectory).run(
+		new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
 				new String[]{teamscaleUrl, "user", "accesskey"});
 	}
 
