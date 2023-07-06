@@ -9,16 +9,25 @@ import java.net.URLClassLoader;
 public class PreMain {
 
 	/**
-	 * Entry point for the agent, called by the JVM.
-	 * The only purpose of this method is to enforce classloader isolation of
-	 * the agent from the rest of the application by running the actual agent
-	 * in a custom classloader that only has access to the agent's Jar file.
+	 * System property that we use to prevent this agent from being attached to the same VM twice. This can happen if
+	 * the agent is registered via multiple JVM environment variables and/or the command line at the same time.
+	 */
+	private static final String LOCKING_SYSTEM_PROPERTY = "TEAMSCALE_JAVA_PROFILER_ATTACHED";
+
+	/**
+	 * Entry point for the agent, called by the JVM. The only purpose of this method is to enforce classloader isolation
+	 * of the agent from the rest of the application by running the actual agent in a custom classloader that only has
+	 * access to the agent's Jar file.
 	 * <p>
-	 * We do this by temporarily changing the thread's context classloader to
-	 * an {@link URLClassLoader} without a parent, starting the agent and then
-	 * resetting the context classloader.
+	 * We do this by temporarily changing the thread's context classloader to an {@link URLClassLoader} without a
+	 * parent, starting the agent and then resetting the context classloader.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
+		if (System.getProperty(LOCKING_SYSTEM_PROPERTY) != null) {
+			return;
+		}
+		System.setProperty(LOCKING_SYSTEM_PROPERTY, "true");
+
 		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		URL agentJarUrl = PreMain.class.getProtectionDomain().getCodeSource().getLocation();
