@@ -75,7 +75,7 @@ public class InstallEtcEnvironmentStep implements IStep {
 	private String removeProfilerVariables(List<String> linesWithoutNewline) {
 		Set<String> linesToRemove = new HashSet<>(StringUtils.splitLinesAsList(
 				environmentVariables.getEtcEnvironmentString(), false));
-		return linesWithoutNewline.stream().filter(linesToRemove::contains)
+		return linesWithoutNewline.stream().filter(line -> !linesToRemove.contains(line))
 				.collect(Collectors.joining("\n"));
 	}
 }

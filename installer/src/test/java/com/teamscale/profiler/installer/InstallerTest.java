@@ -24,7 +24,7 @@ class InstallerTest {
 	private static final int TEAMSCALE_PORT = 8054;
 	private static final String FILE_TO_INSTALL_CONTENT = "install-me";
 	private static final String NESTED_FILE_CONTENT = "nested-file";
-	private static final String ENVIRONMENT_CONTENT = "PATH=/usr/bin";
+	private static final String ENVIRONMENT_CONTENT = "#this is /etc/environment\nPATH=/usr/bin";
 	private static final String TEAMSCALE_URL = "http://localhost:" + TEAMSCALE_PORT + "/";
 
 
@@ -92,7 +92,8 @@ class InstallerTest {
 		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(new String[]{}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 		assertThatThrownBy(
-				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(new String[]{TEAMSCALE_URL}))
+				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
+						new String[]{TEAMSCALE_URL}))
 				.isInstanceOf(Installer.CommandlineUsageError.class);
 		assertThatThrownBy(
 				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
@@ -142,6 +143,43 @@ class InstallerTest {
 	}
 
 	@Test
+	void successfulUninstallation() throws FatalInstallerError {
+		install();
+		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
+				etcDirectory).uninstall();
+
+		assertThat(errorReporter.wereErrorsReported()).isFalse();
+
+		assertThat(targetDirectory).doesNotExist();
+		if (SystemUtils.isLinux()) {
+			assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
+			assertThat(systemdConfig).doesNotExist();
+		}
+	}
+
+	@Test
+	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
+		install();
+		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
+
+		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
+				etcDirectory).uninstall();
+
+		assertThat(errorReporter.wereErrorsReported()).isTrue();
+
+		assertThat(targetDirectory).exists();
+		assertThat(installedTeamscaleProperties).exists();
+		// nested files must be removed if possible
+		assertThat(installedNestedFile).doesNotExist();
+
+		if (SystemUtils.isLinux()) {
+			// other uninstall steps must run regardless of previous failure
+			assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
+			assertThat(systemdConfig).doesNotExist();
+		}
+	}
+
+	@Test
 	void noEtcEnvironment() throws FatalInstallerError, IOException {
 		Files.delete(environmentFile);
 		install();
@@ -187,7 +225,7 @@ class InstallerTest {
 	@Test
 	void installDirectoryNotWritable() {
 		assertThat(targetDirectory.getParent().toFile().setReadOnly()).isTrue();
-		assertThatThrownBy(() -> install(TEAMSCALE_URL)).hasMessageContaining("Cannot create installation directory");
+		assertThatThrownBy(() -> install(TEAMSCALE_URL)).hasMessageContaining("Cannot create directory");
 	}
 
 	private void install() throws FatalInstallerError {

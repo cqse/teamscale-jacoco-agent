@@ -94,6 +94,8 @@ public class Installer {
 
 	/**
 	 * Installs the profiler.
+	 *
+	 * @throws FatalInstallerError if a step of the installation process fails.
 	 */
 	public void install(String[] args) throws FatalInstallerError {
 		if (args.length == 1 && args[0].equals("--uninstall")) {
@@ -114,7 +116,11 @@ public class Installer {
 		}
 	}
 
-	private UninstallerErrorReporter uninstall() {
+	/**
+	 * Uninstalls the profiler. All errors that happened during the uninstallation are reported via the returned {@link
+	 * UninstallerErrorReporter}.
+	 */
+	public UninstallerErrorReporter uninstall() {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
 		for (IStep step : steps) {
 			step.uninstall(errorReporter);
@@ -122,10 +128,17 @@ public class Installer {
 		return errorReporter;
 	}
 
-	private static class UninstallerErrorReporter implements IStep.IUninstallErrorReporter {
+	/**
+	 * Reports errors during installation to stderr.
+	 */
+	public static class UninstallerErrorReporter implements IStep.IUninstallErrorReporter {
+
+		private boolean errorsReported = false;
 
 		/** Whether at least one error was reported. */
-		private boolean errorsReported = false;
+		public boolean wereErrorsReported() {
+			return errorsReported;
+		}
 
 		@Override
 		public void report(FatalInstallerError e) {
