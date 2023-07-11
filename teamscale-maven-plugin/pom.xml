@@ -96,7 +96,7 @@
         <dependency>
             <groupId>com.teamscale</groupId>
             <artifactId>teamscale-lib-commons</artifactId>
-            <version>8.9.1</version>
+            <version>9.0.0</version>
         </dependency>
     </dependencies>
 
