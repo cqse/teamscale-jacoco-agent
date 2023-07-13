@@ -157,6 +157,24 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public boolean skip;
 
 	/**
+	 * Run all tests independent of TIA information.
+	 */
+	@Parameter(defaultValue = "false")
+	public boolean runAllTests;
+
+	/**
+	 * Run only impacted tests, if not, they might be ordered using the impact information.
+	 */
+	@Parameter(defaultValue = "true")
+	public boolean runImpacted;
+
+	/**
+	 * Mode of producing testwise coverage.
+	 */
+	@Parameter(defaultValue = "teamscale-upload")
+	public String tiaMode;
+
+	/**
 	 * Map of resolved Maven artifacts. Provided automatically by Maven.
 	 */
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
@@ -204,6 +222,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("endCommit", resolvedEndCommit);
 		setTiaProperty("partition", getPartition());
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
+		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
+		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
 
 		Path agentConfigFile = createAgentConfigFiles();
 		Path logFilePath = targetDirectory.resolve("agent.log");
@@ -367,7 +387,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
 		String config = "mode=testwise" +
-				"\ntia-mode=teamscale-upload" +
+				"\ntia-mode=" + tiaMode +
 				"\nteamscale-server-url=" + teamscaleUrl +
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +

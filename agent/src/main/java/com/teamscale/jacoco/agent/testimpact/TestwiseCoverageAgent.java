@@ -28,6 +28,9 @@ public class TestwiseCoverageAgent extends AgentBase {
 			case TEAMSCALE_UPLOAD:
 				testEventHandler = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 				break;
+			case JSON_FILE:
+				testEventHandler = new CoverageToJsonFileStrategy(controller, options, reportGenerator);
+				break;
 			case HTTP:
 				testEventHandler = new CoverageViaHttpStrategy(controller, options, reportGenerator);
 				break;

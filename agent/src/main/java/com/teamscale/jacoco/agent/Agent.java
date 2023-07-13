@@ -111,7 +111,7 @@ public class Agent extends AgentBase {
 		}
 
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
-			File outputFile = options.createTempFile("jacoco", "xml");
+			File outputFile = options.createNewFileInOutputDirectory("jacoco", "xml");
 			CoverageFile coverageFile = generator.convert(dump, outputFile);
 			uploader.upload(coverageFile);
 		} catch (IOException e) {

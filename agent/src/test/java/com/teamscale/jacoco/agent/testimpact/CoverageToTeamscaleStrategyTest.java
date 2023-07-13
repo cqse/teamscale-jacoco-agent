@@ -112,7 +112,7 @@ public class CoverageToTeamscaleStrategyTest {
 	private AgentOptions mockOptions() throws IOException {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
-		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
+		when(options.createNewFileInOutputDirectory(any(), any())).thenReturn(new File(tempDir, "test"));
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");
