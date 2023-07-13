@@ -1,18 +1,10 @@
 
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.report.testwise.model.TestInfo;
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
