@@ -358,6 +358,9 @@ You can run the testwise agent in three different modes, configured via the opti
   This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert all `*.exec` files and upload a testwise coverage report to Teamscale or in situations where the agent must consume as little memory and CPU as possible and thus cannot convert the execution data to a report as required by the other options.
   It is, however, less convenient as you have to convert the `*.exec` files yourself.
 
+- `json-file`: The agent stores the coverage in JSON `*.json` files within the `out` directory.
+  This is most useful when running tests in a CI/CD pipeline where the testwise coverage is to be provided in artifact stores, such as S3 or Artifactory, using custom upload scripts.
+
 - `teamscale-upload`: the agent will buffer all testwise coverage and test execution data in-memory and upload the testwise report to Teamscale once you call the `POST /testrun/end` REST endpoint.
   This option is the most convenient of the different modes as the agent handles all aspects of report generation and the upload to Teamscale for you.
   This mode may slow down the startup of the system under test and result in a larger memory footprint than the `exec-file` mode.
