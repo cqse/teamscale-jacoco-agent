@@ -69,7 +69,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	/**
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String teamscaleUrl;
 
 	/**
@@ -82,14 +82,14 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the
 	 * {@link #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
 	 */
-	@Parameter(property = "teamscale.username", required = true)
+	@Parameter(property = "teamscale.username")
 	public String username;
 
 	/**
 	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property
 	 * {@code teamscale.accessToken}.
 	 */
-	@Parameter(property = "teamscale.accessToken", required = true)
+	@Parameter(property = "teamscale.accessToken")
 	public String accessToken;
 
 	/**
@@ -157,13 +157,13 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public boolean skip;
 
 	/**
-	 * Run all tests independent of TIA information.
+	 * Executes all tests, not only impacted ones if set. Defaults to false.
 	 */
 	@Parameter(defaultValue = "false")
 	public boolean runAllTests;
 
 	/**
-	 * Run only impacted tests, if not, they might be ordered using the impact information.
+	 * Executes only impacted tests, not all ones if set. Defaults to true.
 	 */
 	@Parameter(defaultValue = "true")
 	public boolean runImpacted;
@@ -433,10 +433,12 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 * plugin works out of the box in most situations.
 	 */
 	private void setTiaProperty(String name, String value) {
-		String fullyQualifiedName = "teamscale.test.impacted." + name;
-		getLog().debug("Setting property " + name + "=" + value);
-		session.getUserProperties().setProperty(fullyQualifiedName, value);
-		session.getSystemProperties().setProperty(fullyQualifiedName, value);
-		System.setProperty(fullyQualifiedName, value);
+		if (value != null) {
+			String fullyQualifiedName = "teamscale.test.impacted." + name;
+			getLog().debug("Setting property " + name + "=" + value);
+			session.getUserProperties().setProperty(fullyQualifiedName, value);
+			session.getSystemProperties().setProperty(fullyQualifiedName, value);
+			System.setProperty(fullyQualifiedName, value);
+		}
 	}
 }
