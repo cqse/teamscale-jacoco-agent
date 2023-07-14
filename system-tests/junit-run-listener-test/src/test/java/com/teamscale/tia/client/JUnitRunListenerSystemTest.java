@@ -26,7 +26,7 @@ public class JUnitRunListenerSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT);
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false);
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}

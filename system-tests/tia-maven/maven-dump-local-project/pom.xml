@@ -49,7 +49,7 @@
                 <configuration>
                     <projectId>m</projectId>
                     <partition>MyPartition</partition>
-                    <tiamode>disk</tiamode>
+                    <tiaMode>disk</tiaMode>
                     <runAllTests>true</runAllTests>
                     <runImpacted>false</runImpacted>
                     <includes>

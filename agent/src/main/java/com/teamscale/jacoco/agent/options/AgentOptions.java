@@ -522,22 +522,21 @@ public class AgentOptions {
 	 * actually exists. One output folder is created per partition.
 	 */
 	public File createNewFileInPartitionOutputDirectory(String prefix, String extension) throws IOException {
-		Path partitionOutputDirectory = Paths.get(outputDirectory.toString(), safeFolderName(getTeamscaleServerOptions().partition));
-		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(partitionOutputDirectory.toFile());
-		return partitionOutputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension)
-				.toFile();
+		Path partitionOutputDir = outputDirectory.resolve(safeFolderName(getTeamscaleServerOptions().partition));
+		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(partitionOutputDir.toFile());
+		return partitionOutputDir.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
 	}
 
-	private static String safeFolderName(String folderName) {
+	private static Path safeFolderName(String folderName) {
 		String result = folderName.replaceAll("[<>:\"/\\|?*]", "")
 				.replaceAll("\\.{1,}", "dot")
 				.replaceAll("\\x00", "")
 				.replaceAll("[. ]$", "");
 
 		if (result.isEmpty()) {
-			return "default";
+			return Paths.get("default");
 		} else {
-			return result;
+			return Paths.get(result);
 		}
 	}
 
