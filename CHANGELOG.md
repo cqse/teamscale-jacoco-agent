@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 30.1.0
 - [feature] The option `tiamode` has now an additional choice `disk` to dump testwise coverage as JSON to the output folder.
 - [feature] _teamscale-maven-plugin_: The configuration options `runAllTests`, `runImpacted`, and `tiamode` are now available
 - [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
