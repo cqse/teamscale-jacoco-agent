@@ -6,6 +6,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,11 @@ public class TiaMavenDumpToFileSystemTest {
 					"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 		}
 		teamscaleMockServer.uploadedReports.clear();
+	}
+
+	@AfterEach
+	public void stopFakeTeamscaleServer() throws Exception {
+		teamscaleMockServer.shutdown();
 	}
 
 	@Test
