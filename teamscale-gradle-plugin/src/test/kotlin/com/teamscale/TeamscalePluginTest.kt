@@ -40,6 +40,7 @@ class TeamscalePluginTest {
     fun startFakeTeamscaleServer() {
         teamscaleMockServer = TeamscaleMockServer(
             FAKE_TEAMSCALE_PORT,
+            false,
             "com/example/project/JUnit4Test/systemTest"
         )
         teamscaleMockServer.uploadedReports.clear()

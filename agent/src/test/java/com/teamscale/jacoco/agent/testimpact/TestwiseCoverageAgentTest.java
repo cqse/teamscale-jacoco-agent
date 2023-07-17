@@ -77,7 +77,7 @@ public class TestwiseCoverageAgentTest {
 
 		int port = PORT_COUNTER.incrementAndGet();
 		AgentOptions options = mockOptions(port);
-		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
+		when(options.createNewFileInOutputDirectory(any(), any())).thenReturn(new File(tempDir, "test"));
 		new TestwiseCoverageAgent(options, null, reportGenerator);
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));

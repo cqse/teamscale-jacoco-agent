@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] The option `tiamode` has now an additional choice `disk` to dump testwise coverage as JSON to the output folder.
+- [feature] _teamscale-maven-plugin_: The configuration options `runAllTests`, `runImpacted`, and `tiamode` are now available
 - [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
 - [fix] The option `ignore-uncovered-classes` did not filter out empty interface nodes from the XML report 
 - [fix] _teamscale-gradle-plugin_: The plugin failed to log the `No class files found in the given directories!` error message
