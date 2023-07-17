@@ -47,7 +47,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <projectId>m</projectId>
                     <partition>MyPartition</partition>
                     <tiaMode>disk</tiaMode>
                     <runAllTests>true</runAllTests>

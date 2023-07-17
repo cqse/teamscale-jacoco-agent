@@ -75,7 +75,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	/**
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String projectId;
 
 	/**

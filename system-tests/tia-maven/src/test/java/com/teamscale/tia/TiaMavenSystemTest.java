@@ -35,7 +35,7 @@ public class TiaMavenSystemTest {
 	}
 
 	@AfterEach
-	public void stopFakeTeamscaleServer() throws Exception {
+	public void stopFakeTeamscaleServer() {
 		teamscaleMockServer.shutdown();
 	}
 
