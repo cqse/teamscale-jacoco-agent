@@ -8,6 +8,8 @@ import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -16,7 +18,6 @@ import java.util.List;
 /** Installs the agent system-globally. */
 public class Installer {
 
-	private static final Path DEFAULT_SOURCE_DIRECTORY = Paths.get(".");
 	private static final Path DEFAULT_INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
 	private static final Path DEFAULT_ETC_DIRECTORY = Paths.get("/etc");
 
@@ -27,6 +28,18 @@ public class Installer {
 			return "Try running this installer as Administrator.";
 		} else {
 			return "Try running this installer as root, e.g. with sudo.";
+		}
+	}
+
+
+	/** Returns the directory that contains the agent to install or null if it can't be resolved. */
+	private static Path getSourceDirectory() {
+		try {
+			URI jarFileUri = Installer.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+			// we assume that the dist zip is extracted and the installer jar not moved
+			return Paths.get(jarFileUri).getParent();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException("Failed to obtain agent directory. This is a bug, please report it.", e);
 		}
 	}
 
@@ -57,7 +70,7 @@ public class Installer {
 	 * running with --uninstall will uninstall the profiler.
 	 */
 	public static void main(String[] args) {
-		Installer installer = new Installer(DEFAULT_SOURCE_DIRECTORY, DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
+		Installer installer = new Installer(getSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
 
 		try {
 			if (args.length == 1 && args[0].equals("--uninstall")) {
