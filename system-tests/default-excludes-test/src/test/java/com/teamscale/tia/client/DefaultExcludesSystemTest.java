@@ -22,7 +22,7 @@ public class DefaultExcludesSystemTest {
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
 		System.setProperty("org.eclipse.jetty.LEVEL", "OFF");
 
-		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT);
+		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false);
 
 		new SystemUnderTest().foo();
 		SystemTestUtils.dumpCoverage(AGENT_PORT);

@@ -47,7 +47,7 @@ import java.util.Collections;
 	/** {@inheritDoc} */
 	@Override
 	public void visitCoverage(IClassCoverage coverage) {
-		if (ignoreUncoveredClasses && coverage.getClassCounter().getStatus() == ICounter.NOT_COVERED) {
+		if (ignoreUncoveredClasses && (coverage.getClassCounter().getStatus() & ICounter.FULLY_COVERED) == 0) {
 			return;
 		}
 

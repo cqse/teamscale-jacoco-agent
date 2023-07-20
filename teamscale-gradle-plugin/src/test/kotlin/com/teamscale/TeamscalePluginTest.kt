@@ -40,6 +40,7 @@ class TeamscalePluginTest {
     fun startFakeTeamscaleServer() {
         teamscaleMockServer = TeamscaleMockServer(
             FAKE_TEAMSCALE_PORT,
+            false,
             "com/example/project/JUnit4Test/systemTest"
         )
         teamscaleMockServer.uploadedReports.clear()
@@ -138,6 +139,17 @@ class TeamscalePluginTest {
 
         val source = testwiseCoverageReportFile.readText()
         assertFullCoverage(source)
+    }
+
+    @Test
+    fun `wrong include pattern produces error`() {
+        val build = build(
+            true, true,
+            "clean",
+            "unitTest",
+            "-PjacocoIncludePattern=non.existent.package.*"
+        )
+        assertThat(build.output).contains("None of the 9 class files found in the given directories match the configured include/exclude patterns!")
     }
 
     private fun build(executesTask: Boolean, expectFailure: Boolean, vararg arguments: String): BuildResult {

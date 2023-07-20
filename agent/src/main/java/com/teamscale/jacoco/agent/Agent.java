@@ -19,6 +19,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
@@ -77,12 +79,24 @@ public class Agent extends AgentBase {
 		}
 
 		try {
-			com.teamscale.jacoco.agent.util.FileSystemUtils.deleteDirectoryIfEmpty(options.getOutputDirectory());
+			deleteDirectoryIfEmpty(options.getOutputDirectory());
 		} catch (IOException e) {
 			logger.info("Could not delete empty output directory {}. " +
 							"This directory was created inside the configured output directory to be able to " +
 							"distinguish between different runs of the profiled JVM. You may delete it manually.",
 					options.getOutputDirectory(), e);
+		}
+	}
+
+	/**
+	 * Delete a directory from disk if it is empty. This method does nothing if the path provided does not exist or
+	 * point to a file.
+	 *
+	 * @throws IOException if the deletion of the directory fails
+	 */
+	private static void deleteDirectoryIfEmpty(Path directory) throws IOException {
+		if (Files.isDirectory(directory) && Files.list(directory).toArray().length == 0) {
+			Files.delete(directory);
 		}
 	}
 
@@ -111,7 +125,7 @@ public class Agent extends AgentBase {
 		}
 
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
-			File outputFile = options.createTempFile("jacoco", "xml");
+			File outputFile = options.createNewFileInOutputDirectory("jacoco", "xml");
 			CoverageFile coverageFile = generator.convert(dump, outputFile);
 			uploader.upload(coverageFile);
 		} catch (IOException e) {

@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.9.2</version>
+            <version>3.9.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.9.2</version>
+            <version>3.9.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -96,7 +96,7 @@
         <dependency>
             <groupId>com.teamscale</groupId>
             <artifactId>teamscale-lib-commons</artifactId>
-            <version>8.9.1</version>
+            <version>9.0.0</version>
         </dependency>
     </dependencies>
 

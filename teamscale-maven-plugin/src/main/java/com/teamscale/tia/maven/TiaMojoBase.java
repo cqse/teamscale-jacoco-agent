@@ -69,27 +69,27 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	/**
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String teamscaleUrl;
 
 	/**
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String projectId;
 
 	/**
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the
 	 * {@link #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
 	 */
-	@Parameter(property = "teamscale.username", required = true)
+	@Parameter(property = "teamscale.username")
 	public String username;
 
 	/**
 	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property
 	 * {@code teamscale.accessToken}.
 	 */
-	@Parameter(property = "teamscale.accessToken", required = true)
+	@Parameter(property = "teamscale.accessToken")
 	public String accessToken;
 
 	/**
@@ -157,6 +157,24 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public boolean skip;
 
 	/**
+	 * Executes all tests, not only impacted ones if set. Defaults to false.
+	 */
+	@Parameter(defaultValue = "false")
+	public boolean runAllTests;
+
+	/**
+	 * Executes only impacted tests, not all ones if set. Defaults to true.
+	 */
+	@Parameter(defaultValue = "true")
+	public boolean runImpacted;
+
+	/**
+	 * Mode of producing testwise coverage.
+	 */
+	@Parameter(defaultValue = "teamscale-upload")
+	public String tiaMode;
+
+	/**
 	 * Map of resolved Maven artifacts. Provided automatically by Maven.
 	 */
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
@@ -204,6 +222,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("endCommit", resolvedEndCommit);
 		setTiaProperty("partition", getPartition());
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
+		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
+		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
 
 		Path agentConfigFile = createAgentConfigFiles();
 		Path logFilePath = targetDirectory.resolve("agent.log");
@@ -367,7 +387,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
 		String config = "mode=testwise" +
-				"\ntia-mode=teamscale-upload" +
+				"\ntia-mode=" + tiaMode +
 				"\nteamscale-server-url=" + teamscaleUrl +
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
@@ -413,10 +433,12 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 * plugin works out of the box in most situations.
 	 */
 	private void setTiaProperty(String name, String value) {
-		String fullyQualifiedName = "teamscale.test.impacted." + name;
-		getLog().debug("Setting property " + name + "=" + value);
-		session.getUserProperties().setProperty(fullyQualifiedName, value);
-		session.getSystemProperties().setProperty(fullyQualifiedName, value);
-		System.setProperty(fullyQualifiedName, value);
+		if (value != null) {
+			String fullyQualifiedName = "teamscale.test.impacted." + name;
+			getLog().debug("Setting property " + name + "=" + value);
+			session.getUserProperties().setProperty(fullyQualifiedName, value);
+			session.getSystemProperties().setProperty(fullyQualifiedName, value);
+			System.setProperty(fullyQualifiedName, value);
+		}
 	}
 }

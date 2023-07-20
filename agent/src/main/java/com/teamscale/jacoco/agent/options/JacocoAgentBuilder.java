@@ -88,7 +88,7 @@ public class JacocoAgentBuilder {
 					agentOptions.getClassDirectoriesOrZips(), agentOptions.getLocationIncludeFilter(),
 					agentOptions.getDuplicateClassFileBehavior(), LoggingUtils.wrap(logger));
 			return new TestwiseCoverageAgent(agentOptions,
-					new TestExecutionWriter(agentOptions.createTempFile("test-execution", "json")),
+					new TestExecutionWriter(agentOptions.createNewFileInOutputDirectory("test-execution", "json")),
 					reportGenerator);
 		} else {
 			return new Agent(agentOptions, instrumentation);
@@ -107,7 +107,7 @@ public class JacocoAgentBuilder {
 				sessionId = System.getenv(agentOptions.testImpactConfig.testEnvironmentVariable);
 			}
 			// when writing to a .exec file, we can instruct JaCoCo to do so directly
-			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createTempFile("jacoco", "exec")
+			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createNewFileInOutputDirectory("jacoco", "exec")
 					.getAbsolutePath();
 
 		} else {
