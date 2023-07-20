@@ -40,11 +40,22 @@ public class InstallAgentFilesStep implements IStep {
 
 	@Override
 	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
+		ensureAgentIsPresentInSourceDirectory();
 		createAgentDirectory();
 		copyAgentFiles();
 		writeTeamscaleProperties(credentials);
 		makeCoverageAndLogDirectoriesWorldWritable();
 		makeAllProfilerFilesWorldReadable();
+	}
+
+	private void ensureAgentIsPresentInSourceDirectory() throws FatalInstallerError {
+		Path agentPath = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
+		if (!Files.exists(agentPath)) {
+			throw new FatalInstallerError(
+					"It looks like you moved the installer. Could not locate the profiler files at " + sourceDirectory + "."
+							+ "\nPlease start over by extracting the profiler files from the zip file you downloaded."
+							+ " Do not make any changes to the extracted files and directories or installation will fail.");
+		}
 	}
 
 	@Override

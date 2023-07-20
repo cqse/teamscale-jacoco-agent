@@ -141,6 +141,13 @@ class InstallerTest {
 	}
 
 	@Test
+	void distributionChangedByUser() throws IOException {
+		Files.delete(sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar"));
+		assertThatThrownBy(() -> install())
+				.hasMessageContaining("It looks like you moved the installer");
+	}
+
+	@Test
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,

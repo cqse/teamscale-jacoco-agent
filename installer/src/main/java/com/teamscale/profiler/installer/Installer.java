@@ -33,7 +33,7 @@ public class Installer {
 
 
 	/** Returns the directory that contains the agent to install or null if it can't be resolved. */
-	private static Path getSourceDirectory() {
+	private static Path getDefaultSourceDirectory() {
 		try {
 			URI jarFileUri = Installer.class.getProtectionDomain().getCodeSource().getLocation().toURI();
 			// we assume that the dist zip is extracted and the installer jar not moved
@@ -70,7 +70,7 @@ public class Installer {
 	 * running with --uninstall will uninstall the profiler.
 	 */
 	public static void main(String[] args) {
-		Installer installer = new Installer(getSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
+		Installer installer = new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
 
 		try {
 			if (args.length == 1 && args[0].equals("--uninstall")) {
