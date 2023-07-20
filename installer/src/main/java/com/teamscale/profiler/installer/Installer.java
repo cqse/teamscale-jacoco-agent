@@ -5,6 +5,7 @@ import com.teamscale.profiler.installer.steps.InstallAgentFilesStep;
 import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
 import okhttp3.HttpUrl;
+import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 
 import java.nio.file.Path;
@@ -75,6 +76,10 @@ public class Installer {
 		try {
 			installer.install(args);
 			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
+			System.out.println("To activate the profiler for an application, set the environment variable"
+					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG"
+					+ "\nIts value must be the path to a valid profiler configuration file."
+					+ "\nThen, restart your application (for web applications: restart the app server).");
 		} catch (PermissionError e) {
 			e.printToStderr();
 
@@ -144,7 +149,7 @@ public class Installer {
 	 */
 	public UninstallerErrorReporter uninstall() {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
-		for (IStep step : steps) {
+		for (IStep step : CollectionUtils.reverse(steps)) {
 			step.uninstall(errorReporter);
 		}
 		return errorReporter;
