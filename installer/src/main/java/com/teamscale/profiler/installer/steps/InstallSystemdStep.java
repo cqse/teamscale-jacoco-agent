@@ -32,6 +32,7 @@ public class InstallSystemdStep implements IStep {
 		}
 
 		if (!Files.exists(getSystemdEtcDirectory())) {
+			System.out.println("systemd could not be detected. Not installing profiler for systemd services.");
 			// system has no systemd installed
 			return;
 		}

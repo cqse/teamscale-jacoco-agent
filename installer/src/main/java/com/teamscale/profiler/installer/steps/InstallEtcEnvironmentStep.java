@@ -36,8 +36,11 @@ public class InstallEtcEnvironmentStep implements IStep {
 
 		Path environmentFile = getEnvironmentFile();
 		if (!Files.exists(environmentFile)) {
-			System.out.println(
-					environmentFile + " does not exist. Skipping global registration of the profiler there.");
+			System.err.println(
+					environmentFile + " does not exist. Skipping system-wide registration of the profiler."
+							+ "\nYou need to manually register the profiler for process that should be profiled by"
+							+ " setting the following environment variables:"
+							+ "\n\n" + environmentVariables.getEtcEnvironmentString() + "\n");
 			return;
 		}
 
