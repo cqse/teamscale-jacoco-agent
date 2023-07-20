@@ -10,8 +10,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Runs the system under test and then forces a dump of the agent to our {@link TeamscaleMockServer}. Checks the
- * resulting report to ensure the default excludes are applied.
+ * Runs the system under test and then forces a dump of the agent to a {@link RedirectMockServer}. This sends redirects
+ * to our {@link TeamscaleMockServer}. Checks that the agent respects and follows these redirects.
  */
 public class HttpRedirectSystemTest {
 
