@@ -10,7 +10,7 @@ public class InstallFileUtils {
 	/** Makes the given path world-readable. */
 	public static void makeReadable(Path path) throws FatalInstallerError {
 		if (!path.toFile().setReadable(true, false)) {
-			throw new FatalInstallerError(
+			throw new PermissionError(
 					"Failed to make " + path + " readable. Please check file permissions.");
 		}
 	}
@@ -18,7 +18,7 @@ public class InstallFileUtils {
 	/** Makes the given path world-writable. */
 	public static void makeWritable(Path path) throws FatalInstallerError {
 		if (!path.toFile().setWritable(true, false)) {
-			throw new FatalInstallerError(
+			throw new PermissionError(
 					"Failed to make " + path + " writable. Please check file permissions.");
 		}
 	}
@@ -28,7 +28,7 @@ public class InstallFileUtils {
 		try {
 			Files.createDirectories(directory);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Cannot create directory " + directory, e);
+			throw new PermissionError("Cannot create directory " + directory, e);
 		}
 	}
 

@@ -2,6 +2,7 @@ package com.teamscale.profiler.installer.steps;
 
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.InstallFileUtils;
+import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
@@ -55,7 +56,7 @@ public class InstallAgentFilesStep implements IStep {
 		FileSystemUtils.deleteRecursively(installDirectory.toFile());
 
 		if (Files.exists(installDirectory)) {
-			errorReporter.report(new FatalInstallerError("Failed to fully remove " + installDirectory));
+			errorReporter.report(new PermissionError("Failed to fully remove " + installDirectory));
 		}
 	}
 
@@ -66,7 +67,7 @@ public class InstallAgentFilesStep implements IStep {
 				InstallFileUtils.makeReadable(path);
 			}
 		} catch (IOException e) {
-			throw new FatalInstallerError("Failed to list all files in " + installDirectory + ".", e);
+			throw new PermissionError("Failed to list all files in " + installDirectory + ".", e);
 		}
 	}
 
@@ -89,7 +90,7 @@ public class InstallAgentFilesStep implements IStep {
 				StandardOpenOption.CREATE)) {
 			properties.store(out, null);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Failed to write " + getTeamscalePropertiesPath() + ".", e);
+			throw new PermissionError("Failed to write " + getTeamscalePropertiesPath() + ".", e);
 		}
 
 		InstallFileUtils.makeReadable(getTeamscalePropertiesPath());
@@ -99,7 +100,7 @@ public class InstallAgentFilesStep implements IStep {
 		try {
 			FileSystemUtils.copyFiles(sourceDirectory.toFile(), installDirectory.toFile(), null);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Failed to copy some files to " + installDirectory + "."
+			throw new PermissionError("Failed to copy some files to " + installDirectory + "."
 					+ " Please manually clean up " + installDirectory, e);
 		}
 	}

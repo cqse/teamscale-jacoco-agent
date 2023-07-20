@@ -2,6 +2,7 @@ package com.teamscale.profiler.installer.steps;
 
 import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
+import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import org.conqat.lib.commons.string.StringUtils;
 import org.conqat.lib.commons.system.SystemUtils;
@@ -46,7 +47,7 @@ public class InstallEtcEnvironmentStep implements IStep {
 			Files.write(environmentFile, content.getBytes(StandardCharsets.US_ASCII),
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			throw new FatalInstallerError("Could not change contents of " + environmentFile, e);
+			throw new PermissionError("Could not change contents of " + environmentFile, e);
 		}
 	}
 
@@ -66,7 +67,7 @@ public class InstallEtcEnvironmentStep implements IStep {
 			String newContent = removeProfilerVariables(lines);
 			Files.write(environmentFile, newContent.getBytes(StandardCharsets.US_ASCII));
 		} catch (IOException e) {
-			errorReporter.report(new FatalInstallerError("Failed to remove profiler from " + environmentFile + "." +
+			errorReporter.report(new PermissionError("Failed to remove profiler from " + environmentFile + "." +
 					" Please remove the relevant environment variables yourself." +
 					" Otherwise, Java applications may crash.", e));
 		}

@@ -5,6 +5,7 @@ import com.teamscale.profiler.installer.steps.InstallAgentFilesStep;
 import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
 import okhttp3.HttpUrl;
+import org.conqat.lib.commons.system.SystemUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,6 +18,16 @@ public class Installer {
 	private static final Path DEFAULT_SOURCE_DIRECTORY = Paths.get(".");
 	private static final Path DEFAULT_INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
 	private static final Path DEFAULT_ETC_DIRECTORY = Paths.get("/etc");
+
+	private static final String RERUN_ADVICE = getRerunAdvice();
+
+	private static String getRerunAdvice() {
+		if (SystemUtils.isWindows()) {
+			return "Try running this installer as Administrator.";
+		} else {
+			return "Try running this installer as root, e.g. with sudo.";
+		}
+	}
 
 	private final List<IStep> steps;
 
@@ -64,17 +75,28 @@ public class Installer {
 		try {
 			installer.install(args);
 			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
+		} catch (PermissionError e) {
+			e.printToStderr();
+
+			System.err.println(
+					"\n\nInstallation failed because the installer had insufficient permissions to make the necessary"
+							+ " changes on your system.\nSee above for error messages.\n" + RERUN_ADVICE);
+			System.exit(1);
 		} catch (FatalInstallerError e) {
 			e.printToStderr();
 			System.err.println("\n\nInstallation failed. See above for error messages.");
-			System.exit(1);
+			System.exit(2);
 		}
 	}
 
 	private static void uninstall(Installer installer) {
 		UninstallerErrorReporter errorReporter = installer.uninstall();
 		if (errorReporter.errorsReported) {
-			System.err.println("\n\nUninstallation failed. See above for error messages.");
+			String message = "Uninstallation failed. See above for error messages.";
+			if (errorReporter.hadPermissionError) {
+				message += "\n" + RERUN_ADVICE;
+			}
+			System.err.println("\n\n" + message);
 			System.exit(1);
 		}
 		System.out.println("Profiler successfully uninstalled");
@@ -117,8 +139,8 @@ public class Installer {
 	}
 
 	/**
-	 * Uninstalls the profiler. All errors that happened during the uninstallation are reported via the returned {@link
-	 * UninstallerErrorReporter}.
+	 * Uninstalls the profiler. All errors that happened during the uninstallation are reported via the returned
+	 * {@link UninstallerErrorReporter}.
 	 */
 	public UninstallerErrorReporter uninstall() {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
@@ -134,6 +156,7 @@ public class Installer {
 	public static class UninstallerErrorReporter implements IStep.IUninstallErrorReporter {
 
 		private boolean errorsReported = false;
+		private boolean hadPermissionError = false;
 
 		/** Whether at least one error was reported. */
 		public boolean wereErrorsReported() {
@@ -143,6 +166,9 @@ public class Installer {
 		@Override
 		public void report(FatalInstallerError e) {
 			errorsReported = true;
+			if (e instanceof PermissionError) {
+				hadPermissionError = true;
+			}
 			e.printToStderr();
 		}
 	}

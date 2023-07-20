@@ -2,6 +2,7 @@ package com.teamscale.profiler.installer.steps;
 
 import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
+import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import org.conqat.lib.commons.system.SystemUtils;
 
@@ -11,8 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * On Linux with systemd, registers the agent globally for systemd services. This is necessary in addition to {@link
- * InstallEtcEnvironmentStep}, since systemd doesn't always inject /etc/environment into started services.
+ * On Linux with systemd, registers the agent globally for systemd services. This is necessary in addition to
+ * {@link InstallEtcEnvironmentStep}, since systemd doesn't always inject /etc/environment into started services.
  */
 public class InstallSystemdStep implements IStep {
 
@@ -37,14 +38,14 @@ public class InstallSystemdStep implements IStep {
 
 		Path systemdConfigFile = getSystemdConfigFile();
 		if (Files.exists(systemdConfigFile)) {
-			throw new FatalInstallerError("Cannot create systemd configuration file " + systemdConfigFile);
+			throw new PermissionError("Cannot create systemd configuration file " + systemdConfigFile);
 		}
 
 		String content = "[Manager]\nDefaultEnvironment=" + environmentVariables.getSystemdString() + "\n";
 		try {
 			Files.write(systemdConfigFile, content.getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
-			throw new FatalInstallerError("Could not create " + systemdConfigFile, e);
+			throw new PermissionError("Could not create " + systemdConfigFile, e);
 		}
 	}
 
@@ -67,7 +68,7 @@ public class InstallSystemdStep implements IStep {
 			Files.delete(systemdConfigFile);
 		} catch (IOException e) {
 			errorReporter.report(
-					new FatalInstallerError("Failed to remove systemd config file " + systemdConfigFile + "." +
+					new PermissionError("Failed to remove systemd config file " + systemdConfigFile + "." +
 							" Manually remove this file or systemd Java services may fail to start.", e));
 		}
 	}
