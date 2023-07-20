@@ -144,20 +144,11 @@ public abstract class AgentBase {
 			return;
 		}
 
-		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
-
-		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
+		checkForOtherAgents(delayedLogger);
 
-		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
-				s -> s.contains("-javaagent"));
-		if (javaAgents.size() > 1) {
-			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
-		}
-		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
-			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
-		}
-
+		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
+		AgentOptions agentOptions;
 		try {
 			agentOptions = AgentOptionsParser.parse(options, environmentConfigFile, credentials, delayedLogger);
 		} catch (AgentOptionParseException e) {
@@ -186,6 +177,17 @@ public abstract class AgentBase {
 
 		AgentBase agent = agentBuilder.createAgent(instrumentation);
 		agent.registerShutdownHook();
+	}
+
+	private static void checkForOtherAgents(DelayedLogger delayedLogger) {
+		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
+				s -> s.contains("-javaagent"));
+		if (javaAgents.size() > 1) {
+			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
+		}
+		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
+			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
+		}
 	}
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */

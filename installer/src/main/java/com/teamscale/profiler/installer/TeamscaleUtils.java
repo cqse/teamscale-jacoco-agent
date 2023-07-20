@@ -24,7 +24,7 @@ public class TeamscaleUtils {
 		HttpUrl url = credentials.url.resolve("api/v8.8/projects");
 		if (url == null) {
 			// this should never happen but the API forces us to handle this
-			throw new RuntimeException("Cannot resolve API endpoint against URL " + credentials.url);
+			throw new IllegalStateException("Cannot resolve API endpoint against URL " + credentials.url);
 		}
 
 		Request request = new Request.Builder()
