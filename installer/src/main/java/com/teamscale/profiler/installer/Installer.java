@@ -30,6 +30,11 @@ public class Installer {
 		}
 	}
 
+	/**
+	 * List of steps to run during installation and uninstallation. During uninstallation, steps are run in the reverse
+	 * order of this list. After each step, the system must be in a safe state, meaning the user's applications must
+	 * still run. This is especially important during uninstallation.
+	 */
 	private final List<IStep> steps;
 
 	/**
@@ -151,6 +156,9 @@ public class Installer {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
 		for (IStep step : CollectionUtils.reverse(steps)) {
 			step.uninstall(errorReporter);
+			if (errorReporter.errorsReported) {
+				break;
+			}
 		}
 		return errorReporter;
 	}

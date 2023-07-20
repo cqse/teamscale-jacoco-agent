@@ -4,15 +4,19 @@ import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 
 /**
- * One step in the installation process. Steps must be independent of one
+ * One step in the installation process. Steps are run in a fixed order for installation and in the reverse order during
+ * uninstallation.
  */
 public interface IStep {
 
 	/** Runs this installation step. */
 	void install(TeamscaleCredentials credentials) throws FatalInstallerError;
 
-	/** Undoes the actions performed in {@link #install(TeamscaleCredentials)}
-	 * @param errorReporter*/
+	/**
+	 * Undoes the actions performed in {@link #install(TeamscaleCredentials)}
+	 *
+	 * @param errorReporter
+	 */
 	void uninstall(IUninstallErrorReporter errorReporter);
 
 	/**

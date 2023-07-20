@@ -6,6 +6,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -173,10 +175,27 @@ class InstallerTest {
 		assertThat(installedNestedFile).doesNotExist();
 
 		if (SystemUtils.isLinux()) {
-			// other uninstall steps must run regardless of previous failure
 			assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
 			assertThat(systemdConfig).doesNotExist();
 		}
+	}
+
+	@EnabledOnOs(OS.LINUX)
+	@Test
+	void uninstallChangingEtcEnvironmentFails() throws FatalInstallerError {
+		install();
+		assertThat(environmentFile.toFile().setWritable(false, false)).isTrue();
+
+		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
+				etcDirectory).uninstall();
+
+		assertThat(errorReporter.wereErrorsReported()).isTrue();
+
+		assertThat(environmentFile).exists().content().contains("_JAVA_OPTIONS");
+
+		// ensure that the agent uninstall step did not run because the preceding environment step failed
+		assertThat(targetDirectory).exists();
+		assertThat(installedTeamscaleProperties).exists();
 	}
 
 	@Test
