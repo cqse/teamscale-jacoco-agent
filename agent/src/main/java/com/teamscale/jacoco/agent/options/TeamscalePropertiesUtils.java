@@ -26,25 +26,37 @@ public class TeamscalePropertiesUtils {
 	 * @throws AgentOptionParseException in case the teamscale.properties file exists but can't be read or parsed.
 	 */
 	public static TeamscaleCredentials parseCredentials() throws AgentOptionParseException {
-		if (!Files.exists(TEAMSCALE_PROPERTIES_PATH)) {
+		return parseCredentials(TEAMSCALE_PROPERTIES_PATH);
+	}
+
+	/**
+	 * Same as {@link #parseCredentials()} but testable since the path is not hardcoded.
+	 */
+	/*package*/ static TeamscaleCredentials parseCredentials(
+			Path teamscalePropertiesPath) throws AgentOptionParseException {
+		if (!Files.exists(teamscalePropertiesPath)) {
 			return null;
 		}
 
 		try {
-			Properties properties = FileSystemUtils.readProperties(TEAMSCALE_PROPERTIES_PATH.toFile());
+			Properties properties = FileSystemUtils.readProperties(teamscalePropertiesPath.toFile());
 			return parseProperties(properties);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Failed to read " + TEAMSCALE_PROPERTIES_PATH, e);
+			throw new AgentOptionParseException("Failed to read " + teamscalePropertiesPath, e);
 		}
 	}
 
 	private static TeamscaleCredentials parseProperties(Properties properties) throws AgentOptionParseException {
 		String urlString = properties.getProperty("url");
+		if (urlString == null) {
+			throw new AgentOptionParseException("teamscale.properties is missing the url field");
+		}
+
 		HttpUrl url;
 		try {
 			url = HttpUrl.get(urlString);
 		} catch (IllegalArgumentException e) {
-			throw new AgentOptionParseException("teamscale.properties contained malformatted URL " + urlString, e);
+			throw new AgentOptionParseException("teamscale.properties contained malformed URL " + urlString, e);
 		}
 
 		String userName = properties.getProperty("username");
