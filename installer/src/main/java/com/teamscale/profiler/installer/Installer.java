@@ -143,12 +143,6 @@ public class Installer {
 	 * @throws FatalInstallerError if a step of the installation process fails.
 	 */
 	public void install(String[] args) throws FatalInstallerError {
-		if (args.length == 1 && args[0].equals("--uninstall")) {
-			uninstall();
-			System.out.println("Profiler successfully uninstalled");
-			return;
-		}
-
 		TeamscaleCredentials credentials = parseCredentials(args);
 		TeamscaleUtils.checkTeamscaleConnection(credentials);
 		install(credentials);
