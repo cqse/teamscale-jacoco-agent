@@ -6,10 +6,11 @@ plugins {
 
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "com.teamscale.jacoco.agent.installer.Installer"
+        attributes["Main-Class"] = "com.teamscale.profiler.installer.Installer"
     }
+    // don't append a version number
+    archiveFileName.set("installer.jar")
 }
-
 
 dependencies {
     implementation(libs.okhttp.core)
