@@ -34,9 +34,6 @@ class InstallerTest {
 	private Path targetDirectory;
 	private Path etcDirectory;
 
-	private Path fileToInstall;
-	private Path nestedFileToInstall;
-
 	private Path installedFile;
 	private Path installedNestedFile;
 	private Path installedTeamscaleProperties;
@@ -63,10 +60,10 @@ class InstallerTest {
 		Files.createDirectory(systemdDirectory);
 		systemdConfig = systemdDirectory.resolve("teamscale-java-profiler.conf");
 
-		fileToInstall = sourceDirectory.resolve("install-me.txt");
+		Path fileToInstall = sourceDirectory.resolve("install-me.txt");
 		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
-		nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
+		Path nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 		Files.createDirectories(nestedFileToInstall.getParent());
 		Files.write(nestedFileToInstall, NESTED_FILE_CONTENT.getBytes(StandardCharsets.UTF_8),
 				StandardOpenOption.CREATE);

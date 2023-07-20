@@ -13,9 +13,10 @@ public interface IStep {
 	void install(TeamscaleCredentials credentials) throws FatalInstallerError;
 
 	/**
-	 * Undoes the actions performed in {@link #install(TeamscaleCredentials)}
+	 * Undoes the actions performed in {@link #install(TeamscaleCredentials)}. If part of the uninstallation process
+	 * fails, the step continues trying to uninstall as much as possible.
 	 *
-	 * @param errorReporter
+	 * @param errorReporter all errors that happen during the uninstallation of this step are reported to this.
 	 */
 	void uninstall(IUninstallErrorReporter errorReporter);
 
