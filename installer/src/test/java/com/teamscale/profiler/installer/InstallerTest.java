@@ -138,7 +138,6 @@ class InstallerTest {
 					+ "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
 					+ " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 		}
-		// TODO (FS) windows: use cacls to check Everyone SID?
 	}
 
 	@Test
