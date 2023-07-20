@@ -47,20 +47,24 @@ public class AgentOptionsParser {
 	private final FilePatternResolver filePatternResolver;
 	private final TeamscaleConfig teamscaleConfig;
 	private final String environmentConfigFile;
+	private final TeamscaleCredentials credentials;
 
-	public AgentOptionsParser(ILogger logger, String environmentConfigFile) {
+	public AgentOptionsParser(ILogger logger, String environmentConfigFile,
+							  TeamscaleCredentials credentials) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
 		this.environmentConfigFile = environmentConfigFile;
+		this.credentials = credentials;
 	}
 
 	/**
 	 * Parses the given command-line options.
 	 */
 	public static AgentOptions parse(String optionsString, String environmentConfigFile,
+									 TeamscaleCredentials credentials,
 									 ILogger logger) throws AgentOptionParseException {
-		return new AgentOptionsParser(logger, environmentConfigFile).parse(optionsString);
+		return new AgentOptionsParser(logger, environmentConfigFile, credentials).parse(optionsString);
 	}
 
 	/**
@@ -73,6 +77,12 @@ public class AgentOptionsParser {
 		logger.debug("Parsing options: " + optionsString);
 		AgentOptions options = new AgentOptions();
 		options.originalOptionsString = optionsString;
+
+		if (credentials != null) {
+			options.teamscaleServer.url = credentials.url;
+			options.teamscaleServer.userName = credentials.userName;
+			options.teamscaleServer.userAccessToken = credentials.accessKey;
+		}
 
 		if (!StringUtils.isEmpty(optionsString)) {
 			String[] optionParts = optionsString.split(",");

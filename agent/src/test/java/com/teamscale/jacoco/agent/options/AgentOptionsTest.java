@@ -183,7 +183,7 @@ public class AgentOptionsTest {
 	 * have to be provided individually via the 'git.properties' file.
 	 */
 	@Test
-	public void testNoCommitOrRevisionGivenWhenProjectNull() throws Exception {
+	public void testNoCommitOrRevisionGivenWhenProjectNull() {
 		String message = "You tried to provide a commit to upload to directly." +
 				" This is not possible, since you did not provide the 'teamscale-project' Teamscale project to upload to";
 
@@ -314,7 +314,7 @@ public class AgentOptionsTest {
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new CommandLineLogger(), null);
+		return new AgentOptionsParser(new CommandLineLogger(), null, null);
 	}
 
 	/**

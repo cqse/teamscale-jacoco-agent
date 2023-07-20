@@ -18,13 +18,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Tests parsing of the agent's command line options. */
 public class AgentOptionsParserTest {
 
-	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null);
+	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null);
 
 	@Test
-	public void environmentConfigOverridesCommandLineOptions(@TempDir Path tempDir) throws IOException, AgentOptionParseException {
+	public void environmentConfigOverridesCommandLineOptions(
+			@TempDir Path tempDir) throws IOException, AgentOptionParseException {
 		Path config = tempDir.resolve("config.properties");
 		Files.write(config, "debug=true".getBytes(StandardCharsets.UTF_8));
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), config.toString());
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), config.toString(), null);
 		AgentOptions options = parser.parse("debug=false");
 
 		assertThat(options.debugLogging).isEqualTo(true);
@@ -32,9 +33,9 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void environmentConfigPathDoesNotExist() {
-		assertThatThrownBy(() -> {
-			new AgentOptionsParser(new CommandLineLogger(), "/this/file/doesnt/exist").parse("");
-		}).hasMessageContaining("not found");
+		assertThatThrownBy(
+				() -> new AgentOptionsParser(new CommandLineLogger(), "/this/file/doesnt/exist", null).parse("")
+		).hasMessageContaining("not found");
 	}
 
 	@Test
@@ -75,6 +76,22 @@ public class AgentOptionsParserTest {
 		assertThat(parser.parse(
 				"upload-url=teamscale.url.com:444").uploadUrl)
 				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:444/"));
+	}
+
+	@Test
+	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
+		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
+
+		assertThatThrownBy(() ->
+				parser.parse("")
+		).hasMessageContaining("You did provide some options prefixed with 'teamscale-', but not all required ones");
+
+		assertThat(parser.parse("teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
+				"user");
+		assertThat(parser.parse(
+				"teamscale-project=p,teamscale-partition=p,teamscale-user=user2").teamscaleServer.userName).isEqualTo(
+				"user2");
 	}
 
 	/**

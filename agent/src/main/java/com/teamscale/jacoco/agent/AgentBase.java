@@ -7,6 +7,8 @@ import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentBuilder;
+import com.teamscale.jacoco.agent.options.TeamscaleCredentials;
+import com.teamscale.jacoco.agent.options.TeamscalePropertiesUtils;
 import com.teamscale.jacoco.agent.util.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -142,6 +144,8 @@ public abstract class AgentBase {
 			return;
 		}
 
+		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
+
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
 
@@ -155,7 +159,7 @@ public abstract class AgentBase {
 		}
 
 		try {
-			agentOptions = AgentOptionsParser.parse(options, environmentConfigFile, delayedLogger);
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigFile, credentials, delayedLogger);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.error("Failed to parse agent options: " + e.getMessage(), e);
