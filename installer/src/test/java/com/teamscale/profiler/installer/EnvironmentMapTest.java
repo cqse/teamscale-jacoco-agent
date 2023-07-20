@@ -11,15 +11,15 @@ class EnvironmentMapTest {
 		assertThat(new EnvironmentMap("V", "a b").getSystemdString()).isEqualTo("\"V=a b\"");
 		assertThat(new EnvironmentMap("V", "\\a").getSystemdString()).isEqualTo("\"V=\\\\a\"");
 		assertThat(new EnvironmentMap("V", "\"").getSystemdString()).isEqualTo("\"V=\\\"\"");
-		assertThat(new EnvironmentMap("V", "a b").getEtcEnvironmentString()).isEqualTo("V=\"a b\"\n");
-		assertThat(new EnvironmentMap("V", "\\a").getEtcEnvironmentString()).isEqualTo("V=\"\\\\a\"\n");
-		assertThat(new EnvironmentMap("V", "\"").getEtcEnvironmentString()).isEqualTo("V=\"\\\"\"\n");
+		assertThat(new EnvironmentMap("V", "a b").getEtcEnvironmentString()).isEqualTo("V=\"a b\"");
+		assertThat(new EnvironmentMap("V", "\\a").getEtcEnvironmentString()).isEqualTo("V=\"\\\\a\"");
+		assertThat(new EnvironmentMap("V", "\"").getEtcEnvironmentString()).isEqualTo("V=\"\\\"\"");
 	}
 
 	@Test
 	void testMultipleEntries() {
 		assertThat(new EnvironmentMap("V", "a", "E", "b").getSystemdString()).isEqualTo("E=b V=a");
-		assertThat(new EnvironmentMap("V", "a", "E", "b").getEtcEnvironmentString()).isEqualTo("E=b\nV=a\n");
+		assertThat(new EnvironmentMap("V", "a", "E", "b").getEtcEnvironmentString()).isEqualTo("E=b\nV=a");
 	}
 
 }
