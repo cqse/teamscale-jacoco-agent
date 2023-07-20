@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 /** Map of environment variables and their values. */
 public class EnvironmentMap {
 
-	private Map<String, String> environment = new HashMap<>();
+	private final Map<String, String> environment = new HashMap<>();
 
 	/**
 	 * Creates a map of keys and values from the the supplied ones. Supplying e.g. A, B, C, D will store environment

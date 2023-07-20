@@ -45,7 +45,7 @@ class InstallerTest {
 	private Path systemdDirectory;
 	private Path systemdConfig;
 
-	private static MockTeamscale TEAMSCALE;
+	private static MockTeamscale mockTeamscale;
 
 	@BeforeEach
 	void setUpSourceDirectory() throws IOException {
@@ -78,12 +78,12 @@ class InstallerTest {
 
 	@BeforeAll
 	static void startFakeTeamscale() {
-		TEAMSCALE = new MockTeamscale(TEAMSCALE_PORT);
+		mockTeamscale = new MockTeamscale(TEAMSCALE_PORT);
 	}
 
 	@AfterAll
 	static void stopFakeTeamscale() {
-		TEAMSCALE.shutdown();
+		mockTeamscale.shutdown();
 	}
 
 	@Test
