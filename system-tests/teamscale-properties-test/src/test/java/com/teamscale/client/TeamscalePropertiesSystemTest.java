@@ -18,7 +18,7 @@ public class TeamscalePropertiesSystemTest {
 
 	@Test
 	public void systemTest() throws Exception {
-		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT);
+		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false);
 
 		new SystemUnderTest().foo();
 		SystemTestUtils.dumpCoverage(AGENT_PORT);
