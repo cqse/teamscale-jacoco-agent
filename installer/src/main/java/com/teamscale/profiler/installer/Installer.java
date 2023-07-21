@@ -6,7 +6,6 @@ import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.system.SystemUtils;
-import org.jetbrains.annotations.NotNull;
 import picocli.CommandLine;
 
 import java.net.URI;
@@ -66,6 +65,10 @@ public class Installer {
 				new InstallSystemdStep(etcDirectory, environmentVariables));
 	}
 
+	/**
+	 * Installs the profiler with the given Teamscale credentials.
+	 * @return the exit code for the CLI.
+	 */
 	public static int install(TeamscaleCredentials credentials) {
 		try {
 			getDefaultInstaller().runInstall(credentials);
@@ -89,11 +92,15 @@ public class Installer {
 		}
 	}
 
-	@NotNull
 	private static Installer getDefaultInstaller() {
 		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
 	}
 
+
+	/**
+	 * Uninstalls the profiler.
+	 * @return the exit code for the CLI.
+	 */
 	public static int uninstall() {
 		UninstallerErrorReporter errorReporter = getDefaultInstaller().runUninstall();
 		if (errorReporter.errorsReported) {
