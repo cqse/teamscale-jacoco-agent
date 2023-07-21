@@ -3,7 +3,9 @@ package com.teamscale.profiler.installer;
 import okhttp3.HttpUrl;
 import picocli.CommandLine;
 
+/** Helps Picocli to convert from String to HttpUrl. */
 public class HttpUrlTypeConverter implements CommandLine.ITypeConverter<HttpUrl> {
+
 	@Override
 	public HttpUrl convert(String value) {
 		HttpUrl url = HttpUrl.parse(value);

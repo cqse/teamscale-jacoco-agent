@@ -6,6 +6,9 @@ import java.util.concurrent.Callable;
 
 import static com.teamscale.profiler.installer.RootCommand.EXIT_CODE_PROGRAMMING_ERROR;
 
+/**
+ * CLI command that uninstalls the profiler.
+ */
 @CommandLine.Command(name = "uninstall", description = "Uninstalls the profiler.")
 public class UninstallCommand implements Callable<Integer> {
 
