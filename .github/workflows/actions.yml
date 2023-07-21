@@ -22,7 +22,9 @@ jobs:
       uses: graalvm/setup-graalvm@v1
       with:
         java-version: '17.0.7'
-        distribution: 'graalvm'
+        distribution: 'graalvm-community'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        set-java-home: true
     - name: Build with Gradle
       run: ./gradlew build
     - name: Upload Release Assets
