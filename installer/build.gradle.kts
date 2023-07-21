@@ -17,8 +17,8 @@ application {
 }
 
 dependencies {
-    // we need this alpha version since it comes with support for GraalVM
-    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.10")
+    // we need this older version since newer versions are Kotlin-implemented and don't play nice with GraalVM
+    implementation("com.squareup.okhttp3:okhttp:3.14.2")
     implementation(libs.teamscaleLibCommons)
     implementation(libs.picocli.core)
     annotationProcessor(libs.picocli.codegen)
@@ -34,7 +34,7 @@ graalvmNative {
             // build an executable instead of a shared library
             sharedLibrary.set(false)
             // Required for reading files from the filesystem. See https://github.com/oracle/graal/issues/1294
-            buildArgs("-H:+AddAllCharsets")
+            buildArgs("-H:+AddAllCharsets", "--enable-http", "--enable-https")
         }
     }
 }
