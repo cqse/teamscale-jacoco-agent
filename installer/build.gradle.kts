@@ -9,8 +9,6 @@ tasks.jar {
     manifest {
         attributes["Main-Class"] = "com.teamscale.profiler.installer.RootCommand"
     }
-    // don't append a version number
-    archiveFileName.set("installer.jar")
 }
 
 application {
