@@ -39,7 +39,7 @@ public class Installer {
 			// we assume that the dist zip is extracted and the installer jar not moved
 			return Paths.get(jarFileUri).getParent();
 		} catch (URISyntaxException e) {
-			throw new RuntimeException("Failed to obtain agent directory. This is a bug, please report it.", e);
+			throw new IllegalStateException("Failed to obtain agent directory. This is a bug, please report it.", e);
 		}
 	}
 
