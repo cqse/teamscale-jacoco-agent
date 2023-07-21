@@ -65,6 +65,10 @@ public class InstallEtcEnvironmentStep implements IStep {
 		}
 
 		Path environmentFile = getEnvironmentFile();
+		if (!Files.exists(environmentFile)) {
+			return;
+		}
+
 		try {
 			List<String> lines = Files.readAllLines(environmentFile, StandardCharsets.US_ASCII);
 			String newContent = removeProfilerVariables(lines);

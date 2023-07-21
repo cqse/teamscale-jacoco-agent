@@ -65,6 +65,10 @@ public class InstallSystemdStep implements IStep {
 		}
 
 		Path systemdConfigFile = getSystemdConfigFile();
+		if (!Files.exists(systemdConfigFile)) {
+			return;
+		}
+
 		try {
 			Files.delete(systemdConfigFile);
 		} catch (IOException e) {

@@ -143,6 +143,26 @@ class InstallerTest {
 	}
 
 	@Test
+	void uninstallSuccessfullyEvenIfSystemDConfigWasManuallyRemoved() throws FatalInstallerError, IOException {
+		install();
+		Files.delete(systemdConfig);
+		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
+				etcDirectory).runUninstall();
+
+		assertThat(errorReporter.wereErrorsReported()).isFalse();
+	}
+
+	@Test
+	void uninstallSuccessfullyEvenIfEnvironmentFileDoesntExist() throws FatalInstallerError, IOException {
+		install();
+		Files.delete(environmentFile);
+		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
+				etcDirectory).runUninstall();
+
+		assertThat(errorReporter.wereErrorsReported()).isFalse();
+	}
+
+	@Test
 	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
 		install();
 		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
