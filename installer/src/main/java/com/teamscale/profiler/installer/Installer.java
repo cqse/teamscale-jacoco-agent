@@ -4,9 +4,10 @@ import com.teamscale.profiler.installer.steps.IStep;
 import com.teamscale.profiler.installer.steps.InstallAgentFilesStep;
 import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
-import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.system.SystemUtils;
+import org.jetbrains.annotations.NotNull;
+import picocli.CommandLine;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -65,76 +66,46 @@ public class Installer {
 				new InstallSystemdStep(etcDirectory, environmentVariables));
 	}
 
-	/**
-	 * Runs the installer. Expected command-line arguments: [TEAMSCALE URL] [TEAMSCALE USER] [ACCESS KEY] Alternatively,
-	 * running with --uninstall will uninstall the profiler.
-	 */
-	public static void main(String[] args) {
-		Installer installer = new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
-
+	public static int install(TeamscaleCredentials credentials) {
 		try {
-			if (args.length == 1 && args[0].equals("--uninstall")) {
-				uninstall(installer);
-			} else {
-				install(installer, args);
-			}
-
-			// we use System.exit here to make sure that no background threads spawned by libraries we use prevent the
-			// program from exiting. May e.g. happen with okhttp
-			System.exit(0);
-		} catch (Throwable t) {
-			t.printStackTrace(System.err);
-			System.err.println("\n\nInstallation failed due to an internal error." +
-					" This is likely a bug, please report the entire console output to support@teamscale.com");
-			System.exit(2);
-		}
-	}
-
-	private static void install(Installer installer, String[] args) {
-		try {
-			installer.install(args);
+			getDefaultInstaller().runInstall(credentials);
 			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
 			System.out.println("To activate the profiler for an application, set the environment variable"
 					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG"
 					+ "\nIts value must be the path to a valid profiler configuration file."
 					+ "\nThen, restart your application (for web applications: restart the app server).");
+			return CommandLine.ExitCode.OK;
 		} catch (PermissionError e) {
 			e.printToStderr();
 
 			System.err.println(
 					"\n\nInstallation failed because the installer had insufficient permissions to make the necessary"
 							+ " changes on your system.\nSee above for error messages.\n" + RERUN_ADVICE);
-			System.exit(1);
+			return RootCommand.EXIT_CODE_PERMISSION_ERROR;
 		} catch (FatalInstallerError e) {
 			e.printToStderr();
 			System.err.println("\n\nInstallation failed. See above for error messages.");
-			System.exit(2);
+			return RootCommand.EXIT_CODE_OTHER_ERROR;
 		}
 	}
 
-	private static void uninstall(Installer installer) {
-		UninstallerErrorReporter errorReporter = installer.uninstall();
+	@NotNull
+	private static Installer getDefaultInstaller() {
+		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
+	}
+
+	public static int uninstall() {
+		UninstallerErrorReporter errorReporter = getDefaultInstaller().runUninstall();
 		if (errorReporter.errorsReported) {
 			String message = "Uninstallation failed. See above for error messages.";
 			if (errorReporter.hadPermissionError) {
 				message += "\n" + RERUN_ADVICE;
 			}
 			System.err.println("\n\n" + message);
-			System.exit(1);
+			return RootCommand.EXIT_CODE_OTHER_ERROR;
 		}
 		System.out.println("Profiler successfully uninstalled");
-	}
-
-	/**
-	 * Thrown when the users command-line parameters are invalid. Includes a helpful message how to supply correct
-	 * command-line arguments.
-	 */
-	public static class CommandlineUsageError extends FatalInstallerError {
-
-		public CommandlineUsageError(String cause) {
-			super(cause + "\n\nUSAGE: install-profiler [TEAMSCALE URL] [TEAMSCALE USER] [ACCESS KEY]");
-		}
-
+		return CommandLine.ExitCode.OK;
 	}
 
 	/**
@@ -142,24 +113,19 @@ public class Installer {
 	 *
 	 * @throws FatalInstallerError if a step of the installation process fails.
 	 */
-	public void install(String[] args) throws FatalInstallerError {
-		TeamscaleCredentials credentials = parseCredentials(args);
+	public void runInstall(TeamscaleCredentials credentials) throws FatalInstallerError {
 		TeamscaleUtils.checkTeamscaleConnection(credentials);
-		install(credentials);
-		System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
-	}
-
-	private void install(TeamscaleCredentials credentials) throws FatalInstallerError {
 		for (IStep step : steps) {
 			step.install(credentials);
 		}
+		System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
 	}
 
 	/**
 	 * Uninstalls the profiler. All errors that happened during the uninstallation are reported via the returned
 	 * {@link UninstallerErrorReporter}.
 	 */
-	public UninstallerErrorReporter uninstall() {
+	public UninstallerErrorReporter runUninstall() {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
 		for (IStep step : CollectionUtils.reverse(steps)) {
 			step.uninstall(errorReporter);
@@ -209,20 +175,6 @@ public class Installer {
 
 	private Path getAgentJarPath(Path installDirectory) {
 		return installDirectory.resolve("lib/teamscale-jacoco-agent.jar");
-	}
-
-	private TeamscaleCredentials parseCredentials(String[] args) throws FatalInstallerError {
-		if (args.length < 3) {
-			throw new CommandlineUsageError("You must provide 3 command line arguments");
-		}
-
-		String urlArgument = args[0];
-		HttpUrl url = HttpUrl.parse(urlArgument);
-		if (url == null) {
-			throw new CommandlineUsageError("This is not a valid URL: " + urlArgument);
-		}
-
-		return new TeamscaleCredentials(url, args[1], args[2]);
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.teamscale.profiler.installer;
 
+import okhttp3.HttpUrl;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -87,27 +88,6 @@ class InstallerTest {
 	}
 
 	@Test
-	void insufficientCommandLineParameters() {
-		assertThatThrownBy(() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(new String[]{}))
-				.isInstanceOf(Installer.CommandlineUsageError.class);
-		assertThatThrownBy(
-				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
-						new String[]{TEAMSCALE_URL}))
-				.isInstanceOf(Installer.CommandlineUsageError.class);
-		assertThatThrownBy(
-				() -> new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
-						new String[]{TEAMSCALE_URL, "user"}))
-				.isInstanceOf(Installer.CommandlineUsageError.class);
-
-		assertThatThrownBy(() ->
-				new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
-						new String[]{"not-a-url!", "user", "accesskey"})
-		).hasMessageContaining("This is not a valid URL");
-
-		assertThat(targetDirectory).doesNotExist();
-	}
-
-	@Test
 	void successfulInstallation() throws FatalInstallerError, IOException {
 		install();
 
@@ -151,7 +131,7 @@ class InstallerTest {
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).uninstall();
+				etcDirectory).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 
@@ -168,7 +148,7 @@ class InstallerTest {
 		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).uninstall();
+				etcDirectory).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isTrue();
 
@@ -190,7 +170,7 @@ class InstallerTest {
 		assertThat(environmentFile.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).uninstall();
+				etcDirectory).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isTrue();
 
@@ -255,8 +235,8 @@ class InstallerTest {
 	}
 
 	private void install(String teamscaleUrl) throws FatalInstallerError {
-		new Installer(sourceDirectory, targetDirectory, etcDirectory).install(
-				new String[]{teamscaleUrl, "user", "accesskey"});
+		new Installer(sourceDirectory, targetDirectory, etcDirectory).runInstall(
+				new TeamscaleCredentials(HttpUrl.get(teamscaleUrl), "user", "accesskey"));
 	}
 
 }
