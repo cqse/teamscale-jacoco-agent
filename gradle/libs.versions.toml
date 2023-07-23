@@ -8,7 +8,7 @@ jacoco = "0.8.8"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
 logback = "1.3.8"
 retrofit = "2.9.0"
-junit = "5.9.3"
+junit = "5.10.0"
 junitPlatform = "1.9.3"
 okhttp = "4.11.0"
 mockito = "4.11.0"
