@@ -9,6 +9,7 @@ import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 /**
  * A wrapper around the JaCoCo Java agent that starts a HTTP server and listens for test events.
@@ -44,6 +45,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 	@Override
 	protected ResourceConfig initResourceConfig() {
 		ResourceConfig resourceConfig = new ResourceConfig();
+		resourceConfig.property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE.toString());
 		TestwiseCoverageResource.setAgent(this);
 		return resourceConfig.register(TestwiseCoverageResource.class);
 	}

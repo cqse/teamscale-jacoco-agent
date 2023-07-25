@@ -36,10 +36,10 @@ gradle (IntelliJ Settings -> Build, Execution, Deplyment -> Build Tools -> Gradl
 
 ### Debugging the Gradle plugin
 
-* increase the plugin version in `build.gradle` and in `BuildVersion.kt`
+* increase the plugin version in `build.gradle`
 * `./gradlew publishToMavenLocal` will deploy your checked out version to your local m2 cache
 * then you can import this version into any other gradle project by
-  * replacing the `share.cqse.eu` repository with the `mavenLocal()` repository in the `buildscript` section of the project's `build.gradle`
+  * adding the `mavenLocal()` repository in the `pluginManagement > repositories` section of the project's `settings.gradle`
   * adding `repositories { mavenLocal(); mavenCentral() }` to the body of the `build.gradle`
   * declaring a plugin dependency on the incremented version of the teamscale plugin
 * to debug a build that uses the plugin, run `./gradlew` with `--no-daemon -Dorg.gradle.debug=true`.

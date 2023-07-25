@@ -23,6 +23,8 @@ jersey-containerServletCore = { module = "org.glassfish.jersey.containers:jersey
 jersey-mediaJsonJackson = { module = "org.glassfish.jersey.media:jersey-media-json-jackson", version.ref = "jersey" }
 jersey-hk2 = { module = "org.glassfish.jersey.inject:jersey-hk2", version.ref = "jersey" }
 
+jakarta-activation-api = { module = "jakarta.activation:jakarta.activation-api", version = "1.2.2" }
+
 jacoco-core = { module = "org.jacoco:org.jacoco.core", version.ref = "jacoco" }
 jacoco-report = { module = "org.jacoco:org.jacoco.report", version.ref = "jacoco" }
 jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
