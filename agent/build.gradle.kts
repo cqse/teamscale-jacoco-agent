@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.jersey.containerJettyHttp)
     implementation(libs.jersey.mediaJsonJackson)
     implementation(libs.jersey.hk2)
+    runtimeOnly(libs.jakarta.activation.api)
 
     implementation(project(":teamscale-client"))
     implementation(project(":report-generator"))

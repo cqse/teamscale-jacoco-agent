@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _teamscale-gradle-plugin_: Warnings were logged during test execution (WARNING: JAXBContext implementation could not be found. WADL feature is disabled., WARNING: A class javax.activation.DataSource for a default provider)
 
 # 30.1.0
 - [feature] The option `tiamode` has now an additional choice `disk` to dump testwise coverage as JSON to the output folder.

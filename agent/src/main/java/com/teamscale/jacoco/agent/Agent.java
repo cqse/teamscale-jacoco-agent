@@ -15,6 +15,7 @@ import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +66,7 @@ public class Agent extends AgentBase {
 	@Override
 	protected ResourceConfig initResourceConfig() {
 		ResourceConfig resourceConfig = new ResourceConfig();
+		resourceConfig.property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE.toString());
 		AgentResource.setAgent(this);
 		return resourceConfig.register(AgentResource.class);
 	}
