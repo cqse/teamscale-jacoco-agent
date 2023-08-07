@@ -3,6 +3,7 @@ package com.teamscale.test.commons;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
@@ -36,24 +37,35 @@ public class TeamscaleMockServer {
 	private final JsonAdapter<List<PrioritizableTestCluster>> testClusterJsonAdapter = new Moshi.Builder().build()
 			.adapter(Types.newParameterizedType(List.class, PrioritizableTestCluster.class));
 
+	private final JsonAdapter<List<ClusteredTestDetails>> testDetailsJsonAdapter = new Moshi.Builder().build()
+			.adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
+
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestwiseCoverageReport.class);
 
 	/** All reports uploaded to this Teamscale instance. */
-	public final List<String> uploadedReports = new ArrayList<>();
+	public final List<ExternalReport> uploadedReports = new ArrayList<>();
 	/** All user agents that were present in the received requests. */
 	public final Set<String> collectedUserAgents = new HashSet<>();
+
+	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
+	public final Set<ClusteredTestDetails> availableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private final List<String> impactedTests;
 
-	public TeamscaleMockServer(int port, String... impactedTests) throws IOException {
+	public TeamscaleMockServer(int port, boolean expectNoInteraction, String...impactedTests) throws IOException {
 		this.impactedTests = Arrays.asList(impactedTests);
 		service = Service.ignite();
 		service.port(port);
-		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
-				this::handleReport);
-		service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		if (expectNoInteraction) {
+			service.post("", (request, response) -> { throw new IllegalStateException("No POST to the mock server expected!"); });
+			service.put("", (request, response) -> { throw new IllegalStateException("No PUT to the mock server expected!"); });
+		} else {
+			service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
+					this::handleReport);
+			service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		}
 		service.exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());
@@ -70,11 +82,12 @@ public class TeamscaleMockServer {
 	 * @throws IOException when parsing the report fails.
 	 */
 	public TestwiseCoverageReport parseUploadedTestwiseCoverageReport(int index) throws IOException {
-		return testwiseCoverageReportJsonAdapter.fromJson(uploadedReports.get(index));
+		return testwiseCoverageReportJsonAdapter.fromJson(uploadedReports.get(index).getReportString());
 	}
 
-	private String handleImpactedTests(Request request, Response response) {
+	private String handleImpactedTests(Request request, Response response) throws IOException {
 		collectedUserAgents.add(request.headers("User-Agent"));
+		availableTests.addAll(testDetailsJsonAdapter.fromJson(request.body()));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
 		return testClusterJsonAdapter.toJson(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
 	}
@@ -85,8 +98,9 @@ public class TeamscaleMockServer {
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
 		Part file = request.raw().getPart("report");
+		String partition = request.queryParams("partition");
 		String reportString = IOUtils.toString(file.getInputStream());
-		uploadedReports.add(reportString);
+		uploadedReports.add(new ExternalReport(reportString, partition));
 		file.delete();
 
 		return "success";
@@ -99,5 +113,4 @@ public class TeamscaleMockServer {
 		service.stop();
 		service.awaitStop();
 	}
-
 }

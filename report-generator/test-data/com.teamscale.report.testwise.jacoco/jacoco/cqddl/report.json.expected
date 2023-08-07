@@ -1,4 +1,5 @@
 {
+  "partial": true,
   "tests": [
     {
       "uniformPath": "[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]",

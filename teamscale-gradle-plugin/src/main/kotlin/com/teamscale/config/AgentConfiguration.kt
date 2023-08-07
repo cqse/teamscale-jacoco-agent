@@ -34,7 +34,7 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
     }
 
     /** The local agent's server url to connect to. */
-    var localAgent: TeamscaleAgent? = TeamscaleAgent(HttpUrl.parse("http://127.0.0.1:8123/")!!)
+    var localAgent: TeamscaleAgent? = null
 
     /** A remote agent's server url to connect to. */
     var remoteAgent: TeamscaleAgent? = null
@@ -80,8 +80,8 @@ class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskEx
             val builder = StringBuilder()
             val argument = ArgumentAppender(builder)
             builder.append("-javaagent:")
-            val agentJar = project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration)
-                .filter { it.name.startsWith("teamscale-jacoco-agent") }.first()
+            val agentJar =
+                project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration).singleFile
             builder.append(agentJar.canonicalPath)
             builder.append("=")
 

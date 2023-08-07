@@ -14,14 +14,14 @@ import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
 import com.teamscale.report.jacoco.dump.Dump;
-import spark.Request;
-import spark.Response;
-import spark.Service;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
@@ -33,7 +33,7 @@ import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 public class Agent extends AgentBase {
 
 	/** Converts binary data to XML. */
-	private JaCoCoXmlReportGenerator generator;
+	private final JaCoCoXmlReportGenerator generator;
 
 	/** Regular dump task. */
 	private Timer timer;
@@ -64,26 +64,11 @@ public class Agent extends AgentBase {
 	}
 
 	@Override
-	protected void initServerEndpoints(Service spark) {
-		super.initServerEndpoints(spark);
-		spark.post("/dump", this::handleDump);
-		spark.post("/reset", this::handleReset);
-	}
-
-	/** Handles dumping a XML coverage report for coverage collected until now. */
-	private String handleDump(Request request, Response response) {
-		logger.debug("Dumping report triggered via HTTP request");
-		dumpReport();
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	/** Handles resetting of coverage. */
-	private String handleReset(Request request, Response response) {
-		logger.debug("Resetting coverage triggered via HTTP request");
-		controller.reset();
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
+	protected ResourceConfig initResourceConfig() {
+		ResourceConfig resourceConfig = new ResourceConfig();
+		resourceConfig.property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE.toString());
+		AgentResource.setAgent(this);
+		return resourceConfig.register(AgentResource.class);
 	}
 
 	@Override
@@ -96,7 +81,7 @@ public class Agent extends AgentBase {
 		}
 
 		try {
-			com.teamscale.jacoco.agent.util.FileSystemUtils.deleteDirectoryIfEmpty(options.getOutputDirectory());
+			deleteDirectoryIfEmpty(options.getOutputDirectory());
 		} catch (IOException e) {
 			logger.info("Could not delete empty output directory {}. " +
 							"This directory was created inside the configured output directory to be able to " +
@@ -106,10 +91,22 @@ public class Agent extends AgentBase {
 	}
 
 	/**
+	 * Delete a directory from disk if it is empty. This method does nothing if the path provided does not exist or
+	 * point to a file.
+	 *
+	 * @throws IOException if the deletion of the directory fails
+	 */
+	private static void deleteDirectoryIfEmpty(Path directory) throws IOException {
+		if (Files.isDirectory(directory) && Files.list(directory).toArray().length == 0) {
+			Files.delete(directory);
+		}
+	}
+
+	/**
 	 * Dumps the current execution data, converts it, writes it to the output directory defined in {@link #options} and
 	 * uploads it if an uploader is configured. Logs any errors, never throws an exception.
 	 */
-	private void dumpReport() {
+	public void dumpReport() {
 		logger.debug("Starting dump");
 
 		try {
@@ -130,7 +127,7 @@ public class Agent extends AgentBase {
 		}
 
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
-			File outputFile = options.createTempFile("jacoco", "xml");
+			File outputFile = options.createNewFileInOutputDirectory("jacoco", "xml");
 			CoverageFile coverageFile = generator.convert(dump, outputFile);
 			uploader.upload(coverageFile);
 		} catch (IOException e) {

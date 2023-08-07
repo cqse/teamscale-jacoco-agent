@@ -81,7 +81,13 @@ public class CommandLineInterface {
 	}
 
 	private void endTestRun() throws Exception {
-		AgentCommunicationUtils.handleRequestError(api::testRunFinished,
+		boolean partial;
+		if (arguments.size() == 1) {
+			partial = Boolean.parseBoolean(arguments.remove(0));
+		} else {
+			partial = false;
+		}
+		AgentCommunicationUtils.handleRequestError(() -> api.testRunFinished(partial),
 				"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 	}
 
@@ -98,7 +104,8 @@ public class CommandLineInterface {
 
 		// the agent already records test duration, so we can simply provide a dummy value here
 		TestExecution execution = new TestExecution(uniformPath, 0L, result, message);
-		AgentCommunicationUtils.handleRequestError(() -> api.testFinished(uniformPath, execution),
+		AgentCommunicationUtils.handleRequestError(
+				() -> api.testFinished(UrlUtils.percentEncode(uniformPath), execution),
 				"Failed to end coverage recording for test case " + uniformPath +
 						". Coverage for that test case is most likely lost.");
 	}
@@ -110,7 +117,7 @@ public class CommandLineInterface {
 							" as the first argument of the startTest command");
 		}
 		String uniformPath = arguments.remove(0);
-		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(uniformPath),
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(UrlUtils.percentEncode(uniformPath)),
 				"Failed to start coverage recording for test case " + uniformPath +
 						". Coverage for that test case is lost.");
 	}

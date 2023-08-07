@@ -14,6 +14,9 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * An {@link AnalyzerCache} instance processes a set of Java class/jar/war/... files and builds a {@link
@@ -64,6 +67,21 @@ public class AnalyzerCache extends FilteringAnalyzer {
 				stringPool);
 		final ClassVisitor visitor = new ClassProbesAdapter(classAnalyzer, false);
 		reader.accept(visitor, 0);
+	}
+
+	/**
+	 * Adds caching for jar files to the analyze jar functionality.
+	 */
+	@Override
+	protected int analyzeJar(final InputStream input, final String location) throws IOException {
+		long jarId = CRC64.classId(Files.readAllBytes(Paths.get(location)));
+		int probesCountForJarId = probesCache.countForJarId(jarId);
+		if (probesCountForJarId != 0) {
+			return probesCountForJarId;
+		}
+		int count = super.analyzeJar(input, location);
+		probesCache.addJarId(jarId, count);
+		return count;
 	}
 
 	/**

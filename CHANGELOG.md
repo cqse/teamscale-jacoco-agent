@@ -4,8 +4,71 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# next release
+# Next Release
 - [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you change this behavior with `search-git-properties-recursively`.
+
+# 30.1.1
+- [fix] _teamscale-gradle-plugin_: Warnings were logged during test execution (WARNING: JAXBContext implementation could not be found. WADL feature is disabled., WARNING: A class javax.activation.DataSource for a default provider)
+
+# 30.1.0
+- [feature] The option `tiamode` has now an additional choice `disk` to dump testwise coverage as JSON to the output folder.
+- [feature] _teamscale-maven-plugin_: The configuration options `runAllTests`, `runImpacted`, and `tiamode` are now available
+- [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
+- [fix] The option `ignore-uncovered-classes` did not filter out empty interface nodes from the XML report 
+- [fix] _teamscale-gradle-plugin_: The plugin failed to log the `No class files found in the given directories!` error message
+
+# 30.0.2
+- [fix] _teamscale-gradle-plugin_: Reports uploaded by `teamscaleReportUpload` ended up in wrong partition
+- [fix] _impacted-test-engine_: Failure when no tests were impacted
+
+# 30.0.1
+- [fix] _report-generator_: Fixed Gradle module metadata which resulted in `Could not find org.jacoco.agent-0.8.8-runtime`
+
+# 30.0.0
+- [breaking change] _teamscale-maven-plugin_: Made plugin compatible with surefire 3.0.0. Replace the `teamscale-surefire-provider` dependency with `impacted-test-engine` in your pom.xml files.
+- [feature] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Added ability to pass excluded test engines to impacted test engine
+- [fix] _teamscale-maven-plugin_: Testwise coverage uploads were performed per test cluster instead of one upload after all tests
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Impacted tests were requested once for each test engine
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Execution of impacted tests failed when test names were unstable i.e. parameterized tests with parameters that are not serializeable
+
+# 29.1.3
+- [fix] http control server was not correctly shut down after the tests ended
+
+# 29.1.2
+- [fix] _teamscale-maven-plugin_: Partition was not correctly provided to the impacted test engine
+- [fix] _tia-client_: Semicolons in test names were not correctly sent to the Teamscale JaCoCo Agent
+
+# 29.1.1
+- [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Tooling did not provide a way to set the partial flag
+
+# 29.1.0
+- [feature] _teamscale-gradle-plugin_: Allow parallel test execution with testwise coverage collection
+- [fix] _teamscale-gradle-plugin_: Verify that maxParallelForks is 1
+- [fix] _impacted-test-engine_: Provide sane fallback for non-supported test engines
+
+# 29.0.0
+- [fix] Fixed the prefix extraction pattern and the partition pattern for Artifactory in the agent's documentation
+- [fix/breaking change] _teamscale-client_, _teamscale-gradle-plugin_, _teamscale-maven-plugin_, _teamscale-jacoco-agent_: Teamscale 8.0 introduced the concept of execution units. To distinguish them from normal, singular test executions, the `-test-exection-` and `-execution-unit-` uniform path prefixes were introduced. This broke gradle and maven test runner plugins because the actual test paths and Teamscale's uniform paths did not match anymore. To prevent this, `testName` is now exposed by the teamscale client and used by the plugins which corresponds to the uniform path without the prefixes. **If you're using the client, or listen to the `/testrun/start` API from the Teamscale JaCoCo agent, this is a breaking change.** You now need to use `testName` in your runner, not the `uniformPath`.
+
+# 28.0.0
+- [breaking change] removed support for JavaWS
+- [fix] Fixed git.properties detection when directories are on the classpath
+
+# 27.0.2
+- [fix] Updated dependencies (Fixes #225, CVE-2022-42889)
+
+# 27.0.1
+- [fix] _teamscale-gradle-plugin_: Property 'outputLocation' is declared as an output property of Report xml (type TaskGeneratedSingleFileReport) but does not have a task associated with it.
+
+# 27.0.0
+
+- [fix] _teamscale-gradle-plugin_: Failed to upload JUnit reports
+- [breaking change] _teamscale-gradle-plugin_: Setting the destination within test.teamscale.reports.jacoco/junit transparently sets the report destination in the corresponding jacoco/junit plugins
+- [breaking change] _teamscale-gradle-plugin_: TestwiseCoverageReportTask no longer clears the parent folder of the written testwise coverage report
+
+# 26.0.2
+
+- [fix] Testwise coverage conversion was slow when many .exec files are included.
 
 # 26.0.1
 

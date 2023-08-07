@@ -5,7 +5,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 /**
  * Use this class to report test start and end events and upload testwise coverage to Teamscale.
  * <p>
- * After having run all tests, call {@link #endTestRun()} to create a testwise coverage report and upload it to
+ * After having run all tests, call {@link #endTestRun(boolean)} to create a testwise coverage report and upload it to
  * Teamscale. This requires that you configured the agent to upload coverage to Teamscale
  * (`tia-mode=teamscale-upload`).
  */
@@ -47,7 +47,7 @@ public class TestRun {
 	 *                                         start and end events.
 	 */
 	public RunningTest startTest(String uniformPath) throws AgentHttpRequestFailedException {
-		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(uniformPath),
+		AgentCommunicationUtils.handleRequestError(() -> api.testStarted(UrlUtils.percentEncode(uniformPath)),
 				"Failed to start coverage recording for test case " + uniformPath);
 		return new RunningTest(uniformPath, api);
 	}
@@ -62,8 +62,8 @@ public class TestRun {
 	 *                                         failure. The recorded coverage is likely lost. The caller should log this
 	 *                                         problem appropriately.
 	 */
-	public void endTestRun() throws AgentHttpRequestFailedException {
-		AgentCommunicationUtils.handleRequestError(api::testRunFinished,
+	public void endTestRun(boolean partial) throws AgentHttpRequestFailedException {
+		AgentCommunicationUtils.handleRequestError(() -> api.testRunFinished(partial),
 				"Failed to create a coverage report and upload it to Teamscale. The coverage is most likely lost");
 	}
 

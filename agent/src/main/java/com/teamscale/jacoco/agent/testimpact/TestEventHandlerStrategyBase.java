@@ -1,8 +1,5 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.PrioritizableTestCluster;
@@ -13,6 +10,7 @@ import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestInfo;
 import org.slf4j.Logger;
 import retrofit2.Response;
 
@@ -36,9 +34,6 @@ public abstract class TestEventHandlerStrategyBase {
 
 	/** May be null if the user did not configure Teamscale. */
 	protected final TeamscaleClient teamscaleClient;
-
-	private final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClustersJsonAdapter = new Moshi.Builder()
-			.build().adapter(Types.newParameterizedType(List.class, PrioritizableTestCluster.class));
 
 
 	protected TestEventHandlerStrategyBase(AgentOptions agentOptions, JacocoRuntimeController controller) {
@@ -65,8 +60,8 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @return The body of the response. <code>null</code> indicates "204 No content". Non-null results will be treated
 	 * as a json response.
 	 */
-	public String testEnd(String test,
-						  TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
+	public TestInfo testEnd(String test,
+							TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		if (testExecution != null) {
 			testExecution.setUniformPath(test);
 			if (startTimestamp != -1) {
@@ -88,9 +83,10 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @throws IOException                   if the request to Teamscale failed.
 	 * @throws UnsupportedOperationException if the user did not properly configure the {@link #teamscaleClient}.
 	 */
-	public String testRunStart(List<ClusteredTestDetails> availableTests, boolean includeNonImpactedTests,
-							   boolean includeAddedTests, boolean includeFailedAndSkipped,
-							   String baseline) throws IOException {
+	public List<PrioritizableTestCluster> testRunStart(List<ClusteredTestDetails> availableTests,
+													   boolean includeNonImpactedTests,
+													   boolean includeAddedTests, boolean includeFailedAndSkipped,
+													   String baseline) throws IOException {
 		int availableTestCount = 0;
 		if (availableTests != null) {
 			availableTestCount = availableTests.size();
@@ -104,9 +100,9 @@ public abstract class TestEventHandlerStrategyBase {
 						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition),
 						includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped);
 		if (response.isSuccessful()) {
-			String json = prioritizableTestClustersJsonAdapter.toJson(response.body());
-			logger.debug("Teamscale suggested these tests: {}", json);
-			return json;
+			List<PrioritizableTestCluster> prioritizableTestClusters = response.body();
+			logger.debug("Teamscale suggested these tests: {}", prioritizableTestClusters.toString());
+			return prioritizableTestClusters;
 		} else {
 			String responseBody = HttpUtils.getErrorBodyStringSafe(response);
 			throw new IOException(
@@ -130,10 +126,10 @@ public abstract class TestEventHandlerStrategyBase {
 	}
 
 	/**
-	 * Signals that the test run has ended. Strategies that support this can upload a report via the {@link
-	 * #teamscaleClient} here.
+	 * Signals that the test run has ended. Strategies that support this can upload a report via the
+	 * {@link #teamscaleClient} here.
 	 */
-	public void testRunEnd() throws IOException, CoverageGenerationException {
+	public void testRunEnd(boolean partial) throws IOException, CoverageGenerationException {
 		throw new UnsupportedOperationException("You configured the agent in a mode that does not support uploading " +
 				"reports to Teamscale. Please configure 'tia-mode=teamscale-upload' or simply don't call" +
 				"POST /testrun/end.");

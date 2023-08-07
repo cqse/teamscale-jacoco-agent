@@ -25,6 +25,6 @@ open class TeamscaleJacocoReportTaskExtension(
 
     /** Overload for Groovy DSL compatibility. */
     fun report(closure: Closure<*>) {
-        report { o -> project.configure(o, closure) }
+        report { project.configure(this, closure) }
     }
 }

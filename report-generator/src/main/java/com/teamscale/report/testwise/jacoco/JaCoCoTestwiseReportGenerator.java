@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Creates a XML report for an execution data store. The report is grouped by session.
+ * Creates an XML report for an execution data store. The report is grouped by session.
  * <p>
  * The class files under test must be compiled with debug information otherwise no coverage will be collected.
  */
@@ -51,6 +51,14 @@ public class JaCoCoTestwiseReportGenerator {
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.executionDataReader = new CachingExecutionDataReader(logger, codeDirectoriesOrArchives,
 				locationIncludeFilter, duplicateClassFileBehavior);
+		updateClassDirCache();
+	}
+
+	/**
+	 * Updates the probe cache of the {@link ExecutionDataReader}.
+	 */
+	public void updateClassDirCache() {
+		executionDataReader.analyzeClassDirs();
 	}
 
 	/** Converts the given dumps to a report. */
@@ -77,7 +85,7 @@ public class JaCoCoTestwiseReportGenerator {
 
 	/** Converts the given dumps to a report. */
 	public void convertAndConsume(File executionDataFile,
-								  Consumer<TestCoverageBuilder> consumer) throws IOException, CoverageGenerationException {
+								  Consumer<TestCoverageBuilder> consumer) throws IOException {
 		CachingExecutionDataReader.DumpConsumer dumpConsumer = executionDataReader
 				.buildCoverageConsumer(locationIncludeFilter, consumer);
 		readAndConsumeDumps(executionDataFile, dumpConsumer);

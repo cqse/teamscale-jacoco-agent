@@ -8,6 +8,8 @@ import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
+import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
 /**
@@ -19,16 +21,16 @@ class TopLevelReportConfiguration(val project: Project) {
     /** Configures settings for all Testwise Coverage reports. */
     @JvmOverloads
     fun testwiseCoverage(action: Action<in TestwiseCoverageConfiguration> = Action {}) {
-        project.tasks.withType(TestImpacted::class.java) { testImpacted ->
+        project.tasks.withType<TestImpacted> {
             val testImpactedExtension =
-                testImpacted.extensions.getByType(TeamscaleTestImpactedTaskExtension::class.java)
+                this.extensions.getByType<TeamscaleTestImpactedTaskExtension>()
             testImpactedExtension.report(action)
         }
     }
 
     /** Overload for Groovy DSL compatibility. */
     fun testwiseCoverage(closure: Closure<*>) {
-        testwiseCoverage { o -> project.configure(o, closure) }
+        testwiseCoverage { project.configure(this, closure) }
     }
 
     /**
@@ -37,15 +39,15 @@ class TopLevelReportConfiguration(val project: Project) {
      */
     @JvmOverloads
     fun jacoco(action: Action<in JacocoReportConfiguration> = Action {}) {
-        project.tasks.withType(JacocoReport::class.java) { jacocoReport ->
-            val testExtension = jacocoReport.extensions.getByType(TeamscaleJacocoReportTaskExtension::class.java)
+        project.tasks.withType<JacocoReport> {
+            val testExtension = extensions.getByType<TeamscaleJacocoReportTaskExtension>()
             testExtension.report(action)
         }
     }
 
     /** Overload for Groovy DSL compatibility. */
     fun jacoco(closure: Closure<*>) {
-        jacoco { o -> project.configure(o, closure) }
+        jacoco { project.configure(this, closure) }
     }
 
     /**
@@ -54,17 +56,17 @@ class TopLevelReportConfiguration(val project: Project) {
      */
     @JvmOverloads
     fun junit(action: Action<in JUnitReportConfiguration> = Action {}) {
-        project.tasks.withType(Test::class.java) { test ->
-            if (test is TestImpacted) {
+        project.tasks.withType<Test> {
+            if (this is TestImpacted) {
                 return@withType
             }
-            val testExtension = test.extensions.getByType(TeamscaleTestTaskExtension::class.java)
+            val testExtension = this.extensions.getByType<TeamscaleTestTaskExtension>()
             testExtension.report(action)
         }
     }
 
     /** Overload for Groovy DSL compatibility. */
     fun junit(closure: Closure<*>) {
-        junit { o -> project.configure(o, closure) }
+        junit { project.configure(this, closure) }
     }
 }

@@ -4,14 +4,13 @@ import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.provider.SetProperty
+import org.gradle.api.tasks.*
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 
 /** Handles report uploads to Teamscale. */
-open class TeamscaleUploadTask : DefaultTask() {
+abstract class TeamscaleUploadTask : DefaultTask() {
 
     /** The global teamscale configuration. */
     @Internal
@@ -24,6 +23,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
     /** The commit for which the reports should be uploaded. */
     @get:Input
+    @get:Optional
     val commitDescriptor
         get() = extension.commit.getOrResolveCommitDescriptor(project).first
 
@@ -32,12 +32,18 @@ open class TeamscaleUploadTask : DefaultTask() {
      * If set it is preferred over commitDescriptor.
      */
     @get:Input
+    @get:Optional
     val revision
         get() = extension.commit.getOrResolveCommitDescriptor(project).second
 
     /** The list of reports to be uploaded. */
-    @Input
-    val reports = mutableSetOf<Report>()
+    @get:Nested
+    abstract val reports: SetProperty<Report>
+
+    /** The report files. See Report.reportFiles for details. */
+    @get:Input
+    val reportFiles
+        get() = reports.get().map { it.reportFiles }
 
     @Input
     var ignoreFailures: Boolean = false
@@ -50,8 +56,10 @@ open class TeamscaleUploadTask : DefaultTask() {
     /** Executes the report upload. */
     @TaskAction
     fun action() {
-        if (reports.isEmpty()) {
-            logger.info("Skipping upload. No reports to upload.")
+        val enabledReports = reports.get().filter { it.upload.get() }
+
+        if (enabledReports.isEmpty()) {
+            logger.info("Skipping upload. No reports enabled for uploading.")
             return
         }
 
@@ -59,7 +67,7 @@ open class TeamscaleUploadTask : DefaultTask() {
 
         try {
             logger.info("Uploading to $server at ${revision ?: commitDescriptor}...")
-            uploadReports()
+            uploadReports(enabledReports)
         } catch (e: Exception) {
             if (ignoreFailures) {
                 logger.warn("Ignoring failure during upload:")
@@ -70,17 +78,18 @@ open class TeamscaleUploadTask : DefaultTask() {
         }
     }
 
-    private fun uploadReports() {
+    private fun uploadReports(enabledReports: List<Report>) {
         // We want to upload e.g. all JUnit test reports that go to the same partition
-        // as one commit so we group them before uploading them
-        for ((key, reports) in reports.groupBy { Triple(it.format, it.partition, it.message) }) {
+        // as one commit, so we group them before uploading them
+        for ((key, reports) in enabledReports.groupBy { Triple(it.format, it.partition.get(), it.message.get()) }) {
             val (format, partition, message) = key
-            val reportFiles = reports.map { it.reportFile }.distinct()
+            val reportFiles = reports.flatMap { it.reportFiles.files }.filter { it.exists() }.distinct()
             logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
             if (reportFiles.isEmpty()) {
                 logger.info("Skipped empty upload!")
                 continue
             }
+            logger.debug("Uploading $reportFiles")
 
             try {
                 // Prefer to upload to revision and fallback to branch timestamp

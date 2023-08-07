@@ -5,8 +5,11 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-tasks.register<ConfigureShadowRelocation>("relocateShadowJar" ) {
-    target = tasks.getByName<ShadowJar>( "shadowJar")
+// Automatic configures dependency relocation
+// see https://imperceptiblethoughts.com/shadow/configuration/relocation/#automatically-relocating-dependencies
+tasks.register<ConfigureShadowRelocation>("relocateShadowJar") {
+    dependsOn("jar")
+    target = tasks.getByName<ShadowJar>("shadowJar")
     onlyIf {
         !project.hasProperty("debug")
     }
@@ -18,4 +21,11 @@ tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set(null as String?)
     mergeServiceFiles()
     dependsOn(tasks.named("relocateShadowJar"))
+    manifest {
+        // The jaxb library, which we are shading is a multi release jar, so we have to explicitly "inherit" this attribute
+        // https://github.com/johnrengelman/shadow/issues/449
+        attributes["Multi-Release"] = "true"
+    }
+
+    exclude("META-INF/versions/19/**")
 }

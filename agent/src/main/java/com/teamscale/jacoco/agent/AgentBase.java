@@ -1,10 +1,6 @@
 package com.teamscale.jacoco.agent;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.HttpUtils;
-import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -14,17 +10,18 @@ import com.teamscale.jacoco.agent.util.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils.LoggingResources;
-import com.teamscale.report.testwise.model.RevisionInfo;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.string.StringUtils;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
-import spark.Request;
-import spark.Response;
-import spark.Service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -47,18 +44,14 @@ public abstract class AgentBase {
 	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** Controls the JaCoCo runtime. */
-	protected final JacocoRuntimeController controller;
+	public final JacocoRuntimeController controller;
 
 	/** The agent options. */
 	protected AgentOptions options;
 
+	private Server server;
+
 	private static LoggingUtils.LoggingResources loggingResources;
-
-	private final Service spark = Service.ignite();
-
-	/** JSON adapter for revision information. */
-	private final JsonAdapter<RevisionInfo> revisionInfoJsonAdapter = new Moshi.Builder().build()
-			.adapter(RevisionInfo.class);
 
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
@@ -73,7 +66,12 @@ public abstract class AgentBase {
 		logger.info("Starting JaCoCo agent for process {} with options: {}",
 				ManagementFactory.getRuntimeMXBean().getName(), getOptionsObjectToLog());
 		if (options.getHttpServerPort() != null) {
-			initServer();
+			try {
+				initServer();
+			} catch (Exception e) {
+				throw new IllegalStateException(
+						"Control server not started.", e);
+			}
 		}
 	}
 
@@ -95,31 +93,39 @@ public abstract class AgentBase {
 	/**
 	 * Starts the http server, which waits for information about started and finished tests.
 	 */
-	private void initServer() {
+	private void initServer() throws Exception {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
-		spark.port(options.getHttpServerPort());
 
-		initServerEndpoints(spark);
-		// this is needed during our tests which will try to access the API
-		// directly after creating an agent
-		spark.awaitInitialization();
+		//Jersey Implementation
+		ServletContextHandler handler = buildUsingResourceConfig();
+		QueuedThreadPool threadPool = new QueuedThreadPool();
+		threadPool.setMaxThreads(10);
+		threadPool.setDaemon(true);
+
+		// Create a server instance and set the thread pool
+		server = new Server(threadPool);
+
+		// Create a server connector, set the port and add it to the server
+		ServerConnector connector = new ServerConnector(server);
+		connector.setPort(options.getHttpServerPort());
+		server.addConnector(connector);
+		server.setHandler(handler);
+		server.start();
 	}
 
-	/** Adds the endpoints that are available in the implemented mode. */
-	protected void initServerEndpoints(Service spark) {
-		spark.get("/partition",
-				(request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().partition).orElse(""));
-		spark.get("/message",
-				(request, response) -> Optional.ofNullable(options.getTeamscaleServerOptions().getMessage())
-						.orElse(""));
-		spark.get("/revision", (request, response) -> this.getRevisionInfo());
-		spark.get("/commit", (request, response) -> this.getRevisionInfo());
-		spark.put("/partition", this::handleSetPartition);
-		spark.put("/message", this::handleSetMessage);
-		spark.put("/revision", this::handleSetRevision);
-		spark.put("/commit", this::handleSetCommit);
+	private ServletContextHandler buildUsingResourceConfig() {
+		ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+		handler.setContextPath("/");
 
+		ResourceConfig resourceConfig = initResourceConfig();
+		handler.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
+		return handler;
 	}
+
+	/**
+	 * Initializes the {@link ResourceConfig} needed for the Jetty + Jersey Server
+	 */
+	protected abstract ResourceConfig initResourceConfig();
 
 	/**
 	 * Called by the actual premain method once the agent is isolated from the rest of the application.
@@ -255,82 +261,19 @@ public abstract class AgentBase {
 	/** Stop the http server if it's running */
 	void stopServer() {
 		if (options.getHttpServerPort() != null) {
-			spark.stop();
+			try {
+				server.stop();
+			} catch (Exception e) {
+				logger.error("Could not stop server so it is killed now.", e);
+			} finally {
+				server.destroy();
+			}
 		}
 	}
 
 	/** Called when the shutdown hook is triggered. */
 	protected void prepareShutdown() {
 		// Template method to be overridden by subclasses.
-	}
-
-	/** Handles setting the partition name. */
-	private String handleSetPartition(Request request, Response response) {
-		String partition = StringUtils.removeDoubleQuotes(request.body());
-		if (partition == null || partition.isEmpty()) {
-			return handleBadRequest(response,
-					"The new partition name is missing in the request body! Please add it as plain text.");
-		}
-
-		logger.debug("Changing partition name to " + partition);
-		controller.setSessionId(partition);
-		options.getTeamscaleServerOptions().partition = partition;
-
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	/** Handles setting the upload message. */
-	private String handleSetMessage(Request request, Response response) {
-		String message = StringUtils.removeDoubleQuotes(request.body());
-		if (message == null || message.isEmpty()) {
-			return handleBadRequest(response,
-					"The new message is missing in the request body! Please add it as plain text.");
-		}
-
-		logger.debug("Changing message to " + message);
-		options.getTeamscaleServerOptions().setMessage(message);
-
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	/** Handles setting the upload commit. */
-	private String handleSetCommit(Request request, Response response) {
-		String commit = StringUtils.removeDoubleQuotes(request.body());
-		if (commit == null || commit.isEmpty()) {
-			return handleBadRequest(response,
-					"The new upload commit is missing in the request body! Please add it as plain text.");
-		}
-		options.getTeamscaleServerOptions().commit = CommitDescriptor.parse(commit);
-
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
-	}
-
-	private String handleBadRequest(Response response, String message) {
-		logger.error(message);
-		response.status(HttpServletResponse.SC_BAD_REQUEST);
-		return message;
-	}
-
-	/** Returns revision information for the Teamscale upload. */
-	private String getRevisionInfo() {
-		TeamscaleServer server = options.getTeamscaleServerOptions();
-		return revisionInfoJsonAdapter.toJson(new RevisionInfo(server.commit, server.revision));
-	}
-
-	/** Handles setting the revision. */
-	private String handleSetRevision(Request request, Response response) {
-		String revision = org.conqat.lib.commons.string.StringUtils.removeDoubleQuotes(request.body());
-		if (revision == null || revision.isEmpty()) {
-			return handleBadRequest(response,
-					"The new revision name is missing in the request body! Please add it as plain text.");
-		}
-		logger.debug("Changing revision name to " + revision);
-		options.getTeamscaleServerOptions().revision = revision;
-		response.status(HttpServletResponse.SC_NO_CONTENT);
-		return "";
 	}
 
 }

@@ -13,15 +13,15 @@ plugins {
 
 import com.teamscale.TestImpacted
 
-ext.junit4Version = '4.12'
-ext.junitVintageVersion = '5.4.0'
+ext.junit4Version = '4.13.2'
+ext.junitVintageVersion = '5.10.0'
 ext.junitPlatformVersion = '1.4.0'
-ext.junitJupiterVersion = '5.4.0'
+ext.junitJupiterVersion = '5.10.0'
 
 if (!project.hasProperty("withoutServerConfig")) {
 	teamscale {
 		server {
-			url = 'http://127.0.0.1:8080'
+			url = 'http://127.0.0.1:64000'
 			userName = 'build'
 			userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
 			project = 'test'
@@ -45,7 +45,7 @@ task unitTest(type: TestImpacted) {
 	useJUnitPlatform {
 		excludeTags 'integration'
 	}
-	jacoco.includes = [ 'com.example.project.*' ]
+	jacoco.includes = [ project.findProperty('jacocoIncludePattern') ?: 'com.example.project.*' ]
 	testLogging {
 		// events "started", "skipped", "failed"
 		exceptionFormat "short"

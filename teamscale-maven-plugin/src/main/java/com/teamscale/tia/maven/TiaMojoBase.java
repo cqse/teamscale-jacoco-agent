@@ -2,14 +2,18 @@ package com.teamscale.tia.maven;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Base class for TIA Mojos. Provides all necessary functionality but can be subclassed to change the partition.
@@ -30,22 +35,17 @@ import java.util.Map;
  *     <li>Send test start and end events to the Java agent themselves</li>
  * </ul>
  * <p>
- * To use our JUnit 5 test engine, you must declare it as a dependency of the maven-surefire-plugin and/or the
- * maven-failsafe-plugin. Example:
+ * To use our JUnit 5 impacted-test-engine, you must declare it as a test dependency. Example:
  *
  * <pre>{@code
- * <plugin>
- *     <groupId>org.apache.maven.plugins</groupId>
- *     <artifactId>maven-surefire-plugin</artifactId>
- *     <version>3.0.0-M5</version>
- *     <dependencies>
- *         <dependency>
- *             <groupId>com.teamscale</groupId>
- *             <artifactId>teamscale-surefire-provider</artifactId>
- *             <version>23.2.0</version>
- *         </dependency>
- *     </dependencies>
- * </plugin>
+<dependencies>
+	<dependency>
+		<groupId>com.teamscale</groupId>
+		<artifactId>impacted-test-engine</artifactId>
+		<version>30.0.0</version>
+		<scope>test</scope>
+	</dependency>
+</dependencies>
  * }</pre>
  * <p>
  * To send test events yourself, you can use our TIA client library (Maven coordinates: com.teamscale:tia-client).
@@ -55,29 +55,41 @@ import java.util.Map;
 public abstract class TiaMojoBase extends AbstractMojo {
 
 	/**
+	 * Name of the surefire/failsafe option to pass in
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included engines</a>
+	 */
+	private static final String INCLUDE_JUNIT5_ENGINES_OPTION = "includeJUnit5Engines";
+
+	/**
+	 * Name of the surefire/failsafe option to pass in
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded engines</a>
+	 */
+	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
+
+	/**
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String teamscaleUrl;
 
 	/**
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String projectId;
 
 	/**
-	 * The username to use to perform the upload. Must have the "Upload external data" permission for the {@link
-	 * #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
+	 * The username to use to perform the upload. Must have the "Upload external data" permission for the
+	 * {@link #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
 	 */
-	@Parameter(property = "teamscale.username", required = true)
+	@Parameter(property = "teamscale.username")
 	public String username;
 
 	/**
-	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property {@code
-	 * teamscale.accessToken}.
+	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property
+	 * {@code teamscale.accessToken}.
 	 */
-	@Parameter(property = "teamscale.accessToken", required = true)
+	@Parameter(property = "teamscale.accessToken")
 	public String accessToken;
 
 	/**
@@ -145,6 +157,24 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public boolean skip;
 
 	/**
+	 * Executes all tests, not only impacted ones if set. Defaults to false.
+	 */
+	@Parameter(defaultValue = "false")
+	public boolean runAllTests;
+
+	/**
+	 * Executes only impacted tests, not all ones if set. Defaults to true.
+	 */
+	@Parameter(defaultValue = "true")
+	public boolean runImpacted;
+
+	/**
+	 * Mode of producing testwise coverage.
+	 */
+	@Parameter(defaultValue = "teamscale-upload")
+	public String tiaMode;
+
+	/**
 	 * Map of resolved Maven artifacts. Provided automatically by Maven.
 	 */
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
@@ -171,7 +201,13 @@ public abstract class TiaMojoBase extends AbstractMojo {
 			return;
 		}
 
-		validateTestPluginConfiguration(getTestPluginArtifact());
+		Plugin testPlugin = getTestPlugin(getTestPluginArtifact());
+		if (testPlugin != null) {
+			configureTestPlugin();
+			for (PluginExecution execution : testPlugin.getExecutions()) {
+				validateTestPluginConfiguration(execution);
+			}
+		}
 
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
@@ -184,27 +220,51 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedEndCommit);
+		setTiaProperty("partition", getPartition());
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
+		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
+		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
 
 		Path agentConfigFile = createAgentConfigFiles();
 		Path logFilePath = targetDirectory.resolve("agent.log");
 		setArgLine(agentConfigFile, logFilePath);
 	}
 
-	private void validateTestPluginConfiguration(String testPluginArtifact) throws MojoFailureException {
-		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
-		Plugin testPlugin = plugins.get(testPluginArtifact);
-		if (testPlugin == null) {
-			return;
-		}
+	/**
+	 * Sets the teamscale-test-impacted engine as only includedEngine and passes all previous engine configuration to
+	 * the impacted test engine instead.
+	 */
+	private void configureTestPlugin() {
+		enforcePropertyValue(INCLUDE_JUNIT5_ENGINES_OPTION, "includedEngines", "teamscale-test-impacted");
+		enforcePropertyValue(EXCLUDE_JUNIT5_ENGINES_OPTION, "excludedEngines", "");
+	}
 
-		Xpp3Dom configurationDom = (Xpp3Dom) testPlugin.getConfiguration();
+	private void enforcePropertyValue(String engineOption, String impactedEngineSuffix,
+									  String newValue) {
+		overrideProperty(engineOption, impactedEngineSuffix, newValue, session.getCurrentProject().getProperties());
+		overrideProperty(engineOption, impactedEngineSuffix, newValue, session.getUserProperties());
+	}
+
+	private void overrideProperty(String engineOption, String impactedEngineSuffix, String newValue,
+								  Properties properties) {
+		Object originalValue = properties.put(getPropertyName(engineOption), newValue);
+		if (originalValue instanceof String && !Strings.isBlank((String) originalValue) && !newValue.equals(
+				originalValue)) {
+			setTiaProperty(impactedEngineSuffix, (String) originalValue);
+		}
+	}
+
+	private void validateTestPluginConfiguration(PluginExecution execution) throws MojoFailureException {
+		Xpp3Dom configurationDom = (Xpp3Dom) execution.getConfiguration();
 		if (configurationDom == null) {
 			return;
 		}
 
-		validateParallelizationParameter(testPluginArtifact, configurationDom, "threadCount");
-		validateParallelizationParameter(testPluginArtifact, configurationDom, "forkCount");
+		validateEngineNotConfigured(configurationDom, INCLUDE_JUNIT5_ENGINES_OPTION);
+		validateEngineNotConfigured(configurationDom, EXCLUDE_JUNIT5_ENGINES_OPTION);
+
+		validateParallelizationParameter(configurationDom, "threadCount");
+		validateParallelizationParameter(configurationDom, "forkCount");
 
 		Xpp3Dom parameterDom = configurationDom.getChild("reuseForks");
 		if (parameterDom == null) {
@@ -214,14 +274,37 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		String value = parameterDom.getValue();
 		if (value != null && !value.equals("true")) {
 			throw new MojoFailureException(
-					"You configured the " + testPluginArtifact + " plugin to not reuse forks via the reuseForks configuration parameter." +
+					"You configured the " + getTestPluginArtifact() + " plugin to not reuse forks via the reuseForks configuration parameter." +
 							" This is not supported when performing Test Impact analysis as it prevents properly recording testwise coverage." +
 							" Please enable fork reuse when running Test Impact analysis.");
 		}
 	}
 
-	private void validateParallelizationParameter(String testPluginArtifact, Xpp3Dom configurationDom,
-						   String parallelizationParameter) throws MojoFailureException {
+	private void validateEngineNotConfigured(Xpp3Dom configurationDom,
+											 String xmlConfigurationName) throws MojoFailureException {
+		Xpp3Dom engines = configurationDom.getChild(xmlConfigurationName);
+		if (engines != null) {
+			throw new MojoFailureException(
+					"You configured JUnit 5 engines in the " + getTestPluginArtifact() + " plugin via the " + xmlConfigurationName + " configuration parameter." +
+							" This is currently not supported when performing Test Impact analysis." +
+							" Please add the " + xmlConfigurationName + " via the " + getPropertyName(
+							xmlConfigurationName) + " property.");
+		}
+	}
+
+	@NotNull
+	private String getPropertyName(String xmlConfigurationName) {
+		return getTestPluginPropertyPrefix() + "." + xmlConfigurationName;
+	}
+
+	@Nullable
+	private Plugin getTestPlugin(String testPluginArtifact) {
+		Map<String, Plugin> plugins = session.getCurrentProject().getModel().getBuild().getPluginsAsMap();
+		return plugins.get(testPluginArtifact);
+	}
+
+	private void validateParallelizationParameter(Xpp3Dom configurationDom,
+												  String parallelizationParameter) throws MojoFailureException {
 		Xpp3Dom parameterDom = configurationDom.getChild(parallelizationParameter);
 		if (parameterDom == null) {
 			return;
@@ -230,7 +313,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		String value = parameterDom.getValue();
 		if (value != null && !value.equals("1")) {
 			throw new MojoFailureException(
-					"You configured parallel tests in the " + testPluginArtifact + " plugin via the " + parallelizationParameter + " configuration parameter." +
+					"You configured parallel tests in the " + getTestPluginArtifact() + " plugin via the " + parallelizationParameter + " configuration parameter." +
 							" Parallel tests are not supported when performing Test Impact analysis as they prevent recording testwise coverage." +
 							" Please disable parallel tests when running Test Impact analysis.");
 		}
@@ -245,6 +328,9 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 * @return the artifact name of the test plugin (e.g. Surefire, Failsafe).
 	 */
 	protected abstract String getTestPluginArtifact();
+
+	/** @return The prefix of the properties that are used to pass parameters to the plugin. */
+	protected abstract String getTestPluginPropertyPrefix();
 
 	/**
 	 * @return whether this Mojo applies to integration tests.
@@ -301,7 +387,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
 		String config = "mode=testwise" +
-				"\ntia-mode=teamscale-upload" +
+				"\ntia-mode=" + tiaMode +
 				"\nteamscale-server-url=" + teamscaleUrl +
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
@@ -347,10 +433,12 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 * plugin works out of the box in most situations.
 	 */
 	private void setTiaProperty(String name, String value) {
-		String fullyQualifiedName = "teamscale.test.impacted." + name;
-		getLog().debug("Setting property " + name + "=" + value);
-		session.getUserProperties().setProperty(fullyQualifiedName, value);
-		session.getSystemProperties().setProperty(fullyQualifiedName, value);
-		System.setProperty(fullyQualifiedName, value);
+		if (value != null) {
+			String fullyQualifiedName = "teamscale.test.impacted." + name;
+			getLog().debug("Setting property " + name + "=" + value);
+			session.getUserProperties().setProperty(fullyQualifiedName, value);
+			session.getSystemProperties().setProperty(fullyQualifiedName, value);
+			System.setProperty(fullyQualifiedName, value);
+		}
 	}
 }

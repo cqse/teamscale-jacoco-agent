@@ -1,7 +1,5 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -22,8 +20,6 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
-	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class)
-			.indent("\t");
 	private final JaCoCoTestwiseReportGenerator reportGenerator;
 
 	public CoverageViaHttpStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
@@ -33,19 +29,19 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 	}
 
 	@Override
-	public String testEnd(String test, TestExecution testExecution)
+	public TestInfo testEnd(String test, TestExecution testExecution)
 			throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		super.testEnd(test, testExecution);
 
 		TestInfoBuilder builder = new TestInfoBuilder(test);
 		Dump dump = controller.dumpAndReset();
+		reportGenerator.updateClassDirCache();
 		builder.setCoverage(reportGenerator.convert(dump));
 		if (testExecution != null) {
 			builder.setExecution(testExecution);
 		}
 		TestInfo testInfo = builder.build();
-		String testInfoJson = testInfoJsonAdapter.toJson(testInfo);
-		logger.debug("Generated test info {}", testInfoJson);
-		return testInfoJson;
+		logger.debug("Generated test info {}", testInfo.toString());
+		return testInfo;
 	}
 }

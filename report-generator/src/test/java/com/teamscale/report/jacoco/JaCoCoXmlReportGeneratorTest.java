@@ -93,7 +93,7 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		runGenerator(testFolderName, EDuplicateClassFileBehavior.IGNORE, false,
 				new ClasspathWildcardIncludeFilter("*", null), createDummyDump(classId));
 	}
-	
+
 	/** Ensures that uncovered classes are removed from the report if ignore-uncovered-classes is set. */
 	@Test
 	void testShrinking() throws Exception {
@@ -108,8 +108,9 @@ public class JaCoCoXmlReportGeneratorTest extends TestDataBase {
 		String xmlString = stream.toString(StandardCharsets.UTF_8.name());
 		assertThat(xmlString).contains("TestClass");
 		assertThat(xmlString).doesNotContain("TestClassTwo");
+		assertThat(xmlString).doesNotContain("ITestInterface");
 	}
-	
+
 	/** Ensures that uncovered classes are contained in the report if ignore-uncovered-classes is not set. */
 	@Test
 	void testNonShrinking() throws Exception {

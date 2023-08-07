@@ -40,15 +40,20 @@ class CachingExecutionDataReader {
 	/**
 	 * Analyzes the class/jar/war/... files and creates a lookup of which probes belong to which method.
 	 */
-	private void analyzeClassDirs() throws CoverageGenerationException {
+	public void analyzeClassDirs() {
 		if (probesCache == null) {
 			probesCache = new ProbesCache(logger, duplicateClassFileBehavior);
 		}
+		if (classesDirectories.isEmpty()) {
+			logger.warn("No class directories found for caching.");
+			return;
+		}
 		AnalyzerCache analyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
+		int classCount = 0;
 		for (File classDir : classesDirectories) {
 			if (classDir.exists()) {
 				try {
-					analyzer.analyzeAll(classDir);
+					classCount += analyzer.analyzeAll(classDir);
 				} catch (IOException e) {
 					logger.error("Failed to analyze class files in " + classDir + "! " +
 							"Maybe the folder contains incompatible class files. " +
@@ -56,9 +61,13 @@ class CachingExecutionDataReader {
 				}
 			}
 		}
-		if (probesCache.isEmpty()) {
+		if (classCount == 0) {
 			String directoryList = classesDirectories.stream().map(File::getPath).collect(Collectors.joining(","));
-			throw new CoverageGenerationException("No class files found in the given directories! " + directoryList);
+			logger.error("No class files found in the given directories! " + directoryList);
+		} else if (probesCache.isEmpty()) {
+			String directoryList = classesDirectories.stream().map(File::getPath).collect(Collectors.joining(","));
+			logger.error(
+					"None of the " + classCount + " class files found in the given directories match the configured include/exclude patterns! " + directoryList);
 		}
 	}
 
@@ -66,8 +75,7 @@ class CachingExecutionDataReader {
 	 * Converts the given store to coverage data. The coverage will only contain line range coverage information.
 	 */
 	public DumpConsumer buildCoverageConsumer(ClasspathWildcardIncludeFilter locationIncludeFilter,
-											  Consumer<TestCoverageBuilder> nextConsumer) throws CoverageGenerationException {
-		analyzeClassDirs();
+											  Consumer<TestCoverageBuilder> nextConsumer) {
 		return new DumpConsumer(logger, locationIncludeFilter, nextConsumer);
 	}
 

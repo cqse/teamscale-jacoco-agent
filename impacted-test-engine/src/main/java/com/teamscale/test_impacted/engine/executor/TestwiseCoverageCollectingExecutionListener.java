@@ -2,12 +2,9 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.test_impacted.engine.ImpactedTestEngine;
+import com.teamscale.test_impacted.commons.LoggerUtils;
 import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver;
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils;
-import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.engine.EngineExecutionListener;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
@@ -15,7 +12,6 @@ import org.junit.platform.engine.TestExecutionResult.Status;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.reporting.ReportEntry;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -23,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.isTestRepresentative;
 
@@ -30,12 +27,12 @@ import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.is
  * An execution listener which delegates events to another {@link EngineExecutionListener} and notifies Teamscale agents
  * collecting test wise coverage.
  */
-class TestwiseCoverageCollectingExecutionListener implements EngineExecutionListener {
+public class TestwiseCoverageCollectingExecutionListener implements EngineExecutionListener {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestwiseCoverageCollectingExecutionListener.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(TestwiseCoverageCollectingExecutionListener.class);
 
-	/** An API service to signal test start and end to the agent. */
-	private final List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis;
+	/** An API to signal test start and end to the agent. */
+	private final TeamscaleAgentNotifier teamscaleAgentNotifier;
 
 	/** List of tests that have been executed, skipped or failed. */
 	private final List<TestExecution> testExecutions = new ArrayList<>();
@@ -47,12 +44,12 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 
 	private final EngineExecutionListener delegateEngineExecutionListener;
 
-	private final Map<UniqueId, TestExecutionResult> testResultCache = new HashMap<>();
+	private final Map<UniqueId, List<TestExecutionResult>> testResultCache = new HashMap<>();
 
-	TestwiseCoverageCollectingExecutionListener(List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis,
-												ITestDescriptorResolver testDescriptorResolver,
-												EngineExecutionListener engineExecutionListener) {
-		this.testwiseCoverageAgentApis = testwiseCoverageAgentApis;
+	public TestwiseCoverageCollectingExecutionListener(TeamscaleAgentNotifier teamscaleAgentNotifier,
+													   ITestDescriptorResolver testDescriptorResolver,
+													   EngineExecutionListener engineExecutionListener) {
+		this.teamscaleAgentNotifier = teamscaleAgentNotifier;
 		this.testDescriptorResolver = testDescriptorResolver;
 		this.delegateEngineExecutionListener = engineExecutionListener;
 	}
@@ -72,9 +69,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 		}
 
 		testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(testUniformPath -> {
-			if (!AutoSkippingEngineExecutionListener.TEST_NOT_IMPACTED_REASON.equals(reason)) {
-				testExecutions.add(new TestExecution(testUniformPath, 0L, ETestExecutionResult.SKIPPED, reason));
-			}
+			testExecutions.add(new TestExecution(testUniformPath, 0L, ETestExecutionResult.SKIPPED, reason));
 			delegateEngineExecutionListener.executionSkipped(testDescriptor, reason);
 		});
 	}
@@ -82,20 +77,10 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	@Override
 	public void executionStarted(TestDescriptor testDescriptor) {
 		if (isTestRepresentative(testDescriptor)) {
-			testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(this::startTest);
+			testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(teamscaleAgentNotifier::startTest);
+			executionStartTime = System.currentTimeMillis();
 		}
 		delegateEngineExecutionListener.executionStarted(testDescriptor);
-	}
-
-	private void startTest(String testUniformPath) {
-		try {
-			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testStarted(testUniformPath).execute();
-			}
-		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error while calling service api.");
-		}
-		executionStartTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -111,26 +96,14 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 			if (testExecution != null) {
 				testExecutions.add(testExecution);
 			}
-			endTest(uniformPath.get(), testExecution);
-		} else {
-			testResultCache.put(testDescriptor.getUniqueId(), testExecutionResult);
-
-			if (isLastDescriptor(testDescriptor)) {
-				// this is the root node, i.e. test execution is completely finished now
-				endTestRun();
-			}
+			teamscaleAgentNotifier.endTest(uniformPath.get(), testExecution);
+		} else if (testDescriptor.getParent().isPresent()) {
+			List<TestExecutionResult> testExecutionResults = testResultCache.computeIfAbsent(
+					testDescriptor.getParent().get().getUniqueId(), (key) -> new ArrayList<>());
+			testExecutionResults.add(testExecutionResult);
 		}
 
 		delegateEngineExecutionListener.executionFinished(testDescriptor, testExecutionResult);
-	}
-
-	private static boolean isLastDescriptor(TestDescriptor descriptor) {
-		return descriptor.isRoot() || descriptor.getParent().map(
-				TestwiseCoverageCollectingExecutionListener::isImpactedTestEngineDescriptor).orElse(false);
-	}
-
-	private static boolean isImpactedTestEngineDescriptor(TestDescriptor descriptor) {
-		return UniqueId.forEngine(ImpactedTestEngine.ENGINE_ID).equals(descriptor.getUniqueId());
 	}
 
 	private TestExecution getTestExecution(TestDescriptor testDescriptor,
@@ -158,42 +131,13 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	private List<TestExecutionResult> getTestExecutionResults(TestDescriptor testDescriptor,
 															  TestExecutionResult testExecutionResult) {
 		List<TestExecutionResult> testExecutionResults = new ArrayList<>();
-		for (TestDescriptor child : testDescriptor.getChildren()) {
-			TestExecutionResult childTestExecutionResult = testResultCache.remove(child.getUniqueId());
-			if (childTestExecutionResult != null) {
-				testExecutionResults.add(childTestExecutionResult);
-			} else {
-				LOGGER.warn(() -> "No test execution found for " + child.getUniqueId());
-			}
+		List<TestExecutionResult> childTestExecutionResult = testResultCache.remove(testDescriptor.getUniqueId());
+		if (childTestExecutionResult != null) {
+			testExecutionResults.addAll(childTestExecutionResult);
 		}
 		testExecutionResults.add(testExecutionResult);
 		return testExecutionResults;
 	}
-
-	private void endTest(String testUniformPath, TestExecution testExecution) {
-		try {
-			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				if (testExecution == null) {
-					apiService.testFinished(testUniformPath).execute();
-				} else {
-					apiService.testFinished(testUniformPath, testExecution).execute();
-				}
-			}
-		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
-		}
-	}
-
-	private void endTestRun() {
-		try {
-			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testRunFinished().execute();
-			}
-		} catch (IOException e) {
-			LOGGER.error(e, () -> "Error contacting test wise coverage agent.");
-		}
-	}
-
 
 	private TestExecution buildTestExecution(String testUniformPath, long duration,
 											 Status status, String message) {
@@ -207,7 +151,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 				return new TestExecution(testUniformPath, duration, ETestExecutionResult.FAILURE,
 						message);
 			default:
-				LOGGER.error(() -> "Got unexpected test execution result status: " + status);
+				LOGGER.severe(() -> "Got unexpected test execution result status: " + status);
 				return null;
 		}
 	}
@@ -231,7 +175,7 @@ class TestwiseCoverageCollectingExecutionListener implements EngineExecutionList
 	}
 
 	/** @see #testExecutions */
-	List<TestExecution> getTestExecutions() {
+	public List<TestExecution> getTestExecutions() {
 		return testExecutions;
 	}
 }

@@ -32,4 +32,9 @@ public class TiaUnitTestMojo extends TiaMojoBase {
 	protected String getTestPluginArtifact() {
 		return "org.apache.maven.plugins:maven-surefire-plugin";
 	}
+
+	@Override
+	protected String getTestPluginPropertyPrefix() {
+		return "surefire";
+	}
 }

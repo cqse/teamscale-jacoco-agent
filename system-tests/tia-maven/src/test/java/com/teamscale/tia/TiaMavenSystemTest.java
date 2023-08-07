@@ -4,6 +4,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,27 +21,35 @@ public class TiaMavenSystemTest {
 	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
 	 * project.
 	 */
-	private static final int FAKE_TEAMSCALE_PORT = 65432;
+	private static final int FAKE_TEAMSCALE_PORT = 63700;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT,
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false,
 					"bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
 					"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
 
+	@AfterEach
+	public void stopFakeTeamscaleServer() {
+		teamscaleMockServer.shutdown();
+	}
+
 	@Test
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project");
+
+		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(2);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(unitTestReport.tests).hasSize(2);
+		assertThat(unitTestReport.partial).isTrue();
 		assertAll(() -> {
 			assertThat(unitTestReport.tests).extracting(test -> test.uniformPath)
 					.containsExactlyInAnyOrder("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()");

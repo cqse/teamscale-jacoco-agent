@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -349,9 +350,11 @@ public class AgentOptions {
 	}
 
 	private void validateTestwiseCoverageConfig(Validator validator) {
+		boolean diskMode = testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.DISK;
+
 		validator.isFalse(
-				httpServerPort == null && testImpactConfig.testEnvironmentVariable == null,
-				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor 'test-env'!" +
+				!diskMode && httpServerPort == null && testImpactConfig.testEnvironmentVariable == null,
+				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port', 'test-env', nor dumping to disk!" +
 						" One of them is required!");
 
 		validator.isFalse(
@@ -502,7 +505,7 @@ public class AgentOptions {
 		GitSingleProjectPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
 				uploader,
 				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
-						file, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
+						file, isJarFile, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
 				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
@@ -544,13 +547,36 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Creates a new temp file with the given prefix, extension and current timestamp and ensures that the parent folder
+	 * Creates a new file with the given prefix, extension and current timestamp and ensures that the parent folder
 	 * actually exists.
 	 */
-	public File createTempFile(String prefix, String extension) throws IOException {
+	public File createNewFileInOutputDirectory(String prefix, String extension) throws IOException {
 		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(outputDirectory.toFile());
 		return outputDirectory.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension)
 				.toFile();
+	}
+
+	/**
+	 * Creates a new file with the given prefix, extension and current timestamp and ensures that the parent folder
+	 * actually exists. One output folder is created per partition.
+	 */
+	public File createNewFileInPartitionOutputDirectory(String prefix, String extension) throws IOException {
+		Path partitionOutputDir = outputDirectory.resolve(safeFolderName(getTeamscaleServerOptions().partition));
+		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(partitionOutputDir.toFile());
+		return partitionOutputDir.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
+	}
+
+	private static Path safeFolderName(String folderName) {
+		String result = folderName.replaceAll("[<>:\"/\\|?*]", "")
+				.replaceAll("\\.{1,}", "dot")
+				.replaceAll("\\x00", "")
+				.replaceAll("[. ]$", "");
+
+		if (result.isEmpty()) {
+			return Paths.get("default");
+		} else {
+			return Paths.get(result);
+		}
 	}
 
 	/**

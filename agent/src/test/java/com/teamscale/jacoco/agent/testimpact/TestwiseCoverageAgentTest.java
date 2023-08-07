@@ -77,7 +77,7 @@ public class TestwiseCoverageAgentTest {
 
 		int port = PORT_COUNTER.incrementAndGet();
 		AgentOptions options = mockOptions(port);
-		when(options.createTempFile(any(), any())).thenReturn(new File(tempDir, "test"));
+		when(options.createNewFileInOutputDirectory(any(), any())).thenReturn(new File(tempDir, "test"));
 		new TestwiseCoverageAgent(options, null, reportGenerator);
 
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
@@ -86,14 +86,14 @@ public class TestwiseCoverageAgentTest {
 		assertThat(testRun.getPrioritizedClusters()).hasSize(1);
 		assertThat(testRun.getPrioritizedClusters().get(0).tests).hasSize(1);
 		PrioritizableTest test = testRun.getPrioritizedClusters().get(0).tests.get(0);
-		assertThat(test.uniformPath).isEqualTo("test2");
+		assertThat(test.testName).isEqualTo("test2");
 
-		RunningTest runningTest = testRun.startTest(test.uniformPath);
+		RunningTest runningTest = testRun.startTest(test.testName);
 		runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
-		testRun.endTestRun();
+		testRun.endTestRun(true);
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
+				matches("\\Q{\"partial\":true,\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
 				any(), any(), any(), any());
 	}
 
