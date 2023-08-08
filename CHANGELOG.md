@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] support `full` mode of the Maven git-commit-id plugin.
 
 # 30.1.1
 - [fix] _teamscale-gradle-plugin_: Warnings were logged during test execution (WARNING: JAXBContext implementation could not be found. WADL feature is disabled., WARNING: A class javax.activation.DataSource for a default provider)
