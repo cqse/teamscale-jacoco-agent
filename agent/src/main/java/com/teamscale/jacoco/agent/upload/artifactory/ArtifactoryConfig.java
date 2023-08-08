@@ -200,7 +200,8 @@ public class ArtifactoryConfig {
 
 	/** Parses the commit information from a git.properties file. */
 	public static List<CommitInfo> parseGitProperties(File file,
-													  boolean isJarFile, DateTimeFormatter gitPropertiesCommitTimeFormat,
+													  boolean isJarFile,
+													  DateTimeFormatter gitPropertiesCommitTimeFormat,
 													  boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(
 				file, isJarFile, recursiveSearch);
@@ -211,20 +212,35 @@ public class ArtifactoryConfig {
 			Properties properties = entryWithProperties.getSecond();
 
 			String revision = GitPropertiesLocatorUtils
-					.getGitPropertiesValue(properties, GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, entry,
-							file);
-			String branchName = GitPropertiesLocatorUtils
-					.getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH,
-							entry, file);
-			long timestamp = ZonedDateTime.parse(GitPropertiesLocatorUtils
-							.getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME,
-									entry,
-									file),
+					.getGitCommitPropertyValue(properties, entry, file);
+			String branchName = getGitPropertiesValue(properties,
+					GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH,
+					entry, file);
+			long timestamp = ZonedDateTime.parse(
+					getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME,
+							entry,
+							file),
 					gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
 			result.add(new CommitInfo(revision, new CommitDescriptor(branchName, timestamp)));
 
 		}
 		return result;
+	}
+
+	/**
+	 * Returns a value from a git properties file.
+	 */
+	private static String getGitPropertiesValue(
+			Properties gitProperties, String key, String entryName, File jarFile) throws InvalidGitPropertiesException {
+		String value = gitProperties.getProperty(key);
+		if (StringUtils.isEmpty(value)) {
+			throw new InvalidGitPropertiesException(
+					"No entry or empty value for '" + key + "' in " + entryName + " in " + jarFile + "." +
+							"\nContents of " + GitPropertiesLocatorUtils.GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties
+			);
+		}
+
+		return value;
 	}
 
 	/** Hold information regarding a commit. */
