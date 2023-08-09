@@ -393,18 +393,22 @@ public class AgentOptions {
 		}
 
 		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
-			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
-					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
-					" with the 'teamscale.project' field set.");
 			DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
 					(project, revision) ->
 							new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
 
 			if (gitPropertiesJar != null) {
+				logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
+						" auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+						gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
+
 				startMultiGitPropertiesFileSearchInJarFile(uploader, gitPropertiesJar);
 				return uploader;
 			}
 
+			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
+					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
+					" with the 'teamscale.project' field set.");
 			registerMultiGitPropertiesLocator(uploader, instrumentation);
 			return uploader;
 		}
@@ -414,6 +418,9 @@ public class AgentOptions {
 				DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
 
 				if (gitPropertiesJar != null) {
+					logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
+							"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+							gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
 					startGitPropertiesSearchInJarFile(uploader, gitPropertiesJar);
 					return uploader;
 				}
