@@ -27,10 +27,16 @@ import java.util.regex.Pattern;
 public class GitPropertiesLocatorUtils {
 
 	/** Name of the git.properties file. */
-	private static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
+	public static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
 	/** The git.properties key that holds the commit hash. */
-	public static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
+	private static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
+
+	/**
+	 * Alternative git.properties key that might also hold the commit hash, depending on the Maven git-commit-id plugin
+	 * configuration.
+	 */
+	private static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
 
 	/** The git.properties key that holds the Teamscale project name. */
 	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
@@ -57,8 +63,9 @@ public class GitPropertiesLocatorUtils {
 				recursiveSearch);
 		List<String> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			result.add(getGitPropertiesValue(entryWithProperties.getSecond(), GIT_PROPERTIES_GIT_COMMIT_ID,
-					entryWithProperties.getFirst(), file));
+			String revision = getGitCommitPropertyValue(entryWithProperties.getSecond(),
+					entryWithProperties.getFirst(), file);
+			result.add(revision);
 		}
 		return result;
 	}
@@ -164,10 +171,14 @@ public class GitPropertiesLocatorUtils {
 		List<ProjectRevision> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			String revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
+			if (StringUtils.isEmpty(revision)) {
+				revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID_FULL);
+			}
 			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
 			if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
 				throw new InvalidGitPropertiesException(
-						"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
+						"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "'/'" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
+								"' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
 								"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + entryWithProperties.getSecond()
 								.toString()
 				);
@@ -210,8 +221,7 @@ public class GitPropertiesLocatorUtils {
 	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInDirectoryFile(
 			File directoryFile, boolean recursiveSearch) throws IOException {
-		List<Pair<String, Properties>> result = new ArrayList<>();
-		result.addAll(findGitPropertiesInFolder(directoryFile));
+		List<Pair<String, Properties>> result = new ArrayList<>(findGitPropertiesInFolder(directoryFile));
 
 		if (recursiveSearch) {
 			result.addAll(findGitPropertiesInNestedJarFiles(directoryFile));
@@ -283,24 +293,29 @@ public class GitPropertiesLocatorUtils {
 		}
 		if (isEmpty) {
 			throw new IOException(
-					"No entries in Jar file " + archiveName + ". Is this a valid jar file?. If not, please report to CQSE.");
+					"No entries in Jar file " + archiveName + ". Is this a valid jar file?. If so, please report to CQSE.");
 		}
 		return result;
 	}
 
 	/**
-	 * Returns a value from a git properties file.
+	 * Returns a value from a git properties file for the Git SHA1. This can be either in
+	 * {@link #GIT_PROPERTIES_GIT_COMMIT_ID} or {@link #GIT_PROPERTIES_GIT_COMMIT_ID_FULL}.
 	 */
-	public static String getGitPropertiesValue(
-			Properties gitProperties, String key, String entryName, File jarFile) throws InvalidGitPropertiesException {
-		String revision = gitProperties.getProperty(key);
-		if (StringUtils.isEmpty(revision)) {
+	public static String getGitCommitPropertyValue(
+			Properties gitProperties, String entryName, File jarFile) throws InvalidGitPropertiesException {
+		String value = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
+		if (StringUtils.isEmpty(value)) {
+			value = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_ID_FULL);
+		}
+		if (StringUtils.isEmpty(value)) {
 			throw new InvalidGitPropertiesException(
-					"No entry or empty value for '" + key + "' in " + entryName + " in " + jarFile + "." +
-							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ": " + gitProperties
+					"No entry or empty value for '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
+							"' in " + entryName + " in " + jarFile + "." +
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties
 			);
 		}
 
-		return revision;
+		return value;
 	}
 }
