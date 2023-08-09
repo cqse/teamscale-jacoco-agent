@@ -421,7 +421,7 @@ public class AgentOptions {
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
 				DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
-				registerSingeGitPropertiesLocator(uploader, instrumentation);
+				registerSingleGitPropertiesLocator(uploader, instrumentation);
 				return uploader;
 			}
 			return new TeamscaleUploader(teamscaleServer);
@@ -459,8 +459,8 @@ public class AgentOptions {
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
-	private void registerSingeGitPropertiesLocator(DelayedUploader<ProjectRevision> uploader,
-												   Instrumentation instrumentation) {
+	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectRevision> uploader,
+													Instrumentation instrumentation) {
 		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
