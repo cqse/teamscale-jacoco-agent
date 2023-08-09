@@ -30,13 +30,13 @@ public class GitPropertiesLocatorUtils {
 	public static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
 	/** The git.properties key that holds the commit hash. */
-	public static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
+	private static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
 
 	/**
 	 * Alternative git.properties key that might also hold the commit hash, depending on the Maven git-commit-id plugin
 	 * configuration.
 	 */
-	public static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
+	private static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
 
 	/** The git.properties key that holds the Teamscale project name. */
 	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
