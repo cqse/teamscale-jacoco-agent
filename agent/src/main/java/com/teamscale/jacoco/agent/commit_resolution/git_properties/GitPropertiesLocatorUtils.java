@@ -221,8 +221,7 @@ public class GitPropertiesLocatorUtils {
 	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInDirectoryFile(
 			File directoryFile, boolean recursiveSearch) throws IOException {
-		List<Pair<String, Properties>> result = new ArrayList<>();
-		result.addAll(findGitPropertiesInFolder(directoryFile));
+		List<Pair<String, Properties>> result = new ArrayList<>(findGitPropertiesInFolder(directoryFile));
 
 		if (recursiveSearch) {
 			result.addAll(findGitPropertiesInNestedJarFiles(directoryFile));
