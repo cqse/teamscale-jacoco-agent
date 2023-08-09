@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class InstallerTest {
 
-	private static final int TEAMSCALE_PORT = 8054;
+	private static final int TEAMSCALE_PORT = 8059;
 	private static final String FILE_TO_INSTALL_CONTENT = "install-me";
 	private static final String NESTED_FILE_CONTENT = "nested-file";
 	private static final String ENVIRONMENT_CONTENT = "#this is /etc/environment\nPATH=/usr/bin";
@@ -123,7 +123,7 @@ class InstallerTest {
 	@Test
 	void distributionChangedByUser() throws IOException {
 		Files.delete(sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar"));
-		assertThatThrownBy(() -> install())
+		assertThatThrownBy(this::install)
 				.hasMessageContaining("It looks like you moved the installer");
 	}
 
