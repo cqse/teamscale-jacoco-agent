@@ -1,6 +1,6 @@
 # --- build image ---
 
-FROM ghcr.io/graalvm/jdk:java17-22.0.0 as build
+FROM ghcr.io/graalvm/jdk-community:17.0.8 as build
 ADD . /src
 WORKDIR /src
 RUN ./gradlew :agent:assemble
