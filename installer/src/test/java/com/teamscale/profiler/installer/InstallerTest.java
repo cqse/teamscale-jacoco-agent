@@ -1,6 +1,9 @@
 package com.teamscale.profiler.installer;
 
 import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -75,16 +78,36 @@ class InstallerTest {
 		installedCoverageDirectory = targetDirectory.resolve("coverage");
 		installedLogsDirectory = targetDirectory.resolve("logs");
 		installedAgentLibrary = targetDirectory.resolve("lib/teamscale-jacoco-agent.jar");
+
+		testMockTs();
 	}
 
 	@BeforeAll
-	static void startFakeTeamscale() {
+	static void startFakeTeamscale() throws IOException {
+		System.err.println("---> Starting mock teamscale");
 		mockTeamscale = new MockTeamscale(TEAMSCALE_PORT);
+		System.err.println("---> Done Starting mock teamscale");
+
+		testMockTs();
+	}
+
+	private static void testMockTs() throws IOException {
+		OkHttpClient client = new OkHttpClient();
+
+		Request request = new Request.Builder()
+				.url(HttpUrl.get("http://localhost:" + TEAMSCALE_PORT + "/testing"))
+				.build();
+		try (Response response = client.newCall(request).execute()) {
+			System.err.println(
+					"Test response: " + response.code() + " " + response.message() + "\n" + response.body().string());
+		}
 	}
 
 	@AfterAll
 	static void stopFakeTeamscale() {
+		System.err.println("---> Shutting down mock teamscale");
 		mockTeamscale.shutdown();
+		System.err.println("---> Done shutting down mock teamscale");
 	}
 
 	@Test
