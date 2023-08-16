@@ -75,6 +75,11 @@ public class AgentOptions {
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
+	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
+	/* package */ File gitPropertiesJar;
+
+	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
+	public static final String GIT_PROPERTIES_JAR_OPTION = "git-properties-jar";
 
 	/**
 	 * The original options passed to the agent.
@@ -388,17 +393,42 @@ public class AgentOptions {
 		}
 
 		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
+			DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
+					(project, revision) ->
+							new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+
+			if (gitPropertiesJar != null) {
+				logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
+						" auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+						gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
+
+				startMultiGitPropertiesFileSearchInJarFile(uploader, gitPropertiesJar);
+				return uploader;
+			}
+
 			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
 					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
 					" with the 'teamscale.project' field set.");
-			return createDelayedMultiProjectTeamscaleUploader(instrumentation);
+			registerMultiGitPropertiesLocator(uploader, instrumentation);
+			return uploader;
 		}
 
 		if (teamscaleServer.hasAllRequiredFieldsSet()) {
 			if (!teamscaleServer.hasCommitOrRevision()) {
+				DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
+
+				if (gitPropertiesJar != null) {
+					logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
+							"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+							gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
+					startGitPropertiesSearchInJarFile(uploader, gitPropertiesJar);
+					return uploader;
+				}
+
 				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-				return createDelayedTeamscaleUploader(instrumentation);
+				registerSingleGitPropertiesLocator(uploader, instrumentation);
+				return uploader;
 			}
 			return new TeamscaleUploader(teamscaleServer);
 		}
@@ -428,8 +458,22 @@ public class AgentOptions {
 		return new LocalDiskUploader();
 	}
 
-	private IUploader createDelayedTeamscaleUploader(Instrumentation instrumentation) {
-		DelayedUploader<ProjectRevision> uploader = new DelayedUploader<>(
+	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectRevision> uploader,
+												   File gitPropertiesJar) {
+		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
+				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
+		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
+	}
+
+	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectRevision> uploader,
+													Instrumentation instrumentation) {
+		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
+				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
+		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
+	}
+
+	private DelayedUploader<ProjectRevision> createDelayedSingleProjectTeamscaleUploader() {
+		return new DelayedUploader<>(
 				projectRevision -> {
 					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project
 							.equals(projectRevision.getProject())) {
@@ -441,19 +485,20 @@ public class AgentOptions {
 					teamscaleServer.revision = projectRevision.getRevision();
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
-		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
-				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
-		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
-		return uploader;
 	}
 
-	private IUploader createDelayedMultiProjectTeamscaleUploader(Instrumentation instrumentation) {
-		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader((project, revision) ->
-				new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+	private void startMultiGitPropertiesFileSearchInJarFile(DelayedTeamscaleMultiProjectUploader uploader,
+															File gitPropertiesJar) {
+		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
+				this.searchGitPropertiesRecursively);
+		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
+	}
+
+	private void registerMultiGitPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader,
+												   Instrumentation instrumentation) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
 				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
-		return uploader;
 	}
 
 	private IUploader createDelayedArtifactoryUploader(Instrumentation instrumentation) {
