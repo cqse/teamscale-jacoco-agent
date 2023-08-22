@@ -398,10 +398,10 @@ public abstract class TiaMojoBase extends AbstractMojo {
 				"\nlogging-config=" + loggingConfigPath +
 				"\nout=" + agentOutputDirectory.toAbsolutePath();
 		if (ArrayUtils.isNotEmpty(includes)) {
-			config += "\nincludes=" + String.join(",", includes);
+			config += "\nincludes=" + String.join(";", includes);
 		}
 		if (ArrayUtils.isNotEmpty(excludes)) {
-			config += "\nexcludes=" + String.join(",", excludes);
+			config += "\nexcludes=" + String.join(";", excludes);
 		}
 		return config;
 	}

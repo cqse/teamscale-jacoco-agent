@@ -5,8 +5,11 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 31.0.0
 - [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
 - [feature] support `full` mode of the Maven git-commit-id plugin.
+- [fix] Providing multiple include pattern in the maven plugin resulted in no coverage being collected
 
 # 30.1.1
 - [fix] _teamscale-gradle-plugin_: Warnings were logged during test execution (WARNING: JAXBContext implementation could not be found. WADL feature is disabled., WARNING: A class javax.activation.DataSource for a default provider)

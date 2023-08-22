@@ -5,7 +5,7 @@ plugins {
 
 group = "com.teamscale"
 
-val appVersion by extra("30.1.1")
+val appVersion by extra("31.0.0")
 
 val snapshotVersion = appVersion + if (VersionUtils.isTaggedRelease()) "" else "-SNAPSHOT"
 
