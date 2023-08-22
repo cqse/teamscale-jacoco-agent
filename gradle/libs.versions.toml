@@ -6,7 +6,7 @@ jersey = "2.40"
 # and update the internal_xxxxxx hash included in the PreMain package name in AgentBase.java.
 jacoco = "0.8.8"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
-logback = "1.3.8"
+logback = "1.3.11"
 retrofit = "2.9.0"
 junit = "5.10.0"
 junitPlatform = "1.9.3"
