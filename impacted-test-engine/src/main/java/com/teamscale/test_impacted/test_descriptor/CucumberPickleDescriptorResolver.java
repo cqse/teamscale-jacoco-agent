@@ -7,17 +7,19 @@ import sun.management.Agent;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public class CucumberPickleDescriptorResolver extends JUnitTestDescriptorResolverBase {
+public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver {
 	@Override
-	public String getEngineId() {
-		return "junit-platform-suite";
+	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
+		return Optional.empty();
 	}
 
 	@Override
-	protected Optional<String> getClassName(TestDescriptor testDescriptor) {
-		// TODO remove log
-		Logger logger = LoggerUtils.getLogger(CucumberPickleDescriptorResolver.class);
-		logger.info("Test Descriptor: " + testDescriptor.getDisplayName());
-		return Optional.of(testDescriptor.getDisplayName());
+	public Optional<String> getClusterId(TestDescriptor testDescriptor) {
+		return Optional.empty();
+	}
+
+	@Override
+	public String getEngineId() {
+		return "cucumber";
 	}
 }
