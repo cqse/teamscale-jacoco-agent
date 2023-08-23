@@ -22,6 +22,7 @@ public class TestDescriptorResolverRegistry {
 		// Register default test descriptor resolvers
 		registerTestDescriptorResolver(new JUnitJupiterTestDescriptorResolver());
 		registerTestDescriptorResolver(new JUnitVintageTestDescriptorResolver());
+		registerTestDescriptorResolver(new JUnitPlatformSuiteDescriptorResolver());
 		registerTestDescriptorResolver(new CucumberPickleDescriptorResolver());
 
 		// Override existing or register new test descriptor resolvers
