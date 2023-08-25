@@ -1,9 +1,9 @@
 # --- build image ---
 
-FROM ghcr.io/graalvm/jdk-community:17.0.8 as build
+FROM openjdk:8 as build
 ADD . /src
 WORKDIR /src
-RUN ./gradlew :agent:assemble
+RUN ./gradlew :agent:shadowJar
 
 # --- production image ---
 
