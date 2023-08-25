@@ -26,6 +26,7 @@ public class RedirectMockServer {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());
 		});
+		service.awaitInitialization();
 	}
 
 
