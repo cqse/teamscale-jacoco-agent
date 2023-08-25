@@ -20,6 +20,8 @@ jobs:
         distribution: 'graalvm-community'
         github-token: ${{ secrets.GITHUB_TOKEN }}
         set-java-home: true
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Build with Gradle
       run: ./gradlew build --console=plain
     - name: Upload Release Assets
