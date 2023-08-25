@@ -21,7 +21,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         set-java-home: true
     - name: Build with Gradle
-      run: ./gradlew build --console=plain
+      run: ./gradlew build
     - name: Upload Release Assets
       if: startsWith(github.ref, 'refs/tags/v')
       uses: svenstaro/upload-release-action@v2
