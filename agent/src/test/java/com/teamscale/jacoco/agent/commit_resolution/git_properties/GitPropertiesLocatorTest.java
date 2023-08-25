@@ -15,7 +15,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class GitPropertiesLocatorTest {
 
 	private static final List<String> TEST_ARCHIVES = Arrays
-			.asList("plain-git-properties.jar", "spring-boot-git-properties.jar", "spring-boot-git-properties.war");
+			.asList("plain-git-properties.jar", "spring-boot-git-properties.jar", "spring-boot-git-properties.war",
+					"full-git-properties.jar");
 
 	@Test
 	public void testReadingGitPropertiesFromArchive() throws Exception {
@@ -25,8 +26,7 @@ public class GitPropertiesLocatorTest {
 					.findGitPropertiesInArchive(jarInputStream, archiveName, true);
 			assertThat(commits.size()).isEqualTo(1);
 			String rev = GitPropertiesLocatorUtils
-					.getGitPropertiesValue(commits.get(0).getSecond(),
-							GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, "test",
+					.getGitCommitPropertyValue(commits.get(0).getSecond(), "test",
 							new File("test.jar"));
 			assertThat(rev).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
 		}
@@ -42,8 +42,7 @@ public class GitPropertiesLocatorTest {
 				true, true);
 		assertThat(commits.size()).isEqualTo(2); // First git.properties in the root war, 2nd in the nested Jar
 		String rev = GitPropertiesLocatorUtils
-				.getGitPropertiesValue(commits.get(1).getSecond(),
-						GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID,
+				.getGitCommitPropertyValue(commits.get(1).getSecond(),
 						"test",
 						new File("test.jar"));
 		assertThat(rev).isEqualTo("5b3b2d44987be38f930fe57128274e317316423d");
@@ -70,8 +69,7 @@ public class GitPropertiesLocatorTest {
 		gitProperties.put("git.commit.time", "123ab");
 		gitProperties.put("git.branch", "master");
 		assertThatThrownBy(
-				() -> GitPropertiesLocatorUtils.getGitPropertiesValue(gitProperties,
-						GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, "test", new File("test.jar")))
+				() -> GitPropertiesLocatorUtils.getGitCommitPropertyValue(gitProperties, "test", new File("test.jar")))
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
 }

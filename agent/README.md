@@ -137,11 +137,10 @@ directories, you can get the commit info via
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format
   section above)
-- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
+- `git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
   This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
-  This search works up to a nesting depth of two, meaning that for example a Jar file inside a War file will be searched. If there was another Jar file inside the previous Jar file, it would not be searched for a `git.properties` file.
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").

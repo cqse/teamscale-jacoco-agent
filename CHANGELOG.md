@@ -6,6 +6,14 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 31.0.0
+- [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
+- [feature] support `full` mode of the Maven git-commit-id plugin.
+- [fix] Providing multiple include pattern in the maven plugin resulted in no coverage being collected
+
+# 30.1.1
+- [fix] _teamscale-gradle-plugin_: Warnings were logged during test execution (WARNING: JAXBContext implementation could not be found. WADL feature is disabled., WARNING: A class javax.activation.DataSource for a default provider)
+
 # 30.1.0
 - [feature] The option `tiamode` has now an additional choice `disk` to dump testwise coverage as JSON to the output folder.
 - [feature] _teamscale-maven-plugin_: The configuration options `runAllTests`, `runImpacted`, and `tiamode` are now available

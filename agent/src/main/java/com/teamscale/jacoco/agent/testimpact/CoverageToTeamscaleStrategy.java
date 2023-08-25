@@ -26,7 +26,7 @@ public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 					"You must provide a commit or revision via the agent's '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION +
 							"', '" + TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "', '" +
 							TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "' or '" +
-							TeamscaleConfig.TEAMSCALE_GIT_PROPERTIES_JAR_OPTION + "' option." +
+							AgentOptions.GIT_PROPERTIES_JAR_OPTION + "' option." +
 							" Auto-detecting the git.properties does not work since we need the commit before any code" +
 							" has been profiled in order to obtain the prioritized test cases from the TIA.");
 		}
