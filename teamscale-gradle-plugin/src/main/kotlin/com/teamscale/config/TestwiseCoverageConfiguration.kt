@@ -19,17 +19,16 @@ open class TestwiseCoverageConfiguration(project: Project, task: TestImpacted) :
     fun setDestination(destination: String) {
         this.destination.set(project.objects.fileProperty().fileValue(File(destination)))
     }
+
     init {
         destination.set(partition.map { partition ->
-            project.objects.fileProperty().fileValue(
-                File(
-                    project.rootProject.buildDir, "reports/testwise-coverage/${task.name}/${
-                        partition.replace(
-                            "[ /\\\\]".toRegex(),
-                            "-"
-                        )
-                    }.json"
-                )
+            project.rootProject.layout.buildDirectory.file(
+                "reports/testwise-coverage/${task.name}/${
+                    partition.replace(
+                        "[ /\\\\]".toRegex(),
+                        "-"
+                    )
+                }.json"
             ).get()
         })
     }
