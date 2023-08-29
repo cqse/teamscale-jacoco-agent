@@ -21,7 +21,7 @@ import java.util.zip.ZipInputStream;
 /**
  * {@link Analyzer} that filters the analyzed class files based on a {@link Predicate}.
  */
-/* package */ public class FilteringAnalyzer extends Analyzer {
+/* package */ public class FilteringAnalyzer extends OpenAnalyzer {
 
 	/** The filter for the analyzed class files. */
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
@@ -47,11 +47,28 @@ import java.util.zip.ZipInputStream;
 		return super.analyzeAll(input, location);
 	}
 
-	/** Copied from Analyzer.analyzerError */
-	private IOException analyzerError(final String location,
-									  final Exception cause) {
-		return new IOException(
-				String.format("Error while analyzing %s.", location), cause);
+	@Override
+	public void analyzeClass(final byte[] buffer, final String location)
+			throws IOException {
+		try {
+			analyzeClass(buffer);
+		} catch (final RuntimeException cause) {
+			if (isUnsupportedClassFile(cause)) {
+				logger.error(cause.getMessage() + " in " + location);
+			} else {
+				throw analyzerError(location, cause);
+			}
+		}
+	}
+
+	/**
+	 * Checks if the error indicates that the class file might be newer than what is currently supported by
+	 * JaCoCo. The concrete error message seems to depend on the used JVM, so we only check for "Unsupported" which seems
+	 * to be common amongst all of them.
+	 */
+	private boolean isUnsupportedClassFile(RuntimeException cause) {
+		return cause instanceof IllegalArgumentException && cause.getMessage()
+				.startsWith("Unsupported");
 	}
 
 	/**
