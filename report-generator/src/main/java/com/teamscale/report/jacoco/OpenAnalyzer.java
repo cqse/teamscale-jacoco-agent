@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2022 Mountainminds GmbH & Co. KG and Contributors
+ * Copyright (c) 2009, 2023 Mountainminds GmbH & Co. KG and Contributors
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0
@@ -47,6 +47,13 @@ import java.util.zip.ZipInputStream;
  * - {@link #analyzerError(String, Exception)}
  * <p>
  * When performing an update of JaCoCo we need to check that this file is still up-to-date.
+ * <p>
+ * An {@link Analyzer} instance processes a set of Java class files and
+ * calculates coverage data for them. For each class file the result is reported
+ * to a given {@link ICoverageVisitor} instance. In addition the
+ * {@link Analyzer} requires a {@link ExecutionDataStore} instance that holds
+ * the execution data for the classes to analyze. The {@link Analyzer} offers
+ * several methods to analyze classes from a variety of sources.
  */
 public class OpenAnalyzer {
 

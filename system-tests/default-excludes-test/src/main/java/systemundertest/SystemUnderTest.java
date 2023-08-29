@@ -1,7 +1,7 @@
 package systemundertest;
 
 import notexcluded.sun.NotExcludedClass;
-import shadow.ShadowedClass;
+import tsshadow.ShadowedClass;
 
 /** Fake system under test to generate some coverage. */
 public class SystemUnderTest {

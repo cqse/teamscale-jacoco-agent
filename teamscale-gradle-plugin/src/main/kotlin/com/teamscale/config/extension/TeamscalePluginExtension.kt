@@ -92,7 +92,7 @@ open class TeamscalePluginExtension(val project: Project) {
             "com.teamscale.report.*",
             "com.teamscale.client.*",
             "org.jacoco.core.*",
-            "shadow.*",
+            "tsshadow.*",
             "okhttp3.*",
             "okio.*",
             "retrofit2.*",

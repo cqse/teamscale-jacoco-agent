@@ -1,8 +1,8 @@
 package com.teamscale.jacoco.agent;
 
-import org.jacoco.agent.rt.internal_b6258fc.CoverageTransformer;
-import org.jacoco.agent.rt.internal_b6258fc.core.runtime.AgentOptions;
-import org.jacoco.agent.rt.internal_b6258fc.core.runtime.IRuntime;
+import org.jacoco.agent.rt.internal_4a7f17c.CoverageTransformer;
+import org.jacoco.agent.rt.internal_4a7f17c.core.runtime.AgentOptions;
+import org.jacoco.agent.rt.internal_4a7f17c.core.runtime.IRuntime;
 import org.slf4j.Logger;
 
 import java.lang.instrument.IllegalClassFormatException;

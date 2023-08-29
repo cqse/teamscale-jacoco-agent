@@ -10,6 +10,8 @@ plugins {
 tasks.register<ConfigureShadowRelocation>("relocateShadowJar") {
     dependsOn("jar")
     target = tasks.getByName<ShadowJar>("shadowJar")
+    // Custom prefix to reduce the risk of conflicting with other shaded dependencies that might be on the application classpath
+    prefix = "tsshadow"
     onlyIf {
         !project.hasProperty("debug")
     }

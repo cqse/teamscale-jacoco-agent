@@ -13,30 +13,25 @@
 
 package com.teamscale.jacoco.agent;
 
-import org.jacoco.agent.rt.internal_b6258fc.Agent;
-import org.jacoco.agent.rt.internal_b6258fc.CoverageTransformer;
-import org.jacoco.agent.rt.internal_b6258fc.IExceptionLogger;
-import org.jacoco.agent.rt.internal_b6258fc.core.runtime.AgentOptions;
-import org.jacoco.agent.rt.internal_b6258fc.core.runtime.IRuntime;
-import org.jacoco.agent.rt.internal_b6258fc.core.runtime.InjectedClassRuntime;
-import org.jacoco.agent.rt.internal_b6258fc.core.runtime.ModifiedSystemClassRuntime;
+import org.jacoco.agent.rt.internal_4a7f17c.Agent;
+import org.jacoco.agent.rt.internal_4a7f17c.AgentModule;
+import org.jacoco.agent.rt.internal_4a7f17c.CoverageTransformer;
+import org.jacoco.agent.rt.internal_4a7f17c.IExceptionLogger;
+import org.jacoco.agent.rt.internal_4a7f17c.core.runtime.AgentOptions;
+import org.jacoco.agent.rt.internal_4a7f17c.core.runtime.IRuntime;
+import org.jacoco.agent.rt.internal_4a7f17c.core.runtime.InjectedClassRuntime;
+import org.jacoco.agent.rt.internal_4a7f17c.core.runtime.ModifiedSystemClassRuntime;
 import org.slf4j.Logger;
 
 import java.lang.instrument.Instrumentation;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
 
 /**
- * This is a copy of the PreMain class from the JaCoCo agent. The only changes are that we:
+ * This is a copy of the {@link PreMain} class from the JaCoCo agent. The only changes are that we:
  * <ul>
  * <li>replaced the {@link CoverageTransformer} with our {@link LenientCoverageTransformer}</li>
  * <li>pass a {@link Logger} to {@link #premain(String, Instrumentation, Logger)} which is passed to the
  * {@link LenientCoverageTransformer} instead of {@link IExceptionLogger}</li>
  * </ul>
- * <p>
- * The agent which is referred as the <code>Premain-Class</code>. The agent configuration is provided with the agent
- * parameters in the command line.
  */
 public final class JaCoCoPreMain {
 
@@ -67,56 +62,16 @@ public final class JaCoCoPreMain {
 	private static IRuntime createRuntime(final Instrumentation inst)
 			throws Exception {
 
-		if (redefineJavaBaseModule(inst)) {
-			return new InjectedClassRuntime(Object.class, "$JaCoCo");
+		if (AgentModule.isSupported()) {
+			final AgentModule module = new AgentModule();
+			module.openPackage(inst, Object.class);
+			final Class<InjectedClassRuntime> clazz = module
+					.loadClassInModule(InjectedClassRuntime.class);
+			return clazz.getConstructor(Class.class, String.class)
+					.newInstance(Object.class, "$JaCoCo");
 		}
 
 		return ModifiedSystemClassRuntime.createFor(inst,
 				"java/lang/UnknownError");
 	}
-
-	/**
-	 * Opens {@code java.base} module for {@link InjectedClassRuntime} when executed on Java 9 JREs or higher.
-	 *
-	 * @return <code>true</code> when running on Java 9 or higher,
-	 * <code>false</code> otherwise
-	 * @throws Exception if unable to open
-	 */
-	private static boolean redefineJavaBaseModule(
-			final Instrumentation instrumentation) throws Exception {
-		try {
-			Class.forName("java.lang.Module");
-		} catch (final ClassNotFoundException e) {
-			return false;
-		}
-
-		Instrumentation.class.getMethod("redefineModule", //
-				Class.forName("java.lang.Module"), //
-				Set.class, //
-				Map.class, //
-				Map.class, //
-				Set.class, //
-				Map.class //
-		).invoke(instrumentation, // instance
-				getModule(Object.class), // module
-				Collections.emptySet(), // extraReads
-				Collections.emptyMap(), // extraExports
-				Collections.singletonMap("java.lang",
-						Collections.singleton(
-								getModule(InjectedClassRuntime.class))), // extraOpens
-				Collections.emptySet(), // extraUses
-				Collections.emptyMap() // extraProvides
-		);
-		return true;
-	}
-
-	/**
-	 * @return {@code cls.getModule()}
-	 */
-	private static Object getModule(final Class<?> cls) throws Exception {
-		return Class.class //
-				.getMethod("getModule") //
-				.invoke(cls);
-	}
-
 }

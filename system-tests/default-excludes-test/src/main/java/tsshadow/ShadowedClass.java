@@ -1,4 +1,4 @@
-package shadow;
+package tsshadow;
 
 public class ShadowedClass {
 	public int x() {
