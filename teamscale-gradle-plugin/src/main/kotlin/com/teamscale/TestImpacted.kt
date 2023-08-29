@@ -16,7 +16,7 @@ import javax.inject.Inject
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
 @CacheableTask
-open class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
+abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
 
     companion object {
         const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
