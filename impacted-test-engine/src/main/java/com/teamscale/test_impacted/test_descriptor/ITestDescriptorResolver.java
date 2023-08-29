@@ -8,6 +8,8 @@ import java.util.Optional;
 /** Interface for implementation of mappings from {@link TestDescriptor}s to uniform paths. */
 public interface ITestDescriptorResolver {
 
+	String ENGINE_SEGMENT_TYPE = "engine";
+
 	/** Returns the uniform path or {@link Optional#empty()} if no uniform path could be determined. */
 	Optional<String> getUniformPath(TestDescriptor testDescriptor);
 
