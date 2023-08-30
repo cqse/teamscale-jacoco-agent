@@ -29,7 +29,7 @@ public class DefaultExcludesSystemTest {
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
-		assertThat(report).doesNotContain("tsshadow");
+		assertThat(report).doesNotContain("shadow");
 		assertThat(report).doesNotContain("junit");
 		assertThat(report).doesNotContain("eclipse");
 		assertThat(report).doesNotContain("apache");
