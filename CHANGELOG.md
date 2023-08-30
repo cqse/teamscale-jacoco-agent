@@ -9,6 +9,7 @@ We use [semantic versioning](http://semver.org/):
   - `teamscale.agent.destinationProperty` type has changed from `Property<File>` to `DirectoryProperty`
   - `teamscale.agent.setDestination(destination)` parameter type has changed from `Property<File>` to `Provider<Directory>`
 - [fix] _agent_: Discovery of unsupported class file versions will no longer lead to a crash, but will be logged instead
+- [breaking] _tia-runlisteners_: Requires JUnit 5.10.0 now
 - [feature] _agent_: Added support for Java 19, 20 and experimental support for 21.
 
 # 31.0.0
