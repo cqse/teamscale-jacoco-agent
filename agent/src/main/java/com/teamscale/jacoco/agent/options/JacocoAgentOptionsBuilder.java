@@ -1,28 +1,21 @@
 package com.teamscale.jacoco.agent.options;
 
-import com.teamscale.jacoco.agent.Agent;
-import com.teamscale.jacoco.agent.AgentBase;
-import com.teamscale.jacoco.agent.testimpact.TestExecutionWriter;
-import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
-import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
 /** Builder for the JaCoCo agent options string. */
-public class JacocoAgentBuilder {
+public class JacocoAgentOptionsBuilder {
 	private final Logger logger = LoggingUtils.getLogger(this);
 
 	private final AgentOptions agentOptions;
 
-	public JacocoAgentBuilder(AgentOptions agentOptions) {
+	public JacocoAgentOptionsBuilder(AgentOptions agentOptions) {
 		this.agentOptions = agentOptions;
 	}
 
@@ -75,23 +68,6 @@ public class JacocoAgentBuilder {
 			return Files.createTempDirectory(agentDirectory, "jacoco-class-dump");
 		} catch (IOException e) {
 			throw new AgentOptionParseException("Unable to create a temporary directory anywhere", e);
-		}
-	}
-
-	/**
-	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
-	 * the HTTP server is used.
-	 */
-	public AgentBase createAgent(Instrumentation instrumentation) throws UploaderException, IOException {
-		if (agentOptions.useTestwiseCoverageMode()) {
-			JaCoCoTestwiseReportGenerator reportGenerator = new JaCoCoTestwiseReportGenerator(
-					agentOptions.getClassDirectoriesOrZips(), agentOptions.getLocationIncludeFilter(),
-					agentOptions.getDuplicateClassFileBehavior(), LoggingUtils.wrap(logger));
-			return new TestwiseCoverageAgent(agentOptions,
-					new TestExecutionWriter(agentOptions.createNewFileInOutputDirectory("test-execution", "json")),
-					reportGenerator);
-		} else {
-			return new Agent(agentOptions, instrumentation);
 		}
 	}
 
