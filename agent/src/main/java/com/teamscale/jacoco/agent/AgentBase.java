@@ -167,7 +167,7 @@ public abstract class AgentBase {
 
 		logger.info("Starting JaCoCo's agent");
 		JacocoAgentBuilder agentBuilder = new JacocoAgentBuilder(agentOptions);
-		org.jacoco.agent.rt.internal_b6258fc.PreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation);
+		JaCoCoPreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation, logger);
 
 		AgentBase agent = agentBuilder.createAgent(instrumentation);
 		agent.registerShutdownHook();
