@@ -19,7 +19,8 @@ jobs:
         distribution: 'temurin'
         java-version: 11
     - name: Build with Gradle
-      run: ./gradlew build
+      # Workaround for a bug in the Gradle shadow plugin that attempt to transform artifacts too early
+      run:  ./gradlew jar && ./gradlew build
     - name: Upload Release Assets
       if: startsWith(github.ref, 'refs/tags/v')
       uses: svenstaro/upload-release-action@v2
