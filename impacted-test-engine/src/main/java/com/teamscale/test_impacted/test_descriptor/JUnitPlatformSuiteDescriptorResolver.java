@@ -15,18 +15,16 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
-		LOGGER.info(testDescriptor.toString());
 		List<UniqueId.Segment> segments = testDescriptor.getUniqueId().getSegments();
 		if (verifySegments(segments)) {
 			LOGGER.severe(
 					() -> "Assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine] " +
-							"for junit-platform-suite tests. Using "
-							+ testDescriptor.getUniqueId()
-							.toString() + "as uniform path as fallback.");
+							"for junit-platform-suite tests. Using " + testDescriptor.getUniqueId().toString()
+							+ "as uniform path as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
-		UniqueId.Segment suiteSegment = segments.get(1);
+		String suite = segments.get(1).getValue().replace('.', '/');
 		List<UniqueId.Segment> secondaryEngineSegments = segments.subList(2, segments.size());
 
 		ITestDescriptorResolver secondaryTestDescriptorResolver = TestDescriptorResolverRegistry.getTestDescriptorResolver(
@@ -46,8 +44,7 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
-		LOGGER.info(suiteSegment.getValue() + "/" + secondaryUniformPath.get());
-		return Optional.of(suiteSegment.getValue() + "/" + secondaryUniformPath.get());
+		return Optional.of(suite + "/" + secondaryUniformPath.get());
 	}
 
 	@Override
@@ -62,7 +59,7 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
-		UniqueId.Segment suiteSegment = segments.get(1);
+		String suite = segments.get(1).getValue().replace('.', '/');
 		List<UniqueId.Segment> secondaryEngineSegments = segments.subList(2, segments.size());
 
 		ITestDescriptorResolver secondaryTestDescriptorResolver = TestDescriptorResolverRegistry.getTestDescriptorResolver(
@@ -81,7 +78,7 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 					"Using " + testDescriptor.getUniqueId().toString() + "as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
-		return Optional.of(suiteSegment.getValue() + "/" + secondaryClusterId.get());
+		return Optional.of(suite + "/" + secondaryClusterId.get());
 	}
 
 	private static boolean verifySegments(List<UniqueId.Segment> segments) {
