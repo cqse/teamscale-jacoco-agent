@@ -9,6 +9,7 @@ plugins {
     com.teamscale.`shadow-convention`
     com.teamscale.coverage
     com.teamscale.publish
+    com.teamscale.`logger-patch`
 }
 
 publishAs {
