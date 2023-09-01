@@ -17,14 +17,15 @@ Feature: Calculator
       | num1 | num2 | total |
       | -2   | 3    | 1     |
       | 10   | 15   | 25    |
-      | 1    | -1   | 0     |
+      | 12   | 13   | 25    |
 
-  Scenario Outline: Add two numbers <num1> & <num2>
+
+  Scenario Outline: Subtract two numbers <num1> & <num2>
     Given I have a calculator
-    When I add <num1> and <num2>
-    Then the result should be <total>
+    When I subtract <num2> from <num1>
+    Then the result should be <difference>
 
     Examples:
-      | num1 | num2 | total |
-      | 99   | -99  | 0     |
-      | -1   | -10  | -11   |
+      | num1 | num2 | difference |
+      | 99   | 99   | 0          |
+      | 10   | -1   | 11         |
