@@ -8,9 +8,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+/**
+ * Test descriptor resolver for JUnit Platform Suite test (c.f.
+ * https://junit.org/junit5/docs/current/user-guide/#junit-platform-suite-engine)
+ */
 public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorResolver {
 
 	private static final Logger LOGGER = LoggerUtils.getLogger(JUnitPlatformSuiteDescriptorResolver.class);
+	/** Type of the unique id segment of a test descriptor representing a test suite */
 	public static final String SUITE_SEGMENT_TYPE = "suite";
 
 	@Override

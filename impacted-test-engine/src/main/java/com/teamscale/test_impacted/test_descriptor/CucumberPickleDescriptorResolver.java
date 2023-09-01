@@ -7,8 +7,14 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+/**
+ * Test descriptor resolver for Cucumber. For details how we extract the uniform path, see comment in
+ * {@link #getPickleName(TestDescriptor)}. The cluster id is the .feature file in which the tests are defined.
+ */
 public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver {
+	/** Name of the cucumber test engine as used in the unique id of the test descriptor */
 	public static final String CUCUMBER_ENGINE_ID = "cucumber";
+	/** Type of the unique id segment of a test descriptor representing a cucumber feature file */
 	public static final String FEATURE_SEGMENT_TYPE = "feature";
 
 	private static final Logger LOGGER = LoggerUtils.getLogger(CucumberPickleDescriptorResolver.class);
@@ -53,8 +59,8 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	}
 
 	private Optional<String> getPickleName(TestDescriptor testDescriptor) {
-		// PickleDescriptor is not public, so we can't import and use it to get access to the pickle attribute containing the name => reflection
-		// https://github.com/cucumber/cucumber-jvm/blob/main/cucumber-junit-platform-engine/src/main/java/io/cucumber/junit/platform/engine/NodeDescriptor.java#L96
+		// The PickleDescriptor test descriptor class is not public, so we can't import and use it to get access to the pickle attribute containing the name => reflection
+		// https://github.com/cucumber/cucumber-jvm/blob/main/cucumber-junit-platform-engine/src/main/java/io/cucumber/junit/platform/engine/NodeDescriptor.java#L90
 		// We want to use the name, though, because all other fields of the test descriptor like the unique id and the (legacy-) display name can easily result in inconsistencies, e.g. for
 		// Scenario Outline: Add two numbers <num1> & <num2>
 		//    Given I have a calculator
