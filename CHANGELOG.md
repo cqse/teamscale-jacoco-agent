@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Support for cucumber tests
+- [feature] Support for junit platform suite tests
 
 # 32.0.0
 - [breaking] _teamscale-gradle-plugin_: Removed usage of deprecated Gradle APIs
