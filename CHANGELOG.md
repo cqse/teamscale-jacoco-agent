@@ -5,11 +5,15 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
-- [breaking] _teamscale-gradle-plugin_: Removed usage of deprecated Gradle APIs.
+
+# 32.0.0
+- [breaking] _teamscale-gradle-plugin_: Removed usage of deprecated Gradle APIs
   - `teamscale.agent.destinationProperty` type has changed from `Property<File>` to `DirectoryProperty`
   - `teamscale.agent.setDestination(destination)` parameter type has changed from `Property<File>` to `Provider<Directory>`
 - [fix] _agent_: Discovery of unsupported class file versions will no longer lead to a crash, but will be logged instead
 - [breaking] _tia-runlisteners_: Requires JUnit 5.10.0 now
+- [feature] _agent_: Added support for Java 19, 20 and experimental support for 21
+- [fix] _agent_: Attaching the agent in testwise mode to a JBoss Wildfly server caused a crash
 
 # 31.0.0
 - [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
