@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  * Runs several Maven projects' Surefire tests that have the agent attached and one of our JUnit run listeners enabled.
  * Checks that this produces a correct coverage report.
  */
-public class TiaMavenSystemTest {
+public class TiaMavenCucumberSystemTest {
 
 	/**
 	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
@@ -27,7 +27,9 @@ public class TiaMavenSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false);
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false,
+					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0",
+					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 99 & -99");
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
@@ -41,7 +43,6 @@ public class TiaMavenSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project");
 
-		// TODO adapt assertions to the actual maven project
 		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
@@ -51,22 +52,15 @@ public class TiaMavenSystemTest {
 		assertThat(unitTestReport.partial).isTrue();
 		assertAll(() -> {
 			assertThat(unitTestReport.tests).extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()");
+					.containsExactlyInAnyOrder(
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0",
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 99 & -99");
 			assertThat(unitTestReport.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
 			assertThat(unitTestReport.tests).extracting(SystemTestUtils::getCoverageString)
-					.containsExactly("SUT.java:3,6-7", "SUT.java:3,10-11");
-		});
-
-		TestwiseCoverageReport integrationTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(1);
-		assertThat(integrationTestReport.tests).hasSize(2);
-		assertAll(() -> {
-			assertThat(integrationTestReport.tests).extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder("bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
-			assertThat(integrationTestReport.tests).extracting(test -> test.result)
-					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
-			assertThat(integrationTestReport.tests).extracting(SystemTestUtils::getCoverageString)
-					.containsExactly("SUT.java:3,6-7", "SUT.java:3,10-11");
+					.containsExactly(
+							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,34-35",
+							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,34-35");
 		});
 	}
 

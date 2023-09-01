@@ -118,7 +118,6 @@
                     <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
                     <endCommit>master:HEAD</endCommit>
                     <partition>MyPartition</partition>
-                    <runAllTests>true</runAllTests>
                     <includes>
                         <include>*hellocucumber*</include>
                     </includes>
