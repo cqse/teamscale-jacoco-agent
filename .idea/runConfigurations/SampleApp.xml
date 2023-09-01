@@ -1,11 +1,24 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SampleApp" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="com.example.Main" />
-    <module name="teamscale-jacoco-agent.sample-debugging-app.main" />
-    <option name="VM_PARAMETERS" value="-javaagent:agent/build/libs/teamscale-jacoco-agent.jar=config-file=sample-debugging-app/jacocoagent.properties" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-      <option name="Gradle.BeforeRunTask" enabled="true" tasks="shadowJar" externalProjectPath="$PROJECT_DIR$/agent" vmOptions="" scriptParameters="-Pdebug=true" />
-    </method>
+  <configuration default="false" name="SampleApp" type="GradleRunConfiguration" factoryName="Gradle">
+    <ExternalSystemSettings>
+      <option name="executionName" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      <option name="externalSystemIdString" value="GRADLE" />
+      <option name="scriptParameters" value="-Pdebug=true" />
+      <option name="taskDescriptions">
+        <list />
+      </option>
+      <option name="taskNames">
+        <list>
+          <option value="sample-debugging-app:run" />
+        </list>
+      </option>
+      <option name="vmOptions" />
+    </ExternalSystemSettings>
+    <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+    <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+    <DebugAllEnabled>false</DebugAllEnabled>
+    <RunAsTest>false</RunAsTest>
+    <method v="2" />
   </configuration>
 </component>

@@ -25,11 +25,6 @@ import java.nio.file.Paths;
  * For every class that gets found {@link #analyzeClass(byte[])} is called. A class is identified by its class ID which
  * is a CRC64 checksum of the classfile. We process each class with {@link CachingClassAnalyzer} to fill a {@link
  * ClassCoverageLookup}.
- * <p>
- * The class basically needs to override {@link Analyzer#analyzeClass(byte[])}. Since the method is private we need to
- * override and copy the implementations of all methods that call this method, which is {@link
- * Analyzer#analyzeClass(byte[], String)}. When updating we just need to make sure that no additional methods have been
- * added to {@link Analyzer}, which call the private method internally.
  */
 public class AnalyzerCache extends FilteringAnalyzer {
 
@@ -50,7 +45,8 @@ public class AnalyzerCache extends FilteringAnalyzer {
 	 * Analyses the given class. Instead of the original implementation in {@link Analyzer#analyzeClass(byte[])} we
 	 * don't use concrete execution data, but instead build a probe cache to speed up repeated lookups.
 	 */
-	private void analyzeClass(final byte[] source) {
+	@Override
+	protected void analyzeClass(final byte[] source) {
 		long classId = CRC64.classId(source);
 		if (probesCache.containsClassId(classId)) {
 			return;
@@ -82,18 +78,5 @@ public class AnalyzerCache extends FilteringAnalyzer {
 		int count = super.analyzeJar(input, location);
 		probesCache.addJarId(jarId, count);
 		return count;
-	}
-
-	/**
-	 * @inheritDoc <p> Copy of the method from {@link Analyzer#analyzeClass(byte[], String)}, because it calls the
-	 * private {@link Analyzer#analyzeClass(byte[])} method, which we therefore cannot override.
-	 */
-	@Override
-	public void analyzeClass(final byte[] buffer, final String location) throws IOException {
-		try {
-			analyzeClass(buffer);
-		} catch (RuntimeException cause) {
-			throw new IOException(String.format("Error while analyzing %s.", location), cause);
-		}
 	}
 }
