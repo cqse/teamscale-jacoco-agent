@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 32.0.0
 - [breaking] _teamscale-gradle-plugin_: Removed usage of deprecated Gradle APIs
   - `teamscale.agent.destinationProperty` type has changed from `Property<File>` to `DirectoryProperty`
   - `teamscale.agent.setDestination(destination)` parameter type has changed from `Property<File>` to `Provider<Directory>`
