@@ -26,6 +26,4 @@ tasks.named<ShadowJar>("shadowJar") {
         // https://github.com/johnrengelman/shadow/issues/449
         attributes["Multi-Release"] = "true"
     }
-
-    exclude("META-INF/versions/19/**")
 }
