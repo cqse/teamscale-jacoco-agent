@@ -17,7 +17,7 @@ import java.util.jar.JarOutputStream
  * The JulManagerFreeTransform class implements an artifact transform for jar file. It transforms them by creating a
  * new jar file with the same entries, but rewriting all contained class files. It replaces all calls to
  * java.util.logging.Logger.getLogger(...) with Logger.global, which works without instantiating a LogManager, which
- * is needed to make the agent work in JBoss Wildfly (see TS-35130).
+ * is needed to make the agent work in JBoss Wildfly (see TS-35526).
  */
 @CacheableTransform
 abstract class JulManagerFreeTransform : TransformAction<TransformParameters.None> {
