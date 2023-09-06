@@ -6,6 +6,7 @@ import org.junit.platform.engine.UniqueId;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
@@ -20,47 +21,26 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
-		List<UniqueId.Segment> segments = testDescriptor.getUniqueId().getSegments();
-		if (verifySegments(segments)) {
-			LOGGER.severe(
-					() -> "Assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine] " +
-							"for junit-platform-suite tests. Using " + testDescriptor.getUniqueId().toString()
-							+ "as uniform path as fallback.");
-			return Optional.of(testDescriptor.getUniqueId().toString());
-		}
-
-		String suite = segments.get(1).getValue().replace('.', '/');
-		List<UniqueId.Segment> secondaryEngineSegments = segments.subList(2, segments.size());
-
-		ITestDescriptorResolver secondaryTestDescriptorResolver = TestDescriptorResolverRegistry.getTestDescriptorResolver(
-				secondaryEngineSegments.get(0).getValue());
-		if (secondaryTestDescriptorResolver == null) {
-			LOGGER.severe(() -> "Cannot find a secondary engine nested under the junit-platform-suite engine " +
-					"(assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine])" +
-					"Using " + testDescriptor.getUniqueId().toString() + "as uniform path as fallback.");
-			return Optional.of(testDescriptor.getUniqueId().toString());
-		}
-
-		Optional<String> secondaryUniformPath = secondaryTestDescriptorResolver.getUniformPath(testDescriptor);
-		if (!secondaryUniformPath.isPresent()) {
-			LOGGER.severe(() -> "Secondary test descriptor resolver for engine " +
-					secondaryEngineSegments.get(0).getValue() + " was not able to resolve the uniform path. " +
-					"Using " + testDescriptor.getUniqueId().toString() + "as fallback.");
-			return Optional.of(testDescriptor.getUniqueId().toString());
-		}
-
-		return Optional.of(suite + "/" + secondaryUniformPath.get());
+		return extractUniformPathOrClusterId(testDescriptor, "uniform path",
+				testDescriptorResolver -> testDescriptorResolver.getUniformPath(testDescriptor));
 	}
 
 	@Override
 	public Optional<String> getClusterId(TestDescriptor testDescriptor) {
+		return extractUniformPathOrClusterId(testDescriptor, "cluster id",
+				testDescriptorResolver -> testDescriptorResolver.getClusterId(testDescriptor));
+	}
+
+	private static Optional<String> extractUniformPathOrClusterId(TestDescriptor testDescriptor,
+																  String nameOfValueToExtractForLogs,
+																  Function<ITestDescriptorResolver, Optional<String>> uniformPathOrClusterIdExtractor) {
 		List<UniqueId.Segment> segments = testDescriptor.getUniqueId().getSegments();
 		if (verifySegments(segments)) {
 			LOGGER.severe(
 					() -> "Assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine] " +
 							"for junit-platform-suite tests. Using "
 							+ testDescriptor.getUniqueId()
-							.toString() + "as cluster id as fallback.");
+							.toString() + "as " + nameOfValueToExtractForLogs + " as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
@@ -72,18 +52,22 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 		if (secondaryTestDescriptorResolver == null) {
 			LOGGER.severe(() -> "Cannot find a secondary engine nested under the junit-platform-suite engine " +
 					"(assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine])" +
-					"Using " + testDescriptor.getUniqueId().toString() + "as cluster id as fallback.");
+					"Using " + testDescriptor.getUniqueId()
+					.toString() + "as " + nameOfValueToExtractForLogs + " as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
-		Optional<String> secondaryClusterId = secondaryTestDescriptorResolver.getClusterId(testDescriptor);
-		if (!secondaryClusterId.isPresent()) {
+		Optional<String> secondaryClusterIdOrUniformPath = uniformPathOrClusterIdExtractor.apply(
+				secondaryTestDescriptorResolver);
+		if (!secondaryClusterIdOrUniformPath.isPresent()) {
 			LOGGER.severe(() -> "Secondary test descriptor resolver for engine " +
-					secondaryEngineSegments.get(0).getValue() + " was not able to resolve the cluster id. " +
+					secondaryEngineSegments.get(0)
+							.getValue() + " was not able to resolve the " + nameOfValueToExtractForLogs + ". " +
 					"Using " + testDescriptor.getUniqueId().toString() + "as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
-		return Optional.of(suite + "/" + secondaryClusterId.get());
+
+		return Optional.of(suite + "/" + secondaryClusterIdOrUniformPath.get());
 	}
 
 	private static boolean verifySegments(List<UniqueId.Segment> segments) {
