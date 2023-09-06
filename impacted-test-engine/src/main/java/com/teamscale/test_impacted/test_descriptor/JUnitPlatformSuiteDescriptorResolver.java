@@ -40,7 +40,7 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 					() -> "Assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine] " +
 							"for junit-platform-suite tests. Using "
 							+ testDescriptor.getUniqueId()
-							.toString() + "as " + nameOfValueToExtractForLogs + " as fallback.");
+							.toString() + " as " + nameOfValueToExtractForLogs + " as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
@@ -51,9 +51,9 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 				secondaryEngineSegments.get(0).getValue());
 		if (secondaryTestDescriptorResolver == null) {
 			LOGGER.severe(() -> "Cannot find a secondary engine nested under the junit-platform-suite engine " +
-					"(assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine])" +
+					"(assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine]). " +
 					"Using " + testDescriptor.getUniqueId()
-					.toString() + "as " + nameOfValueToExtractForLogs + " as fallback.");
+					.toString() + " as " + nameOfValueToExtractForLogs + " as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
@@ -63,7 +63,7 @@ public class JUnitPlatformSuiteDescriptorResolver implements ITestDescriptorReso
 			LOGGER.severe(() -> "Secondary test descriptor resolver for engine " +
 					secondaryEngineSegments.get(0)
 							.getValue() + " was not able to resolve the " + nameOfValueToExtractForLogs + ". " +
-					"Using " + testDescriptor.getUniqueId().toString() + "as fallback.");
+					"Using " + testDescriptor.getUniqueId().toString() + " as fallback.");
 			return Optional.of(testDescriptor.getUniqueId().toString());
 		}
 
