@@ -8,9 +8,9 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 /** Test descriptor resolver for JUnit based {@link TestEngine}s. */
-public abstract class JUnitTestDescriptorResolverBase implements ITestDescriptorResolver {
+public abstract class JUnitClassBasedTestDescriptorResolverBase implements ITestDescriptorResolver {
 
-	private static final Logger LOGGER = LoggerUtils.getLogger(JUnitTestDescriptorResolverBase.class);
+	private static final Logger LOGGER = LoggerUtils.getLogger(JUnitClassBasedTestDescriptorResolverBase.class);
 
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
