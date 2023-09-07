@@ -1,7 +1,14 @@
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.List;
+
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -12,13 +19,21 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
-import java.lang.management.ManagementFactory;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.jacoco.CoverageFile;
+
+import okhttp3.HttpUrl;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
- * {@link JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation
+ * and instantiation of the {@link JacocoRuntimeController}.
  * <p>
- * Subclasses must handle dumping onto disk and uploading via the configured uploader.
+ * Subclasses must handle dumping onto disk and uploading via the configured
+ * uploader.
  */
 public abstract class AgentBase {
 
@@ -45,18 +60,62 @@ public abstract class AgentBase {
 
 		logger.info("Starting JaCoCo agent for process {} with options: {}",
 				ManagementFactory.getRuntimeMXBean().getName(), getOptionsObjectToLog());
+		retryUnsuccessfulUploads(options);
 		if (options.getHttpServerPort() != null) {
 			try {
 				initServer();
 			} catch (Exception e) {
-				throw new IllegalStateException(
-						"Control server not started.", e);
+				throw new IllegalStateException("Control server not started.", e);
 			}
 		}
 	}
 
 	/**
-	 * Lazily generated string representation of the command line arguments to print to the log.
+	 * If we have coverage that was leftover because of previously unsuccessful
+	 * coverage uploads, we retry to upload them again with the same configuration
+	 * as in the previous try.
+	 *
+	 * This method expects that the .properties file of the leftover coverage is
+	 * constructed in a specific order.
+	 * 
+	 */
+	private void retryUnsuccessfulUploads(AgentOptions options) {
+		List<File> reuploadCandidates = FileSystemUtils.listFilesRecursively(
+				options.getOutputDirectory().getParent().toFile(),
+				filepath -> filepath.getName().contains(RETRY_UPLOAD_FILE_SUFFIX));
+		for (File file : reuploadCandidates) {
+			try {
+				logger.info("Retrying previously unsuccessful coverage upload for file {}.", file);
+				String[] config = FileSystemUtils.readFile(file).split("\n");
+				TeamscaleServer server = new TeamscaleServer();
+				server.url = HttpUrl.parse(StringUtils.stripPrefix(config[0], "url="));
+				server.project = StringUtils.stripPrefix(config[1], "project=");
+				server.userName = StringUtils.stripPrefix(config[2], "userName=");
+				server.userAccessToken = StringUtils.stripPrefix(config[3], "userAccessToken=");
+				server.partition = StringUtils.stripPrefix(config[4], "partition=");
+				server.commit = CommitDescriptor.parse(StringUtils.stripPrefix(config[5], "commit="));
+				String revision = StringUtils.stripPrefix(config[6], "revision=");
+				if (revision.equals("null")) {
+					revision = null;
+				}
+				server.revision = revision;
+				server.setMessage(StringUtils.stripPrefix(config[7], "message=").replace("$nl$", "\n"));
+
+				TeamscaleUploader uploader = new TeamscaleUploader(server);
+				CoverageFile coverageFile = new CoverageFile(
+						new File(StringUtils.stripSuffix(file.getAbsolutePath(), RETRY_UPLOAD_FILE_SUFFIX)));
+				file.delete();
+				uploader.upload(coverageFile);
+			} catch (IOException e) {
+				logger.error("Reading config of previously unsuccessful coverage upload failed.");
+			}
+
+		}
+	}
+
+	/**
+	 * Lazily generated string representation of the command line arguments to print
+	 * to the log.
 	 */
 	private Object getOptionsObjectToLog() {
 		return new Object() {
@@ -71,12 +130,13 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Starts the http server, which waits for information about started and finished tests.
+	 * Starts the http server, which waits for information about started and
+	 * finished tests.
 	 */
 	private void initServer() throws Exception {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
 
-		//Jersey Implementation
+		// Jersey Implementation
 		ServletContextHandler handler = buildUsingResourceConfig();
 		QueuedThreadPool threadPool = new QueuedThreadPool();
 		threadPool.setMaxThreads(10);
@@ -108,7 +168,8 @@ public abstract class AgentBase {
 	protected abstract ResourceConfig initResourceConfig();
 
 	/**
-	 * Registers a shutdown hook that stops the timer and dumps coverage a final time.
+	 * Registers a shutdown hook that stops the timer and dumps coverage a final
+	 * time.
 	 */
 	void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
