@@ -21,6 +21,7 @@ import com.teamscale.report.jacoco.CoverageFile;
 /** Uploads XML Coverage to a Teamscale instance. */
 public class TeamscaleUploader implements IUploader {
 
+	/** The properties file suffix for unsuccessful coverage uploads. */
 	public static final String RETRY_UPLOAD_FILE_SUFFIX = "_upload-retry.properties";
 
 	/** The logger. */
