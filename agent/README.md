@@ -249,7 +249,7 @@ following JVM parameters
 -Djavax.net.ssl.trustStorePassword=<Password>
 ```
 
-## Testwise mode (options do not apply to normal mode)
+## Options for testwise mode (do not apply to normal mode)
 
 The testwise coverage mode allows to record coverage per test, which is needed for Test Impact Analysis. This means that
 you can distinguish later, which test did produce which coverage. To enable this the `mode` option must be set to
