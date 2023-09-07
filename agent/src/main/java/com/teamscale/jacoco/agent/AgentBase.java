@@ -80,6 +80,9 @@ public abstract class AgentBase {
 	 * 
 	 */
 	private void retryUnsuccessfulUploads(AgentOptions options) {
+		if (options.getOutputDirectory() == null) {
+			return;
+		}
 		List<File> reuploadCandidates = FileSystemUtils.listFilesRecursively(
 				options.getOutputDirectory().getParent().toFile(),
 				filepath -> filepath.getName().contains(RETRY_UPLOAD_FILE_SUFFIX));
