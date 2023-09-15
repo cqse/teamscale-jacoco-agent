@@ -36,7 +36,9 @@ import retrofit2.Response;
 
 /** Uploads the coverage archive to a provided azure file storage. */
 public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> {
-
+	/**
+	 * The properties file suffix for unsuccessful coverage uploads to azure.
+	 */
 	public static final String AZURE_RETRY_UPLOAD_FILE_SUFFIX = "_azure-retry.properties";
 
 	/** Pattern matches the host of a azure file storage */

@@ -10,8 +10,10 @@ import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProper
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_NAME;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -32,9 +34,7 @@ import com.teamscale.report.jacoco.CoverageFile;
 public class TeamscaleUploader implements IUploader {
 
 	/**
-	 * The properties file suffix for unsuccessful coverage uploads. TODO:
-	 * Differentiate failed upload source with multiple static final strings
-	 * (+artifactory, azure).
+	 * The properties file suffix for unsuccessful coverage uploads.
 	 */
 	public static final String TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX = "_teamscale-retry.properties";
 
@@ -74,7 +74,8 @@ public class TeamscaleUploader implements IUploader {
 				coverageFile.getName() + TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX));
 		Properties serverProperties = this.createServerProperties();
 		try {
-			FileWriter writer = new FileWriter(uploadMetadataFile);
+			OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(uploadMetadataFile.toPath()),
+					StandardCharsets.UTF_8);
 			serverProperties.store(writer, null);
 			writer.close();
 		} catch (IOException e) {

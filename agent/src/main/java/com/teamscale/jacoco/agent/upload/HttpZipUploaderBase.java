@@ -42,6 +42,10 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	/** The API which performs the upload */
 	private T api;
 
+	/**
+	 * The key to the additional metadatafiles property. Is used to later find the
+	 * paths of additional metadata files in case of reupload.
+	 */
 	public static final String ADDITIONAL_METADATA_PROPERTIES_KEY = "ADDITIONAL_METADATA_FILES";
 
 	/** Constructor. */
@@ -86,6 +90,10 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 		}
 	}
 
+	/**
+	 * Marks coverage files of unsuccessful coverage uploads so that they can be
+	 * reuploaded at next agent start.
+	 */
 	public abstract void markFileForUploadRetry(CoverageFile coverageFile);
 
 	/** Performs the upload and returns <code>true</code> if successful. */
@@ -156,6 +164,10 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 		zipOutputStream.close();
 	}
 
+	/**
+	 * Sets the paths of additional metadata files in the properties. This also
+	 * saves the amount of file paths so that it can be easily iterated over later.
+	 */
 	protected void setAdditionalMetaDataPathProperties(Properties properties) {
 		properties.setProperty(ADDITIONAL_METADATA_PROPERTIES_KEY, String.valueOf(additionalMetaDataFiles.size()));
 		for (int i = 0; i < additionalMetaDataFiles.size(); i++) {

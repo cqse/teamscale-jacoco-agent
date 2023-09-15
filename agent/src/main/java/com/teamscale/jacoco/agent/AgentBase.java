@@ -14,9 +14,11 @@ import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProper
 import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
@@ -120,7 +122,8 @@ public abstract class AgentBase {
 		String fileName = file.getName();
 		logger.info("Retrying previously unsuccessful coverage upload for file {}.", file);
 		try {
-			FileReader reader = new FileReader(file);
+			InputStreamReader reader = new InputStreamReader(Files.newInputStream(file.toPath()),
+					StandardCharsets.UTF_8);
 			Properties properties = new Properties();
 			properties.load(reader);
 			IUploader uploader;
