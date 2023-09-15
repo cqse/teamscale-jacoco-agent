@@ -1,11 +1,28 @@
 package com.teamscale.jacoco.agent;
 
-import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
+import static com.teamscale.jacoco.agent.upload.HttpZipUploaderBase.ADDITIONAL_METADATA_PROPERTIES_KEY;
+import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader.ARTIFACTORY_RETRY_UPLOAD_FILE_SUFFIX;
+import static com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader.AZURE_RETRY_UPLOAD_FILE_SUFFIX;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.MESSAGE;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PROJECT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.URL;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_ACCESS_TOKEN;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_NAME;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
@@ -19,10 +36,19 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
+import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.EReportFormat;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
+import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 
@@ -74,46 +100,108 @@ public abstract class AgentBase {
 	 * If we have coverage that was leftover because of previously unsuccessful
 	 * coverage uploads, we retry to upload them again with the same configuration
 	 * as in the previous try.
-	 *
-	 * This method expects that the .properties file of the leftover coverage is
-	 * constructed in a specific order.
-	 * 
 	 */
 	private void retryUnsuccessfulUploads(AgentOptions options) {
-		if (options.getOutputDirectory() == null) {
-			return;
+		Path outputPath = options.getOutputDirectory();
+		if (outputPath == null) {
+			// Default fallback
+			outputPath = AgentUtils.getAgentDirectory().resolve("coverage");
 		}
-		List<File> reuploadCandidates = FileSystemUtils.listFilesRecursively(
-				options.getOutputDirectory().getParent().toFile(),
-				filepath -> filepath.getName().contains(RETRY_UPLOAD_FILE_SUFFIX));
+		List<File> reuploadCandidates = FileSystemUtils.listFilesRecursively(outputPath.getParent().toFile(),
+				filepath -> filepath.getName().endsWith(TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX)
+						|| filepath.getName().endsWith(AZURE_RETRY_UPLOAD_FILE_SUFFIX)
+						|| filepath.getName().endsWith(ARTIFACTORY_RETRY_UPLOAD_FILE_SUFFIX));
 		for (File file : reuploadCandidates) {
-			try {
-				logger.info("Retrying previously unsuccessful coverage upload for file {}.", file);
-				String[] config = FileSystemUtils.readFile(file).split("\n");
-				TeamscaleServer server = new TeamscaleServer();
-				server.url = HttpUrl.parse(StringUtils.stripPrefix(config[0], "url="));
-				server.project = StringUtils.stripPrefix(config[1], "project=");
-				server.userName = StringUtils.stripPrefix(config[2], "userName=");
-				server.userAccessToken = StringUtils.stripPrefix(config[3], "userAccessToken=");
-				server.partition = StringUtils.stripPrefix(config[4], "partition=");
-				server.commit = CommitDescriptor.parse(StringUtils.stripPrefix(config[5], "commit="));
-				String revision = StringUtils.stripPrefix(config[6], "revision=");
-				if (revision.equals("null")) {
-					revision = null;
-				}
-				server.revision = revision;
-				server.setMessage(StringUtils.stripPrefix(config[7], "message=").replace("$nl$", "\n"));
-
-				TeamscaleUploader uploader = new TeamscaleUploader(server);
-				CoverageFile coverageFile = new CoverageFile(
-						new File(StringUtils.stripSuffix(file.getAbsolutePath(), RETRY_UPLOAD_FILE_SUFFIX)));
-				file.delete();
-				uploader.upload(coverageFile);
-			} catch (IOException e) {
-				logger.error("Reading config of previously unsuccessful coverage upload failed.");
-			}
-
+			reuploadCoverageFromPropertiesFile(file);
 		}
+	}
+
+	private void reuploadCoverageFromPropertiesFile(File file) {
+		String fileName = file.getName();
+		logger.info("Retrying previously unsuccessful coverage upload for file {}.", file);
+		try {
+			FileReader reader = new FileReader(file);
+			Properties properties = new Properties();
+			properties.load(reader);
+			IUploader uploader;
+			CoverageFile coverageFile;
+			if (fileName.endsWith(ARTIFACTORY_RETRY_UPLOAD_FILE_SUFFIX)) {
+				coverageFile = new CoverageFile(new File(
+						StringUtils.stripSuffix(file.getAbsolutePath(), ARTIFACTORY_RETRY_UPLOAD_FILE_SUFFIX)));
+				uploader = createArtifactoryUploader(properties);
+			} else if (fileName.endsWith(AZURE_RETRY_UPLOAD_FILE_SUFFIX)) {
+				coverageFile = new CoverageFile(
+						new File(StringUtils.stripSuffix(file.getAbsolutePath(), AZURE_RETRY_UPLOAD_FILE_SUFFIX)));
+				uploader = createAzureUploader(properties);
+			} else {
+				coverageFile = new CoverageFile(
+						new File(StringUtils.stripSuffix(file.getAbsolutePath(), TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX)));
+				uploader = createTeamscaleUploader(properties);
+			}
+			reader.close();
+			uploader.upload(coverageFile);
+			file.delete();
+		} catch (IOException | UploaderException e) {
+			logger.error("Reuploading coverage failed. " + e);
+		}
+	}
+
+	private ArtifactoryUploader createArtifactoryUploader(Properties properties) {
+		ArtifactoryConfig config = new ArtifactoryConfig();
+		config.url = HttpUrl.parse(properties.getProperty(ArtifactoryConfig.ARTIFACTORY_URL_OPTION));
+		config.user = properties.getProperty(ArtifactoryConfig.ARTIFACTORY_USER_OPTION);
+		config.password = properties.getProperty(ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION);
+		config.legacyPath = Boolean
+				.parseBoolean(properties.getProperty(ArtifactoryConfig.ARTIFACTORY_LEGACY_PATH_OPTION));
+		config.zipPath = properties.getProperty(ArtifactoryConfig.ARTIFACTORY_ZIP_PATH_OPTION);
+		config.pathSuffix = properties.getProperty(ArtifactoryConfig.ARTIFACTORY_PATH_SUFFIX);
+		String revision = properties.getProperty(REVISION.name());
+		String commitString = properties.getProperty(COMMIT.name());
+		config.commitInfo = new ArtifactoryConfig.CommitInfo(revision, CommitDescriptor.parse(commitString));
+		config.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(
+				properties.getProperty(ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION));
+		config.apiKey = properties.getProperty(ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION);
+		config.partition = properties.getProperty(ArtifactoryConfig.ARTIFACTORY_PARTITION);
+		EReportFormat reportFormat = EReportFormat.valueOf(properties.getProperty("REPORT_FORMAT").toUpperCase());
+		if (!config.hasAllRequiredFieldsSet()) {
+			logger.error("Artifactory config misses required fields.");
+		}
+		return new ArtifactoryUploader(config, getAdditionalMetaDataPaths(properties), reportFormat);
+	}
+
+	private List<Path> getAdditionalMetaDataPaths(Properties properties) {
+		List<Path> additionalMetaDataFiles = new ArrayList<>();
+		for (int i = 0; i < Integer.parseInt(properties.getProperty(ADDITIONAL_METADATA_PROPERTIES_KEY)); i++) {
+			additionalMetaDataFiles
+					.add(Paths.get(properties.getProperty(ADDITIONAL_METADATA_PROPERTIES_KEY + "_" + i)));
+		}
+		return additionalMetaDataFiles;
+	}
+
+	private AzureFileStorageUploader createAzureUploader(Properties properties) throws UploaderException {
+		AzureFileStorageConfig config = new AzureFileStorageConfig();
+		config.url = HttpUrl.parse(properties.getProperty(URL.name()));
+		config.accessKey = properties.getProperty(USER_ACCESS_TOKEN.name());
+		return new AzureFileStorageUploader(config, getAdditionalMetaDataPaths(properties));
+	}
+
+	private TeamscaleUploader createTeamscaleUploader(Properties properties) {
+		TeamscaleServer server = this.createTeamscaleServerFromProperties(properties);
+		return new TeamscaleUploader(server);
+	}
+
+	/** Creates a TeamscalerServer instance from the provided Properties. */
+	private TeamscaleServer createTeamscaleServerFromProperties(Properties properties) {
+		TeamscaleServer server = new TeamscaleServer();
+		server.url = HttpUrl.parse(properties.getProperty(URL.name()));
+		server.project = properties.getProperty(PROJECT.name());
+		server.userName = properties.getProperty(USER_NAME.name());
+		server.userAccessToken = properties.getProperty(USER_ACCESS_TOKEN.name());
+		server.partition = properties.getProperty(PARTITION.name());
+		server.commit = CommitDescriptor.parse(properties.getProperty(COMMIT.name()));
+		server.revision = Strings.emptyToNull(properties.getProperty(REVISION.name()));
+		server.setMessage(properties.getProperty(MESSAGE.name()));
+		return server;
 	}
 
 	/**

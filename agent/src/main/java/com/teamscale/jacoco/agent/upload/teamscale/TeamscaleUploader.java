@@ -1,13 +1,23 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.MESSAGE;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PROJECT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.URL;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_ACCESS_TOKEN;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_NAME;
+
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Properties;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
+import com.google.common.base.Strings;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
@@ -21,8 +31,12 @@ import com.teamscale.report.jacoco.CoverageFile;
 /** Uploads XML Coverage to a Teamscale instance. */
 public class TeamscaleUploader implements IUploader {
 
-	/** The properties file suffix for unsuccessful coverage uploads. */
-	public static final String RETRY_UPLOAD_FILE_SUFFIX = "_upload-retry.properties";
+	/**
+	 * The properties file suffix for unsuccessful coverage uploads. TODO:
+	 * Differentiate failed upload source with multiple static final strings
+	 * (+artifactory, azure).
+	 */
+	public static final String TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX = "_teamscale-retry.properties";
 
 	/** The logger. */
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -42,8 +56,8 @@ public class TeamscaleUploader implements IUploader {
 				deleteCoverageFile(coverageFile);
 			} else {
 				logger.warn("Failed to upload coverage to Teamscale. "
-						+ "Won't delete local file {} so that the upload can automatically be retried upon profiler restart."
-						+ " Upload can also be retried manually.", coverageFile);
+						+ "Won't delete local file {} so that the upload can automatically be retried upon profiler restart. "
+						+ "Upload can also be retried manually.", coverageFile);
 				markFileForUploadRetry(coverageFile);
 			}
 		}
@@ -54,30 +68,37 @@ public class TeamscaleUploader implements IUploader {
 	 * uploaded, so that the coverage upload can be retried another time.
 	 * 
 	 */
-	private void markFileForUploadRetry(CoverageFile coverageFile) {
+	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
 				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
-				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
-
-		List<String> configuration = new ArrayList<>();
-		configuration.add("url=" + teamscaleServer.url.toString());
-		configuration.add("project=" + teamscaleServer.project);
-		configuration.add("userName=" + teamscaleServer.userName);
-		configuration.add("userAccessToken=" + teamscaleServer.userAccessToken);
-		configuration.add("partition=" + teamscaleServer.partition);
-		configuration.add("commit=" + teamscaleServer.commit.toString());
-		configuration.add("revision=" + teamscaleServer.revision);
-
-		// we don't want to have newlines in our message to make parsing easier
-		configuration.add("message=" + teamscaleServer.getMessage().replace("\n", "$nl$"));
+				coverageFile.getName() + TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX));
+		Properties serverProperties = this.createServerProperties();
 		try {
-			FileSystemUtils.writeLines(uploadMetadataFile, configuration);
+			FileWriter writer = new FileWriter(uploadMetadataFile);
+			serverProperties.store(writer, null);
+			writer.close();
 		} catch (IOException e) {
 			logger.warn(
 					"Failed to create metadata file for automatic upload retry of {}. Please manually retry the coverage upload to Teamscale.",
 					coverageFile);
 			uploadMetadataFile.delete();
 		}
+	}
+
+	/**
+	 * Creates server properties to be written in a properties file.
+	 */
+	private Properties createServerProperties() {
+		Properties serverProperties = new Properties();
+		serverProperties.setProperty(URL.name(), teamscaleServer.url.toString());
+		serverProperties.setProperty(PROJECT.name(), teamscaleServer.project);
+		serverProperties.setProperty(USER_NAME.name(), teamscaleServer.userName);
+		serverProperties.setProperty(USER_ACCESS_TOKEN.name(), teamscaleServer.userAccessToken);
+		serverProperties.setProperty(PARTITION.name(), teamscaleServer.partition);
+		serverProperties.setProperty(COMMIT.name(), teamscaleServer.commit.toString());
+		serverProperties.setProperty(REVISION.name(), Strings.nullToEmpty(teamscaleServer.revision));
+		serverProperties.setProperty(MESSAGE.name(), teamscaleServer.getMessage());
+		return serverProperties;
 	}
 
 	private void deleteCoverageFile(CoverageFile coverageFile) {
