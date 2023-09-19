@@ -2,6 +2,8 @@ package com.teamscale.client;
 
 import com.squareup.moshi.Json;
 
+import java.util.StringJoiner;
+
 /**
  * {@link TestDetails} with information about their partition as well as tracking data used during prioritization of
  * tests. Two instances are considered equal if the test details are equals.
@@ -44,4 +46,16 @@ public class PrioritizableTest {
 		this.testName = testName;
 	}
 
+	@Override
+	public String toString() {
+		return new StringJoiner(", ", PrioritizableTest.class.getSimpleName() + "[", "]")
+				.add("testName='" + testName + "'")
+				.add("uniformPath='" + uniformPath + "'")
+				.add("selectionReason='" + selectionReason + "'")
+				.add("partition='" + partition + "'")
+				.add("durationInMs=" + durationInMs)
+				.add("score=" + score)
+				.add("rank=" + rank)
+				.toString();
+	}
 }

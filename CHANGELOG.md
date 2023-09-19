@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- _impacted-test-engine_: Failed requests to Teamscale did result in unreadable error message
 
 # 32.1.0
 - [feature] _teamscale-maven-plugin_: Support for cucumber tests
