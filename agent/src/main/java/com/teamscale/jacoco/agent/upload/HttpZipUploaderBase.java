@@ -76,18 +76,14 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 				logger.warn("Failed to upload coverage to Teamscale. "
 						+ "Won't delete local file {} so that the upload can automatically be retried upon profiler restart. "
 						+ "Upload can also be retried manually.", coverageFile);
-				markFileForUploadRetry(coverageFile);
+				if (this instanceof IUploadRetry) {
+					((IUploadRetry) this).markFileForUploadRetry(coverageFile);
+				}
 			}
 		} catch (IOException e) {
 			logger.warn("Could not delete file {} after upload", coverageFile);
 		}
 	}
-
-	/**
-	 * Marks coverage files of unsuccessful coverage uploads so that they can be
-	 * reuploaded at next agent start.
-	 */
-	public abstract void markFileForUploadRetry(CoverageFile coverageFile);
 
 	/** Performs the upload and returns <code>true</code> if successful. */
 	protected boolean tryUpload(CoverageFile coverageFile) {

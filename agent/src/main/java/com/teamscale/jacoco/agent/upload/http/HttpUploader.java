@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
-import com.teamscale.report.jacoco.CoverageFile;
 
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
@@ -24,11 +23,6 @@ public class HttpUploader extends HttpZipUploaderBase<IHttpUploadApi> {
 	@Override
 	protected Response<ResponseBody> uploadCoverageZip(File zipFile) throws IOException {
 		return getApi().uploadCoverageZip(zipFile);
-	}
-
-	@Override
-	public void markFileForUploadRetry(CoverageFile coverageFile) {
-		// Intentionally left blank as local reupload is unsupported for this uploader.
 	}
 
 	/** {@inheritDoc} */

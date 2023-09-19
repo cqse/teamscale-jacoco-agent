@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import com.teamscale.client.EReportFormat;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
+import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.report.jacoco.CoverageFile;
 
@@ -33,7 +35,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Response;
 
 /** Uploads the coverage archive to a provided azure file storage. */
-public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> {
+public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> implements IUploadRetry {
 
 	/** Pattern matches the host of a azure file storage */
 	private static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
@@ -68,6 +70,13 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 					coverageFile);
 			uploadMetadataFile.delete();
 		}
+	}
+
+	@Override
+	public void reupload(CoverageFile coverageFile, Properties properties) {
+		// The azure uploader does not have any special reupload properties, so it will
+		// just use the normal upload instead.
+		this.upload(coverageFile);
 	}
 
 	/**

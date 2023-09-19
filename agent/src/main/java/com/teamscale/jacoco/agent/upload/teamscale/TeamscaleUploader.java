@@ -23,13 +23,14 @@ import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
+import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 
 /** Uploads XML Coverage to a Teamscale instance. */
-public class TeamscaleUploader implements IUploader {
+public class TeamscaleUploader implements IUploader, IUploadRetry {
 
 	/**
 	 * The properties file suffix for unsuccessful coverage uploads.
@@ -52,9 +53,7 @@ public class TeamscaleUploader implements IUploader {
 		doUpload(coverageFile, this.teamscaleServer);
 	}
 
-	/**
-	 * Retries previously unsuccessful coverage uploads with the given properties.
-	 */
+	@Override
 	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
 		TeamscaleServer server = new TeamscaleServer();
 		server.project = reuploadProperties.getProperty(PROJECT.name());
@@ -81,11 +80,7 @@ public class TeamscaleUploader implements IUploader {
 		}
 	}
 
-	/**
-	 * Creates a properties file that is mapped to the coverage that could not be
-	 * uploaded, so that the coverage upload can be retried another time.
-	 * 
-	 */
+	@Override
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
 				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),

@@ -20,6 +20,7 @@ import com.teamscale.client.EReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
+import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.report.jacoco.CoverageFile;
 
 import okhttp3.Interceptor;
@@ -31,7 +32,7 @@ import retrofit2.Response;
 /**
  * Uploads XMLs to Artifactory.
  */
-public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> {
+public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> implements IUploadRetry {
 
 	/**
 	 * Header that can be used as alternative to basic authentication to
@@ -67,9 +68,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		}
 	}
 
-	/**
-	 * Retries previously unsuccessful coverage uploads with the given properties.
-	 */
+	@Override
 	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
 		ArtifactoryConfig config = new ArtifactoryConfig();
 		config.url = artifactoryConfig.url;
@@ -86,7 +85,6 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		config.partition = Strings.emptyToNull(reuploadProperties.getProperty(PARTITION.name()));
 		setUploadPath(coverageFile, config);
 		super.upload(coverageFile);
-
 	}
 
 	/** Creates properties from the artifactory configs. */
