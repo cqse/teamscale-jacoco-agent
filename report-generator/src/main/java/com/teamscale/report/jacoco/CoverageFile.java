@@ -1,9 +1,5 @@
 package com.teamscale.report.jacoco;
 
-import com.teamscale.client.FileSystemUtils;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,14 +8,21 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Objects;
 
+import com.teamscale.client.FileSystemUtils;
+
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+
 /**
- * Represents a coverage file on disk. The main purpose is to avoid reading the entire file into memory as this
- * dramatically increases the memory footprint of the JVM which might run out of memory because of this.
+ * Represents a coverage file on disk. The main purpose is to avoid reading the
+ * entire file into memory as this dramatically increases the memory footprint
+ * of the JVM which might run out of memory because of this.
  *
- * The object internally holds a counter of how many references to the file are currently held. This allows to share
- * the same file for multiple uploads and deleting it once all uploads have succeeded. Use {@link #acquireReference()}
- * to make the object aware that it was passed to another uploader and {@link #delete()} to signal that you no
- * longer intend to access the file.
+ * The object internally holds a counter of how many references to the file are
+ * currently held. This allows to share the same file for multiple uploads and
+ * deleting it once all uploads have succeeded. Use {@link #acquireReference()}
+ * to make the object aware that it was passed to another uploader and
+ * {@link #delete()} to signal that you no longer intend to access the file.
  */
 public class CoverageFile {
 
@@ -31,8 +34,9 @@ public class CoverageFile {
 	}
 
 	/**
-	 * Marks the file as being used by an additional uploader. This ensures that the file is not deleted until all users
-	 * have signed via {@link #delete()} that they no longer intend to access the file.
+	 * Marks the file as being used by an additional uploader. This ensures that the
+	 * file is not deleted until all users have signed via {@link #delete()} that
+	 * they no longer intend to access the file.
 	 */
 	public CoverageFile acquireReference() {
 		referenceCounter++;
@@ -40,12 +44,13 @@ public class CoverageFile {
 	}
 
 	/**
-	 * Copies the coverage File in blocks from the disk to the output stream to avoid having to read the entire file
-	 * into memory.
+	 * Copies the coverage File in blocks from the disk to the output stream to
+	 * avoid having to read the entire file into memory.
 	 */
 	public void copy(OutputStream outputStream) throws IOException {
 		FileInputStream inputStream = new FileInputStream(coverageFile);
 		FileSystemUtils.copy(inputStream, outputStream);
+		inputStream.close();
 	}
 
 	/**
@@ -71,7 +76,8 @@ public class CoverageFile {
 	}
 
 	/**
-	 * Create a {@link okhttp3.MultipartBody} form body with the contents of the coverage file.
+	 * Create a {@link okhttp3.MultipartBody} form body with the contents of the
+	 * coverage file.
 	 */
 	public RequestBody createFormRequestBody() {
 		return RequestBody.create(MultipartBody.FORM, new File(coverageFile.getAbsolutePath()));
@@ -80,15 +86,16 @@ public class CoverageFile {
 	/**
 	 * Get the {@link java.io.OutputStream} in order to write to the coverage file.
 	 *
-	 * @throws IOException If the file did not exist yet and could not be created
+	 * @throws IOException
+	 *             If the file did not exist yet and could not be created
 	 */
 	public OutputStream getOutputStream() throws IOException {
 		try {
 			return new FileOutputStream(coverageFile);
 		} catch (IOException e) {
-			throw new IOException("Could not create temporary coverage file" + this + ". " +
-					"This is used to cache the coverage file on disk before uploading it to its final destination. " +
-					"This coverage is lost. Please fix the underlying issue to avoid losing coverage.", e);
+			throw new IOException("Could not create temporary coverage file" + this + ". "
+					+ "This is used to cache the coverage file on disk before uploading it to its final destination. "
+					+ "This coverage is lost. Please fix the underlying issue to avoid losing coverage.", e);
 		}
 
 	}

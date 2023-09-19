@@ -495,7 +495,7 @@ If you are using Git, you can use either a Maven or Gradle plugin to store the c
 in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
 
 Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits,
-especially when tests are executed independently from the build. The following assumes that we are using a Git
+especially when tests are executed independently of the build. The following assumes that we are using a Git
 repository.
 
 ### Maven
@@ -627,6 +627,10 @@ the raw JaCoCo conversion will not allow.
 __The caveats listed in the above `ignore-duplicates` section still apply!__
 
 # Troubleshooting
+
+## Automatic upload failed
+
+If the produced coverage failed to be automatically uploaded, it is stored in the provided `out` folder. The JaCoCo agent will retry to upload the coverage upon restart with the originally provided configs (e.g. server url, user, etc.). The coverage will be stored until the upload succeeds.
 
 ## My application fails to start after registering the agent
 

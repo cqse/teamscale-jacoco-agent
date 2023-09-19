@@ -1,16 +1,5 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
-import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.options.AgentOptionsParser;
-import com.teamscale.jacoco.agent.options.FilePatternResolver;
-import okhttp3.HttpUrl;
-import org.conqat.lib.commons.collections.Pair;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -20,43 +9,58 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.conqat.lib.commons.collections.Pair;
+
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.StringUtils;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.AgentOptionsParser;
+import com.teamscale.jacoco.agent.options.FilePatternResolver;
+
+import okhttp3.HttpUrl;
+
 /** Config necessary to upload files to an azure file storage. */
 public class ArtifactoryConfig {
 	/**
-	 * Option to specify the artifactory URL. This shall be the entire path down to the directory to which the coverage
-	 * should be uploaded to, not only the base url of artifactory.
+	 * Option to specify the artifactory URL. This shall be the entire path down to
+	 * the directory to which the coverage should be uploaded to, not only the base
+	 * url of artifactory.
 	 */
 	public static final String ARTIFACTORY_URL_OPTION = "artifactory-url";
 
 	/**
-	 * Username that shall be used for basic auth. Alternative to basic auth is to use an API key with the
-	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Username that shall be used for basic auth. Alternative to basic auth is to
+	 * use an API key with the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_USER_OPTION = "artifactory-user";
 
 	/**
-	 * Password that shall be used for basic auth. Alternative to basic auth is to use an API key with the
-	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
+	 * Password that shall be used for basic auth. Alternative to basic auth is to
+	 * use an API key with the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	public static final String ARTIFACTORY_PASSWORD_OPTION = "artifactory-password";
 
 	/**
 	 * API key that shall be used to authenticate requests to artifactory with the
-	 * {@link com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}. Alternatively
-	 * basic auth with username ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password
+	 * {@link com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader#ARTIFACTORY_API_HEADER}.
+	 * Alternatively basic auth with username
+	 * ({@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION}) and password
 	 * ({@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION}) can be used.
 	 */
 	public static final String ARTIFACTORY_API_KEY_OPTION = "artifactory-api-key";
 
 	/**
-	 * Option that specifies if the legacy path for uploading files to artifactory should be used instead of the new
-	 * standard path.
+	 * Option that specifies if the legacy path for uploading files to artifactory
+	 * should be used instead of the new standard path.
 	 */
 	public static final String ARTIFACTORY_LEGACY_PATH_OPTION = "artifactory-legacy-path";
 
 	/**
-	 * Option that specifies under which path the coverage file shall lie within the zip file that is created for the
-	 * upload.
+	 * Option that specifies under which path the coverage file shall lie within the
+	 * zip file that is created for the upload.
 	 */
 	public static final String ARTIFACTORY_ZIP_PATH_OPTION = "artifactory-zip-path";
 
@@ -66,12 +70,14 @@ public class ArtifactoryConfig {
 	public static final String ARTIFACTORY_PATH_SUFFIX = "artifactory-path-suffix";
 
 	/**
-	 * Specifies the location of the JAR file which includes the git.properties file.
+	 * Specifies the location of the JAR file which includes the git.properties
+	 * file.
 	 */
 	public static final String ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION = "artifactory-git-properties-jar";
 
 	/**
-	 * Specifies the date format in which the commit timestamp in the git.properties file is formatted.
+	 * Specifies the date format in which the commit timestamp in the git.properties
+	 * file is formatted.
 	 */
 	public static final String ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "artifactory-git-properties-commit-date-format";
 
@@ -101,8 +107,18 @@ public class ArtifactoryConfig {
 	/** The information regarding a commit. */
 	public CommitInfo commitInfo;
 
-	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION} */
-	public DateTimeFormatter gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+	/**
+	 * We save the original dateTimeFormatter pattern, as it would be lost after
+	 * creating the formatter otherwise. Can be reused when retrying unsuccessful
+	 * uploads.
+	 */
+	public String dateTimeFormatterPattern = "yyyy-MM-dd'T'HH:mm:ssZ";
+
+	/**
+	 * Related to
+	 * {@link ArtifactoryConfig#ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION}
+	 */
+	public DateTimeFormatter gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(dateTimeFormatterPattern);
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} */
 	public String apiKey;
@@ -115,44 +131,43 @@ public class ArtifactoryConfig {
 	 *
 	 * @return true if it has successfully process the given option.
 	 */
-	public static boolean handleArtifactoryOptions(ArtifactoryConfig options,
-												   FilePatternResolver filePatternResolver,
-												   String key, String value)
-			throws AgentOptionParseException {
+	public static boolean handleArtifactoryOptions(ArtifactoryConfig options, FilePatternResolver filePatternResolver,
+			String key, String value) throws AgentOptionParseException {
 		switch (key) {
-			case ARTIFACTORY_URL_OPTION:
-				options.url = AgentOptionsParser.parseUrl(key, value);
-				return true;
-			case ARTIFACTORY_USER_OPTION:
-				options.user = value;
-				return true;
-			case ARTIFACTORY_PASSWORD_OPTION:
-				options.password = value;
-				return true;
-			case ARTIFACTORY_LEGACY_PATH_OPTION:
-				options.legacyPath = Boolean.parseBoolean(value);
-				return true;
-			case ARTIFACTORY_ZIP_PATH_OPTION:
-				options.zipPath = StringUtils.stripSuffix(value, "/");
-				return true;
-			case ARTIFACTORY_PATH_SUFFIX:
-				options.pathSuffix = StringUtils.stripSuffix(value, "/");
-				return true;
-			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
-				options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
-						options.gitPropertiesCommitTimeFormat, key, value);
-				return true;
-			case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
-				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
-				return true;
-			case ARTIFACTORY_API_KEY_OPTION:
-				options.apiKey = value;
-				return true;
-			case ARTIFACTORY_PARTITION:
-				options.partition = value;
-				return true;
-			default:
-				return false;
+		case ARTIFACTORY_URL_OPTION:
+			options.url = AgentOptionsParser.parseUrl(key, value);
+			return true;
+		case ARTIFACTORY_USER_OPTION:
+			options.user = value;
+			return true;
+		case ARTIFACTORY_PASSWORD_OPTION:
+			options.password = value;
+			return true;
+		case ARTIFACTORY_LEGACY_PATH_OPTION:
+			options.legacyPath = Boolean.parseBoolean(value);
+			return true;
+		case ARTIFACTORY_ZIP_PATH_OPTION:
+			options.zipPath = StringUtils.stripSuffix(value, "/");
+			return true;
+		case ARTIFACTORY_PATH_SUFFIX:
+			options.pathSuffix = StringUtils.stripSuffix(value, "/");
+			return true;
+		case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
+			options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
+					options.gitPropertiesCommitTimeFormat, key, value);
+			return true;
+		case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
+			options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
+			options.dateTimeFormatterPattern = value;
+			return true;
+		case ARTIFACTORY_API_KEY_OPTION:
+			options.apiKey = value;
+			return true;
+		case ARTIFACTORY_PARTITION:
+			options.partition = value;
+			return true;
+		default:
+			return false;
 		}
 	}
 
@@ -175,22 +190,22 @@ public class ArtifactoryConfig {
 
 	/** Parses the commit information form a git.properties file. */
 	public static CommitInfo parseGitProperties(FilePatternResolver filePatternResolver,
-												DateTimeFormatter gitPropertiesCommitTimeFormat, String optionName,
-												String value) throws AgentOptionParseException {
+			DateTimeFormatter gitPropertiesCommitTimeFormat, String optionName, String value)
+			throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
-			// We can't be sure that the search-git-properties-recursively option is parsed already.
-			// Since we only support one git.properties file for artifactory anyway, recursive search is disabled here.
+			// We can't be sure that the search-git-properties-recursively option is parsed
+			// already.
+			// Since we only support one git.properties file for artifactory anyway,
+			// recursive search is disabled here.
 			List<CommitInfo> commitInfo = parseGitProperties(jarFile, true, gitPropertiesCommitTimeFormat, false);
 			if (commitInfo.isEmpty()) {
-				throw new AgentOptionParseException(
-						"Found no git.properties files in " + jarFile);
+				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
 			}
 			if (commitInfo.size() > 1) {
-				throw new AgentOptionParseException(
-						"Found multiple git.properties files in " + jarFile +
-								". Uploading to multiple projects is currently not possible with Artifactory. " +
-								"Please contact CQSE if you need this feature.");
+				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile
+						+ ". Uploading to multiple projects is currently not possible with Artifactory. "
+						+ "Please contact CQSE if you need this feature.");
 			}
 			return commitInfo.get(0);
 		} catch (IOException | InvalidGitPropertiesException e) {
@@ -199,27 +214,22 @@ public class ArtifactoryConfig {
 	}
 
 	/** Parses the commit information from a git.properties file. */
-	public static List<CommitInfo> parseGitProperties(File file,
-													  boolean isJarFile,
-													  DateTimeFormatter gitPropertiesCommitTimeFormat,
-													  boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
-		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(
-				file, isJarFile, recursiveSearch);
+	public static List<CommitInfo> parseGitProperties(File file, boolean isJarFile,
+			DateTimeFormatter gitPropertiesCommitTimeFormat, boolean recursiveSearch)
+			throws IOException, InvalidGitPropertiesException {
+		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(file,
+				isJarFile, recursiveSearch);
 		List<CommitInfo> result = new ArrayList<>();
 
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			String entry = entryWithProperties.getFirst();
 			Properties properties = entryWithProperties.getSecond();
 
-			String revision = GitPropertiesLocatorUtils
-					.getGitCommitPropertyValue(properties, entry, file);
+			String revision = GitPropertiesLocatorUtils.getGitCommitPropertyValue(properties, entry, file);
 			String branchName = getGitPropertiesValue(properties,
-					GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH,
-					entry, file);
-			long timestamp = ZonedDateTime.parse(
-					getGitPropertiesValue(properties, GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME,
-							entry,
-							file),
+					GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_BRANCH, entry, file);
+			long timestamp = ZonedDateTime.parse(getGitPropertiesValue(properties,
+					GitSingleProjectPropertiesLocator.GIT_PROPERTIES_GIT_COMMIT_TIME, entry, file),
 					gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
 			result.add(new CommitInfo(revision, new CommitDescriptor(branchName, timestamp)));
 
@@ -230,14 +240,13 @@ public class ArtifactoryConfig {
 	/**
 	 * Returns a value from a git properties file.
 	 */
-	private static String getGitPropertiesValue(
-			Properties gitProperties, String key, String entryName, File jarFile) throws InvalidGitPropertiesException {
+	private static String getGitPropertiesValue(Properties gitProperties, String key, String entryName, File jarFile)
+			throws InvalidGitPropertiesException {
 		String value = gitProperties.getProperty(key);
 		if (StringUtils.isEmpty(value)) {
-			throw new InvalidGitPropertiesException(
-					"No entry or empty value for '" + key + "' in " + entryName + " in " + jarFile + "." +
-							"\nContents of " + GitPropertiesLocatorUtils.GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties
-			);
+			throw new InvalidGitPropertiesException("No entry or empty value for '" + key + "' in " + entryName + " in "
+					+ jarFile + "." + "\nContents of " + GitPropertiesLocatorUtils.GIT_PROPERTIES_FILE_NAME + ":\n"
+					+ gitProperties);
 		}
 
 		return value;
@@ -271,8 +280,7 @@ public class ArtifactoryConfig {
 				return false;
 			}
 			CommitInfo that = (CommitInfo) o;
-			return Objects.equals(revision, that.revision) &&
-					Objects.equals(commit, that.commit);
+			return Objects.equals(revision, that.revision) && Objects.equals(commit, that.commit);
 		}
 
 		@Override

@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+- [feature] _agent_: Previously unsuccessful coverage uploads are now automatically retried upon agent restart
+
 # 32.1.0
 - [feature] _teamscale-maven-plugin_: Support for cucumber tests
 - [feature] _teamscale-maven-plugin_, _impacted-test-engine_: Support for junit platform suite tests
