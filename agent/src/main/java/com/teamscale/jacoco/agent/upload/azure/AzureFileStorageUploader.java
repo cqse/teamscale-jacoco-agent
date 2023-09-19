@@ -9,6 +9,8 @@ import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_CONTE
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_RANGE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_TYPE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_WRITE;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.URL;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,9 +28,9 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.jacoco.agent.upload.UploaderException;
-import com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties;
 import com.teamscale.report.jacoco.CoverageFile;
 
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -36,10 +38,6 @@ import retrofit2.Response;
 
 /** Uploads the coverage archive to a provided azure file storage. */
 public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> {
-	/**
-	 * The properties file suffix for unsuccessful coverage uploads to azure.
-	 */
-	public static final String AZURE_RETRY_UPLOAD_FILE_SUFFIX = "_azure-retry.properties";
 
 	/** Pattern matches the host of a azure file storage */
 	private static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
@@ -65,15 +63,11 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
 				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
-				coverageFile.getName() + AZURE_RETRY_UPLOAD_FILE_SUFFIX));
+				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
 		Properties properties = new Properties();
-		properties.setProperty(ETeamscaleServerProperties.URL.toString(), this.uploadUrl.toString());
-		properties.setProperty(ETeamscaleServerProperties.USER_ACCESS_TOKEN.toString(), this.accessKey);
-		setAdditionalMetaDataPathProperties(properties);
-		try {
-			FileWriter writer = new FileWriter(uploadMetadataFile);
+		properties.setProperty(URL.toString(), this.uploadUrl.toString());
+		try (FileWriter writer = new FileWriter(uploadMetadataFile)) {
 			properties.store(writer, null);
-			writer.close();
 		} catch (IOException e) {
 			logger.warn(
 					"Failed to create metadata file for automatic upload retry of {}. Please manually retry the coverage upload to Azure.",
@@ -99,6 +93,14 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	@Override
 	public String describe() {
 		return String.format("Uploading coverage to the Azure File Storage at %s", this.uploadUrl);
+	}
+
+	@Override
+	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
+		HttpUrl originalUrl = this.uploadUrl;
+		this.uploadUrl = HttpUrl.parse(reuploadProperties.getProperty(URL.name()));
+		upload(coverageFile);
+		this.uploadUrl = originalUrl;
 	}
 
 	@Override
@@ -227,7 +229,6 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 
 		String auth = AzureFileStorageHttpUtils.getAuthorizationString(PUT, account, accessKey, filePath, headers,
 				queryParameters);
-		logger.info(auth);
 
 		headers.put(AUTHORIZATION, auth);
 		return getApi().put(filePath, headers, queryParameters).execute();

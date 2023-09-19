@@ -9,7 +9,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.teamscale.jacoco.agent.Agent;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
 import com.teamscale.report.jacoco.CoverageFile;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -43,9 +42,7 @@ public class UploadTestBase {
 	 * After unsuccessfully uploading coverage, this method starts the agent which
 	 * triggers the automatic upload retry of the remaining coverage.
 	 */
-	protected void startAgentAfterUploadFailure() throws UploaderException {
-		AgentOptions options = new TestAgentOptionsBuilder().withTeamscaleMessage("Foobar")
-				.withTeamscalePartition("Test").create();
+	protected void startAgentAfterUploadFailure(AgentOptions options) throws UploaderException {
 		options.setParentOutputDirectory(Paths.get(coverageFile.toString()).getParent());
 		mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 		// Agent is started to check automatic upload retry.

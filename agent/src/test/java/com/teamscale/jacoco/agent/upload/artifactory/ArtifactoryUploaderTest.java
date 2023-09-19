@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
 import com.teamscale.jacoco.agent.upload.UploadTestBase;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 
@@ -56,7 +58,9 @@ public class ArtifactoryUploaderTest extends UploadTestBase {
 		mockWebServer.enqueue(new MockResponse().setResponseCode(400));
 		uploader.upload(coverageFile);
 		assertThat(Files.exists(Paths.get(coverageFile.toString()))).isEqualTo(true);
-		startAgentAfterUploadFailure();
+		AgentOptions options = new TestAgentOptionsBuilder()
+				.withMinimalArtifactoryConfig("fookey", "Test", mockWebServer.url(serverUrl).toString()).create();
+		startAgentAfterUploadFailure(options);
 		assertThat(Files.notExists(Paths.get(coverageFile.toString()))).isEqualTo(true);
 	}
 

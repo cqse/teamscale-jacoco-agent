@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
 import com.teamscale.jacoco.agent.upload.UploadTestBase;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 
@@ -38,7 +40,11 @@ public class TeamscaleAutomaticUploadRetryTest extends UploadTestBase {
 		// This is expected to fail and leave the coverage on disk.
 		uploader.upload(coverageFile);
 		assertThat(Files.exists(Paths.get(coverageFile.toString()))).isEqualTo(true);
-		startAgentAfterUploadFailure();
+		AgentOptions options = new TestAgentOptionsBuilder().withTeamscaleMessage("Foobar")
+				.withTeamscalePartition("Test").withTeamscaleProject("project").withTeamscaleUser("User")
+				.withTeamscaleUrl(mockWebServer.url(serverUrl).toString()).withTeamscaleAccessToken("foobar123")
+				.withTeamscaleRevision("greatrevision").create();
+		startAgentAfterUploadFailure(options);
 		// A deleted coverage file tells us that the upload was successful.
 		assertThat(Files.notExists(Paths.get(coverageFile.toString()))).isEqualTo(true);
 	}

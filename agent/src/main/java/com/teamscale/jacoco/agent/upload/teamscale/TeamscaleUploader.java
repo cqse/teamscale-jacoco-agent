@@ -5,9 +5,6 @@ import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProper
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PROJECT;
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.URL;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_ACCESS_TOKEN;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.USER_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +17,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Strings;
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
@@ -36,7 +34,7 @@ public class TeamscaleUploader implements IUploader {
 	/**
 	 * The properties file suffix for unsuccessful coverage uploads.
 	 */
-	public static final String TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX = "_teamscale-retry.properties";
+	public static final String RETRY_UPLOAD_FILE_SUFFIX = "_upload-retry.properties";
 
 	/** The logger. */
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -51,8 +49,26 @@ public class TeamscaleUploader implements IUploader {
 
 	@Override
 	public void upload(CoverageFile coverageFile) {
+		doUpload(coverageFile, this.teamscaleServer);
+	}
+
+	@Override
+	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
+		TeamscaleServer server = new TeamscaleServer();
+		server.project = reuploadProperties.getProperty(PROJECT.name());
+		server.commit = CommitDescriptor.parse(reuploadProperties.getProperty(COMMIT.name()));
+		server.partition = reuploadProperties.getProperty(PARTITION.name());
+		server.revision = Strings.emptyToNull(reuploadProperties.getProperty(REVISION.name()));
+		server.userAccessToken = teamscaleServer.userAccessToken;
+		server.userName = teamscaleServer.userName;
+		server.url = teamscaleServer.url;
+		server.setMessage(reuploadProperties.getProperty(MESSAGE.name()));
+		doUpload(coverageFile, server);
+	}
+
+	private void doUpload(CoverageFile coverageFile, TeamscaleServer teamscaleServer) {
 		try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
-			if (tryUploading(coverageFile)) {
+			if (tryUploading(coverageFile, teamscaleServer)) {
 				deleteCoverageFile(coverageFile);
 			} else {
 				logger.warn("Failed to upload coverage to Teamscale. "
@@ -71,13 +87,11 @@ public class TeamscaleUploader implements IUploader {
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
 				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
-				coverageFile.getName() + TEAMSCALE_RETRY_UPLOAD_FILE_SUFFIX));
+				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
 		Properties serverProperties = this.createServerProperties();
-		try {
-			OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(uploadMetadataFile.toPath()),
-					StandardCharsets.UTF_8);
+		try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(uploadMetadataFile.toPath()),
+				StandardCharsets.UTF_8)) {
 			serverProperties.store(writer, null);
-			writer.close();
 		} catch (IOException e) {
 			logger.warn(
 					"Failed to create metadata file for automatic upload retry of {}. Please manually retry the coverage upload to Teamscale.",
@@ -91,10 +105,7 @@ public class TeamscaleUploader implements IUploader {
 	 */
 	private Properties createServerProperties() {
 		Properties serverProperties = new Properties();
-		serverProperties.setProperty(URL.name(), teamscaleServer.url.toString());
 		serverProperties.setProperty(PROJECT.name(), teamscaleServer.project);
-		serverProperties.setProperty(USER_NAME.name(), teamscaleServer.userName);
-		serverProperties.setProperty(USER_ACCESS_TOKEN.name(), teamscaleServer.userAccessToken);
 		serverProperties.setProperty(PARTITION.name(), teamscaleServer.partition);
 		serverProperties.setProperty(COMMIT.name(), teamscaleServer.commit.toString());
 		serverProperties.setProperty(REVISION.name(), Strings.nullToEmpty(teamscaleServer.revision));
@@ -112,7 +123,7 @@ public class TeamscaleUploader implements IUploader {
 	}
 
 	/** Performs the upload and returns <code>true</code> if successful. */
-	private boolean tryUploading(CoverageFile coverageFile) {
+	private boolean tryUploading(CoverageFile coverageFile, TeamscaleServer teamscaleServer) {
 		logger.debug("Uploading JaCoCo artifact to {}", teamscaleServer);
 
 		try {

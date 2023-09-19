@@ -1,13 +1,18 @@
 package com.teamscale.jacoco.agent.upload;
 
-import com.teamscale.jacoco.agent.util.LoggingUtils;
-import com.teamscale.report.jacoco.CoverageFile;
-import org.slf4j.Logger;
-
 import java.util.Collection;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
-/** Base class for wrapper uploaders that allow uploading the same coverage to multiple locations. */
+import org.slf4j.Logger;
+
+import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.jacoco.CoverageFile;
+
+/**
+ * Base class for wrapper uploaders that allow uploading the same coverage to
+ * multiple locations.
+ */
 public abstract class DelayedMultiUploaderBase implements IUploader {
 
 	/** Logger. */
@@ -24,6 +29,11 @@ public abstract class DelayedMultiUploaderBase implements IUploader {
 				wrappedUploader.upload(file);
 			}
 		}
+	}
+
+	@Override
+	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
+		// Intentionally left blank
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	protected final Logger logger = LoggingUtils.getLogger(this);
 
 	/** The URL to upload to. */
-	protected final HttpUrl uploadUrl;
+	protected HttpUrl uploadUrl;
 
 	/** Additional files to include in the uploaded zip. */
 	protected final List<Path> additionalMetaDataFiles;
@@ -41,12 +41,6 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 
 	/** The API which performs the upload */
 	private T api;
-
-	/**
-	 * The key to the additional metadatafiles property. Is used to later find the
-	 * paths of additional metadata files in case of reupload.
-	 */
-	public static final String ADDITIONAL_METADATA_PROPERTIES_KEY = "ADDITIONAL_METADATA_FILES";
 
 	/** Constructor. */
 	public HttpZipUploaderBase(HttpUrl uploadUrl, List<Path> additionalMetaDataFiles, Class<T> apiClass) {
@@ -89,6 +83,9 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 			logger.warn("Could not delete file {} after upload", coverageFile);
 		}
 	}
+
+	@Override
+	public abstract void reupload(CoverageFile coverageFile, Properties reuploadProperties);
 
 	/**
 	 * Marks coverage files of unsuccessful coverage uploads so that they can be
@@ -144,7 +141,6 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 		try (FileOutputStream fileOutputStream = new FileOutputStream(zipFile);
 				ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
 			fillZipFile(zipOutputStream, coverageFile);
-			fileOutputStream.close();
 			return zipFile;
 		}
 	}
@@ -160,19 +156,6 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 		for (Path additionalFile : additionalMetaDataFiles) {
 			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));
 			zipOutputStream.write(FileSystemUtils.readFileBinary(additionalFile.toFile()));
-		}
-		zipOutputStream.close();
-	}
-
-	/**
-	 * Sets the paths of additional metadata files in the properties. This also
-	 * saves the amount of file paths so that it can be easily iterated over later.
-	 */
-	protected void setAdditionalMetaDataPathProperties(Properties properties) {
-		properties.setProperty(ADDITIONAL_METADATA_PROPERTIES_KEY, String.valueOf(additionalMetaDataFiles.size()));
-		for (int i = 0; i < additionalMetaDataFiles.size(); i++) {
-			properties.setProperty(ADDITIONAL_METADATA_PROPERTIES_KEY + "_" + i,
-					additionalMetaDataFiles.get(i).toString());
 		}
 	}
 

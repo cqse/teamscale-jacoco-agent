@@ -1,5 +1,10 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,11 +15,11 @@ import java.util.Properties;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import com.google.common.base.Strings;
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
-import com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties;
 import com.teamscale.report.jacoco.CoverageFile;
 
 import okhttp3.Interceptor;
@@ -27,12 +32,6 @@ import retrofit2.Response;
  * Uploads XMLs to Artifactory.
  */
 public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> {
-
-	/**
-	 * The suffix to add to the metafile that will be created to automatically retry
-	 * unsuccessful coverage uploads.
-	 */
-	public static final String ARTIFACTORY_RETRY_UPLOAD_FILE_SUFFIX = "_artifactory-retry.properties";
 
 	/**
 	 * Header that can be used as alternative to basic authentication to
@@ -56,12 +55,10 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
 				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
-				coverageFile.getName() + ARTIFACTORY_RETRY_UPLOAD_FILE_SUFFIX));
+				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
 		Properties properties = createArtifactoryProperties();
-		try {
-			FileWriter writer = new FileWriter(uploadMetadataFile);
+		try (FileWriter writer = new FileWriter(uploadMetadataFile)) {
 			properties.store(writer, null);
-			writer.close();
 		} catch (IOException e) {
 			logger.warn(
 					"Failed to create metadata file for automatic upload retry of {}. Please manually retry the coverage upload to Azure.",
@@ -70,29 +67,32 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		}
 	}
 
+	@Override
+	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
+		ArtifactoryConfig config = new ArtifactoryConfig();
+		config.url = artifactoryConfig.url;
+		config.user = artifactoryConfig.user;
+		config.password = artifactoryConfig.password;
+		config.legacyPath = artifactoryConfig.legacyPath;
+		config.zipPath = artifactoryConfig.zipPath;
+		config.pathSuffix = artifactoryConfig.pathSuffix;
+		String revision = reuploadProperties.getProperty(REVISION.name());
+		String commitString = reuploadProperties.getProperty(COMMIT.name());
+		config.commitInfo = new ArtifactoryConfig.CommitInfo(revision, CommitDescriptor.parse(commitString));
+		config.gitPropertiesCommitTimeFormat = artifactoryConfig.gitPropertiesCommitTimeFormat;
+		config.apiKey = artifactoryConfig.apiKey;
+		config.partition = Strings.emptyToNull(reuploadProperties.getProperty(PARTITION.name()));
+		setUploadPath(coverageFile, config);
+		super.upload(coverageFile);
+
+	}
+
 	/** Creates properties from the artifactory configs. */
 	private Properties createArtifactoryProperties() {
 		Properties properties = new Properties();
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_URL_OPTION, artifactoryConfig.url.toString());
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_USER_OPTION, Strings.nullToEmpty(artifactoryConfig.user));
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_PASSWORD_OPTION,
-				Strings.nullToEmpty(artifactoryConfig.password));
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_LEGACY_PATH_OPTION,
-				String.valueOf(artifactoryConfig.legacyPath));
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_ZIP_PATH_OPTION,
-				Strings.nullToEmpty(artifactoryConfig.zipPath));
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_PATH_SUFFIX,
-				Strings.nullToEmpty(artifactoryConfig.pathSuffix));
-		properties.setProperty(ETeamscaleServerProperties.REVISION.name(), artifactoryConfig.commitInfo.revision);
-		properties.setProperty(ETeamscaleServerProperties.COMMIT.name(),
-				artifactoryConfig.commitInfo.commit.toString());
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION,
-				artifactoryConfig.dateTimeFormatterPattern);
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, artifactoryConfig.apiKey);
-		properties.setProperty(ArtifactoryConfig.ARTIFACTORY_PARTITION,
-				Strings.nullToEmpty(artifactoryConfig.partition));
-		setAdditionalMetaDataPathProperties(properties);
-		properties.setProperty("REPORT_FORMAT", this.coverageFormat);
+		properties.setProperty(REVISION.name(), artifactoryConfig.commitInfo.revision);
+		properties.setProperty(COMMIT.name(), artifactoryConfig.commitInfo.commit.toString());
+		properties.setProperty(PARTITION.name(), Strings.nullToEmpty(artifactoryConfig.partition));
 		return properties;
 	}
 
@@ -107,8 +107,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		}
 	}
 
-	@Override
-	public void upload(CoverageFile coverageFile) {
+	private void setUploadPath(CoverageFile coverageFile, ArtifactoryConfig artifactoryConfig) {
 		if (artifactoryConfig.legacyPath) {
 			this.uploadPath = String.join("/", artifactoryConfig.commitInfo.commit.branchName,
 					artifactoryConfig.commitInfo.commit.timestamp + "-" + artifactoryConfig.commitInfo.revision,
@@ -123,6 +122,11 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 					artifactoryConfig.partition, coverageFormat, artifactoryConfig.pathSuffix,
 					coverageFile.getNameWithoutExtension() + ".zip");
 		}
+	}
+
+	@Override
+	public void upload(CoverageFile coverageFile) {
+		setUploadPath(coverageFile, this.artifactoryConfig);
 		super.upload(coverageFile);
 	}
 
