@@ -3,7 +3,6 @@ package com.teamscale.jacoco.agent.upload.delay;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -77,11 +76,6 @@ public class DelayedUploader<T> implements IUploader {
 			return wrappedUploader.describe();
 		}
 		return "Temporary cache until commit is resolved: " + cacheDir.toAbsolutePath();
-	}
-
-	@Override
-	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
-		// Intentionally left blank
 	}
 
 	/**

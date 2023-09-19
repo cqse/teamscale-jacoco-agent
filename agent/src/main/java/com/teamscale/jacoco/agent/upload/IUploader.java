@@ -1,7 +1,5 @@
 package com.teamscale.jacoco.agent.upload;
 
-import java.util.Properties;
-
 import com.teamscale.report.jacoco.CoverageFile;
 
 /** Uploads coverage reports. */
@@ -16,10 +14,5 @@ public interface IUploader {
 
 	/** Human-readable description of the uploader. */
 	String describe();
-
-	/**
-	 * Retries previously unsuccessful coverage uploads with the given properties.
-	 */
-	void reupload(CoverageFile coverageFile, Properties reuploadProperties);
 
 }

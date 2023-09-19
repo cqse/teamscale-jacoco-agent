@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -83,9 +82,6 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 			logger.warn("Could not delete file {} after upload", coverageFile);
 		}
 	}
-
-	@Override
-	public abstract void reupload(CoverageFile coverageFile, Properties reuploadProperties);
 
 	/**
 	 * Marks coverage files of unsuccessful coverage uploads so that they can be

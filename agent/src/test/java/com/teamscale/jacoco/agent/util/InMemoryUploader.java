@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.report.jacoco.CoverageFile;
@@ -25,11 +24,6 @@ public class InMemoryUploader implements IUploader {
 		} catch (IOException e) {
 			// Do nothing as not being able to delete the file is not important for tests
 		}
-	}
-
-	@Override
-	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
-		// Intentionally left blank.
 	}
 
 	@Override

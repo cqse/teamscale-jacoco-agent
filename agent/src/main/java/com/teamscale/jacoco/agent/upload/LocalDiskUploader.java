@@ -1,7 +1,5 @@
 package com.teamscale.jacoco.agent.upload;
 
-import java.util.Properties;
-
 import com.teamscale.report.jacoco.CoverageFile;
 
 /**
@@ -20,8 +18,4 @@ public class LocalDiskUploader implements IUploader {
 		return "configured output directory on the local disk";
 	}
 
-	@Override
-	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
-		// Intentionally left blank
-	}
 }

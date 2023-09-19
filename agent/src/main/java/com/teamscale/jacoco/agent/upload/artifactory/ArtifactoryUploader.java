@@ -67,7 +67,9 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		}
 	}
 
-	@Override
+	/**
+	 * Retries previously unsuccessful coverage uploads with the given properties.
+	 */
 	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
 		ArtifactoryConfig config = new ArtifactoryConfig();
 		config.url = artifactoryConfig.url;

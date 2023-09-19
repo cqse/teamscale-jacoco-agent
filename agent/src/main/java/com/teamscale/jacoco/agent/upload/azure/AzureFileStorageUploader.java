@@ -9,17 +9,14 @@ import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_CONTE
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_RANGE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_TYPE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_WRITE;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.URL;
 import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +27,6 @@ import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.report.jacoco.CoverageFile;
 
-import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -64,10 +60,8 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
 				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
 				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
-		Properties properties = new Properties();
-		properties.setProperty(URL.toString(), this.uploadUrl.toString());
-		try (FileWriter writer = new FileWriter(uploadMetadataFile)) {
-			properties.store(writer, null);
+		try {
+			uploadMetadataFile.createNewFile();
 		} catch (IOException e) {
 			logger.warn(
 					"Failed to create metadata file for automatic upload retry of {}. Please manually retry the coverage upload to Azure.",
@@ -93,14 +87,6 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	@Override
 	public String describe() {
 		return String.format("Uploading coverage to the Azure File Storage at %s", this.uploadUrl);
-	}
-
-	@Override
-	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
-		HttpUrl originalUrl = this.uploadUrl;
-		this.uploadUrl = HttpUrl.parse(reuploadProperties.getProperty(URL.name()));
-		upload(coverageFile);
-		this.uploadUrl = originalUrl;
 	}
 
 	@Override

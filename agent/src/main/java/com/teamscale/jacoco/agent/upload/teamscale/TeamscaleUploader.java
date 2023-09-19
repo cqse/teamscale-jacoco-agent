@@ -52,7 +52,9 @@ public class TeamscaleUploader implements IUploader {
 		doUpload(coverageFile, this.teamscaleServer);
 	}
 
-	@Override
+	/**
+	 * Retries previously unsuccessful coverage uploads with the given properties.
+	 */
 	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
 		TeamscaleServer server = new TeamscaleServer();
 		server.project = reuploadProperties.getProperty(PROJECT.name());

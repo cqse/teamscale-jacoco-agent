@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.upload;
 
 import java.util.Collection;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -29,11 +28,6 @@ public abstract class DelayedMultiUploaderBase implements IUploader {
 				wrappedUploader.upload(file);
 			}
 		}
-	}
-
-	@Override
-	public void reupload(CoverageFile coverageFile, Properties reuploadProperties) {
-		// Intentionally left blank
 	}
 
 	@Override

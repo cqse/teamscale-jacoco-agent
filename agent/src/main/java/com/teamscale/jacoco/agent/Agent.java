@@ -27,6 +27,9 @@ import org.glassfish.jersey.server.ServerProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
+import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.Timer;
@@ -98,7 +101,18 @@ public class Agent extends AgentBase {
 			properties.load(reader);
 			CoverageFile coverageFile = new CoverageFile(
 					new File(StringUtils.stripSuffix(file.getAbsolutePath(), RETRY_UPLOAD_FILE_SUFFIX)));
-			uploader.reupload(coverageFile, properties);
+
+			if (uploader instanceof TeamscaleUploader) {
+				((TeamscaleUploader) uploader).reupload(coverageFile, properties);
+			} else if (uploader instanceof ArtifactoryUploader) {
+				((ArtifactoryUploader) uploader).reupload(coverageFile, properties);
+			} else if (uploader instanceof AzureFileStorageUploader) {
+				// The azure uploader does not have any special reupload properties, so it will
+				// use the normal upload instead.
+				uploader.upload(coverageFile);
+			} else {
+				logger.info("Reupload not implemented for uploader {}", uploader.describe());
+			}
 			file.delete();
 		} catch (IOException e) {
 			logger.error("Reuploading coverage failed. " + e);
