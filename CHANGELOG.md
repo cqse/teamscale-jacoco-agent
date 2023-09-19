@@ -8,6 +8,10 @@ We use [semantic versioning](http://semver.org/):
 
 - [feature] _agent_: Previously unsuccessful coverage uploads are now automatically retried upon agent restart
 
+# 32.1.0
+- [feature] _teamscale-maven-plugin_: Support for cucumber tests
+- [feature] _teamscale-maven-plugin_, _impacted-test-engine_: Support for junit platform suite tests
+
 # 32.0.0
 - [breaking] _teamscale-gradle-plugin_: Removed usage of deprecated Gradle APIs
   - `teamscale.agent.destinationProperty` type has changed from `Property<File>` to `DirectoryProperty`

@@ -44,7 +44,7 @@ jcommander = { module = "com.beust:jcommander", version = "1.82" }
 teamscaleLibCommons = { module = "com.teamscale:teamscale-lib-commons", version = "9.1.0" }
 commonsCodec = { module = "commons-codec:commons-codec", version = "1.16.0" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.9" }
-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.6.1.202309021850-r" }
+jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.7.0.202309050840-r" }
 okio = { module = "com.squareup.okio:okio", version = "3.5.0" }
 
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
@@ -62,7 +62,7 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 
 [plugins]
-versions = { id = "com.github.ben-manes.versions", version = "0.47.0" }
+versions = { id = "com.github.ben-manes.versions", version = "0.48.0" }
 markdownToPdf = { id = "de.fntsoftware.gradle.markdown-to-pdf", version = "1.1.0" }
 nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version = "1.3.0" }
 pluginPublish = { id = "com.gradle.plugin-publish", version = "1.2.1" }

@@ -6,7 +6,7 @@ import org.junit.platform.engine.TestEngine;
 import java.util.Optional;
 
 /** Test default test descriptor resolver for the JUnit jupiter {@link TestEngine}. */
-public class JUnitJupiterTestDescriptorResolver extends JUnitTestDescriptorResolverBase {
+public class JUnitJupiterTestDescriptorResolver extends JUnitClassBasedTestDescriptorResolverBase {
 
 	/** The segment type name that the jupiter engine uses for the class descriptor nodes. */
 	public static final String CLASS_SEGMENT_TYPE = "class";
