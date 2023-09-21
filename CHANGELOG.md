@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 
 - [feature] _agent_: Previously unsuccessful coverage uploads are now automatically retried upon agent restart
+- [fix] _teamscale-maven-plugin_: Fix uniform path and cluster ID extraction for cucumber pre 7.11.2
 
 # 32.1.0
 - [feature] _teamscale-maven-plugin_: Support for cucumber tests
