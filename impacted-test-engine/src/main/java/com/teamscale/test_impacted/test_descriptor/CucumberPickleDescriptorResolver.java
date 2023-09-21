@@ -4,6 +4,8 @@ import com.teamscale.test_impacted.commons.LoggerUtils;
 import org.junit.platform.engine.TestDescriptor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -78,17 +80,26 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 		// (legacy-) display name: Example #1.1 <- example index in the file (changes if you add another tests above)
 		// testDescritor.pickle.pickle.name: Add two numbers -2 & 3 <- should be unique in the vast majority of times
 		// => So the pickle name is the most stable and meaningful one
+		Field pickleField = null;
 		try {
-			Field pickleField = testDescriptor.getClass().getDeclaredField("pickle");
+			pickleField = testDescriptor.getClass().getDeclaredField("pickle");
+		} catch (NoSuchFieldException e) {
+			// Pre cucumber 7.11.2, the field was called pickleEvent (see NodeDescriptor in this merge request: https://github.com/cucumber/cucumber-jvm/pull/2711/files)
+			// ...
+		}
+		try {
+			if (pickleField == null) {
+				// ... so try again with "pickleEvent"
+				pickleField = testDescriptor.getClass().getDeclaredField("pickleEvent");
+			}
 			pickleField.setAccessible(true);
 			Object pickle = pickleField.get(testDescriptor);
-			Field internalPickleField = pickle.getClass().getDeclaredField("pickle");
-			internalPickleField.setAccessible(true);
-			Object internalPickle = internalPickleField.get(pickle);
-			Field nameField = internalPickle.getClass().getDeclaredField("name");
-			nameField.setAccessible(true);
-			return Optional.ofNullable(nameField.get(internalPickle).toString());
-		} catch (NoSuchFieldException | IllegalAccessException e) {
+			// getName() is required by the pickle interface https://github.com/cucumber/cucumber-jvm/blob/main/cucumber-gherkin/src/main/java/io/cucumber/core/gherkin/Pickle.java#L14
+			Method getNameMethod = pickle.getClass().getDeclaredMethod("getName");
+			getNameMethod.setAccessible(true);
+			Object name = getNameMethod.invoke(pickle);
+			return Optional.of(name.toString());
+		} catch (NoSuchFieldException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
 			return Optional.empty();
 		}
 	}
