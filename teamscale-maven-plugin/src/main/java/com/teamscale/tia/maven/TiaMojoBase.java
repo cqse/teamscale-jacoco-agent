@@ -247,17 +247,22 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
 
-		Path agentConfigFile = createAgentConfigFiles();
+		Path agentConfigFile = createAgentConfigFiles(agentPort);
 		Path logFilePath = targetDirectory.resolve("agent.log");
 		setArgLine(agentConfigFile, logFilePath);
 	}
 
+	/**
+	 * Automatically find an available port.
+	 */
 	private String findAvailablePort() {
 		try (ServerSocket socket = new ServerSocket(0)) {
-			return String.valueOf(socket.getLocalPort());
+			int port = socket.getLocalPort();
+			getLog().info("Automatically set server port to " + port);
+			return String.valueOf(port);
 		} catch (IOException e) {
-			getLog().error("Cannot automatically determine open port. Using default fallback port 12888.", e);
-			return "12888";
+			getLog().error("Port blocked, trying again.", e);
+			return findAvailablePort();
 		}
 	}
 
@@ -391,7 +396,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 				session, getLog(), propertyName, isIntegrationTest());
 	}
 
-	private Path createAgentConfigFiles() throws MojoFailureException {
+	private Path createAgentConfigFiles(String agentPort) throws MojoFailureException {
 		Path loggingConfigPath = targetDirectory.resolve("logback.xml");
 		try (OutputStream loggingConfigOutputStream = Files.newOutputStream(loggingConfigPath)) {
 			FileSystemUtils.copy(readAgentLogbackConfig(), loggingConfigOutputStream);
@@ -400,7 +405,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 					+ " Make sure the path " + loggingConfigPath + " is writeable.", e);
 		}
 
-		Path configFilePath = targetDirectory.resolve("agent.properties");
+		Path configFilePath = targetDirectory.resolve(agentPort + "agent.properties");
 		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory.resolve("reports"));
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));
