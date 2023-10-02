@@ -32,7 +32,7 @@ public class TiaMavenMultipleJobsTest {
 		}
 		// Wait for processes to do something.
 		Thread.sleep(10000);
-		File configFile = new File(Paths.get("maven-dump-local-project", "target", "tia", "agent.log").toUri());
+		File configFile = new File(Paths.get(workingDirectory.getAbsolutePath(), "target", "tia", "agent.log").toUri());
 		String configContent = FileSystemUtils.readFile(configFile);
 		assertThat(configContent).isNotEmpty();
 		assertThat(configContent).doesNotContain("Could not start http server on port");
