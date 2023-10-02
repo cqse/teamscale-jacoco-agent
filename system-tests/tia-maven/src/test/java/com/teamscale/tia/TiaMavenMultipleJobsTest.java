@@ -25,11 +25,10 @@ public class TiaMavenMultipleJobsTest {
 		ProcessBuilder[] processes = new ProcessBuilder[4];
 		String executable = "./mvnw";
 		if (SystemUtils.isWindows()) {
-			executable = "mvnw.cmd";
+			executable = Paths.get("maven-dump-local-project", "mvnw.cmd").toUri().getPath();
 		}
 		for (int i = 0; i < processes.length; i++) {
-			new ProcessBuilder(Paths.get("maven-dump-local-project", executable).toUri().getPath(), "clean", "verify")
-					.directory(workingDirectory).start();
+			new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory).start();
 		}
 		// Wait for processes to do something.
 		Thread.sleep(10000);
