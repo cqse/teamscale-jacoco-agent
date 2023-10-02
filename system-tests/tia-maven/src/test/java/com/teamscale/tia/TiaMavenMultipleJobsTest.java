@@ -6,6 +6,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -22,8 +23,12 @@ public class TiaMavenMultipleJobsTest {
 	public void testMavenTia() throws Exception {
 		File workingDirectory = new File("maven-dump-local-project");
 		ProcessBuilder[] processes = new ProcessBuilder[4];
+		String executable = "./mvnw";
+		if (SystemUtils.isWindows()) {
+			executable = "mvnw.cmd";
+		}
 		for (int i = 0; i < processes.length; i++) {
-			new ProcessBuilder(Paths.get("maven-dump-local-project", "mvnw.cmd").toUri().getPath(), "clean", "verify")
+			new ProcessBuilder(Paths.get("maven-dump-local-project", executable).toUri().getPath(), "clean", "verify")
 					.directory(workingDirectory).start();
 		}
 		// Wait for processes to do something.
