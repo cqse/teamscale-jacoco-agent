@@ -28,8 +28,9 @@ public class TiaMavenCucumberSystemTest {
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
 			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false,
-					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0",
-					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99");
+					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0/Add two numbers 0 & 0",
+					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.1",
+					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.2");
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
@@ -48,18 +49,24 @@ public class TiaMavenCucumberSystemTest {
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(unitTestReport.tests).hasSize(2);
+		assertThat(unitTestReport.tests).hasSize(3);
 		assertThat(unitTestReport.partial).isTrue();
 		assertAll(() -> {
 			assertThat(unitTestReport.tests).extracting(test -> test.uniformPath)
 					.containsExactlyInAnyOrder(
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99");
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0/Add two numbers 0 & 0",
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.1",
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.2"
+					);
 			assertThat(unitTestReport.tests).extracting(test -> test.result)
-					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
+					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED,
+							ETestExecutionResult.PASSED);
 			assertThat(unitTestReport.tests).extracting(SystemTestUtils::getCoverageString)
-					.containsExactly("Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
-							"Calculator.java:3,9;StepDefinitions.java:12,24-25,34-35,39-40");
+					.containsExactly(
+							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
+							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
+							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40"
+					);
 		});
 	}
 
