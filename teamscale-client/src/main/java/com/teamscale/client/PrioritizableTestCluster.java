@@ -3,6 +3,7 @@ package com.teamscale.client;
 import com.squareup.moshi.Json;
 
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * A {@link PrioritizableTestCluster} represents an ordered {@link List} of {@link PrioritizableTest}s which should be
@@ -44,5 +45,15 @@ public class PrioritizableTestCluster {
 	public PrioritizableTestCluster(String clusterId, List<PrioritizableTest> tests) {
 		this.clusterId = clusterId;
 		this.tests = tests;
+	}
+
+	@Override
+	public String toString() {
+		return new StringJoiner(", ", PrioritizableTestCluster.class.getSimpleName() + "[", "]")
+				.add("clusterId='" + clusterId + "'")
+				.add("score=" + score)
+				.add("rank=" + rank)
+				.add("tests=" + tests)
+				.toString();
 	}
 }
