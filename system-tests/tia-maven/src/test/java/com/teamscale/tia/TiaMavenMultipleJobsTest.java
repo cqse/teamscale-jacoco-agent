@@ -32,8 +32,8 @@ public class TiaMavenMultipleJobsTest {
 		}
 		ProcessUtils.ExecutionResult result = ProcessUtils
 				.execute(new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
+		// Get additional output for error debugging.
 		System.out.println(result.getStdout());
-		// Wait for processes to do something.
 		File configFile = new File(Paths.get(workingDirectory.getAbsolutePath(), "target", "tia", "agent.log").toUri());
 		String configContent = FileSystemUtils.readFile(configFile);
 		assertThat(configContent).isNotEmpty();
