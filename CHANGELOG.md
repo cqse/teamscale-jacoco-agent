@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+- [feature] _agent_: Dynamically find open port for coverage collection.
 - [feature] _agent_: Previously unsuccessful coverage uploads are now automatically retried upon agent restart
 
 # 32.1.0

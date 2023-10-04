@@ -6,6 +6,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.io.ProcessUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.Test;
 
@@ -22,19 +23,21 @@ public class TiaMavenMultipleJobsTest {
 	@Test
 	public void testMavenTia() throws Exception {
 		File workingDirectory = new File("maven-dump-local-project");
-		ProcessBuilder[] processes = new ProcessBuilder[4];
 		String executable = "./mvnw";
 		if (SystemUtils.isWindows()) {
 			executable = Paths.get("maven-dump-local-project", "mvnw.cmd").toUri().getPath();
 		}
-		for (int i = 0; i < processes.length; i++) {
+		for (int i = 0; i < 3; i++) {
 			new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory).start();
 		}
+		ProcessUtils.ExecutionResult result = ProcessUtils
+				.execute(new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
+		System.out.println(result.getStdout());
 		// Wait for processes to do something.
-		Thread.sleep(10000);
 		File configFile = new File(Paths.get(workingDirectory.getAbsolutePath(), "target", "tia", "agent.log").toUri());
 		String configContent = FileSystemUtils.readFile(configFile);
 		assertThat(configContent).isNotEmpty();
+		assertThat(result.terminatedByTimeoutOrInterruption()).isFalse();
 		assertThat(configContent).doesNotContain("Could not start http server on port");
 	}
 }
