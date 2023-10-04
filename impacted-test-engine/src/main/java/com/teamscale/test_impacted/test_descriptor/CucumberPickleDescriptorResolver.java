@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 /**
  * Test descriptor resolver for Cucumber. For details how we extract the uniform path, see comment in
- * {@link #getPickleName(TestDescriptor)}. The cluster id is the .feature file in which the tests are defined.
+ * {@link #getPickleId(TestDescriptor)}. The cluster id is the .feature file in which the tests are defined.
  */
 public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver {
 	/** Name of the cucumber test engine as used in the unique id of the test descriptor */
@@ -29,7 +29,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
 			return Optional.empty();
 		}
-		Optional<String> pickleName = getPickleName(testDescriptor);
+		Optional<String> pickleName = getPickleId(testDescriptor);
 		if (!pickleName.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the pickle name for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
@@ -60,11 +60,13 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 		return featureClasspath.map(featureClasspathString -> featureClasspathString.replaceAll("classpath:", ""));
 	}
 
-	private Optional<String> getPickleName(TestDescriptor testDescriptor) {
+	private Optional<String> getPickleId(TestDescriptor testDescriptor) {
 		// The PickleDescriptor test descriptor class is not public, so we can't import and use it to get access to the pickle attribute containing the name => reflection
 		// https://github.com/cucumber/cucumber-jvm/blob/main/cucumber-junit-platform-engine/src/main/java/io/cucumber/junit/platform/engine/NodeDescriptor.java#L90
-		// We want to use the name, though, because all other fields of the test descriptor like the unique id and the (legacy-) display name can easily result in inconsistencies, e.g. for
-		// Scenario Outline: Add two numbers <num1> & <num2>
+		// We want to use the name, though, because the unique id of the test descriptor can easily result in inconsistencies,
+		// e.g. for
+		//
+		// Scenario Outline: Add two numbers
 		//    Given I have a calculator
 		//    When I add <num1> and <num2>
 		//    Then the result should be <total>
@@ -74,12 +76,21 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 		//      | -2   | 3    | 1     |
 		//      | 10   | 15   | 25    |
 		//      | 12   | 13   | 25    |
-		// tests will be executed for every line of the examples table. The unique id refers to the line number (!) of the example in the .feature file
-		// and the (legacy-) display name on the index of the example in the table. So for the first example, we'll have
+		//
+		// tests will be executed for every line of the examples table. The unique id refers to the line number (!) of the example in the .feature file.
 		// unique id: [...][feature:classpath%3Ahellocucumber%2Fcalculator.feature]/[scenario:11]/[examples:16]/[example:18] <- the latter numbers are line numbers in the file!!
-		// (legacy-) display name: Example #1.1 <- example index in the file (changes if you add another tests above)
-		// testDescritor.pickle.pickle.name: Add two numbers -2 & 3 <- should be unique in the vast majority of times
-		// => So the pickle name is the most stable and meaningful one
+		// This means, everytime the line numbers change the test would not be recognised as the same in Teamscale anymore.
+		// So we use the pickle name (testDescriptor.pickle.getName()) to get the descriptive name "Add two numbers".
+		// This is not unique yet, as all the executions of the test (all examples) will have the same name then => may not be the case in Teamscale.
+		// To resolve this, we add the display name of the test descriptor at the end (testDescriptor.getDisplayName), which will be "Example #1.1", Example #1.2", etc.
+		// For normal Scenarios, this will result in the pickle name twice, which we accept here. E.g.
+		//
+		// Scenario: Add two numbers 0 & 0
+		//    Given I have a calculator
+		//    When I add 0 and 0
+		//    Then the result should be 0
+		//
+		// Results in "Add two numbers 0 & 0/Add two numbers 0 & 0"
 		Field pickleField = null;
 		try {
 			pickleField = testDescriptor.getClass().getDeclaredField("pickle");
@@ -97,8 +108,9 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 			// getName() is required by the pickle interface https://github.com/cucumber/cucumber-jvm/blob/main/cucumber-gherkin/src/main/java/io/cucumber/core/gherkin/Pickle.java#L14
 			Method getNameMethod = pickle.getClass().getDeclaredMethod("getName");
 			getNameMethod.setAccessible(true);
-			Object name = getNameMethod.invoke(pickle);
-			return Optional.of(name.toString());
+			String name = getNameMethod.invoke(pickle).toString();
+			String id = name + "/" + testDescriptor.getDisplayName();
+			return Optional.of(id);
 		} catch (NoSuchFieldException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
 			return Optional.empty();
 		}
