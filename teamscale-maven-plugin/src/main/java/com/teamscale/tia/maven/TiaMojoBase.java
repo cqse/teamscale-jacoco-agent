@@ -405,7 +405,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 					+ " Make sure the path " + loggingConfigPath + " is writeable.", e);
 		}
 
-		Path configFilePath = targetDirectory.resolve(agentPort + "agent.properties");
+		Path configFilePath = targetDirectory.resolve("agent-at-port-" + agentPort + ".properties");
 		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory.resolve("reports"));
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));

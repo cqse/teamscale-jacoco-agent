@@ -51,7 +51,7 @@ public abstract class AgentBase {
 				initServer();
 			} catch (Exception e) {
 				logger.error("Could not start http server on port " + options.getHttpServerPort()
-						+ ". Check if the port is blocked.");
+						+ ". Please check if the port is blocked.");
 				throw new IllegalStateException("Control server not started.", e);
 			}
 		}
