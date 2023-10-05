@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - _impacted-test-engine_: Failed requests to Teamscale did result in unreadable error message
 - [feature] _teamscale-maven-plugin_: Automatically find open port for coverage collection.
+- [fix] _teamscale-maven-plugin_: Same uniform path was extracted for Cucumber scenario outlines which do not have their parameters in the title
 
 # 32.2.0
 - [feature] _agent_: Previously unsuccessful coverage uploads are now automatically retried upon agent restart

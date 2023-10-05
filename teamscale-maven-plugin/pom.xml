@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.teamscale</groupId>
@@ -73,7 +72,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.9.4</version>
+            <version>3.9.5</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -85,7 +84,7 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.9.4</version>
+            <version>3.9.5</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -96,7 +95,7 @@
         <dependency>
             <groupId>com.teamscale</groupId>
             <artifactId>teamscale-lib-commons</artifactId>
-            <version>9.1.0</version>
+            <version>9.2.0</version>
         </dependency>
     </dependencies>
 

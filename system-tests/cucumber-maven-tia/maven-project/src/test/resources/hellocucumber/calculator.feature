@@ -8,7 +8,7 @@ Feature: Calculator
     When I add 0 and 0
     Then the result should be 0
 
-  Scenario Outline: Add two numbers <num1> & <num2>
+  Scenario Outline: Add two numbers
     Given I have a calculator
     When I add <num1> and <num2>
     Then the result should be <total>
