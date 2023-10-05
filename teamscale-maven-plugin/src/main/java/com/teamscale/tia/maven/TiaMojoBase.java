@@ -237,6 +237,20 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	/**
+	 * Automatically find an available port.
+	 */
+	private String findAvailablePort() {
+		try (ServerSocket socket = new ServerSocket(0)) {
+			int port = socket.getLocalPort();
+			getLog().info("Automatically set server port to " + port);
+			return String.valueOf(port);
+		} catch (IOException e) {
+			getLog().error("Port blocked, trying again.", e);
+			return findAvailablePort();
+		}
+	}
+
+	/**
 	 * Sets the teamscale-test-impacted engine as only includedEngine and passes all previous engine configuration to
 	 * the impacted test engine instead.
 	 */
