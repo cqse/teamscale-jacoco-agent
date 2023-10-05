@@ -1,16 +1,5 @@
 package com.teamscale.tia.maven;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -26,56 +15,61 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+
 /**
- * Base class for TIA Mojos. Provides all necessary functionality but can be
- * subclassed to change the partition.
+ * Base class for TIA Mojos. Provides all necessary functionality but can be subclassed to change the partition.
  * <p>
  * For this plugin to work, you must either
  *
  * <ul>
- * <li>Make Surefire and Failsafe use our JUnit 5 test engine</li>
- * <li>Send test start and end events to the Java agent themselves</li>
+ *     <li>Make Surefire and Failsafe use our JUnit 5 test engine</li>
+ *     <li>Send test start and end events to the Java agent themselves</li>
  * </ul>
  * <p>
- * To use our JUnit 5 impacted-test-engine, you must declare it as a test
- * dependency. Example:
+ * To use our JUnit 5 impacted-test-engine, you must declare it as a test dependency. Example:
  *
  * <pre>{@code
-<dependencies>
-	<dependency>
-		<groupId>com.teamscale</groupId>
-		<artifactId>impacted-test-engine</artifactId>
-		<version>30.0.0</version>
-		<scope>test</scope>
-	</dependency>
-</dependencies>
+ * <dependencies>
+ * <dependency>
+ * <groupId>com.teamscale</groupId>
+ * <artifactId>impacted-test-engine</artifactId>
+ * <version>30.0.0</version>
+ * <scope>test</scope>
+ * </dependency>
+ * </dependencies>
  * }</pre>
  * <p>
- * To send test events yourself, you can use our TIA client library (Maven
- * coordinates: com.teamscale:tia-client).
+ * To send test events yourself, you can use our TIA client library (Maven coordinates: com.teamscale:tia-client).
  * <p>
- * The log file of the agent is written to
- * {@code ${project.build.directory}/tia/agent.log}.
+ * The log file of the agent is written to {@code ${project.build.directory}/tia/agent.log}.
  */
 public abstract class TiaMojoBase extends AbstractMojo {
 
 	/**
-	 * Name of the surefire/failsafe option to pass in <a href=
-	 * "https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included
+	 * Name of the surefire/failsafe option to pass in
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included
 	 * engines</a>
 	 */
 	private static final String INCLUDE_JUNIT5_ENGINES_OPTION = "includeJUnit5Engines";
 
 	/**
-	 * Name of the surefire/failsafe option to pass in <a href=
-	 * "https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded
+	 * Name of the surefire/failsafe option to pass in
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded
 	 * engines</a>
 	 */
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
 
 	/**
-	 * The URL of the Teamscale instance to which the recorded coverage will be
-	 * uploaded.
+	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
 	@Parameter()
 	public String teamscaleUrl;
@@ -87,80 +81,71 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public String projectId;
 
 	/**
-	 * The username to use to perform the upload. Must have the "Upload external
-	 * data" permission for the {@link #projectId}. Can also be specified via the
-	 * Maven property {@code teamscale.username}.
+	 * The username to use to perform the upload. Must have the "Upload external data" permission for the
+	 * {@link #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
 	 */
 	@Parameter(property = "teamscale.username")
 	public String username;
 
 	/**
-	 * Teamscale access token of the {@link #username}. Can also be specified via
-	 * the Maven property {@code teamscale.accessToken}.
+	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property
+	 * {@code teamscale.accessToken}.
 	 */
 	@Parameter(property = "teamscale.accessToken")
 	public String accessToken;
 
 	/**
-	 * You can optionally use this property to override the code commit to which the
-	 * coverage will be uploaded. Format:
+	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
 	 * {@code BRANCH:UNIX_EPOCH_TIMESTAMP_IN_MILLISECONDS}
 	 * <p>
-	 * If no end commit is manually specified, the plugin will try to determine the
-	 * currently checked out Git commit.
+	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
 	 */
 	@Parameter
 	public String endCommit;
 
 	/**
-	 * You can optionally specify which code should be included in the coverage
-	 * instrumentation. Each pattern is applied to the fully qualified class names
-	 * of the profiled system. Use {@code *} to match any number characters and
+	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
+	 * to the fully qualified class names of the profiled system. Use {@code *} to match any number characters and
 	 * {@code ?} to match any single character.
 	 * <p>
-	 * Classes that match any of the include patterns are included, unless any
-	 * exclude pattern excludes them.
+	 * Classes that match any of the include patterns are included, unless any exclude pattern excludes them.
 	 */
 	@Parameter
 	public String[] includes;
 
 	/**
-	 * You can optionally specify which code should be excluded from the coverage
-	 * instrumentation. Each pattern is applied to the fully qualified class names
-	 * of the profiled system. Use {@code *} to match any number characters and
-	 * {@code ?} to match any single character.
+	 * You can optionally specify which code should be excluded from the coverage instrumentation. Each pattern is
+	 * applied to the fully qualified class names of the profiled system. Use {@code *} to match any number characters
+	 * and {@code ?} to match any single character.
 	 * <p>
-	 * Classes that match any of the exclude patterns are excluded, even if they are
-	 * included by an include pattern.
+	 * Classes that match any of the exclude patterns are excluded, even if they are included by an include pattern.
 	 */
 	@Parameter
 	public String[] excludes;
 
 	/**
-	 * In order to instrument the system under test, a Java agent must be attached
-	 * to the JVM of the system. The JVM command line arguments to achieve this are
-	 * by default written to the property {@code argLine}, which is automatically
-	 * picked up by Surefire and Failsafe and applied to the JVMs these plugins
-	 * start. You can override the name of this property if you wish to manually
-	 * apply the command line arguments yourself, e.g. if your system under test is
-	 * started by some other plugin like the Spring boot starter.
+	 * In order to instrument the system under test, a Java agent must be attached to the JVM of the system. The JVM
+	 * command line arguments to achieve this are by default written to the property {@code argLine}, which is
+	 * automatically picked up by Surefire and Failsafe and applied to the JVMs these plugins start. You can override
+	 * the name of this property if you wish to manually apply the command line arguments yourself, e.g. if your system
+	 * under test is started by some other plugin like the Spring boot starter.
 	 */
 	@Parameter
 	public String propertyName;
 
 	/**
-	 * Port on which the Java agent listens for commands from this plugin. The
-	 * default value 0 will tell the agent to automatically search for an open port.
+	 * Port on which the Java agent listens for commands from this plugin. The default value 0 will tell the agent to
+	 * automatically search for an open port.
 	 */
 	@Parameter(defaultValue = "0")
 	public String agentPort;
 
 	/**
-	 * Optional additional arguments to send to the agent. Each argument must be of
-	 * the form {@code KEY=VALUE}.
+	 * Optional additional arguments to send to the agent. Each argument must be of the form {@code KEY=VALUE}.
 	 */
 	@Parameter
 	public String[] additionalAgentOptions;
+
 
 	/**
 	 * Changes the log level of the agent to DEBUG.
@@ -199,8 +184,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public Map<String, Artifact> pluginArtifactMap;
 
 	/**
-	 * The project build directory (usually: {@code ./target}). Provided
-	 * automatically by Maven.
+	 * The project build directory (usually: {@code ./target}). Provided automatically by Maven.
 	 */
 	@Parameter(defaultValue = "${project.build.directory}")
 	public String projectBuildDir;
@@ -253,38 +237,25 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	/**
-	 * Automatically find an available port.
-	 */
-	private String findAvailablePort() {
-		try (ServerSocket socket = new ServerSocket(0)) {
-			int port = socket.getLocalPort();
-			getLog().info("Automatically set server port to " + port);
-			return String.valueOf(port);
-		} catch (IOException e) {
-			getLog().error("Port blocked, trying again.", e);
-			return findAvailablePort();
-		}
-	}
-
-	/**
-	 * Sets the teamscale-test-impacted engine as only includedEngine and passes all
-	 * previous engine configuration to the impacted test engine instead.
+	 * Sets the teamscale-test-impacted engine as only includedEngine and passes all previous engine configuration to
+	 * the impacted test engine instead.
 	 */
 	private void configureTestPlugin() {
 		enforcePropertyValue(INCLUDE_JUNIT5_ENGINES_OPTION, "includedEngines", "teamscale-test-impacted");
 		enforcePropertyValue(EXCLUDE_JUNIT5_ENGINES_OPTION, "excludedEngines", "");
 	}
 
-	private void enforcePropertyValue(String engineOption, String impactedEngineSuffix, String newValue) {
+	private void enforcePropertyValue(String engineOption, String impactedEngineSuffix,
+									  String newValue) {
 		overrideProperty(engineOption, impactedEngineSuffix, newValue, session.getCurrentProject().getProperties());
 		overrideProperty(engineOption, impactedEngineSuffix, newValue, session.getUserProperties());
 	}
 
 	private void overrideProperty(String engineOption, String impactedEngineSuffix, String newValue,
-			Properties properties) {
+								  Properties properties) {
 		Object originalValue = properties.put(getPropertyName(engineOption), newValue);
-		if (originalValue instanceof String && !Strings.isBlank((String) originalValue)
-				&& !newValue.equals(originalValue)) {
+		if (originalValue instanceof String && !Strings.isBlank((String) originalValue) && !newValue.equals(
+				originalValue)) {
 			setTiaProperty(impactedEngineSuffix, (String) originalValue);
 		}
 	}
@@ -308,21 +279,22 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 		String value = parameterDom.getValue();
 		if (value != null && !value.equals("true")) {
-			throw new MojoFailureException("You configured the " + getTestPluginArtifact()
-					+ " plugin to not reuse forks via the reuseForks configuration parameter."
-					+ " This is not supported when performing Test Impact analysis as it prevents properly recording testwise coverage."
-					+ " Please enable fork reuse when running Test Impact analysis.");
+			throw new MojoFailureException(
+					"You configured the " + getTestPluginArtifact() + " plugin to not reuse forks via the reuseForks configuration parameter." +
+							" This is not supported when performing Test Impact analysis as it prevents properly recording testwise coverage." +
+							" Please enable fork reuse when running Test Impact analysis.");
 		}
 	}
 
-	private void validateEngineNotConfigured(Xpp3Dom configurationDom, String xmlConfigurationName)
-			throws MojoFailureException {
+	private void validateEngineNotConfigured(Xpp3Dom configurationDom,
+											 String xmlConfigurationName) throws MojoFailureException {
 		Xpp3Dom engines = configurationDom.getChild(xmlConfigurationName);
 		if (engines != null) {
-			throw new MojoFailureException("You configured JUnit 5 engines in the " + getTestPluginArtifact()
-					+ " plugin via the " + xmlConfigurationName + " configuration parameter."
-					+ " This is currently not supported when performing Test Impact analysis." + " Please add the "
-					+ xmlConfigurationName + " via the " + getPropertyName(xmlConfigurationName) + " property.");
+			throw new MojoFailureException(
+					"You configured JUnit 5 engines in the " + getTestPluginArtifact() + " plugin via the " + xmlConfigurationName + " configuration parameter." +
+							" This is currently not supported when performing Test Impact analysis." +
+							" Please add the " + xmlConfigurationName + " via the " + getPropertyName(
+							xmlConfigurationName) + " property.");
 		}
 	}
 
@@ -337,8 +309,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		return plugins.get(testPluginArtifact);
 	}
 
-	private void validateParallelizationParameter(Xpp3Dom configurationDom, String parallelizationParameter)
-			throws MojoFailureException {
+	private void validateParallelizationParameter(Xpp3Dom configurationDom,
+												  String parallelizationParameter) throws MojoFailureException {
 		Xpp3Dom parameterDom = configurationDom.getChild(parallelizationParameter);
 		if (parameterDom == null) {
 			return;
@@ -346,10 +318,10 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 		String value = parameterDom.getValue();
 		if (value != null && !value.equals("1")) {
-			throw new MojoFailureException("You configured parallel tests in the " + getTestPluginArtifact()
-					+ " plugin via the " + parallelizationParameter + " configuration parameter."
-					+ " Parallel tests are not supported when performing Test Impact analysis as they prevent recording testwise coverage."
-					+ " Please disable parallel tests when running Test Impact analysis.");
+			throw new MojoFailureException(
+					"You configured parallel tests in the " + getTestPluginArtifact() + " plugin via the " + parallelizationParameter + " configuration parameter." +
+							" Parallel tests are not supported when performing Test Impact analysis as they prevent recording testwise coverage." +
+							" Please disable parallel tests when running Test Impact analysis.");
 		}
 	}
 
@@ -363,16 +335,13 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 */
 	protected abstract String getTestPluginArtifact();
 
-	/**
-	 * @return The prefix of the properties that are used to pass parameters to the
-	 *         plugin.
-	 */
+	/** @return The prefix of the properties that are used to pass parameters to the plugin. */
 	protected abstract String getTestPluginPropertyPrefix();
 
 	/**
 	 * @return whether this Mojo applies to integration tests.
-	 *         <p>
-	 *         Depending on this, different properties are used to set the argLine.
+	 * <p>
+	 * Depending on this, different properties are used to set the argLine.
 	 */
 	protected abstract boolean isIntegrationTest();
 
@@ -401,8 +370,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		try (OutputStream loggingConfigOutputStream = Files.newOutputStream(loggingConfigPath)) {
 			FileSystemUtils.copy(readAgentLogbackConfig(), loggingConfigOutputStream);
 		} catch (IOException e) {
-			throw new MojoFailureException("Writing the logging configuration file for the TIA agent failed."
-					+ " Make sure the path " + loggingConfigPath + " is writeable.", e);
+			throw new MojoFailureException("Writing the logging configuration file for the TIA agent failed." +
+					" Make sure the path " + loggingConfigPath + " is writeable.", e);
 		}
 
 		Path configFilePath = targetDirectory.resolve("agent-at-port-" + agentPort + ".properties");
@@ -410,8 +379,8 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));
 		} catch (IOException e) {
-			throw new MojoFailureException("Writing the configuration file for the TIA agent failed."
-					+ " Make sure the path " + configFilePath + " is writeable.", e);
+			throw new MojoFailureException("Writing the configuration file for the TIA agent failed." +
+					" Make sure the path " + configFilePath + " is writeable.", e);
 		}
 
 		getLog().info("Agent config file created at " + configFilePath);
@@ -423,11 +392,17 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	}
 
 	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
-		String config = "mode=testwise" + "\ntia-mode=" + tiaMode + "\nteamscale-server-url=" + teamscaleUrl
-				+ "\nteamscale-project=" + projectId + "\nteamscale-user=" + username + "\nteamscale-access-token="
-				+ accessToken + "\nteamscale-commit=" + resolvedEndCommit + "\nteamscale-partition=" + getPartition()
-				+ "\nhttp-server-port=" + agentPort + "\nlogging-config=" + loggingConfigPath + "\nout="
-				+ agentOutputDirectory.toAbsolutePath();
+		String config = "mode=testwise" +
+				"\ntia-mode=" + tiaMode +
+				"\nteamscale-server-url=" + teamscaleUrl +
+				"\nteamscale-project=" + projectId +
+				"\nteamscale-user=" + username +
+				"\nteamscale-access-token=" + accessToken +
+				"\nteamscale-commit=" + resolvedEndCommit +
+				"\nteamscale-partition=" + getPartition() +
+				"\nhttp-server-port=" + agentPort +
+				"\nlogging-config=" + loggingConfigPath +
+				"\nout=" + agentOutputDirectory.toAbsolutePath();
 		if (ArrayUtils.isNotEmpty(includes)) {
 			config += "\nincludes=" + String.join(";", includes);
 		}
@@ -452,18 +427,16 @@ public abstract class TiaMojoBase extends AbstractMojo {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
 			return commit.branch + ":" + commit.timestamp;
 		} catch (IOException e) {
-			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml"
-					+ " and I could also not determine the checked out commit in " + basedir + " from Git", e);
+			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
+					" and I could also not determine the checked out commit in " + basedir + " from Git", e);
 		}
 	}
 
 	/**
-	 * Sets a property in the TIA namespace. It seems that, depending on Maven
-	 * version and which other plugins are used, different types of properties are
-	 * respected both during the build and during tests (as e.g. failsafe tests are
-	 * often run in a separate JVM spawned by Maven). So we set our properties in
-	 * every possible way to make sure the plugin works out of the box in most
-	 * situations.
+	 * Sets a property in the TIA namespace. It seems that, depending on Maven version and which other plugins are used,
+	 * different types of properties are respected both during the build and during tests (as e.g. failsafe tests are
+	 * often run in a separate JVM spawned by Maven). So we set our properties in every possible way to make sure the
+	 * plugin works out of the box in most situations.
 	 */
 	private void setTiaProperty(String name, String value) {
 		if (value != null) {
