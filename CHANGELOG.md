@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 32.3.0
 - _impacted-test-engine_: Failed requests to Teamscale did result in unreadable error message
 - [feature] _teamscale-maven-plugin_: Automatically find open port for coverage collection.
 - [fix] _teamscale-maven-plugin_: Same uniform path was extracted for Cucumber scenario outlines which do not have their parameters in the title
