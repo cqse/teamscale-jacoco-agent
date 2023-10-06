@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,14 +39,14 @@ import java.util.Properties;
  * To use our JUnit 5 impacted-test-engine, you must declare it as a test dependency. Example:
  *
  * <pre>{@code
-<dependencies>
-	<dependency>
-		<groupId>com.teamscale</groupId>
-		<artifactId>impacted-test-engine</artifactId>
-		<version>30.0.0</version>
-		<scope>test</scope>
-	</dependency>
-</dependencies>
+ * <dependencies>
+ * <dependency>
+ * <groupId>com.teamscale</groupId>
+ * <artifactId>impacted-test-engine</artifactId>
+ * <version>30.0.0</version>
+ * <scope>test</scope>
+ * </dependency>
+ * </dependencies>
  * }</pre>
  * <p>
  * To send test events yourself, you can use our TIA client library (Maven coordinates: com.teamscale:tia-client).
@@ -56,13 +57,15 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 	/**
 	 * Name of the surefire/failsafe option to pass in
-	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included engines</a>
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included
+	 * engines</a>
 	 */
 	private static final String INCLUDE_JUNIT5_ENGINES_OPTION = "includeJUnit5Engines";
 
 	/**
 	 * Name of the surefire/failsafe option to pass in
-	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded engines</a>
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded
+	 * engines</a>
 	 */
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
 
@@ -132,9 +135,10 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	public String propertyName;
 
 	/**
-	 * Port on which the Java agent listens for commands from this plugin.
+	 * Port on which the Java agent listens for commands from this plugin. The default value 0 will tell the agent to
+	 * automatically search for an open port.
 	 */
-	@Parameter(defaultValue = "12888")
+	@Parameter(defaultValue = "0")
 	public String agentPort;
 
 	/**
@@ -221,13 +225,30 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedEndCommit);
 		setTiaProperty("partition", getPartition());
+		if (agentPort.equals("0")) {
+			agentPort = findAvailablePort();
+		}
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
 
-		Path agentConfigFile = createAgentConfigFiles();
+		Path agentConfigFile = createAgentConfigFiles(agentPort);
 		Path logFilePath = targetDirectory.resolve("agent.log");
 		setArgLine(agentConfigFile, logFilePath);
+	}
+
+	/**
+	 * Automatically find an available port.
+	 */
+	private String findAvailablePort() {
+		try (ServerSocket socket = new ServerSocket(0)) {
+			int port = socket.getLocalPort();
+			getLog().info("Automatically set server port to " + port);
+			return String.valueOf(port);
+		} catch (IOException e) {
+			getLog().error("Port blocked, trying again.", e);
+			return findAvailablePort();
+		}
 	}
 
 	/**
@@ -359,7 +380,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 				session, getLog(), propertyName, isIntegrationTest());
 	}
 
-	private Path createAgentConfigFiles() throws MojoFailureException {
+	private Path createAgentConfigFiles(String agentPort) throws MojoFailureException {
 		Path loggingConfigPath = targetDirectory.resolve("logback.xml");
 		try (OutputStream loggingConfigOutputStream = Files.newOutputStream(loggingConfigPath)) {
 			FileSystemUtils.copy(readAgentLogbackConfig(), loggingConfigOutputStream);
@@ -368,7 +389,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 					" Make sure the path " + loggingConfigPath + " is writeable.", e);
 		}
 
-		Path configFilePath = targetDirectory.resolve("agent.properties");
+		Path configFilePath = targetDirectory.resolve("agent-at-port-" + agentPort + ".properties");
 		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory.resolve("reports"));
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));

@@ -50,6 +50,8 @@ public abstract class AgentBase {
 			try {
 				initServer();
 			} catch (Exception e) {
+				logger.error("Could not start http server on port " + options.getHttpServerPort()
+						+ ". Please check if the port is blocked.");
 				throw new IllegalStateException("Control server not started.", e);
 			}
 		}
@@ -86,7 +88,6 @@ public abstract class AgentBase {
 
 		// Create a server instance and set the thread pool
 		server = new Server(threadPool);
-
 		// Create a server connector, set the port and add it to the server
 		ServerConnector connector = new ServerConnector(server);
 		connector.setPort(options.getHttpServerPort());
