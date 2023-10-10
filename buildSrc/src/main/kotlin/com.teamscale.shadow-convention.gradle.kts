@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
+    java
     id("com.github.johnrengelman.shadow")
 }
 
@@ -26,4 +27,19 @@ tasks.named<ShadowJar>("shadowJar") {
         // https://github.com/johnrengelman/shadow/issues/449
         attributes["Multi-Release"] = "true"
     }
+}
+
+// Defer the resolution of 'runtimeClasspath'. This is an issue in the shadow
+// plugin that it automatically accesses the files in 'runtimeClasspath' while
+// Gradle is building the task graph. The lines below work around that.
+// https://github.com/johnrengelman/shadow/issues/882
+tasks.withType<ShadowJar> {
+    inputs.files(project.configurations.runtimeClasspath)
+    configurations = emptyList()
+    doFirst { configurations = listOf(project.configurations.runtimeClasspath.get()) }
+}
+
+tasks.withType<ConfigureShadowRelocation> {
+    inputs.files(project.configurations.runtimeClasspath)
+    doFirst { target.configurations = listOf(project.configurations.runtimeClasspath.get()) }
 }

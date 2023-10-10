@@ -3,8 +3,7 @@
 FROM openjdk:8 as build
 ADD . /src
 WORKDIR /src
-# Workaround for a bug in the Gradle shadow plugin that attempt to transform artifacts too early
-RUN ./gradlew :teamscale-client:jar :report-generator:jar && ./gradlew :agent:assemble
+RUN ./gradlew :agent:assemble
 
 # --- production image ---
 
