@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
+- [fix] _agent_: Produce more helpful error results in case a service call to Teamscale fails while handling an HTTP call 
 
 # 32.3.1
 - Re-release because of failing publishing process

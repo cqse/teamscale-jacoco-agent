@@ -27,10 +27,11 @@ public class TiaMavenCucumberSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false,
-					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0/Add two numbers 0 & 0",
-					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.1",
-					"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.2");
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads()
+					.withImpactedTests(
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 0 & 0/Add two numbers 0 & 0",
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.1",
+							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers/Example #1.2");
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}

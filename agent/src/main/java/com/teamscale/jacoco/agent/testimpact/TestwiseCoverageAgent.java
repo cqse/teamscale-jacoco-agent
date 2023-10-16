@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.jacoco.agent.AgentBase;
+import com.teamscale.jacoco.agent.GenericExceptionMapper;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
@@ -54,7 +55,6 @@ public class TestwiseCoverageAgent extends AgentBase {
 				testEventHandler = new CoverageToExecFileStrategy(controller, options, testExecutionWriter);
 				break;
 		}
-
 	}
 
 	@Override
@@ -62,6 +62,6 @@ public class TestwiseCoverageAgent extends AgentBase {
 		ResourceConfig resourceConfig = new ResourceConfig();
 		resourceConfig.property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE.toString());
 		TestwiseCoverageResource.setAgent(this);
-		return resourceConfig.register(TestwiseCoverageResource.class);
+		return resourceConfig.register(TestwiseCoverageResource.class).register(GenericExceptionMapper.class);
 	}
 }
