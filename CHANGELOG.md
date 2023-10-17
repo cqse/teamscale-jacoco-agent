@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
 
 # 32.3.1
 - Re-release because of failing publishing process
