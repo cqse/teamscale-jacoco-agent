@@ -32,7 +32,8 @@ public class TiaClientSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false, "testFoo", "testBar");
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads()
+					.withImpactedTests("testFoo", "testBar");
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}

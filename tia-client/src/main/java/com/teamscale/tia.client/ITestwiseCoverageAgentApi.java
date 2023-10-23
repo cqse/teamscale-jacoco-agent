@@ -55,9 +55,17 @@ public interface ITestwiseCoverageAgentApi {
 	);
 
 	/**
-	 * Test run started. Returns the list of TIA-selected and -prioritized test clusters to execute. If the given
-	 * available tests are null, returns a single dummy cluster with all prioritized tests that Teamscale currently
-	 * knows about.
+	 * Test run started. Returns a single dummy cluster of TIA-selected and -prioritized tests
+	 * that Teamscale currently knows about.
+	 */
+	@POST("testrun/start")
+	Call<List<PrioritizableTestCluster>> testRunStarted(
+			@Query("include-non-impacted") boolean includeNonImpacted,
+			@Query("baseline") Long baseline
+	);
+
+	/**
+	 * Test run started. Returns the list of TIA-selected and -prioritized test clusters to execute.
 	 */
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
