@@ -220,6 +220,10 @@ public abstract class AgentBase {
 	 * the default logger.
 	 */
 	private static LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
+		if (premainOptions == null) {
+			return LoggingUtils.initializeDefaultLogging();
+		}
+
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
 				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);
