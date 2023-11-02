@@ -67,13 +67,17 @@ public class Installer {
 
 	/**
 	 * Installs the profiler with the given Teamscale credentials.
+	 *
 	 * @return the exit code for the CLI.
 	 */
 	public static int install(TeamscaleCredentials credentials) {
 		try {
 			getDefaultInstaller().runInstall(credentials);
 			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
-			System.out.println("To activate the profiler for an application, set the environment variable"
+			if (SystemUtils.isLinux()) {
+				System.out.println("To use the profiler in your current session, please log out and back in.");
+			}
+			System.out.println("To activate the profiler for an application, set the environment variable:"
 					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG"
 					+ "\nIts value must be the path to a valid profiler configuration file."
 					+ "\nThen, restart your application (for web applications: restart the app server).");
@@ -99,6 +103,7 @@ public class Installer {
 
 	/**
 	 * Uninstalls the profiler.
+	 *
 	 * @return the exit code for the CLI.
 	 */
 	public static int uninstall() {
@@ -111,7 +116,8 @@ public class Installer {
 			System.err.println("\n\n" + message);
 			return RootCommand.EXIT_CODE_OTHER_ERROR;
 		}
-		System.out.println("Profiler successfully uninstalled");
+		System.out.println("Profiler successfully uninstalled.\n" +
+				"You need to restart all previously profiled applications to stop profiling them.");
 		return CommandLine.ExitCode.OK;
 	}
 
