@@ -40,8 +40,19 @@ gradle (IntelliJ Settings -> Build, Execution, Deplyment -> Build Tools -> Gradl
 * `./gradlew publishToMavenLocal` will deploy your checked out version to your local m2 cache
 * then you can import this version into any other gradle project by
   * adding the `mavenLocal()` repository in the `pluginManagement > repositories` section of the project's `settings.gradle`
-  * adding `repositories { mavenLocal(); mavenCentral() }` to the body of the `build.gradle`
-  * declaring a plugin dependency on the incremented version of the teamscale plugin
+    * `pluginManagement` must be the first block in the `settings.gradle` file
+    * e.g. 
+    ```gradle
+    pluginManagement {
+        repositories {
+            mavenLocal()
+            mavenCentral() // we still need maven central for the other dependencies
+        }
+    }
+    ```
+  * and adding `repositories { mavenLocal(); mavenCentral() }` to the body of the `build.gradle`
+  * and declaring a plugin dependency on the incremented version of the teamscale plugin `com.teamscale`
+    * you might need to add `-SNAPSHOT` behind the version
 * to debug a build that uses the plugin, run `./gradlew` with `--no-daemon -Dorg.gradle.debug=true`.
   The build will pause and wait for you to attach a debugger, via IntelliJ's `Run > Attach to Process`.
 * to debug the impacted test engine during a build, run `./gradlew` with `--no-daemon --debug-jvm` and wait for the test phase to start.
