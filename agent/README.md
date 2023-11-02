@@ -75,7 +75,7 @@ The log file is written to the agent's directory in the subdirectory `logs` by d
 
 #### Testwise coverage
 
-If you want to collect testwise coverage, please have a look below in the [Testwise mode section](####Testwise-coverage-modes).
+If you want to collect testwise coverage, please have a look below in the [Testwise mode section](#### Testwise coverage modes).
 
 #### Path format
 

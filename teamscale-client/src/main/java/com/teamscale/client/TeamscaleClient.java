@@ -148,9 +148,8 @@ public class TeamscaleClient {
 							includeNonImpacted,
 							includeFailedAndSkipped,
 							ensureProcessed, includeAddedTests, availableTests.stream()
-									.map(clusteredTestDetails -> TestWithClusterId.fromClusteredTestDetails(
-											clusteredTestDetails)).collect(
-											Collectors.toList()))
+									.map(TestWithClusterId::fromClusteredTestDetails)
+									.collect(Collectors.toList()))
 					.execute();
 		}
 	}

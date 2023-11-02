@@ -95,7 +95,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
                 logger.info("Skipped empty upload!")
                 continue
             }
-            logger.debug("Uploading $reportFiles")
+            logger.debug("Uploading {}", reportFiles)
 
             try {
                 // Prefer to upload to revision and fallback to branch timestamp

@@ -111,7 +111,7 @@ public class CommandLineInterface {
 	}
 
 	private void startTest() throws Exception {
-		if (arguments.size() < 1) {
+		if (arguments.isEmpty()) {
 			throw new InvalidCommandLineException(
 					"You must provide the uniform path of the test that is about to be started" +
 							" as the first argument of the startTest command");
