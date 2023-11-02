@@ -168,14 +168,14 @@ public class TeamscaleClient {
 
 	/** Uploads multiple reports to Teamscale in the given {@link EReportFormat}. */
 	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
-							  String revision,
+							  String revision, String repositoryId,
 							  String partition, String message) throws IOException {
-		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, partition, message);
+		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, repositoryId ,partition, message);
 	}
 
 	/** Uploads multiple reports to Teamscale. */
 	public void uploadReports(String reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
-							  String revision,
+							  String revision, String repositoryId,
 							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);
@@ -183,8 +183,8 @@ public class TeamscaleClient {
 		}).collect(Collectors.toList());
 
 		Response<ResponseBody> response = service
-				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, true, partition, message,
-						partList).execute();
+				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, repositoryId, true, partition,
+						message, partList).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response));
 		}
@@ -192,8 +192,9 @@ public class TeamscaleClient {
 
 	/** Uploads one in-memory report to Teamscale. */
 	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
-							 String revision, String partition, String message) throws IOException {
+							 String revision, String repositoryId, String partition, String message) throws IOException {
 		RequestBody requestBody = RequestBody.create(MultipartBody.FORM, report);
-		service.uploadReport(projectId, commitDescriptor, revision, partition, reportFormat, message, requestBody);
+		service.uploadReport(projectId, commitDescriptor, revision, repositoryId, partition, reportFormat, message,
+				requestBody);
 	}
 }

@@ -61,6 +61,8 @@ public class TestwiseCoverageAgentTest {
 	 */
 	private static final AtomicInteger PORT_COUNTER = new AtomicInteger(54321);
 
+	private static final String REPOSITORY_ID = "repositoryIdMocked";
+
 	@Test
 	public void testAccessViaTiaClientAndReportUploadToTeamscale() throws Exception {
 		List<ClusteredTestDetails> availableTests = Arrays
@@ -94,7 +96,7 @@ public class TestwiseCoverageAgentTest {
 		testRun.endTestRun(true);
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":true,\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
-				any(), any(), any(), any());
+				any(), any(), eq(REPOSITORY_ID), any(), any());
 	}
 
 	private interface ITestwiseCoverageAgentApiWithoutBody {
@@ -143,6 +145,7 @@ public class TestwiseCoverageAgentTest {
 		server.userName = "build";
 		server.userAccessToken = "token";
 		server.partition = "partition";
+		server.repositoryId = REPOSITORY_ID;
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 		when(options.getHttpServerPort()).thenReturn(port);
 		when(options.getTestwiseCoverageMode()).thenReturn(ETestwiseCoverageMode.TEAMSCALE_UPLOAD);

@@ -37,6 +37,11 @@ public class TeamscaleServer {
 	 */
 	public String revision;
 
+	/**
+	 * The repository identifier of the connector.
+	 */
+	public String repositoryId;
+
 	private String message = null;
 
 	/**
@@ -137,7 +142,10 @@ public class TeamscaleServer {
 		return teamscaleServer;
 	}
 
-	/** Creates a copy of the {@link TeamscaleServer} configuration, but with the given project and revision set. */
+	/**
+	 * Creates a copy of the {@link TeamscaleServer} configuration, but with the given {@link TeamscaleServer#project},
+	 * and {@link TeamscaleServer#revision} and {@link TeamscaleServer#repositoryId} set.
+	 */
 	public TeamscaleServer withProjectAndRevision(String teamscaleProject, String revision) {
 		TeamscaleServer teamscaleServer = new TeamscaleServer();
 		teamscaleServer.url = url;
@@ -146,6 +154,7 @@ public class TeamscaleServer {
 		teamscaleServer.partition = partition;
 		teamscaleServer.project = teamscaleProject;
 		teamscaleServer.revision = revision;
+		teamscaleServer.repositoryId = repositoryId;
 		return teamscaleServer;
 	}
 }

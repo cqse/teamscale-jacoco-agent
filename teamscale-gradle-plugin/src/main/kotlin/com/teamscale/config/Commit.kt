@@ -31,7 +31,14 @@ class Commit : Serializable {
             field = value?.trim()
         }
 
-    /** Wraps branch and timestamp in a commit descriptor. */
+    /**
+     * The repository (= identifier of the teamscale connector), the commit belongs to.
+     */
+    var repositoryId: String? = null
+        set(value) {
+            field = value?.trim()
+        }
+
     /** Wraps [branchName] and [timestamp] in a commit descriptor. */
     private fun getCommitDescriptor(): CommitDescriptor {
         return CommitDescriptor(branchName, timestamp)

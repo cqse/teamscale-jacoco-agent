@@ -36,9 +36,11 @@ public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 	protected void handleTestwiseCoverageJsonReady(String json) throws IOException {
 		try {
 			teamscaleClient
-					.uploadReport(EReportFormat.TESTWISE_COVERAGE, json,
+					.uploadReport(EReportFormat.TESTWISE_COVERAGE,
+							json,
 							agentOptions.getTeamscaleServerOptions().commit,
 							agentOptions.getTeamscaleServerOptions().revision,
+							agentOptions.getTeamscaleServerOptions().repositoryId,
 							agentOptions.getTeamscaleServerOptions().partition,
 							agentOptions.getTeamscaleServerOptions().getMessage());
 		} catch (IOException e) {

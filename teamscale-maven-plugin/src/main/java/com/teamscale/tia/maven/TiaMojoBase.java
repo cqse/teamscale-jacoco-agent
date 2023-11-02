@@ -1,5 +1,6 @@
 package com.teamscale.tia.maven;
 
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -103,6 +104,12 @@ public abstract class TiaMojoBase extends AbstractMojo {
 	 */
 	@Parameter
 	public String endCommit;
+
+	/**
+	 * Optional. Value of the teamscale connector's repository identifier.
+	 */
+	@Parameter
+	public String repositoryId;
 
 	/**
 	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
@@ -231,6 +238,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
+		setTiaProperty("repositoryId", repositoryId);
 
 		Path agentConfigFile = createAgentConfigFiles(agentPort);
 		Path logFilePath = targetDirectory.resolve("agent.log");

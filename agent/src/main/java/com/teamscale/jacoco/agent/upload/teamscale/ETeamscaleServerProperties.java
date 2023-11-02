@@ -19,6 +19,8 @@ public enum ETeamscaleServerProperties {
 	COMMIT,
 	/** See {@link TeamscaleServer#revision} */
 	REVISION,
+	/** See {@link TeamscaleServer#repositoryId} */
+	REPOSITORY_ID,
 	/** See {@link TeamscaleServer#getMessage()} */
 	MESSAGE;
 }

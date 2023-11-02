@@ -95,6 +95,15 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#repositoryId Teamscale connector repository identifier}.
+	 */
+	public TestAgentOptionsBuilder withTeamscaleRepositoryId(String teamscaleRepositoryId) {
+		this.teamscaleServer.repositoryId = teamscaleRepositoryId;
+		return this;
+	}
+
+	/**
 	 * Adds minimal artifactory configs so that a ArtifactoryUploader can be built.
 	 */
 	public TestAgentOptionsBuilder withMinimalArtifactoryConfig(String apiKey, String partition, String url) {

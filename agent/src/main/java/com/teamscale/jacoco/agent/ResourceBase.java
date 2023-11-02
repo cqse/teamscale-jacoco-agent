@@ -59,6 +59,15 @@ public abstract class ResourceBase {
 		return this.getRevisionInfo();
 	}
 
+	/**
+	 * Returns the repository identifier configured in the teamscale connector.
+	 */
+	@GET
+	@Path("/repositoryId")
+	public String getRepositoryId() {
+		return Optional.ofNullable(agentBase.options.getTeamscaleServerOptions().repositoryId).orElse("");
+	}
+
 	/** Handles setting the partition name. */
 	@PUT
 	@Path("/partition")
@@ -99,6 +108,21 @@ public abstract class ResourceBase {
 		}
 		logger.debug("Changing revision name to " + revision);
 		agentBase.options.getTeamscaleServerOptions().revision = revision;
+
+		return Response.noContent().build();
+	}
+
+	/** Handles setting the repository (= identifier configured in the teamscale connector). */
+	@PUT
+	@Path("/repositoryId")
+	public Response setRepositoryId(String repositoryIdString) {
+		String repositoryId = StringUtils.removeDoubleQuotes(repositoryIdString);
+
+		if (com.teamscale.client.StringUtils.isBlank(repositoryId)) {
+			handleBadRequest("The new repositoryId name is missing in the request body! Please add it as plain text.");
+		}
+		logger.debug("Changing repositoryId name to " + repositoryId);
+		agentBase.options.getTeamscaleServerOptions().repositoryId = repositoryId;
 
 		return Response.noContent().build();
 	}

@@ -24,6 +24,12 @@ public class TeamscaleConfig {
 	/** Option name that allows to specify a git commit hash to which coverage should be uploaded to. */
 	public static final String TEAMSCALE_REVISION_OPTION = "teamscale-revision";
 
+	/**
+	 * Option name that allows to specify the repository identifier of the teamscale connector.
+	 * @see TeamscaleServer#repositoryId
+	 */
+	public static final String TEAMSCALE_REPOSITORY_ID_OPTION = "teamscale-repository-identifier";
+
 	/** Option name that allows to specify a jar file that contains the git commit hash in a MANIFEST.MF file. */
 	public static final String TEAMSCALE_REVISION_MANIFEST_JAR_OPTION = "teamscale-revision-manifest-jar";
 
@@ -74,6 +80,9 @@ public class TeamscaleConfig {
 				return true;
 			case TEAMSCALE_REVISION_OPTION:
 				teamscaleServer.revision = value;
+				return true;
+			case TEAMSCALE_REPOSITORY_ID_OPTION:
+				teamscaleServer.repositoryId = value;
 				return true;
 			case TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
 				teamscaleServer.revision = getRevisionFromManifest(

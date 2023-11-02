@@ -36,6 +36,11 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     val revision
         get() = extension.commit.getOrResolveCommitDescriptor(project).second
 
+    @get:Input
+    @get:Optional
+    val repositoryId
+        get() = extension.commit.repositoryId
+
     /** The list of reports to be uploaded. */
     @get:Nested
     abstract val reports: SetProperty<Report>
@@ -103,6 +108,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
                         reportFiles,
                         commitDescriptorOrNull,
                         revision,
+                        repositoryId,
                         partition,
                         message
                     )
