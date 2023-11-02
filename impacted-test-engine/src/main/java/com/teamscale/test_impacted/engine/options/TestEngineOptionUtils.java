@@ -95,7 +95,7 @@ public class TestEngineOptionUtils {
 
 		private List<String> getStringList(String propertyName) {
 			return get(propertyName, listAsString -> {
-				if (StringUtils.isEmpty(listAsString)) {
+				if (StringUtils.isBlank(listAsString)) {
 					return Collections.emptyList();
 				}
 

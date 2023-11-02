@@ -138,7 +138,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	@Override
 	protected String getZipEntryCoverageFileName(CoverageFile coverageFile) {
 		String path = coverageFile.getName();
-		if (!StringUtils.isEmpty(artifactoryConfig.zipPath)) {
+		if (!StringUtils.isBlank(artifactoryConfig.zipPath)) {
 			path = artifactoryConfig.zipPath + "/" + path;
 		}
 

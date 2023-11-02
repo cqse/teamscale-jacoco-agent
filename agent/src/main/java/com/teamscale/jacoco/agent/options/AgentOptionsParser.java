@@ -71,7 +71,7 @@ public class AgentOptionsParser {
 		AgentOptions options = new AgentOptions();
 		options.originalOptionsString = optionsString;
 
-		if (!StringUtils.isEmpty(optionsString)) {
+		if (!StringUtils.isBlank(optionsString)) {
 			String[] optionParts = optionsString.split(",");
 			for (String optionPart : optionParts) {
 				handleOption(options, optionPart);

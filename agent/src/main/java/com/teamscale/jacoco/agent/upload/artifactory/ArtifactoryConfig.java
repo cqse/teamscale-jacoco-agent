@@ -243,7 +243,7 @@ public class ArtifactoryConfig {
 	private static String getGitPropertiesValue(Properties gitProperties, String key, String entryName, File jarFile)
 			throws InvalidGitPropertiesException {
 		String value = gitProperties.getProperty(key);
-		if (StringUtils.isEmpty(value)) {
+		if (StringUtils.isBlank(value)) {
 			throw new InvalidGitPropertiesException("No entry or empty value for '" + key + "' in " + entryName + " in "
 					+ jarFile + "." + "\nContents of " + GitPropertiesLocatorUtils.GIT_PROPERTIES_FILE_NAME + ":\n"
 					+ gitProperties);

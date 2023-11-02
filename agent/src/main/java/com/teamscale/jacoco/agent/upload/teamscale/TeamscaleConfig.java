@@ -114,9 +114,9 @@ public class TeamscaleConfig {
 		Manifest manifest = getManifestFromJarFile(jarFile);
 		String branch = manifest.getMainAttributes().getValue("Branch");
 		String timestamp = manifest.getMainAttributes().getValue("Timestamp");
-		if (StringUtils.isEmpty(branch)) {
+		if (StringUtils.isBlank(branch)) {
 			throw new AgentOptionParseException("No entry 'Branch' in MANIFEST");
-		} else if (StringUtils.isEmpty(timestamp)) {
+		} else if (StringUtils.isBlank(timestamp)) {
 			throw new AgentOptionParseException("No entry 'Timestamp' in MANIFEST");
 		}
 		logger.debug("Found commit " + branch + ":" + timestamp + " in file " + jarFile);
@@ -129,13 +129,13 @@ public class TeamscaleConfig {
 	private String getRevisionFromManifest(File jarFile) throws AgentOptionParseException {
 		Manifest manifest = getManifestFromJarFile(jarFile);
 		String revision = manifest.getMainAttributes().getValue("Revision");
-		if (StringUtils.isEmpty(revision)) {
+		if (StringUtils.isBlank(revision)) {
 			// currently needed option for a customer
 			if (manifest.getAttributes("Git") != null) {
 				revision = manifest.getAttributes("Git").getValue("Git_Commit");
 			}
 
-			if (StringUtils.isEmpty(revision)) {
+			if (StringUtils.isBlank(revision)) {
 				throw new AgentOptionParseException("No entry 'Revision' in MANIFEST");
 			}
 		}

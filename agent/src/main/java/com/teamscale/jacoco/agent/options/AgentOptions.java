@@ -475,7 +475,7 @@ public class AgentOptions {
 	private DelayedUploader<ProjectRevision> createDelayedSingleProjectTeamscaleUploader() {
 		return new DelayedUploader<>(
 				projectRevision -> {
-					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project
+					if (!StringUtils.isBlank(projectRevision.getProject()) && !teamscaleServer.project
 							.equals(projectRevision.getProject())) {
 						logger.warn(
 								"Teamscale project '{}' specified in the agent configuration is not the same as the Teamscale project '{}' specified in git.properties file(s). Proceeding to upload to the" +

@@ -32,20 +32,6 @@ public class StringUtils {
 	public static final String EMPTY_STRING = "";
 
 	/**
-	 * Checks if a string is empty (after trimming).
-	 *
-	 * @param text the string to check.
-	 * @return <code>true</code> if string is empty or <code>null</code>,
-	 * <code>false</code> otherwise.
-	 */
-	public static boolean isEmpty(String text) {
-		if (text == null) {
-			return true;
-		}
-		return EMPTY_STRING.equals(text.trim());
-	}
-
-	/**
 	 * Determine if the supplied {@link String} is <em>blank</em> (i.e., {@code null} or consisting only of whitespace
 	 * characters).
 	 *

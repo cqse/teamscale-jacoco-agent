@@ -135,7 +135,7 @@ public class CommandLineInterface {
 	private List<ClusteredTestDetails> parseAvailableTestsFromStdin() throws java.io.IOException {
 		String json = readStdin();
 		List<ClusteredTestDetails> availableTests = Collections.emptyList();
-		if (!StringUtils.isEmpty(json)) {
+		if (!StringUtils.isBlank(json)) {
 			availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
 		}
 		return availableTests;
