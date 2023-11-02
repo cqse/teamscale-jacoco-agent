@@ -154,6 +154,22 @@ class TeamscalePluginTest {
         assertThat(build.output).contains("None of the 9 class files found in the given directories match the configured include/exclude patterns!")
     }
 
+    @Test
+    fun `repository identifier can be configured and is used in report upload`() {
+        // we don't care about the coverage results we just need to check the uploaded repositoryId
+        build(
+            true, false,
+            "--continue",
+            "clean",
+            "unitTest",
+            "--impacted",
+            "teamscaleReportUpload"
+        )
+
+        assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
+        assertThat(teamscaleMockServer.uploadedReports[0].repositoryId).isEqualTo("repo-id-test")
+    }
+
     private fun build(executesTask: Boolean, expectFailure: Boolean, vararg arguments: String): BuildResult {
         val runnerArgs = arguments.toMutableList()
         val runner = GradleRunner.create()

@@ -4,10 +4,12 @@ package com.teamscale.test.commons;
 public class ExternalReport {
 	private final String reportString;
 	private final String partition;
+	private final String repositoryId;
 
-	public ExternalReport(String reportString, String partition) {
+	public ExternalReport(String reportString, String partition, String repositoryId) {
 		this.reportString = reportString;
 		this.partition = partition;
+		this.repositoryId = repositoryId;
 	}
 
 	public String getReportString() {
@@ -16,5 +18,9 @@ public class ExternalReport {
 
 	public String getPartition() {
 		return partition;
+	}
+
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 }

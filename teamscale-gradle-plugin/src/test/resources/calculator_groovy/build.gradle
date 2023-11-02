@@ -33,6 +33,7 @@ teamscale {
 	commit {
 		timestamp = 1544512967526L
 		branchName = "master"
+		repositoryId = "repo-id-test"
 	}
 	report {
 		testwiseCoverage {

@@ -100,7 +100,8 @@ public class TeamscaleMockServer {
 		Part file = request.raw().getPart("report");
 		String partition = request.queryParams("partition");
 		String reportString = IOUtils.toString(file.getInputStream());
-		uploadedReports.add(new ExternalReport(reportString, partition));
+		String repositoryId = request.queryParams("repository");
+		uploadedReports.add(new ExternalReport(reportString, partition, repositoryId));
 		file.delete();
 
 		return "success";
