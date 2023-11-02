@@ -37,9 +37,20 @@ public class InstallSystemdStep implements IStep {
 			return;
 		}
 
+		if (!Files.exists(getSystemdSystemConfDDirectory())) {
+			try {
+				Files.createDirectories(getSystemdSystemConfDDirectory());
+			} catch (IOException e) {
+				throw new PermissionError("Cannot create system.conf.d directory: " + getSystemdSystemConfDDirectory(),
+						e);
+			}
+		}
+
 		Path systemdConfigFile = getSystemdConfigFile();
 		if (Files.exists(systemdConfigFile)) {
-			throw new PermissionError("Cannot create systemd configuration file " + systemdConfigFile);
+			throw new PermissionError(
+					"Cannot create systemd configuration file " + systemdConfigFile + " because it already exists." +
+							"\nPlease uninstall any old profiler versions first");
 		}
 
 		String content = "[Manager]\nDefaultEnvironment=" + environmentVariables.getSystemdString() + "\n";
@@ -54,8 +65,12 @@ public class InstallSystemdStep implements IStep {
 		return etcDirectory.resolve("systemd");
 	}
 
+	private Path getSystemdSystemConfDDirectory() {
+		return getSystemdEtcDirectory().resolve("system.conf.d");
+	}
+
 	private Path getSystemdConfigFile() {
-		return getSystemdEtcDirectory().resolve("teamscale-java-profiler.conf");
+		return getSystemdSystemConfDDirectory().resolve("teamscale-java-profiler.conf");
 	}
 
 	@Override

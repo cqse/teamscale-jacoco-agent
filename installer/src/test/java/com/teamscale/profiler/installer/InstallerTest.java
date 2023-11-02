@@ -59,7 +59,7 @@ class InstallerTest {
 
 		systemdDirectory = etcDirectory.resolve("systemd");
 		Files.createDirectory(systemdDirectory);
-		systemdConfig = systemdDirectory.resolve("teamscale-java-profiler.conf");
+		systemdConfig = systemdDirectory.resolve("system.conf.d/teamscale-java-profiler.conf");
 
 		Path fileToInstall = sourceDirectory.resolve("install-me.txt");
 		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
