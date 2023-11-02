@@ -19,6 +19,7 @@ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
  */
 open class TeamscalePluginExtension(val project: Project) {
 
+    /** Configuration of the Teamscale server. */
     val server = ServerConfiguration()
 
     /** Configures the Teamscale server. */
@@ -31,6 +32,7 @@ open class TeamscalePluginExtension(val project: Project) {
         server { this@TeamscalePluginExtension.project.configure(this, closure) }
     }
 
+    /** Configuration ofo the commit info */
     val commit = Commit()
 
     /** Configures the code commit. */
@@ -43,6 +45,7 @@ open class TeamscalePluginExtension(val project: Project) {
         commit { project.configure(this, closure) }
     }
 
+    /** Configuration of the baseline commit timestamp. */
     var baseline: Long? = null
 
     /** Configures the baseline. */
@@ -55,6 +58,7 @@ open class TeamscalePluginExtension(val project: Project) {
         baseline { project.configure(this, closure) }
     }
 
+    /** Configuration of the report to be uploaded. */
     val report = TopLevelReportConfiguration(project)
 
     /** Configures the reports to be uploaded. */

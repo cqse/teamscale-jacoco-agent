@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.DelayedMultiUploaderBase;
