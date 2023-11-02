@@ -125,7 +125,6 @@ public class Installer {
 		for (IStep step : steps) {
 			step.install(credentials);
 		}
-		System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
 	}
 
 	/**
