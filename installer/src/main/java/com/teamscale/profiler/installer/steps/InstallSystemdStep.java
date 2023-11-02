@@ -120,5 +120,7 @@ public class InstallSystemdStep implements IStep {
 					new PermissionError("Failed to remove systemd config file " + systemdConfigFile + "." +
 							" Manually remove this file or systemd Java services may fail to start.", e));
 		}
+
+		daemonReload();
 	}
 }
