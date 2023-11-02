@@ -3,9 +3,14 @@ Feature: Calculator
   I want to use a calculator to add numbers
   So that I don't need to add myself
 
-  Scenario: Add two numbers 0 & 0
+  Scenario: Add two numbers
     Given I have a calculator
     When I add 0 and 0
+    Then the result should be 0
+
+  Scenario: Add two numbers
+    Given I have a calculator
+    When I add 1 and -1
     Then the result should be 0
 
   Scenario Outline: Add two numbers
