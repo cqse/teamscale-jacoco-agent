@@ -131,7 +131,7 @@ class InstallerTest {
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).runUninstall();
+				etcDirectory, false).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 
@@ -147,7 +147,7 @@ class InstallerTest {
 		install();
 		Files.delete(systemdConfig);
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).runUninstall();
+				etcDirectory, false).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 	}
@@ -157,7 +157,7 @@ class InstallerTest {
 		install();
 		Files.delete(environmentFile);
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).runUninstall();
+				etcDirectory, false).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 	}
@@ -168,7 +168,7 @@ class InstallerTest {
 		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).runUninstall();
+				etcDirectory, false).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isTrue();
 
@@ -190,7 +190,7 @@ class InstallerTest {
 		assertThat(environmentFile.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory).runUninstall();
+				etcDirectory, false).runUninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isTrue();
 
@@ -255,7 +255,7 @@ class InstallerTest {
 	}
 
 	private void install(String teamscaleUrl) throws FatalInstallerError {
-		new Installer(sourceDirectory, targetDirectory, etcDirectory).runInstall(
+		new Installer(sourceDirectory, targetDirectory, etcDirectory, false).runInstall(
 				new TeamscaleCredentials(HttpUrl.get(teamscaleUrl), "user", "accesskey"));
 	}
 

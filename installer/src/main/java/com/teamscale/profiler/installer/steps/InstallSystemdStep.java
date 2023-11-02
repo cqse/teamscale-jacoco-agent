@@ -4,6 +4,7 @@ import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
+import org.conqat.lib.commons.io.ProcessUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 
 import java.io.IOException;
@@ -19,10 +20,12 @@ public class InstallSystemdStep implements IStep {
 
 	private final Path etcDirectory;
 	private final EnvironmentMap environmentVariables;
+	private final boolean reloadSystemdDaemon;
 
-	public InstallSystemdStep(Path etcDirectory, EnvironmentMap environmentMap) {
+	public InstallSystemdStep(Path etcDirectory, EnvironmentMap environmentMap, boolean reloadSystemdDaemon) {
 		this.etcDirectory = etcDirectory;
 		this.environmentVariables = environmentMap;
+		this.reloadSystemdDaemon = reloadSystemdDaemon;
 	}
 
 	@Override
@@ -59,6 +62,32 @@ public class InstallSystemdStep implements IStep {
 		} catch (IOException e) {
 			throw new PermissionError("Could not create " + systemdConfigFile, e);
 		}
+
+		daemonReload();
+	}
+
+	private void daemonReload() {
+		if (!this.reloadSystemdDaemon) {
+			return;
+		}
+
+		try {
+			ProcessUtils.ExecutionResult result = ProcessUtils.execute(
+					new ProcessBuilder("systemctl", "daemon-reload"), null, 5);
+			if (result.terminatedByTimeoutOrInterruption() || result.getReturnCode() != 0) {
+				askUserToManuallyReloadDaemon();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			askUserToManuallyReloadDaemon();
+		}
+	}
+
+	private void askUserToManuallyReloadDaemon() {
+		System.err.println(
+				"Failed to reload the systemd daemon. Systemd services can only be profiled after reloading the daemon." +
+						"\nPlease manually reload the daemon with:" +
+						"\nsystemctl daemon-reload");
 	}
 
 	private Path getSystemdEtcDirectory() {

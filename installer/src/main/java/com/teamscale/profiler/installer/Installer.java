@@ -58,11 +58,11 @@ public class Installer {
 	 * @param installDirectory directory to which to install the profiler.
 	 * @param etcDirectory     on Linux: the /etc directory
 	 */
-	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory) {
+	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory, boolean reloadSystemdDaemon) {
 		EnvironmentMap environmentVariables = getEnvironmentVariables(installDirectory);
 		this.steps = Arrays.asList(new InstallAgentFilesStep(sourceDirectory, installDirectory),
 				new InstallEtcEnvironmentStep(etcDirectory, environmentVariables),
-				new InstallSystemdStep(etcDirectory, environmentVariables));
+				new InstallSystemdStep(etcDirectory, environmentVariables, reloadSystemdDaemon));
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class Installer {
 	}
 
 	private static Installer getDefaultInstaller() {
-		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY);
+		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY, true);
 	}
 
 
