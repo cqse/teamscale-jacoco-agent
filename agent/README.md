@@ -172,7 +172,7 @@ directories, you can get the commit info via
   - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
   - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
   - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
-  - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
+  - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain text in the format: branch:timestamp
 - `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon
   separated list of applications. Each application is specified as a fully qualified classname (referred to as marker
   class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed

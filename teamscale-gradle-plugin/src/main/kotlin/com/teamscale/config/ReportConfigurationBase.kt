@@ -13,6 +13,7 @@ abstract class ReportConfigurationBase(private val format: EReportFormat, val pr
     /** The partition for which artifacts are uploaded. */
     var partition: Property<String> = project.objects.property(String::class.java).convention(task.name)
 
+    /** @see partition */
     fun setPartition(partition: String) {
         this.partition.set(partition)
     }
@@ -21,6 +22,7 @@ abstract class ReportConfigurationBase(private val format: EReportFormat, val pr
     var message: Property<String> =
         project.objects.property(String::class.java).convention("${format.readableName} gradle upload")
 
+    /** @see message */
     fun setMessage(message: String) {
         this.message.set(message)
     }
@@ -30,11 +32,12 @@ abstract class ReportConfigurationBase(private val format: EReportFormat, val pr
      */
     var upload: Property<Boolean> = project.objects.property(Boolean::class.java).convention(true)
 
+    /** @see upload */
     fun setUpload(upload: Boolean) {
         this.upload.set(upload)
     }
 
-    /** Returns a report specification used in the TeamscaleUploadTask. */
+    /** Returns a report specification used in the [com.teamscale.TeamscaleUploadTask]. */
     fun getReport(): Report {
         return Report(
             upload = upload,

@@ -56,7 +56,7 @@ public class TestwiseCoverageAgentTest {
 	File tempDir;
 
 	/**
-	 * Ensures that each test case gets it's own port number, so each tested instance of the agent runs it's REST API on
+	 * Ensures that each test case gets its own port number, so each tested instance of the agent runs its REST API on
 	 * a separate port.
 	 */
 	private static final AtomicInteger PORT_COUNTER = new AtomicInteger(54321);

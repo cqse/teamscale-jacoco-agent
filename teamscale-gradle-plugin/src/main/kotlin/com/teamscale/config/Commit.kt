@@ -32,12 +32,13 @@ class Commit : Serializable {
         }
 
     /** Wraps branch and timestamp in a commit descriptor. */
+    /** Wraps [branchName] and [timestamp] in a commit descriptor. */
     private fun getCommitDescriptor(): CommitDescriptor {
         return CommitDescriptor(branchName, timestamp)
     }
 
     /**
-     * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
+     * Checks that a [branchName] and [timestamp] are set or can be retrieved from the projects git and
      * stores them for later use.
      */
     fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor?, String?> {

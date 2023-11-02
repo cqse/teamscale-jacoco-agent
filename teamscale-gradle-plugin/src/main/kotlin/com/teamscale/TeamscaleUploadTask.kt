@@ -29,7 +29,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
 
     /**
      * The commit revision for which the reports should be uploaded.
-     * If set it is preferred over commitDescriptor.
+     * If set it is preferred over [commitDescriptor].
      */
     @get:Input
     @get:Optional
@@ -40,11 +40,12 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     @get:Nested
     abstract val reports: SetProperty<Report>
 
-    /** The report files. See Report.reportFiles for details. */
+    /** The report files. See [Report.reportFiles] for details. */
     @get:Input
     val reportFiles
         get() = reports.get().map { it.reportFiles }
 
+    /** If `true`, failures during upload will be ignored (but logged). */
     @Input
     var ignoreFailures: Boolean = false
 
@@ -117,7 +118,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
 
 /**
  * Retries the given block numOfRetries-times catching any thrown exceptions.
- * If none of the retries succeeded the latest catched exception is rethrown.
+ * If none of the retries succeeded the latest caught exception is rethrown.
  */
 fun <T> retry(numOfRetries: Int, block: () -> T): T {
     var throwable: Throwable? = null

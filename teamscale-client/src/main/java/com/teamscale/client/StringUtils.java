@@ -152,8 +152,8 @@ public class StringUtils {
 	 * strings the Diff class should be used, that has a more efficient algorithm, but only for insert/delete (not
 	 * replace operation).
 	 * <p>
-	 * Although this is a clean reimplementation, the basic algorithm is explained here:
-	 * http://en.wikipedia.org/wiki/Levenshtein_distance# Iterative_with_two_matrix_rows
+	 * Although this is a clean reimplementation, the basic algorithm is explained
+	 * <a href="http://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows">here</a>:
 	 */
 	public static int editDistance(String s, String t) {
 		char[] sChars = s.toCharArray();
