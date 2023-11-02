@@ -573,7 +573,7 @@ public class AgentOptions {
 	}
 
 	private static Path safeFolderName(String folderName) {
-		String result = folderName.replaceAll("[<>:\"/\\|?*]", "")
+		String result = folderName.replaceAll("[<>:\"/\\\\|?*]", "")
 				.replaceAll("\\.{1,}", "dot")
 				.replaceAll("\\x00", "")
 				.replaceAll("[. ]$", "");
