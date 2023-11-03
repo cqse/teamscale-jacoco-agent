@@ -5,9 +5,12 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] add installer for system-wide installation
+- [feature] allow specifying path to configuration file via environment variable `TEAMSCALE_JAVA_PROFILER_CONFIG`
+- [breaking change] default log and coverage file directory changed to `/tmp` which works in more situations
 
 # 31.0.0
-- [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
+- [breaking change] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
 - [feature] support `full` mode of the Maven git-commit-id plugin.
 - [fix] Providing multiple include pattern in the maven plugin resulted in no coverage being collected
 
