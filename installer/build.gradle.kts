@@ -26,6 +26,14 @@ dependencies {
     testImplementation(libs.spark)
 }
 
+tasks.processResources {
+    filesMatching("**/app.properties") {
+        filter {
+            it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", rootProject.extra("appVersion").toString())
+        }
+    }
+}
+
 graalvmNative {
     binaries {
         named("main") {

@@ -10,7 +10,7 @@ import static com.teamscale.profiler.installer.RootCommand.EXIT_CODE_PROGRAMMING
 /**
  * CLI command that installs the profiler.
  */
-@CommandLine.Command(name = "install", description = "Installs the profiler.")
+@CommandLine.Command(name = "install", description = "Installs the profiler.", versionProvider = VersionProvider.class)
 public class InstallCommand implements Callable<Integer> {
 
 	@CommandLine.Parameters(index = "0", converter = HttpUrlTypeConverter.class, description = "The URL of your Teamscale instance.")
