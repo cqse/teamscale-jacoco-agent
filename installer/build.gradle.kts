@@ -29,7 +29,7 @@ dependencies {
 tasks.processResources {
     filesMatching("**/app.properties") {
         filter {
-            it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", rootProject.extra("appVersion").toString())
+            it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", rootProject.ext["appVersion"].toString())
         }
     }
 }
@@ -41,8 +41,14 @@ graalvmNative {
             fallback.set(false)
             // build an executable instead of a shared library
             sharedLibrary.set(false)
-            // Required for reading files from the filesystem. See https://github.com/oracle/graal/issues/1294
-            buildArgs("-H:+AddAllCharsets", "--enable-http", "--enable-https")
+            buildArgs(
+                // Required for reading files from the filesystem. See https://github.com/oracle/graal/issues/1294
+                "-H:+AddAllCharsets",
+                // Required for HTTP requests
+                "--enable-http", "--enable-https",
+                // Required to include the app.properties file
+                "-H:IncludeResourceBundles=com.teamscale.profiler.installer.app"
+            )
         }
     }
 }

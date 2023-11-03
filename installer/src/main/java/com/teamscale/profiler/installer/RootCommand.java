@@ -4,14 +4,14 @@ import org.conqat.lib.commons.system.SystemUtils;
 import picocli.CommandLine;
 
 /**
- * The main command for the CLI.
- * Does nothing itself but hosts the subcommands.
+ * The main command for the CLI. Does nothing itself but hosts the subcommands.
  */
 @CommandLine.Command(name = "installer",
 		mixinStandardHelpOptions = true,
 		usageHelpAutoWidth = true,
 		scope = CommandLine.ScopeType.INHERIT,
 		subcommands = {InstallCommand.class, UninstallCommand.class},
+		versionProvider = VersionProvider.class,
 		description = "Installs or uninstalls the profiler system-wide. Must be run as root/Administrator.")
 public class RootCommand {
 
