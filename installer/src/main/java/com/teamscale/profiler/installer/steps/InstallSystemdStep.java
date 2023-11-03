@@ -4,13 +4,14 @@ import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
-import org.conqat.lib.commons.io.ProcessUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 /**
  * On Linux with systemd, registers the agent globally for systemd services. This is necessary in addition to
@@ -72,12 +73,18 @@ public class InstallSystemdStep implements IStep {
 		}
 
 		try {
-			ProcessUtils.ExecutionResult result = ProcessUtils.execute(
-					new ProcessBuilder("systemctl", "daemon-reload"), null, 5);
-			if (result.terminatedByTimeoutOrInterruption() || result.getReturnCode() != 0) {
+			ProcessBuilder builder = new ProcessBuilder("systemctl", "daemon-reload")
+					// must redirect program output or it might hang forever
+					.redirectError(ProcessBuilder.Redirect.to(new File("/dev/null")))
+					.redirectOutput(ProcessBuilder.Redirect.to(new File("/dev/null")));
+
+			Process process = builder.start();
+			if (!process.waitFor(5, TimeUnit.SECONDS) || process.exitValue() != 0) {
+				// timeout
+				process.destroyForcibly();
 				askUserToManuallyReloadDaemon();
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 			askUserToManuallyReloadDaemon();
 		}
