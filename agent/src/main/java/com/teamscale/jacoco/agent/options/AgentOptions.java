@@ -203,7 +203,7 @@ public class AgentOptions {
 	/* package */ boolean obfuscateSecurityRelatedOutputs = true;
 
 	public AgentOptions() {
-		setParentOutputDirectory(AgentUtils.getAgentDirectory().resolve("coverage"));
+		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));
 	}
 
 	/** @see #debugLogging */
