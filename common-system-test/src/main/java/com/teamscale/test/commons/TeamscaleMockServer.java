@@ -65,6 +65,7 @@ public class TeamscaleMockServer {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			return "Unexpected request: " + request.requestMethod() + " " + request.uri();
 		});
+		service.init();
 		service.awaitInitialization();
 	}
 
