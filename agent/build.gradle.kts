@@ -81,17 +81,17 @@ tasks.startShadowScripts {
 }
 
 distributions {
-    named("shadow") {
-        distributionBaseName.set("teamscale-jacoco-agent")
-        contents {
-            from(project(":installer").tasks["nativeCompile"].outputs.files) {
-                include("installer")
-            }
+	named("shadow") {
+		distributionBaseName.set("teamscale-jacoco-agent")
+		contents {
+			from(project(":installer").tasks["nativeCompile"].outputs.files) {
+				include("installer")
+			}
 
-            from(tasks.readmeToPdf) {
-                into("documentation")
-                rename("README.pdf", "userguide.pdf")
-            }
+			from(tasks.readmeToPdf) {
+				into("documentation")
+				rename("README.pdf", "userguide.pdf")
+			}
 
 			filesMatching("**/VERSION.txt") {
 				filter {
