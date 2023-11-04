@@ -37,6 +37,9 @@ public class AgentUtils {
 		}
 	}
 
+	/**
+	 * Returns the main temporary directory where all agent temp files should be placed.
+	 */
 	public static Path getMainTempDirectory() {
 		if (mainTempDirectory == null) {
 			try {

@@ -4,6 +4,9 @@ import picocli.CommandLine;
 
 import java.util.ResourceBundle;
 
+/**
+ * Calculates the version string shown with {@code -V}.
+ */
 public class VersionProvider implements CommandLine.IVersionProvider {
 
 	private static final String VERSION;
@@ -13,6 +16,7 @@ public class VersionProvider implements CommandLine.IVersionProvider {
 		VERSION = bundle.getString("version");
 	}
 
+	@Override
 	public String[] getVersion() {
 		return new String[]{"Teamscale profiler installer version " + VERSION};
 	}
