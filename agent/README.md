@@ -73,12 +73,16 @@ __Please check the produced log file for errors and warnings before using the ag
 
 The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
 
+#### Testwise coverage
+
+If you want to collect testwise coverage, please have a look below in the [Testwise mode section](####Testwise-coverage-modes).
+
 #### Path format
 
 All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant
 patterns with `*`, `**` and `?`.
 
-### Options for normal mode
+### Options for normal mode (do not apply to testwise mode)
 
 - `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
   by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
@@ -244,7 +248,7 @@ following JVM parameters
 -Djavax.net.ssl.trustStorePassword=<Password>
 ```
 
-## Options for testwise mode
+## Options for testwise mode (do not apply to normal mode)
 
 The testwise coverage mode allows to record coverage per test, which is needed for Test Impact Analysis. This means that
 you can distinguish later, which test did produce which coverage. To enable this the `mode` option must be set to
@@ -269,7 +273,7 @@ cleaning the output directory before starting a new test run.
 
 #### 2. The system under test is started once
 
-The test system (the application executing the test specification) can inform the agent of when a test started and
+The test system (the application executing the test specification) __has to__  inform the agent of when a test started and
 finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events
@@ -491,7 +495,7 @@ If you are using Git, you can use either a Maven or Gradle plugin to store the c
 in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
 
 Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits,
-especially when tests are executed independently from the build. The following assumes that we are using a Git
+especially when tests are executed independently of the build. The following assumes that we are using a Git
 repository.
 
 ### Maven
@@ -623,6 +627,10 @@ the raw JaCoCo conversion will not allow.
 __The caveats listed in the above `ignore-duplicates` section still apply!__
 
 # Troubleshooting
+
+## Automatic upload failed
+
+If the produced coverage failed to be automatically uploaded, it is stored in the provided `out` folder. The JaCoCo agent will retry to upload the coverage upon restart with the originally provided configs (e.g. server url, user, etc.). The coverage will be stored until the upload succeeds.
 
 ## My application fails to start after registering the agent
 

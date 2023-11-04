@@ -26,7 +26,7 @@ public class HttpRedirectSystemTest {
 		System.setProperty("org.eclipse.jetty.LEVEL", "OFF");
 
 		RedirectMockServer redirectMockServer = new RedirectMockServer(FAKE_REDIRECT_PORT, FAKE_TEAMSCALE_PORT);
-		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, false);
+		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads();
 
 		new SystemUnderTest().foo();
 		SystemTestUtils.dumpCoverage(AGENT_PORT);

@@ -10,10 +10,8 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Stateful builder for the {@link Instruction}s of a method. All instructions of a method must be added in their
@@ -64,7 +62,6 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 	 * may not been known yet.
 	 */
 	private final List<Jump> jumps;
-
 
 	/**
 	 * Creates a new builder instance which can be used to analyze a single method.

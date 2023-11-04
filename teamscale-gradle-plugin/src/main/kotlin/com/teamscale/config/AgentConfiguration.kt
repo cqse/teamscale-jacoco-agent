@@ -5,7 +5,8 @@ import com.teamscale.TeamscalePlugin
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.File
@@ -13,23 +14,23 @@ import java.io.Serializable
 
 
 /**
- * Configuration for the the Teamscale JaCoCo agent.
+ * Configuration for the Teamscale JaCoCo agent.
  * The agent can either be configured to run locally or to connect to an
  * already running remote testwise coverage server.
  */
 class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskExtension) : Serializable {
 
     /** The property object backing #destination. */
-    private var destinationProperty: Property<File> = project.objects.property(File::class.java)
+    private var destinationProperty: DirectoryProperty = project.objects.directoryProperty()
 
     /** The destination directory to store test artifacts into. */
     var destination: File
-        get() = destinationProperty.get()
+        get() = destinationProperty.get().asFile
         set(value) {
             destinationProperty.set(value)
         }
 
-    fun setDestination(provider: Provider<File>) {
+    fun setDestination(provider: Provider<Directory>) {
         destinationProperty.set(provider)
     }
 

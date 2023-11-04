@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EclipseCodeFormatterProjectSettings">
+    <option name="projectSpecificProfile">
+      <ProjectSpecificProfile>
+        <option name="pathToConfigFileJava" value="$FILE_PATH$/.idea/misc/EclipseJavaCodeFormat.xml" />
+        <option name="selectedJavaProfile" value="Teamscale Eclipse Formatter Settings" />
+      </ProjectSpecificProfile>
+    </option>
+  </component>
+</project>

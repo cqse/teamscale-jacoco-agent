@@ -5,6 +5,7 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.test_impacted.commons.LoggerUtils;
+import okhttp3.ResponseBody;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -64,15 +65,24 @@ public class ImpactedTestsProvider {
 					return testClusters;
 
 				}
-				LOGGER.severe(() -> "Teamscale was not able to determine impacted tests:\n" + response.errorBody());
+				LOGGER.severe("Teamscale was not able to determine impacted tests:\n" + response.body());
 			} else {
-				LOGGER.severe(() -> "Retrieval of impacted tests failed: " + response.code() + " " + response
-						.message() + "\n" + response.errorBody());
+				LOGGER.severe("Retrieval of impacted tests failed: " + response.code() + " " + response
+						.message() + "\n" + getErrorBody(response));
 			}
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> "Retrieval of impacted tests failed.");
 		}
 		return null;
+	}
+
+	private static String getErrorBody(Response<?> response) throws IOException {
+		try (ResponseBody error = response.errorBody()) {
+			if (error != null) {
+				return error.string();
+			}
+		}
+		return "";
 	}
 
 	/**

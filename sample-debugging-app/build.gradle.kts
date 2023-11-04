@@ -1,5 +1,10 @@
 plugins {
 	com.teamscale.`java-convention`
+	application
+}
+
+application {
+	mainClass.set("com.example.Main")
 }
 
 version = "unspecified"
@@ -12,4 +17,13 @@ tasks.jar {
 	manifest {
 		attributes["Main-Class"] = "com.example.Main"
 	}
+}
+
+tasks.named<JavaExec>("run") {
+	teamscaleAgent(
+		mapOf(
+			"config-file" to "jacocoagent.properties"
+		)
+	)
+	dependsOn(":agent:shadowJar")
 }

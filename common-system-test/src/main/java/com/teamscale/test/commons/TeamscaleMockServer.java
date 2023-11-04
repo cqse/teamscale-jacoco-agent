@@ -52,20 +52,11 @@ public class TeamscaleMockServer {
 	public final Set<ClusteredTestDetails> availableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
-	private final List<String> impactedTests;
+	private List<String> impactedTests;
 
-	public TeamscaleMockServer(int port, boolean expectNoInteraction, String...impactedTests) throws IOException {
-		this.impactedTests = Arrays.asList(impactedTests);
+	public TeamscaleMockServer(int port) throws IOException {
 		service = Service.ignite();
 		service.port(port);
-		if (expectNoInteraction) {
-			service.post("", (request, response) -> { throw new IllegalStateException("No POST to the mock server expected!"); });
-			service.put("", (request, response) -> { throw new IllegalStateException("No PUT to the mock server expected!"); });
-		} else {
-			service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
-					this::handleReport);
-			service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
-		}
 		service.exception(Exception.class, (Exception exception, Request request, Response response) -> {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			response.body("Exception: " + exception.getMessage());
@@ -75,6 +66,31 @@ public class TeamscaleMockServer {
 			return "Unexpected request: " + request.requestMethod() + " " + request.uri();
 		});
 		service.awaitInitialization();
+	}
+
+	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
+	public TeamscaleMockServer acceptingReportUploads() {
+		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
+				this::handleReport);
+		return this;
+	}
+
+	/** Configures the server to answer all impacted test calls with the given tests. */
+	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
+		this.impactedTests = Arrays.asList(impactedTests);
+		service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		return this;
+	}
+
+	/** Configures the server to answer all POST/PUT requests with an error. */
+	public TeamscaleMockServer disallowingStateChanges() {
+		service.post("", (request, response) -> {
+			throw new IllegalStateException("No POST to the mock server expected!");
+		});
+		service.put("", (request, response) -> {
+			throw new IllegalStateException("No PUT to the mock server expected!");
+		});
+		return this;
 	}
 
 	/**
