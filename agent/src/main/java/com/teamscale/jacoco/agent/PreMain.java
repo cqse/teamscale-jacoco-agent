@@ -41,7 +41,7 @@ public class PreMain {
 	private static final String LOCKING_SYSTEM_PROPERTY = "TEAMSCALE_JAVA_PROFILER_ATTACHED";
 
 	/** Environment variable from which to read the config file to use. */
-	public static final String CONFIG_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG";
+	private static final String CONFIG_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG";
 
 	/**
 	 * Entry point for the agent, called by the JVM.
