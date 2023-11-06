@@ -59,6 +59,7 @@ dependencies {
 	testImplementation(project(":tia-client"))
 	testImplementation(libs.retrofit.converter.moshi)
 	testImplementation(libs.okhttp.mockwebserver)
+	testImplementation(libs.moshi)
 }
 
 application {

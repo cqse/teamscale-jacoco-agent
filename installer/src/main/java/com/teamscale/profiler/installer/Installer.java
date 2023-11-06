@@ -78,8 +78,8 @@ public class Installer {
 				System.out.println("To use the profiler in your current session, please log out and back in.");
 			}
 			System.out.println("To activate the profiler for an application, set the environment variable:"
-					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG"
-					+ "\nIts value must be the path to a valid profiler configuration file."
+					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG_ID"
+					+ "\nIts value must be a valid profiler configuration ID defined in the Teamscale instance."
 					+ "\nThen, restart your application (for web applications: restart the app server)."
 					+ "\nIn an interactive session, you have to log out and log back in for the changes to take effect.");
 			return CommandLine.ExitCode.OK;

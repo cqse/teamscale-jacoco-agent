@@ -16,6 +16,7 @@ import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitProperties
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocatingTransformer;
+import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
@@ -76,6 +77,7 @@ public class AgentOptions {
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*";
 
 	private final Logger logger = LoggingUtils.getLogger(this);
+
 	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
 	/* package */ File gitPropertiesJar;
 
@@ -202,6 +204,13 @@ public class AgentOptions {
 	 * not.
 	 */
 	/* package */ boolean obfuscateSecurityRelatedOutputs = true;
+
+	/**
+	 * Helper class that holds the process information, Teamscale client and profiler configuration and allows to
+	 * continuously update the profiler's info in Teamscale in the background via
+	 * {@link ConfigurationViaTeamscale#startHeartbeatThreadAndRegisterShutdownHook()}.
+	 */
+	public ConfigurationViaTeamscale configurationViaTeamscale;
 
 	public AgentOptions() {
 		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));

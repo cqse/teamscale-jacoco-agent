@@ -7,6 +7,8 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
+import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
@@ -46,31 +48,32 @@ public class AgentOptionsParser {
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
 	private final TeamscaleConfig teamscaleConfig;
-	private final String environmentConfigFile;
+	private final String environmentConfigId;
 	private final TeamscaleCredentials credentials;
 
-	public AgentOptionsParser(ILogger logger, String environmentConfigFile,
+	public AgentOptionsParser(ILogger logger, String environmentConfigId,
 							  TeamscaleCredentials credentials) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
-		this.environmentConfigFile = environmentConfigFile;
+		this.environmentConfigId = environmentConfigId;
 		this.credentials = credentials;
 	}
 
 	/**
 	 * Parses the given command-line options.
 	 */
-	public static AgentOptions parse(String optionsString, String environmentConfigFile,
+	public static AgentOptions parse(String optionsString, String environmentConfigId,
 									 TeamscaleCredentials credentials,
-									 ILogger logger) throws AgentOptionParseException {
-		return new AgentOptionsParser(logger, environmentConfigFile, credentials).parse(optionsString);
+									 ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
+		return new AgentOptionsParser(logger, environmentConfigId, credentials).parse(optionsString);
 	}
 
 	/**
 	 * Parses the given command-line options.
 	 */
-	/* package */ AgentOptions parse(String optionsString) throws AgentOptionParseException {
+	/* package */ AgentOptions parse(
+			String optionsString) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (optionsString == null) {
 			optionsString = "";
 		}
@@ -91,8 +94,8 @@ public class AgentOptionsParser {
 			}
 		}
 
-		if (environmentConfigFile != null) {
-			handleOption(options, "config-file=" + environmentConfigFile);
+		if (environmentConfigId != null) {
+			handleOption(options, "config-id=" + environmentConfigId);
 		}
 
 		Validator validator = options.getValidator();
@@ -105,7 +108,8 @@ public class AgentOptionsParser {
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
-	private void handleOption(AgentOptions options, String optionPart) throws AgentOptionParseException {
+	private void handleOption(AgentOptions options,
+							  String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
 		String key = keyAndValue.getFirst();
 		String value = keyAndValue.getSecond();
@@ -173,8 +177,11 @@ public class AgentOptionsParser {
 	 * @return true if it has successfully processed the given option.
 	 */
 	private boolean handleAgentOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException {
+			throws AgentOptionParseException, AgentOptionReceiveException {
 		switch (key) {
+			case "config-id":
+				readConfigFromTeamscale(options, value);
+				return true;
 			case CONFIG_FILE_OPTION:
 				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
 				return true;
@@ -243,6 +250,21 @@ public class AgentOptionsParser {
 		}
 	}
 
+	private void readConfigFromTeamscale(AgentOptions options,
+										 String value) throws AgentOptionParseException, AgentOptionReceiveException {
+		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
+			throw new AgentOptionParseException(
+					"Has specified config-id '" + value + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
+		}
+		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, value,
+				options.teamscaleServer.url,
+				options.teamscaleServer.userName,
+				options.teamscaleServer.userAccessToken);
+		options.configurationViaTeamscale = configuration;
+		logger.debug("Received the following options from Teamscale: " + configuration.getProfilerConfiguration());
+		readConfigFromString(options, configuration.getProfilerConfiguration().configurationOptions);
+	}
+
 	private File getGitPropertiesJarFile(String path) {
 		File jarFile = new File(path);
 		if (!jarFile.exists()) {
@@ -277,22 +299,30 @@ public class AgentOptionsParser {
 	 * line, but line breaks are also considered as separators. e.g. class-dir=out # Some comment includes=test.*
 	 * excludes=third.party.*
 	 */
-	private void readConfigFromFile(AgentOptions options, File configFile) throws AgentOptionParseException {
+	private void readConfigFromFile(AgentOptions options,
+									File configFile) throws AgentOptionParseException, AgentOptionReceiveException {
 		try {
-			List<String> configFileKeyValues = FileSystemUtils.readLinesUTF8(configFile);
-			for (String optionKeyValue : configFileKeyValues) {
-				String trimmedOption = optionKeyValue.trim();
-				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
-					continue;
-				}
-				handleOption(options, optionKeyValue);
-			}
+			String content = FileSystemUtils.readFileUTF8(configFile);
+			readConfigFromString(options, content);
 		} catch (FileNotFoundException e) {
 			throw new AgentOptionParseException(
 					"File " + configFile.getAbsolutePath() + " given for option 'config-file' not found", e);
 		} catch (IOException e) {
 			throw new AgentOptionParseException(
 					"An error occurred while reading the config file " + configFile.getAbsolutePath(), e);
+		}
+	}
+
+	private void readConfigFromString(AgentOptions options,
+									  String content) throws AgentOptionParseException, AgentOptionReceiveException {
+		List<String> configFileKeyValues = org.conqat.lib.commons.string.StringUtils.splitLinesAsList(
+				content);
+		for (String optionKeyValue : configFileKeyValues) {
+			String trimmedOption = optionKeyValue.trim();
+			if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
+				continue;
+			}
+			handleOption(options, optionKeyValue);
 		}
 	}
 

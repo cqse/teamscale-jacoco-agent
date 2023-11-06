@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
+import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -41,7 +42,7 @@ public class PreMain {
 	private static final String LOCKING_SYSTEM_PROPERTY = "TEAMSCALE_JAVA_PROFILER_ATTACHED";
 
 	/** Environment variable from which to read the config file to use. */
-	private static final String CONFIG_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG";
+	private static final String CONFIG_ID_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG_ID";
 
 	/**
 	 * Entry point for the agent, called by the JVM.
@@ -52,14 +53,21 @@ public class PreMain {
 		}
 		System.setProperty(LOCKING_SYSTEM_PROPERTY, "true");
 
-		String environmentConfigFile = System.getenv(CONFIG_ENVIRONMENT_VARIABLE);
-		if (StringUtils.isEmpty(options) && environmentConfigFile == null) {
+		String environmentConfigId = System.getenv(CONFIG_ID_ENVIRONMENT_VARIABLE);
+		if (StringUtils.isEmpty(options) && environmentConfigId == null) {
 			// profiler was registered globally and no config was set explicitly by the user, thus ignore this process
 			// and don't profile anything
 			return;
 		}
 
-		AgentOptions agentOptions = getAndApplyAgentOptions(options, environmentConfigFile);
+		AgentOptions agentOptions;
+		try {
+			agentOptions = getAndApplyAgentOptions(options, environmentConfigId);
+		} catch (AgentOptionReceiveException e) {
+			// When Teamscale is not available, we don't want to fail hard to still allow for testing even if no
+			// coverage is collected (see TS-33237)
+			return;
+		}
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 
@@ -67,13 +75,16 @@ public class PreMain {
 		JacocoAgentOptionsBuilder agentBuilder = new JacocoAgentOptionsBuilder(agentOptions);
 		JaCoCoPreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation, logger);
 
+		if (agentOptions.configurationViaTeamscale != null) {
+			agentOptions.configurationViaTeamscale.startHeartbeatThreadAndRegisterShutdownHook();
+		}
 		AgentBase agent = createAgent(agentOptions, instrumentation);
 		agent.registerShutdownHook();
 	}
 
 	@NotNull
 	private static AgentOptions getAndApplyAgentOptions(String options,
-														String environmentConfigFile) throws AgentOptionParseException, IOException {
+														String environmentConfigId) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
 
 		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
@@ -88,9 +99,12 @@ public class PreMain {
 		}
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
+		if (credentials == null) {
+			delayedLogger.warn("Did not find a teamscale.properties file!");
+		}
 		try {
-			agentOptions = AgentOptionsParser.parse(options, environmentConfigFile, credentials, delayedLogger);
-		} catch (AgentOptionParseException e) {
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, credentials, delayedLogger);
+		} catch (AgentOptionParseException | AgentOptionReceiveException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.error("Failed to parse agent options: " + e.getMessage(), e);
 				System.err.println("Failed to parse agent options: " + e.getMessage());

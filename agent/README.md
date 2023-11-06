@@ -53,6 +53,8 @@ The following options are available:
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
   which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format
   section below)
+- `config-id` (optional): a profiler configuration ID as defined in Teamscale. This allows to centrally manage the 
+  profiler configuration in Teamscale's UI (under Project Configuration > Profilers since Teamscale 9.4).
 - `logging-config` (optional): path to a [logback][logback] configuration XML file (other configuration formats are not supported
   at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the

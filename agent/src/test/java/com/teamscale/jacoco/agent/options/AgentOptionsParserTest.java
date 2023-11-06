@@ -1,17 +1,22 @@
 package com.teamscale.jacoco.agent.options;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.teamscale.client.ProfilerConfiguration;
+import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
 import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -20,7 +25,27 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /** Tests parsing of the agent's command line options. */
 public class AgentOptionsParserTest {
 
+	private TeamscaleCredentials teamscaleCredentials;
 	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null);
+	/** The mock server to run requests against. */
+	protected MockWebServer mockWebServer;
+
+	private static final JsonAdapter<ProfilerRegistration> REGISTRATION_ADAPTER = new Moshi.Builder().build()
+			.adapter(ProfilerRegistration.class);
+
+	/** Starts the mock server. */
+	@BeforeEach
+	public void setup() throws Exception {
+		mockWebServer = new MockWebServer();
+		mockWebServer.start();
+		teamscaleCredentials = new TeamscaleCredentials(mockWebServer.url("/"), "user", "key");
+	}
+
+	/** Shuts down the mock server. */
+	@AfterEach
+	public void cleanup() throws Exception {
+		mockWebServer.shutdown();
+	}
 
 	@Test
 	public void testUploadMethodRecognition() throws Exception {
@@ -74,14 +99,18 @@ public class AgentOptionsParserTest {
 	}
 
 	@Test
-	public void environmentConfigOverridesCommandLineOptions(
-			@TempDir Path tempDir) throws IOException, AgentOptionParseException {
-		Path config = tempDir.resolve("config.properties");
-		Files.write(config, "debug=true".getBytes(StandardCharsets.UTF_8));
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), config.toString(), null);
-		AgentOptions options = parser.parse("debug=false");
+	public void environmentConfigOverridesCommandLineOptions() throws Exception {
+		ProfilerRegistration registration = new ProfilerRegistration();
+		registration.profilerId = UUID.randomUUID().toString();
+		registration.profilerConfiguration = new ProfilerConfiguration();
+		registration.profilerConfiguration.configurationId = "my-config";
+		registration.profilerConfiguration.configurationOptions = "teamscale-partition=foo";
+		mockWebServer.enqueue(new MockResponse().setBody(REGISTRATION_ADAPTER.toJson(registration)));
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
+				teamscaleCredentials);
+		AgentOptions options = parser.parse("teamscale-partition=bar");
 
-		assertThat(options.debugLogging).isEqualTo(true);
+		assertThat(options.teamscaleServer.partition).isEqualTo("foo");
 	}
 
 	@Test
@@ -159,10 +188,12 @@ public class AgentOptionsParserTest {
 	}
 
 	@Test
-	public void environmentConfigPathDoesNotExist() {
+	public void environmentConfigIdDoesNotExist() {
+		mockWebServer.enqueue(new MockResponse().setResponseCode(404).setBody("invalid-config-id does not exist"));
 		assertThatThrownBy(
-				() -> new AgentOptionsParser(new CommandLineLogger(), "/this/file/doesnt/exist", null).parse("")
-		).hasMessageContaining("not found");
+				() -> new AgentOptionsParser(new CommandLineLogger(), "invalid-config-id", teamscaleCredentials).parse(
+						"")
+		).isInstanceOf(AgentOptionParseException.class).hasMessageContaining("invalid-config-id does not exist");
 	}
 
 	@Test
@@ -207,8 +238,7 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
-		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, teamscaleCredentials);
 
 		assertThat(parser.parse("teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");

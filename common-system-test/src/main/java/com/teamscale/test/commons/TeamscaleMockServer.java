@@ -6,6 +6,8 @@ import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.ProfilerConfiguration;
+import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import spark.Request;
 import spark.Response;
@@ -43,6 +45,9 @@ public class TeamscaleMockServer {
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
 			.adapter(TestwiseCoverageReport.class);
 
+	private final JsonAdapter<ProfilerRegistration> profilerRegistrationAdapter = new Moshi.Builder().build()
+			.adapter(ProfilerRegistration.class);
+
 	/** All reports uploaded to this Teamscale instance. */
 	public final List<ExternalReport> uploadedReports = new ArrayList<>();
 	/** All user agents that were present in the received requests. */
@@ -53,6 +58,8 @@ public class TeamscaleMockServer {
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private List<String> impactedTests;
+	private final List<String> profilerEvents = new ArrayList<>();
+	private ProfilerConfiguration profilerConfiguration;
 
 	public TeamscaleMockServer(int port) throws IOException {
 		service = Service.ignite();
@@ -83,6 +90,15 @@ public class TeamscaleMockServer {
 		return this;
 	}
 
+	/** Configures the server to answer all impacted test calls with the given tests. */
+	public TeamscaleMockServer withProfilerConfiguration(ProfilerConfiguration profilerConfiguration) {
+		this.profilerConfiguration = profilerConfiguration;
+		service.post("api/v9.4.0/running-profilers", this::handleProfilerRegistration);
+		service.put("api/v9.4.0/running-profilers/:profilerId", this::handleProfilerHeartbeat);
+		service.delete("api/v9.4.0/running-profilers/:profilerId", this::handleProfilerUnregister);
+		return this;
+	}
+
 	/** Configures the server to answer all POST/PUT requests with an error. */
 	public TeamscaleMockServer disallowingStateChanges() {
 		service.post("", (request, response) -> {
@@ -108,6 +124,32 @@ public class TeamscaleMockServer {
 		availableTests.addAll(testDetailsJsonAdapter.fromJson(request.body()));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
 		return testClusterJsonAdapter.toJson(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
+	}
+
+	private String handleProfilerRegistration(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add(
+				"Profiler registered and requested configuration " + request.queryParams("configuration-id"));
+		ProfilerRegistration registration = new ProfilerRegistration();
+		registration.profilerConfiguration = this.profilerConfiguration;
+		registration.profilerId = "123";
+		return profilerRegistrationAdapter.toJson(registration);
+	}
+
+	private String handleProfilerHeartbeat(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add("Profiler " + request.params(":profilerId") + " sent heartbeat");
+		return "";
+	}
+
+	private String handleProfilerUnregister(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add("Profiler " + request.params(":profilerId") + " unregistered");
+		return "foo";
+	}
+
+	public List<String> getProfilerEvents() {
+		return profilerEvents;
 	}
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
