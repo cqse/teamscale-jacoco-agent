@@ -8,6 +8,8 @@ We use [semantic versioning](http://semver.org/):
 - [feature] add installer for system-wide installation
 - [feature] allow specifying path to configuration file via environment variable `TEAMSCALE_JAVA_PROFILER_CONFIG`
 - [breaking change] default log and coverage file directory changed to `/tmp` which works in more situations
+
+# 32.4.0
 - [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
 - [fix] _agent_: Produce more helpful error results in case a service call to Teamscale fails while handling an HTTP call 
 - [fix] _teamscale-maven-plugin_: The same uniform paths were extracted for tests that have the same name in a Cucumber feature file 
