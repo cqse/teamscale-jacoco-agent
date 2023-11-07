@@ -23,7 +23,7 @@ public class TeamscaleUtils {
 
 	/** Ensures that we can connect to Teamscale with the given credentials. */
 	public static void checkTeamscaleConnection(TeamscaleCredentials credentials) throws FatalInstallerError {
-		OkHttpClient client = OkHttpUtils.createClient(validateSsl, null, null, 10);
+		OkHttpClient client = OkHttpUtils.createClient(validateSsl, 30);
 
 		// we use the project list as a test to see if the Teamscale credentials are valid.
 		// any other API that requires a logged-in user would be fine as well.
