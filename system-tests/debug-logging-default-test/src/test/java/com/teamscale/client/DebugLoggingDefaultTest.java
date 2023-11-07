@@ -21,15 +21,13 @@ public class DebugLoggingDefaultTest {
 	}
 
 	private Path searchForAgentTempDirectory() throws IOException {
-		try (Stream<Path> stream = findAllAgentTempDirectories()) {
-			Optional<Path> maybeTempDirectory = stream.sorted().findFirst();
+		Path tempDirectory = Paths.get(System.getProperty("java.io.tmpdir"));
+		try (Stream<Path> stream = Files.list(tempDirectory)) {
+			Optional<Path> maybeTempDirectory = stream.
+					filter(path -> path.getFileName().toString().contains("teamscale-java-profiler"))
+					.sorted().findFirst();
 			return maybeTempDirectory.orElseThrow(() -> new AssertionError("Could not locate agent temp directory"));
 		}
 	}
 
-	private Stream<Path> findAllAgentTempDirectories() throws IOException {
-		Path tempDirectory = Paths.get(System.getProperty("java.io.tmpdir"));
-		return Files.list(tempDirectory)
-				.filter(path -> path.getFileName().toString().contains("teamscale-java-profiler"));
-	}
 }
