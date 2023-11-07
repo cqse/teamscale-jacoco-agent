@@ -21,7 +21,11 @@ object SystemTestUtils {
 			return pickedPort
 		}
 	}
+
 }
 
+/** The port that the fake Teamscale should use during the system test. Guaranteed conflict-free. */
 val Test.teamscalePort: Int by lazy { SystemTestUtils.pickFreePort() }
+
+/** The port that the agent should use during the system test. Guaranteed conflict-free. */
 val Test.agentPort: Int by lazy { SystemTestUtils.pickFreePort() }
