@@ -5,6 +5,10 @@ plugins {
 	id("org.graalvm.buildtools.native") version "0.9.5"
 }
 
+repositories {
+	maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+}
+
 tasks.jar {
 	manifest {
 		attributes["Main-Class"] = "com.teamscale.profiler.installer.RootCommand"
@@ -22,6 +26,7 @@ dependencies {
 	implementation(libs.teamscaleLibCommons)
 	implementation(libs.picocli.core)
 	annotationProcessor(libs.picocli.codegen)
+	implementation("org.jetbrains.nativecerts:jvm-native-trusted-roots:1.0.19")
 
 	testImplementation(libs.spark)
 }

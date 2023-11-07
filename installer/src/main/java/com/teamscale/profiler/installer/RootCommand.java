@@ -24,8 +24,16 @@ public class RootCommand {
 	/** Exit code for all other errors. */
 	public static final int EXIT_CODE_OTHER_ERROR = 5;
 
-	@SuppressWarnings("InstantiationOfUtilityClass")
 	private static final RootCommand INSTANCE = new RootCommand();
+
+	@CommandLine.Option(names = "insecure", description = "Disable SSL certificate validation during the installation,"
+			+ " e.g. to accept self-signed or broken certificates."
+			+ "\nThis only affects the connection to Teamscale during the installation process, not the installed profiler.")
+	public void setInsecure(boolean insecure) {
+		if (insecure) {
+			TeamscaleUtils.disableSslValidation();
+		}
+	}
 
 	/** Entrypoint for the CLI. */
 	public static void main(String[] args) {

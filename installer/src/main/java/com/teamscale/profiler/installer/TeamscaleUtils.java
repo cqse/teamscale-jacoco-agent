@@ -15,9 +15,15 @@ import java.net.UnknownHostException;
 /** Utilities for interacting with a Teamscale instance. */
 public class TeamscaleUtils {
 
+	private static boolean validateSsl = true;
+
+	public static void disableSslValidation() {
+		validateSsl = false;
+	}
+
 	/** Ensures that we can connect to Teamscale with the given credentials. */
 	public static void checkTeamscaleConnection(TeamscaleCredentials credentials) throws FatalInstallerError {
-		OkHttpClient client = new OkHttpClient();
+		OkHttpClient client = OkHttpUtils.createClient(validateSsl, null, null, 10);
 
 		// we use the project list as a test to see if the Teamscale credentials are valid.
 		// any other API that requires a logged-in user would be fine as well.
@@ -38,7 +44,9 @@ public class TeamscaleUtils {
 			throw new FatalInstallerError("Failed to connect via HTTPS to " + credentials.url
 					+ "\nPlease ensure that your Teamscale instance is reachable under " + credentials.url
 					+ " and that it is configured for HTTPS, not HTTP. E.g. open that URL in your"
-					+ " browser and verify that you can connect successfully.",
+					+ " browser and verify that you can connect successfully."
+					+ "\n\nIf you want to accept self-signed or broken certificates without an error"
+					+ " you can use --insecure.",
 					e);
 		} catch (UnknownHostException e) {
 			throw new FatalInstallerError("The host " + url + " could not be resolved."

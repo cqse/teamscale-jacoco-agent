@@ -7,7 +7,6 @@ plugins {
 tasks.test {
 	val teamscalePropertiesPath = agentJar.toPath().getParent().getParent().resolve("teamscale.properties")
 	doFirst {
-		System.err.println("tsprop=$teamscalePropertiesPath")
 		teamscalePropertiesPath.writeText("""
 			url=http://localhost:$teamscalePort
 			username=fake
