@@ -13,19 +13,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class DefaultExcludesSystemTest {
 
-	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
-	private static final int FAKE_TEAMSCALE_PORT = 63200;
-	private static final int AGENT_PORT = 63201;
-
 	@Test
 	public void systemTest() throws Exception {
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
 		System.setProperty("org.eclipse.jetty.LEVEL", "OFF");
 
-		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads();
+		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads();
 
 		new SystemUnderTest().foo();
-		SystemTestUtils.dumpCoverage(AGENT_PORT);
+		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();

@@ -16,22 +16,17 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  */
 public class JUnitRunListenerSystemTest {
 
-	/**
-	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
-	 * project.
-	 */
-	private static final int FAKE_TEAMSCALE_PORT = 63401;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads();
+			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads();
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
 
-	/** Tests the JUnit 5 {@link org.junit.platform.launcher.TestExecutionListener}. */
+	/** Tests the JUnit 5 TestExecutionListener. */
 	@Test
 	public void testJUnit5TestExecutionListener() throws Exception {
 		SystemTestUtils.runMavenTests("junit5-maven-project");
@@ -49,7 +44,7 @@ public class JUnitRunListenerSystemTest {
 		});
 	}
 
-	/** Tests the JUnit 4 {@link org.junit.runner.notification.RunListener}. */
+	/** Tests the JUnit 4 RunListener. */
 	@Test
 	public void testJUnit4RunListener() throws Exception {
 		SystemTestUtils.runMavenTests("junit4-maven-project");

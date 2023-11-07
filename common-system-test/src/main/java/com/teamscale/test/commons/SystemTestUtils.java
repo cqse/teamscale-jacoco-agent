@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
  */
 public class SystemTestUtils {
 
+	public static final Integer TEAMSCALE_PORT = Integer.getInteger("teamscalePort");
+	public static final Integer AGENT_PORT = Integer.getInteger("agentPort");
+
 	/**
 	 * Turns the coverage of the given {@link TestInfo} into a string for simple assertions.
 	 * <p>

@@ -11,11 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArtifactoryGitPropertiesDetectionTest {
 
-	/**
-	 * This port must match what is configured for the -javaagent line in the build.gradle file.
-	 */
-	private static final int FAKE_ARTIFACTORY_PORT = 63100;
-	private static final int AGENT_PORT = 63101;
+	private static final int FAKE_ARTIFACTORY_PORT = Integer.getInteger("artifactoryPort");
 	private ArtifactoryMockServer artifactoryMockServer = null;
 
 	@BeforeEach
@@ -32,7 +28,7 @@ public class ArtifactoryGitPropertiesDetectionTest {
 	public void systemTest() throws Exception {
 		SystemUnderTest.foo();
 
-		SystemTestUtils.dumpCoverage(AGENT_PORT);
+		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
 		assertThat(artifactoryMockServer.uploadedReports).hasSize(1);
 		PairList<String, String> reports = artifactoryMockServer.uploadedReports;

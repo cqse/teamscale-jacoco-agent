@@ -15,21 +15,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class HttpRedirectSystemTest {
 
-	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
-	private static final int FAKE_TEAMSCALE_PORT = 63302;
-	private static final int FAKE_REDIRECT_PORT = 63300;
-	private static final int AGENT_PORT = 63301;
+	private static final int REDIRECT_PORT = Integer.getInteger("redirectPort");
 
 	@Test
 	public void systemTest() throws Exception {
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
 		System.setProperty("org.eclipse.jetty.LEVEL", "OFF");
 
-		RedirectMockServer redirectMockServer = new RedirectMockServer(FAKE_REDIRECT_PORT, FAKE_TEAMSCALE_PORT);
-		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads();
+		RedirectMockServer redirectMockServer = new RedirectMockServer(REDIRECT_PORT, SystemTestUtils.TEAMSCALE_PORT);
+		TeamscaleMockServer teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads();
 
 		new SystemUnderTest().foo();
-		SystemTestUtils.dumpCoverage(AGENT_PORT);
+		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		checkCustomUserAgent(teamscaleMockServer);

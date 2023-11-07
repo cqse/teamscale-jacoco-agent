@@ -26,11 +26,7 @@ public class TiaMavenDumpToFileSystemTest {
 
 	private static final String MAVEN_PROJECT_NAME = "maven-dump-local-project";
 
-	/**
-	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
-	 * project.
-	 */
-	private static final int FAKE_TEAMSCALE_PORT = 63700;
+
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
@@ -39,7 +35,7 @@ public class TiaMavenDumpToFileSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).disallowingStateChanges();
+			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).disallowingStateChanges();
 		}
 	}
 

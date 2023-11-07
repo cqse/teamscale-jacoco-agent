@@ -5,10 +5,6 @@ plugins {
 }
 
 tasks.test {
-	/** These ports must match what is configured in the SystemTest class. */
-	val agentPort = 63301
-	val teamscalePort = 63302
-
 	val teamscalePropertiesPath = agentJar.toPath().getParent().getParent().resolve("teamscale.properties")
 	doFirst {
 		System.err.println("tsprop=$teamscalePropertiesPath")

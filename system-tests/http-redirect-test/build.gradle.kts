@@ -3,13 +3,13 @@ plugins {
 }
 
 tasks.test {
-	/** These ports must match what is configured in the SystemTest class. */
-	val fakeRedirectPort = 63300
-	val agentPort = 63301
+	val redirectPort = SystemTestUtils.pickFreePort()
+	systemProperty("redirectPort", redirectPort)
+
 	teamscaleAgent(
 		mapOf(
 			"http-server-port" to "$agentPort",
-			"teamscale-server-url" to "http://localhost:$fakeRedirectPort",
+			"teamscale-server-url" to "http://localhost:$redirectPort",
 			"teamscale-user" to "fake",
 			"teamscale-access-token" to "fake",
 			"teamscale-project" to "p",
