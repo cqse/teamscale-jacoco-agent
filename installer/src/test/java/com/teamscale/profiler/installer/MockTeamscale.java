@@ -10,7 +10,7 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 /**
  * Mocks a redirect server: redirects all requests to another server.
  */
-	public class MockTeamscale {
+public class MockTeamscale {
 
 	private final Service service;
 
