@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.util;
 
 import com.teamscale.jacoco.agent.PreMain;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -43,7 +44,8 @@ public class AgentUtils {
 	public static Path getMainTempDirectory() {
 		if (mainTempDirectory == null) {
 			try {
-				mainTempDirectory = Files.createTempDirectory("teamscale-java-profiler-" + getPID() + "-");
+				mainTempDirectory = Files.createTempDirectory("teamscale-java-profiler-" +
+						FileSystemUtils.toSafeFilename(getPID()) + "-");
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to create temporary directory for agent files", e);
 			}
