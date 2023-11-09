@@ -21,7 +21,7 @@ public class ClusteredTestDetails extends TestDetails {
 	 * Needed for Jackson deserialization.
 	 */
 	public ClusteredTestDetails() {
-		//Needed for Jackson
+		// Needed for Jackson  (and likely for Moshi---see TS-36140)
 	}
 
 	public ClusteredTestDetails(String uniformPath, String sourcePath, String content, String clusterId,
