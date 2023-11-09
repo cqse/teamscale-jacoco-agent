@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 32.4.1
+
 - [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
 
 # 32.4.0
