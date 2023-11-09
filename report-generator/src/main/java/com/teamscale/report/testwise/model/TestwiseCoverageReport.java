@@ -16,6 +16,11 @@ public class TestwiseCoverageReport {
 	/** The tests contained in the report. */
 	public final List<TestInfo> tests = new ArrayList<>();
 
+	@SuppressWarnings("unused") // Moshi might use this (TS-36140)
+	public TestwiseCoverageReport() {
+		this(false);
+	}
+
 	public TestwiseCoverageReport(boolean partial) {
 		this.partial = partial;
 	}

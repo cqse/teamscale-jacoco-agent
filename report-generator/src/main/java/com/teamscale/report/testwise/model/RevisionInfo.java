@@ -15,6 +15,11 @@ public class RevisionInfo implements Serializable {
 	/** The value. Either a commit descriptor or a source control revision, depending on {@link #type}. */
 	private final String value;
 
+	@SuppressWarnings("unused") // Moshi might use this (TS-36140)
+	public RevisionInfo() {
+		this("");
+	}
+
 	/** Constructor for Commit. */
 	public RevisionInfo(CommitDescriptor commit) {
 		type = ERevisionType.COMMIT;
