@@ -14,13 +14,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utilities for running system tests.
  */
 public class SystemTestUtils {
 
+	/**
+	 * The port for the mock Teamscale server that was picked by the Gradle build script and is guaranteed to not
+	 * conflict with other system tests.
+	 */
 	public static final Integer TEAMSCALE_PORT = Integer.getInteger("teamscalePort");
+
+	/**
+	 * The port for the agent that was picked by the Gradle build script and is guaranteed to not conflict with other
+	 * system tests.
+	 */
 	public static final Integer AGENT_PORT = Integer.getInteger("agentPort");
 
 	/**
@@ -48,7 +58,8 @@ public class SystemTestUtils {
 			if (SystemUtils.isWindows()) {
 				executable = "./mvnw.cmd";
 			}
-			result = ProcessUtils.execute(new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
+			result = ProcessUtils.execute(
+					new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
 		} catch (IOException e) {
 			throw new IOException(
 					"Failed to run ./mvnw clean verify in directory " + workingDirectory.getAbsolutePath(),
@@ -67,10 +78,9 @@ public class SystemTestUtils {
 
 	/** Retrieve all files in the `tia/reports` folder sorted by name. */
 	public static List<Path> getReportFileNames(String mavenProjectPath) throws IOException {
-		return Files.walk(Paths.get(mavenProjectPath, "target", "tia", "reports"))
-				.filter(Files::isRegularFile)
-				.sorted()
-				.collect(Collectors.toList());
+		try (Stream<Path> stream = Files.walk(Paths.get(mavenProjectPath, "target", "tia", "reports"))) {
+			return stream.filter(Files::isRegularFile).sorted().collect(Collectors.toList());
+		}
 	}
 
 	private interface AgentService {
