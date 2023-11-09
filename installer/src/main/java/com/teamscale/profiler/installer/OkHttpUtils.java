@@ -60,19 +60,21 @@ public class OkHttpUtils {
 	}
 
 	private static class TrustAllCertificatesManager implements X509TrustManager {
-		static final TrustAllCertificatesManager INSTANCE = new TrustAllCertificatesManager();
+		private static final TrustAllCertificatesManager INSTANCE = new TrustAllCertificatesManager();
 
-		public TrustAllCertificatesManager() {
-		}
-
+		@Override
 		public X509Certificate[] getAcceptedIssuers() {
 			return new X509Certificate[0];
 		}
 
+		@Override
 		public void checkServerTrusted(X509Certificate[] certs, String authType) {
+			// do nothing, i.e. accept all certificates
 		}
 
+		@Override
 		public void checkClientTrusted(X509Certificate[] certs, String authType) {
+			// do nothing, i.e. accept all certificates
 		}
 	}
 }

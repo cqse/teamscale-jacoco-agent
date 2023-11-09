@@ -17,6 +17,7 @@ public class TeamscaleUtils {
 
 	private static boolean validateSsl = true;
 
+	/** Disables SSL validation for all Teamscale connections via this class. */
 	public static void disableSslValidation() {
 		validateSsl = false;
 	}

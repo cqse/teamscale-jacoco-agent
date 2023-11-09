@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="EntryPointsManager">
-    <list size="9">
+    <list size="10">
       <item index="0" class="java.lang.String" itemvalue="javax.xml.bind.annotation.XmlAttribute" />
       <item index="1" class="java.lang.String" itemvalue="javax.xml.bind.annotation.XmlElement" />
       <item index="2" class="java.lang.String" itemvalue="org.apache.maven.plugins.annotations.Mojo" />
@@ -11,6 +11,7 @@
       <item index="6" class="java.lang.String" itemvalue="org.gradle.api.tasks.Internal" />
       <item index="7" class="java.lang.String" itemvalue="org.gradle.api.tasks.TaskAction" />
       <item index="8" class="java.lang.String" itemvalue="org.gradle.api.tasks.options.Option" />
+      <item index="9" class="java.lang.String" itemvalue="picocli.CommandLine.Option" />
     </list>
     <writeAnnotations>
       <writeAnnotation name="org.junit.jupiter.api.io.TempDir" />
