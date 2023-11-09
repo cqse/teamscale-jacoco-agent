@@ -61,7 +61,7 @@ The following options are available:
 - `mode` (optional): which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
 - `debug` (optional): `true`, `false` or a path to which the logs should be written to. `true` if no explicit value given.
   This option turns on debug mode. The logs will be written to console and the given file path. If no file path is given,
-  the logs files will be stored to the agents working directory as `teamscale-jacoco-agent.log`.
+  the logs files will be stored in the profiled process's temp directory.
   
 You can pass additional options directly to the original JaCoCo agent by prefixing them with `jacoco-`, e.g.
 `jacoco-sessionid=session1` will set the session ID of the profiling session. See the "Agent" section of the JaCoCo
@@ -71,7 +71,16 @@ __The `-javaagent` option MUST be specified BEFORE the `-jar` option!__
 
 __Please check the produced log file for errors and warnings before using the agent in any productive setting.__
 
-The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
+The log file is written to the profiled process's temp directory in the subfolder `teamscale-java-profiler*/logs` by default.
+
+Examples:
+- Linux: `/tmp/teamscale-java-profiler-2534-2465434652/logs`
+- Windows: `C:\Users\%Username%\AppData\Local\Temp\teamscale-java-profiler-2534-2465434652\logs` where `%Username%` is the name of the user under which the profiled application is running
+
+Note that defining `-Djava.io.tmpdir` will change the temp directory that is being used.
+
+If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
+Check your applications console output for error messages.
 
 #### Testwise coverage
 
@@ -634,7 +643,7 @@ If the produced coverage failed to be automatically uploaded, it is stored in th
 
 ## My application fails to start after registering the agent
 
-Most likely, you provided invalid parameters to the agent. Please check the agent's directory for a log file.
+Most likely, you provided invalid parameters to the agent. Please check the agent's log file.
 If that does not exist, please check stdout of your application. If the agent can't write its log file, it
 will report the errors on stdout.
 
@@ -669,17 +678,6 @@ logging-config=/PATH/TO/logback-config.xml
 ```
 
 You can find example logging configurations in the [logging folder in the agent installation directory](./src/dist/logging).
-
-## How to enable debug logging
-
-An appropriate logging configuration is shipped with the agent under [`logging/logback.debug.xml`](./src/dist/logging/logback.debug.xml).
-Set the agent option
-
-```
-logging-config=/PATH/TO/AGENT/INSTALL/DIRECTORY/logging/logback.debug.xml
-```
-
-The debug logs are written to `/PATH/TO/AGENT/INSTALL/DIRECTORY/logs`.
 
 ## How to see which files/folders are filtered due to the `includes` and `excludes` parameters
 
