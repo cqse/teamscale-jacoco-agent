@@ -6,7 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
-- [fix] _agent_: The agent crashed while starting one some machines with "cannot construct instances of" errors 
+- [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
 
 # 32.4.0
 - [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
