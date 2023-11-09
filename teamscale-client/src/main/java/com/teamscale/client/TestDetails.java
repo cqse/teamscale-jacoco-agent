@@ -25,10 +25,10 @@ public class TestDetails {
 	public String content;
 
 	/**
-	 * Needed for Jackson deserialization.
+	 * Needed for Jackson and Moshi deserialization.
 	 */
 	public TestDetails() {
-		//Needed for Jackson
+		// Needed for Jackson and Moshi
 	}
 
 	public TestDetails(String uniformPath, String sourcePath, String content) {
