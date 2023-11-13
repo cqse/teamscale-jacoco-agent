@@ -26,7 +26,7 @@ public class RootCommand {
 
 	private static final RootCommand INSTANCE = new RootCommand();
 
-	@CommandLine.Option(names = "insecure", description = "Disable SSL certificate validation during the installation,"
+	@CommandLine.Option(names = "--insecure", description = "Disable SSL certificate validation during the installation,"
 			+ " e.g. to accept self-signed or broken certificates."
 			+ "\nThis only affects the connection to Teamscale during the installation process, not the installed profiler.")
 	public void setInsecure(boolean insecure) {
