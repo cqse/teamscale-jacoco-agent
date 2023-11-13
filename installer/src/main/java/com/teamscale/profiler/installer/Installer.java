@@ -80,7 +80,8 @@ public class Installer {
 			System.out.println("To activate the profiler for an application, set the environment variable:"
 					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG"
 					+ "\nIts value must be the path to a valid profiler configuration file."
-					+ "\nThen, restart your application (for web applications: restart the app server).");
+					+ "\nThen, restart your application (for web applications: restart the app server)."
+					+ "\nIn an interactive session, you have to log out and log back in for the changes to take effect.");
 			return CommandLine.ExitCode.OK;
 		} catch (PermissionError e) {
 			e.printToStderr();
