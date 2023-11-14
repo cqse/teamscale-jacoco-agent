@@ -3,8 +3,11 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.tasks.testing.Test
-import org.gradle.kotlin.dsl.extra
 
+/**
+ * Synchronizes access to ports for the system tests so two system tests running in parallel don't
+ * accidentally try to use the same port.
+ */
 abstract class SystemTestPorts : BuildService<BuildServiceParameters.None> {
 
 	private var nextFreePort = 6000
@@ -26,8 +29,10 @@ abstract class SystemTestPorts : BuildService<BuildServiceParameters.None> {
 
 	companion object {
 
+		/** The provider for the build service. You must call #registerWith before using this property. */
 		lateinit var provider: Provider<SystemTestPorts>
 
+		/** Registers the SystemTestPorts with the given project. */
 		fun registerWith(project: Project) {
 			provider =
 				project.gradle.sharedServices.registerIfAbsent("system-test-ports", SystemTestPorts::class.java) {
@@ -35,6 +40,7 @@ abstract class SystemTestPorts : BuildService<BuildServiceParameters.None> {
 				}
 		}
 
+		/** @see SystemTestPorts.pickFreePort */
 		fun pickFreePort(): Int {
 			return provider.get().pickFreePort()
 		}
