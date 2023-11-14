@@ -137,7 +137,7 @@ public class TiaAgent {
 			Instant baseline) throws AgentHttpRequestFailedException {
 		Long baselineTimestamp = calculateBaselineTimestamp(baseline);
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
-				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp, null),
+				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp),
 				"Failed to start the test run");
 		return new TestRunWithFlatSuggestions(api, clusters.get(0).tests);
 	}

@@ -116,7 +116,7 @@ public class Agent extends AgentBase {
 		ResourceConfig resourceConfig = new ResourceConfig();
 		resourceConfig.property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE.toString());
 		AgentResource.setAgent(this);
-		return resourceConfig.register(AgentResource.class);
+		return resourceConfig.register(AgentResource.class).register(GenericExceptionMapper.class);
 	}
 
 	@Override

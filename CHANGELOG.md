@@ -6,6 +6,15 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 32.4.1
+
+- [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
+
+# 32.4.0
+- [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
+- [fix] _agent_: Produce more helpful error results in case a service call to Teamscale fails while handling an HTTP call 
+- [fix] _teamscale-maven-plugin_: The same uniform paths were extracted for tests that have the same name in a Cucumber feature file 
+
 # 32.3.1
 - Re-release because of failing publishing process
 - - _impacted-test-engine_: Failed requests to Teamscale did result in unreadable error message

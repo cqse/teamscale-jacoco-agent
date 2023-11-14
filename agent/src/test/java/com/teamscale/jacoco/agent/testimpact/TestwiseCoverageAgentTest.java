@@ -16,6 +16,8 @@ import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
 import com.teamscale.tia.client.TiaAgent;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.ResponseBody;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,6 +48,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TestwiseCoverageAgentTest {
+	private static final String FORBIDDEN_MESSAGE_PREFIX = "HTTP Status Code: 403 Forbidden\nMessage: ";
+	private static final String MISSING_VIEW_PERMISSIONS = "User doesn't have permission 'VIEW' on project x.";
+	private static final MediaType PLAIN_TEXT = MediaType.parse("plain/text");
 
 	@Mock
 	private TeamscaleClient client;
@@ -95,6 +101,20 @@ public class TestwiseCoverageAgentTest {
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":true,\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
 				any(), any(), any(), any());
+	}
+
+	@Test
+	public void testErrorHandling() throws Exception {
+		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
+				.thenReturn(Response.error(403, ResponseBody.create(FORBIDDEN_MESSAGE_PREFIX + MISSING_VIEW_PERMISSIONS,
+						PLAIN_TEXT)));
+
+		int port = PORT_COUNTER.incrementAndGet();
+		AgentOptions options = mockOptions(port);
+		new TestwiseCoverageAgent(options, null, reportGenerator);
+
+		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
+		assertThatCode(agent::startTestRunAssumingUnchangedTests).hasMessageContaining(MISSING_VIEW_PERMISSIONS);
 	}
 
 	private interface ITestwiseCoverageAgentApiWithoutBody {

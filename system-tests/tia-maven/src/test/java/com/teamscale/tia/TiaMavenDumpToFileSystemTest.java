@@ -39,11 +39,8 @@ public class TiaMavenDumpToFileSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT, true,
-					"bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
-					"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).disallowingStateChanges();
 		}
-		teamscaleMockServer.uploadedReports.clear();
 	}
 
 	@AfterEach
