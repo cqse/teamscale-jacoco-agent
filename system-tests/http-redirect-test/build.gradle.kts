@@ -3,7 +3,7 @@ plugins {
 }
 
 tasks.test {
-	val redirectPort = SystemTestUtils.pickFreePort()
+	val redirectPort = SystemTestPorts.pickFreePort()
 	systemProperty("redirectPort", redirectPort)
 
 	teamscaleAgent(

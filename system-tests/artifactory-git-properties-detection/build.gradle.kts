@@ -9,7 +9,7 @@ sourceSets {
 }
 
 tasks.test {
-	val artifactoryPort = SystemTestUtils.pickFreePort()
+	val artifactoryPort = SystemTestPorts.pickFreePort()
 	systemProperty("artifactoryPort", artifactoryPort)
 
 	teamscaleAgent(
