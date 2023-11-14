@@ -73,12 +73,16 @@ __Please check the produced log file for errors and warnings before using the ag
 
 The log file is written to the agent's directory in the subdirectory `logs` by default. If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
 
+#### Testwise coverage
+
+If you want to collect testwise coverage, please have a look below in the [Testwise mode section](####Testwise-coverage-modes).
+
 #### Path format
 
 All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant
 patterns with `*`, `**` and `?`.
 
-### Options for normal mode
+### Options for normal mode (do not apply to testwise mode)
 
 - `class-dir`: the path under which all class files of the profiled application are stored. Normally, this is inferred
   by the agent automatically. For some application, profiling performance may improve if you specify it explicitly. May be
@@ -137,11 +141,10 @@ directories, you can get the commit info via
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via
   `Branch` and  `Timestamp` entries in the given jar/war's `META-INF/MANIFEST.MF` file. (For details see path format
   section above)
-- `teamscale-git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
+- `git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
   This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
-  This search works up to a nesting depth of two, meaning that for example a Jar file inside a War file will be searched. If there was another Jar file inside the previous Jar file, it would not be searched for a `git.properties` file.
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
@@ -245,7 +248,7 @@ following JVM parameters
 -Djavax.net.ssl.trustStorePassword=<Password>
 ```
 
-## Options for testwise mode
+## Options for testwise mode (do not apply to normal mode)
 
 The testwise coverage mode allows to record coverage per test, which is needed for Test Impact Analysis. This means that
 you can distinguish later, which test did produce which coverage. To enable this the `mode` option must be set to
@@ -270,7 +273,7 @@ cleaning the output directory before starting a new test run.
 
 #### 2. The system under test is started once
 
-The test system (the application executing the test specification) can inform the agent of when a test started and
+The test system (the application executing the test specification) __has to__  inform the agent of when a test started and
 finished via a REST API. The corresponding server listens at the specified port.
 
 - `http-server-port` (required): the port at which the agent should start an HTTP server that listens for test events
@@ -357,6 +360,9 @@ You can run the testwise agent in three different modes, configured via the opti
 - `exec-file` (default): The agent stores the coverage in a binary `*.exec` file within the `out` directory.
   This is most useful when running tests in a CI/CD pipeline where the build tooling can later batch-convert all `*.exec` files and upload a testwise coverage report to Teamscale or in situations where the agent must consume as little memory and CPU as possible and thus cannot convert the execution data to a report as required by the other options.
   It is, however, less convenient as you have to convert the `*.exec` files yourself.
+
+- `disk`: The agent stores the coverage in JSON `*.json` files within the `out` directory.
+  This is most useful when running tests in a CI/CD pipeline where the testwise coverage is to be provided in storage systems (such as S3) using custom upload scripts.
 
 - `teamscale-upload`: the agent will buffer all testwise coverage and test execution data in-memory and upload the testwise report to Teamscale once you call the `POST /testrun/end` REST endpoint.
   This option is the most convenient of the different modes as the agent handles all aspects of report generation and the upload to Teamscale for you.
@@ -489,7 +495,7 @@ If you are using Git, you can use either a Maven or Gradle plugin to store the c
 in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
 
 Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits,
-especially when tests are executed independently from the build. The following assumes that we are using a Git
+especially when tests are executed independently of the build. The following assumes that we are using a Git
 repository.
 
 ### Maven
@@ -621,6 +627,10 @@ the raw JaCoCo conversion will not allow.
 __The caveats listed in the above `ignore-duplicates` section still apply!__
 
 # Troubleshooting
+
+## Automatic upload failed
+
+If the produced coverage failed to be automatically uploaded, it is stored in the provided `out` folder. The JaCoCo agent will retry to upload the coverage upon restart with the originally provided configs (e.g. server url, user, etc.). The coverage will be stored until the upload succeeds.
 
 ## My application fails to start after registering the agent
 

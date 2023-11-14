@@ -5,7 +5,58 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 32.4.1
+
+- [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
+
+# 32.4.0
+- [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
+- [fix] _agent_: Produce more helpful error results in case a service call to Teamscale fails while handling an HTTP call 
+- [fix] _teamscale-maven-plugin_: The same uniform paths were extracted for tests that have the same name in a Cucumber feature file 
+
+# 32.3.1
+- Re-release because of failing publishing process
+- - _impacted-test-engine_: Failed requests to Teamscale did result in unreadable error message
+  - [feature] _teamscale-maven-plugin_: Automatically find open port for coverage collection.
+  - [fix] _teamscale-maven-plugin_: Same uniform path was extracted for Cucumber scenario outlines which do not have their parameters in the title
+
+# 32.3.0
+- _impacted-test-engine_: Failed requests to Teamscale did result in unreadable error message
+- [feature] _teamscale-maven-plugin_: Automatically find open port for coverage collection.
+- [fix] _teamscale-maven-plugin_: Same uniform path was extracted for Cucumber scenario outlines which do not have their parameters in the title
+
+# 32.2.0
+- [feature] _agent_: Previously unsuccessful coverage uploads are now automatically retried upon agent restart
+- [fix] _teamscale-maven-plugin_: Fix uniform path and cluster ID extraction for cucumber pre 7.11.2
+
+# 32.1.0
+- [feature] _teamscale-maven-plugin_: Support for cucumber tests
+- [feature] _teamscale-maven-plugin_, _impacted-test-engine_: Support for junit platform suite tests
+
+# 32.0.0
+- [breaking] _teamscale-gradle-plugin_: Removed usage of deprecated Gradle APIs
+  - `teamscale.agent.destinationProperty` type has changed from `Property<File>` to `DirectoryProperty`
+  - `teamscale.agent.setDestination(destination)` parameter type has changed from `Property<File>` to `Provider<Directory>`
+- [fix] _agent_: Discovery of unsupported class file versions will no longer lead to a crash, but will be logged instead
+- [breaking] _tia-runlisteners_: Requires JUnit 5.10.0 now
+- [feature] _agent_: Added support for Java 19, 20 and experimental support for 21
+- [fix] _agent_: Attaching the agent in testwise mode to a JBoss Wildfly server caused a crash
+
+# 31.0.0
+- [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
+- [feature] support `full` mode of the Maven git-commit-id plugin.
+- [fix] Providing multiple include pattern in the maven plugin resulted in no coverage being collected
+
+# 30.1.1
+- [fix] _teamscale-gradle-plugin_: Warnings were logged during test execution (WARNING: JAXBContext implementation could not be found. WADL feature is disabled., WARNING: A class javax.activation.DataSource for a default provider)
+
+# 30.1.0
+- [feature] The option `tiamode` has now an additional choice `disk` to dump testwise coverage as JSON to the output folder.
+- [feature] _teamscale-maven-plugin_: The configuration options `runAllTests`, `runImpacted`, and `tiamode` are now available
 - [fix] _impacted-test-engine_: Mixed test results for dynamically generated tests were incorrectly summarized
+- [fix] The option `ignore-uncovered-classes` did not filter out empty interface nodes from the XML report 
+- [fix] _teamscale-gradle-plugin_: The plugin failed to log the `No class files found in the given directories!` error message
 
 # 30.0.2
 - [fix] _teamscale-gradle-plugin_: Reports uploaded by `teamscaleReportUpload` ended up in wrong partition

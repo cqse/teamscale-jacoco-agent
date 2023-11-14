@@ -207,6 +207,39 @@ public class AgentOptionsTest {
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 	}
 
+	/**
+	 * Test that agent continues to run if the user provided an invalid path via the
+	 * {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} jar option.
+	 */
+	@Test
+	public void testGitPropertiesJarOptionWithNonExistentFileDoesNotFailBadly() throws AgentOptionParseException {
+		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=doesNotExist" + File.separator + jarFile.getAbsolutePath());
+		assertThat(agentOptions.gitPropertiesJar).isNull();
+	}
+
+	/** Test that the {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} option can be parsed correctly */
+	@Test
+	public void testGitPropertiesJarOptionParsedCorrectly() throws AgentOptionParseException {
+		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=" + jarFile.getAbsolutePath());
+		assertThat(agentOptions.gitPropertiesJar).isNotNull();
+	}
+
+	/**
+	 * Test that agent continues to run if the user provided a folder via the
+	 * {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} jar option.
+	 */
+	@Test
+	public void testGitPropertiesJarDoesNotAcceptFolders() throws AgentOptionParseException {
+		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=" + jarFile.getParent());
+		assertThat(agentOptions.gitPropertiesJar).isNull();
+	}
+
 	/** Tests that supplying version info is supported in Testwise mode. */
 	@Test
 	public void testVersionInfosInTestwiseMode() throws AgentOptionParseException {
@@ -271,9 +304,9 @@ public class AgentOptionsTest {
 	}
 
 	/**
-	 * Tests that setting {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} and {@link
-	 * ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION} (along with {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION})
-	 * passes the AgentOptions' validity check.
+	 * Tests that setting {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} and
+	 * {@link ArtifactoryConfig#ARTIFACTORY_PASSWORD_OPTION} (along with
+	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
 	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws AgentOptionParseException {
@@ -286,9 +319,9 @@ public class AgentOptionsTest {
 	}
 
 	/**
-	 * Tests that setting {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} and {@link
-	 * ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} (along with {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION})
-	 * passes the AgentOptions' validity check.
+	 * Tests that setting {@link ArtifactoryConfig#ARTIFACTORY_USER_OPTION} and
+	 * {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} (along with
+	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
 	public void testArtifactoryApiKeySetPassesValidityCheck() throws AgentOptionParseException {

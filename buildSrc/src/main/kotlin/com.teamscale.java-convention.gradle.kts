@@ -16,7 +16,7 @@ java {
     }
 }
 
-tasks.named<Test>("test") {
+tasks.test {
     useJUnitPlatform {
         excludeEngines("teamscale-test-impacted")
     }

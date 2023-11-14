@@ -80,7 +80,7 @@ public class ArgLine {
 	private String createJvmOptions() {
 		List<String> jvmOptions = new ArrayList<>();
 		jvmOptions.add("-Dteamscale.markstart");
-		jvmOptions.add(createJavaagentArgument());
+		jvmOptions.add(createJavaAgentArgument());
 		jvmOptions.add("-DTEAMSCALE_AGENT_LOG_FILE=" + logFilePath);
 		jvmOptions.add("-DTEAMSCALE_AGENT_LOG_LEVEL=" + agentLogLevel);
 		jvmOptions.add("-Dteamscale.markend");
@@ -96,7 +96,7 @@ public class ArgLine {
 		}
 	}
 
-	private String createJavaagentArgument() {
+	private String createJavaAgentArgument() {
 		List<String> agentOptions = new ArrayList<>();
 		agentOptions.add("config-file=" + agentConfigFile.toAbsolutePath());
 		agentOptions.addAll(Arrays.asList(ArrayUtils.nullToEmpty(additionalAgentOptions)));

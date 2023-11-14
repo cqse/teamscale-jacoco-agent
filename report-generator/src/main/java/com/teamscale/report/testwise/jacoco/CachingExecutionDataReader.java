@@ -49,10 +49,11 @@ class CachingExecutionDataReader {
 			return;
 		}
 		AnalyzerCache analyzer = new AnalyzerCache(probesCache, locationIncludeFilter, logger);
+		int classCount = 0;
 		for (File classDir : classesDirectories) {
 			if (classDir.exists()) {
 				try {
-					analyzer.analyzeAll(classDir);
+					classCount += analyzer.analyzeAll(classDir);
 				} catch (IOException e) {
 					logger.error("Failed to analyze class files in " + classDir + "! " +
 							"Maybe the folder contains incompatible class files. " +
@@ -60,9 +61,13 @@ class CachingExecutionDataReader {
 				}
 			}
 		}
-		if (probesCache.isEmpty()) {
+		if (classCount == 0) {
 			String directoryList = classesDirectories.stream().map(File::getPath).collect(Collectors.joining(","));
 			logger.error("No class files found in the given directories! " + directoryList);
+		} else if (probesCache.isEmpty()) {
+			String directoryList = classesDirectories.stream().map(File::getPath).collect(Collectors.joining(","));
+			logger.error(
+					"None of the " + classCount + " class files found in the given directories match the configured include/exclude patterns! " + directoryList);
 		}
 	}
 

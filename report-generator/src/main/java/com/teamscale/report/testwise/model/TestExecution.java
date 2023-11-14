@@ -48,10 +48,10 @@ public class TestExecution implements Serializable {
 	private String message;
 
 	/**
-	 * Needed for Jackson deserialization.
+	 * Needed for Jackson and Moshi deserialization.
 	 */
 	public TestExecution() {
-		//Needed for Jackson
+		// Needed for Jackson (and likely for Moshi---see TS-36140)
 	}
 
 	public TestExecution(String name, long durationMillis, ETestExecutionResult result) {

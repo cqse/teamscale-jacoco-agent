@@ -35,6 +35,12 @@
     },
     {
       "matchPackagePrefixes": [
+        "jakarta.activation"
+      ],
+      "allowedVersions": "< 2"
+    },
+    {
+      "matchPackagePrefixes": [
         "org.mockito"
       ],
       "allowedVersions": "< 5"

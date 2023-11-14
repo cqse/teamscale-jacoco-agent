@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,14 +37,14 @@ import java.util.Properties;
  * To use our JUnit 5 impacted-test-engine, you must declare it as a test dependency. Example:
  *
  * <pre>{@code
-<dependencies>
-	<dependency>
-		<groupId>com.teamscale</groupId>
-		<artifactId>impacted-test-engine</artifactId>
-		<version>30.0.0</version>
-		<scope>test</scope>
-	</dependency>
-</dependencies>
+ * <dependencies>
+ * <dependency>
+ * <groupId>com.teamscale</groupId>
+ * <artifactId>impacted-test-engine</artifactId>
+ * <version>30.0.0</version>
+ * <scope>test</scope>
+ * </dependency>
+ * </dependencies>
  * }</pre>
  * <p>
  * To send test events yourself, you can use our TIA client library (Maven coordinates: com.teamscale:tia-client).
@@ -54,15 +55,52 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 
 	/**
 	 * Name of the surefire/failsafe option to pass in
-	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included engines</a>
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#includeJUnit5Engines">included
+	 * engines</a>
 	 */
 	private static final String INCLUDE_JUNIT5_ENGINES_OPTION = "includeJUnit5Engines";
 
 	/**
 	 * Name of the surefire/failsafe option to pass in
-	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded engines</a>
+	 * <a href="https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#excludejunit5engines">excluded
+	 * engines</a>
 	 */
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
+
+	/**
+	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
+	 */
+	@Parameter()
+	public String teamscaleUrl;
+
+	/**
+	 * The Teamscale project to which the recorded coverage will be uploaded
+	 */
+	@Parameter()
+	public String projectId;
+
+	/**
+	 * The username to use to perform the upload. Must have the "Upload external data" permission for the
+	 * {@link #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
+	 */
+	@Parameter(property = "teamscale.username")
+	public String username;
+
+	/**
+	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property
+	 * {@code teamscale.accessToken}.
+	 */
+	@Parameter(property = "teamscale.accessToken")
+	public String accessToken;
+
+	/**
+	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
+	 * {@code BRANCH:UNIX_EPOCH_TIMESTAMP_IN_MILLISECONDS}
+	 * <p>
+	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
+	 */
+	@Parameter
+	public String endCommit;
 
 	/**
 	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
@@ -95,9 +133,10 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	public String propertyName;
 
 	/**
-	 * Port on which the Java agent listens for commands from this plugin.
+	 * Port on which the Java agent listens for commands from this plugin. The default value 0 will tell the agent to
+	 * automatically search for an open port.
 	 */
-	@Parameter(defaultValue = "12888")
+	@Parameter(defaultValue = "0")
 	public String agentPort;
 
 	/**
@@ -106,11 +145,54 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	@Parameter
 	public String[] additionalAgentOptions;
 
+
 	/**
 	 * Changes the log level of the agent to DEBUG.
 	 */
 	@Parameter(defaultValue = "false")
 	public boolean debugLogging;
+
+	/**
+	 * Whether to skip the execution of this Mojo.
+	 */
+	@Parameter(defaultValue = "false")
+	public boolean skip;
+
+	/**
+	 * Executes all tests, not only impacted ones if set. Defaults to false.
+	 */
+	@Parameter(defaultValue = "false")
+	public boolean runAllTests;
+
+	/**
+	 * Executes only impacted tests, not all ones if set. Defaults to true.
+	 */
+	@Parameter(defaultValue = "true")
+	public boolean runImpacted;
+
+	/**
+	 * Mode of producing testwise coverage.
+	 */
+	@Parameter(defaultValue = "teamscale-upload")
+	public String tiaMode;
+
+	/**
+	 * Map of resolved Maven artifacts. Provided automatically by Maven.
+	 */
+	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
+	public Map<String, Artifact> pluginArtifactMap;
+
+	/**
+	 * The project build directory (usually: {@code ./target}). Provided automatically by Maven.
+	 */
+	@Parameter(defaultValue = "${project.build.directory}")
+	public String projectBuildDir;
+
+	/**
+	 * The running Maven session. Provided automatically by Maven.
+	 */
+	@Parameter(defaultValue = "${session}")
+	public MavenSession session;
 
 	private Path targetDirectory;
 
@@ -140,11 +222,30 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedCommit);
 		setTiaProperty("partition", getPartition());
+		if (agentPort.equals("0")) {
+			agentPort = findAvailablePort();
+		}
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
+		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
+		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
 
-		Path agentConfigFile = createAgentConfigFiles();
+		Path agentConfigFile = createAgentConfigFiles(agentPort);
 		Path logFilePath = targetDirectory.resolve("agent.log");
 		setArgLine(agentConfigFile, logFilePath);
+	}
+
+	/**
+	 * Automatically find an available port.
+	 */
+	private String findAvailablePort() {
+		try (ServerSocket socket = new ServerSocket(0)) {
+			int port = socket.getLocalPort();
+			getLog().info("Automatically set server port to " + port);
+			return String.valueOf(port);
+		} catch (IOException e) {
+			getLog().error("Port blocked, trying again.", e);
+			return findAvailablePort();
+		}
 	}
 
 	/**
@@ -276,7 +377,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 				session, getLog(), propertyName, isIntegrationTest());
 	}
 
-	private Path createAgentConfigFiles() throws MojoFailureException {
+	private Path createAgentConfigFiles(String agentPort) throws MojoFailureException {
 		Path loggingConfigPath = targetDirectory.resolve("logback.xml");
 		try (OutputStream loggingConfigOutputStream = Files.newOutputStream(loggingConfigPath)) {
 			FileSystemUtils.copy(readAgentLogbackConfig(), loggingConfigOutputStream);
@@ -285,7 +386,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 					" Make sure the path " + loggingConfigPath + " is writeable.", e);
 		}
 
-		Path configFilePath = targetDirectory.resolve("agent.properties");
+		Path configFilePath = targetDirectory.resolve("agent-at-port-" + agentPort + ".properties");
 		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory.resolve("reports"));
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));
@@ -304,7 +405,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 
 	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
 		String config = "mode=testwise" +
-				"\ntia-mode=teamscale-upload" +
+				"\ntia-mode=" + tiaMode +
 				"\nteamscale-server-url=" + teamscaleUrl +
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
@@ -315,10 +416,10 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 				"\nlogging-config=" + loggingConfigPath +
 				"\nout=" + agentOutputDirectory.toAbsolutePath();
 		if (ArrayUtils.isNotEmpty(includes)) {
-			config += "\nincludes=" + String.join(",", includes);
+			config += "\nincludes=" + String.join(";", includes);
 		}
 		if (ArrayUtils.isNotEmpty(excludes)) {
-			config += "\nexcludes=" + String.join(",", excludes);
+			config += "\nexcludes=" + String.join(";", excludes);
 		}
 		return config;
 	}
@@ -335,10 +436,12 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	 * plugin works out of the box in most situations.
 	 */
 	private void setTiaProperty(String name, String value) {
-		String fullyQualifiedName = "teamscale.test.impacted." + name;
-		getLog().debug("Setting property " + name + "=" + value);
-		session.getUserProperties().setProperty(fullyQualifiedName, value);
-		session.getSystemProperties().setProperty(fullyQualifiedName, value);
-		System.setProperty(fullyQualifiedName, value);
+		if (value != null) {
+			String fullyQualifiedName = "teamscale.test.impacted." + name;
+			getLog().debug("Setting property " + name + "=" + value);
+			session.getUserProperties().setProperty(fullyQualifiedName, value);
+			session.getSystemProperties().setProperty(fullyQualifiedName, value);
+			System.setProperty(fullyQualifiedName, value);
+		}
 	}
 }

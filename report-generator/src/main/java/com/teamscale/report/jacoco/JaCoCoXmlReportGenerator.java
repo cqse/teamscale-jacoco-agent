@@ -4,7 +4,6 @@ import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.jacoco.dump.Dump;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
-import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -108,7 +107,7 @@ public class JaCoCoXmlReportGenerator {
 		CoverageBuilder coverageBuilder = new TeamscaleCoverageBuilder(this.logger,
 				duplicateClassFileBehavior, ignoreUncoveredClasses);
 
-		Analyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);
+		FilteringAnalyzer analyzer = new FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger);
 
 		for (File file : codeDirectoriesOrArchives) {
 			analyzer.analyzeAll(file);

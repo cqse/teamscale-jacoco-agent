@@ -4,6 +4,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,11 +27,16 @@ public class TiaMavenSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT,
-					"bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
-					"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads()
+					.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
+							"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 		}
 		teamscaleMockServer.uploadedReports.clear();
+	}
+
+	@AfterEach
+	public void stopFakeTeamscaleServer() {
+		teamscaleMockServer.shutdown();
 	}
 
 	@Test

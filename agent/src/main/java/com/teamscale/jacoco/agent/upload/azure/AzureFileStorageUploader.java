@@ -1,22 +1,5 @@
 package com.teamscale.jacoco.agent.upload.azure;
 
-import com.teamscale.client.EReportFormat;
-import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
-import com.teamscale.jacoco.agent.upload.UploaderException;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static com.teamscale.jacoco.agent.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.HEAD;
 import static com.teamscale.jacoco.agent.upload.azure.AzureFileStorageHttpUtils.EHttpMethod.PUT;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.AUTHORIZATION;
@@ -26,9 +9,33 @@ import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_CONTE
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_RANGE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_TYPE;
 import static com.teamscale.jacoco.agent.upload.azure.AzureHttpHeader.X_MS_WRITE;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+
+import com.teamscale.client.EReportFormat;
+import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
+import com.teamscale.jacoco.agent.upload.IUploadRetry;
+import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.report.jacoco.CoverageFile;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 
 /** Uploads the coverage archive to a provided azure file storage. */
-public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> {
+public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadApi> implements IUploadRetry {
 
 	/** Pattern matches the host of a azure file storage */
 	private static final Pattern AZURE_FILE_STORAGE_HOST_PATTERN = Pattern
@@ -50,17 +57,39 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		validateUploadUrl();
 	}
 
-	/** Extracts and returns the account of the provided azure file storage from the URL. */
+	@Override
+	public void markFileForUploadRetry(CoverageFile coverageFile) {
+		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
+				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
+				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
+		try {
+			uploadMetadataFile.createNewFile();
+		} catch (IOException e) {
+			logger.warn(
+					"Failed to create metadata file for automatic upload retry of {}. Please manually retry the coverage upload to Azure.",
+					coverageFile);
+			uploadMetadataFile.delete();
+		}
+	}
+
+	@Override
+	public void reupload(CoverageFile coverageFile, Properties properties) {
+		// The azure uploader does not have any special reupload properties, so it will
+		// just use the normal upload instead.
+		this.upload(coverageFile);
+	}
+
+	/**
+	 * Extracts and returns the account of the provided azure file storage from the
+	 * URL.
+	 */
 	private String getAccount() throws UploaderException {
 		Matcher matcher = AZURE_FILE_STORAGE_HOST_PATTERN.matcher(this.uploadUrl.host());
 		if (matcher.matches()) {
 			return matcher.group(1);
 		} else {
-			throw new UploaderException(
-					String.format(
-							"URL is malformed. Must be in the format " +
-									"\"https://<account>.file.core.windows.net/<share>/\", but was instead: %s",
-							uploadUrl));
+			throw new UploaderException(String.format("URL is malformed. Must be in the format "
+					+ "\"https://<account>.file.core.windows.net/<share>/\", but was instead: %s", uploadUrl));
 		}
 	}
 
@@ -80,16 +109,16 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	}
 
 	/**
-	 * Makes sure that the upload url is valid and that it exists on the file storage. If some directories do not
-	 * exists, they will be created.
+	 * Makes sure that the upload url is valid and that it exists on the file
+	 * storage. If some directories do not exists, they will be created.
 	 */
 	private void validateUploadUrl() throws UploaderException {
 		List<String> pathParts = this.uploadUrl.pathSegments();
 
 		if (pathParts.size() < 2) {
 			throw new UploaderException(String.format(
-					"%s is too short for a file path on the storage. " +
-							"At least the share must be provided: https://<account>.file.core.windows.net/<share>/",
+					"%s is too short for a file path on the storage. "
+							+ "At least the share must be provided: https://<account>.file.core.windows.net/<share>/",
 					uploadUrl.url().getPath()));
 		}
 
@@ -97,8 +126,8 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 			checkAndCreatePath(pathParts);
 		} catch (IOException e) {
 			throw new UploaderException(String.format(
-					"Checking the validity of %s failed. " +
-							"There is probably something wrong with the URL or a problem with the account/key: ",
+					"Checking the validity of %s failed. "
+							+ "There is probably something wrong with the URL or a problem with the account/key: ",
 					this.uploadUrl.url().getPath()), e);
 		}
 	}
@@ -112,8 +141,8 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 			if (!checkDirectory(directoryPath).isSuccessful()) {
 				Response<ResponseBody> mkdirResponse = createDirectory(directoryPath);
 				if (!mkdirResponse.isSuccessful()) {
-					throw new UploaderException(
-							String.format("Creation of path '/%s' was unsuccessful", directoryPath), mkdirResponse);
+					throw new UploaderException(String.format("Creation of path '/%s' was unsuccessful", directoryPath),
+							mkdirResponse);
 				}
 			}
 		}
@@ -131,8 +160,8 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 		Map<String, String> queryParameters = new HashMap<>();
 
-		String auth = AzureFileStorageHttpUtils
-				.getAuthorizationString(HEAD, account, accessKey, filePath, headers, queryParameters);
+		String auth = AzureFileStorageHttpUtils.getAuthorizationString(HEAD, account, accessKey, filePath, headers,
+				queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
 		return getApi().head(filePath, headers, queryParameters).execute();
@@ -145,16 +174,16 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		Map<String, String> queryParameters = new HashMap<>();
 		queryParameters.put("restype", "directory");
 
-		String auth = AzureFileStorageHttpUtils
-				.getAuthorizationString(HEAD, account, accessKey, directoryPath, headers, queryParameters);
+		String auth = AzureFileStorageHttpUtils.getAuthorizationString(HEAD, account, accessKey, directoryPath, headers,
+				queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
 		return getApi().head(directoryPath, headers, queryParameters).execute();
 	}
 
 	/**
-	 * Creates the directory specified by the given path. The path must contain the share where it should be created
-	 * on.
+	 * Creates the directory specified by the given path. The path must contain the
+	 * share where it should be created on.
 	 */
 	private Response<ResponseBody> createDirectory(String directoryPath) throws IOException, UploaderException {
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
@@ -162,16 +191,16 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		Map<String, String> queryParameters = new HashMap<>();
 		queryParameters.put("restype", "directory");
 
-		String auth = AzureFileStorageHttpUtils
-				.getAuthorizationString(PUT, account, accessKey, directoryPath, headers, queryParameters);
+		String auth = AzureFileStorageHttpUtils.getAuthorizationString(PUT, account, accessKey, directoryPath, headers,
+				queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
 		return getApi().put(directoryPath, headers, queryParameters).execute();
 	}
 
 	/** Creates and fills a file with the given data and name. */
-	private Response<ResponseBody> createAndFillFile(File zipFile,
-													 String fileName) throws UploaderException, IOException {
+	private Response<ResponseBody> createAndFillFile(File zipFile, String fileName)
+			throws UploaderException, IOException {
 		Response<ResponseBody> response = createFile(zipFile, fileName);
 		if (response.isSuccessful()) {
 			return fillFile(zipFile, fileName);
@@ -181,32 +210,32 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	}
 
 	/**
-	 * Creates an empty file with the given name. The size is defined by the length of the given byte array.
+	 * Creates an empty file with the given name. The size is defined by the length
+	 * of the given byte array.
 	 */
-	private Response<ResponseBody> createFile(File zipFile,
-											  String fileName) throws IOException, UploaderException {
+	private Response<ResponseBody> createFile(File zipFile, String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
-		headers.put(X_MS_CONTENT_LENGTH, zipFile.length() + "");
+		headers.put(X_MS_CONTENT_LENGTH, String.valueOf(zipFile.length()));
 		headers.put(X_MS_TYPE, "file");
 
 		Map<String, String> queryParameters = new HashMap<>();
 
-		String auth = AzureFileStorageHttpUtils
-				.getAuthorizationString(PUT, account, accessKey, filePath, headers, queryParameters);
+		String auth = AzureFileStorageHttpUtils.getAuthorizationString(PUT, account, accessKey, filePath, headers,
+				queryParameters);
 
 		headers.put(AUTHORIZATION, auth);
 		return getApi().put(filePath, headers, queryParameters).execute();
 	}
 
 	/**
-	 * Fills the file defined by the name with the given data. Should be used with {@link #createFile(File, String)},
-	 * because the request only writes exactly the length of the given data, so the file should be exactly as big as the
+	 * Fills the file defined by the name with the given data. Should be used with
+	 * {@link #createFile(File, String)}, because the request only writes exactly
+	 * the length of the given data, so the file should be exactly as big as the
 	 * data, otherwise it will be partially filled or is not big enough.
 	 */
-	private Response<ResponseBody> fillFile(File zipFile,
-											String fileName) throws IOException, UploaderException {
+	private Response<ResponseBody> fillFile(File zipFile, String fileName) throws IOException, UploaderException {
 		String filePath = uploadUrl.url().getPath() + fileName;
 
 		String range = "bytes=0-" + (zipFile.length() - 1);
@@ -215,15 +244,14 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 		Map<String, String> headers = AzureFileStorageHttpUtils.getBaseHeaders();
 		headers.put(X_MS_WRITE, "update");
 		headers.put(X_MS_RANGE, range);
-		headers.put(CONTENT_LENGTH, "" + zipFile.length());
+		headers.put(CONTENT_LENGTH, String.valueOf(zipFile.length()));
 		headers.put(CONTENT_TYPE, contentType);
 
 		Map<String, String> queryParameters = new HashMap<>();
 		queryParameters.put("comp", "range");
 
-		String auth = AzureFileStorageHttpUtils
-				.getAuthorizationString(PUT, account, accessKey, filePath, headers, queryParameters);
-
+		String auth = AzureFileStorageHttpUtils.getAuthorizationString(PUT, account, accessKey, filePath, headers,
+				queryParameters);
 		headers.put(AUTHORIZATION, auth);
 		RequestBody content = RequestBody.create(MediaType.parse(contentType), zipFile);
 		return getApi().putData(filePath, headers, queryParameters, content).execute();
