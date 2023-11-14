@@ -142,6 +142,10 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		List<File> reports = new ArrayList<>();
 		for (Path reportPath : reportOutputFiles) {
 			File report = reportPath.toFile();
+			if (!report.exists()) {
+				getLog().debug(String.format("Cannot find %s, skipping...", report.getAbsolutePath()));
+				continue;
+			}
 			if (!report.canRead()) {
 				getLog().warn(String.format("Cannot read %s, skipping!", report.getAbsolutePath()));
 				continue;
