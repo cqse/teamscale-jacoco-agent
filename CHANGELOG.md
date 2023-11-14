@@ -6,8 +6,9 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
-# 32.4.1
+- [feature] _teamscale-maven-plugin_: Add new execution goal to batch convert .exec files into testwise coverage report.
 
+# 32.4.1
 - [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
 
 # 32.4.0
