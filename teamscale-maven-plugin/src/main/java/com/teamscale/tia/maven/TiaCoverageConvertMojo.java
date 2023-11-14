@@ -64,7 +64,7 @@ public class TiaCoverageConvertMojo  extends AbstractMojo {
 	@Parameter()
 	public String outputFile;
 
-	ILogger logger = new CommandLineLogger();
+	private final ILogger logger = new CommandLineLogger();
 
 	@Override
 	public void execute() throws MojoFailureException {

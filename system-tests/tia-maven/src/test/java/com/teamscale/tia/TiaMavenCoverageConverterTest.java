@@ -26,7 +26,6 @@ public class TiaMavenCoverageConverterTest {
 		}
 
 		ProcessUtils.ExecutionResult result = ProcessUtils.execute(new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
-		System.out.println(result.getStdout());
 		File configFile = new File(Paths.get(workingDirectory.getAbsolutePath(), "target", "tia", "agent.log").toUri());
 		String configContent = FileSystemUtils.readFile(configFile);
 		assertThat(configContent).isNotEmpty();
