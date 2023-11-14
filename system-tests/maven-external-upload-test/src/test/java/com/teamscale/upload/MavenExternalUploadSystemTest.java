@@ -27,7 +27,7 @@ public class MavenExternalUploadSystemTest {
 
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
-	private static final String MAVEN_PROJFECT_PATH = "root-project";
+	private static final String NESTED_MAVEN_PROJECT_PATH = "nested-project";
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
@@ -37,8 +37,8 @@ public class MavenExternalUploadSystemTest {
 		teamscaleMockServer.uploadedReports.clear();
 	}
 
-	private void runCoverageUploadGoal() {
-		File workingDirectory = new File(MavenExternalUploadSystemTest.MAVEN_PROJFECT_PATH);
+	private void runCoverageUploadGoal(String projectPath) {
+		File workingDirectory = new File(projectPath);
 		try {
 			ProcessUtils.execute(new ProcessBuilder("./mvnw", "com.teamscale:teamscale-maven-plugin:upload-coverage").directory(workingDirectory));
 		} catch (IOException e) {
@@ -48,8 +48,8 @@ public class MavenExternalUploadSystemTest {
 
 	@Test
 	public void testMavenExternalUpload() throws Exception {
-		SystemTestUtils.runMavenTests(MAVEN_PROJFECT_PATH);
-		runCoverageUploadGoal();
+		SystemTestUtils.runMavenTests(NESTED_MAVEN_PROJECT_PATH);
+		runCoverageUploadGoal(NESTED_MAVEN_PROJECT_PATH);
 		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(2);
 		ExternalReport unitTests = teamscaleMockServer.uploadedReports.get(0);
 		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(1);
