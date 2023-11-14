@@ -3,8 +3,8 @@ package bar;
 import org.junit.jupiter.api.Test;
 import foo.SUT;
 
-/** Dummy test class */
-public class UnitTest {
+/** Dummy test class 2 */
+public class TwoUnitTest {
 
 	/** Dummy test*/
 	@Test
