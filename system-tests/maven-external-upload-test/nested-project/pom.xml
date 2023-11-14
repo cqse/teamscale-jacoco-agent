@@ -5,10 +5,10 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.example</groupId>
-    <artifactId>root-project</artifactId>
+    <artifactId>nested-project</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>root-project</name>
+    <name>nested-project</name>
     <packaging>pom</packaging>
 
     <properties>
@@ -99,11 +99,11 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <teamscaleUrl>http://localhost:${tia.teamscale.fake.port}</teamscaleUrl>
-                        <projectId>m</projectId>
-                        <username>build</username>
-                        <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
-                        <endCommit>master:HEAD</endCommit>
+                        <teamscaleUrl>http://localhost:9090</teamscaleUrl>
+                        <projectId>mavensystemtestroot</projectId>
+                        <username>test</username>
+                        <accessToken>GErh1S1CxkLFw4QQLHIpE2XCCrBEamOT</accessToken>
+                        <endCommit>default:HEAD</endCommit>
                         <unitTestPartition>My Custom Unit Tests Partition</unitTestPartition>
                     </configuration>
                 </plugin>
