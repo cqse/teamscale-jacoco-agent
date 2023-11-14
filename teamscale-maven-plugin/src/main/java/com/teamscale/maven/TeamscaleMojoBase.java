@@ -102,15 +102,20 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 * @see GitCommit
 	 */
 	protected void resolveEndCommit() throws MojoFailureException {
+		if (StringUtils.isNotBlank(endCommit)) {
+			resolvedCommit = endCommit;
+			if (StringUtils.isNotBlank(revision)) {
+				resolvedRevision = revision;
+				return;
+			}
+		}
 		Path basedir = session.getCurrentProject().getBasedir().toPath();
 		try {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
-			if (StringUtils.isNotBlank(endCommit)) {
+			if (StringUtils.isBlank(resolvedCommit)) {
 				resolvedCommit = commit.branch + ":" + commit.timestamp;
 			}
-			if (StringUtils.isNotBlank(revision)) {
-				resolvedRevision = commit.sha1;
-			}
+			resolvedRevision = commit.sha1;
 		} catch (IOException e) {
 			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
 					" and I could also not determine the checked out commit in " + basedir + " from Git", e);
