@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Run this goal after the Jacoco report generation to upload them to a configured Teamscale instance.
@@ -92,7 +93,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
 		resolveEndCommit();
-		getLog().info("Parsing Jacoco plugin configurations");
+		getLog().debug("Parsing Jacoco plugin configurations");
 		parseJacocoConfiguration();
 		try {
 			getLog().debug("Uploading coverage reports");
@@ -139,12 +140,20 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 	}
 
 	private void uploadCoverage(List<Path> reportOutputFiles, String partition) throws IOException {
-		Collection<File> reports = reportOutputFiles.stream().map(Path::toFile).filter(File::canRead).collect(Collectors.toList());
+		List<File> reports = new ArrayList<>();
+		for (Path reportPath : reportOutputFiles) {
+			File report = reportPath.toFile();
+			if (!report.canRead()) {
+				getLog().warn(String.format("Cannot read %s, skipping!", report.getAbsolutePath()));
+				continue;
+			}
+			reports.add(report);
+		}
 		if (!reports.isEmpty()) {
 			getLog().info(String.format("Uploading %d Jacoco report for project %s to %s", reports.size(), projectId, partition));
 			teamscaleClient.uploadReports(EReportFormat.JACOCO, reports, CommitDescriptor.parse(resolvedCommit), revision, partition, "External upload via Teamscale Maven plugin");
 		} else {
-			getLog().info(String.format("Found no reports for %s", partition));
+			getLog().info(String.format("Found no valid reports for %s", partition));
 		}
 	}
 
