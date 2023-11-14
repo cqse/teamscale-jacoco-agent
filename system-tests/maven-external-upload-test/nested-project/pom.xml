@@ -99,11 +99,11 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <teamscaleUrl>http://localhost:9090</teamscaleUrl>
-                        <projectId>mavensystemtestroot</projectId>
-                        <username>test</username>
-                        <accessToken>GErh1S1CxkLFw4QQLHIpE2XCCrBEamOT</accessToken>
-                        <endCommit>default:HEAD</endCommit>
+                        <teamscaleUrl>http://localhost:${tia.teamscale.fake.port}</teamscaleUrl>
+                        <projectId>m</projectId>
+                        <username>build</username>
+                        <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
+                        <endCommit>master:HEAD</endCommit>
                         <unitTestPartition>My Custom Unit Tests Partition</unitTestPartition>
                     </configuration>
                 </plugin>
