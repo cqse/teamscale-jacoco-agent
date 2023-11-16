@@ -4,6 +4,7 @@ import com.teamscale.test.commons.ExternalReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.conqat.lib.commons.io.ProcessUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,9 @@ public class MavenExternalUploadSystemTest {
 
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
-	private static final String NESTED_MAVEN_PROJECT_PATH = "nested-project";
+	private static final String NESTED_MAVEN_PROJECT_NAME = "nested-project";
+
+	private static final String FAILING_MAVEN_PROJECT_NAME = "failing-project";
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
@@ -37,24 +40,40 @@ public class MavenExternalUploadSystemTest {
 		teamscaleMockServer.uploadedReports.clear();
 	}
 
-	private void runCoverageUploadGoal(String projectPath) {
+	private ProcessUtils.ExecutionResult runCoverageUploadGoal(String projectPath) {
 		File workingDirectory = new File(projectPath);
 		try {
-			ProcessUtils.execute(new ProcessBuilder("./mvnw", "com.teamscale:teamscale-maven-plugin:upload-coverage").directory(workingDirectory));
+			return ProcessUtils.execute(new ProcessBuilder("./mvnw", "com.teamscale:teamscale-maven-plugin:upload-coverage").directory(workingDirectory));
 		} catch (IOException e) {
 			fail(String.valueOf(e));
 		}
+		return null;
 	}
 
 	@Test
 	public void testMavenExternalUpload() throws Exception {
-		SystemTestUtils.runMavenTests(NESTED_MAVEN_PROJECT_PATH);
-		runCoverageUploadGoal(NESTED_MAVEN_PROJECT_PATH);
+		SystemTestUtils.runMavenTests(NESTED_MAVEN_PROJECT_NAME);
+		runCoverageUploadGoal(NESTED_MAVEN_PROJECT_NAME);
 		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(2);
 		ExternalReport unitTests = teamscaleMockServer.uploadedReports.get(0);
 		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(1);
 		assertThat(unitTests.getPartition()).isEqualTo("My Custom Unit Tests Partition");
 		assertThat(integrationTests.getPartition()).isEqualTo("Integration Tests");
+	}
+
+	@Test
+	public void testIncorrectJaCoCoConfiguration() throws IOException {
+		SystemTestUtils.runMavenTests(FAILING_MAVEN_PROJECT_NAME);
+		ProcessUtils.ExecutionResult result = runCoverageUploadGoal(FAILING_MAVEN_PROJECT_NAME);
+		assertThat(result).isNotNull();
+		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(0);
+		assertThat(result.getStdout()).contains(String.format("Skipping upload for %s as %s is not configured to produce XML reports",
+				FAILING_MAVEN_PROJECT_NAME, "org.jacoco:jacoco-maven-plugin"));
+	}
+
+	@AfterAll
+	public static void stopFakeTeamscaleServer() {
+		teamscaleMockServer.shutdown();
 	}
 
 }
