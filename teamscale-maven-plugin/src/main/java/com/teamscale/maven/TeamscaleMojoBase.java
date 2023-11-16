@@ -1,7 +1,6 @@
 package com.teamscale.maven;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -13,7 +12,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * A base class for all Teamscale related maven Mojos.
@@ -68,18 +66,6 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 */
 	@Parameter(defaultValue = "false")
 	public boolean skip;
-
-	/**
-	 * Map of resolved Maven artifacts. Provided automatically by Maven.
-	 */
-	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
-	public Map<String, Artifact> pluginArtifactMap;
-
-	/**
-	 * The project build directory (usually: {@code ./target}). Provided automatically by Maven.
-	 */
-	@Parameter(defaultValue = "${project.build.directory}")
-	public String projectBuildDir;
 
 	/**
 	 * The running Maven session. Provided automatically by Maven.

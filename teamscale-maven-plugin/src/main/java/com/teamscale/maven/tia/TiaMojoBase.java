@@ -4,7 +4,6 @@ import com.teamscale.maven.TeamscaleMojoBase;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.MojoFailureException;
@@ -69,41 +68,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
 
 	/**
-	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
-	 */
-	@Parameter()
-	public String teamscaleUrl;
-
-	/**
-	 * The Teamscale project to which the recorded coverage will be uploaded
-	 */
-	@Parameter()
-	public String projectId;
-
-	/**
-	 * The username to use to perform the upload. Must have the "Upload external data" permission for the
-	 * {@link #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
-	 */
-	@Parameter(property = "teamscale.username")
-	public String username;
-
-	/**
-	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property
-	 * {@code teamscale.accessToken}.
-	 */
-	@Parameter(property = "teamscale.accessToken")
-	public String accessToken;
-
-	/**
-	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
-	 * {@code BRANCH:UNIX_EPOCH_TIMESTAMP_IN_MILLISECONDS}
-	 * <p>
-	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
-	 */
-	@Parameter
-	public String endCommit;
-
-	/**
 	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
 	 * to the fully qualified class names of the profiled system. Use {@code *} to match any number characters and
 	 * {@code ?} to match any single character.
@@ -154,12 +118,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	public boolean debugLogging;
 
 	/**
-	 * Whether to skip the execution of this Mojo.
-	 */
-	@Parameter(defaultValue = "false")
-	public boolean skip;
-
-	/**
 	 * Executes all tests, not only impacted ones if set. Defaults to false.
 	 */
 	@Parameter(defaultValue = "false")
@@ -188,12 +146,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	 */
 	@Parameter(defaultValue = "${project.build.directory}")
 	public String projectBuildDir;
-
-	/**
-	 * The running Maven session. Provided automatically by Maven.
-	 */
-	@Parameter(defaultValue = "${session}")
-	public MavenSession session;
 
 	private Path targetDirectory;
 
