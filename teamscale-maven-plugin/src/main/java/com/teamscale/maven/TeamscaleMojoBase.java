@@ -22,27 +22,27 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	/**
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String teamscaleUrl;
 
 	/**
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
-	@Parameter(required = true)
+	@Parameter()
 	public String projectId;
 
 	/**
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the {@link
 	 * #projectId}. Can also be specified via the Maven property {@code teamscale.username}.
 	 */
-	@Parameter(property = "teamscale.username", required = true)
+	@Parameter(property = "teamscale.username")
 	public String username;
 
 	/**
 	 * Teamscale access token of the {@link #username}. Can also be specified via the Maven property {@code
 	 * teamscale.accessToken}.
 	 */
-	@Parameter(property = "teamscale.accessToken", required = true)
+	@Parameter(property = "teamscale.accessToken")
 	public String accessToken;
 
 	/**
