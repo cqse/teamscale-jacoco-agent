@@ -2,11 +2,14 @@ plugins {
 	id("com.teamscale.java-convention")
 }
 
-SystemTestPorts.registerWith(project)
+val provider = SystemTestPorts.registerWith(project)
 
 tasks.test {
 	dependsOn(":agent:shadowJar")
-	usesService(SystemTestPorts.provider)
+	usesService(provider)
+	portProvider = provider
+	teamscalePort = provider.get().pickFreePort()
+	agentPort = provider.get().pickFreePort()
 	systemProperties("agentPort" to agentPort, "teamscalePort" to teamscalePort)
 }
 
