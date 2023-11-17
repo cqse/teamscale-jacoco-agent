@@ -1,5 +1,6 @@
 plugins {
 	id("com.teamscale.java-convention")
+	id("com.teamscale.agent-jar")
 }
 
 val provider = SystemTestPorts.registerWith(project)
