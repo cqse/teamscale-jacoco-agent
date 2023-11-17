@@ -100,13 +100,20 @@ public class TeamscaleServer {
 				partition != null;
 	}
 
-	/** Returns whether all required fields are null. */
-	public boolean hasAllRequiredFieldsNull() {
+	/** Whether a URL, user and access token were provided. */
+	public boolean canConnectToTeamscale() {
+		return url != null && userName != null && userAccessToken != null;
+	}
+
+	/** Returns whether all fields are null. */
+	public boolean hasAllFieldsNull() {
 		return url == null &&
 				project == null &&
 				userName == null &&
 				userAccessToken == null &&
-				partition == null;
+				partition == null &&
+				commit == null &&
+				revision == null;
 	}
 
 	/** Returns whether either a commit or revision has been set. */

@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests parsing of the agent's command line options. */
@@ -83,6 +84,71 @@ public class AgentOptionsParserTest {
 		assertThat(options.debugLogging).isEqualTo(true);
 	}
 
+	@Test
+	public void notAllRequiredTeamscaleOptionsSet() {
+		assertThatCode(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj")
+		).doesNotThrowAnyException();
+		assertThatCode(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p")
+		).doesNotThrowAnyException();
+		assertThatCode(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token")
+		).doesNotThrowAnyException();
+
+		assertThatThrownBy(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-project=proj")
+		).hasMessageContaining("You configured a teamscale-project but no teamscale-partition to upload to.");
+
+		assertThatThrownBy(
+				() -> parser.parse("teamscale-server-url=teamscale.com")
+		).hasMessageContaining("not all required ones");
+		assertThatThrownBy(
+				() -> parser.parse("teamscale-server-url=teamscale.com,teamscale-user=user")
+		).hasMessageContaining("not all required ones");
+		assertThatThrownBy(
+				() -> parser.parse("teamscale-server-url=teamscale.com,teamscale-access-token=token")
+		).hasMessageContaining("not all required ones");
+		assertThatThrownBy(
+				() -> parser.parse("teamscale-user=user,teamscale-access-token=token")
+		).hasMessageContaining("not all required ones");
+		assertThatThrownBy(
+				() -> parser.parse("teamscale-revision=1234")
+		).hasMessageContaining("not all required ones");
+		assertThatThrownBy(
+				() -> parser.parse("teamscale-commit=master:1234")
+		).hasMessageContaining("not all required ones");
+	}
+
+	@Test
+	public void sapNwdiRequiresAllTeamscaleOptionsExceptProject() {
+		assertThatThrownBy(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+		).hasMessageContaining(
+				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete");
+		assertThatThrownBy(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+		).hasMessageContaining(
+				"The project must be specified via sap-nwdi-applications");
+	}
+
+	@Test
+	public void revisionOrCommitRequireProject() {
+		assertThatThrownBy(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-revision=12345")
+		).hasMessageContaining("you did not provide the 'teamscale-project'");
+		assertThatThrownBy(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-commit=master:HEAD")
+		).hasMessageContaining("you did not provide the 'teamscale-project'");
+	}
 
 	@Test
 	public void environmentConfigPathDoesNotExist() {

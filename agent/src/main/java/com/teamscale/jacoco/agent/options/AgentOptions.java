@@ -299,13 +299,8 @@ public class AgentOptions {
 	}
 
 	private void validateTeamscaleUploadConfig(Validator validator) {
-		EUploadMethod uploadMethod = determineUploadMethod();
-		if (uploadMethod != EUploadMethod.TEAMSCALE_MULTI_PROJECT && uploadMethod != EUploadMethod.TEAMSCALE_SINGLE_PROJECT) {
-			return;
-		}
-
 		validator.isTrue(
-				teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
+				teamscaleServer.hasAllFieldsNull() || teamscaleServer.canConnectToTeamscale() || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetAndProjectNull() && (teamscaleServer.revision != null
@@ -318,6 +313,9 @@ public class AgentOptions {
 		validator.isTrue(teamscaleServer.revision == null || teamscaleServer.commit == null,
 				"'" + TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "' and '" + TeamscaleConfig.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "' are incompatible with '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION + "' and '" +
 						TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
+
+		validator.isTrue(teamscaleServer.project == null || teamscaleServer.partition != null,
+				"You configured a teamscale-project but no teamscale-partition to upload to.");
 	}
 
 	private void validateUploadConfig(Validator validator) {
