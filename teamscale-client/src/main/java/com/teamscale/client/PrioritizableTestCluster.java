@@ -2,6 +2,7 @@ package com.teamscale.client;
 
 import com.squareup.moshi.Json;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -41,6 +42,12 @@ public class PrioritizableTestCluster {
 
 	/** The {@link PrioritizableTest}s in this cluster. */
 	public List<PrioritizableTest> tests;
+
+	@SuppressWarnings("unused")
+		// Moshi might use this (TS-36477)
+	PrioritizableTestCluster() {
+		this("", new ArrayList<>());
+	}
 
 	public PrioritizableTestCluster(String clusterId, List<PrioritizableTest> tests) {
 		this.clusterId = clusterId;
