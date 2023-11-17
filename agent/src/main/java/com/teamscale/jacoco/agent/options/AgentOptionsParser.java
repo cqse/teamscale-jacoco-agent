@@ -7,7 +7,7 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
@@ -236,7 +236,7 @@ public class AgentOptionsParser {
 				options.httpServerPort = parseInt(key, value);
 				return true;
 			case "sap-nwdi-applications":
-				options.sapNetWeaverJavaApplications = SapNwdiApplications.parseApplications(value);
+				options.sapNetWeaverJavaApplications = SapNwdiApplication.parseApplications(value);
 				return true;
 			default:
 				return false;

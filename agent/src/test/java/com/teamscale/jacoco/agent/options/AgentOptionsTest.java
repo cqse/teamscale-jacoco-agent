@@ -276,12 +276,12 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.sapNetWeaverJavaApplications)
 				.isNotNull()
 				.satisfies(sap -> {
-					assertThat(sap.getApplications()).hasSize(2);
-					assertThat(sap.getApplications()).element(0).satisfies(application -> {
+					assertThat(sap).hasSize(2);
+					assertThat(sap).element(0).satisfies(application -> {
 						assertThat(application.markerClass).isEqualTo("com.example");
 						assertThat(application.teamscaleProject).isEqualTo("project");
 					});
-					assertThat(sap.getApplications()).element(1).satisfies(application -> {
+					assertThat(sap).element(1).satisfies(application -> {
 						assertThat(application.markerClass).isEqualTo("com.test");
 						assertThat(application.teamscaleProject).isEqualTo("p2");
 					});

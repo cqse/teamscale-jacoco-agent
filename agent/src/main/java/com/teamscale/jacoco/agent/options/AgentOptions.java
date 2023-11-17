@@ -17,7 +17,7 @@ import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitProperties
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocatingTransformer;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
-import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
@@ -195,7 +195,7 @@ public class AgentOptions {
 	/**
 	 * The configuration necessary when used in an SAP NetWeaver Java environment.
 	 */
-	/* package */ SapNwdiApplications sapNetWeaverJavaApplications = null;
+	/* package */ List<SapNwdiApplication> sapNetWeaverJavaApplications = new ArrayList<>();
 
 	/**
 	 * Whether to obfuscate security related configuration options when dumping them into the log or onto the console or
@@ -305,7 +305,7 @@ public class AgentOptions {
 		}
 
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer
-						.hasAllRequiredFieldsSetExceptProject() || sapNetWeaverJavaApplications != null,
+						.hasAllRequiredFieldsSetExceptProject() || sapNetWeaverJavaApplications.isEmpty(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetAndProjectNull() && (teamscaleServer.revision != null
@@ -344,13 +344,14 @@ public class AgentOptions {
 	}
 
 	private void validateSapNetWeaverConfig(Validator validator) {
-		validator.isTrue(sapNetWeaverJavaApplications == null || sapNetWeaverJavaApplications.hasAllRequiredFieldsSet(),
-				"You provided an SAP NWDI applications config, but it is empty.");
+		if (sapNetWeaverJavaApplications.isEmpty()) {
+			return;
+		}
 
-		validator.isTrue(sapNetWeaverJavaApplications == null || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
+		validator.isTrue(teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
 				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete.");
 
-		validator.isTrue(sapNetWeaverJavaApplications == null || !teamscaleServer.hasAllRequiredFieldsSet(),
+		validator.isTrue(teamscaleServer.project == null,
 				"You provided an SAP NWDI applications config and a teamscale-project. This is not allowed. " +
 						"The project must be specified via sap-nwdi-applications!");
 	}
@@ -419,7 +420,7 @@ public class AgentOptions {
 		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
 			return EUploadMethod.AZURE_FILE_STORAGE;
 		}
-		if (sapNetWeaverJavaApplications != null && sapNetWeaverJavaApplications.hasAllRequiredFieldsSet()) {
+		if (!sapNetWeaverJavaApplications.isEmpty()) {
 			return EUploadMethod.SAP_NWDI_TEAMSCALE;
 		}
 		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
@@ -581,7 +582,7 @@ public class AgentOptions {
 				(commit, application) -> new TeamscaleUploader(
 						teamscaleServer.withProjectAndCommit(application.getTeamscaleProject(), commit)));
 		instrumentation.addTransformer(new NwdiMarkerClassLocatingTransformer(uploader, getLocationIncludeFilter(),
-				sapNetWeaverJavaApplications.getApplications()));
+				sapNetWeaverJavaApplications));
 		return uploader;
 	}
 
@@ -633,8 +634,8 @@ public class AgentOptions {
 	}
 
 	private static Path safeFolderName(String folderName) {
-		String result = folderName.replaceAll("[<>:\"/\\|?*]", "")
-				.replaceAll("\\.{1,}", "dot")
+		String result = folderName.replaceAll("[<>:\"/|?*]", "")
+				.replaceAll("\\.+", "dot")
 				.replaceAll("\\x00", "")
 				.replaceAll("[. ]$", "");
 
@@ -723,13 +724,6 @@ public class AgentOptions {
 	/** Whether coverage should be dumped on JVM shutdown. */
 	public boolean shouldDumpOnExit() {
 		return shouldDumpOnExit;
-	}
-
-	/**
-	 * Whether to search directories and jar files recursively for git.properties files
-	 */
-	public boolean isSearchGitPropertiesRecursively() {
-		return searchGitPropertiesRecursively;
 	}
 
 	/** @see TestImpactConfig#testwiseCoverageMode */

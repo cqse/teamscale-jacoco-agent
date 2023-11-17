@@ -20,17 +20,17 @@ import java.util.function.BiFunction;
  */
 public class DelayedSapNwdiMultiUploader extends DelayedMultiUploaderBase implements IUploader {
 
-	private final BiFunction<CommitDescriptor, SapNwdiApplications.SapNwdiApplication, IUploader> uploaderFactory;
+	private final BiFunction<CommitDescriptor, SapNwdiApplication, IUploader> uploaderFactory;
 
 	/** The wrapped uploader instances. */
-	private final Map<SapNwdiApplications.SapNwdiApplication, IUploader> uploaders = new HashMap<>();
+	private final Map<SapNwdiApplication, IUploader> uploaders = new HashMap<>();
 
 	/**
 	 * Visible for testing. Allows tests to control the {@link Executor} to test the asynchronous functionality of this
 	 * class.
 	 */
 	public DelayedSapNwdiMultiUploader(
-			BiFunction<CommitDescriptor, SapNwdiApplications.SapNwdiApplication, IUploader> uploaderFactory) {
+			BiFunction<CommitDescriptor, SapNwdiApplication, IUploader> uploaderFactory) {
 		this.uploaderFactory = uploaderFactory;
 		registerShutdownHook();
 	}
@@ -46,7 +46,7 @@ public class DelayedSapNwdiMultiUploader extends DelayedMultiUploaderBase implem
 	}
 
 	/** Sets the commit info detected for the application. */
-	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplications.SapNwdiApplication application) {
+	public void setCommitForApplication(CommitDescriptor commit, SapNwdiApplication application) {
 		logger.info("Found commit for " + application.markerClass + ": " + commit);
 		IUploader uploader = uploaderFactory.apply(commit, application);
 		uploaders.put(application, uploader);
