@@ -22,7 +22,7 @@ fun Task.createAgentCopy() {
 	}
 }
 
-tasks.named<JavaExec>("run") {
+tasks.withType<JavaExec>() {
 	createAgentCopy()
 }
 
