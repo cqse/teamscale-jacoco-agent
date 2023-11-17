@@ -300,12 +300,12 @@ public class AgentOptions {
 
 	private void validateTeamscaleUploadConfig(Validator validator) {
 		EUploadMethod uploadMethod = determineUploadMethod();
-		if (uploadMethod != EUploadMethod.TEAMSCALE_MULTI_PROJECT && uploadMethod != EUploadMethod.TEAMSCALE_SINGLE_PROJECT && uploadMethod != EUploadMethod.SAP_NWDI_TEAMSCALE) {
+		if (uploadMethod != EUploadMethod.TEAMSCALE_MULTI_PROJECT && uploadMethod != EUploadMethod.TEAMSCALE_SINGLE_PROJECT) {
 			return;
 		}
 
-		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer
-						.hasAllRequiredFieldsSetExceptProject() || sapNetWeaverJavaApplications.isEmpty(),
+		validator.isTrue(
+				teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
 		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetAndProjectNull() && (teamscaleServer.revision != null
