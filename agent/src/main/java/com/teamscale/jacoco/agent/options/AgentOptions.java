@@ -333,10 +333,10 @@ public class AgentOptions {
 				"If you want to upload data to an Azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
-		// TODO (FS) this is incomplete: SAP NWDI, multi teamscale upload, ...
 		long configuredStores = Stream
 				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
-						teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(), uploadUrl != null).filter(x -> x)
+						teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(), uploadUrl != null,
+						teamscaleServer.isConfiguredForMultiProjectUpload()).filter(x -> x)
 				.count();
 
 		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
@@ -352,8 +352,9 @@ public class AgentOptions {
 				"You provided an SAP NWDI applications config and a teamscale-project. This is not allowed. " +
 						"The project must be specified via sap-nwdi-applications!");
 
-		validator.isTrue(teamscaleServer.isConfiguredForMultiProjectUpload(),
+		validator.isTrue(teamscaleServer.project != null || teamscaleServer.isConfiguredForMultiProjectUpload(),
 				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete.");
+
 	}
 
 	private void validateTestwiseCoverageConfig(Validator validator) {

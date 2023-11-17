@@ -131,11 +131,19 @@ public class AgentOptionsParserTest {
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 		).hasMessageContaining(
 				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete");
+
 		assertThatThrownBy(
 				() -> parser.parse(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 		).hasMessageContaining(
 				"The project must be specified via sap-nwdi-applications");
+
+		assertThatThrownBy(
+				() -> parser.parse(
+						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+		).hasMessageContaining(
+						"You provided an SAP NWDI applications config and a teamscale-project")
+				.hasMessageNotContaining("the 'teamscale-' upload options are incomplete");
 	}
 
 	@Test
