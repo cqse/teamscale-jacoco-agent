@@ -22,6 +22,7 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@EnabledOnOs(OS.LINUX)
 class InstallerTest {
 
 	private static final int TEAMSCALE_PORT = 8059;
