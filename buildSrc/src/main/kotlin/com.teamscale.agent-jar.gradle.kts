@@ -17,7 +17,8 @@ fun Task.createAgentCopy() {
 		mkdir(libDir)
 		copy {
 			from(project.project(":agent").tasks["shadowJar"].outputs.files.singleFile)
-			to(agentJar)
+			into(libDir)
+			rename { _ -> agentJar.name }
 		}
 	}
 }
