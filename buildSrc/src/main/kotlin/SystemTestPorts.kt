@@ -37,6 +37,7 @@ abstract class SystemTestPorts : BuildService<BuildServiceParameters.None> {
 	}
 }
 
+/** Provider for the SystemTestPorts build service. */
 @Suppress("UNCHECKED_CAST")
 var Test.portProvider: Provider<SystemTestPorts>
 	get() = extra["portProvider"] as Provider<SystemTestPorts>
