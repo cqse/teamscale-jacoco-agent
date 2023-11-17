@@ -22,7 +22,7 @@ public class SapNwdiApplications {
 		return !applications.isEmpty();
 	}
 
-	/** Parses an application definition string e.g. "com.package.MyClass:projectId,com.company.Main:project". */
+	/** Parses an application definition string e.g. "com.package.MyClass:projectId;com.company.Main:project". */
 	public static SapNwdiApplications parseApplications(String applications) throws AgentOptionParseException {
 		SapNwdiApplications nwdiConfiguration = new SapNwdiApplications();
 		String[] markerClassAndProjectPairs = applications.split(";");

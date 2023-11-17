@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
 import okhttp3.HttpUrl;
@@ -21,6 +22,57 @@ public class AgentOptionsParserTest {
 	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null);
 
 	@Test
+	public void testUploadMethodRecognition() throws Exception {
+		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
+		assertThat(parser.parse("upload-url=teamscale.url.com:443").determineUploadMethod()).isEqualTo(
+				AgentOptions.EUploadMethod.HTTP);
+		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
+				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
+		assertThat(parser.parse(
+				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
+						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, "apikey",
+						ArtifactoryConfig.ARTIFACTORY_PARTITION, "partition")
+		).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.ARTIFACTORY);
+
+		String basicTeamscaleOptions = "teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p";
+		assertThat(parser.parse(basicTeamscaleOptions)
+				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_MULTI_PROJECT);
+		assertThat(parser.parse(basicTeamscaleOptions + ",teamscale-project=proj")
+				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_SINGLE_PROJECT);
+		assertThat(parser.parse(
+						basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+				.determineUploadMethod())
+				.isEqualTo(AgentOptions.EUploadMethod.SAP_NWDI_TEAMSCALE);
+	}
+
+	@Test
+	public void testUploadMethodRecognitionWithTeamscaleProperties() throws Exception {
+		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
+
+		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
+		assertThat(parser.parse("upload-url=teamscale.url.com:443").determineUploadMethod()).isEqualTo(
+				AgentOptions.EUploadMethod.HTTP);
+		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
+				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
+		assertThat(parser.parse(
+				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
+						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, "apikey",
+						ArtifactoryConfig.ARTIFACTORY_PARTITION, "partition")
+		).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.ARTIFACTORY);
+
+		String basicTeamscaleOptions = "teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p";
+		assertThat(parser.parse(basicTeamscaleOptions)
+				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_MULTI_PROJECT);
+		assertThat(parser.parse(basicTeamscaleOptions + ",teamscale-project=proj")
+				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_SINGLE_PROJECT);
+		assertThat(parser.parse(
+						basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+				.determineUploadMethod())
+				.isEqualTo(AgentOptions.EUploadMethod.SAP_NWDI_TEAMSCALE);
+	}
+
+	@Test
 	public void environmentConfigOverridesCommandLineOptions(
 			@TempDir Path tempDir) throws IOException, AgentOptionParseException {
 		Path config = tempDir.resolve("config.properties");
@@ -30,6 +82,7 @@ public class AgentOptionsParserTest {
 
 		assertThat(options.debugLogging).isEqualTo(true);
 	}
+
 
 	@Test
 	public void environmentConfigPathDoesNotExist() {
@@ -82,10 +135,6 @@ public class AgentOptionsParserTest {
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
 		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
-
-		assertThatThrownBy(() ->
-				parser.parse("")
-		).hasMessageContaining("You did provide some options prefixed with 'teamscale-', but not all required ones");
 
 		assertThat(parser.parse("teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");

@@ -39,6 +39,7 @@ import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -298,6 +299,11 @@ public class AgentOptions {
 	}
 
 	private void validateTeamscaleUploadConfig(Validator validator) {
+		EUploadMethod uploadMethod = determineUploadMethod();
+		if (uploadMethod != EUploadMethod.TEAMSCALE_MULTI_PROJECT && uploadMethod != EUploadMethod.TEAMSCALE_SINGLE_PROJECT && uploadMethod != EUploadMethod.SAP_NWDI_TEAMSCALE) {
+			return;
+		}
+
 		validator.isTrue(teamscaleServer.hasAllRequiredFieldsNull() || teamscaleServer
 						.hasAllRequiredFieldsSetExceptProject() || sapNetWeaverJavaApplications != null,
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
@@ -384,78 +390,131 @@ public class AgentOptions {
 		return null;
 	}
 
+	/** All available upload methods. */
+	/*package*/ enum EUploadMethod {
+		/** Saving coverage files on disk. */
+		LOCAL_DISK,
+		/** Sending coverage via HTTP POST to an arbitrary endpoint. */
+		HTTP,
+		/** Sending coverage to a single Teamscale project. */
+		TEAMSCALE_SINGLE_PROJECT,
+		/** Sending coverage to multiple Teamscale projects. */
+		TEAMSCALE_MULTI_PROJECT,
+		/** Sending coverage to multiple Teamscale projects based on SAP NWDI application definitions. */
+		SAP_NWDI_TEAMSCALE,
+		/** Sending coverage to an Artifactory. */
+		ARTIFACTORY,
+		/** Sending coverage to Azure file storage. */
+		AZURE_FILE_STORAGE,
+	}
+
+	/** Determines the upload method that should be used based on the set options. */
+	/*package*/ EUploadMethod determineUploadMethod() {
+		if (uploadUrl != null) {
+			return EUploadMethod.HTTP;
+		}
+		if (artifactoryConfig.hasAllRequiredFieldsSet()) {
+			return EUploadMethod.ARTIFACTORY;
+		}
+		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
+			return EUploadMethod.AZURE_FILE_STORAGE;
+		}
+		if (sapNetWeaverJavaApplications != null && sapNetWeaverJavaApplications.hasAllRequiredFieldsSet()) {
+			return EUploadMethod.SAP_NWDI_TEAMSCALE;
+		}
+		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
+			return EUploadMethod.TEAMSCALE_MULTI_PROJECT;
+		}
+		if (teamscaleServer.hasAllRequiredFieldsSet()) {
+			return EUploadMethod.TEAMSCALE_SINGLE_PROJECT;
+		}
+		return EUploadMethod.LOCAL_DISK;
+	}
+
 	/**
 	 * Creates an uploader for the coverage XMLs.
 	 */
 	public IUploader createUploader(Instrumentation instrumentation) throws UploaderException {
-		if (uploadUrl != null) {
-			return new HttpUploader(uploadUrl, additionalMetaDataFiles);
+		EUploadMethod uploadMethod = determineUploadMethod();
+		switch (uploadMethod) {
+			case HTTP:
+				return new HttpUploader(uploadUrl, additionalMetaDataFiles);
+			case TEAMSCALE_MULTI_PROJECT:
+				return createTeamscaleMultiProjectUploader(instrumentation);
+			case TEAMSCALE_SINGLE_PROJECT:
+				return createTeamscaleSingleProjectUploader(instrumentation);
+			case ARTIFACTORY:
+				return createArtifactoryUploader(instrumentation);
+			case AZURE_FILE_STORAGE:
+				return new AzureFileStorageUploader(azureFileStorageConfig,
+						additionalMetaDataFiles);
+			case SAP_NWDI_TEAMSCALE: {
+				logger.info("NWDI configuration detected. The Agent will try and" +
+						" auto-detect commit information by searching all profiled Jar/War/Ear/... files.");
+				return createNwdiTeamscaleUploader(instrumentation);
+			}
+			case LOCAL_DISK:
+				return new LocalDiskUploader();
+			default:
+				throw new RuntimeException("Unhandled upload method " + uploadMethod + "."
+						+ " This is a bug, please report this to CQSE.");
 		}
+	}
 
-		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
-			DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
-					(project, revision) ->
-							new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+	@NotNull
+	private IUploader createArtifactoryUploader(Instrumentation instrumentation) {
+		if (!artifactoryConfig.hasCommitInfo()) {
+			logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+					" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+			return createDelayedArtifactoryUploader(instrumentation);
+		}
+		return new ArtifactoryUploader(artifactoryConfig,
+				additionalMetaDataFiles, getReportFormat());
+	}
+
+	@NotNull
+	private IUploader createTeamscaleSingleProjectUploader(Instrumentation instrumentation) {
+		if (!teamscaleServer.hasCommitOrRevision()) {
+			DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
 
 			if (gitPropertiesJar != null) {
-				logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
-						" auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+				logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
+						"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
 						gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
-
-				startMultiGitPropertiesFileSearchInJarFile(uploader, gitPropertiesJar);
+				startGitPropertiesSearchInJarFile(uploader, gitPropertiesJar);
 				return uploader;
 			}
 
-			logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
-					" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
-					" with the 'teamscale.project' field set.");
-			registerMultiGitPropertiesLocator(uploader, instrumentation);
+			logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+					" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+			registerSingleGitPropertiesLocator(uploader, instrumentation);
+			return uploader;
+		}
+		return new TeamscaleUploader(teamscaleServer);
+	}
+
+	@NotNull
+	private DelayedTeamscaleMultiProjectUploader createTeamscaleMultiProjectUploader(
+			Instrumentation instrumentation) {
+		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
+				(project, revision) ->
+						new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+
+		if (gitPropertiesJar != null) {
+			logger.info(
+					"You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
+							" auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+							gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
+
+			startMultiGitPropertiesFileSearchInJarFile(uploader, gitPropertiesJar);
 			return uploader;
 		}
 
-		if (teamscaleServer.hasAllRequiredFieldsSet()) {
-			if (!teamscaleServer.hasCommitOrRevision()) {
-				DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
-
-				if (gitPropertiesJar != null) {
-					logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
-							"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
-							gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
-					startGitPropertiesSearchInJarFile(uploader, gitPropertiesJar);
-					return uploader;
-				}
-
-				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
-						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-				registerSingleGitPropertiesLocator(uploader, instrumentation);
-				return uploader;
-			}
-			return new TeamscaleUploader(teamscaleServer);
-		}
-
-		if (artifactoryConfig.hasAllRequiredFieldsSet()) {
-			if (!artifactoryConfig.hasCommitInfo()) {
-				logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
-						" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-				return createDelayedArtifactoryUploader(instrumentation);
-			}
-			return new ArtifactoryUploader(artifactoryConfig,
-					additionalMetaDataFiles, getReportFormat());
-		}
-
-		if (azureFileStorageConfig.hasAllRequiredFieldsSet()) {
-			return new AzureFileStorageUploader(azureFileStorageConfig,
-					additionalMetaDataFiles);
-		}
-
-		if (sapNetWeaverJavaApplications != null && sapNetWeaverJavaApplications
-				.hasAllRequiredFieldsSet() && teamscaleServer.hasAllRequiredFieldsSetExceptProject()) {
-			logger.info("NWDI configuration detected. The Agent will try and" +
-					" auto-detect commit information by searching all profiled Jar/War/Ear/... files.");
-			return createNwdiTeamscaleUploader(instrumentation);
-		}
-
-		return new LocalDiskUploader();
+		logger.info("You did not provide a Teamscale project to upload to directly, so the Agent will try and" +
+				" auto-detect it by searching all profiled Jar/War/Ear/... files for git.properties files" +
+				" with the 'teamscale.project' field set.");
+		registerMultiGitPropertiesLocator(uploader, instrumentation);
+		return uploader;
 	}
 
 	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectRevision> uploader,
@@ -569,7 +628,8 @@ public class AgentOptions {
 	public File createNewFileInPartitionOutputDirectory(String prefix, String extension) throws IOException {
 		Path partitionOutputDir = outputDirectory.resolve(safeFolderName(getTeamscaleServerOptions().partition));
 		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(partitionOutputDir.toFile());
-		return partitionOutputDir.resolve(prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
+		return partitionOutputDir.resolve(
+				prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
 	}
 
 	private static Path safeFolderName(String folderName) {
