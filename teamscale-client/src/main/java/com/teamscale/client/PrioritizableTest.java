@@ -42,6 +42,12 @@ public class PrioritizableTest {
 	@Json(name = "rank")
 	public int rank;
 
+	@SuppressWarnings("unused")
+		// Moshi might use this (TS-36477)
+	PrioritizableTest() {
+		this("");
+	}
+
 	public PrioritizableTest(String testName) {
 		this.testName = testName;
 	}
