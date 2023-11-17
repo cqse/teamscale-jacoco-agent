@@ -300,13 +300,13 @@ public class AgentOptions {
 
 	private void validateTeamscaleUploadConfig(Validator validator) {
 		validator.isTrue(
-				teamscaleServer.hasAllFieldsNull() || teamscaleServer.canConnectToTeamscale() || teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
+				teamscaleServer.hasAllFieldsNull() || teamscaleServer.canConnectToTeamscale() || teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload() || teamscaleServer.isConfiguredForMultiProjectUpload(),
 				"You did provide some options prefixed with 'teamscale-', but not all required ones!");
 
-		validator.isFalse(teamscaleServer.hasAllRequiredFieldsSetAndProjectNull() && (teamscaleServer.revision != null
+		validator.isFalse(teamscaleServer.isConfiguredForMultiProjectUpload() && (teamscaleServer.revision != null
 						|| teamscaleServer.commit != null),
 				"You tried to provide a commit to upload to directly. This is not possible, since you" +
-						" did not provide the 'teamscale-project' Teamscale project to upload to. Please either specify the 'teamscale-project'" +
+						" did not provide the 'teamscale-project' to upload to. Please either specify the 'teamscale-project'" +
 						" property, or provide the respective projects and commits via all the profiled Jar/War/Ear/...s' " +
 						" git.properties files.");
 
@@ -315,7 +315,7 @@ public class AgentOptions {
 						TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'.");
 
 		validator.isTrue(teamscaleServer.project == null || teamscaleServer.partition != null,
-				"You configured a teamscale-project but no teamscale-partition to upload to.");
+				"You configured a 'teamscale-project' but no 'teamscale-partition' to upload to.");
 	}
 
 	private void validateUploadConfig(Validator validator) {
@@ -333,9 +333,11 @@ public class AgentOptions {
 				"If you want to upload data to an Azure file storage you need to provide both " +
 						"'azure-url' and 'azure-key' ");
 
+		// TODO (FS) this is incomplete: SAP NWDI, multi teamscale upload, ...
 		long configuredStores = Stream
 				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
-						teamscaleServer.hasAllRequiredFieldsSet(), uploadUrl != null).filter(x -> x).count();
+						teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(), uploadUrl != null).filter(x -> x)
+				.count();
 
 		validator.isTrue(configuredStores <= 1, "You cannot configure multiple upload stores, " +
 				"such as a Teamscale instance, upload URL, Azure file storage or artifactory");
@@ -346,12 +348,12 @@ public class AgentOptions {
 			return;
 		}
 
-		validator.isTrue(teamscaleServer.hasAllRequiredFieldsSetExceptProject(),
-				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete.");
-
 		validator.isTrue(teamscaleServer.project == null,
 				"You provided an SAP NWDI applications config and a teamscale-project. This is not allowed. " +
 						"The project must be specified via sap-nwdi-applications!");
+
+		validator.isTrue(teamscaleServer.isConfiguredForMultiProjectUpload(),
+				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete.");
 	}
 
 	private void validateTestwiseCoverageConfig(Validator validator) {
@@ -371,7 +373,7 @@ public class AgentOptions {
 						"incompatible with Testwise coverage mode!");
 
 		validator.isFalse(testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
-						&& !teamscaleServer.hasAllRequiredFieldsSet(),
+						&& !teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
 				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
 	}
@@ -382,7 +384,7 @@ public class AgentOptions {
 	 * Teamscale connection.
 	 */
 	public TeamscaleClient createTeamscaleClient() {
-		if (teamscaleServer.hasAllRequiredFieldsSet()) {
+		if (teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload()) {
 			return new TeamscaleClient(teamscaleServer.url.toString(), teamscaleServer.userName,
 					teamscaleServer.userAccessToken, teamscaleServer.project);
 		}
@@ -421,10 +423,10 @@ public class AgentOptions {
 		if (!sapNetWeaverJavaApplications.isEmpty()) {
 			return EUploadMethod.SAP_NWDI_TEAMSCALE;
 		}
-		if (teamscaleServer.hasAllRequiredFieldsSetAndProjectNull()) {
+		if (teamscaleServer.isConfiguredForMultiProjectUpload()) {
 			return EUploadMethod.TEAMSCALE_MULTI_PROJECT;
 		}
-		if (teamscaleServer.hasAllRequiredFieldsSet()) {
+		if (teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload()) {
 			return EUploadMethod.TEAMSCALE_SINGLE_PROJECT;
 		}
 		return EUploadMethod.LOCAL_DISK;
@@ -473,23 +475,24 @@ public class AgentOptions {
 
 	@NotNull
 	private IUploader createTeamscaleSingleProjectUploader(Instrumentation instrumentation) {
-		if (!teamscaleServer.hasCommitOrRevision()) {
-			DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
+		if (teamscaleServer.hasCommitOrRevision()) {
+			return new TeamscaleUploader(teamscaleServer);
+		}
 
-			if (gitPropertiesJar != null) {
-				logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
-						"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
-						gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
-				startGitPropertiesSearchInJarFile(uploader, gitPropertiesJar);
-				return uploader;
-			}
+		DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
 
-			logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
-					" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
-			registerSingleGitPropertiesLocator(uploader, instrumentation);
+		if (gitPropertiesJar != null) {
+			logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
+					"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+					gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
+			startGitPropertiesSearchInJarFile(uploader, gitPropertiesJar);
 			return uploader;
 		}
-		return new TeamscaleUploader(teamscaleServer);
+
+		logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
+				" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
+		registerSingleGitPropertiesLocator(uploader, instrumentation);
+		return uploader;
 	}
 
 	@NotNull

@@ -286,8 +286,8 @@ public class AgentOptionsTest {
 						assertThat(application.teamscaleProject).isEqualTo("p2");
 					});
 				});
-		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSetExceptProject()).isTrue();
-		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSet()).isFalse();
+		assertThat(agentOptions.teamscaleServer.isConfiguredForMultiProjectUpload()).isTrue();
+		assertThat(agentOptions.teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload()).isFalse();
 	}
 
 	/**

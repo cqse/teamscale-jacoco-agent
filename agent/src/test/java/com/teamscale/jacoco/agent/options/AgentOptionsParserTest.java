@@ -102,7 +102,7 @@ public class AgentOptionsParserTest {
 		assertThatThrownBy(
 				() -> parser.parse(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-project=proj")
-		).hasMessageContaining("You configured a teamscale-project but no teamscale-partition to upload to.");
+		).hasMessageContaining("You configured a 'teamscale-project' but no 'teamscale-partition' to upload to.");
 
 		assertThatThrownBy(
 				() -> parser.parse("teamscale-server-url=teamscale.com")

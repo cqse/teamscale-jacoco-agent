@@ -78,23 +78,19 @@ public class TeamscaleServer {
 		this.message = message;
 	}
 
-	/** Returns if all required fields are non-null. */
-	public boolean hasAllRequiredFieldsSet() {
-		return project != null &&
-				hasAllRequiredFieldsSetExceptProject();
-	}
-
-	/** Checks if all required fields are non-null, except the project which must be null. */
-	public boolean hasAllRequiredFieldsSetAndProjectNull() {
-		return project == null && url != null &&
+	/** Checks if all fields required for a single-project Teamscale upload are non-null. */
+	public boolean isConfiguredForSingleProjectTeamscaleUpload() {
+		return url != null &&
 				userName != null &&
 				userAccessToken != null &&
-				partition != null;
+				partition != null &&
+				project != null;
 	}
 
-	/** Checks whether all required fields, except for the project field, are non-null. */
-	public boolean hasAllRequiredFieldsSetExceptProject() {
-		return url != null &&
+	/** Checks if all fields required for a Teamscale upload are non-null, except the project which must be null. */
+	public boolean isConfiguredForMultiProjectUpload() {
+		return project == null &&
+				url != null &&
 				userName != null &&
 				userAccessToken != null &&
 				partition != null;
