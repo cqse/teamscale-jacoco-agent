@@ -172,7 +172,7 @@ public class AgentOptionsTest {
 	public void testTeamscaleRevisionManifestJarOption() throws URISyntaxException, AgentOptionParseException {
 		File jar = new File(getClass().getResource("manifest-with-git-commit-revision.jar").toURI());
 		AgentOptions options = getAgentOptionsParserWithDummyLogger().parse(
-				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath());
+				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 
 		assertThat(options.getTeamscaleServerOptions().revision).isEqualTo("f364d58dc4966ca856260185e46a90f80ee5e9c6");
 	}
@@ -183,9 +183,9 @@ public class AgentOptionsTest {
 	 * have to be provided individually via the 'git.properties' file.
 	 */
 	@Test
-	public void testNoCommitOrRevisionGivenWhenProjectNull() {
+	public void testNoCommitOrRevisionGivenWhenProjectNull() throws Exception {
 		String message = "You tried to provide a commit to upload to directly." +
-				" This is not possible, since you did not provide the 'teamscale-project' Teamscale project to upload to";
+				" This is not possible, since you did not provide the 'teamscale-project' to upload to";
 
 		assertThatThrownBy(
 				() -> getAgentOptionsParserWithDummyLogger().parse(
@@ -244,11 +244,11 @@ public class AgentOptionsTest {
 	@Test
 	public void testVersionInfosInTestwiseMode() throws AgentOptionParseException {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
-				"http-server-port=8081,teamscale-revision=1234");
+				"http-server-port=8081,teamscale-revision=1234,teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 		assertThat(agentOptions.getTeamscaleServerOptions().revision).isEqualTo("1234");
 
 		agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
-				"http-server-port=8081,teamscale-commit=branch:1234");
+				"http-server-port=8081,teamscale-commit=branch:1234,teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 		assertThat(agentOptions.getTeamscaleServerOptions().commit).isEqualTo(CommitDescriptor.parse("branch:1234"));
 	}
 
