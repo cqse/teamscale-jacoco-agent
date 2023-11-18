@@ -14,6 +14,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +29,12 @@ public class ConfigurationViaTeamscale {
 	 * Two minute timeout. This is quite high to account for an eventual high load on the Teamscale server. This is a
 	 * tradeoff between fast application startup and potentially missing test coverage.
 	 */
-	private static final int LONG_TIMEOUT = 120;
+	private static final Duration LONG_TIMEOUT = Duration.ofSeconds(120);
+
+	/**
+	 * The UUID that Teamscale assigned to this instance of the profiler during the registration.
+	 * This ID needs to be used when communicating with Teamscale.
+	 */
 	private final String profilerId;
 
 	private final ITeamscaleService teamscaleClient;

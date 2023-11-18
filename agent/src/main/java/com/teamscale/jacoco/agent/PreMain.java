@@ -106,8 +106,11 @@ public class PreMain {
 			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, credentials, delayedLogger);
 		} catch (AgentOptionParseException | AgentOptionReceiveException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
-				delayedLogger.error("Failed to parse agent options: " + e.getMessage(), e);
-				System.err.println("Failed to parse agent options: " + e.getMessage());
+				if (e instanceof AgentOptionParseException) {
+					delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
+				} else {
+					delayedLogger.errorAndStdErr( e.getMessage() + " The application should start up normally, but NO coverage will be collected!", e);
+				}
 
 				// we perform actual logging output after writing to console to
 				// ensure the console is reached even in case of logging issues

@@ -37,6 +37,12 @@ public class TeamscaleServer {
 	 */
 	public String revision;
 
+	/**
+	 * The configuration ID that was used to retrieve the profiler configuration. This is only set here to append it to
+	 * the default upload message.
+	 */
+	public String configId;
+
 	private String message = null;
 
 	/**
@@ -69,9 +75,14 @@ public class TeamscaleServer {
 			revisionPart = "\nfor revision: " + revision;
 		}
 
+		String configIdPart = "";
+		if (configId != null) {
+			configIdPart = "\nprofiler configuration ID: " + configId;
+		}
+
 		return partition + " coverage uploaded at " +
 				DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()) + "\n\n" +
-				hostnamePart + revisionPart;
+				hostnamePart + revisionPart + configIdPart;
 	}
 
 	public void setMessage(String message) {
@@ -85,7 +96,7 @@ public class TeamscaleServer {
 
 	/** Checks if all fields required for a Teamscale upload are non-null, except the project which must be null. */
 	public boolean isConfiguredForMultiProjectUpload() {
-		return isConfiguredForServerConnection() && project == null;
+		return isConfiguredForServerConnection() && partition != null && project == null;
 	}
 
 	/** Checks if all required fields to access a Teamscale server are non-null. */

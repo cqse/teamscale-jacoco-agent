@@ -5,6 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
@@ -51,22 +52,26 @@ public class AgentOptionsParser {
 	private final String environmentConfigId;
 	private final TeamscaleCredentials credentials;
 
-	public AgentOptionsParser(ILogger logger, String environmentConfigId,
-							  TeamscaleCredentials credentials) {
-		this.logger = logger;
-		this.filePatternResolver = new FilePatternResolver(logger);
-		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
-		this.environmentConfigId = environmentConfigId;
-		this.credentials = credentials;
-	}
-
 	/**
 	 * Parses the given command-line options.
+	 *
+	 * @param environmentConfigId The Profiler configuration ID given via the
+	 *                            {@link com.teamscale.jacoco.agent.PreMain#CONFIG_ID_ENVIRONMENT_VARIABLE} environment
+	 *                            variable.
 	 */
 	public static AgentOptions parse(String optionsString, String environmentConfigId,
 									 TeamscaleCredentials credentials,
 									 ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
 		return new AgentOptionsParser(logger, environmentConfigId, credentials).parse(optionsString);
+	}
+
+	@VisibleForTesting
+	AgentOptionsParser(ILogger logger, String environmentConfigId, TeamscaleCredentials credentials) {
+		this.logger = logger;
+		this.filePatternResolver = new FilePatternResolver(logger);
+		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
+		this.environmentConfigId = environmentConfigId;
+		this.credentials = credentials;
 	}
 
 	/**
@@ -251,12 +256,13 @@ public class AgentOptionsParser {
 	}
 
 	private void readConfigFromTeamscale(AgentOptions options,
-										 String value) throws AgentOptionParseException, AgentOptionReceiveException {
+										 String configId) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
 			throw new AgentOptionParseException(
-					"Has specified config-id '" + value + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
+					"Has specified config-id '" + configId + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
 		}
-		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, value,
+		options.teamscaleServer.configId = configId;
+		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, configId,
 				options.teamscaleServer.url,
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);

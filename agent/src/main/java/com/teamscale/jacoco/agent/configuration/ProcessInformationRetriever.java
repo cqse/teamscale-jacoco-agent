@@ -9,8 +9,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * The ProcessInformationRetriever class is responsible for retrieving process information such as the host name and
- * process ID.
+ * Is responsible for retrieving process information such as the host name and process ID.
  */
 public class ProcessInformationRetriever {
 
