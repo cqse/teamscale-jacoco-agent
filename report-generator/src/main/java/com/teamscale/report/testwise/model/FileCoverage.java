@@ -9,6 +9,12 @@ public class FileCoverage {
 	/** A list of line ranges that have been covered. */
 	public final String coveredLines;
 
+	@SuppressWarnings("unused")
+		// Moshi might use this (TS-36477)
+	FileCoverage() {
+		this("", "");
+	}
+
 	public FileCoverage(String fileName, String coveredLines) {
 		this.fileName = fileName;
 		this.coveredLines = coveredLines;
