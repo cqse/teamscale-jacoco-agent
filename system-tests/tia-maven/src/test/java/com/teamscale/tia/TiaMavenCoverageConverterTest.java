@@ -5,8 +5,6 @@ import com.squareup.moshi.Moshi;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.test.commons.SystemTestUtils;
-import org.conqat.lib.commons.io.ProcessUtils;
-import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -36,17 +34,7 @@ public class TiaMavenCoverageConverterTest {
 	@Test
 	public void testMavenTia() throws Exception {
 		File workingDirectory = new File(PROJECT_NAME);
-		String executable = "./mvnw";
-		if (SystemUtils.isWindows()) {
-			executable = Paths.get(PROJECT_NAME, "mvnw.cmd").toUri().getPath();
-		}
-
-		ProcessUtils.ExecutionResult result = ProcessUtils.execute(
-				new ProcessBuilder(executable, "clean", "test",
-						"teamscale-maven-plugin:testwise-coverage-converter").directory(
-						workingDirectory));
-		assertThat(result.terminatedByTimeoutOrInterruption()).isFalse();
-		System.out.println(result.getStdout());
+		SystemTestUtils.runMavenTests(PROJECT_NAME);
 		File testwiseCoverage = new File(
 				Paths.get(workingDirectory.getAbsolutePath(), "target", "tia", "reports", "testwise-coverage-1.json")
 						.toUri());
