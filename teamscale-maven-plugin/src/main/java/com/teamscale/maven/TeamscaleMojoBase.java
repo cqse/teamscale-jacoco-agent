@@ -103,8 +103,8 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 			}
 			resolvedRevision = commit.sha1;
 		} catch (IOException e) {
-			throw new MojoFailureException("You did not configure an <endCommit> in the pom.xml" +
-					" and I could also not determine the checked out commit in " + basedir + " from Git", e);
+			throw new MojoFailureException("There is no <endCommit> configured in the pom.xml" +
+					" and it was not possible to determine the checked out commit in " + basedir + " from Git", e);
 		}
 	}
 
