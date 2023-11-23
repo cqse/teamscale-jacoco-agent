@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.ClasspathUtils;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
-import com.teamscale.jacoco.agent.util.Benchmark;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -33,8 +32,8 @@ import java.util.List;
  * Batch converts all created .exec file reports into a testwise coverage report.
  */
 @Mojo(name = "testwise-coverage-converter", defaultPhase = LifecyclePhase.VERIFY,
-		requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
-public class TiaCoverageConvertMojo  extends AbstractMojo {
+		requiresDependencyResolution = ResolutionScope.RUNTIME)
+public class TiaCoverageConvertMojo extends AbstractMojo {
 	/**
 	 * Wildcard include patterns to apply during JaCoCo's traversal of class files.
 	 */
@@ -62,32 +61,34 @@ public class TiaCoverageConvertMojo  extends AbstractMojo {
 	 * The output directory of the testwise coverage reports.
 	 */
 	@Parameter()
-	public String outputFile;
+	public String outputFolder;
 
 	private final ILogger logger = new CommandLineLogger();
 
 	@Override
 	public void execute() throws MojoFailureException {
-		if(Strings.isNullOrEmpty(outputFile)){
-			outputFile = Paths.get(projectBuildDir, "tia", "testwise-coverage.json").toString();
+		if (Strings.isNullOrEmpty(outputFolder)) {
+			outputFolder = Paths.get(projectBuildDir, "tia", "reports", "testwise-coverage.json").toString();
 		}
 		List<File> reportFiles = new ArrayList<>();
 		reportFiles.add(Paths.get(projectBuildDir, "tia").toAbsolutePath().resolve("reports").toFile());
-		try (Benchmark ignored = new Benchmark("Generating the testwise coverage report")) {
-			JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator();
-			TestInfoFactory testInfoFactory = createTestInfoFactory(reportFiles);
-			List<File> jacocoExecutionDataList = ReportUtils
-					.listFiles(ETestArtifactFormat.JACOCO, reportFiles);
-			try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
-					new File(outputFile), splitAfter)) {
-				for (File executionDataFile : jacocoExecutionDataList) {
-					generator.convertAndConsume(executionDataFile, coverageWriter);
-				}
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+
+		logger.info("Generating the testwise coverage report");
+		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator();
+		TestInfoFactory testInfoFactory = createTestInfoFactory(reportFiles);
+		List<File> jacocoExecutionDataList = ReportUtils
+				.listFiles(ETestArtifactFormat.JACOCO, reportFiles);
+		try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
+				new File(outputFolder), splitAfter)) {
+			for (File executionDataFile : jacocoExecutionDataList) {
+				logger.info("Writing execution data for file: " + executionDataFile.getName());
+				generator.convertAndConsume(executionDataFile, coverageWriter);
 			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
+
 	private TestInfoFactory createTestInfoFactory(List<File> reportFiles) throws MojoFailureException {
 		try {
 			List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST,
@@ -106,11 +107,11 @@ public class TiaCoverageConvertMojo  extends AbstractMojo {
 
 	private JaCoCoTestwiseReportGenerator createJaCoCoTestwiseReportGenerator() throws MojoFailureException {
 		String includes = null;
-		if (this.includes != null){
+		if (this.includes != null) {
 			includes = String.join(":", this.includes);
 		}
 		String excludes = null;
-		if (this.excludes != null){
+		if (this.excludes != null) {
 			excludes = String.join(":", this.excludes);
 		}
 		try {
@@ -125,6 +126,7 @@ public class TiaCoverageConvertMojo  extends AbstractMojo {
 			throw new MojoFailureException(e);
 		}
 	}
+
 	private List<File> getClassDirectoriesOrZips() throws AgentOptionParseException {
 		List<String> classDirectoriesOrZips = new ArrayList<>();
 		classDirectoriesOrZips.add(projectBuildDir);
