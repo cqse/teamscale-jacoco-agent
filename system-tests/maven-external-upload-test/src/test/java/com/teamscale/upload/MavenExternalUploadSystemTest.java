@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Runs several Maven projects' Surefire and Failsafe tests that produce coverage via the Jacoco Maven plugin
+ * Runs several Maven projects' Surefire and Failsafe tests that produce coverage via the Jacoco Maven plugin.
  * Checks that the Jacoco reports are correctly uploaded to a Teamscale instance.
  */
 public class MavenExternalUploadSystemTest {
