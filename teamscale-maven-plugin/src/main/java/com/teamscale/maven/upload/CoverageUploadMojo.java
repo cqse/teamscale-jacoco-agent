@@ -1,6 +1,8 @@
 package com.teamscale.maven.upload;
 
+import com.teamscale.maven.GitCommit;
 import com.teamscale.maven.TeamscaleMojoBase;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -92,6 +94,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
 		resolveEndCommit();
+		resolveRevision();
 		getLog().debug("Parsing Jacoco plugin configurations");
 		parseJacocoConfiguration();
 		try {
@@ -192,5 +195,20 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 
 	private Xpp3Dom getJacocoGoalExecutionConfiguration(MavenProject project, String pluginGoal) {
 		return super.getExecutionConfigurationDom(project, JACOCO_PLUGIN_NAME, pluginGoal);
+	}
+
+	private void resolveRevision() throws MojoFailureException {
+		if (StringUtils.isNotBlank(revision)) {
+			resolvedRevision = revision;
+		} else {
+			Path basedir = session.getCurrentProject().getBasedir().toPath();
+			try {
+				GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
+				resolvedRevision = commit.sha1;
+			} catch (IOException e) {
+				throw new MojoFailureException("There is no <revision> configured in the pom.xml" +
+						" and it was not possible to determine the current revision in " + basedir + " from Git", e);
+			}
+		}
 	}
 }
