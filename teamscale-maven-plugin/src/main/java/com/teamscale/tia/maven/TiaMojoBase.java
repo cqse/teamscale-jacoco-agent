@@ -286,19 +286,7 @@ public abstract class TiaMojoBase extends AbstractMojo {
 
 		validateParallelizationParameter(configurationDom, "threadCount");
 		validateParallelizationParameter(configurationDom, "forkCount");
-
-		Xpp3Dom parameterDom = configurationDom.getChild("reuseForks");
-		if (parameterDom == null) {
-			return;
-		}
-
-		String value = parameterDom.getValue();
-		if (value != null && !value.equals("true")) {
-			throw new MojoFailureException(
-					"You configured the " + getTestPluginArtifact() + " plugin to not reuse forks via the reuseForks configuration parameter." +
-							" This is not supported when performing Test Impact analysis as it prevents properly recording testwise coverage." +
-							" Please enable fork reuse when running Test Impact analysis.");
-		}
+		
 	}
 
 	private void validateEngineNotConfigured(Xpp3Dom configurationDom,
