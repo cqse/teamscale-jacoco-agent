@@ -97,6 +97,13 @@
             <artifactId>teamscale-lib-commons</artifactId>
             <version>9.3.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.teamscale</groupId>
+            <artifactId>teamscale-client</artifactId>
+            <version>${teamscale.agent.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

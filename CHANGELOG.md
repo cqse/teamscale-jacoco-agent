@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _teamscale-maven-plugin_: Added the `upload-coverage` goal which automatically uploads JaCoCo reports to Teamscale.
 
 # 32.4.2
 - [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
