@@ -23,7 +23,7 @@ public class AgentUtils {
 		if (mainTempDirectory == null) {
 			try {
 				mainTempDirectory = Files.createTempDirectory("teamscale-java-profiler-" +
-						FileSystemUtils.toSafeFilename(ProcessInformationRetriever.getPID()) + "-");
+						FileSystemUtils.toSafeFilename(ProcessInformationRetriever.getPID()));
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to create temporary directory for agent files", e);
 			}

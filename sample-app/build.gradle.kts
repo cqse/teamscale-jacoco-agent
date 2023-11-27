@@ -19,6 +19,11 @@ plugins {
 
 version = "unspecified"
 
+application {
+    applicationName = "sample-app"
+    mainClass.set("Main")
+}
+
 tasks.jar {
     manifest {
         attributes["Main-Class"] = "Main"

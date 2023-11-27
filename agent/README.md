@@ -55,6 +55,7 @@ The following options are available:
   section below)
 - `config-id` (optional): a profiler configuration ID as defined in Teamscale. This allows to centrally manage the 
   profiler configuration in Teamscale's UI (under Project Configuration > Profilers since Teamscale 9.4).
+  Alternatively you can also set the `TEAMSCALE_JAVA_PROFILER_CONFIG_ID` environment variable to that value.
 - `logging-config` (optional): path to a [logback][logback] configuration XML file (other configuration formats are not supported
   at the moment).
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
@@ -686,7 +687,7 @@ You can find example logging configurations in the [logging folder in the agent 
 Enable debug logging in the logging config. Warning: this may create a lot of log entries!
 
 ## Error: "The application was shut down before a commit could be found", despite including a git.properties file in your jar/war/...
-When using  application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which results in an "The application was shut down before a commit could be found" error.
+When using application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which results in an "The application was shut down before a commit could be found" error.
 To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
 
 

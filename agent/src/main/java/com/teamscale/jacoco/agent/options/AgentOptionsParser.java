@@ -267,7 +267,7 @@ public class AgentOptionsParser {
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);
 		options.configurationViaTeamscale = configuration;
-		logger.debug("Received the following options from Teamscale: " + configuration.getProfilerConfiguration());
+		logger.debug("Received the following options from Teamscale: " + configuration.getProfilerConfiguration().configurationOptions);
 		readConfigFromString(options, configuration.getProfilerConfiguration().configurationOptions);
 	}
 
