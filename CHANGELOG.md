@@ -5,7 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
-- [feature] add installer for system-wide installation
+- [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)
 - [feature] allow specifying configuration ID from Teamscale via environment variable `TEAMSCALE_JAVA_PROFILER_CONFIG_ID`
 - [breaking change] default log and coverage file directory changed to `/tmp` which works in more situations
 - [feature] _agent_: Added `config-id` option to allow retrieving the agent configuration from Teamscale. 
