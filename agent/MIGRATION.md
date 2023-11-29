@@ -17,8 +17,8 @@ This will install the agent to `/opt/teamscale-profiler/java` and will attach it
 Then for each application where you currently use the Teamscale JaCoCo Agent: 
 - Create a profiler configuration within Teamscale with the same options that you previously specified via the `config-file=agent.properties`
   - Omit the `teamscale-server-url`, `teamscale-user` and `teamscale-access-key` options
-- Instead, attach the `TEAMSCALE_JAVA_PROFILER_CONFIG_ID=my-configuration-id` environment variable to the start script of your System under Test
+- Instead, set the `TEAMSCALE_JAVA_PROFILER_CONFIG_ID=my-configuration-id` environment variable for the Java process that runs your system under test (e.g., the application server or systemd service).
 - Remove the existing configuration that manually attaches the Teamscale JaCoCo Agent to the System under Test  
-- Restart the application and verify that the profiler is shown in Teamscale under `Running Profiler`
+- Restart the application and verify that the profiler is shown in Teamscale under `Running Profilers`
 - Perform some actions in the System under Test and shut it down
 - Verify that new coverage was uploaded to Teamscale

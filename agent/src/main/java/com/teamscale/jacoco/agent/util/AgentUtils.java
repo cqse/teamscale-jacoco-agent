@@ -22,8 +22,10 @@ public class AgentUtils {
 	public static Path getMainTempDirectory() {
 		if (mainTempDirectory == null) {
 			try {
+				// We add a trailing hyphen here to visually separate the PID from the random number that Java appends
+				// to the name to make it unique
 				mainTempDirectory = Files.createTempDirectory("teamscale-java-profiler-" +
-						FileSystemUtils.toSafeFilename(ProcessInformationRetriever.getPID()));
+						FileSystemUtils.toSafeFilename(ProcessInformationRetriever.getPID()) + "-");
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to create temporary directory for agent files", e);
 			}
