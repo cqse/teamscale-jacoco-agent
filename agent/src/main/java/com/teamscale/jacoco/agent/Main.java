@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 public class Main {
 
 	/** Version of this program. */
-	private static final String VERSION;
+	public static final String VERSION;
 
 	static {
 		ResourceBundle bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app");

@@ -1,0 +1,7 @@
+2023-11-14 16:57:49 WARN  com.teamscale.jacoco.agent.Agent - For best results consider registering the Teamscale JaCoCo Agent first.
+2023-11-14 16:57:49 INFO  com.teamscale.jacoco.agent.Agent - Logging to /tmp/teamscale-java-profiler-512910-3095345224459062175/logs
+2023-11-14 16:57:49 INFO  com.teamscale.jacoco.agent.Agent - Starting JaCoCo's agent
+2023-11-14 16:57:49 ERROR s.c.t.r.t.j.JaCoCoTestwiseReportGenerator - No class files found in the given directories! /tmp/teamscale-java-profiler-512910-3095345224459062175/jacoco-class-dump
+2023-11-14 16:57:49 INFO  c.t.j.a.t.TestwiseCoverageAgent - Starting JaCoCo agent for process 512910@z13 with options: config-file=/home/k/proj/teamscale-jacoco-agent/system-tests/cucumber-maven-tia/maven-project/target/tia/agent-at-port-45897.properties
+2023-11-14 16:57:49 INFO  c.t.j.a.t.TestwiseCoverageAgent - Listening for test events on port 45897.
+2023-11-14 16:57:51 INFO  c.t.j.a.t.TestwiseCoverageAgent - CQSE JaCoCo agent successfully shut down.

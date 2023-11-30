@@ -39,6 +39,7 @@ public class PreMain {
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 
+		logger.info("Teamscale Java profiler version " + Main.VERSION);
 		logger.info("Starting JaCoCo's agent");
 		JacocoAgentOptionsBuilder agentBuilder = new JacocoAgentOptionsBuilder(agentOptions);
 		JaCoCoPreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation, logger);
@@ -103,7 +104,8 @@ public class PreMain {
 	 * Returns in instance of the agent that was configured. Either an agent with interval based line-coverage dump or
 	 * the HTTP server is used.
 	 */
-	private static AgentBase createAgent(AgentOptions agentOptions, Instrumentation instrumentation) throws UploaderException, IOException {
+	private static AgentBase createAgent(AgentOptions agentOptions,
+										 Instrumentation instrumentation) throws UploaderException, IOException {
 		if (agentOptions.useTestwiseCoverageMode()) {
 			return TestwiseCoverageAgent.create(agentOptions);
 		} else {
@@ -130,7 +132,8 @@ public class PreMain {
 	 * {@link #premain(String, Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use
 	 * this and falls back to the default logger.
 	 */
-	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions, DelayedLogger delayedLogger) {
+	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions,
+																		   DelayedLogger delayedLogger) {
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
 				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);
@@ -159,7 +162,8 @@ public class PreMain {
 	}
 
 	/** Creates a fallback logger using the given config file. */
-	private static LoggingUtils.LoggingResources createFallbackLoggerFromConfig(String configLocation, DelayedLogger delayedLogger) {
+	private static LoggingUtils.LoggingResources createFallbackLoggerFromConfig(String configLocation,
+																				DelayedLogger delayedLogger) {
 		try {
 			return LoggingUtils.initializeLogging(
 					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
