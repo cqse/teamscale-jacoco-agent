@@ -6,23 +6,14 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.convert.ConvertCommand;
+import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.JaCoCo;
 import org.slf4j.Logger;
 
-import java.util.ResourceBundle;
-
 /** Provides a command line interface for interacting with JaCoCo. */
 public class Main {
-
-	/** Version of this program. */
-	public static final String VERSION;
-
-	static {
-		ResourceBundle bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app");
-		VERSION = bundle.getString("version");
-	}
 
 	/** The logger. */
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -53,7 +44,7 @@ public class Main {
 		}
 
 		if (defaultArguments.help) {
-			System.out.println("CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
+			System.out.println("CQSE JaCoCo agent " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 			jCommander.usage();
 			return;
 		}
@@ -63,7 +54,7 @@ public class Main {
 			handleInvalidCommandLine(jCommander, StringUtils.LINE_FEED + validator.getErrorMessage());
 		}
 
-		logger.info("Starting CQSE JaCoCo agent " + VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
+		logger.info("Starting CQSE JaCoCo agent " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 		command.run();
 	}
 

@@ -8,6 +8,7 @@ import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentOptionsBuilder;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -39,7 +40,7 @@ public class PreMain {
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 
-		logger.info("Teamscale Java profiler version " + Main.VERSION);
+		logger.info("Teamscale Java profiler version " + AgentUtils.VERSION);
 		logger.info("Starting JaCoCo's agent");
 		JacocoAgentOptionsBuilder agentBuilder = new JacocoAgentOptionsBuilder(agentOptions);
 		JaCoCoPreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation, logger);
