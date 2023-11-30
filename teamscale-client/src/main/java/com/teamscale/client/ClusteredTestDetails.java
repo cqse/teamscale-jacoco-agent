@@ -1,5 +1,8 @@
 package com.teamscale.client;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * {@link TestDetails} with additional information about which cluster of tests the test case belongs to during
  * prioritization.
@@ -17,15 +20,11 @@ public class ClusteredTestDetails extends TestDetails {
 	 */
 	public String partition;
 
-	/**
-	 * Needed for Jackson deserialization.
-	 */
-	public ClusteredTestDetails() {
-		// Needed for Jackson (and likely for Moshi---see TS-36140)
-	}
-
-	public ClusteredTestDetails(String uniformPath, String sourcePath, String content, String clusterId,
-								String partition) {
+	@JsonCreator
+	public ClusteredTestDetails(@JsonProperty("uniformPath") String uniformPath,
+								@JsonProperty("sourcePath") String sourcePath, @JsonProperty("content") String content,
+								@JsonProperty("clusterId") String clusterId,
+								@JsonProperty("partition") String partition) {
 		super(uniformPath, sourcePath, content);
 		this.clusterId = clusterId;
 		this.partition = partition;

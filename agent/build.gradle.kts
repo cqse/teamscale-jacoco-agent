@@ -52,10 +52,10 @@ dependencies {
 
 	implementation(libs.retrofit.core)
 
-	implementation(libs.moshi)
+	implementation(libs.jackson.databind)
 
 	testImplementation(project(":tia-client"))
-	testImplementation(libs.retrofit.converter.moshi)
+	testImplementation(libs.retrofit.converter.jackson)
 	testImplementation(libs.okhttp.mockwebserver)
 }
 

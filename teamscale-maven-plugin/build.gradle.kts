@@ -5,7 +5,6 @@ abstract class MavenExec : Exec() {
 	override fun exec() {
 		val mavenExecutable = if (Os.isFamily(Os.FAMILY_WINDOWS)) "mvnw.cmd" else "./mvnw"
 		executable = mavenExecutable
-		args("-X")
 		workingDir(".")
 		project.file("pom.xml").writeText(
 			project.file("pom.xml").readText().replace(

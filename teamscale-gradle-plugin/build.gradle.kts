@@ -37,7 +37,7 @@ dependencies {
     implementation(project(":report-generator"))
     implementation(gradleApi())
     implementation(libs.jgit)
-    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.jackson.databind)
     testImplementation(libs.okio)
     testImplementation(project(":common-system-test"))
 }

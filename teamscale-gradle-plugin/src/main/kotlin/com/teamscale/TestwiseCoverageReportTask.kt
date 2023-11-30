@@ -1,5 +1,6 @@
 package com.teamscale
 
+import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.client.TestDetails
 import com.teamscale.config.*
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
@@ -108,7 +109,7 @@ open class TestwiseCoverageReportTask : DefaultTask() {
         jaCoCoTestwiseReportGenerator: JaCoCoTestwiseReportGenerator
     ) {
         val testDetails =
-            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<TestDetails>::class.java, artifacts)
+            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<ClusteredTestDetails>::class.java, artifacts)
         val testExecutions = ReportUtils.readObjects(
             ETestArtifactFormat.TEST_EXECUTION,
             Array<TestExecution>::class.java,

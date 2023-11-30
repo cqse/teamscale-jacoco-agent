@@ -1,11 +1,9 @@
 package com.teamscale.tia.client;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.Moshi;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestInfo;
+import com.teamscale.report.util.JsonUtils;
 import okhttp3.ResponseBody;
 
 import java.io.IOException;
@@ -26,7 +24,6 @@ public class RunningTest {
 
 	private final String uniformPath;
 	private final ITestwiseCoverageAgentApi api;
-	private final JsonAdapter<TestInfo> testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class);
 
 	public RunningTest(String uniformPath, ITestwiseCoverageAgentApi api) {
 		this.uniformPath = uniformPath;
@@ -106,8 +103,8 @@ public class RunningTest {
 		}
 
 		try {
-			return testInfoJsonAdapter.fromJson(json);
-		} catch (JsonDataException | IOException e) {
+			return JsonUtils.deserialize(json, TestInfo.class);
+		} catch (IOException e) {
 			throw new AgentHttpRequestFailedException("Unable to parse the JSON returned by the agent. Maybe you have" +
 					" a version mismatch between the tia-client and the agent?. Json returned by the agent: `" + json +
 					"`", e);
