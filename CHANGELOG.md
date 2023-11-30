@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 32.5.0
 - [feature] _teamscale-maven-plugin_: Added the `upload-coverage` goal which automatically uploads JaCoCo reports to Teamscale.
 
 # 32.4.2
