@@ -54,7 +54,8 @@
     },
     {
       "matchPackageNames": [
-        "com.teamscale:teamscale-jacoco-agent"
+        "com.teamscale:teamscale-jacoco-agent",
+        "com.teamscale:teamscale-client"
       ],
       "enabled": false
     }
