@@ -1,12 +1,10 @@
 package com.teamscale.test.commons;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
-import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.TestWithClusterId;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.report.util.JsonUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -34,22 +32,13 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
  */
 public class TeamscaleMockServer {
 
-	private final JsonAdapter<List<PrioritizableTestCluster>> testClusterJsonAdapter = new Moshi.Builder().build()
-			.adapter(Types.newParameterizedType(List.class, PrioritizableTestCluster.class));
-
-	private final JsonAdapter<List<ClusteredTestDetails>> testDetailsJsonAdapter = new Moshi.Builder().build()
-			.adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
-
-	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
-			.adapter(TestwiseCoverageReport.class);
-
 	/** All reports uploaded to this Teamscale instance. */
 	public final List<ExternalReport> uploadedReports = new ArrayList<>();
 	/** All user agents that were present in the received requests. */
 	public final Set<String> collectedUserAgents = new HashSet<>();
 
 	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
-	public final Set<ClusteredTestDetails> availableTests = new HashSet<>();
+	public final Set<TestWithClusterId> availableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private List<String> impactedTests;
@@ -98,14 +87,14 @@ public class TeamscaleMockServer {
 	 * @throws IOException when parsing the report fails.
 	 */
 	public TestwiseCoverageReport parseUploadedTestwiseCoverageReport(int index) throws IOException {
-		return testwiseCoverageReportJsonAdapter.fromJson(uploadedReports.get(index).getReportString());
+		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(), TestwiseCoverageReport.class);
 	}
 
 	private String handleImpactedTests(Request request, Response response) throws IOException {
 		collectedUserAgents.add(request.headers("User-Agent"));
-		availableTests.addAll(testDetailsJsonAdapter.fromJson(request.body()));
+		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
-		return testClusterJsonAdapter.toJson(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
+		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
 	}
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {

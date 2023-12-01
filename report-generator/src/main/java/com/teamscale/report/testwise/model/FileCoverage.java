@@ -1,5 +1,8 @@
 package com.teamscale.report.testwise.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /** Holds coverage of a single file. */
 public class FileCoverage {
 
@@ -9,13 +12,8 @@ public class FileCoverage {
 	/** A list of line ranges that have been covered. */
 	public final String coveredLines;
 
-	@SuppressWarnings("unused")
-		// Moshi might use this (TS-36477)
-	FileCoverage() {
-		this("", "");
-	}
-
-	public FileCoverage(String fileName, String coveredLines) {
+	@JsonCreator
+	public FileCoverage(@JsonProperty("fileName") String fileName, @JsonProperty("coveredLines") String coveredLines) {
 		this.fileName = fileName;
 		this.coveredLines = coveredLines;
 	}

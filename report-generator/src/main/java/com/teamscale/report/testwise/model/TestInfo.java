@@ -1,5 +1,8 @@
 package com.teamscale.report.testwise.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +21,8 @@ public class TestInfo {
 	public final String sourcePath;
 
 	/**
-	 * Some kind of content to tell whether the test specification has changed. Can be revision number or
-	 * hash over the specification or similar.
+	 * Some kind of content to tell whether the test specification has changed. Can be revision number or hash over the
+	 * specification or similar.
 	 */
 	public final String content;
 
@@ -30,21 +33,18 @@ public class TestInfo {
 	public final ETestExecutionResult result;
 
 	/**
-	 * Optional message given for test failures (normally contains a stack trace).
-	 * May be {@code null}.
+	 * Optional message given for test failures (normally contains a stack trace). May be {@code null}.
 	 */
 	public final String message;
 
 	/** All paths that the test did cover. */
 	public final List<PathCoverage> paths = new ArrayList<>();
 
-	@SuppressWarnings("unused") // Moshi might use this (TS-36140)
-	public TestInfo() {
-		this("", "", "", 0.0, ETestExecutionResult.SKIPPED, "");
-	}
-
-	public TestInfo(String uniformPath, String sourcePath, String content, Double duration, ETestExecutionResult result,
-					String message) {
+	@JsonCreator
+	public TestInfo(@JsonProperty("uniformPath") String uniformPath, @JsonProperty("sourcePath") String sourcePath,
+					@JsonProperty("content") String content, @JsonProperty("duration") Double duration,
+					@JsonProperty("result") ETestExecutionResult result,
+					@JsonProperty("message") String message) {
 		this.uniformPath = uniformPath;
 		this.sourcePath = sourcePath;
 		this.content = content;

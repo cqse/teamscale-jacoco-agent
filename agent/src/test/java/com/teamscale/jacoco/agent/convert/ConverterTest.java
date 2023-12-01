@@ -59,12 +59,12 @@ public class ConverterTest {
 		String json = FileSystemUtils.readFileUTF8(new File(tempDir, "testwise-coverage-1.json"));
 		assertThat(json).
 				contains(
-						"\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]\"")
+						"\"uniformPath\" : \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testFunctions(org.conqat.lib.cqddl.CQDDLTest)]\"")
 				.contains(
-						"\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]\"")
-				.contains("\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]\"")
-				.contains("\"uniformPath\": \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]\"")
-				.contains("\"result\": \"PASSED\"").contains("\"duration\": 1234").contains("\"coveredLines\": \"33,46-47");
+						"\"uniformPath\" : \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testDirectObjectInsertion(org.conqat.lib.cqddl.CQDDLTest)]\"")
+				.contains("\"uniformPath\" : \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]\"")
+				.contains("\"uniformPath\" : \"[engine:junit-vintage]/[runner:org.conqat.lib.cqddl.CQDDLTest]/[test:testKeyAbbreviations(org.conqat.lib.cqddl.CQDDLTest)]\"")
+				.contains("\"result\" : \"PASSED\"").contains("\"duration\" : 1234").contains("\"coveredLines\" : \"33,46-47");
 	}
 
 	private void copyResourceTo(String name, File targetDir) throws URISyntaxException, IOException {

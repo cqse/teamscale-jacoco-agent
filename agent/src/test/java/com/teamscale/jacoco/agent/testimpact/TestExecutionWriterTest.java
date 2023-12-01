@@ -18,7 +18,7 @@ class TestExecutionWriterTest {
 		TestExecutionWriter writer = new TestExecutionWriter(tempFile.toFile());
 		writer.append(new TestExecution("test1", 123, ETestExecutionResult.PASSED));
 		String json = String.join("\n", Files.readAllLines(tempFile));
-		assertThat(json).isEqualTo("[{\"durationMillis\":123,\"result\":\"PASSED\",\"uniformPath\":\"test1\"}]");
+		assertThat(json).isEqualTo("[{\"uniformPath\":\"test1\",\"durationMillis\":123,\"result\":\"PASSED\"}]");
 	}
 
 	@Test
@@ -29,9 +29,9 @@ class TestExecutionWriterTest {
 		writer.append(new TestExecution("test2", 123, ETestExecutionResult.PASSED));
 		writer.append(new TestExecution("test3", 123, ETestExecutionResult.PASSED));
 		String json = String.join("\n", Files.readAllLines(tempFile));
-		assertThat(json).isEqualTo("[{\"durationMillis\":123,\"result\":\"PASSED\",\"uniformPath\":\"test1\"}" +
-				",{\"durationMillis\":123,\"result\":\"PASSED\",\"uniformPath\":\"test2\"}" +
-				",{\"durationMillis\":123,\"result\":\"PASSED\",\"uniformPath\":\"test3\"}]");
+		assertThat(json).isEqualTo("[{\"uniformPath\":\"test1\",\"durationMillis\":123,\"result\":\"PASSED\"}" +
+				",{\"uniformPath\":\"test2\",\"durationMillis\":123,\"result\":\"PASSED\"}" +
+				",{\"uniformPath\":\"test3\",\"durationMillis\":123,\"result\":\"PASSED\"}]");
 	}
 
 }

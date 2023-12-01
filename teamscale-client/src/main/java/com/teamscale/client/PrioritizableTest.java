@@ -1,6 +1,7 @@
 package com.teamscale.client;
 
-import com.squareup.moshi.Json;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.StringJoiner;
 
@@ -33,22 +34,16 @@ public class PrioritizableTest {
 	 * higher probability of the test to detect potential bugs. The value can only express a relative importance
 	 * compared to other scores of the same request. It makes no sense to compare the score against absolute values.
 	 */
-	@Json(name = "currentScore")
+	@JsonProperty("currentScore")
 	public double score;
 
 	/**
 	 * Field for storing the tests rank. The rank is the 1-based index of the test in the prioritized list.
 	 */
-	@Json(name = "rank")
 	public int rank;
 
-	@SuppressWarnings("unused")
-		// Moshi might use this (TS-36477)
-	PrioritizableTest() {
-		this("");
-	}
-
-	public PrioritizableTest(String testName) {
+	@JsonCreator
+	public PrioritizableTest(@JsonProperty("testName") String testName) {
 		this.testName = testName;
 	}
 

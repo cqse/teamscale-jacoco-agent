@@ -10,6 +10,6 @@ dependencies {
     api(project(":tia-client"))
 
     api(libs.spark)
-    api(libs.moshi)
+    api(libs.jackson.databind)
     api(libs.teamscaleLibCommons)
 }

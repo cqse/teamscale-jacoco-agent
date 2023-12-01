@@ -8,7 +8,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.converter.moshi.MoshiConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -94,7 +94,7 @@ public interface ITestwiseCoverageAgentApi {
 		Retrofit retrofit = new Retrofit.Builder()
 				.client(httpClientBuilder.build()) //
 				.baseUrl(baseUrl) //
-				.addConverterFactory(MoshiConverterFactory.create()) //
+				.addConverterFactory(JacksonConverterFactory.create()) //
 				.build();
 		return retrofit.create(ITestwiseCoverageAgentApi.class);
 	}

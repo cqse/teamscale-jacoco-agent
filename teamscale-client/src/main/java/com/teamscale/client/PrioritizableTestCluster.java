@@ -1,8 +1,8 @@
 package com.teamscale.client;
 
-import com.squareup.moshi.Json;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -30,26 +30,20 @@ public class PrioritizableTestCluster {
 	 * compared to other scores of the same request. It makes no sense to compare the score against absolute values.
 	 * The value is 0 if no availableTests are given.
 	 */
-	@Json(name = "currentScore")
+	@JsonProperty("currentScore")
 	public double score;
 
 	/**
 	 * Field for storing the tests rank. The rank is the 1-based index of the test
 	 * in the prioritized list.
 	 */
-	@Json(name = "rank")
 	public int rank;
 
 	/** The {@link PrioritizableTest}s in this cluster. */
 	public List<PrioritizableTest> tests;
 
-	@SuppressWarnings("unused")
-		// Moshi might use this (TS-36477)
-	PrioritizableTestCluster() {
-		this("", new ArrayList<>());
-	}
-
-	public PrioritizableTestCluster(String clusterId, List<PrioritizableTest> tests) {
+	@JsonCreator
+	public PrioritizableTestCluster(@JsonProperty("clusterId") String clusterId, @JsonProperty("tests") List<PrioritizableTest> tests) {
 		this.clusterId = clusterId;
 		this.tests = tests;
 	}

@@ -17,6 +17,10 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.report.testwise.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 
 /** Representation of a single test (method) execution. */
@@ -37,6 +41,8 @@ public class TestExecution implements Serializable {
 	private long durationMillis;
 
 	/** Duration of the execution in seconds. */
+	@JsonProperty("duration")
+	@JsonAlias("durationSeconds")
 	private Double duration;
 
 	/** The actual execution result state. */
@@ -48,10 +54,11 @@ public class TestExecution implements Serializable {
 	private String message;
 
 	/**
-	 * Needed for Jackson and Moshi deserialization.
+	 * Needed for Jackson deserialization.
 	 */
+	@JsonCreator
 	public TestExecution() {
-		// Needed for Jackson (and likely for Moshi---see TS-36140)
+		// Needed for Jackson
 	}
 
 	public TestExecution(String name, long durationMillis, ETestExecutionResult result) {

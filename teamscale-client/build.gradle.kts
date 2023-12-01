@@ -17,5 +17,5 @@ dependencies {
     implementation(libs.okhttp.core)
     implementation(libs.commonsCodec)
     implementation(libs.slf4j.api)
-    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.retrofit.converter.jackson)
 }

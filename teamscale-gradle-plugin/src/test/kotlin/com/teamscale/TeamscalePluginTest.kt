@@ -1,9 +1,9 @@
 package com.teamscale
 
-import com.squareup.moshi.Moshi
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
+import com.teamscale.report.util.JsonUtils
 import com.teamscale.test.commons.TeamscaleMockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
@@ -170,7 +170,7 @@ class TeamscalePluginTest {
 			.withProjectDir(temporaryFolder)
 			.withPluginClasspath()
 			.withArguments(runnerArgs)
-			.withGradleVersion("6.5")
+			.withGradleVersion("8.4")
 
 		if (DEBUG_PLUGIN) {
 			runner.withDebug(true)
@@ -191,8 +191,7 @@ class TeamscalePluginTest {
 	}
 
 	private fun assertFullCoverage(source: String) {
-		val testwiseCoverageReport =
-			Moshi.Builder().build().adapter(TestwiseCoverageReport::class.java).fromJson(source)
+		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
 		assertThat(testwiseCoverageReport!!)
 			.hasPartial(false)
 			.containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
@@ -216,8 +215,7 @@ class TeamscalePluginTest {
 	}
 
 	private fun assertPartialCoverage(source: String) {
-		val testwiseCoverageReport =
-			Moshi.Builder().build().adapter(TestwiseCoverageReport::class.java).fromJson(source)
+		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
 		assertThat(testwiseCoverageReport!!)
 			.hasPartial(true)
 			.containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
