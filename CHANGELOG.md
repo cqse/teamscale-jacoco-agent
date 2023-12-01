@@ -8,6 +8,7 @@ We use [semantic versioning](http://semver.org/):
 
 # 32.5.0
 - [feature] _teamscale-maven-plugin_: Added the `upload-coverage` goal which automatically uploads JaCoCo reports to Teamscale.
+- [feature] Profiler logs its version on startup
 
 # 32.4.2
 - [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 

@@ -18,7 +18,7 @@ publishAs {
 	description.set("JVM profiler that simplifies various aspects around recording and uploading test coverage")
 }
 
-val appVersion = rootProject.extra("appVersion").toString()
+val appVersion = rootProject.extra["appVersion"].toString()
 val jacocoVersion = libs.versions.jacoco.get()
 val outputVersion = "$appVersion-jacoco-$jacocoVersion"
 
