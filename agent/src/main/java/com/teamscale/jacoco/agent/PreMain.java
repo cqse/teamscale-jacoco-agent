@@ -85,10 +85,7 @@ public class PreMain {
 	@NotNull
 	private static AgentOptions getAndApplyAgentOptions(String options,
 														String environmentConfigId) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
-
-		AgentOptions agentOptions;
 		DelayedLogger delayedLogger = new DelayedLogger();
-
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
 		if (javaAgents.size() > 1) {
@@ -102,21 +99,19 @@ public class PreMain {
 		if (credentials == null) {
 			delayedLogger.warn("Did not find a teamscale.properties file!");
 		}
+		AgentOptions agentOptions;
 		try {
 			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, credentials, delayedLogger);
-		} catch (AgentOptionParseException | AgentOptionReceiveException e) {
+		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
-				if (e instanceof AgentOptionParseException) {
-					delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
-				} else {
-					delayedLogger.errorAndStdErr( e.getMessage() + " The application should start up normally, but NO coverage will be collected!", e);
-				}
-
-				// we perform actual logging output after writing to console to
-				// ensure the console is reached even in case of logging issues
-				// (see TS-23151). We use the Agent class here (same as below)
-				Logger logger = LoggingUtils.getLogger(Agent.class);
-				delayedLogger.logTo(logger);
+				delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
+				attemptLogAndThrow(delayedLogger);
+				throw e;
+			}
+		} catch (AgentOptionReceiveException e) {
+			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
+				delayedLogger.errorAndStdErr( e.getMessage() + " The application should start up normally, but NO coverage will be collected!", e);
+				attemptLogAndThrow(delayedLogger);
 				throw e;
 			}
 		}
@@ -126,6 +121,14 @@ public class PreMain {
 		delayedLogger.logTo(logger);
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 		return agentOptions;
+	}
+
+	private static void attemptLogAndThrow(DelayedLogger delayedLogger) {
+		// We perform actual logging output after writing to console to
+		// ensure the console is reached even in case of logging issues
+		// (see TS-23151). We use the Agent class here (same as below)
+		Logger logger = LoggingUtils.getLogger(Agent.class);
+		delayedLogger.logTo(logger);
 	}
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
