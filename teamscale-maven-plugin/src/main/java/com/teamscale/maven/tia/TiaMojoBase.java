@@ -236,7 +236,18 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 
 		validateParallelizationParameter(configurationDom, "threadCount");
 		validateParallelizationParameter(configurationDom, "forkCount");
-		
+
+		Xpp3Dom parameterDom = configurationDom.getChild("reuseForks");
+		if (parameterDom == null) {
+			return;
+		}
+		String value = parameterDom.getValue();
+		if (value != null && !value.equals("true")) {
+			getLog().warn(
+					"You configured surefire to not reuse forks." +
+							" This has been shown to lead to performance decreases in combination with the Teamscale Maven Plugin." +
+							" If you notice performance problems, please have a look at our troubleshooting section for possible solutions: https://docs.teamscale.com/howto/providing-testwise-coverage/#troubleshooting.");
+		}
 	}
 
 	private void validateEngineNotConfigured(Xpp3Dom configurationDom,
