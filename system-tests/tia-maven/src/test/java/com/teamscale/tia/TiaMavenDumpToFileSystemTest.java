@@ -1,9 +1,8 @@
 package com.teamscale.tia;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.report.util.JsonUtils;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.AfterEach;
@@ -32,9 +31,6 @@ public class TiaMavenDumpToFileSystemTest {
 	 */
 	private static final int FAKE_TEAMSCALE_PORT = 63700;
 	private static TeamscaleMockServer teamscaleMockServer = null;
-
-	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
-			.adapter(TestwiseCoverageReport.class);
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
@@ -78,7 +74,7 @@ public class TiaMavenDumpToFileSystemTest {
 
 	private TestwiseCoverageReport parseDumpedCoverageReport(int index) throws IOException {
 		List<Path> files = SystemTestUtils.getReportFileNames(MAVEN_PROJECT_NAME);
-		return testwiseCoverageReportJsonAdapter.fromJson(new String(Files.readAllBytes(files.get(index))));
+		return JsonUtils.deserialize(new String(Files.readAllBytes(files.get(index))), TestwiseCoverageReport.class);
 	}
 
 }

@@ -1,5 +1,8 @@
 package com.teamscale.client;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -24,14 +27,9 @@ public class TestDetails {
 	 */
 	public String content;
 
-	/**
-	 * Needed for Jackson and Moshi deserialization.
-	 */
-	public TestDetails() {
-		// Needed for Jackson and Moshi
-	}
-
-	public TestDetails(String uniformPath, String sourcePath, String content) {
+	@JsonCreator
+	public TestDetails(@JsonProperty("uniformPath") String uniformPath, @JsonProperty("sourcePath") String sourcePath,
+					   @JsonProperty("content") String content) {
 		this.uniformPath = uniformPath;
 		this.sourcePath = sourcePath;
 		this.content = content;

@@ -1,6 +1,8 @@
 package com.teamscale.report.testwise.model;
 
-import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /** Container for {@link FileCoverage}s of the same path. */
@@ -12,13 +14,8 @@ public class PathCoverage {
 	/** Files with coverage. */
 	private final List<FileCoverage> files;
 
-	@SuppressWarnings("unused") // Moshi might use this (TS-36140)
-	PathCoverage() {
-		this("", new ArrayList<>());
-	}
-
-	/** Constructor. */
-	public PathCoverage(String path, List<FileCoverage> files) {
+	@JsonCreator
+	public PathCoverage(@JsonProperty("path") String path, @JsonProperty("files") List<FileCoverage> files) {
 		this.path = path;
 		this.files = files;
 	}

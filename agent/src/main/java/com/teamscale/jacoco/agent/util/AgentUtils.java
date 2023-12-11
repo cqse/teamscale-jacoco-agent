@@ -6,9 +6,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ResourceBundle;
 
 /** General utilities for working with the agent. */
 public class AgentUtils {
+
+	/** Version of this program. */
+	public static final String VERSION;
+
+	static {
+		ResourceBundle bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app");
+		VERSION = bundle.getString("version");
+	}
 
 	/** Returns the directory that contains the agent or null if it can't be resolved. */
 	public static Path getAgentDirectory() {
