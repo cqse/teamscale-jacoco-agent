@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -24,16 +26,23 @@ public class TiaMavenCucumberSystemTest {
 	private static final int FAKE_TEAMSCALE_PORT = 63800;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
+	private static final String[] TEST_PATHS = {
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #1",
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #2",
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #3",
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #4",
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99 #1"
+	};
+
+	private static final String COVERAGE_ADD = "Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40";
+	private static final String COVERAGE_SUBTRACT = "Calculator.java:3,9;StepDefinitions.java:12,24-25,34-35,39-40";
+
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads()
-					.withImpactedTests(
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #1",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #2",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #3",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #4",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99 #1");
+			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT)
+					.acceptingReportUploads()
+					.withImpactedTests(TEST_PATHS);
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
@@ -52,26 +61,24 @@ public class TiaMavenCucumberSystemTest {
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(unitTestReport.tests).hasSize(5);
+		assertThat(unitTestReport.tests).hasSize(TEST_PATHS.length);
 		assertThat(unitTestReport.partial).isTrue();
 		assertAll(() -> {
-			assertThat(unitTestReport.tests).extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder(
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #1",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #2",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #3",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #4",
-							"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99 #1");
-			assertThat(unitTestReport.tests).extracting(test -> test.result)
-					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED,
-							ETestExecutionResult.PASSED, ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
-			assertThat(unitTestReport.tests).extracting(SystemTestUtils::getCoverageString)
-					.containsExactly(
-							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
-							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
-							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
-							"Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40",
-							"Calculator.java:3,9;StepDefinitions.java:12,24-25,34-35,39-40");
+			assertThat(unitTestReport.tests)
+					.extracting(test -> test.uniformPath)
+					.containsExactlyInAnyOrder(TEST_PATHS);
+			assertThat(unitTestReport.tests)
+					.extracting(test -> test.result)
+					.containsExactlyInAnyOrder(Arrays.stream(TEST_PATHS)
+							.map(s -> ETestExecutionResult.PASSED)
+							.toArray(ETestExecutionResult[]::new));
+			assertThat(unitTestReport.tests)
+					.extracting(SystemTestUtils::getCoverageString)
+					.containsExactly(COVERAGE_ADD, // must match TEST_PATHS
+							COVERAGE_ADD,
+							COVERAGE_ADD,
+							COVERAGE_ADD,
+							COVERAGE_SUBTRACT);
 		});
 	}
 
