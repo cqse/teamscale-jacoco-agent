@@ -34,3 +34,8 @@ Feature: Calculator
       | num1 | num2 | difference |
       | 99   | 99   | 0          |
       | 10   | -1   | 11         |
+
+  Scenario: Actually we just want to test a http://link
+    Given I have a calculator
+    When I add 0 and 1
+    Then the result should be 1

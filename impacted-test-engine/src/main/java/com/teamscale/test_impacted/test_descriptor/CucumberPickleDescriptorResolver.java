@@ -115,10 +115,26 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 			Method getNameMethod = pickle.getClass().getDeclaredMethod("getName");
 			getNameMethod.setAccessible(true);
 			String name = getNameMethod.invoke(pickle).toString();
-			return Optional.of(name);
+
+			return Optional
+					.of(name)
+					.map(CucumberPickleDescriptorResolver::escapeSlashes);
 		} catch (NoSuchFieldException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
 			return Optional.empty();
 		}
+	}
+
+	/**
+	 * Escapes slashes (/) in a given input (usually a scenario name) with a backslash (\).
+	 * <br><br>
+	 * If a slash is already escaped, no additional escaping is done.
+	 * <ul>
+	 *     <li>{@code / -> \/}</li>
+	 *     <li>{@code \/ -> \/}</li>
+	 * </ul>
+	 */
+	static String escapeSlashes(String input) {
+		return input.replaceAll("(?<!\\\\)/", "\\\\/");
 	}
 
 	private Optional<TestDescriptor> getFeatureFileTestDescriptor(TestDescriptor testDescriptor) {

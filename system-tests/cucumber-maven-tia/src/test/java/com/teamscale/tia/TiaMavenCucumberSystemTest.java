@@ -26,7 +26,8 @@ public class TiaMavenCucumberSystemTest {
 	private static final int FAKE_TEAMSCALE_PORT = 63800;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
-	private static final String[] TEST_PATHS = {
+	private static final String[] TEST_PATHS = { // sorted alphabetically
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Actually we just want to test a http:\\/\\/link #1", // also tests addition, escaped /
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #1",
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #2",
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #3",
@@ -78,6 +79,7 @@ public class TiaMavenCucumberSystemTest {
 			assertThat(unitTestReport.tests)
 					.extracting(SystemTestUtils::getCoverageString)
 					.containsExactly(COVERAGE_ADD, // must match TEST_PATHS
+							COVERAGE_ADD,
 							COVERAGE_ADD,
 							COVERAGE_ADD,
 							COVERAGE_ADD,
