@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _teamscale-maven-plugin_ Test names containing slashes could not be uploaded
+- [fix] _tia-client_ Impacted test retrieval failed due to JSON parsing error
 
 # 32.6.0
 - [feature] Profiler logs its version on startup
