@@ -1,11 +1,11 @@
 package com.teamscale.tia.client;
 
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.report.util.JsonUtils;
 import okhttp3.HttpUrl;
 
 import java.io.BufferedReader;

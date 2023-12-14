@@ -24,7 +24,8 @@ public class TeamscaleServiceGenerator {
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
 									  int readTimeout, int writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(JacksonConverterFactory.create()),
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
+						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
@@ -42,7 +43,8 @@ public class TeamscaleServiceGenerator {
 														String accessToken, File logfile, int readTimeout,
 														int writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(JacksonConverterFactory.create()),
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
+						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())

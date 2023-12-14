@@ -1,9 +1,9 @@
 package com.teamscale
 
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
+import com.teamscale.client.JsonUtils
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
-import com.teamscale.report.util.JsonUtils
 import com.teamscale.test.commons.TeamscaleMockServer
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult

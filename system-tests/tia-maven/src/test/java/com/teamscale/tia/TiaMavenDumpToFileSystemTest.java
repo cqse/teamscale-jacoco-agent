@@ -1,8 +1,8 @@
 package com.teamscale.tia;
 
+import com.teamscale.client.JsonUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.report.util.JsonUtils;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.AfterEach;
