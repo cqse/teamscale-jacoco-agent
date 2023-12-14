@@ -26,7 +26,7 @@ public class TiaMavenCucumberSystemTest {
 	private static final int FAKE_TEAMSCALE_PORT = 63800;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
-	private static final String[] TEST_PATHS = { // sorted alphabetically
+	private static final String[] IMPACTED_TEST_PATHS = { // sorted alphabetically
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Actually we just want to test a http:\\/\\/link #1", // also tests addition, escaped /
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #1",
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #2",
@@ -43,7 +43,7 @@ public class TiaMavenCucumberSystemTest {
 		if (teamscaleMockServer == null) {
 			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT)
 					.acceptingReportUploads()
-					.withImpactedTests(TEST_PATHS);
+					.withImpactedTests(IMPACTED_TEST_PATHS);
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
@@ -62,15 +62,15 @@ public class TiaMavenCucumberSystemTest {
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(unitTestReport.tests).hasSize(TEST_PATHS.length);
+		assertThat(unitTestReport.tests).hasSize(IMPACTED_TEST_PATHS.length);
 		assertThat(unitTestReport.partial).isTrue();
 		assertAll(() -> {
 			assertThat(unitTestReport.tests)
 					.extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder(TEST_PATHS);
+					.containsExactlyInAnyOrder(IMPACTED_TEST_PATHS);
 			assertThat(unitTestReport.tests)
 					.extracting(test -> test.result)
-					.containsExactlyInAnyOrder(Arrays.stream(TEST_PATHS)
+					.containsExactlyInAnyOrder(Arrays.stream(IMPACTED_TEST_PATHS)
 							.map(s -> ETestExecutionResult.PASSED)
 							.toArray(ETestExecutionResult[]::new));
 			assertThat(unitTestReport.tests)
