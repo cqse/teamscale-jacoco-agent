@@ -20,6 +20,7 @@ class CucumberPickleDescriptorResolverTest {
 		expectedByInput.put("a//", "a\\/\\/");
 		expectedByInput.put("//a", "\\/\\/a");
 		expectedByInput.put("//", "\\/\\/");
+		expectedByInput.put("///", "\\/\\/\\/");
 		expectedByInput.put("\\", "\\");
 		expectedByInput.put("http://link", "http:\\/\\/link");
 
