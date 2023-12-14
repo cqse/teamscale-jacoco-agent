@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -13,7 +14,6 @@ import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
-import com.teamscale.report.util.JsonUtils;
 import org.slf4j.Logger;
 
 import java.io.File;

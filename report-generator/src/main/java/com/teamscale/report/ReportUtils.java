@@ -2,11 +2,11 @@ package com.teamscale.report;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.testwise.ETestArtifactFormat;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.report.util.JsonUtils;
 
 import java.io.File;
 import java.io.IOException;
