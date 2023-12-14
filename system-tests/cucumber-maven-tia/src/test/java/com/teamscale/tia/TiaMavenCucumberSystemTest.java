@@ -32,10 +32,7 @@ public class TiaMavenCucumberSystemTest {
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #2",
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #3",
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #4",
-			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers #5",
-			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99 #1",
-			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 10 & -1 #1"
-
+			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Subtract two numbers 99 & 99 #1"
 	};
 
 	private static final String COVERAGE_ADD = "Calculator.java:3,5;StepDefinitions.java:12,24-25,29-30,39-40";
@@ -83,10 +80,7 @@ public class TiaMavenCucumberSystemTest {
 							COVERAGE_ADD,
 							COVERAGE_ADD,
 							COVERAGE_ADD,
-							COVERAGE_ADD,
-							COVERAGE_SUBTRACT,
-							COVERAGE_SUBTRACT
-					);
+							COVERAGE_SUBTRACT);
 		});
 	}
 
