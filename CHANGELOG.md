@@ -6,6 +6,11 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 32.6.2
+- Re-Release 32.6.1
+- [fix] _teamscale-maven-plugin_ Test names containing slashes could not be uploaded
+- [fix] _tia-client_ Impacted test retrieval failed due to JSON parsing error
+
 # 32.6.1
 - [fix] _teamscale-maven-plugin_ Test names containing slashes could not be uploaded
 - [fix] _tia-client_ Impacted test retrieval failed due to JSON parsing error
