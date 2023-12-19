@@ -69,7 +69,7 @@ public class Installer {
 	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory, boolean reloadSystemdDaemon) {
 		EnvironmentMap environmentVariables = getEnvironmentVariables(installDirectory);
 		this.steps = Arrays.asList(new InstallAgentFilesStep(sourceDirectory, installDirectory),
-				new InstallWindowsSystemEnvironmentStep(environmentVariables, new WindowsRegistry()),
+				new InstallWindowsSystemEnvironmentStep(environmentVariables, WindowsRegistry.INSTANCE),
 				new InstallEtcEnvironmentStep(etcDirectory, environmentVariables),
 				new InstallSystemdStep(etcDirectory, environmentVariables, reloadSystemdDaemon));
 	}

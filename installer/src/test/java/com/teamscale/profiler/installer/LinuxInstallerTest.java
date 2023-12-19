@@ -174,7 +174,6 @@ class LinuxInstallerTest {
 		}
 	}
 
-	@EnabledOnOs(OS.LINUX)
 	@Test
 	void uninstallChangingEtcEnvironmentFails() throws FatalInstallerError {
 		install();

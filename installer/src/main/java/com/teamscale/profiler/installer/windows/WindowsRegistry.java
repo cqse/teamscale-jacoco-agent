@@ -10,6 +10,16 @@ import com.teamscale.profiler.installer.FatalInstallerError;
  */
 public class WindowsRegistry implements IRegistry {
 
+	/** The key under which machine-global environment variables are stored. */
+	public static final String ENVIRONMENT_REGISTRY_KEY = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+
+	/** The singleton instance. */
+	public static final WindowsRegistry INSTANCE = new WindowsRegistry();
+
+	private WindowsRegistry() {
+		// private constructor to force usage of singleton
+	}
+
 	@Override
 	public String getHklmValue(String key, String name) throws FatalInstallerError {
 		try {

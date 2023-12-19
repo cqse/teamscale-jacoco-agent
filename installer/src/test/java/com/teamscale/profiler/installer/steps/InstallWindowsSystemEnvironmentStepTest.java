@@ -5,6 +5,7 @@ import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.Installer;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import com.teamscale.profiler.installer.windows.IRegistry;
+import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +14,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Tests the installation step that sets Windows environment variables. This test mocks the registry so we can test this
+ * step on any OS.
+ */
 class InstallWindowsSystemEnvironmentStepTest {
 
 	private static final TeamscaleCredentials CREDENTIALS = new TeamscaleCredentials(
@@ -41,11 +46,11 @@ class InstallWindowsSystemEnvironmentStepTest {
 		}
 
 		public String getVariable(String name) {
-			return getHklmValue(InstallWindowsSystemEnvironmentStep.ENVIRONMENT_REGISTRY_KEY, name);
+			return getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, name);
 		}
 
 		public void setVariable(String name, String value) {
-			setHklmValue(InstallWindowsSystemEnvironmentStep.ENVIRONMENT_REGISTRY_KEY, name, value);
+			setHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, name, value);
 		}
 	}
 
