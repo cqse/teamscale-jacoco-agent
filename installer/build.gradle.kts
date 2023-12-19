@@ -23,6 +23,7 @@ dependencies {
 	implementation(libs.teamscaleLibCommons)
 	implementation(libs.picocli.core)
 	annotationProcessor(libs.picocli.codegen)
+	implementation("net.java.dev.jna:jna-platform:5.14.0")
 
 	testImplementation(libs.spark)
 }

@@ -20,6 +20,10 @@ public class EnvironmentMap {
 		}
 	}
 
+	public Map<String, String> getMap() {
+		return environment;
+	}
+
 	private String escape(String value) {
 		return value.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"");
 	}

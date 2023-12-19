@@ -30,11 +30,12 @@ public class InstallSystemdStep implements IStep {
 	}
 
 	@Override
-	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
-		if (!SystemUtils.isLinux()) {
-			return;
-		}
+	public boolean shouldRun() {
+		return SystemUtils.isLinux();
+	}
 
+	@Override
+	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
 		if (!Files.exists(getSystemdEtcDirectory())) {
 			System.out.println("systemd could not be detected. Not installing profiler for systemd services.");
 			// system has no systemd installed
@@ -111,10 +112,6 @@ public class InstallSystemdStep implements IStep {
 
 	@Override
 	public void uninstall(IUninstallErrorReporter errorReporter) {
-		if (!SystemUtils.isLinux()) {
-			return;
-		}
-
 		Path systemdConfigFile = getSystemdConfigFile();
 		if (!Files.exists(systemdConfigFile)) {
 			return;

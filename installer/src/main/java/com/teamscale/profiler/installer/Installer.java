@@ -4,6 +4,8 @@ import com.teamscale.profiler.installer.steps.IStep;
 import com.teamscale.profiler.installer.steps.InstallAgentFilesStep;
 import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
+import com.teamscale.profiler.installer.steps.InstallWindowsSystemEnvironmentStep;
+import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.system.SystemUtils;
 import picocli.CommandLine;
@@ -18,19 +20,25 @@ import java.util.List;
 /** Installs the agent system-globally. */
 public class Installer {
 
-	private static final Path DEFAULT_INSTALL_DIRECTORY = Paths.get("/opt/teamscale-profiler/java");
+	private static final Path DEFAULT_INSTALL_DIRECTORY = windowsOrLinux(
+			Paths.get(System.getenv("ProgramFiles")),
+			Paths.get("/opt/teamscale-profiler/java")
+	);
+
 	private static final Path DEFAULT_ETC_DIRECTORY = Paths.get("/etc");
 
-	private static final String RERUN_ADVICE = getRerunAdvice();
+	private static final String RERUN_ADVICE = windowsOrLinux(
+			"Try running this installer as Administrator.",
+			"Try running this installer as root, e.g. with sudo."
+	);
 
-	private static String getRerunAdvice() {
+	private static <T> T windowsOrLinux(T windowsValue, T linuxValue) {
 		if (SystemUtils.isWindows()) {
-			return "Try running this installer as Administrator.";
+			return windowsValue;
 		} else {
-			return "Try running this installer as root, e.g. with sudo.";
+			return linuxValue;
 		}
 	}
-
 
 	/** Returns the directory that contains the agent to install or null if it can't be resolved. */
 	private static Path getDefaultSourceDirectory() {
@@ -61,6 +69,7 @@ public class Installer {
 	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory, boolean reloadSystemdDaemon) {
 		EnvironmentMap environmentVariables = getEnvironmentVariables(installDirectory);
 		this.steps = Arrays.asList(new InstallAgentFilesStep(sourceDirectory, installDirectory),
+				new InstallWindowsSystemEnvironmentStep(environmentVariables, new WindowsRegistry()),
 				new InstallEtcEnvironmentStep(etcDirectory, environmentVariables),
 				new InstallSystemdStep(etcDirectory, environmentVariables, reloadSystemdDaemon));
 	}
@@ -130,6 +139,9 @@ public class Installer {
 	public void runInstall(TeamscaleCredentials credentials) throws FatalInstallerError {
 		TeamscaleUtils.checkTeamscaleConnection(credentials);
 		for (IStep step : steps) {
+			if (!step.shouldRun()) {
+				continue;
+			}
 			step.install(credentials);
 		}
 	}
@@ -141,6 +153,10 @@ public class Installer {
 	public UninstallerErrorReporter runUninstall() {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
 		for (IStep step : CollectionUtils.reverse(steps)) {
+			if (!step.shouldRun()) {
+				continue;
+			}
+
 			step.uninstall(errorReporter);
 			if (errorReporter.errorsReported) {
 				break;

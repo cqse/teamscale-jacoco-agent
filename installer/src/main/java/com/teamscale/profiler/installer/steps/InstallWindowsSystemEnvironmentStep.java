@@ -1,0 +1,85 @@
+package com.teamscale.profiler.installer.steps;
+
+import com.teamscale.profiler.installer.EnvironmentMap;
+import com.teamscale.profiler.installer.FatalInstallerError;
+import com.teamscale.profiler.installer.TeamscaleCredentials;
+import com.teamscale.profiler.installer.windows.IRegistry;
+import org.conqat.lib.commons.string.StringUtils;
+import org.conqat.lib.commons.system.SystemUtils;
+
+import java.util.Map;
+
+/** On Linux, registers the agent globally via environment variables set in /etc/environment */
+public class InstallWindowsSystemEnvironmentStep implements IStep {
+
+	private final EnvironmentMap environmentVariables;
+	private final IRegistry registry;
+
+	public static final String ENVIRONMENT_REGISTRY_KEY = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+
+	public InstallWindowsSystemEnvironmentStep(EnvironmentMap environmentMap, IRegistry registry) {
+		this.environmentVariables = environmentMap;
+		this.registry = registry;
+	}
+
+	@Override
+	public boolean shouldRun() {
+		return SystemUtils.isWindows();
+	}
+
+	@Override
+	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
+		Map<String, String> map = environmentVariables.getMap();
+		for (String variable : map.keySet()) {
+			addProfiler(variable, map.get(variable), registry);
+		}
+	}
+
+	@Override
+	public void uninstall(IUninstallErrorReporter errorReporter) {
+		Map<String, String> map = environmentVariables.getMap();
+		for (String variable : map.keySet()) {
+			try {
+				String valueToRemove = map.get(variable);
+				removeProfiler(variable, valueToRemove, registry);
+			} catch (FatalInstallerError e) {
+				errorReporter.report(e);
+			}
+		}
+	}
+
+	/*package*/
+	static void addProfiler(String variable, String valueToAdd, IRegistry registry) throws FatalInstallerError {
+		String currentValue = registry.getHklmValue(ENVIRONMENT_REGISTRY_KEY, variable);
+
+		String newValue = valueToAdd;
+		if (!StringUtils.isEmpty(currentValue)) {
+			newValue = valueToAdd + " " + currentValue;
+		}
+		registry.setHklmValue(ENVIRONMENT_REGISTRY_KEY, variable, newValue);
+	}
+
+	/*package*/
+	static void removeProfiler(String variable, String valueToRemove,
+							   IRegistry registry) throws FatalInstallerError {
+		String currentValue = registry.getHklmValue(ENVIRONMENT_REGISTRY_KEY, variable);
+		if (StringUtils.isEmpty(currentValue)) {
+			return;
+		}
+
+		if (currentValue.equals(valueToRemove)) {
+			registry.deleteHklmValue(ENVIRONMENT_REGISTRY_KEY, variable);
+			return;
+		}
+
+		if (!currentValue.contains(valueToRemove)) {
+			return;
+		}
+
+		if (currentValue.contains(valueToRemove + " ")) {
+			valueToRemove += " ";
+		}
+		String newValue = currentValue.replace(valueToRemove, "");
+		registry.setHklmValue(ENVIRONMENT_REGISTRY_KEY, variable, newValue);
+	}
+}

@@ -20,6 +20,10 @@ public interface IStep {
 	 */
 	void uninstall(IUninstallErrorReporter errorReporter);
 
+	default boolean shouldRun() {
+		return true;
+	}
+
 	/**
 	 * Used to report errors that happen during uninstallation. During uninstalling, we want to remove everything we can
 	 * remove, even if some parts of the process fail. Thus we don't just throw exceptions and abort.

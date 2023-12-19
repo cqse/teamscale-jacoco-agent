@@ -29,11 +29,12 @@ public class InstallEtcEnvironmentStep implements IStep {
 	}
 
 	@Override
-	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
-		if (!SystemUtils.isLinux()) {
-			return;
-		}
+	public boolean shouldRun() {
+		return SystemUtils.isLinux();
+	}
 
+	@Override
+	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
 		Path environmentFile = getEnvironmentFile();
 		if (!Files.exists(environmentFile)) {
 			System.err.println(
@@ -60,10 +61,6 @@ public class InstallEtcEnvironmentStep implements IStep {
 
 	@Override
 	public void uninstall(IUninstallErrorReporter errorReporter) {
-		if (!SystemUtils.isLinux()) {
-			return;
-		}
-
 		Path environmentFile = getEnvironmentFile();
 		if (!Files.exists(environmentFile)) {
 			return;
