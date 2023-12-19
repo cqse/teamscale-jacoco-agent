@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @EnabledOnOs(OS.LINUX)
-class InstallerTest {
+class LinuxInstallerTest {
 
 	private static final int TEAMSCALE_PORT = 8059;
 	private static final String FILE_TO_INSTALL_CONTENT = "install-me";
