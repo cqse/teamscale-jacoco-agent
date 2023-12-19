@@ -26,14 +26,6 @@ public class InstallAgentFilesStep implements IStep {
 		this.installDirectory = installDirectory;
 	}
 
-	private Path getCoverageDirectory() {
-		return installDirectory.resolve("coverage");
-	}
-
-	private Path getLogDirectory() {
-		return installDirectory.resolve("logs");
-	}
-
 	private Path getTeamscalePropertiesPath() {
 		return installDirectory.resolve("teamscale.properties");
 	}
@@ -44,7 +36,6 @@ public class InstallAgentFilesStep implements IStep {
 		createAgentDirectory();
 		copyAgentFiles();
 		writeTeamscaleProperties(credentials);
-		makeCoverageAndLogDirectoriesWorldWritable();
 		makeAllProfilerFilesWorldReadable();
 	}
 
@@ -80,15 +71,6 @@ public class InstallAgentFilesStep implements IStep {
 		} catch (IOException e) {
 			throw new PermissionError("Failed to list all files in " + installDirectory + ".", e);
 		}
-	}
-
-	private void makeCoverageAndLogDirectoriesWorldWritable() throws FatalInstallerError {
-		InstallFileUtils.createDirectory(getCoverageDirectory());
-		InstallFileUtils.makeWritable(getCoverageDirectory());
-
-		InstallFileUtils.createDirectory(getLogDirectory());
-		InstallFileUtils.makeWritable(getLogDirectory());
-
 	}
 
 	private void writeTeamscaleProperties(TeamscaleCredentials credentials) throws FatalInstallerError {

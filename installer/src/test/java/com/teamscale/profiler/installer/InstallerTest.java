@@ -18,7 +18,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -39,8 +38,6 @@ class InstallerTest {
 	private Path installedFile;
 	private Path installedNestedFile;
 	private Path installedTeamscaleProperties;
-	private Path installedCoverageDirectory;
-	private Path installedLogsDirectory;
 	private Path installedAgentLibrary;
 
 	private Path environmentFile;
@@ -73,8 +70,6 @@ class InstallerTest {
 		installedFile = targetDirectory.resolve(sourceDirectory.relativize(fileToInstall));
 		installedNestedFile = targetDirectory.resolve(sourceDirectory.relativize(nestedFileToInstall));
 		installedTeamscaleProperties = targetDirectory.resolve("teamscale.properties");
-		installedCoverageDirectory = targetDirectory.resolve("coverage");
-		installedLogsDirectory = targetDirectory.resolve("logs");
 		installedAgentLibrary = targetDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 	}
 
@@ -102,14 +97,9 @@ class InstallerTest {
 		assertThat(properties.getProperty("username")).isEqualTo("user");
 		assertThat(properties.getProperty("accesskey")).isEqualTo("accesskey");
 
-		assertThat(installedCoverageDirectory).exists().isReadable().isWritable();
-		assertThat(installedLogsDirectory).exists().isReadable().isWritable();
-
 		if (SystemUtils.isLinux()) {
 			assertThat(Files.getPosixFilePermissions(installedTeamscaleProperties)).contains(OTHERS_READ);
 			assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
-			assertThat(Files.getPosixFilePermissions(installedLogsDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
-			assertThat(Files.getPosixFilePermissions(installedCoverageDirectory)).contains(OTHERS_READ, OTHERS_WRITE);
 
 			assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
 					+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
