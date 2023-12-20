@@ -68,7 +68,7 @@ jobs:
         accesskey: ${{ secrets.CQSE_TEAMSCALE_IO_ACCESSKEY }}
         partition: 'Coverage'
         format: 'JACOCO'
-        message: 'Coverage'
+        message: 'Linux Coverage'
         files: '**/jacocoTestReport.xml'
 
   test-windows:
