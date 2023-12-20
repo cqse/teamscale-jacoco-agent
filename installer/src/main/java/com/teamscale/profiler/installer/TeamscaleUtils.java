@@ -34,6 +34,7 @@ public class TeamscaleUtils {
 			throw new IllegalStateException("Cannot resolve API endpoint against URL " + credentials.url);
 		}
 
+		@SuppressWarnings("KotlinInternalInJava") // this warning is a false positive here due to the #url() overload
 		Request request = new Request.Builder()
 				.url(url)
 				.header("Authorization", Credentials.basic(credentials.username, credentials.accessKey))
@@ -43,24 +44,24 @@ public class TeamscaleUtils {
 			handleErrors(response, credentials);
 		} catch (SSLException e) {
 			throw new FatalInstallerError("Failed to connect via HTTPS to " + credentials.url
-					+ "\nPlease ensure that your Teamscale instance is reachable under " + credentials.url
-					+ " and that it is configured for HTTPS, not HTTP. E.g. open that URL in your"
-					+ " browser and verify that you can connect successfully."
-					+ "\n\nIf you want to accept self-signed or broken certificates without an error"
-					+ " you can use --insecure.",
+										  + "\nPlease ensure that your Teamscale instance is reachable under " + credentials.url
+										  + " and that it is configured for HTTPS, not HTTP. E.g. open that URL in your"
+										  + " browser and verify that you can connect successfully."
+										  + "\n\nIf you want to accept self-signed or broken certificates without an error"
+										  + " you can use --insecure.",
 					e);
 		} catch (UnknownHostException e) {
 			throw new FatalInstallerError("The host " + url + " could not be resolved."
-					+ " Please ensure you have no typo and that this host is reachable from this server.",
+										  + " Please ensure you have no typo and that this host is reachable from this server.",
 					e);
 		} catch (ConnectException e) {
 			throw new FatalInstallerError("The URL " + url + " refused a connection."
-					+ " Please ensure that you have no typo and that this endpoint is reachable and not blocked by firewalls.",
+										  + " Please ensure that you have no typo and that this endpoint is reachable and not blocked by firewalls.",
 					e);
 		} catch (
 				SocketTimeoutException e) {
 			throw new FatalInstallerError("Request timeout reached."
-					+ " Please ensure that you have no typo and that this endpoint is reachable and not blocked by firewalls.",
+										  + " Please ensure that you have no typo and that this endpoint is reachable and not blocked by firewalls.",
 					e);
 		} catch (IOException e) {
 			throw new FatalInstallerError(
@@ -75,18 +76,18 @@ public class TeamscaleUtils {
 				location = "<server did not provide a location header>";
 			}
 			throw new FatalInstallerError("You provided an incorrect URL."
-					+ " The server responded with a redirect to " + "'" + location + "'."
-					+ " This may e.g. happen if you used HTTP instead of HTTPS."
-					+ " Please use the correct URL for Teamscale instead.");
+										  + " The server responded with a redirect to " + "'" + location + "'."
+										  + " This may e.g. happen if you used HTTP instead of HTTPS."
+										  + " Please use the correct URL for Teamscale instead.");
 		}
 
 		if (response.code() == 401) {
 			String editUserUrl = TeamscaleUtils.getEditUserUrl(credentials.url, credentials.username);
 			throw new FatalInstallerError("You provided incorrect credentials."
-					+ " Either the user '" + credentials.username + "' does not exist in Teamscale"
-					+ " or the access key you provided is incorrect."
-					+ " Please check both the username and access key in Teamscale under Admin > Users: "
-					+ editUserUrl + "\nPlease use the user's access key, not their password.");
+										  + " Either the user '" + credentials.username + "' does not exist in Teamscale"
+										  + " or the access key you provided is incorrect."
+										  + " Please check both the username and access key in Teamscale under Admin > Users: "
+										  + editUserUrl + "\nPlease use the user's access key, not their password.");
 		}
 
 		if (!response.isSuccessful()) {
