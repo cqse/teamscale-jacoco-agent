@@ -5,6 +5,7 @@ import com.teamscale.profiler.installer.steps.InstallAgentFilesStep;
 import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
 import com.teamscale.profiler.installer.steps.InstallWindowsSystemEnvironmentStep;
+import com.teamscale.profiler.installer.windows.IRegistry;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.system.SystemUtils;
@@ -65,11 +66,13 @@ public class Installer {
 	 * @param sourceDirectory  directory that contains the profiler binaries and support files to install.
 	 * @param installDirectory directory to which to install the profiler.
 	 * @param etcDirectory     on Linux: the /etc directory
+	 * @param registry         the Windows registry (not used on Linux)
 	 */
-	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory, boolean reloadSystemdDaemon) {
+	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory, boolean reloadSystemdDaemon,
+					 IRegistry registry) {
 		EnvironmentMap environmentVariables = getEnvironmentVariables(installDirectory);
 		this.steps = Arrays.asList(new InstallAgentFilesStep(sourceDirectory, installDirectory),
-				new InstallWindowsSystemEnvironmentStep(environmentVariables, WindowsRegistry.INSTANCE),
+				new InstallWindowsSystemEnvironmentStep(environmentVariables, registry),
 				new InstallEtcEnvironmentStep(etcDirectory, environmentVariables),
 				new InstallSystemdStep(etcDirectory, environmentVariables, reloadSystemdDaemon));
 	}
@@ -107,7 +110,8 @@ public class Installer {
 	}
 
 	private static Installer getDefaultInstaller() {
-		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY, true);
+		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY, true,
+				WindowsRegistry.INSTANCE);
 	}
 
 

@@ -3,14 +3,10 @@ package com.teamscale.profiler.installer.steps;
 import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.Installer;
+import com.teamscale.profiler.installer.MockRegistry;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
-import com.teamscale.profiler.installer.windows.IRegistry;
-import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,37 +22,9 @@ class InstallWindowsSystemEnvironmentStepTest {
 	private static final EnvironmentMap environment = new EnvironmentMap("_JAVA_OPTIONS",
 			"\"-javaagent:C:\\Program Files\\foo.jar\"");
 
-	private static class FakeRegistry implements IRegistry {
-
-		private final Map<String, String> values = new HashMap<>();
-
-		@Override
-		public String getHklmValue(String key, String name) {
-			return values.get(key + "\\" + name);
-		}
-
-		@Override
-		public void setHklmValue(String key, String name, String value) {
-			values.put(key + "\\" + name, value);
-		}
-
-		@Override
-		public void deleteHklmValue(String key, String name) {
-			values.remove(key + "\\" + name);
-		}
-
-		public String getVariable(String name) {
-			return getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, name);
-		}
-
-		public void setVariable(String name, String value) {
-			setHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, name, value);
-		}
-	}
-
 	@Test
 	void successfulInstall() throws FatalInstallerError {
-		FakeRegistry registry = new FakeRegistry();
+		MockRegistry registry = new MockRegistry();
 		new InstallWindowsSystemEnvironmentStep(environment, registry).install(CREDENTIALS);
 
 		assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo(environment.getMap().get("_JAVA_OPTIONS"));
@@ -64,7 +32,7 @@ class InstallWindowsSystemEnvironmentStepTest {
 
 	@Test
 	void successfulUninstall() throws FatalInstallerError {
-		FakeRegistry registry = new FakeRegistry();
+		MockRegistry registry = new MockRegistry();
 		Installer.UninstallerErrorReporter errorReporter = new Installer.UninstallerErrorReporter();
 
 		new InstallWindowsSystemEnvironmentStep(environment, registry).install(CREDENTIALS);
@@ -76,7 +44,7 @@ class InstallWindowsSystemEnvironmentStepTest {
 
 	@Test
 	void addAndRemoveProfiler() throws FatalInstallerError {
-		FakeRegistry registry = new FakeRegistry();
+		MockRegistry registry = new MockRegistry();
 
 		InstallWindowsSystemEnvironmentStep.addProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry);
 		assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo("-javaagent:foo.jar");
@@ -87,7 +55,7 @@ class InstallWindowsSystemEnvironmentStepTest {
 
 	@Test
 	void addAndRemoveProfilerWithPreviousValue() throws FatalInstallerError {
-		FakeRegistry registry = new FakeRegistry();
+		MockRegistry registry = new MockRegistry();
 
 		registry.setVariable("_JAVA_OPTIONS", "-javaagent:other.jar");
 		InstallWindowsSystemEnvironmentStep.addProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry);

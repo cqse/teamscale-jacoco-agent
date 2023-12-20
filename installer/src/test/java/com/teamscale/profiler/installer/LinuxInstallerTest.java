@@ -1,8 +1,7 @@
 package com.teamscale.profiler.installer;
 
+import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import okhttp3.HttpUrl;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Properties;
 
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @EnabledOnOs(OS.LINUX)
 class LinuxInstallerTest {
@@ -36,7 +33,6 @@ class LinuxInstallerTest {
 	private Path etcDirectory;
 
 	private Path installedFile;
-	private Path installedNestedFile;
 	private Path installedTeamscaleProperties;
 	private Path installedAgentLibrary;
 
@@ -68,7 +64,6 @@ class LinuxInstallerTest {
 				StandardOpenOption.CREATE);
 
 		installedFile = targetDirectory.resolve(sourceDirectory.relativize(fileToInstall));
-		installedNestedFile = targetDirectory.resolve(sourceDirectory.relativize(nestedFileToInstall));
 		installedTeamscaleProperties = targetDirectory.resolve("teamscale.properties");
 		installedAgentLibrary = targetDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 	}
@@ -87,58 +82,33 @@ class LinuxInstallerTest {
 	void successfulInstallation() throws FatalInstallerError, IOException {
 		install();
 
-		assertThat(installedFile).exists().content().isEqualTo(FILE_TO_INSTALL_CONTENT);
-		assertThat(installedNestedFile).exists().content().isEqualTo(NESTED_FILE_CONTENT);
+		assertThat(Files.getPosixFilePermissions(installedTeamscaleProperties)).contains(OTHERS_READ);
+		assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
 
-		assertThat(installedTeamscaleProperties).exists();
-		Properties properties = FileSystemUtils.readProperties(installedTeamscaleProperties.toFile());
-		assertThat(properties.keySet()).containsExactlyInAnyOrder("url", "username", "accesskey");
-		assertThat(properties.getProperty("url")).isEqualTo(TEAMSCALE_URL);
-		assertThat(properties.getProperty("username")).isEqualTo("user");
-		assertThat(properties.getProperty("accesskey")).isEqualTo("accesskey");
+		assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
+				+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+				+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 
-		if (SystemUtils.isLinux()) {
-			assertThat(Files.getPosixFilePermissions(installedTeamscaleProperties)).contains(OTHERS_READ);
-			assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
-
-			assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
-					+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
-					+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
-
-			assertThat(systemdConfig).content().isEqualTo("[Manager]"
-					+ "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
-					+ " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
-		}
-	}
-
-	@Test
-	void distributionChangedByUser() throws IOException {
-		Files.delete(sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar"));
-		assertThatThrownBy(this::install)
-				.hasMessageContaining("It looks like you moved the installer");
+		assertThat(systemdConfig).content().isEqualTo("[Manager]"
+				+ "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+				+ " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 	}
 
 	@Test
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
-		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory, false).runUninstall();
+		Installer.UninstallerErrorReporter errorReporter = uninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
-
-		assertThat(targetDirectory).doesNotExist();
-		if (SystemUtils.isLinux()) {
-			assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
-			assertThat(systemdConfig).doesNotExist();
-		}
+		assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
+		assertThat(systemdConfig).doesNotExist();
 	}
 
 	@Test
 	void uninstallSuccessfullyEvenIfSystemDConfigWasManuallyRemoved() throws FatalInstallerError, IOException {
 		install();
 		Files.delete(systemdConfig);
-		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory, false).runUninstall();
+		Installer.UninstallerErrorReporter errorReporter = uninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 	}
@@ -147,8 +117,7 @@ class LinuxInstallerTest {
 	void uninstallSuccessfullyEvenIfEnvironmentFileDoesntExist() throws FatalInstallerError, IOException {
 		install();
 		Files.delete(environmentFile);
-		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory, false).runUninstall();
+		Installer.UninstallerErrorReporter errorReporter = uninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 	}
@@ -158,20 +127,11 @@ class LinuxInstallerTest {
 		install();
 		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
 
-		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory, false).runUninstall();
+		Installer.UninstallerErrorReporter errorReporter = uninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isTrue();
-
-		assertThat(targetDirectory).exists();
-		assertThat(installedTeamscaleProperties).exists();
-		// nested files must be removed if possible
-		assertThat(installedNestedFile).doesNotExist();
-
-		if (SystemUtils.isLinux()) {
-			assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
-			assertThat(systemdConfig).doesNotExist();
-		}
+		assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
+		assertThat(systemdConfig).doesNotExist();
 	}
 
 	@Test
@@ -179,8 +139,7 @@ class LinuxInstallerTest {
 		install();
 		assertThat(environmentFile.toFile().setWritable(false, false)).isTrue();
 
-		Installer.UninstallerErrorReporter errorReporter = new Installer(sourceDirectory, targetDirectory,
-				etcDirectory, false).runUninstall();
+		Installer.UninstallerErrorReporter errorReporter = uninstall();
 
 		assertThat(errorReporter.wereErrorsReported()).isTrue();
 
@@ -207,46 +166,14 @@ class LinuxInstallerTest {
 		assertThat(systemdConfig).doesNotExist();
 	}
 
-	@Test
-	void nonexistantTeamscaleUrl() {
-		assertThatThrownBy(() -> install("http://does-not-exist:8080"))
-				.hasMessageContaining("could not be resolved");
-		assertThat(targetDirectory).doesNotExist();
-	}
-
-	@Test
-	void connectionRefused() {
-		assertThatThrownBy(() -> install("http://localhost:" + (TEAMSCALE_PORT + 1)))
-				.hasMessageContaining("refused a connection");
-		assertThat(targetDirectory).doesNotExist();
-	}
-
-	@Test
-	void httpsInsteadOfHttp() {
-		assertThatThrownBy(() -> install("https://localhost:" + TEAMSCALE_PORT))
-				.hasMessageContaining("configured for HTTPS, not HTTP");
-		assertThat(targetDirectory).doesNotExist();
-	}
-
-	@Test
-	void profilerAlreadyInstalled() throws IOException {
-		Files.createDirectories(targetDirectory);
-		assertThatThrownBy(this::install).hasMessageContaining("Path already exists");
-	}
-
-	@Test
-	void installDirectoryNotWritable() {
-		assertThat(targetDirectory.getParent().toFile().setReadOnly()).isTrue();
-		assertThatThrownBy(() -> install(TEAMSCALE_URL)).hasMessageContaining("Cannot create directory");
-	}
-
 	private void install() throws FatalInstallerError {
-		install(TEAMSCALE_URL);
+		new Installer(sourceDirectory, targetDirectory, etcDirectory, false, WindowsRegistry.INSTANCE).runInstall(
+				new TeamscaleCredentials(HttpUrl.get(LinuxInstallerTest.TEAMSCALE_URL), "user", "accesskey"));
 	}
 
-	private void install(String teamscaleUrl) throws FatalInstallerError {
-		new Installer(sourceDirectory, targetDirectory, etcDirectory, false).runInstall(
-				new TeamscaleCredentials(HttpUrl.get(teamscaleUrl), "user", "accesskey"));
+	private Installer.UninstallerErrorReporter uninstall() {
+		return new Installer(sourceDirectory, targetDirectory,
+				etcDirectory, false, WindowsRegistry.INSTANCE).runUninstall();
 	}
 
 }
