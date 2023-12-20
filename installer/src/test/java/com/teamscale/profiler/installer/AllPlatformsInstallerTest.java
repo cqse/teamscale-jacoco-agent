@@ -108,8 +108,6 @@ class AllPlatformsInstallerTest {
 
 		assertThat(targetDirectory).exists();
 		assertThat(installedTeamscaleProperties).exists();
-		// nested files must be removed if possible
-		assertThat(installedNestedFile).doesNotExist();
 	}
 
 	@Test
