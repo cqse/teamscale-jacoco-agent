@@ -76,7 +76,7 @@ class TeamscalePropertiesUtilsTest {
 	}
 
 	/** This test doesn't work on Windows since {@link java.io.File#setReadable(boolean)} does not work there. */
-	@DisabledOnOs(OS.LINUX)
+	@DisabledOnOs(OS.WINDOWS)
 	@Test
 	void fileNotReadable() throws IOException {
 		Files.write(teamscalePropertiesPath,
