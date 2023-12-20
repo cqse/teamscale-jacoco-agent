@@ -7,8 +7,7 @@ import com.teamscale.profiler.installer.steps.InstallSystemdStep;
 import com.teamscale.profiler.installer.steps.InstallWindowsSystemEnvironmentStep;
 import com.teamscale.profiler.installer.windows.IRegistry;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;
-import org.conqat.lib.commons.collections.CollectionUtils;
-import org.conqat.lib.commons.system.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import picocli.CommandLine;
 
 import java.net.URI;
@@ -40,7 +39,7 @@ public class Installer {
 	);
 
 	private static <T> T windowsOrLinux(Supplier<T> windowsSupplier, Supplier<T> linuxSupplier) {
-		if (SystemUtils.isWindows()) {
+		if (SystemUtils.IS_OS_WINDOWS) {
 			return windowsSupplier.get();
 		} else {
 			return linuxSupplier.get();
@@ -159,7 +158,8 @@ public class Installer {
 	 */
 	public UninstallerErrorReporter runUninstall() {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
-		for (IStep step : CollectionUtils.reverse(steps)) {
+		for (int i = steps.size() - 1; i >= 0; i--) {
+			IStep step = steps.get(i);
 			if (step.shouldNotRun()) {
 				continue;
 			}

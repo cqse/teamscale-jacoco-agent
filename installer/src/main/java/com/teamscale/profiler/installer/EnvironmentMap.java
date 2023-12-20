@@ -1,6 +1,7 @@
 package com.teamscale.profiler.installer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,6 +47,13 @@ public class EnvironmentMap {
 	public String getEtcEnvironmentString() {
 		return sortedEntryStream().map(entry -> entry.getKey() + "=" + quoteIfNecessary(entry.getValue()))
 				.collect(Collectors.joining("\n"));
+	}
+
+	/**
+	 * Returns a list of lines that can be appended to /etc/environment.
+	 */
+	public List<String> getEtcEnvironmentLinesList() {
+		return sortedEntryStream().map(entry -> entry.getKey() + "=" + quoteIfNecessary(entry.getValue())).toList();
 	}
 
 	/**

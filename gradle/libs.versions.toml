@@ -44,6 +44,8 @@ moshi = { module = "com.squareup.moshi:moshi", version = "1.15.0" }
 jcommander = { module = "com.beust:jcommander", version = "1.82" }
 teamscaleLibCommons = { module = "com.teamscale:teamscale-lib-commons", version = "9.2.0" }
 commonsCodec = { module = "commons-codec:commons-codec", version = "1.16.0" }
+commonsLang = { module="org.apache.commons:commons-lang3", version="3.14.0" }
+commonsIo = { module="commons-io:commons-io", version="2.15.1" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.9" }
 jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.7.0.202309050840-r" }
 okio = { module = "com.squareup.okio:okio", version = "3.6.0" }

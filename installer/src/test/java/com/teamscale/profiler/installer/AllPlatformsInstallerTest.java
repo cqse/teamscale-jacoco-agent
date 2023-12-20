@@ -4,14 +4,12 @@ import com.teamscale.profiler.installer.utils.MockRegistry;
 import com.teamscale.profiler.installer.utils.MockTeamscale;
 import com.teamscale.profiler.installer.utils.TestUtils;
 import okhttp3.HttpUrl;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -46,11 +44,11 @@ class AllPlatformsInstallerTest {
 		etcDirectory = Files.createTempDirectory("InstallerTest-etc");
 
 		Path fileToInstall = sourceDirectory.resolve("install-me.txt");
-		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+		Files.writeString(fileToInstall, FILE_TO_INSTALL_CONTENT, StandardOpenOption.CREATE);
 
 		Path nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 		Files.createDirectories(nestedFileToInstall.getParent());
-		Files.write(nestedFileToInstall, NESTED_FILE_CONTENT.getBytes(StandardCharsets.UTF_8),
+		Files.writeString(nestedFileToInstall, NESTED_FILE_CONTENT,
 				StandardOpenOption.CREATE);
 
 		installedFile = targetDirectory.resolve(sourceDirectory.relativize(fileToInstall));
@@ -74,9 +72,10 @@ class AllPlatformsInstallerTest {
 
 		assertThat(installedFile).exists().content().isEqualTo(FILE_TO_INSTALL_CONTENT);
 		assertThat(installedNestedFile).exists().content().isEqualTo(NESTED_FILE_CONTENT);
-
 		assertThat(installedTeamscaleProperties).exists();
-		Properties properties = FileSystemUtils.readProperties(installedTeamscaleProperties.toFile());
+
+		Properties properties = new Properties();
+		properties.load(Files.newInputStream(installedTeamscaleProperties));
 		assertThat(properties.keySet()).containsExactlyInAnyOrder("url", "username", "accesskey");
 		assertThat(properties.getProperty("url")).isEqualTo(TEAMSCALE_URL);
 		assertThat(properties.getProperty("username")).isEqualTo("user");

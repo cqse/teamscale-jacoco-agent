@@ -4,8 +4,7 @@ import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
-import org.conqat.lib.commons.string.StringUtils;
-import org.conqat.lib.commons.system.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +29,7 @@ public class InstallEtcEnvironmentStep implements IStep {
 
 	@Override
 	public boolean shouldNotRun() {
-		return !SystemUtils.isLinux();
+		return !SystemUtils.IS_OS_LINUX;
 	}
 
 	@Override
@@ -39,16 +38,16 @@ public class InstallEtcEnvironmentStep implements IStep {
 		if (!Files.exists(environmentFile)) {
 			System.err.println(
 					environmentFile + " does not exist. Skipping system-wide registration of the profiler."
-							+ "\nYou need to manually register the profiler for process that should be profiled by"
-							+ " setting the following environment variables:"
-							+ "\n\n" + environmentVariables.getEtcEnvironmentString() + "\n");
+					+ "\nYou need to manually register the profiler for process that should be profiled by"
+					+ " setting the following environment variables:"
+					+ "\n\n" + environmentVariables.getEtcEnvironmentString() + "\n");
 			return;
 		}
 
 		String content = "\n" + environmentVariables.getEtcEnvironmentString() + "\n";
 
 		try {
-			Files.write(environmentFile, content.getBytes(StandardCharsets.US_ASCII),
+			Files.writeString(environmentFile, content, StandardCharsets.US_ASCII,
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
 			throw new PermissionError("Could not change contents of " + environmentFile, e);
@@ -69,17 +68,16 @@ public class InstallEtcEnvironmentStep implements IStep {
 		try {
 			List<String> lines = Files.readAllLines(environmentFile, StandardCharsets.US_ASCII);
 			String newContent = removeProfilerVariables(lines);
-			Files.write(environmentFile, newContent.getBytes(StandardCharsets.US_ASCII));
+			Files.writeString(environmentFile, newContent, StandardCharsets.US_ASCII);
 		} catch (IOException e) {
 			errorReporter.report(new PermissionError("Failed to remove profiler from " + environmentFile + "." +
-					" Please remove the relevant environment variables yourself." +
-					" Otherwise, Java applications may crash.", e));
+													 " Please remove the relevant environment variables yourself." +
+													 " Otherwise, Java applications may crash.", e));
 		}
 	}
 
 	private String removeProfilerVariables(List<String> linesWithoutNewline) {
-		Set<String> linesToRemove = new HashSet<>(StringUtils.splitLinesAsList(
-				environmentVariables.getEtcEnvironmentString(), false));
+		Set<String> linesToRemove = new HashSet<>(environmentVariables.getEtcEnvironmentLinesList());
 		return linesWithoutNewline.stream().filter(line -> !linesToRemove.contains(line))
 				.collect(Collectors.joining("\n"));
 	}

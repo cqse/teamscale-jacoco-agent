@@ -5,8 +5,8 @@ import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import com.teamscale.profiler.installer.windows.IRegistry;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;
-import org.conqat.lib.commons.string.StringUtils;
-import org.conqat.lib.commons.system.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class InstallWindowsSystemEnvironmentStep implements IStep {
 
 	@Override
 	public boolean shouldNotRun() {
-		return !SystemUtils.isWindows();
+		return !SystemUtils.IS_OS_WINDOWS;
 	}
 
 	@Override
