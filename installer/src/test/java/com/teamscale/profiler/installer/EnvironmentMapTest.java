@@ -18,7 +18,7 @@ class EnvironmentMapTest {
 	void testMultipleEntries() {
 		assertThat(new JvmEnvironmentMap("V", "a", "E", "b").getSystemdString()).isEqualTo("E=b V=a");
 		assertThat(new JvmEnvironmentMap("V", "a", "E", "b").getEtcEnvironmentLinesList()).containsExactlyInAnyOrder(
-				"E=b\nV=a");
+				"E=b", "V=a");
 	}
 
 }
