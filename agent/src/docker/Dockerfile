@@ -1,6 +1,7 @@
 # --- build image ---
 
 FROM openjdk:17 as build
+RUN microdnf install findutils
 ADD . /src
 WORKDIR /src
 RUN ./gradlew :agent:shadowJar
