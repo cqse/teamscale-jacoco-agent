@@ -18,14 +18,6 @@ public class InstallFileUtils {
 		}
 	}
 
-	/** Makes the given path world-writable. */
-	public static void makeWritable(Path path) throws FatalInstallerError {
-		if (!path.toFile().setWritable(true, false)) {
-			throw new PermissionError(
-					"Failed to make " + path + " writable. Please check file permissions.");
-		}
-	}
-
 	/** Creates the given directory, handling errors. */
 	public static void createDirectory(Path directory) throws FatalInstallerError {
 		try {
