@@ -23,6 +23,8 @@ public class TeamscaleUtils {
 	}
 
 	/** Ensures that we can connect to Teamscale with the given credentials. */
+	// this IntelliJ warning is a false positive due to the okhttp property and method overloads
+	@SuppressWarnings("KotlinInternalInJava")
 	public static void checkTeamscaleConnection(TeamscaleCredentials credentials) throws FatalInstallerError {
 		OkHttpClient client = OkHttpUtils.createClient(validateSsl, 30);
 
@@ -34,7 +36,6 @@ public class TeamscaleUtils {
 			throw new IllegalStateException("Cannot resolve API endpoint against URL " + credentials.url);
 		}
 
-		@SuppressWarnings("KotlinInternalInJava") // this warning is a false positive here due to the #url() overload
 		Request request = new Request.Builder()
 				.url(url)
 				.header("Authorization", Credentials.basic(credentials.username, credentials.accessKey))
@@ -51,11 +52,11 @@ public class TeamscaleUtils {
 										  + " you can use --insecure.",
 					e);
 		} catch (UnknownHostException e) {
-			throw new FatalInstallerError("The host " + url + " could not be resolved."
+			throw new FatalInstallerError("The host " + credentials.url + " could not be resolved."
 										  + " Please ensure you have no typo and that this host is reachable from this server.",
 					e);
 		} catch (ConnectException e) {
-			throw new FatalInstallerError("The URL " + url + " refused a connection."
+			throw new FatalInstallerError("The URL " + credentials.url + " refused a connection."
 										  + " Please ensure that you have no typo and that this endpoint is reachable and not blocked by firewalls.",
 					e);
 		} catch (
