@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches: '**'
-    tags: 'v*'
+    tags: '**'
   pull_request:
     branches: '**'
 
@@ -94,6 +94,6 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         file: 'agent/src/docker/Dockerfile'
-        push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        push: ${{ startsWith(github.ref, 'refs/tags/') }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

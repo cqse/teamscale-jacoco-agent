@@ -51,7 +51,10 @@ abstract class JulManagerFreeTransform : TransformAction<TransformParameters.Non
 		if (jarEntry.name.endsWith(".class")) {
 			val classReader = ClassReader(input)
 			val classWriter = ClassWriter(classReader, 0)
-			val classVisitor = IdentifyStaticGetLoggerCalls(classWriter)
+			val stringReplacer = StringValueReplacer(classWriter) {
+				if (it.startsWith("logback.")) "shadow.$it" else it
+			}
+			val classVisitor = IdentifyStaticGetLoggerCalls(stringReplacer)
 			classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
 			val rewrittenClass = classWriter.toByteArray()
 
@@ -130,5 +133,41 @@ private class StaticGetLoggerReplacer(
 			Method("getLogger", LOGGER_TYPE, arrayOf(STRING_TYPE)),
 			Method("getLogger", LOGGER_TYPE, arrayOf(STRING_TYPE, STRING_TYPE))
 		)
+	}
+}
+
+/** Replaces string constants within a class file using the given replace function. */
+private class StringValueReplacer(
+	classVisitor: ClassVisitor?,
+	private val stringReplacer: (string: String) -> String,
+) : ClassVisitor(Opcodes.ASM9, classVisitor) {
+
+	private fun transformConstant(value: Any?): Any? {
+		return if (value is String) stringReplacer(value) else value
+	}
+
+	override fun visitField(
+		access: Int,
+		name: String?,
+		descriptor: String?,
+		signature: String?,
+		value: Any?
+	): FieldVisitor {
+		return super.visitField(access, name, descriptor, signature, transformConstant(value))
+	}
+
+	override fun visitMethod(
+		access: Int,
+		name: String,
+		descriptor: String,
+		signature: String?,
+		exceptions: Array<String>?
+	): MethodVisitor {
+		val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
+		return object : MethodVisitor(Opcodes.ASM9, mv) {
+			override fun visitLdcInsn(cst: Any?) {
+				super.visitLdcInsn(transformConstant(cst))
+			}
+		}
 	}
 }
