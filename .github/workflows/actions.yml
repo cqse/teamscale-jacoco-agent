@@ -8,8 +8,8 @@ on:
     branches: '**'
 
 jobs:
-  build:
-    name: Build & Deploy
+  build-linux:
+    name: Build Linux & Deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -72,6 +72,33 @@ jobs:
         partition: 'Coverage'
         format: 'JACOCO'
         message: 'Coverage'
+        files: '**/jacocoTestReport.xml'
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up GraalVM
+      uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: '17.0.8'
+        distribution: 'graalvm-community'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        set-java-home: true
+    - name: Build with Gradle
+      run: ./gradlew build
+    - name: Upload coverage to Teamscale
+      if: always() && github.event_name == 'push'
+      uses: cqse/teamscale-upload-action@v2.8.2
+      with:
+        server: 'https://cqse.teamscale.io'
+        project: 'teamscale-jacoco-agent'
+        user: ${{ secrets.CQSE_TEAMSCALE_IO_USER }}
+        accesskey: ${{ secrets.CQSE_TEAMSCALE_IO_ACCESSKEY }}
+        partition: 'Coverage Windows'
+        format: 'JACOCO'
+        message: 'Coverage Windows'
         files: '**/jacocoTestReport.xml'
 
   docker:
