@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+# 32.6.3
+- Re-Release 32.6.2
 
 # 32.6.2
 - Re-Release 32.6.1

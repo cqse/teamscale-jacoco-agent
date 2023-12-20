@@ -66,6 +66,7 @@ if (project.hasProperty("sonatypeUsername") &&
 		group = "publishing"
 		description = "Publishes the Maven publication to the Sonatype repository"
 		dependsOn(":agent:publishToMavenLocal")
+		dependsOn(":teamscale-client:publishToMavenLocal")
 		doFirst {
 			file("/tmp/maven-settings.xml").writeText(
 				"""
@@ -83,7 +84,6 @@ if (project.hasProperty("sonatypeUsername") &&
 		}
 		args(
 			"deploy", "-s", "/tmp/maven-settings.xml",
-			"-Drevision=${project.version}", "-Dteamscale.agent.version=${project.version}",
 			"-Dgpg.passphrase=${project.property("signing.password")}",
 			"-Dgpg.homedir=${project.property("gpgDirectory")}",
 			"-Dgpg.keyname=${project.property("signing.keyId")}",
