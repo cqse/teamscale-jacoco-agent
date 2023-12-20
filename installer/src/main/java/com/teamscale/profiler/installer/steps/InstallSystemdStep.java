@@ -30,8 +30,8 @@ public class InstallSystemdStep implements IStep {
 	}
 
 	@Override
-	public boolean shouldRun() {
-		return SystemUtils.isLinux();
+	public boolean shouldNotRun() {
+		return !SystemUtils.isLinux();
 	}
 
 	@Override

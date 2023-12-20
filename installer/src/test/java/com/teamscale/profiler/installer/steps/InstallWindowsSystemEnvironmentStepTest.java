@@ -19,15 +19,15 @@ class InstallWindowsSystemEnvironmentStepTest {
 	private static final TeamscaleCredentials CREDENTIALS = new TeamscaleCredentials(
 			HttpUrl.get("http://localhost:" + 8058 + "/"), "user", "accesskey");
 
-	private static final EnvironmentMap environment = new EnvironmentMap("_JAVA_OPTIONS",
+	private static final EnvironmentMap ENVIRONMENT = new EnvironmentMap("_JAVA_OPTIONS",
 			"\"-javaagent:C:\\Program Files\\foo.jar\"");
 
 	@Test
 	void successfulInstall() throws FatalInstallerError {
 		MockRegistry registry = new MockRegistry();
-		new InstallWindowsSystemEnvironmentStep(environment, registry).install(CREDENTIALS);
+		new InstallWindowsSystemEnvironmentStep(ENVIRONMENT, registry).install(CREDENTIALS);
 
-		assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo(environment.getMap().get("_JAVA_OPTIONS"));
+		assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo(ENVIRONMENT.getMap().get("_JAVA_OPTIONS"));
 	}
 
 	@Test
@@ -35,8 +35,8 @@ class InstallWindowsSystemEnvironmentStepTest {
 		MockRegistry registry = new MockRegistry();
 		Installer.UninstallerErrorReporter errorReporter = new Installer.UninstallerErrorReporter();
 
-		new InstallWindowsSystemEnvironmentStep(environment, registry).install(CREDENTIALS);
-		new InstallWindowsSystemEnvironmentStep(environment, registry).uninstall(errorReporter);
+		new InstallWindowsSystemEnvironmentStep(ENVIRONMENT, registry).install(CREDENTIALS);
+		new InstallWindowsSystemEnvironmentStep(ENVIRONMENT, registry).uninstall(errorReporter);
 
 		assertThat(errorReporter.wereErrorsReported()).isFalse();
 		assertThat(registry.getVariable("_JAVA_OPTIONS")).isNull();
