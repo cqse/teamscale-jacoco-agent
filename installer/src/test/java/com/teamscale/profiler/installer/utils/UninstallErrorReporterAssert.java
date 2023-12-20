@@ -25,6 +25,7 @@ public class UninstallErrorReporterAssert extends AbstractAssert<UninstallErrorR
 		}
 	}
 
+	/** Creates an assert for the given reporter. */
 	public static UninstallErrorReporterAssert assertThat(Installer.UninstallerErrorReporter reporter) {
 		return new UninstallErrorReporterAssert(reporter, UninstallErrorReporterAssert.class);
 	}
