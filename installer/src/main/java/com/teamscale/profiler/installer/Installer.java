@@ -34,6 +34,11 @@ public class Installer {
 			() -> "Try running this installer as root, e.g. with sudo."
 	);
 
+	private static final String RESTART_ADVICE = windowsOrLinux(
+			() -> "Please restart Windows to apply all changes.",
+			() -> "In an interactive session, you have to log out and log back in for the changes to take effect."
+	);
+
 	private static <T> T windowsOrLinux(Supplier<T> windowsSupplier, Supplier<T> linuxSupplier) {
 		if (SystemUtils.isWindows()) {
 			return windowsSupplier.get();
@@ -86,22 +91,19 @@ public class Installer {
 	public static int install(TeamscaleCredentials credentials) {
 		try {
 			getDefaultInstaller().runInstall(credentials);
-			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY);
-			if (SystemUtils.isLinux()) {
-				System.out.println("To use the profiler in your current session, please log out and back in.");
-			}
-			System.out.println("To activate the profiler for an application, set the environment variable:"
+			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY
+					+ "\n\nTo activate the profiler for an application, set the environment variable:"
 					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG_ID"
 					+ "\nIts value must be a valid profiler configuration ID defined in the Teamscale instance."
 					+ "\nThen, restart your application (for web applications: restart the app server)."
-					+ "\nIn an interactive session, you have to log out and log back in for the changes to take effect.");
+					+ "\n\n" + RESTART_ADVICE);
 			return CommandLine.ExitCode.OK;
 		} catch (PermissionError e) {
 			e.printToStderr();
 
 			System.err.println(
 					"\n\nInstallation failed because the installer had insufficient permissions to make the necessary"
-							+ " changes on your system.\nSee above for error messages.\n" + RERUN_ADVICE);
+							+ " changes on your system.\nSee above for error messages.\n\n" + RERUN_ADVICE);
 			return RootCommand.EXIT_CODE_PERMISSION_ERROR;
 		} catch (FatalInstallerError e) {
 			e.printToStderr();
