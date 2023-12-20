@@ -1,6 +1,6 @@
 package com.teamscale.profiler.installer.steps;
 
-import com.teamscale.profiler.installer.EnvironmentMap;
+import com.teamscale.profiler.installer.JvmEnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
@@ -19,10 +19,10 @@ import java.util.concurrent.TimeUnit;
 public class InstallSystemdStep implements IStep {
 
 	private final Path etcDirectory;
-	private final EnvironmentMap environmentVariables;
+	private final JvmEnvironmentMap environmentVariables;
 	private final boolean reloadSystemdDaemon;
 
-	public InstallSystemdStep(Path etcDirectory, EnvironmentMap environmentMap, boolean reloadSystemdDaemon) {
+	public InstallSystemdStep(Path etcDirectory, JvmEnvironmentMap environmentMap, boolean reloadSystemdDaemon) {
 		this.etcDirectory = etcDirectory;
 		this.environmentVariables = environmentMap;
 		this.reloadSystemdDaemon = reloadSystemdDaemon;

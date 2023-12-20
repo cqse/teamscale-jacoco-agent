@@ -1,6 +1,6 @@
 package com.teamscale.profiler.installer.steps;
 
-import com.teamscale.profiler.installer.EnvironmentMap;
+import com.teamscale.profiler.installer.JvmEnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 public class InstallEtcEnvironmentStep implements IStep {
 
 	private final Path etcDirectory;
-	private final EnvironmentMap environmentVariables;
+	private final JvmEnvironmentMap environmentVariables;
 
-	public InstallEtcEnvironmentStep(Path etcDirectory, EnvironmentMap environmentMap) {
+	public InstallEtcEnvironmentStep(Path etcDirectory, JvmEnvironmentMap environmentMap) {
 		this.etcDirectory = etcDirectory;
 		this.environmentVariables = environmentMap;
 	}
@@ -35,17 +35,18 @@ public class InstallEtcEnvironmentStep implements IStep {
 	@Override
 	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
 		Path environmentFile = getEnvironmentFile();
+		String etcEnvironmentAddition = String.join("\n", environmentVariables.getEtcEnvironmentLinesList());
+
 		if (!Files.exists(environmentFile)) {
 			System.err.println(
 					environmentFile + " does not exist. Skipping system-wide registration of the profiler."
 					+ "\nYou need to manually register the profiler for process that should be profiled by"
 					+ " setting the following environment variables:"
-					+ "\n\n" + environmentVariables.getEtcEnvironmentString() + "\n");
+					+ "\n\n" + etcEnvironmentAddition + "\n");
 			return;
 		}
 
-		String content = "\n" + environmentVariables.getEtcEnvironmentString() + "\n";
-
+		String content = "\n" + etcEnvironmentAddition + "\n";
 		try {
 			Files.writeString(environmentFile, content, StandardCharsets.US_ASCII,
 					StandardOpenOption.APPEND);

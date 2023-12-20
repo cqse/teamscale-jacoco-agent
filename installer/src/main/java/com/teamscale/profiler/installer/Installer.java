@@ -75,7 +75,7 @@ public class Installer {
 	 */
 	public Installer(Path sourceDirectory, Path installDirectory, Path etcDirectory, boolean reloadSystemdDaemon,
 					 IRegistry registry) {
-		EnvironmentMap environmentVariables = getEnvironmentVariables(installDirectory);
+		JvmEnvironmentMap environmentVariables = getEnvironmentVariables(installDirectory);
 		this.steps = Arrays.asList(new InstallAgentFilesStep(sourceDirectory, installDirectory),
 				new InstallWindowsSystemEnvironmentStep(environmentVariables, registry),
 				new InstallEtcEnvironmentStep(etcDirectory, environmentVariables),
@@ -203,9 +203,9 @@ public class Installer {
 	 * by application start scripts
 	 * </ul>
 	 */
-	private EnvironmentMap getEnvironmentVariables(Path installDirectory) {
+	private JvmEnvironmentMap getEnvironmentVariables(Path installDirectory) {
 		String javaAgentArgument = "-javaagent:" + getAgentJarPath(installDirectory);
-		return new EnvironmentMap("JAVA_TOOL_OPTIONS", javaAgentArgument,
+		return new JvmEnvironmentMap("JAVA_TOOL_OPTIONS", javaAgentArgument,
 				"_JAVA_OPTIONS", javaAgentArgument);
 	}
 

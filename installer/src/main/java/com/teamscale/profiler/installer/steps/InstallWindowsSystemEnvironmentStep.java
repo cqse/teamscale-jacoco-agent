@@ -1,6 +1,6 @@
 package com.teamscale.profiler.installer.steps;
 
-import com.teamscale.profiler.installer.EnvironmentMap;
+import com.teamscale.profiler.installer.JvmEnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import com.teamscale.profiler.installer.windows.IRegistry;
@@ -13,10 +13,10 @@ import java.util.Map;
 /** On Windows, registers the agent globally via environment variables set for the entire machine. */
 public class InstallWindowsSystemEnvironmentStep implements IStep {
 
-	private final EnvironmentMap environmentVariables;
+	private final JvmEnvironmentMap environmentVariables;
 	private final IRegistry registry;
 
-	public InstallWindowsSystemEnvironmentStep(EnvironmentMap environmentMap, IRegistry registry) {
+	public InstallWindowsSystemEnvironmentStep(JvmEnvironmentMap environmentMap, IRegistry registry) {
 		this.environmentVariables = environmentMap;
 		this.registry = registry;
 	}
@@ -28,7 +28,7 @@ public class InstallWindowsSystemEnvironmentStep implements IStep {
 
 	@Override
 	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
-		Map<String, String> map = environmentVariables.getMap();
+		Map<String, String> map = environmentVariables.getEnvironmentVariableMap();
 		for (String variable : map.keySet()) {
 			addProfiler(variable, map.get(variable), registry);
 		}
@@ -36,7 +36,7 @@ public class InstallWindowsSystemEnvironmentStep implements IStep {
 
 	@Override
 	public void uninstall(IUninstallErrorReporter errorReporter) {
-		Map<String, String> map = environmentVariables.getMap();
+		Map<String, String> map = environmentVariables.getEnvironmentVariableMap();
 		for (String variable : map.keySet()) {
 			try {
 				String valueToRemove = map.get(variable);

@@ -1,6 +1,6 @@
 package com.teamscale.profiler.installer.steps;
 
-import com.teamscale.profiler.installer.EnvironmentMap;
+import com.teamscale.profiler.installer.JvmEnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.Installer;
 import com.teamscale.profiler.installer.utils.MockRegistry;
@@ -19,15 +19,17 @@ class InstallWindowsSystemEnvironmentStepTest {
 	private static final TeamscaleCredentials CREDENTIALS = new TeamscaleCredentials(
 			HttpUrl.get("http://localhost:" + 8058 + "/"), "user", "accesskey");
 
-	private static final EnvironmentMap ENVIRONMENT = new EnvironmentMap("_JAVA_OPTIONS",
-			"\"-javaagent:C:\\Program Files\\foo.jar\"");
+	private static final JvmEnvironmentMap ENVIRONMENT = new JvmEnvironmentMap(
+			"_JAVA_OPTIONS", "-javaagent:C:\\Program Files\\foo.jar",
+			"JAVA_TOOL_OPTIONS", "-javaagent:C:\\Programs\\foo.jar");
 
 	@Test
 	void successfulInstall() throws FatalInstallerError {
 		MockRegistry registry = new MockRegistry();
 		new InstallWindowsSystemEnvironmentStep(ENVIRONMENT, registry).install(CREDENTIALS);
 
-		assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo(ENVIRONMENT.getMap().get("_JAVA_OPTIONS"));
+		assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo("\"-javaagent:C:\\Program Files\\foo.jar\"");
+		assertThat(registry.getVariable("JAVA_TOOL_OPTIONS")).isEqualTo("-javaagent:C:\\Programs\\foo.jar");
 	}
 
 	@Test
