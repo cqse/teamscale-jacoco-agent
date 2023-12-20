@@ -56,7 +56,7 @@ public class TeamscaleUtils {
 										  + " Please ensure you have no typo and that this host is reachable from this server.",
 					e);
 		} catch (ConnectException e) {
-			throw new FatalInstallerError("The URL " + credentials.url + " refused a connection."
+			throw new FatalInstallerError("The host " + credentials.url + " refused a connection."
 										  + " Please ensure that you have no typo and that this endpoint is reachable and not blocked by firewalls.",
 					e);
 		} catch (
