@@ -74,8 +74,8 @@ jobs:
         message: 'Coverage'
         files: '**/jacocoTestReport.xml'
 
-  build-windows:
-    name: Build Windows
+  test-windows:
+    name: Test on Windows
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
