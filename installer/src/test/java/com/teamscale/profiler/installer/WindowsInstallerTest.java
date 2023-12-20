@@ -86,9 +86,9 @@ class WindowsInstallerTest {
 	}
 
 	@Test
-	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
+	void uninstallDeletingAgentDirectoryFails() throws Exception {
 		install();
-		TestUtils.setPathWritable(targetDirectory, false);
+		TestUtils.makePathReadOnly(targetDirectory);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		UninstallErrorReporterAssert.assertThat(errorReporter).hadErrors();

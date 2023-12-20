@@ -124,9 +124,9 @@ class LinuxInstallerTest {
 	}
 
 	@Test
-	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
+	void uninstallDeletingAgentDirectoryFails() throws Exception {
 		install();
-		TestUtils.setPathWritable(targetDirectory, false);
+		TestUtils.makePathReadOnly(targetDirectory);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();
@@ -136,9 +136,9 @@ class LinuxInstallerTest {
 	}
 
 	@Test
-	void uninstallChangingEtcEnvironmentFails() throws FatalInstallerError {
+	void uninstallChangingEtcEnvironmentFails() throws Exception {
 		install();
-		TestUtils.setPathWritable(environmentFile, false);
+		TestUtils.makePathReadOnly(environmentFile);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();

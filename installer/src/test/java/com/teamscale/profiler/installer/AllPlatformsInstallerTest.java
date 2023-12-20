@@ -99,9 +99,9 @@ class AllPlatformsInstallerTest {
 	}
 
 	@Test
-	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
+	void uninstallDeletingAgentDirectoryFails() throws Exception {
 		install();
-		TestUtils.setPathWritable(targetDirectory, false);
+		TestUtils.makePathReadOnly(targetDirectory);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();
@@ -138,8 +138,8 @@ class AllPlatformsInstallerTest {
 	}
 
 	@Test
-	void installDirectoryNotWritable() {
-		assertThat(targetDirectory.getParent().toFile().setReadOnly()).isTrue();
+	void installDirectoryNotWritable() throws Exception {
+		TestUtils.makePathReadOnly(targetDirectory.getParent());
 		assertThatThrownBy(() -> install(TEAMSCALE_URL)).hasMessageContaining("Cannot create directory");
 	}
 
