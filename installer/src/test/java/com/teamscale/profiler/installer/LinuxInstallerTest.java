@@ -1,6 +1,7 @@
 package com.teamscale.profiler.installer;
 
 import com.teamscale.profiler.installer.utils.MockTeamscale;
+import com.teamscale.profiler.installer.utils.TestUtils;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
@@ -125,7 +126,7 @@ class LinuxInstallerTest {
 	@Test
 	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
 		install();
-		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
+		TestUtils.setPathWritable(targetDirectory, false);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();
@@ -137,7 +138,7 @@ class LinuxInstallerTest {
 	@Test
 	void uninstallChangingEtcEnvironmentFails() throws FatalInstallerError {
 		install();
-		assertThat(environmentFile.toFile().setWritable(false, false)).isTrue();
+		TestUtils.setPathWritable(environmentFile, false);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();

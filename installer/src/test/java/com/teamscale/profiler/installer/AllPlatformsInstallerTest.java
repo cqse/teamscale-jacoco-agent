@@ -2,6 +2,7 @@ package com.teamscale.profiler.installer;
 
 import com.teamscale.profiler.installer.utils.MockRegistry;
 import com.teamscale.profiler.installer.utils.MockTeamscale;
+import com.teamscale.profiler.installer.utils.TestUtils;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -101,8 +102,7 @@ class AllPlatformsInstallerTest {
 	@Test
 	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
 		install();
-		assertThat(targetDirectory.toFile().setWritable(false, false))
-				.withFailMessage("Could not make target directory unwritable").isTrue();
+		TestUtils.setPathWritable(targetDirectory, false);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();

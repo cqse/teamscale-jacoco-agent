@@ -2,6 +2,7 @@ package com.teamscale.profiler.installer;
 
 import com.teamscale.profiler.installer.utils.MockRegistry;
 import com.teamscale.profiler.installer.utils.MockTeamscale;
+import com.teamscale.profiler.installer.utils.TestUtils;
 import com.teamscale.profiler.installer.utils.UninstallErrorReporterAssert;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
@@ -87,7 +88,7 @@ class WindowsInstallerTest {
 	@Test
 	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
 		install();
-		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
+		TestUtils.setPathWritable(targetDirectory, false);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		UninstallErrorReporterAssert.assertThat(errorReporter).hadErrors();
