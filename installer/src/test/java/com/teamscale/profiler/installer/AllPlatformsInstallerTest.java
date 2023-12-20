@@ -1,5 +1,7 @@
 package com.teamscale.profiler.installer;
 
+import com.teamscale.profiler.installer.utils.MockRegistry;
+import com.teamscale.profiler.installer.utils.MockTeamscale;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -14,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
+import static com.teamscale.profiler.installer.utils.UninstallErrorReporterAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -90,19 +93,19 @@ class AllPlatformsInstallerTest {
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
+		assertThat(errorReporter).hadNoErrors();
 
-		assertThat(errorReporter.wereErrorsReported()).isFalse();
 		assertThat(targetDirectory).doesNotExist();
 	}
 
 	@Test
 	void uninstallDeletingAgentDirectoryFails() throws FatalInstallerError {
 		install();
-		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
+		assertThat(targetDirectory.toFile().setWritable(false, false))
+				.withFailMessage("Could not make target directory unwritable").isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
-
-		assertThat(errorReporter.wereErrorsReported()).isTrue();
+		assertThat(errorReporter).hadErrors();
 
 		assertThat(targetDirectory).exists();
 		assertThat(installedTeamscaleProperties).exists();

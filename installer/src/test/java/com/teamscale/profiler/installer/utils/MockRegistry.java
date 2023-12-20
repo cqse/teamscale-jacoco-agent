@@ -1,4 +1,4 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
 
 import com.teamscale.profiler.installer.windows.IRegistry;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;

@@ -1,4 +1,4 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
 
 import spark.Request;
 import spark.Response;

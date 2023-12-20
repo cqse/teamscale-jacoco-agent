@@ -3,7 +3,7 @@ package com.teamscale.profiler.installer.steps;
 import com.teamscale.profiler.installer.EnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.Installer;
-import com.teamscale.profiler.installer.MockRegistry;
+import com.teamscale.profiler.installer.utils.MockRegistry;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,8 @@
 package com.teamscale.profiler.installer;
 
+import com.teamscale.profiler.installer.utils.MockRegistry;
+import com.teamscale.profiler.installer.utils.MockTeamscale;
+import com.teamscale.profiler.installer.utils.UninstallErrorReporterAssert;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -75,8 +78,8 @@ class WindowsInstallerTest {
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
+		UninstallErrorReporterAssert.assertThat(errorReporter).hadNoErrors();
 
-		assertThat(errorReporter.wereErrorsReported()).isFalse();
 		assertThat(registry.getVariable("_JAVA_OPTIONS")).isNull();
 		assertThat(registry.getVariable("JAVA_TOOL_OPTIONS")).isNull();
 	}
@@ -87,8 +90,8 @@ class WindowsInstallerTest {
 		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
+		UninstallErrorReporterAssert.assertThat(errorReporter).hadErrors();
 
-		assertThat(errorReporter.wereErrorsReported()).isTrue();
 		assertThat(registry.getVariable("_JAVA_OPTIONS")).isNull();
 		assertThat(registry.getVariable("JAVA_TOOL_OPTIONS")).isNull();
 	}

@@ -1,5 +1,6 @@
 package com.teamscale.profiler.installer;
 
+import com.teamscale.profiler.installer.utils.MockTeamscale;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
@@ -15,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import static com.teamscale.profiler.installer.utils.UninstallErrorReporterAssert.assertThat;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -98,8 +100,8 @@ class LinuxInstallerTest {
 	void successfulUninstallation() throws FatalInstallerError {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
+		assertThat(errorReporter).hadNoErrors();
 
-		assertThat(errorReporter.wereErrorsReported()).isFalse();
 		assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
 		assertThat(systemdConfig).doesNotExist();
 	}
@@ -109,8 +111,7 @@ class LinuxInstallerTest {
 		install();
 		Files.delete(systemdConfig);
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
-
-		assertThat(errorReporter.wereErrorsReported()).isFalse();
+		assertThat(errorReporter).hadNoErrors();
 	}
 
 	@Test
@@ -118,8 +119,7 @@ class LinuxInstallerTest {
 		install();
 		Files.delete(environmentFile);
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
-
-		assertThat(errorReporter.wereErrorsReported()).isFalse();
+		assertThat(errorReporter).hadNoErrors();
 	}
 
 	@Test
@@ -128,8 +128,8 @@ class LinuxInstallerTest {
 		assertThat(targetDirectory.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
+		assertThat(errorReporter).hadErrors();
 
-		assertThat(errorReporter.wereErrorsReported()).isTrue();
 		assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
 		assertThat(systemdConfig).doesNotExist();
 	}
@@ -140,8 +140,7 @@ class LinuxInstallerTest {
 		assertThat(environmentFile.toFile().setWritable(false, false)).isTrue();
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
-
-		assertThat(errorReporter.wereErrorsReported()).isTrue();
+		assertThat(errorReporter).hadErrors();
 
 		assertThat(environmentFile).exists().content().contains("_JAVA_OPTIONS");
 
