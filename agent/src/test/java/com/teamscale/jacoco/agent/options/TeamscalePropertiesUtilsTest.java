@@ -3,6 +3,8 @@ package com.teamscale.jacoco.agent.options;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
@@ -45,36 +47,44 @@ class TeamscalePropertiesUtilsTest {
 	void missingUsername() throws IOException {
 		Files.write(teamscalePropertiesPath, "url=http://test\naccesskey=key".getBytes(StandardCharsets.UTF_8));
 		assertThatThrownBy(
-				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining("missing the username");
+				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining(
+				"missing the username");
 	}
 
 	@Test
 	void missingAccessKey() throws IOException {
 		Files.write(teamscalePropertiesPath, "url=http://test\nusername=user".getBytes(StandardCharsets.UTF_8));
 		assertThatThrownBy(
-				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining("missing the accesskey");
+				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining(
+				"missing the accesskey");
 	}
 
 	@Test
 	void missingUrl() throws IOException {
 		Files.write(teamscalePropertiesPath, "username=user\nusername=user".getBytes(StandardCharsets.UTF_8));
 		assertThatThrownBy(
-				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining("missing the url");
+				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining(
+				"missing the url");
 	}
 
 	@Test
 	void malformedUrl() throws IOException {
 		Files.write(teamscalePropertiesPath, "url=$$**\nusername=user\nusername=user".getBytes(StandardCharsets.UTF_8));
 		assertThatThrownBy(
-				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining("malformed URL");
+				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining(
+				"malformed URL");
 	}
 
+	/** This test doesn't work on Windows since {@link java.io.File#setReadable(boolean)} does not work there. */
+	@DisabledOnOs(OS.LINUX)
 	@Test
 	void fileNotReadable() throws IOException {
-		Files.write(teamscalePropertiesPath, "url=http://test\nusername=user\nusername=user".getBytes(StandardCharsets.UTF_8));
+		Files.write(teamscalePropertiesPath,
+				"url=http://test\nusername=user\nusername=user".getBytes(StandardCharsets.UTF_8));
 		assertThat(teamscalePropertiesPath.toFile().setReadable(false)).isTrue();
 		assertThatThrownBy(
-				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining("Failed to read");
+				() -> TeamscalePropertiesUtils.parseCredentials(teamscalePropertiesPath)).hasMessageContaining(
+				"Failed to read");
 	}
 
 }
