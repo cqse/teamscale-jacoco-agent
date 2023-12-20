@@ -5,6 +5,7 @@ import com.teamscale.profiler.installer.steps.InstallAgentFilesStep;
 import com.teamscale.profiler.installer.steps.InstallEtcEnvironmentStep;
 import com.teamscale.profiler.installer.steps.InstallSystemdStep;
 import com.teamscale.profiler.installer.steps.InstallWindowsSystemEnvironmentStep;
+import com.teamscale.profiler.installer.utils.TeamscaleUtils;
 import com.teamscale.profiler.installer.windows.IRegistry;
 import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import org.apache.commons.lang3.SystemUtils;

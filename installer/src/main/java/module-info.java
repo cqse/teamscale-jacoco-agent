@@ -6,5 +6,7 @@ module com.teamscale.profiler.installer {
 	requires org.apache.commons.io;
 	exports com.teamscale.profiler.installer;
 	opens com.teamscale.profiler.installer;
+	exports com.teamscale.profiler.installer.utils;
+	opens com.teamscale.profiler.installer.utils;
 }
 

@@ -1,5 +1,7 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
 
+import com.teamscale.profiler.installer.FatalInstallerError;
+import com.teamscale.profiler.installer.TeamscaleCredentials;
 import okhttp3.Credentials;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;

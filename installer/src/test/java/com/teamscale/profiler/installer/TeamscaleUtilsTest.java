@@ -1,6 +1,7 @@
 package com.teamscale.profiler.installer;
 
 import com.teamscale.profiler.installer.utils.MockTeamscale;
+import com.teamscale.profiler.installer.utils.TeamscaleUtils;
 import okhttp3.HttpUrl;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;

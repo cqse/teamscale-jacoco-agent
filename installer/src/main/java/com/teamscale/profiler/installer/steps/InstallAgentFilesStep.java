@@ -1,7 +1,7 @@
 package com.teamscale.profiler.installer.steps;
 
 import com.teamscale.profiler.installer.FatalInstallerError;
-import com.teamscale.profiler.installer.InstallFileUtils;
+import com.teamscale.profiler.installer.utils.InstallFileUtils;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import org.apache.commons.io.file.PathUtils;

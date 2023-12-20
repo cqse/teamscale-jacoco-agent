@@ -1,4 +1,7 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
+
+import com.teamscale.profiler.installer.FatalInstallerError;
+import com.teamscale.profiler.installer.PermissionError;
 
 import java.io.IOException;
 import java.nio.file.Files;

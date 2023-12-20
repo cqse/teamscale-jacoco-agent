@@ -1,5 +1,6 @@
 package com.teamscale.profiler.installer;
 
+import com.teamscale.profiler.installer.utils.TeamscaleUtils;
 import org.apache.commons.lang3.SystemUtils;
 import picocli.CommandLine;
 

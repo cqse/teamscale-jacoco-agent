@@ -1,4 +1,4 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
 
 import okhttp3.OkHttpClient;
 
