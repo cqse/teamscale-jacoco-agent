@@ -13,13 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up GraalVM
-      uses: graalvm/setup-graalvm@v1
+    - uses: actions/setup-java@v4
       with:
-        java-version: '17.0.8'
-        distribution: 'graalvm-community'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        set-java-home: true
+        distribution: 'temurin'
+        java-version: '21'
     - name: Build with Gradle
       run: ./gradlew build
     - name: Upload Release Assets
@@ -79,13 +76,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up GraalVM
-      uses: graalvm/setup-graalvm@v1
+    - uses: actions/setup-java@v4
       with:
-        java-version: '17.0.8'
-        distribution: 'graalvm-community'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        set-java-home: true
+        distribution: 'temurin'
+        java-version: '21'
     - name: Build with Gradle
       run: ./gradlew build
     - name: Upload coverage to Teamscale
