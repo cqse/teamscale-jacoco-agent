@@ -33,7 +33,6 @@ application {
 
 jlink {
 	options = listOf(
-		"--strip-debug",
 		"--compress", "2",
 		"--no-header-files",
 		"--no-man-pages",
