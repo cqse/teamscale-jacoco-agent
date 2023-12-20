@@ -1,6 +1,6 @@
 # --- build image ---
 
-FROM openjdk:8 as build
+FROM openjdk:17 as build
 ADD . /src
 WORKDIR /src
 RUN ./gradlew :agent:shadowJar
