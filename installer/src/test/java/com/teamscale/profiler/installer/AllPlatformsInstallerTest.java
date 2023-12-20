@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
@@ -28,6 +27,7 @@ class AllPlatformsInstallerTest {
 
 	private Path sourceDirectory;
 	private Path targetDirectory;
+	private Path etcDirectory;
 
 	private Path installedFile;
 	private Path installedNestedFile;
@@ -39,6 +39,7 @@ class AllPlatformsInstallerTest {
 	void setUpSourceDirectory() throws IOException {
 		sourceDirectory = Files.createTempDirectory("InstallerTest-source");
 		targetDirectory = Files.createTempDirectory("InstallerTest-target").resolve("profiler");
+		etcDirectory = Files.createTempDirectory("InstallerTest-etc");
 
 		Path fileToInstall = sourceDirectory.resolve("install-me.txt");
 		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
@@ -147,13 +148,12 @@ class AllPlatformsInstallerTest {
 	}
 
 	private void install(String teamscaleUrl) throws FatalInstallerError {
-		new Installer(sourceDirectory, targetDirectory, Paths.get("/etc"), false, new MockRegistry()).runInstall(
+		new Installer(sourceDirectory, targetDirectory, etcDirectory, false, new MockRegistry()).runInstall(
 				new TeamscaleCredentials(HttpUrl.get(teamscaleUrl), "user", "accesskey"));
 	}
 
 	private Installer.UninstallerErrorReporter uninstall() {
-		return new Installer(sourceDirectory, targetDirectory,
-				Paths.get("/etc"), false, new MockRegistry()).runUninstall();
+		return new Installer(sourceDirectory, targetDirectory, etcDirectory, false, new MockRegistry()).runUninstall();
 	}
 
 }

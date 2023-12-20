@@ -17,27 +17,28 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 /** Installs the agent system-globally. */
 public class Installer {
 
 	private static final Path DEFAULT_INSTALL_DIRECTORY = windowsOrLinux(
-			Paths.get(System.getenv("ProgramFiles")),
-			Paths.get("/opt/teamscale-profiler/java")
+			() -> Paths.get(System.getenv("ProgramFiles")),
+			() -> Paths.get("/opt/teamscale-profiler/java")
 	);
 
 	private static final Path DEFAULT_ETC_DIRECTORY = Paths.get("/etc");
 
 	private static final String RERUN_ADVICE = windowsOrLinux(
-			"Try running this installer as Administrator.",
-			"Try running this installer as root, e.g. with sudo."
+			() -> "Try running this installer as Administrator.",
+			() -> "Try running this installer as root, e.g. with sudo."
 	);
 
-	private static <T> T windowsOrLinux(T windowsValue, T linuxValue) {
+	private static <T> T windowsOrLinux(Supplier<T> windowsSupplier, Supplier<T> linuxSupplier) {
 		if (SystemUtils.isWindows()) {
-			return windowsValue;
+			return windowsSupplier.get();
 		} else {
-			return linuxValue;
+			return linuxSupplier.get();
 		}
 	}
 
