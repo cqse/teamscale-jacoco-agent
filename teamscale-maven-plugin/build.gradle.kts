@@ -3,8 +3,11 @@ import org.codehaus.plexus.util.Os
 abstract class MavenExec : Exec() {
 	@TaskAction
 	override fun exec() {
-		val mavenExecutable = if (Os.isFamily(Os.FAMILY_WINDOWS)) "mvnw.cmd" else "./mvnw"
-		executable = mavenExecutable
+		executable = "./mvnw"
+		if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+			executable = "cmd"
+			args(listOf("/c", "mvnw.cmd") + (args ?: listOf()))
+		}
 		workingDir(".")
 		project.file("pom.xml").writeText(
 			project.file("pom.xml").readText().replace(
