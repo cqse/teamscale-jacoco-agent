@@ -101,6 +101,7 @@ class AllPlatformsInstallerTest {
 	@Test
 	void uninstallDeletingAgentDirectoryFails() throws Exception {
 		install();
+		TestUtils.makePathReadOnly(targetDirectory);
 		TestUtils.makePathReadOnly(installedTeamscaleProperties);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
