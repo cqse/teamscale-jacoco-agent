@@ -1,10 +1,10 @@
 package com.teamscale.test.commons;
 
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TestWithClusterId;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.report.util.JsonUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;

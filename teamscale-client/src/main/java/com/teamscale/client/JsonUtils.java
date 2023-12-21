@@ -1,10 +1,11 @@
-package com.teamscale.report.util;
+package com.teamscale.client;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
@@ -22,9 +23,10 @@ public class JsonUtils {
 	 * OBJECT_MAPPER are configured to include all fields when serializing or deserializing objects, regardless of their
 	 * visibility modifiers (public, private, etc.).
 	 */
-	private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+	public static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
 			.visibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
 			.visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 			.serializationInclusion(JsonInclude.Include.NON_NULL)
 			.build();
 
