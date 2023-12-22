@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,12 +56,17 @@ public class SystemTestUtils {
 
 		ProcessUtils.ExecutionResult result;
 		try {
-			String executable = "./mvnw";
+			List<String> arguments = new ArrayList<>();
 			if (SystemUtils.isWindows()) {
-				executable = "./mvnw.cmd";
+				Collections.addAll(arguments, "cmd", "/c", "mvnw.cmd");
+			} else {
+				arguments.add("./mvnw");
 			}
-			result = ProcessUtils.execute(
-					new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
+
+			arguments.add("clean");
+			arguments.add("verify");
+
+			result = ProcessUtils.execute(new ProcessBuilder(arguments).directory(workingDirectory));
 		} catch (IOException e) {
 			throw new IOException(
 					"Failed to run ./mvnw clean verify in directory " + workingDirectory.getAbsolutePath(),

@@ -6,7 +6,7 @@ abstract class MavenExec : Exec() {
 		executable = "./mvnw"
 		if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 			executable = "cmd"
-			args(listOf("/c", "mvnw.cmd") + (args ?: listOf()))
+			args(listOf("/c", "mvnw.cmd") + (args ?: emptyList()))
 		}
 		workingDir(".")
 		project.file("pom.xml").writeText(
