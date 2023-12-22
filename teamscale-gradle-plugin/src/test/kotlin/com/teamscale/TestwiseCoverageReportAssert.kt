@@ -75,7 +75,8 @@ class TestwiseCoverageReportAssert(actual: TestwiseCoverageReport) :
 	): TestwiseCoverageReportAssert {
 		isNotNull
 
-		val path = File(filePath).parent
+		// testwise reports always use slashes, File uses backslashes on Windows
+		val path = File(filePath).parent.replace('\\', '/')
 		val fileName = File(filePath).name
 
 		val test = getTest(testUniformPath)
