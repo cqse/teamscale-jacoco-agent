@@ -19,7 +19,7 @@ application {
 dependencies {
 	// we need this older version since newer versions are Kotlin-implemented and don't play nice with GraalVM
 	// okhttp 5 will add official GraalVM support but is currently still alpha https://square.github.io/okhttp/changelogs/changelog/
-	implementation("com.squareup.okhttp3:okhttp:3.14.2")
+	implementation("com.squareup.okhttp3:okhttp:4.12.0")
 	implementation(libs.teamscaleLibCommons)
 	implementation(libs.picocli.core)
 	annotationProcessor(libs.picocli.codegen)
