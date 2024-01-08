@@ -5,6 +5,12 @@ plugins {
 	id("org.graalvm.buildtools.native") version "0.9.28"
 }
 
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
+}
+
 tasks.jar {
 	manifest {
 		attributes["Main-Class"] = "com.teamscale.profiler.installer.RootCommand"
