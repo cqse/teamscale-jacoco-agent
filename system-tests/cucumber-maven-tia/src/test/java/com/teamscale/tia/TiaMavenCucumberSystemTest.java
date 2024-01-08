@@ -19,11 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  */
 public class TiaMavenCucumberSystemTest {
 
-	/**
-	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
-	 * project.
-	 */
-	private static final int FAKE_TEAMSCALE_PORT = 63800;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	private static final String[] IMPACTED_TEST_PATHS = { // sorted alphabetically
@@ -41,7 +36,7 @@ public class TiaMavenCucumberSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT)
+			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT)
 					.acceptingReportUploads()
 					.withImpactedTests(IMPACTED_TEST_PATHS);
 		}

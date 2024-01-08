@@ -1,11 +1,14 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
+import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.jacoco.agent.options.JacocoAgentOptionsBuilder;
+import com.teamscale.jacoco.agent.options.TeamscaleCredentials;
+import com.teamscale.jacoco.agent.options.TeamscalePropertiesUtils;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.AgentUtils;
@@ -14,6 +17,7 @@ import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.conqat.lib.commons.string.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -33,10 +37,38 @@ public class PreMain {
 	private static LoggingUtils.LoggingResources loggingResources = null;
 
 	/**
+	 * System property that we use to prevent this agent from being attached to the same VM twice. This can happen if
+	 * the agent is registered via multiple JVM environment variables and/or the command line at the same time.
+	 */
+	private static final String LOCKING_SYSTEM_PROPERTY = "TEAMSCALE_JAVA_PROFILER_ATTACHED";
+
+	/** Environment variable from which to read the config file to use. */
+	private static final String CONFIG_ID_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG_ID";
+
+	/**
 	 * Entry point for the agent, called by the JVM.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
-		AgentOptions agentOptions = getAndApplyAgentOptions(options);
+		if (System.getProperty(LOCKING_SYSTEM_PROPERTY) != null) {
+			return;
+		}
+		System.setProperty(LOCKING_SYSTEM_PROPERTY, "true");
+
+		String environmentConfigId = System.getenv(CONFIG_ID_ENVIRONMENT_VARIABLE);
+		if (StringUtils.isEmpty(options) && environmentConfigId == null) {
+			// profiler was registered globally and no config was set explicitly by the user, thus ignore this process
+			// and don't profile anything
+			return;
+		}
+
+		AgentOptions agentOptions;
+		try {
+			agentOptions = getAndApplyAgentOptions(options, environmentConfigId);
+		} catch (AgentOptionReceiveException e) {
+			// When Teamscale is not available, we don't want to fail hard to still allow for testing even if no
+			// coverage is collected (see TS-33237)
+			return;
+		}
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 
@@ -45,15 +77,17 @@ public class PreMain {
 		JacocoAgentOptionsBuilder agentBuilder = new JacocoAgentOptionsBuilder(agentOptions);
 		JaCoCoPreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation, logger);
 
+		if (agentOptions.configurationViaTeamscale != null) {
+			agentOptions.configurationViaTeamscale.startHeartbeatThreadAndRegisterShutdownHook();
+		}
 		AgentBase agent = createAgent(agentOptions, instrumentation);
 		agent.registerShutdownHook();
 	}
 
 	@NotNull
-	private static AgentOptions getAndApplyAgentOptions(String options) throws AgentOptionParseException, IOException {
-		AgentOptions agentOptions;
+	private static AgentOptions getAndApplyAgentOptions(String options,
+														String environmentConfigId) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
 		DelayedLogger delayedLogger = new DelayedLogger();
-
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
 		if (javaAgents.size() > 1) {
@@ -63,18 +97,23 @@ public class PreMain {
 			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
 		}
 
+		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
+		if (credentials == null) {
+			delayedLogger.warn("Did not find a teamscale.properties file!");
+		}
+		AgentOptions agentOptions;
 		try {
-			agentOptions = AgentOptionsParser.parse(options, delayedLogger);
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, credentials, delayedLogger);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
-				delayedLogger.error("Failed to parse agent options: " + e.getMessage(), e);
-				System.err.println("Failed to parse agent options: " + e.getMessage());
-
-				// we perform actual logging output after writing to console to
-				// ensure the console is reached even in case of logging issues
-				// (see TS-23151). We use the Agent class here (same as below)
-				Logger logger = LoggingUtils.getLogger(Agent.class);
-				delayedLogger.logTo(logger);
+				delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
+				attemptLogAndThrow(delayedLogger);
+				throw e;
+			}
+		} catch (AgentOptionReceiveException e) {
+			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
+				delayedLogger.errorAndStdErr( e.getMessage() + " The application should start up normally, but NO coverage will be collected!", e);
+				attemptLogAndThrow(delayedLogger);
 				throw e;
 			}
 		}
@@ -84,6 +123,14 @@ public class PreMain {
 		delayedLogger.logTo(logger);
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 		return agentOptions;
+	}
+
+	private static void attemptLogAndThrow(DelayedLogger delayedLogger) {
+		// We perform actual logging output after writing to console to
+		// ensure the console is reached even in case of logging issues
+		// (see TS-23151). We use the Agent class here (same as below)
+		Logger logger = LoggingUtils.getLogger(Agent.class);
+		delayedLogger.logTo(logger);
 	}
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
@@ -135,6 +182,9 @@ public class PreMain {
 	 */
 	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions,
 																		   DelayedLogger delayedLogger) {
+		if (premainOptions == null) {
+			return LoggingUtils.initializeDefaultLogging();
+		}
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
 				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);

@@ -12,6 +12,8 @@ plugins {
 	com.teamscale.`logger-patch`
 }
 
+evaluationDependsOn(":installer")
+
 publishAs {
 	artifactId.set("teamscale-jacoco-agent")
 	readableName.set("Teamscale JaCoCo Agent")
@@ -82,6 +84,10 @@ distributions {
 	named("shadow") {
 		distributionBaseName.set("teamscale-jacoco-agent")
 		contents {
+			from(project(":installer").tasks["nativeCompile"]) {
+				include("installer")
+			}
+
 			from(tasks.readmeToPdf) {
 				into("documentation")
 				rename("README.pdf", "userguide.pdf")

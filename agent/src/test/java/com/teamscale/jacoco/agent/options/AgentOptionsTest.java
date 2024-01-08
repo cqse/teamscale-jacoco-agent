@@ -38,7 +38,7 @@ public class AgentOptionsTest {
 
 	/** Tests include pattern matching. */
 	@Test
-	public void testIncludePatternMatching() throws AgentOptionParseException {
+	public void testIncludePatternMatching() throws Exception {
 		assertThat(includeFilter("com.*")).accepts("file.jar@com/foo/Bar.class", "file.jar@com/foo/Bar$Goo.class",
 				"file1.jar@goo/file2.jar@com/foo/Bar.class", "com/foo/Bar.class", "com.foo/Bar.class");
 		assertThat(includeFilter("com.*")).rejects("foo/com/Bar.class", "com.class", "file.jar@com.class",
@@ -56,7 +56,7 @@ public class AgentOptionsTest {
 
 	/** Interval options test. */
 	@Test
-	public void testIntervalOptions() throws AgentOptionParseException {
+	public void testIntervalOptions() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(480);
 		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=0");
@@ -68,7 +68,7 @@ public class AgentOptionsTest {
 
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
-	public void testTeamscaleUploadOptions() throws AgentOptionParseException {
+	public void testTeamscaleUploadOptions() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
@@ -90,7 +90,7 @@ public class AgentOptionsTest {
 
 	/** Tests the options for the Test Impact mode. */
 	@Test
-	public void testHttpServerOptions() throws AgentOptionParseException {
+	public void testHttpServerOptions() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
@@ -98,14 +98,14 @@ public class AgentOptionsTest {
 
 	/** Tests the options http-server-port option for normal mode. */
 	@Test
-	public void testHttpServerOptionsForNormalMode() throws AgentOptionParseException {
+	public void testHttpServerOptionsForNormalMode() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("http-server-port=8081");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 
 	/** Tests the options for the Test Impact mode. */
 	@Test
-	public void testEnvironmentVariableOptions() throws AgentOptionParseException {
+	public void testEnvironmentVariableOptions() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
 				"test-env=TEST");
 		assertThat(agentOptions.getTestEnvironmentVariableName()).isEqualTo("TEST");
@@ -113,7 +113,7 @@ public class AgentOptionsTest {
 
 	/** Tests the options for the Test Impact mode. */
 	@Test
-	public void testHttpServerOptionsWithCoverageViaHttp() throws AgentOptionParseException {
+	public void testHttpServerOptionsWithCoverageViaHttp() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,tia-mode=http");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
@@ -122,21 +122,21 @@ public class AgentOptionsTest {
 
 	/** Tests setting ignore-uncovered-classes works. */
 	@Test
-	public void testIgnoreUncoveredClasses() throws AgentOptionParseException {
+	public void testIgnoreUncoveredClasses() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("ignore-uncovered-classes=true");
 		assertTrue(agentOptions.shouldIgnoreUncoveredClasses());
 	}
 
 	/** Tests default for ignore-uncovered-classes is false. */
 	@Test
-	public void testIgnoreUncoveredClassesDefault() throws AgentOptionParseException {
+	public void testIgnoreUncoveredClassesDefault() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		assertFalse(agentOptions.shouldIgnoreUncoveredClasses());
 	}
 
 	/** Tests default for ignore-uncovered-classes is false. */
 	@Test
-	public void shouldAllowMinusForEnumConstants() throws AgentOptionParseException {
+	public void shouldAllowMinusForEnumConstants() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("tia-mode=exec-file");
 		assertThat(agentOptions.getTestwiseCoverageMode()).isEqualTo(ETestwiseCoverageMode.EXEC_FILE);
 	}
@@ -169,10 +169,10 @@ public class AgentOptionsTest {
 
 	/** Tests the 'teamscale-revision-manifest-jar' option correctly parses the 'Git_Commit' field in the manifest. */
 	@Test
-	public void testTeamscaleRevisionManifestJarOption() throws URISyntaxException, AgentOptionParseException {
+	public void testTeamscaleRevisionManifestJarOption() throws Exception {
 		File jar = new File(getClass().getResource("manifest-with-git-commit-revision.jar").toURI());
 		AgentOptions options = getAgentOptionsParserWithDummyLogger().parse(
-				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath());
+				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 
 		assertThat(options.getTeamscaleServerOptions().revision).isEqualTo("f364d58dc4966ca856260185e46a90f80ee5e9c6");
 	}
@@ -185,7 +185,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testNoCommitOrRevisionGivenWhenProjectNull() throws Exception {
 		String message = "You tried to provide a commit to upload to directly." +
-				" This is not possible, since you did not provide the 'teamscale-project' Teamscale project to upload to";
+				" This is not possible, since you did not provide the 'teamscale-project' to upload to";
 
 		assertThatThrownBy(
 				() -> getAgentOptionsParserWithDummyLogger().parse(
@@ -212,7 +212,7 @@ public class AgentOptionsTest {
 	 * {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} jar option.
 	 */
 	@Test
-	public void testGitPropertiesJarOptionWithNonExistentFileDoesNotFailBadly() throws AgentOptionParseException {
+	public void testGitPropertiesJarOptionWithNonExistentFileDoesNotFailBadly() throws Exception {
 		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
 				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=doesNotExist" + File.separator + jarFile.getAbsolutePath());
@@ -221,7 +221,7 @@ public class AgentOptionsTest {
 
 	/** Test that the {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} option can be parsed correctly */
 	@Test
-	public void testGitPropertiesJarOptionParsedCorrectly() throws AgentOptionParseException {
+	public void testGitPropertiesJarOptionParsedCorrectly() throws Exception {
 		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
 				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=" + jarFile.getAbsolutePath());
@@ -233,7 +233,7 @@ public class AgentOptionsTest {
 	 * {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} jar option.
 	 */
 	@Test
-	public void testGitPropertiesJarDoesNotAcceptFolders() throws AgentOptionParseException {
+	public void testGitPropertiesJarDoesNotAcceptFolders() throws Exception {
 		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
 				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=" + jarFile.getParent());
@@ -242,19 +242,19 @@ public class AgentOptionsTest {
 
 	/** Tests that supplying version info is supported in Testwise mode. */
 	@Test
-	public void testVersionInfosInTestwiseMode() throws AgentOptionParseException {
+	public void testVersionInfosInTestwiseMode() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
-				"http-server-port=8081,teamscale-revision=1234");
+				"http-server-port=8081,teamscale-revision=1234,teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 		assertThat(agentOptions.getTeamscaleServerOptions().revision).isEqualTo("1234");
 
 		agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
-				"http-server-port=8081,teamscale-commit=branch:1234");
+				"http-server-port=8081,teamscale-commit=branch:1234,teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 		assertThat(agentOptions.getTeamscaleServerOptions().commit).isEqualTo(CommitDescriptor.parse("branch:1234"));
 	}
 
 	/** Tests the options for azure file storage upload. */
 	@Test
-	public void testAzureFileStorageOptions() throws AgentOptionParseException {
+	public void testAzureFileStorageOptions() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"azure-url=https://mrteamscaleshdev.file.core.windows.net/tstestshare/," +
 				"azure-key=Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
@@ -266,7 +266,7 @@ public class AgentOptionsTest {
 
 	/** Tests the options for SAP NWDI applications. */
 	@Test
-	public void testValidSapNwdiOptions() throws AgentOptionParseException {
+	public void testValidSapNwdiOptions() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
 				"teamscale-server-url=http://your.teamscale.url," +
 				"teamscale-user=your-user-name," +
@@ -276,25 +276,25 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.sapNetWeaverJavaApplications)
 				.isNotNull()
 				.satisfies(sap -> {
-					assertThat(sap.getApplications()).hasSize(2);
-					assertThat(sap.getApplications()).element(0).satisfies(application -> {
+					assertThat(sap).hasSize(2);
+					assertThat(sap).element(0).satisfies(application -> {
 						assertThat(application.markerClass).isEqualTo("com.example");
 						assertThat(application.teamscaleProject).isEqualTo("project");
 					});
-					assertThat(sap.getApplications()).element(1).satisfies(application -> {
+					assertThat(sap).element(1).satisfies(application -> {
 						assertThat(application.markerClass).isEqualTo("com.test");
 						assertThat(application.teamscaleProject).isEqualTo("p2");
 					});
 				});
-		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSetExceptProject()).isTrue();
-		assertThat(agentOptions.teamscaleServer.hasAllRequiredFieldsSet()).isFalse();
+		assertThat(agentOptions.teamscaleServer.isConfiguredForMultiProjectUpload()).isTrue();
+		assertThat(agentOptions.teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload()).isFalse();
 	}
 
 	/**
 	 * Tests successful parsing of the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION}
 	 */
 	@Test
-	public void testArtifactoryApiKeyOptionIsCorrectlyParsed() throws AgentOptionParseException {
+	public void testArtifactoryApiKeyOptionIsCorrectlyParsed() throws Exception {
 		String someArtifactoryApiKey = "some_api_key";
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
 				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
@@ -309,7 +309,7 @@ public class AgentOptionsTest {
 	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
-	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws AgentOptionParseException {
+	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.user = "user";
@@ -324,7 +324,7 @@ public class AgentOptionsTest {
 	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
-	public void testArtifactoryApiKeySetPassesValidityCheck() throws AgentOptionParseException {
+	public void testArtifactoryApiKeySetPassesValidityCheck() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.apiKey = "api_key";
@@ -333,21 +333,21 @@ public class AgentOptionsTest {
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
-	private static Predicate<String> includeFilter(String filterString) throws AgentOptionParseException {
+	private static Predicate<String> includeFilter(String filterString) throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
 				.parse("includes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	/** Returns the include filter predicate for the given filter expression. */
-	private static Predicate<String> excludeFilter(String filterString) throws AgentOptionParseException {
+	private static Predicate<String> excludeFilter(String filterString) throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
 				.parse("excludes=" + filterString);
 		return string -> agentOptions.getLocationIncludeFilter().isIncluded(string);
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new CommandLineLogger());
+		return new AgentOptionsParser(new CommandLineLogger(), null, null);
 	}
 
 	/**

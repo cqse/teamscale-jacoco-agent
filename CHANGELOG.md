@@ -5,6 +5,11 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)
+- [feature] allow specifying configuration ID from Teamscale via environment variable `TEAMSCALE_JAVA_PROFILER_CONFIG_ID`
+- [breaking change] default log and coverage file directory changed to `/tmp` which works in more situations
+- [feature] _agent_: Added `config-id` option to allow retrieving the agent configuration from Teamscale. 
+
 # 32.6.3
 - Re-Release 32.6.2
 
@@ -33,7 +38,7 @@ We use [semantic versioning](http://semver.org/):
 # 32.4.0
 - [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22
 - [fix] _agent_: Produce more helpful error results in case a service call to Teamscale fails while handling an HTTP call 
-- [fix] _teamscale-maven-plugin_: The same uniform paths were extracted for tests that have the same name in a Cucumber feature file 
+- [fix] _teamscale-maven-plugin_: The same uniform paths were extracted for tests that have the same name in a Cucumber feature file
 
 # 32.3.1
 - Re-release because of failing publishing process
@@ -64,7 +69,7 @@ We use [semantic versioning](http://semver.org/):
 - [fix] _agent_: Attaching the agent in testwise mode to a JBoss Wildfly server caused a crash
 
 # 31.0.0
-- [breaking] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
+- [breaking change] Replaced `teamscale-git-properties-jar` with `git-properties-jar`. Jars/Wars/Ears/Aars provided with this option will now also be searched recursively for git.properties files except you set `search-git-properties-recursively=false`.
 - [feature] support `full` mode of the Maven git-commit-id plugin.
 - [fix] Providing multiple include pattern in the maven plugin resulted in no coverage being collected
 
