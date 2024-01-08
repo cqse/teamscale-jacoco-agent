@@ -6,7 +6,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.moshi.MoshiConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,8 @@ public class TeamscaleServiceGenerator {
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
 									  Duration readTimeout, Duration writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
+						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())
@@ -43,7 +44,8 @@ public class TeamscaleServiceGenerator {
 														String accessToken, File logfile, Duration readTimeout,
 														Duration writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl).addConverterFactory(MoshiConverterFactory.create()),
+				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
+						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
 				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
 						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 						.addInterceptor(new AcceptJsonInterceptor())

@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.moshi.MoshiConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
@@ -99,7 +99,7 @@ public class TestwiseCoverageAgentTest {
 
 		testRun.endTestRun(true);
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
-				matches("\\Q{\"partial\":true,\"tests\":[{\"content\":\"content\",\"paths\":[],\"sourcePath\":\"test1\",\"uniformPath\":\"test1\"},{\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"message\":\"message\",\"paths\":[{\"files\":[{\"coveredLines\":\"1-4\",\"fileName\":\"Main.java\"}],\"path\":\"src/main/java\"}],\"result\":\"PASSED\",\"sourcePath\":\"test2\",\"uniformPath\":\"test2\"}]}\\E"),
+				matches("\\Q{\"partial\":true,\"tests\":[{\"uniformPath\":\"test1\",\"sourcePath\":\"test1\",\"content\":\"content\",\"paths\":[]},{\"uniformPath\":\"test2\",\"sourcePath\":\"test2\",\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"message\":\"message\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
 				any(), any(), any(), any());
 	}
 
@@ -142,7 +142,7 @@ public class TestwiseCoverageAgentTest {
 		new TestwiseCoverageAgent(mockOptions(port), null, reportGenerator);
 
 		ITestwiseCoverageAgentApiWithoutBody api = new Retrofit.Builder()
-				.addConverterFactory(MoshiConverterFactory.create())
+				.addConverterFactory(JacksonConverterFactory.create())
 				.baseUrl("http://localhost:" + port)
 				.build().create(ITestwiseCoverageAgentApiWithoutBody.class);
 		Response<List<PrioritizableTestCluster>> response = api.testRunStarted(false, null).execute();

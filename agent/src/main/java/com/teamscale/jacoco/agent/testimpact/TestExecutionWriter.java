@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import org.slf4j.Logger;
@@ -20,9 +19,6 @@ public class TestExecutionWriter {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
-	private final JsonAdapter<TestExecution> testExecutionAdapter = new Moshi.Builder().build()
-			.adapter(TestExecution.class);
-
 	private final File testExecutionFile;
 	private boolean hasWrittenAtLeastOneExecution = false;
 
@@ -33,7 +29,7 @@ public class TestExecutionWriter {
 
 	/** Appends the given {@link TestExecution} to the test execution list file. */
 	public synchronized void append(TestExecution testExecution) throws IOException {
-		String json = testExecutionAdapter.toJson(testExecution);
+		String json = JsonUtils.serialize(testExecution);
 
 		// the file contains a JSON array if it exists and to append to it, we strip the trailing "]" and append
 		// our new entry and a closing "]"

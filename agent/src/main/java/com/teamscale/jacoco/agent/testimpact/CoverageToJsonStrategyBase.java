@@ -1,8 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -25,10 +24,9 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Base for strategies that produce testwise coverage information
- * in JSON and store or send this data further.
+ * Base for strategies that produce testwise coverage information in JSON and store or send this data further.
  */
-public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrategyBase{
+public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrategyBase {
 
 	/**
 	 * The logger to use.
@@ -43,13 +41,10 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 	private final List<TestExecution> testExecutions = new ArrayList<>();
 	private List<ClusteredTestDetails> availableTests = new ArrayList<>();
 
-	private final JsonAdapter<TestwiseCoverageReport> testwiseCoverageReportJsonAdapter = new Moshi.Builder().build()
-			.adapter(TestwiseCoverageReport.class);
-
 	private final JaCoCoTestwiseReportGenerator reportGenerator;
 
 	public CoverageToJsonStrategyBase(JacocoRuntimeController controller, AgentOptions agentOptions,
-									   JaCoCoTestwiseReportGenerator reportGenerator) {
+									  JaCoCoTestwiseReportGenerator reportGenerator) {
 		super(agentOptions, controller);
 		this.reportGenerator = reportGenerator;
 	}
@@ -146,7 +141,7 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 		availableTests.clear();
 		testExecutions.clear();
 
-		return testwiseCoverageReportJsonAdapter.toJson(report);
+		return JsonUtils.serialize(report);
 	}
 
 }

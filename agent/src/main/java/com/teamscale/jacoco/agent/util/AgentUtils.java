@@ -10,11 +10,20 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ResourceBundle;
 
 /** General utilities for working with the agent. */
 public class AgentUtils {
 
+	/** Version of this program. */
+	public static final String VERSION;
+
 	private static Path mainTempDirectory = null;
+
+	static {
+		ResourceBundle bundle = ResourceBundle.getBundle("com.teamscale.jacoco.agent.app");
+		VERSION = bundle.getString("version");
+	}
 
 	/**
 	 * Returns the main temporary directory where all agent temp files should be placed.

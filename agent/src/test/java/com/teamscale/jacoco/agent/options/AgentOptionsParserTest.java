@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
@@ -29,9 +28,6 @@ public class AgentOptionsParserTest {
 	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null);
 	/** The mock server to run requests against. */
 	protected MockWebServer mockWebServer;
-
-	private static final JsonAdapter<ProfilerRegistration> REGISTRATION_ADAPTER = new Moshi.Builder().build()
-			.adapter(ProfilerRegistration.class);
 
 	/** Starts the mock server. */
 	@BeforeEach
@@ -105,7 +101,7 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration = new ProfilerConfiguration();
 		registration.profilerConfiguration.configurationId = "my-config";
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=foo";
-		mockWebServer.enqueue(new MockResponse().setBody(REGISTRATION_ADAPTER.toJson(registration)));
+		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
 				teamscaleCredentials);
 		AgentOptions options = parser.parse("teamscale-partition=bar");

@@ -1,16 +1,17 @@
 package com.teamscale.report.testwise;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.JsonWriter;
-import com.squareup.moshi.Moshi;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.factory.TestInfoFactory;
-import okio.Okio;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.function.Consumer;
 
 /**
@@ -22,15 +23,12 @@ public class TestwiseCoverageReportWriter implements Consumer<TestCoverageBuilde
 	/** Factory for converting {@link TestCoverageBuilder} objects to {@link TestInfo}s. */
 	private final TestInfoFactory testInfoFactory;
 
-	/** Adapter instance for converting {@link TestInfo} objects to JSON. */
-	private final JsonAdapter<TestInfo> testInfoJsonAdapter;
-
 	private final File outputFile;
 	/** After how many written tests a new file should be started. */
 	private final int splitAfter;
 
 	/** Writer instance to where the {@link com.teamscale.report.testwise.model.TestwiseCoverageReport} is written to. */
-	private JsonWriter writer;
+	private JsonGenerator jsonGenerator;
 
 	/** Number of tests written to the file. */
 	private int testsWritten = 0;
@@ -43,7 +41,6 @@ public class TestwiseCoverageReportWriter implements Consumer<TestCoverageBuilde
 		this.testInfoFactory = testInfoFactory;
 		this.outputFile = outputFile;
 		this.splitAfter = splitAfter;
-		this.testInfoJsonAdapter = new Moshi.Builder().build().adapter(TestInfo.class).indent("\t");
 
 		startReport();
 	}
@@ -69,10 +66,12 @@ public class TestwiseCoverageReportWriter implements Consumer<TestCoverageBuilde
 
 	private void startReport() throws IOException {
 		testFileCounter++;
-		writer = JsonWriter.of(Okio.buffer(Okio.sink(getOutputFile(testFileCounter))));
-		writer.beginObject();
-		writer.name("tests");
-		writer.beginArray();
+		OutputStream outputStream = Files.newOutputStream(getOutputFile(testFileCounter).toPath());
+		jsonGenerator = JsonUtils.createFactory().createGenerator(outputStream);
+		jsonGenerator.setPrettyPrinter(new DefaultPrettyPrinter());
+		jsonGenerator.writeStartObject();
+		jsonGenerator.writeFieldName("tests");
+		jsonGenerator.writeStartArray();
 	}
 
 	private File getOutputFile(int testFileCounter) {
@@ -88,13 +87,13 @@ public class TestwiseCoverageReportWriter implements Consumer<TestCoverageBuilde
 			testsWritten = 0;
 			startReport();
 		}
-		testInfoJsonAdapter.toJson(writer, testInfo);
+		jsonGenerator.writeObject(testInfo);
 		testsWritten++;
 	}
 
 	private void endReport() throws IOException {
-		writer.endArray();
-		writer.endObject();
-		writer.close();
+		jsonGenerator.writeEndArray();
+		jsonGenerator.writeEndObject();
+		jsonGenerator.close();
 	}
 }
