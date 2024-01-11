@@ -16,7 +16,7 @@ public class MultipleAgentsTest {
 
 	@Test
 	public void systemTest() throws IOException {
-		assertThat(Files.exists(LOG_DIRECTORY)).isTrue();
+		assertThat(LOG_DIRECTORY).exists();
 		List<String> lines = Files.readAllLines(LOG_DIRECTORY.resolve("teamscale-jacoco-agent.log"));
 		assertThat(lines).anyMatch(
 				s -> s.contains("Using multiple java agents could interfere with coverage recording.")

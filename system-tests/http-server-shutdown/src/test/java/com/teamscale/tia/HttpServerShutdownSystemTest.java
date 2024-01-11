@@ -1,5 +1,6 @@
 package com.teamscale.tia;
 
+import com.teamscale.test.commons.SystemTestUtils;
 import org.assertj.core.api.Assertions;
 import org.conqat.lib.commons.io.ProcessUtils;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,9 @@ public class HttpServerShutdownSystemTest {
 		String agentJar = System.getenv("AGENT_JAR");
 		String sampleJar = System.getenv("SAMPLE_JAR");
 		ProcessUtils.ExecutionResult result = ProcessUtils.execute(
-				new ProcessBuilder("java", "-javaagent:" + agentJar + "=http-server-port=31223", "-jar", sampleJar));
+				new ProcessBuilder("java",
+						"-javaagent:" + agentJar + "=http-server-port=" + SystemTestUtils.AGENT_PORT,
+						"-jar", sampleJar));
 		System.out.println(result.getStderr());
 		System.out.println(result.getStdout());
 		Assertions.assertThat(result.getReturnCode()).isEqualTo(0);

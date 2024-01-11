@@ -23,16 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  */
 public class TiaClientSystemTest {
 
-	/** These ports must match what is configured for the -javaagent line in this project's build.gradle. */
-	private static final int FAKE_TEAMSCALE_PORT = 63500;
-	private static final int AGENT_PORT = 63501;
-
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads()
+			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads()
 					.withImpactedTests("testFoo", "testBar");
 		}
 		teamscaleMockServer.uploadedReports.clear();
@@ -40,7 +36,7 @@ public class TiaClientSystemTest {
 
 	@Test
 	public void systemTest() throws Exception {
-		CustomTestFramework customTestFramework = new CustomTestFramework(AGENT_PORT);
+		CustomTestFramework customTestFramework = new CustomTestFramework(SystemTestUtils.AGENT_PORT);
 		customTestFramework.runTestsWithTia();
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
@@ -59,7 +55,7 @@ public class TiaClientSystemTest {
 
 	@Test
 	public void systemTestWithSpecialCharacter() throws Exception {
-		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + AGENT_PORT));
+		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + SystemTestUtils.AGENT_PORT));
 		TestRun testRun = agent.startTestRunWithoutTestSelection();
 
 		String uniformPath = "my/strange;te st[(-+path!@#$%^&*(name";

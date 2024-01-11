@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent;
 
-import java.lang.management.ManagementFactory;
-
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -12,15 +12,13 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import java.lang.management.ManagementFactory;
 
 /**
- * Base class for agent implementations. Handles logger shutdown, store creation
- * and instantiation of the {@link JacocoRuntimeController}.
+ * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
+ * {@link JacocoRuntimeController}.
  * <p>
- * Subclasses must handle dumping onto disk and uploading via the configured
- * uploader.
+ * Subclasses must handle dumping onto disk and uploading via the configured uploader.
  */
 public abstract class AgentBase {
 
@@ -58,8 +56,7 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Lazily generated string representation of the command line arguments to print
-	 * to the log.
+	 * Lazily generated string representation of the command line arguments to print to the log.
 	 */
 	private Object getOptionsObjectToLog() {
 		return new Object() {
@@ -74,8 +71,7 @@ public abstract class AgentBase {
 	}
 
 	/**
-	 * Starts the http server, which waits for information about started and
-	 * finished tests.
+	 * Starts the http server, which waits for information about started and finished tests.
 	 */
 	private void initServer() throws Exception {
 		logger.info("Listening for test events on port {}.", options.getHttpServerPort());
@@ -111,8 +107,7 @@ public abstract class AgentBase {
 	protected abstract ResourceConfig initResourceConfig();
 
 	/**
-	 * Registers a shutdown hook that stops the timer and dumps coverage a final
-	 * time.
+	 * Registers a shutdown hook that stops the timer and dumps coverage a final time.
 	 */
 	void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {

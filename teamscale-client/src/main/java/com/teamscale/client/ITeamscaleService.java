@@ -7,6 +7,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -130,6 +131,24 @@ public interface ITeamscaleService {
 			@Query("ensure-processed") boolean ensureProcessed,
 			@Query("include-added-tests") boolean includeAddedTests
 	);
+
+	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with. */
+	@POST("api/v9.4.0/running-profilers")
+	Call<ProfilerRegistration> registerProfiler(
+			@Query("configuration-id") String configurationId,
+			@Body ProcessInformation processInformation
+	);
+
+	/** Updates the profiler infos and sets the profiler to still alive. */
+	@PUT("api/v9.4.0/running-profilers/{profilerId}")
+	Call<ResponseBody> sendHeartbeat(
+			@Path("profilerId") String profilerId,
+			@Body ProfilerInfo profilerInfo
+	);
+
+	/** Removes the profiler identified by given ID. */
+	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
+	Call<ResponseBody> unregisterProfiler(@Path("profilerId") String profilerId);
 
 	/**
 	 * Uploads the given report body to Teamscale as blocking call with movetolastcommit set to false.

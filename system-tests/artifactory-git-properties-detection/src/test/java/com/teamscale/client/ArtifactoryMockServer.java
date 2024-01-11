@@ -36,6 +36,7 @@ public class ArtifactoryMockServer {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			return "Unexpected request: " + request.requestMethod() + " " + request.uri();
 		});
+		service.awaitInitialization();
 	}
 
 	private String handleReport(Request request, Response response) throws IOException {

@@ -37,6 +37,12 @@ public class TeamscaleServer {
 	 */
 	public String revision;
 
+	/**
+	 * The configuration ID that was used to retrieve the profiler configuration. This is only set here to append it to
+	 * the default upload message.
+	 */
+	public String configId;
+
 	private String message = null;
 
 	/**
@@ -69,44 +75,51 @@ public class TeamscaleServer {
 			revisionPart = "\nfor revision: " + revision;
 		}
 
+		String configIdPart = "";
+		if (configId != null) {
+			configIdPart = "\nprofiler configuration ID: " + configId;
+		}
+
 		return partition + " coverage uploaded at " +
 				DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()) + "\n\n" +
-				hostnamePart + revisionPart;
+				hostnamePart + revisionPart + configIdPart;
 	}
 
 	public void setMessage(String message) {
 		this.message = message;
 	}
 
-	/** Returns if all required fields are non-null. */
-	public boolean hasAllRequiredFieldsSet() {
-		return project != null &&
-				hasAllRequiredFieldsSetExceptProject();
+	/** Checks if all fields required for a single-project Teamscale upload are non-null. */
+	public boolean isConfiguredForSingleProjectTeamscaleUpload() {
+		return isConfiguredForServerConnection() && partition != null && project != null;
 	}
 
-	/** Returns if all required fields are non-null except the project. Explicitly checks that project is null. */
-	public boolean hasAllRequiredFieldsSetAndProjectNull() {
-		return project == null && url != null &&
-				userName != null &&
-				userAccessToken != null &&
-				partition != null;
+	/** Checks if all fields required for a Teamscale upload are non-null, except the project which must be null. */
+	public boolean isConfiguredForMultiProjectUpload() {
+		return isConfiguredForServerConnection() && partition != null && project == null;
 	}
 
-	/** Returns if all required fields are non-null. */
-	public boolean hasAllRequiredFieldsSetExceptProject() {
+	/** Checks if all required fields to access a Teamscale server are non-null. */
+	public boolean isConfiguredForServerConnection() {
 		return url != null &&
 				userName != null &&
-				userAccessToken != null &&
-				partition != null;
+				userAccessToken != null;
 	}
 
-	/** Returns whether all required fields are null. */
-	public boolean hasAllRequiredFieldsNull() {
+	/** Whether a URL, user and access token were provided. */
+	public boolean canConnectToTeamscale() {
+		return url != null && userName != null && userAccessToken != null;
+	}
+
+	/** Returns whether all fields are null. */
+	public boolean hasAllFieldsNull() {
 		return url == null &&
 				project == null &&
 				userName == null &&
 				userAccessToken == null &&
-				partition == null;
+				partition == null &&
+				commit == null &&
+				revision == null;
 	}
 
 	/** Returns whether either a commit or revision has been set. */

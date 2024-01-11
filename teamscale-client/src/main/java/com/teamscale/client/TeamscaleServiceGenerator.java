@@ -10,6 +10,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 
 /** Helper class for generating a teamscale compatible service. */
 public class TeamscaleServiceGenerator {
@@ -22,7 +23,7 @@ public class TeamscaleServiceGenerator {
 	 * server and which sets the accept header to json.
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
-									  int readTimeout, int writeTimeout, Interceptor... interceptors) {
+									  Duration readTimeout, Duration writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
 						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
@@ -40,8 +41,8 @@ public class TeamscaleServiceGenerator {
 	 * server and which sets the accept-header to json. Logs requests and responses to the given logfile.
 	 */
 	public static <S> S createServiceWithRequestLogging(Class<S> serviceClass, HttpUrl baseUrl, String username,
-														String accessToken, File logfile, int readTimeout,
-														int writeTimeout, Interceptor... interceptors) {
+														String accessToken, File logfile, Duration readTimeout,
+														Duration writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
 						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),

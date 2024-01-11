@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.Base64;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -32,12 +32,12 @@ public class HttpUtils {
 	/**
 	 * Default read timeout in seconds.
 	 */
-	public static final int DEFAULT_READ_TIMEOUT = 60;
+	public static final Duration DEFAULT_READ_TIMEOUT = Duration.ofSeconds(60);
 
 	/**
 	 * Default write timeout in seconds.
 	 */
-	public static final int DEFAULT_WRITE_TIMEOUT = 60;
+	public static final Duration DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(60);
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */
 	private static boolean shouldValidateSsl = true;
@@ -61,7 +61,8 @@ public class HttpUtils {
 	 * be customized with the given action. Timeouts for reading and writing can be customized.
 	 */
 	public static Retrofit createRetrofit(Consumer<Retrofit.Builder> retrofitBuilderAction,
-										  Consumer<OkHttpClient.Builder> okHttpBuilderAction, int readTimeout, int writeTimeout) {
+										  Consumer<OkHttpClient.Builder> okHttpBuilderAction, Duration readTimeout,
+										  Duration writeTimeout) {
 		OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
 		setTimeouts(httpClientBuilder, readTimeout, writeTimeout);
 		setUpSslValidation(httpClientBuilder);
@@ -75,10 +76,10 @@ public class HttpUtils {
 	/**
 	 * Sets sensible defaults for the {@link OkHttpClient}.
 	 */
-	private static void setTimeouts(OkHttpClient.Builder builder, int readTimeout, int writeTimeout) {
-		builder.connectTimeout(60, TimeUnit.SECONDS);
-		builder.readTimeout(readTimeout, TimeUnit.SECONDS);
-		builder.writeTimeout(writeTimeout, TimeUnit.SECONDS);
+	private static void setTimeouts(OkHttpClient.Builder builder, Duration readTimeout, Duration writeTimeout) {
+		builder.connectTimeout(Duration.ofSeconds(60));
+		builder.readTimeout(readTimeout);
+		builder.writeTimeout(writeTimeout);
 	}
 
 	/**

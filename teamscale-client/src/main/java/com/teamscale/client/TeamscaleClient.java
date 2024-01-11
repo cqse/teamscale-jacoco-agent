@@ -8,6 +8,7 @@ import retrofit2.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +32,8 @@ public class TeamscaleClient {
 	private final String projectId;
 
 	/** Constructor with parameters for read and write timeout in seconds. */
-	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, int readTimeout,
-						   int writeTimeout) {
+	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, Duration readTimeout,
+						   Duration writeTimeout) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken, readTimeout,
@@ -49,7 +50,7 @@ public class TeamscaleClient {
 
 	/** Constructor with parameters for read and write timeout in seconds and logfile. */
 	public TeamscaleClient(String baseUrl, String user, String accessToken, String projectId, File logfile,
-						   int readTimeout, int writeTimeout) {
+						   Duration readTimeout, Duration writeTimeout) {
 		this.projectId = projectId;
 		service = TeamscaleServiceGenerator
 				.createServiceWithRequestLogging(ITeamscaleService.class, HttpUrl.parse(baseUrl), user, accessToken,
