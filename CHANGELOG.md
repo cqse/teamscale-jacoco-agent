@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _agent_: Extended list of packages excluded by default
 
 # 33.0.0
 - [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)
