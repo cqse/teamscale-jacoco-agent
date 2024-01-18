@@ -35,7 +35,6 @@ import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
