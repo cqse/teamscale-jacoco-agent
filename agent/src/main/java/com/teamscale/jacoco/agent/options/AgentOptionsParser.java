@@ -202,9 +202,6 @@ public class AgentOptionsParser {
 			case "out":
 				options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
 				return true;
-			case "upload-url":
-				options.uploadUrl = parseUrl(key, value);
-				return true;
 			case "upload-metadata":
 				try {
 					options.additionalMetaDataFiles = CollectionUtils.map(splitMultiOptionValue(value), Paths::get);

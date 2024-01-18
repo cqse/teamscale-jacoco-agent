@@ -46,8 +46,6 @@ public class AgentOptionsParserTest {
 	@Test
 	public void testUploadMethodRecognition() throws Exception {
 		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
-		assertThat(parser.parse("upload-url=teamscale.url.com:443").determineUploadMethod()).isEqualTo(
-				AgentOptions.EUploadMethod.HTTP);
 		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
 				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
 		assertThat(parser.parse(
@@ -73,8 +71,6 @@ public class AgentOptionsParserTest {
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
 
 		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
-		assertThat(parser.parse("upload-url=teamscale.url.com:443").determineUploadMethod()).isEqualTo(
-				AgentOptions.EUploadMethod.HTTP);
 		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
 				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
 		assertThat(parser.parse(
@@ -203,33 +199,6 @@ public class AgentOptionsParserTest {
 		assertThat(parser.parse("").jacocoExcludes).isEqualTo(AgentOptions.DEFAULT_EXCLUDES);
 		assertThat(parser.parse("excludes=**foo**").jacocoExcludes)
 				.isEqualTo("**foo**:" + AgentOptions.DEFAULT_EXCLUDES);
-	}
-
-	@Test
-	public void mustDoHttpsRewriteForNoSchemePort443() throws Exception {
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:443").uploadUrl)
-				.isEqualTo(HttpUrl.parse("https://teamscale.url.com:443/"));
-	}
-
-	@Test
-	public void mustNotDoHttpsRewriteForSchemePort443() throws Exception {
-		assertThat(parser.parse(
-				"upload-url=http://teamscale.url.com:443").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:443/"));
-	}
-
-	@Test
-	public void defaultHttpRewriteForNoScheme() throws Exception {
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:8080").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:8080/"));
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:80").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:80/"));
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:444").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:444/"));
 	}
 
 	@Test
