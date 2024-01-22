@@ -28,7 +28,6 @@ import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
-import com.teamscale.jacoco.agent.upload.http.HttpUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
@@ -36,7 +35,6 @@ import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import okhttp3.HttpUrl;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
@@ -110,11 +108,6 @@ public class AgentOptions {
 	 * The directory to write the XML traces to.
 	 */
 	private Path outputDirectory;
-
-	/**
-	 * The URL to which to upload coverage zips.
-	 */
-	/* package */ HttpUrl uploadUrl = null;
 
 	/**
 	 * Additional meta data files to upload together with the coverage XML.
@@ -269,9 +262,6 @@ public class AgentOptions {
 			validateLoggingConfig(validator);
 		}
 
-		validator.isFalse(uploadUrl == null && !additionalMetaDataFiles.isEmpty(),
-				"You specified additional meta data files to be uploaded but did not configure an upload URL");
-
 		validateTeamscaleUploadConfig(validator);
 
 		validateUploadConfig(validator);
@@ -344,7 +334,7 @@ public class AgentOptions {
 
 		long configuredStores = Stream
 				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
-						teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(), uploadUrl != null,
+						teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
 						teamscaleServer.isConfiguredForMultiProjectUpload()).filter(x -> x)
 				.count();
 
@@ -378,10 +368,6 @@ public class AgentOptions {
 				httpServerPort != null && testImpactConfig.testEnvironmentVariable != null,
 				"You did set both 'http-server-port' and 'test-env'! Only one of them is allowed!");
 
-		validator.isFalse(uploadUrl != null,
-				"'upload-url' option is " +
-						"incompatible with Testwise coverage mode!");
-
 		validator.isFalse(testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
 				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
@@ -405,8 +391,6 @@ public class AgentOptions {
 	/*package*/ enum EUploadMethod {
 		/** Saving coverage files on disk. */
 		LOCAL_DISK,
-		/** Sending coverage via HTTP POST to an arbitrary endpoint. */
-		HTTP,
 		/** Sending coverage to a single Teamscale project. */
 		TEAMSCALE_SINGLE_PROJECT,
 		/** Sending coverage to multiple Teamscale projects. */
@@ -421,9 +405,6 @@ public class AgentOptions {
 
 	/** Determines the upload method that should be used based on the set options. */
 	/*package*/ EUploadMethod determineUploadMethod() {
-		if (uploadUrl != null) {
-			return EUploadMethod.HTTP;
-		}
 		if (artifactoryConfig.hasAllRequiredFieldsSet()) {
 			return EUploadMethod.ARTIFACTORY;
 		}
@@ -448,8 +429,6 @@ public class AgentOptions {
 	public IUploader createUploader(Instrumentation instrumentation) throws UploaderException {
 		EUploadMethod uploadMethod = determineUploadMethod();
 		switch (uploadMethod) {
-			case HTTP:
-				return new HttpUploader(uploadUrl, additionalMetaDataFiles);
 			case TEAMSCALE_MULTI_PROJECT:
 				return createTeamscaleMultiProjectUploader(instrumentation);
 			case TEAMSCALE_SINGLE_PROJECT:

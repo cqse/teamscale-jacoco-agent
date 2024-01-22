@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] _agent_: Extended list of packages excluded by default
+- [maintenance] _agent_: Removed HTTP upload (i.e. `upload-url` option)
 
 # 33.0.0
 - [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)
