@@ -200,12 +200,14 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		} else {
 			reportPath = Paths.get(testwiseCoverageOutputFolder);
 		}
-		List<File> coverageFiles = Arrays.asList(reportPath.toFile().listFiles(File::isFile));
-		if (!coverageFiles.isEmpty()) {
+		File[] files = reportPath.toFile().listFiles(File::isFile);
+		if (files != null) {
+			List<File> testwiseCoverageFiles = Arrays.asList(files);
 			getLog().debug("Uploading testwise coverage to partition " + testwisePartition);
+			uploadCoverage(testwiseCoverageFiles.stream().map(File::toPath).collect(Collectors.toList()),
+					testwisePartition, EReportFormat.TESTWISE_COVERAGE);
+
 		}
-		uploadCoverage(coverageFiles.stream().map(File::toPath).collect(Collectors.toList()), testwisePartition,
-				EReportFormat.TESTWISE_COVERAGE);
 		uploadCoverage(reportGoalOutputFiles, unitTestPartition, EReportFormat.JACOCO);
 		uploadCoverage(reportIntegrationGoalOutputFiles, integrationTestPartition, EReportFormat.JACOCO);
 		uploadCoverage(reportAggregateGoalOutputFiles, aggregatedTestPartition, EReportFormat.JACOCO);
