@@ -1,5 +1,20 @@
 package com.teamscale.maven.upload;
 
+import com.google.common.base.Strings;
+import com.teamscale.maven.GitCommit;
+import com.teamscale.maven.TeamscaleMojoBase;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import shadow.com.teamscale.client.CommitDescriptor;
+import shadow.com.teamscale.client.EReportFormat;
+import shadow.com.teamscale.client.TeamscaleClient;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,23 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-
-import com.google.common.base.Strings;
-import com.teamscale.maven.GitCommit;
-import com.teamscale.maven.TeamscaleMojoBase;
-
-import shadow.com.teamscale.client.CommitDescriptor;
-import shadow.com.teamscale.client.EReportFormat;
-import shadow.com.teamscale.client.TeamscaleClient;
 
 /**
  * Run this goal after the Jacoco report generation to upload them to a
@@ -66,13 +64,6 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 	 */
 	@Parameter(property = "teamscale.aggregatedTestPartition", defaultValue = "Aggregated Tests")
 	public String aggregatedTestPartition;
-
-	/**
-	 * Whether to upload testwise coverage as a result of the
-	 * TiaCoverageConvertMojo.
-	 */
-	@Parameter(property = "teamscale.uploadTestwise", defaultValue = "false")
-	public boolean uploadTestwiseCoverage;
 
 	/**
 	 * The output directory of the testwise coverage reports. Should only be set if
@@ -203,19 +194,18 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 	}
 
 	private void uploadCoverageReports() throws IOException {
-		if (uploadTestwiseCoverage) {
-			getLog().debug("Uploading only testwise coverage to partition " + testwisePartition);
-			Path reportPath;
-			if (Strings.isNullOrEmpty(testwiseCoverageOutputFolder)) {
-				reportPath = Paths.get(projectBuildDir, "tia", "reports");
-			} else {
-				reportPath = Paths.get(testwiseCoverageOutputFolder);
-			}
-			List<File> coverageFiles = Arrays.asList(reportPath.toFile().listFiles(File::isFile));
-			uploadCoverage(coverageFiles.stream().map(File::toPath).collect(Collectors.toList()), testwisePartition,
-					EReportFormat.TESTWISE_COVERAGE);
-			return;
+		Path reportPath;
+		if (Strings.isNullOrEmpty(testwiseCoverageOutputFolder)) {
+			reportPath = Paths.get(projectBuildDir, "tia", "reports");
+		} else {
+			reportPath = Paths.get(testwiseCoverageOutputFolder);
 		}
+		List<File> coverageFiles = Arrays.asList(reportPath.toFile().listFiles(File::isFile));
+		if (!coverageFiles.isEmpty()) {
+			getLog().debug("Uploading testwise coverage to partition " + testwisePartition);
+		}
+		uploadCoverage(coverageFiles.stream().map(File::toPath).collect(Collectors.toList()), testwisePartition,
+				EReportFormat.TESTWISE_COVERAGE);
 		uploadCoverage(reportGoalOutputFiles, unitTestPartition, EReportFormat.JACOCO);
 		uploadCoverage(reportIntegrationGoalOutputFiles, integrationTestPartition, EReportFormat.JACOCO);
 		uploadCoverage(reportAggregateGoalOutputFiles, aggregatedTestPartition, EReportFormat.JACOCO);
@@ -238,7 +228,8 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			reports.add(report);
 		}
 		if (!reports.isEmpty()) {
-			getLog().info(String.format("Uploading %d Jacoco report for project %s to %s", reports.size(), projectId,
+			getLog().info(
+					String.format("Uploading %d report for project %s to %s", reports.size(), projectId,
 					partition));
 			teamscaleClient.uploadReports(format, reports, CommitDescriptor.parse(resolvedCommit), revision, partition,
 					COVERAGE_UPLOAD_MESSAGE);
