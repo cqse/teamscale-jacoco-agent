@@ -1,10 +1,13 @@
 package com.teamscale.test.commons;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TestWithClusterId;
+import com.teamscale.client.ProfilerConfiguration;
+import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.report.util.JsonUtils;
 import spark.Request;
 import spark.Response;
 import spark.Service;
@@ -42,6 +45,8 @@ public class TeamscaleMockServer {
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private List<String> impactedTests;
+	private final List<String> profilerEvents = new ArrayList<>();
+	private ProfilerConfiguration profilerConfiguration;
 
 	public TeamscaleMockServer(int port) throws IOException {
 		service = Service.ignite();
@@ -54,6 +59,8 @@ public class TeamscaleMockServer {
 			response.status(SC_INTERNAL_SERVER_ERROR);
 			return "Unexpected request: " + request.requestMethod() + " " + request.uri();
 		});
+		service.init();
+		service.awaitInitialization();
 	}
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
@@ -67,6 +74,15 @@ public class TeamscaleMockServer {
 	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
 		this.impactedTests = Arrays.asList(impactedTests);
 		service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		return this;
+	}
+
+	/** Configures the server to answer all impacted test calls with the given tests. */
+	public TeamscaleMockServer withProfilerConfiguration(ProfilerConfiguration profilerConfiguration) {
+		this.profilerConfiguration = profilerConfiguration;
+		service.post("api/v9.4.0/running-profilers", this::handleProfilerRegistration);
+		service.put("api/v9.4.0/running-profilers/:profilerId", this::handleProfilerHeartbeat);
+		service.delete("api/v9.4.0/running-profilers/:profilerId", this::handleProfilerUnregister);
 		return this;
 	}
 
@@ -95,6 +111,32 @@ public class TeamscaleMockServer {
 		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
 		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
+	}
+
+	private String handleProfilerRegistration(Request request, Response response) throws JsonProcessingException {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add(
+				"Profiler registered and requested configuration " + request.queryParams("configuration-id"));
+		ProfilerRegistration registration = new ProfilerRegistration();
+		registration.profilerConfiguration = this.profilerConfiguration;
+		registration.profilerId = "123";
+		return JsonUtils.serialize(registration);
+	}
+
+	private String handleProfilerHeartbeat(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add("Profiler " + request.params(":profilerId") + " sent heartbeat");
+		return "";
+	}
+
+	private String handleProfilerUnregister(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add("Profiler " + request.params(":profilerId") + " unregistered");
+		return "foo";
+	}
+
+	public List<String> getProfilerEvents() {
+		return profilerEvents;
 	}
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {

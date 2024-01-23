@@ -17,17 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
  */
 public class TiaMavenSystemTest {
 
-	/**
-	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
-	 * project.
-	 */
-	private static final int FAKE_TEAMSCALE_PORT = 63700;
 	private static TeamscaleMockServer teamscaleMockServer = null;
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads()
+			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads()
 					.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
 							"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 		}

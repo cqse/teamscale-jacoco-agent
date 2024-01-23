@@ -1,5 +1,5 @@
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version("0.7.0")
+    id("org.gradle.toolchains.foojay-resolver-convention") version("0.8.0")
 }
 
 include(":agent")
@@ -13,7 +13,8 @@ include(":tia-runlisteners")
 include(":common-system-test")
 include(":sample-debugging-app")
 include(":teamscale-maven-plugin")
+include(":installer")
 
-file("system-tests").listFiles()?.forEach { folder ->
+file("system-tests").listFiles { file: File -> !file.isHidden }?.forEach { folder ->
     include(":system-tests:${folder.name}")
 }

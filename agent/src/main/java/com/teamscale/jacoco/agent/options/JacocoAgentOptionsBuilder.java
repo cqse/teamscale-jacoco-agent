@@ -28,6 +28,7 @@ public class JacocoAgentOptionsBuilder {
 			builder.append(",includes=").append(agentOptions.jacocoIncludes);
 		}
 		if (agentOptions.jacocoExcludes != null) {
+			logger.debug("Using default excludes: " + AgentOptions.DEFAULT_EXCLUDES);
 			builder.append(",excludes=").append(agentOptions.jacocoExcludes);
 		}
 
@@ -48,6 +49,12 @@ public class JacocoAgentOptionsBuilder {
 	}
 
 	private Path createTemporaryDumpDirectory() throws AgentOptionParseException {
+		try {
+			return Files.createDirectory(AgentUtils.getMainTempDirectory().resolve("jacoco-class-dump"));
+		} catch (IOException e) {
+			logger.warn("Unable to create temporary directory in default location. Trying in system temp directory.");
+		}
+
 		try {
 			return Files.createTempDirectory("jacoco-class-dump");
 		} catch (IOException e) {
@@ -72,8 +79,8 @@ public class JacocoAgentOptionsBuilder {
 	}
 
 	/**
-	 * Returns additional options for JaCoCo depending on the selected {@link AgentOptions#mode} and {@link
-	 * com.teamscale.jacoco.agent.testimpact.TestImpactConfig#testwiseCoverageMode}.
+	 * Returns additional options for JaCoCo depending on the selected {@link AgentOptions#mode} and
+	 * {@link com.teamscale.jacoco.agent.testimpact.TestImpactConfig#testwiseCoverageMode}.
 	 */
 	String getModeSpecificOptions() throws IOException {
 		if (agentOptions
@@ -83,7 +90,8 @@ public class JacocoAgentOptionsBuilder {
 				sessionId = System.getenv(agentOptions.testImpactConfig.testEnvironmentVariable);
 			}
 			// when writing to a .exec file, we can instruct JaCoCo to do so directly
-			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createNewFileInOutputDirectory("jacoco", "exec")
+			return "sessionid=" + sessionId + ",destfile=" + agentOptions.createNewFileInOutputDirectory("jacoco",
+							"exec")
 					.getAbsolutePath();
 
 		} else {

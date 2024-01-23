@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.commit_resolution.sapnwdi;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
-import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplications;
+import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.string.StringUtils;
@@ -21,9 +21,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * {@link ClassFileTransformer} that doesn't change the loaded classes but guesses
- * the rough commit timestamp by inspecting the last modification date of the
- * applications marker class file.
+ * {@link ClassFileTransformer} that doesn't change the loaded classes but guesses the rough commit timestamp by
+ * inspecting the last modification date of the applications marker class file.
  */
 public class NwdiMarkerClassLocatingTransformer implements ClassFileTransformer {
 
@@ -32,12 +31,12 @@ public class NwdiMarkerClassLocatingTransformer implements ClassFileTransformer 
 	private final Logger logger = LoggingUtils.getLogger(this);
 	private final DelayedSapNwdiMultiUploader store;
 	private final ClasspathWildcardIncludeFilter locationIncludeFilter;
-	private final Map<String, SapNwdiApplications.SapNwdiApplication> markerClassesToApplications;
+	private final Map<String, SapNwdiApplication> markerClassesToApplications;
 
 	public NwdiMarkerClassLocatingTransformer(
 			DelayedSapNwdiMultiUploader store,
 			ClasspathWildcardIncludeFilter locationIncludeFilter,
-			Collection<SapNwdiApplications.SapNwdiApplication> apps) {
+			Collection<SapNwdiApplication> apps) {
 		this.store = store;
 		this.locationIncludeFilter = locationIncludeFilter;
 		this.markerClassesToApplications = apps.stream().collect(
@@ -74,10 +73,10 @@ public class NwdiMarkerClassLocatingTransformer implements ClassFileTransformer 
 			URL jarOrClassFolderUrl = codeSource.getLocation();
 			logger.debug("Found " + className + " in " + jarOrClassFolderUrl);
 
-			if (jarOrClassFolderUrl.getProtocol().toLowerCase().equals("file")) {
+			if (jarOrClassFolderUrl.getProtocol().equalsIgnoreCase("file")) {
 				Path file = Paths.get(jarOrClassFolderUrl.toURI());
 				BasicFileAttributes attr = Files.readAttributes(file, BasicFileAttributes.class);
-				SapNwdiApplications.SapNwdiApplication application = markerClassesToApplications.get(className);
+				SapNwdiApplication application = markerClassesToApplications.get(className);
 				CommitDescriptor commitDescriptor = new CommitDescriptor(
 						DTR_BRIDGE_DEFAULT_BRANCH, attr.lastModifiedTime().toMillis());
 				store.setCommitForApplication(commitDescriptor, application);
@@ -85,7 +84,8 @@ public class NwdiMarkerClassLocatingTransformer implements ClassFileTransformer 
 		} catch (Throwable e) {
 			// we catch Throwable to be sure that we log all errors as anything thrown from this method is
 			// silently discarded by the JVM
-			logger.error("Failed to process class {} trying to determine its last modification timestamp.", className, e);
+			logger.error("Failed to process class {} trying to determine its last modification timestamp.", className,
+					e);
 		}
 		return null;
 	}

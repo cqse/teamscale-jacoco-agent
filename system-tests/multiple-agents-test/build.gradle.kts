@@ -14,6 +14,11 @@ tasks.test {
     jvmArgs("-javaagent:$otherJacocoAgent")
 
     val logFilePath = "logTest"
+
+    doFirst {
+        delete(logFilePath)
+    }
+
     teamscaleAgent(
         mapOf(
             "debug" to logFilePath

@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A logger that buffers logs in memory and writes them to the actual logger at a later point.
- * This is needed when stuff needs to be logged before the actual logging framework is initialized.
+ * A logger that buffers logs in memory and writes them to the actual logger at a later point. This is needed when stuff
+ * needs to be logged before the actual logging framework is initialized.
  */
 public class DelayedLogger implements ILogger {
 
@@ -42,6 +42,15 @@ public class DelayedLogger implements ILogger {
 
 	@Override
 	public void error(String message, Throwable throwable) {
+		logActions.add(logger -> logger.error(message, throwable));
+	}
+
+	/**
+	 * Logs an error and also writes the message to {@link System#err} to ensure the message is even logged in case
+	 * setting up the logger itself fails for some reason (see TS-23151).
+	 */
+	public void errorAndStdErr(String message, Throwable throwable) {
+		System.err.println(message);
 		logActions.add(logger -> logger.error(message, throwable));
 	}
 

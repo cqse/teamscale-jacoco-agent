@@ -1,38 +1,40 @@
 package com.teamscale.jacoco.agent.options.sapnwdi;
 
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Tests for parsing the SAP NWDI application definition. */
-public class SapNwdiApplicationsTest {
+public class SapNwdiApplicationTest {
 
 	@Test
-	public void testEmptyConfig() throws AgentOptionParseException {
-		assertThatCode(() -> SapNwdiApplications.parseApplications(""))
+	public void testEmptyConfig() {
+		assertThatThrownBy(() -> SapNwdiApplication.parseApplications(""))
 				.hasMessage("Application definition is expected not to be empty.");
-		SapNwdiApplications configuration = SapNwdiApplications.parseApplications(";");
-		assertThat(configuration.hasAllRequiredFieldsSet()).isFalse();
+		assertThatThrownBy(() -> SapNwdiApplication.parseApplications(";"))
+				.hasMessage("Application definition is expected not to be empty.");
 	}
 
 	@Test
 	public void testIncompleteMarkerClassConfig() {
-		assertThatCode(() -> SapNwdiApplications.parseApplications(":alias"))
+		assertThatThrownBy(() -> SapNwdiApplication.parseApplications(":alias"))
 				.hasMessage("Marker class is not given for :alias!");
 	}
 
 	@Test
 	public void testIncompleteProjectConfig() {
-		assertThatCode(() -> SapNwdiApplications.parseApplications("class:"))
-				.hasMessage("Application definition class: is expected to contain a marker class and project separated by a colon.");
+		assertThatThrownBy(() -> SapNwdiApplication.parseApplications("class:"))
+				.hasMessage(
+						"Application definition class: is expected to contain a marker class and project separated by a colon.");
 	}
 
 	@Test
 	public void testSingleApplication() throws Exception {
-		SapNwdiApplications configuration = SapNwdiApplications.parseApplications("com.teamscale.test2.Bar:alias");
-		assertThat(configuration.getApplications()).element(0).satisfies(application -> {
+		List<SapNwdiApplication> configuration = SapNwdiApplication.parseApplications("com.teamscale.test2.Bar:alias");
+		assertThat(configuration).element(0).satisfies(application -> {
 			assertThat(application.getMarkerClass()).isEqualTo("com.teamscale.test2.Bar");
 			assertThat(application.getTeamscaleProject()).isEqualTo("alias");
 		});
@@ -40,13 +42,13 @@ public class SapNwdiApplicationsTest {
 
 	@Test
 	public void testMultipleApplications() throws Exception {
-		SapNwdiApplications configuration = SapNwdiApplications
+		List<SapNwdiApplication> configuration = SapNwdiApplication
 				.parseApplications("com.teamscale.test1.Bar:alias; com.teamscale.test2.Bar:id");
-		assertThat(configuration.getApplications()).element(0).satisfies(application -> {
+		assertThat(configuration).element(0).satisfies(application -> {
 			assertThat(application.getMarkerClass()).isEqualTo("com.teamscale.test1.Bar");
 			assertThat(application.getTeamscaleProject()).isEqualTo("alias");
 		});
-		assertThat(configuration.getApplications()).element(1).satisfies(application -> {
+		assertThat(configuration).element(1).satisfies(application -> {
 			assertThat(application.getMarkerClass()).isEqualTo("com.teamscale.test2.Bar");
 			assertThat(application.getTeamscaleProject()).isEqualTo("id");
 		});

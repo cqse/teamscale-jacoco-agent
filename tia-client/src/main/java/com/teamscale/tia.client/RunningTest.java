@@ -1,9 +1,9 @@
 package com.teamscale.tia.client;
 
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestInfo;
-import com.teamscale.report.util.JsonUtils;
 import okhttp3.ResponseBody;
 
 import java.io.IOException;
