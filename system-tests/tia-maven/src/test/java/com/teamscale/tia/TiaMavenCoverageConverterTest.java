@@ -1,19 +1,18 @@
 package com.teamscale.tia;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import com.teamscale.client.JsonUtils;
+import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.SystemTestUtils;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Paths;
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.junit.jupiter.api.Test;
-
-import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.report.util.JsonUtils;
-import com.teamscale.test.commons.SystemTestUtils;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests the automatic conversion of .exec files to a testwise coverage report.
