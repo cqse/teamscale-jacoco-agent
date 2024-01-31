@@ -1,3 +1,5 @@
+import org.beryx.jlink.util.JdkUtil
+
 plugins {
 	application
 	com.teamscale.`java-convention`
@@ -31,6 +33,8 @@ application {
 	)
 }
 
+val ADOPTIUM_BINARY_REPOSITORY = "https://api.adoptium.net/v3/binary"
+val RUNTIME_JDK_VERSION = "17.0.5+8"
 jlink {
 	options = listOf(
 		"--compress", "2",
@@ -40,6 +44,25 @@ jlink {
 	)
 	launcher {
 		name = "installer"
+	}
+
+	targetPlatform("linux-x86_64") {
+		setJdkHome(
+			jdkDownload(
+				"$ADOPTIUM_BINARY_REPOSITORY/version/jdk-${RUNTIME_JDK_VERSION}/linux/x64/jdk/hotspot/normal/eclipse",
+				closureOf<JdkUtil.JdkDownloadOptions> {
+					archiveExtension = "tar.gz"
+				})
+		)
+	}
+	targetPlatform("windows-x86_64") {
+		setJdkHome(
+			jdkDownload(
+				"$ADOPTIUM_BINARY_REPOSITORY/version/jdk-${RUNTIME_JDK_VERSION}/windows/x64/jdk/hotspot/normal/eclipse",
+				closureOf<JdkUtil.JdkDownloadOptions> {
+					archiveExtension = "zip"
+				})
+		)
 	}
 }
 
