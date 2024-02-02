@@ -12,7 +12,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,11 +43,11 @@ class WindowsInstallerTest {
 		targetDirectory = Files.createTempDirectory("InstallerTest-target").resolve("profiler");
 
 		Path fileToInstall = sourceDirectory.resolve("install-me.txt");
-		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+		Files.writeString(fileToInstall, FILE_TO_INSTALL_CONTENT, StandardOpenOption.CREATE);
 
 		Path nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 		Files.createDirectories(nestedFileToInstall.getParent());
-		Files.write(nestedFileToInstall, NESTED_FILE_CONTENT.getBytes(StandardCharsets.UTF_8),
+		Files.writeString(nestedFileToInstall, NESTED_FILE_CONTENT,
 				StandardOpenOption.CREATE);
 
 		installedAgentLibrary = targetDirectory.resolve("lib/teamscale-jacoco-agent.jar");

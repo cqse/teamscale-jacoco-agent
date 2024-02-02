@@ -12,7 +12,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -52,19 +51,18 @@ class LinuxInstallerTest {
 		etcDirectory = Files.createTempDirectory("InstallerTest-etc");
 
 		environmentFile = etcDirectory.resolve("environment");
-		Files.write(environmentFile, ENVIRONMENT_CONTENT.getBytes(StandardCharsets.UTF_8));
+		Files.writeString(environmentFile, ENVIRONMENT_CONTENT);
 
 		systemdDirectory = etcDirectory.resolve("systemd");
 		Files.createDirectory(systemdDirectory);
 		systemdConfig = systemdDirectory.resolve("system.conf.d/teamscale-java-profiler.conf");
 
 		Path fileToInstall = sourceDirectory.resolve("install-me.txt");
-		Files.write(fileToInstall, FILE_TO_INSTALL_CONTENT.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+		Files.writeString(fileToInstall, FILE_TO_INSTALL_CONTENT, StandardOpenOption.CREATE);
 
 		Path nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar");
 		Files.createDirectories(nestedFileToInstall.getParent());
-		Files.write(nestedFileToInstall, NESTED_FILE_CONTENT.getBytes(StandardCharsets.UTF_8),
-				StandardOpenOption.CREATE);
+		Files.writeString(nestedFileToInstall, NESTED_FILE_CONTENT, StandardOpenOption.CREATE);
 
 		installedFile = targetDirectory.resolve(sourceDirectory.relativize(fileToInstall));
 		installedTeamscaleProperties = targetDirectory.resolve("teamscale.properties");
@@ -89,12 +87,12 @@ class LinuxInstallerTest {
 		assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
 
 		assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
-				+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
-				+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
+														+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+														+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 
 		assertThat(systemdConfig).content().isEqualTo("[Manager]"
-				+ "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
-				+ " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
+													  + "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+													  + " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 	}
 
 	@Test
