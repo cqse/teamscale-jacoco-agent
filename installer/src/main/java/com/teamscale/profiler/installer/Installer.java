@@ -11,8 +11,7 @@ import com.teamscale.profiler.installer.windows.WindowsRegistry;
 import org.apache.commons.lang3.SystemUtils;
 import picocli.CommandLine;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -48,14 +47,27 @@ public class Installer {
 	}
 
 	/** Returns the directory that contains the agent to install or null if it can't be resolved. */
-	private static Path getDefaultSourceDirectory() {
-		try {
-			URI jarFileUri = Installer.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-			// we assume that the dist zip is extracted and the installer jar not moved
-			return Paths.get(jarFileUri).getParent();
-		} catch (URISyntaxException e) {
-			throw new IllegalStateException("Failed to obtain agent directory. This is a bug, please report it.", e);
+	private static Path getDefaultSourceDirectory() throws FatalInstallerError {
+		// since we package with jlink, java.home is guaranteed to point to SOURCEDIR/installer/installer-PLATFORM
+		Path jlinkJvmPath = Paths.get(System.getProperty("java.home"));
+		if (!Files.exists(jlinkJvmPath)) {
+			throw new FatalInstallerError(
+					"The JLink JVM path " + jlinkJvmPath + " does not exist."
+					+ " It looks like you moved the installation files after extracting the zip."
+					+ "\nPlease start over by extracting the profiler files from the zip file you downloaded."
+					+ " Do not make any changes to the extracted files and directories or installation will fail.");
 		}
+
+		Path sourceDirectory = jlinkJvmPath.getParent().getParent();
+		if (!Files.exists(sourceDirectory)) {
+			throw new FatalInstallerError(
+					"The source directory " + sourceDirectory + " does not exist."
+					+ " It looks like you moved the installation files after extracting the zip."
+					+ "\nPlease start over by extracting the profiler files from the zip file you downloaded."
+					+ " Do not make any changes to the extracted files and directories or installation will fail.");
+		}
+
+		return sourceDirectory;
 	}
 
 	/**
@@ -92,18 +104,18 @@ public class Installer {
 		try {
 			getDefaultInstaller().runInstall(credentials);
 			System.out.println("Installation successful. Profiler installed to " + DEFAULT_INSTALL_DIRECTORY
-					+ "\n\nTo activate the profiler for an application, set the environment variable:"
-					+ "\nTEAMSCALE_JAVA_PROFILER_CONFIG_ID"
-					+ "\nIts value must be a valid profiler configuration ID defined in the Teamscale instance."
-					+ "\nThen, restart your application (for web applications: restart the app server)."
-					+ "\n\n" + RESTART_ADVICE);
+							   + "\n\nTo activate the profiler for an application, set the environment variable:"
+							   + "\nTEAMSCALE_JAVA_PROFILER_CONFIG_ID"
+							   + "\nIts value must be a valid profiler configuration ID defined in the Teamscale instance."
+							   + "\nThen, restart your application (for web applications: restart the app server)."
+							   + "\n\n" + RESTART_ADVICE);
 			return CommandLine.ExitCode.OK;
 		} catch (PermissionError e) {
 			e.printToStderr();
 
 			System.err.println(
 					"\n\nInstallation failed because the installer had insufficient permissions to make the necessary"
-							+ " changes on your system.\nSee above for error messages.\n\n" + RERUN_ADVICE);
+					+ " changes on your system.\nSee above for error messages.\n\n" + RERUN_ADVICE);
 			return RootCommand.EXIT_CODE_PERMISSION_ERROR;
 		} catch (FatalInstallerError e) {
 			e.printToStderr();
@@ -112,7 +124,7 @@ public class Installer {
 		}
 	}
 
-	private static Installer getDefaultInstaller() {
+	private static Installer getDefaultInstaller() throws FatalInstallerError {
 		return new Installer(getDefaultSourceDirectory(), DEFAULT_INSTALL_DIRECTORY, DEFAULT_ETC_DIRECTORY, true,
 				WindowsRegistry.INSTANCE);
 	}
@@ -123,7 +135,7 @@ public class Installer {
 	 *
 	 * @return the exit code for the CLI.
 	 */
-	public static int uninstall() {
+	public static int uninstall() throws FatalInstallerError {
 		UninstallerErrorReporter errorReporter = getDefaultInstaller().runUninstall();
 		if (errorReporter.errorsReported) {
 			String message = "Uninstallation failed. See above for error messages.";
@@ -134,7 +146,7 @@ public class Installer {
 			return RootCommand.EXIT_CODE_OTHER_ERROR;
 		}
 		System.out.println("Profiler successfully uninstalled.\n" +
-				"You need to restart all previously profiled applications to stop profiling them.");
+						   "You need to restart all previously profiled applications to stop profiling them.");
 		return CommandLine.ExitCode.OK;
 	}
 
