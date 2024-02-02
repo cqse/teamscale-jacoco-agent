@@ -145,7 +145,7 @@ public class Installer {
 			System.err.println("\n\n" + message);
 			return RootCommand.EXIT_CODE_OTHER_ERROR;
 		}
-		System.out.println("Profiler successfully uninstalled.\n" +
+		System.out.println("Profiler successfully uninstalled. Please restart your computer.\n" +
 						   "You need to restart all previously profiled applications to stop profiling them.");
 		return CommandLine.ExitCode.OK;
 	}
