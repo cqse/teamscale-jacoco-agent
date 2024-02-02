@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 public class Installer {
 
 	private static final Path DEFAULT_INSTALL_DIRECTORY = windowsOrLinux(
-			() -> Paths.get(System.getenv("ProgramFiles")),
+			() -> Paths.get(System.getenv("ProgramFiles")).resolve("teamscale-profiler/java"),
 			() -> Paths.get("/opt/teamscale-profiler/java")
 	);
 
