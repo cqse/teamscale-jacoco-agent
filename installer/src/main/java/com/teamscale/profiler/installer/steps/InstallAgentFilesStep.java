@@ -5,6 +5,7 @@ import com.teamscale.profiler.installer.utils.InstallFileUtils;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
 import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,6 +52,11 @@ public class InstallAgentFilesStep implements IStep {
 
 	@Override
 	public void uninstall(IUninstallErrorReporter errorReporter) {
+		if (SystemUtils.IS_OS_WINDOWS) {
+			System.out.println("Please manually delete " + installDirectory);
+			return;
+		}
+
 		if (!Files.exists(installDirectory)) {
 			return;
 		}
