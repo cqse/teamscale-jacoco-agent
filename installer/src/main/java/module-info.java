@@ -7,6 +7,7 @@ module com.teamscale.profiler.installer {
 	exports com.teamscale.profiler.installer;
 	opens com.teamscale.profiler.installer;
 	exports com.teamscale.profiler.installer.utils;
+	exports com.teamscale.profiler.installer.windows;
 	opens com.teamscale.profiler.installer.utils;
 }
 
