@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] add installer for Windows
 - [feature] _agent_: Extended list of packages excluded by default
 - [maintenance] _agent_: Removed HTTP upload (i.e. `upload-url` option)
 

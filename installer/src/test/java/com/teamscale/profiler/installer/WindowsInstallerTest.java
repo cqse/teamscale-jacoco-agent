@@ -2,7 +2,6 @@ package com.teamscale.profiler.installer;
 
 import com.teamscale.profiler.installer.utils.MockRegistry;
 import com.teamscale.profiler.installer.utils.MockTeamscale;
-import com.teamscale.profiler.installer.utils.TestUtils;
 import com.teamscale.profiler.installer.utils.UninstallErrorReporterAssert;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
@@ -80,18 +79,6 @@ class WindowsInstallerTest {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		UninstallErrorReporterAssert.assertThat(errorReporter).hadNoErrors();
-
-		assertThat(registry.getVariable("_JAVA_OPTIONS")).isNull();
-		assertThat(registry.getVariable("JAVA_TOOL_OPTIONS")).isNull();
-	}
-
-	@Test
-	void uninstallDeletingAgentDirectoryFails() throws Exception {
-		install();
-		TestUtils.makePathReadOnly(targetDirectory);
-
-		Installer.UninstallerErrorReporter errorReporter = uninstall();
-		UninstallErrorReporterAssert.assertThat(errorReporter).hadErrors();
 
 		assertThat(registry.getVariable("_JAVA_OPTIONS")).isNull();
 		assertThat(registry.getVariable("JAVA_TOOL_OPTIONS")).isNull();

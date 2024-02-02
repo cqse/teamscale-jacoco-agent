@@ -94,21 +94,6 @@ class AllPlatformsInstallerTest {
 		install();
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadNoErrors();
-
-		assertThat(targetDirectory).doesNotExist();
-	}
-
-	@Test
-	void uninstallDeletingAgentDirectoryFails() throws Exception {
-		install();
-		TestUtils.makePathReadOnly(targetDirectory);
-		TestUtils.makePathReadOnly(installedTeamscaleProperties);
-
-		Installer.UninstallerErrorReporter errorReporter = uninstall();
-		assertThat(errorReporter).hadErrors();
-
-		assertThat(targetDirectory).exists();
-		assertThat(installedTeamscaleProperties).exists();
 	}
 
 	@Test

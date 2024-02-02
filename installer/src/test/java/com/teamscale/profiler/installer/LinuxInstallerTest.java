@@ -103,6 +103,7 @@ class LinuxInstallerTest {
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadNoErrors();
 
+		assertThat(targetDirectory).doesNotExist();
 		assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
 		assertThat(systemdConfig).doesNotExist();
 	}
@@ -127,10 +128,13 @@ class LinuxInstallerTest {
 	void uninstallDeletingAgentDirectoryFails() throws Exception {
 		install();
 		TestUtils.makePathReadOnly(targetDirectory);
+		TestUtils.makePathReadOnly(installedTeamscaleProperties);
 
 		Installer.UninstallerErrorReporter errorReporter = uninstall();
 		assertThat(errorReporter).hadErrors();
 
+		assertThat(targetDirectory).exists();
+		assertThat(installedTeamscaleProperties).exists();
 		assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT);
 		assertThat(systemdConfig).doesNotExist();
 	}
