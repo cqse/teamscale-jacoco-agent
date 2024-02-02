@@ -1,5 +1,8 @@
 package com.teamscale.client;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Test with additional information about which cluster of tests the test case belongs to during prioritization.
  */
@@ -26,7 +29,9 @@ public class TestWithClusterId {
 	 */
 	public final String clusterId;
 
-	public TestWithClusterId(String testName, String hash, String partition, String clusterId) {
+	@JsonCreator
+	public TestWithClusterId(@JsonProperty("testName") String testName, @JsonProperty("hash") String hash,
+							 @JsonProperty("partition") String partition, @JsonProperty("clusterId") String clusterId) {
 		this.testName = testName;
 		this.hash = hash;
 		this.partition = partition;

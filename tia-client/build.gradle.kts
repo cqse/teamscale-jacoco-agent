@@ -21,7 +21,7 @@ dependencies {
     api(project(":teamscale-client"))
     api(project(":report-generator"))
     api(libs.retrofit.core)
-    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.retrofit.converter.jackson)
 
     testImplementation(libs.mockito.core)
     testImplementation(libs.okhttp.mockwebserver)

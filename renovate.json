@@ -46,6 +46,13 @@
       "allowedVersions": "< 5"
     },
     {
+      "matchPaths": ["installer/build.gradle.kts"],
+      "matchPackageNames": [
+        "com.squareup.okhttp3:okhttp"
+      ],
+      "allowedVersions": "<4 || >=5"
+    },
+    {
       "matchPackageNames": [
         "com.teamscale:teamscale-lib-commons"
       ],
@@ -54,7 +61,8 @@
     },
     {
       "matchPackageNames": [
-        "com.teamscale:teamscale-jacoco-agent"
+        "com.teamscale:teamscale-jacoco-agent",
+        "com.teamscale:teamscale-client"
       ],
       "enabled": false
     }

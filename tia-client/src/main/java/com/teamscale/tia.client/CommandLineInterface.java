@@ -1,9 +1,7 @@
 package com.teamscale.tia.client;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.StringUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
@@ -30,12 +28,6 @@ public class CommandLineInterface {
 			super(message);
 		}
 	}
-
-	private final JsonAdapter<List<ClusteredTestDetails>> clusteredTestDetailsJsonAdapter =
-			new Moshi.Builder().build().adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
-
-	private final JsonAdapter<List<PrioritizableTestCluster>> prioritizableTestClusterJsonAdapter =
-			new Moshi.Builder().build().adapter(Types.newParameterizedType(List.class, ClusteredTestDetails.class));
 
 	private final List<String> arguments;
 	private final String command;
@@ -129,14 +121,14 @@ public class CommandLineInterface {
 
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(() ->
 				api.testRunStarted(includeNonImpacted, baseline, availableTests), "Failed to start the test run");
-		System.out.println(prioritizableTestClusterJsonAdapter.toJson(clusters));
+		System.out.println(JsonUtils.serialize(clusters));
 	}
 
 	private List<ClusteredTestDetails> parseAvailableTestsFromStdin() throws java.io.IOException {
 		String json = readStdin();
 		List<ClusteredTestDetails> availableTests = Collections.emptyList();
 		if (!StringUtils.isEmpty(json)) {
-			availableTests = clusteredTestDetailsJsonAdapter.fromJson(json);
+			availableTests = JsonUtils.deserializeList(json, ClusteredTestDetails.class);
 		}
 		return availableTests;
 	}

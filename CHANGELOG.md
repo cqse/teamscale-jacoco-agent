@@ -5,10 +5,39 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _agent_: Extended list of packages excluded by default
+- [maintenance] _agent_: Removed HTTP upload (i.e. `upload-url` option)
+
+# 33.0.0
 - [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)
 - [feature] allow specifying configuration ID from Teamscale via environment variable `TEAMSCALE_JAVA_PROFILER_CONFIG_ID`
 - [breaking change] default log and coverage file directory changed to `/tmp` which works in more situations
 - [feature] _agent_: Added `config-id` option to allow retrieving the agent configuration from Teamscale. 
+
+# 32.6.3
+- Re-Release 32.6.2
+
+# 32.6.2
+- Re-Release 32.6.1
+- [fix] _teamscale-maven-plugin_ Test names containing slashes could not be uploaded
+- [fix] _tia-client_ Impacted test retrieval failed due to JSON parsing error
+
+# 32.6.1
+- [fix] _teamscale-maven-plugin_ Test names containing slashes could not be uploaded
+- [fix] _tia-client_ Impacted test retrieval failed due to JSON parsing error
+
+# 32.6.0
+- [feature] Profiler logs its version on startup
+- [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors
+
+# 32.5.0
+- [feature] _teamscale-maven-plugin_: Added the `upload-coverage` goal which automatically uploads JaCoCo reports to Teamscale.
+
+# 32.4.2
+- [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
+
+# 32.4.1
+- [fix] _agent_: The agent crashed while starting on some machines with "cannot construct instances of" errors 
 
 # 32.4.0
 - [feature] _agent_: Added stable support for Java 21 and experimental support for Java 22

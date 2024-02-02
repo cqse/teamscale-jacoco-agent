@@ -40,7 +40,7 @@ jobs:
     - name: Publish Maven Plugin to Maven Central
       if: always() && startsWith(github.ref, 'refs/tags/v')
       run: |
-        ./gradlew :teamscale-maven-plugin:publishMavenPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository \
+        ./gradlew :teamscale-maven-plugin:publishMavenPublicationToSonatypeRepository \
           -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg \
           -PgpgDirectory=${{ github.workspace }}/.gnupg \
           -Psigning.password=${{ secrets.MAVEN_CENTRAL_GPG_SIGNATURE }} \
@@ -60,7 +60,7 @@ jobs:
           -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }}
     - name: Upload coverage to Teamscale
       if: always() && github.event_name == 'push'
-      uses: cqse/teamscale-upload-action@v2.8.2
+      uses: cqse/teamscale-upload-action@v9.2.1
       with:
         server: 'https://cqse.teamscale.io'
         project: 'teamscale-jacoco-agent'

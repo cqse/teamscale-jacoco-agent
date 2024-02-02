@@ -20,7 +20,7 @@ publishAs {
 	description.set("JVM profiler that simplifies various aspects around recording and uploading test coverage")
 }
 
-val appVersion = rootProject.ext["appVersion"].toString()
+val appVersion = rootProject.extra["appVersion"].toString()
 val jacocoVersion = libs.versions.jacoco.get()
 val outputVersion = "$appVersion-jacoco-$jacocoVersion"
 
@@ -54,12 +54,11 @@ dependencies {
 
 	implementation(libs.retrofit.core)
 
-	implementation(libs.moshi)
+	implementation(libs.jackson.databind)
 
 	testImplementation(project(":tia-client"))
-	testImplementation(libs.retrofit.converter.moshi)
+	testImplementation(libs.retrofit.converter.jackson)
 	testImplementation(libs.okhttp.mockwebserver)
-	testImplementation(libs.moshi)
 }
 
 application {

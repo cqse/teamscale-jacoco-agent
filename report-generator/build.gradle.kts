@@ -24,8 +24,7 @@ dependencies {
         }
     }
 
-    // Need to stay at 1.12.0 because 1.13.0 upwards uses multi release jars which breaks the gradle plugin tests
-    implementation("com.squareup.moshi:moshi:1.12.0")
+    implementation(libs.jackson.databind)
 
     testImplementation(libs.jsonassert)
     testImplementation(libs.teamscaleLibCommons)

@@ -28,6 +28,7 @@ public class JacocoAgentOptionsBuilder {
 			builder.append(",includes=").append(agentOptions.jacocoIncludes);
 		}
 		if (agentOptions.jacocoExcludes != null) {
+			logger.debug("Using default excludes: " + AgentOptions.DEFAULT_EXCLUDES);
 			builder.append(",excludes=").append(agentOptions.jacocoExcludes);
 		}
 

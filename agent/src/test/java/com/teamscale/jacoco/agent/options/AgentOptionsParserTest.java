@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
@@ -30,9 +29,6 @@ public class AgentOptionsParserTest {
 	/** The mock server to run requests against. */
 	protected MockWebServer mockWebServer;
 
-	private static final JsonAdapter<ProfilerRegistration> REGISTRATION_ADAPTER = new Moshi.Builder().build()
-			.adapter(ProfilerRegistration.class);
-
 	/** Starts the mock server. */
 	@BeforeEach
 	public void setup() throws Exception {
@@ -50,8 +46,6 @@ public class AgentOptionsParserTest {
 	@Test
 	public void testUploadMethodRecognition() throws Exception {
 		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
-		assertThat(parser.parse("upload-url=teamscale.url.com:443").determineUploadMethod()).isEqualTo(
-				AgentOptions.EUploadMethod.HTTP);
 		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
 				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
 		assertThat(parser.parse(
@@ -77,8 +71,6 @@ public class AgentOptionsParserTest {
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
 
 		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
-		assertThat(parser.parse("upload-url=teamscale.url.com:443").determineUploadMethod()).isEqualTo(
-				AgentOptions.EUploadMethod.HTTP);
 		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
 				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
 		assertThat(parser.parse(
@@ -105,7 +97,7 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration = new ProfilerConfiguration();
 		registration.profilerConfiguration.configurationId = "my-config";
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=foo";
-		mockWebServer.enqueue(new MockResponse().setBody(REGISTRATION_ADAPTER.toJson(registration)));
+		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
 				teamscaleCredentials);
 		AgentOptions options = parser.parse("teamscale-partition=bar");
@@ -207,33 +199,6 @@ public class AgentOptionsParserTest {
 		assertThat(parser.parse("").jacocoExcludes).isEqualTo(AgentOptions.DEFAULT_EXCLUDES);
 		assertThat(parser.parse("excludes=**foo**").jacocoExcludes)
 				.isEqualTo("**foo**:" + AgentOptions.DEFAULT_EXCLUDES);
-	}
-
-	@Test
-	public void mustDoHttpsRewriteForNoSchemePort443() throws Exception {
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:443").uploadUrl)
-				.isEqualTo(HttpUrl.parse("https://teamscale.url.com:443/"));
-	}
-
-	@Test
-	public void mustNotDoHttpsRewriteForSchemePort443() throws Exception {
-		assertThat(parser.parse(
-				"upload-url=http://teamscale.url.com:443").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:443/"));
-	}
-
-	@Test
-	public void defaultHttpRewriteForNoScheme() throws Exception {
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:8080").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:8080/"));
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:80").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:80/"));
-		assertThat(parser.parse(
-				"upload-url=teamscale.url.com:444").uploadUrl)
-				.isEqualTo(HttpUrl.parse("http://teamscale.url.com:444/"));
 	}
 
 	@Test

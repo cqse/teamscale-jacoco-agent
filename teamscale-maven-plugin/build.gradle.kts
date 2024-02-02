@@ -13,6 +13,9 @@ abstract class MavenExec : Exec() {
 			project.file("pom.xml").readText().replace(
 				Regex("<teamscale.agent.version>[^<]+</teamscale.agent.version>"),
 				"<teamscale.agent.version>${project.version}</teamscale.agent.version>"
+			).replace(
+				Regex("<revision>[^<]+</revision>"),
+				"<revision>${project.version}</revision>"
 			)
 		)
 		super.exec()
@@ -20,6 +23,9 @@ abstract class MavenExec : Exec() {
 			project.file("pom.xml").readText().replace(
 				Regex("<teamscale.agent.version>[^<]+</teamscale.agent.version>"),
 				"<teamscale.agent.version>29.0.0</teamscale.agent.version>"
+			).replace(
+				Regex("<revision>[^<]+</revision>"),
+				"<revision>1.0.0-SNAPSHOT</revision>"
 			)
 		)
 	}
@@ -83,7 +89,6 @@ if (project.hasProperty("sonatypeUsername") &&
 		}
 		args(
 			"deploy", "-s", "/tmp/maven-settings.xml",
-			"-Drevision=${project.version}", "-Dteamscale.agent.version=${project.version}",
 			"-Dgpg.passphrase=${project.property("signing.password")}",
 			"-Dgpg.homedir=${project.property("gpgDirectory")}",
 			"-Dgpg.keyname=${project.property("signing.keyId")}",

@@ -1,5 +1,8 @@
 package com.teamscale.report.testwise.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +16,13 @@ public class TestInfo {
 	/**
 	 * Path to the source of the method. Will be equal to uniformPath in most cases, but e.g. @Test methods in a Base
 	 * class will have the sourcePath pointing to the Base class which contains the actual implementation whereas
-	 * uniformPath will contain the the class name of the most specific subclass, from where it was actually executed.
+	 * uniformPath will contain the class name of the most specific subclass, from where it was actually executed.
 	 */
 	public final String sourcePath;
 
 	/**
-	 * Some kind of content to tell whether the test specification has changed. Can be revision number or
-	 * hash over the specification or similar.
+	 * Some kind of content to tell whether the test specification has changed. Can be revision number or hash over the
+	 * specification or similar.
 	 */
 	public final String content;
 
@@ -30,16 +33,18 @@ public class TestInfo {
 	public final ETestExecutionResult result;
 
 	/**
-	 * Optional message given for test failures (normally contains a stack trace).
-	 * May be {@code null}.
+	 * Optional message given for test failures (normally contains a stack trace). May be {@code null}.
 	 */
 	public final String message;
 
 	/** All paths that the test did cover. */
 	public final List<PathCoverage> paths = new ArrayList<>();
 
-	public TestInfo(String uniformPath, String sourcePath, String content, Double duration, ETestExecutionResult result,
-					String message) {
+	@JsonCreator
+	public TestInfo(@JsonProperty("uniformPath") String uniformPath, @JsonProperty("sourcePath") String sourcePath,
+					@JsonProperty("content") String content, @JsonProperty("duration") Double duration,
+					@JsonProperty("result") ETestExecutionResult result,
+					@JsonProperty("message") String message) {
 		this.uniformPath = uniformPath;
 		this.sourcePath = sourcePath;
 		this.content = content;
