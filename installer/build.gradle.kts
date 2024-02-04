@@ -2,7 +2,7 @@ plugins {
 	application
 	com.teamscale.`java-convention`
 	com.teamscale.coverage
-	id("org.graalvm.buildtools.native") version "0.9.5"
+	id("org.graalvm.buildtools.native") version "0.10.0"
 }
 
 tasks.jar {
