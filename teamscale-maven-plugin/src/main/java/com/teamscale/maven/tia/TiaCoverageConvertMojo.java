@@ -1,23 +1,17 @@
 package com.teamscale.maven.tia;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Strings;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
+import com.teamscale.jacoco.agent.options.ClasspathUtils;
+import com.teamscale.jacoco.agent.options.FilePatternResolver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-
-import com.google.common.base.Strings;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.options.ClasspathUtils;
-import com.teamscale.jacoco.agent.options.FilePatternResolver;
-
+import org.apache.maven.project.MavenProject;
 import shadow.com.teamscale.client.TestDetails;
 import shadow.com.teamscale.report.EDuplicateClassFileBehavior;
 import shadow.com.teamscale.report.ReportUtils;
@@ -29,6 +23,14 @@ import shadow.com.teamscale.report.testwise.model.factory.TestInfoFactory;
 import shadow.com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import shadow.com.teamscale.report.util.CommandLineLogger;
 import shadow.com.teamscale.report.util.ILogger;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Batch converts all created .exec file reports into a testwise coverage
@@ -49,7 +51,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 
 	/**
 	 * After how many tests the testwise coverage should be split into multiple
-	 * reports (Default is 5000)."
+	 * reports (Default is 5000).
 	 */
 	@Parameter(defaultValue = "5000")
 	public int splitAfter;
@@ -67,22 +69,37 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 	@Parameter()
 	public String outputFolder;
 
+	/**
+	 * The running Maven session. Provided automatically by Maven.
+	 */
+	@Parameter(defaultValue = "${session}")
+	public MavenSession session;
 	private final ILogger logger = new CommandLineLogger();
 
 	@Override
 	public void execute() throws MojoFailureException {
+
+		List<File> reportFileDirectories = new ArrayList<>();
+		reportFileDirectories.add(Paths.get(projectBuildDir, "tia").toAbsolutePath().resolve("reports").toFile());
+		List<File> classfileDirectories;
 		if (Strings.isNullOrEmpty(outputFolder)) {
 			outputFolder = Paths.get(projectBuildDir, "tia", "reports").toString();
 		}
+		Path reportOutFolder = Paths.get(outputFolder);
+		try {
+			Files.createDirectories(reportOutFolder);
+			classfileDirectories = getClassDirectoriesOrZips(projectBuildDir);
+			findSubprojectReportAndClassDirectories(reportFileDirectories, classfileDirectories);
+		} catch (IOException | AgentOptionParseException e) {
+			logger.error("Could not create testwise report generator. Aborting.");
+			throw new MojoFailureException(e);
+		}
+		logger.info("Generating the testwise coverage report");
+		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator(classfileDirectories);
+		TestInfoFactory testInfoFactory = createTestInfoFactory(reportFileDirectories);
+		List<File> jacocoExecutionDataList = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, reportFileDirectories);
 		String reportFilePath = Paths.get(outputFolder, "testwise-coverage.json").toString();
 
-		List<File> reportFiles = new ArrayList<>();
-		reportFiles.add(Paths.get(projectBuildDir, "tia").toAbsolutePath().resolve("reports").toFile());
-
-		logger.info("Generating the testwise coverage report");
-		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator();
-		TestInfoFactory testInfoFactory = createTestInfoFactory(reportFiles);
-		List<File> jacocoExecutionDataList = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, reportFiles);
 		try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
 				new File(reportFilePath), splitAfter)) {
 			for (File executionDataFile : jacocoExecutionDataList) {
@@ -91,6 +108,17 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private void findSubprojectReportAndClassDirectories(List<File> reportFiles,
+														 List<File> classFiles) throws AgentOptionParseException {
+
+		for (MavenProject subProject : session.getTopLevelProject().getCollectedProjects()) {
+			String subprojectBuildDirectory = subProject.getBuild().getDirectory();
+			reportFiles.add(Paths.get(subprojectBuildDirectory, "tia").toAbsolutePath().resolve("reports")
+					.toFile());
+			classFiles.addAll(getClassDirectoriesOrZips(subprojectBuildDirectory));
 		}
 	}
 
@@ -109,7 +137,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 
 	}
 
-	private JaCoCoTestwiseReportGenerator createJaCoCoTestwiseReportGenerator() throws MojoFailureException {
+	private JaCoCoTestwiseReportGenerator createJaCoCoTestwiseReportGenerator(List<File> classFiles) {
 		String includes = null;
 		if (this.includes != null) {
 			includes = String.join(":", this.includes);
@@ -118,16 +146,11 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 		if (this.excludes != null) {
 			excludes = String.join(":", this.excludes);
 		}
-		try {
-			return new JaCoCoTestwiseReportGenerator(getClassDirectoriesOrZips(),
-					new ClasspathWildcardIncludeFilter(includes, excludes), EDuplicateClassFileBehavior.WARN, logger);
-		} catch (AgentOptionParseException e) {
-			logger.error("Could not create testwise report generator. Aborting.");
-			throw new MojoFailureException(e);
-		}
+		return new JaCoCoTestwiseReportGenerator(classFiles,
+				new ClasspathWildcardIncludeFilter(includes, excludes), EDuplicateClassFileBehavior.WARN, logger);
 	}
 
-	private List<File> getClassDirectoriesOrZips() throws AgentOptionParseException {
+	private List<File> getClassDirectoriesOrZips(String projectBuildDir) throws AgentOptionParseException {
 		List<String> classDirectoriesOrZips = new ArrayList<>();
 		classDirectoriesOrZips.add(projectBuildDir);
 		return ClasspathUtils.resolveClasspathTextFiles("classes", new FilePatternResolver(new CommandLineLogger()),
