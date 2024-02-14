@@ -27,7 +27,6 @@ import shadow.com.teamscale.report.util.ILogger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,21 +80,20 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 
 		List<File> reportFileDirectories = new ArrayList<>();
 		reportFileDirectories.add(Paths.get(projectBuildDir, "tia").toAbsolutePath().resolve("reports").toFile());
-		List<File> classfileDirectories;
+		List<File> classFileDirectories;
 		if (Strings.isNullOrEmpty(outputFolder)) {
 			outputFolder = Paths.get(projectBuildDir, "tia", "reports").toString();
 		}
-		Path reportOutFolder = Paths.get(outputFolder);
 		try {
-			Files.createDirectories(reportOutFolder);
-			classfileDirectories = getClassDirectoriesOrZips(projectBuildDir);
-			findSubprojectReportAndClassDirectories(reportFileDirectories, classfileDirectories);
+			Files.createDirectories(Paths.get(outputFolder));
+			classFileDirectories = getClassDirectoriesOrZips(projectBuildDir);
+			findSubprojectReportAndClassDirectories(reportFileDirectories, classFileDirectories);
 		} catch (IOException | AgentOptionParseException e) {
 			logger.error("Could not create testwise report generator. Aborting.");
 			throw new MojoFailureException(e);
 		}
 		logger.info("Generating the testwise coverage report");
-		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator(classfileDirectories);
+		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator(classFileDirectories);
 		TestInfoFactory testInfoFactory = createTestInfoFactory(reportFileDirectories);
 		List<File> jacocoExecutionDataList = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, reportFileDirectories);
 		String reportFilePath = Paths.get(outputFolder, "testwise-coverage.json").toString();
