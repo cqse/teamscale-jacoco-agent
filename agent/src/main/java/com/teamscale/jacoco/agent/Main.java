@@ -46,6 +46,7 @@ public class Main {
 		if (defaultArguments.help) {
 			System.out.println("CQSE JaCoCo agent " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 			jCommander.usage();
+			// TODO new todo
 			return;
 		}
 
