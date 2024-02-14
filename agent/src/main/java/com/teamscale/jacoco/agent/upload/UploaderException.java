@@ -28,8 +28,10 @@ public class UploaderException extends Exception {
 	private static String createResponseMessage(String message, Response<ResponseBody> response) {
 		try {
 			String errorBodyMessage = response.errorBody().string();
+			int j= 0;
 			return String.format("%s (%s): \n%s", message, response.code(), errorBodyMessage);
 		} catch (IOException | NullPointerException e) {
+			int i = 0;
 			return message;
 		}
 	}
