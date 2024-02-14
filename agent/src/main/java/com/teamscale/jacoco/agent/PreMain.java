@@ -87,7 +87,6 @@ public class PreMain {
 	@NotNull
 	private static AgentOptions getAndApplyAgentOptions(String options,
 														String environmentConfigId) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
-		// TODO 2nd new todo
 		DelayedLogger delayedLogger = new DelayedLogger();
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
