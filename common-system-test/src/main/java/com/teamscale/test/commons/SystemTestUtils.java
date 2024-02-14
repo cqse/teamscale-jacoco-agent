@@ -56,7 +56,7 @@ public class SystemTestUtils {
 		try {
 			String executable = "./mvnw";
 			if (SystemUtils.isWindows()) {
-				executable = "./mvnw.cmd";
+				executable = Paths.get(mavenProjectPath, "mvnw.cmd").toUri().getPath();
 			}
 			result = ProcessUtils.execute(
 					new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
