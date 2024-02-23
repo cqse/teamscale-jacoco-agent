@@ -69,7 +69,7 @@ public abstract class AgentBase {
 			System.setProperty("http.proxyPassword", proxyPassword);
 			System.setProperty("https.proxyPassword", proxyPassword);
 		} catch (IOException e) {
-			throw new RuntimeException(
+			logger.error(
 					"Unable to open file containing proxy password. Please make sure the file exists and the user has the permissions to read the file.",
 					e);
 		}
