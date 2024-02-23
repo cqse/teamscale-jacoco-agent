@@ -61,6 +61,7 @@ The following options are available:
   Use this to change the logging behaviour of the agent. Some sample configurations are provided with the agent in the
   `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section
   below)
+- `proxy-password-file` (optional): path to a file that contains the password for a proxy server authentication. This file may only contain the password and nothing else.
 - `mode` (optional): which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
 - `debug` (optional): `true`, `false` or a path to which the logs should be written to. `true` if no explicit value given.
   This option turns on debug mode. The logs will be written to console and the given file path. If no file path is given,
