@@ -1,5 +1,7 @@
 package com.teamscale.client;
 
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -39,6 +41,12 @@ public class HttpUtils {
 	 */
 	public static final Duration DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(60);
 
+	private static final String HTTP_PROXY_USER_SYSTEM_PROPERTY = "http.proxyUser";
+	private static final String HTTP_PROXY_PASSWORD_SYSTEM_PROPERTY = "http.proxyPassword";
+	private static final String HTTPS_PROXY_USER_SYSTEM_PROPERTY = "https.proxyUser";
+	private static final String HTTPS_PROXY_PASSWORD_SYSTEM_PROPERTY = "https.proxyPassword";
+	private static final String PROXY_AUTHORIZATION_HTTP_HEADER = "Proxy-Authorization";
+
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */
 	private static boolean shouldValidateSsl = true;
 
@@ -66,11 +74,50 @@ public class HttpUtils {
 		OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
 		setTimeouts(httpClientBuilder, readTimeout, writeTimeout);
 		setUpSslValidation(httpClientBuilder);
+		setUpProxyAuthentication(httpClientBuilder);
 		okHttpBuilderAction.accept(httpClientBuilder);
 
 		Retrofit.Builder builder = new Retrofit.Builder().client(httpClientBuilder.build());
 		retrofitBuilderAction.accept(builder);
 		return builder.build();
+	}
+
+	/**
+	 * Java and/or OkHttp do not pick up the {@value HTTP_PROXY_USER_SYSTEM_PROPERTY},
+	 * {@value HTTP_PROXY_PASSWORD_SYSTEM_PROPERTY} and {@value HTTPS_PROXY_USER_SYSTEM_PROPERTY},
+	 * {@value HTTPS_PROXY_PASSWORD_SYSTEM_PROPERTY} system properties automatically. We need to teach OkHttp to pick
+	 * them up.
+	 * <p>
+	 * Sources: <a
+	 * href="https://memorynotfound.com/configure-http-proxy-settings-java/">https://memorynotfound.com/configure-http-proxy-settings-java/</a>
+	 * &
+	 * <a href="https://stackoverflow.com/a/35567936">https://stackoverflow.com/a/35567936</a>
+	 */
+	private static void setUpProxyAuthentication(OkHttpClient.Builder httpClientBuilder) {
+		String httpUser = System.getProperty(HTTP_PROXY_USER_SYSTEM_PROPERTY);
+		String httpPassword = System.getProperty(HTTP_PROXY_PASSWORD_SYSTEM_PROPERTY);
+		String httpsUser = System.getProperty(HTTPS_PROXY_USER_SYSTEM_PROPERTY);
+		String httpsPassword = System.getProperty(HTTPS_PROXY_PASSWORD_SYSTEM_PROPERTY);
+		String username;
+		String password;
+
+		if (!StringUtils.isEmpty(httpsUser) && !StringUtils.isEmpty(httpsPassword)) {
+			username = httpsUser;
+			password = httpsPassword;
+		} else if (!StringUtils.isEmpty(httpUser) && !StringUtils.isEmpty((httpPassword))) {
+			username = httpUser;
+			password = httpPassword;
+		} else {
+			return;
+		}
+
+		Authenticator proxyAuthenticator = (route, response) -> {
+			String credential = Credentials.basic(username, password);
+			return response.request().newBuilder()
+					.header(PROXY_AUTHORIZATION_HTTP_HEADER, credential)
+					.build();
+		};
+		httpClientBuilder.proxyAuthenticator(proxyAuthenticator);
 	}
 
 	/**
