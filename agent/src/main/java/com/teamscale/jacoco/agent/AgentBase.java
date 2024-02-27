@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent;
 
+import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -66,8 +67,8 @@ public abstract class AgentBase {
 		}
 		try {
 			String proxyPassword = FileSystemUtils.readFileUTF8(proxyPasswordFilePath.toFile()).trim();
-			System.setProperty("http.proxyPassword", proxyPassword);
-			System.setProperty("https.proxyPassword", proxyPassword);
+			new ProxySystemProperties(ProxySystemProperties.Protocol.HTTP).setProxyPassword(proxyPassword);
+			new ProxySystemProperties(ProxySystemProperties.Protocol.HTTPS).setProxyPassword(proxyPassword);
 		} catch (IOException e) {
 			logger.error(
 					"Unable to open file containing proxy password. Please make sure the file exists and the user has the permissions to read the file.",
@@ -75,6 +76,7 @@ public abstract class AgentBase {
 		}
 
 	}
+
 	/**
 	 * Lazily generated string representation of the command line arguments to print to the log.
 	 */

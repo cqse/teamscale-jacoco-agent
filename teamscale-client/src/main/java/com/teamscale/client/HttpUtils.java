@@ -17,6 +17,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -41,11 +43,7 @@ public class HttpUtils {
 	 */
 	public static final Duration DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(60);
 
-	private static final String HTTP_PROXY_USER_SYSTEM_PROPERTY = "http.proxyUser";
-	private static final String HTTP_PROXY_PASSWORD_SYSTEM_PROPERTY = "http.proxyPassword";
-	private static final String HTTPS_PROXY_USER_SYSTEM_PROPERTY = "https.proxyUser";
-	private static final String HTTPS_PROXY_PASSWORD_SYSTEM_PROPERTY = "https.proxyPassword";
-	private static final String PROXY_AUTHORIZATION_HTTP_HEADER = "Proxy-Authorization";
+	public static final String PROXY_AUTHORIZATION_HTTP_HEADER = "Proxy-Authorization";
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */
 	private static boolean shouldValidateSsl = true;
@@ -74,7 +72,7 @@ public class HttpUtils {
 		OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
 		setTimeouts(httpClientBuilder, readTimeout, writeTimeout);
 		setUpSslValidation(httpClientBuilder);
-		setUpProxyAuthentication(httpClientBuilder);
+		setUpProxyServer(httpClientBuilder);
 		okHttpBuilderAction.accept(httpClientBuilder);
 
 		Retrofit.Builder builder = new Retrofit.Builder().client(httpClientBuilder.build());
@@ -83,42 +81,58 @@ public class HttpUtils {
 	}
 
 	/**
-	 * Java and/or OkHttp do not pick up the {@value HTTP_PROXY_USER_SYSTEM_PROPERTY},
-	 * {@value HTTP_PROXY_PASSWORD_SYSTEM_PROPERTY} and {@value HTTPS_PROXY_USER_SYSTEM_PROPERTY},
-	 * {@value HTTPS_PROXY_PASSWORD_SYSTEM_PROPERTY} system properties automatically. We need to teach OkHttp to pick
-	 * them up.
+	 * Java and/or OkHttp do not pick up the http.proxy* and https.proxy* system properties reliably. We need to teach
+	 * OkHttp to always pick them up.
 	 * <p>
 	 * Sources: <a
 	 * href="https://memorynotfound.com/configure-http-proxy-settings-java/">https://memorynotfound.com/configure-http-proxy-settings-java/</a>
 	 * &
 	 * <a href="https://stackoverflow.com/a/35567936">https://stackoverflow.com/a/35567936</a>
 	 */
-	private static void setUpProxyAuthentication(OkHttpClient.Builder httpClientBuilder) {
-		String httpUser = System.getProperty(HTTP_PROXY_USER_SYSTEM_PROPERTY);
-		String httpPassword = System.getProperty(HTTP_PROXY_PASSWORD_SYSTEM_PROPERTY);
-		String httpsUser = System.getProperty(HTTPS_PROXY_USER_SYSTEM_PROPERTY);
-		String httpsPassword = System.getProperty(HTTPS_PROXY_PASSWORD_SYSTEM_PROPERTY);
-		String username;
-		String password;
-
-		if (!StringUtils.isEmpty(httpsUser) && !StringUtils.isEmpty(httpsPassword)) {
-			username = httpsUser;
-			password = httpsPassword;
-		} else if (!StringUtils.isEmpty(httpUser) && !StringUtils.isEmpty((httpPassword))) {
-			username = httpUser;
-			password = httpPassword;
-		} else {
-			return;
+	private static void setUpProxyServer(OkHttpClient.Builder httpClientBuilder) {
+		boolean setHttpsProxyWasSuccessful = setUpProxyServerForProtocol(ProxySystemProperties.Protocol.HTTPS,
+				httpClientBuilder);
+		if (!setHttpsProxyWasSuccessful) {
+			setUpProxyServerForProtocol(ProxySystemProperties.Protocol.HTTP, httpClientBuilder);
 		}
+	}
 
+	private static boolean setUpProxyServerForProtocol(ProxySystemProperties.Protocol protocol,
+													   OkHttpClient.Builder httpClientBuilder) {
+
+		ProxySystemProperties proxySystemProperties = new ProxySystemProperties(protocol);
+		String proxyHost = proxySystemProperties.getProxyHost();
+		int proxyPort = proxySystemProperties.getProxyPort();
+		String proxyUser = proxySystemProperties.getProxyUser();
+		String proxyPassword = proxySystemProperties.getProxyPassword();
+
+		if (proxySystemProperties.proxyServerIsSet()) {
+			setProxyServer(httpClientBuilder, proxyHost, proxyPort);
+
+			if (proxySystemProperties.proxyAuthIsSet()) {
+				setProxyAuthenticator(httpClientBuilder, proxyUser, proxyPassword);
+			}
+
+			return true;
+		}
+		return false;
+
+	}
+
+	private static void setProxyServer(OkHttpClient.Builder httpClientBuilder, String proxyHost, int proxyPort) {
+		httpClientBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
+	}
+
+	private static void setProxyAuthenticator(OkHttpClient.Builder httpClientBuilder, String user, String password) {
 		Authenticator proxyAuthenticator = (route, response) -> {
-			String credential = Credentials.basic(username, password);
+			String credential = Credentials.basic(user, password);
 			return response.request().newBuilder()
 					.header(PROXY_AUTHORIZATION_HTTP_HEADER, credential)
 					.build();
 		};
 		httpClientBuilder.proxyAuthenticator(proxyAuthenticator);
 	}
+
 
 	/**
 	 * Sets sensible defaults for the {@link OkHttpClient}.
