@@ -43,6 +43,9 @@ public class HttpUtils {
 	 */
 	public static final Duration DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(60);
 
+	/**
+	 * HTTP header used for authenticating against a proxy server
+	 */
 	public static final String PROXY_AUTHORIZATION_HTTP_HEADER = "Proxy-Authorization";
 
 	/** Controls whether {@link OkHttpClient}s built with this class will validate SSL certificates. */

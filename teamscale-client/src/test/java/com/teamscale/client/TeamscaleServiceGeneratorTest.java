@@ -17,8 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TeamscaleServiceGeneratorTest {
 
-	MockWebServer mockProxyServer;
-	ProxySystemProperties proxySystemProperties = new ProxySystemProperties(ProxySystemProperties.Protocol.HTTP);
+	private MockWebServer mockProxyServer;
+	private final ProxySystemProperties proxySystemProperties = new ProxySystemProperties(
+			ProxySystemProperties.Protocol.HTTP);
 
 	@BeforeEach
 	void setUp() throws IOException {
