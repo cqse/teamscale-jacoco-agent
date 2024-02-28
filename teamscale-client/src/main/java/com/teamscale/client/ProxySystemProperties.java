@@ -41,8 +41,8 @@ public class ProxySystemProperties {
 	}
 
 	/**
-	 * @param protocol Indicates, whether the {@link ProxySystemProperties} should return values for the http.proxy*
-	 *                 system properties or the https.proxy* ones
+	 * @param protocol Indicates, whether the {@link ProxySystemProperties} should use values for the http.proxy* system
+	 *                 properties or the https.proxy* ones
 	 */
 	public ProxySystemProperties(Protocol protocol) {
 		this.protocol = protocol;
