@@ -24,16 +24,9 @@ public class TeamscaleServiceGenerator {
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
 									  Duration readTimeout, Duration writeTimeout, Interceptor... interceptors) {
-		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
-						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
-				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-						.addInterceptor(new AcceptJsonInterceptor())
-						.addNetworkInterceptor(new CustomUserAgentInterceptor())
-				, readTimeout, writeTimeout
-		);
-		return retrofit.create(serviceClass);
+		return createServiceWithRequestLogging(serviceClass, baseUrl, username, accessToken, null, readTimeout,
+				writeTimeout,
+				interceptors);
 	}
 
 	/**
@@ -46,11 +39,15 @@ public class TeamscaleServiceGenerator {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
 						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
-				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-						.addInterceptor(new AcceptJsonInterceptor())
-						.addNetworkInterceptor(new CustomUserAgentInterceptor())
-						.addInterceptor(new FileLoggingInterceptor(logfile)),
+				okHttpBuilder -> {
+					addInterceptors(okHttpBuilder, interceptors)
+							.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
+							.addInterceptor(new AcceptJsonInterceptor())
+							.addNetworkInterceptor(new CustomUserAgentInterceptor());
+					if (logfile != null) {
+						okHttpBuilder.addInterceptor(new FileLoggingInterceptor(logfile));
+					}
+				},
 				readTimeout, writeTimeout
 		);
 		return retrofit.create(serviceClass);
