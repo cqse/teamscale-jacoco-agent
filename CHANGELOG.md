@@ -8,6 +8,7 @@ We use [semantic versioning](http://semver.org/):
 - [feature] _teamscale-maven-plugin_: Add new execution goal to batch convert .exec files into testwise coverage report.
 - [feature] _agent_: Extended list of packages excluded by default
 - [maintenance] _agent_: Removed HTTP upload (i.e. `upload-url` option)
+- [feature] _agent_: New option `proxy-password-file` allows users to provide a file containing a proxy password
 
 # 33.0.0
 - [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)

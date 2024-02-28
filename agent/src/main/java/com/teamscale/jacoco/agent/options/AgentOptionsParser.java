@@ -193,6 +193,9 @@ public class AgentOptionsParser {
 			case LOGGING_CONFIG_OPTION:
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
 				return true;
+			case "proxy-password-file":
+				options.proxyPasswordPath = filePatternResolver.parsePath(key, value);
+				return true;
 			case "interval":
 				options.dumpIntervalInMinutes = parseInt(key, value);
 				return true;
