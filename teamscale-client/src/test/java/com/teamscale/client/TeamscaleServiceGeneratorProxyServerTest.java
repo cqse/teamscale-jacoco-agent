@@ -15,7 +15,10 @@ import java.util.Base64;
 import static com.teamscale.client.HttpUtils.PROXY_AUTHORIZATION_HTTP_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TeamscaleServiceGeneratorTest {
+/**
+ * Tests that our Retrofit + OkHttp client is using the Java proxy system properties ({@code http.proxy*}) if set
+ */
+class TeamscaleServiceGeneratorProxyServerTest {
 
 	private MockWebServer mockProxyServer;
 	private final ProxySystemProperties proxySystemProperties = new ProxySystemProperties(

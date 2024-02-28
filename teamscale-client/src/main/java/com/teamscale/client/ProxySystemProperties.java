@@ -1,5 +1,9 @@
 package com.teamscale.client;
 
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Reads and writes Java system properties values for
  * <ul>
@@ -12,6 +16,8 @@ package com.teamscale.client;
  * These values set the proxy server and credentials that should be used later to reach Teamscale.
  */
 public class ProxySystemProperties {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProxySystemProperties.class);
 
 	private static final String PROXY_HOST_SYSTEM_PROPERTY = ".proxyHost";
 	private static final String PROXY_PORT_SYSTEM_PROPERTY = ".proxyPort";
@@ -60,21 +66,26 @@ public class ProxySystemProperties {
 	 * Read the http(s).proxyHost system variable
 	 */
 	public String getProxyHost() {
-		return System.getProperty(protocol + PROXY_HOST_SYSTEM_PROPERTY);
-	}
-
-	/**
-	 * Set the http(s).proxyHost system variable
-	 */
-	public void setProxyHost(String proxyHost) {
-		System.setProperty(protocol + PROXY_HOST_SYSTEM_PROPERTY, proxyHost);
+		return System.getProperty(getProxyHostSystemPropertyName());
 	}
 
 	/**
 	 * Read the http(s).proxyPort system variable
 	 */
 	public int getProxyPort() {
-		return parsePort(System.getProperty(protocol + PROXY_PORT_SYSTEM_PROPERTY));
+		return parsePort(System.getProperty(getProxyPortSystemPropertyName()));
+	}
+
+	/**
+	 * Set the http(s).proxyHost system variable
+	 */
+	public void setProxyHost(String proxyHost) {
+		System.setProperty(getProxyHostSystemPropertyName(), proxyHost);
+	}
+
+	@NotNull
+	private String getProxyHostSystemPropertyName() {
+		return protocol + PROXY_HOST_SYSTEM_PROPERTY;
 	}
 
 	/**
@@ -88,41 +99,59 @@ public class ProxySystemProperties {
 	 * Set the http(s).proxyPort system variable
 	 */
 	public void setProxyPort(String proxyPort) {
-		System.setProperty(protocol + PROXY_PORT_SYSTEM_PROPERTY, proxyPort);
+		System.setProperty(getProxyPortSystemPropertyName(), proxyPort);
+	}
+
+	@NotNull
+	private String getProxyPortSystemPropertyName() {
+		return protocol + PROXY_PORT_SYSTEM_PROPERTY;
 	}
 
 	/**
 	 * Get the http(s).proxyUser system variable
 	 */
 	public String getProxyUser() {
-		return System.getProperty(protocol + PROXY_USER_SYSTEM_PROPERTY);
+		return System.getProperty(getProxyUserSystemPropertyName());
 	}
 
 	/**
 	 * Set the http(s).proxyUser system variable
 	 */
 	public void setProxyUser(String proxyUser) {
-		System.setProperty(protocol + PROXY_USER_SYSTEM_PROPERTY, proxyUser);
+		System.setProperty(getProxyUserSystemPropertyName(), proxyUser);
+	}
+
+	@NotNull
+	private String getProxyUserSystemPropertyName() {
+		return protocol + PROXY_USER_SYSTEM_PROPERTY;
 	}
 
 	/**
 	 * Get the http(s).proxyPassword system variable
 	 */
 	public String getProxyPassword() {
-		return System.getProperty(protocol + PROXY_PASSWORD_SYSTEM_PROPERTY);
+		return System.getProperty(getProxyPasswordSystemPropertyName());
 	}
+
 
 	/**
 	 * Set the http(s).proxyPassword system variable
 	 */
 	public void setProxyPassword(String proxyPassword) {
-		System.setProperty(protocol + PROXY_PASSWORD_SYSTEM_PROPERTY, proxyPassword);
+		System.setProperty(getProxyPasswordSystemPropertyName(), proxyPassword);
+	}
+
+	@NotNull
+	private String getProxyPasswordSystemPropertyName() {
+		return protocol + PROXY_PASSWORD_SYSTEM_PROPERTY;
 	}
 
 	private int parsePort(String portString) {
 		try {
 			return Integer.parseInt(portString);
 		} catch (NumberFormatException e) {
+			LOGGER.warn("Could not parse proxy port \"" + portString +
+					"\" set via \"" + getProxyPortSystemPropertyName() + "\"");
 			return -1;
 		}
 	}

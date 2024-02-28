@@ -110,10 +110,10 @@ public class HttpUtils {
 		String proxyPassword = proxySystemProperties.getProxyPassword();
 
 		if (proxySystemProperties.proxyServerIsSet()) {
-			setProxyServer(httpClientBuilder, proxyHost, proxyPort);
+			useProxyServer(httpClientBuilder, proxyHost, proxyPort);
 
 			if (proxySystemProperties.proxyAuthIsSet()) {
-				setProxyAuthenticator(httpClientBuilder, proxyUser, proxyPassword);
+				useProxyAuthenticator(httpClientBuilder, proxyUser, proxyPassword);
 			}
 
 			return true;
@@ -122,11 +122,11 @@ public class HttpUtils {
 
 	}
 
-	private static void setProxyServer(OkHttpClient.Builder httpClientBuilder, String proxyHost, int proxyPort) {
+	private static void useProxyServer(OkHttpClient.Builder httpClientBuilder, String proxyHost, int proxyPort) {
 		httpClientBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
 	}
 
-	private static void setProxyAuthenticator(OkHttpClient.Builder httpClientBuilder, String user, String password) {
+	private static void useProxyAuthenticator(OkHttpClient.Builder httpClientBuilder, String user, String password) {
 		Authenticator proxyAuthenticator = (route, response) -> {
 			String credential = Credentials.basic(user, password);
 			return response.request().newBuilder()
