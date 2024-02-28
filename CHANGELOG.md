@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 33.1.0
 - [feature] _teamscale-maven-plugin_: Add new execution goal to batch convert .exec files into testwise coverage report.
 - [feature] _agent_: Extended list of packages excluded by default
 - [maintenance] _agent_: Removed HTTP upload (i.e. `upload-url` option)
