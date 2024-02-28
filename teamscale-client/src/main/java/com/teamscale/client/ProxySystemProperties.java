@@ -24,7 +24,7 @@ public class ProxySystemProperties {
 	private static final String PROXY_USER_SYSTEM_PROPERTY = ".proxyUser";
 	private static final String PROXY_PASSWORD_SYSTEM_PROPERTY = ".proxyPassword";
 
-	private Protocol protocol;
+	private final Protocol protocol;
 
 	/**
 	 * Indicates, whether the {@link ProxySystemProperties} should return values for the http.proxy* system properties

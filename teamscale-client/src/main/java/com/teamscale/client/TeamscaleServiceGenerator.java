@@ -5,6 +5,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -66,6 +67,7 @@ public class TeamscaleServiceGenerator {
 	 */
 	private static class AcceptJsonInterceptor implements Interceptor {
 
+		@NotNull
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request newRequest = chain.request().newBuilder().header("Accept", "application/json").build();
@@ -77,6 +79,7 @@ public class TeamscaleServiceGenerator {
 	 * Sets the custom user agent {@link #USER_AGENT} header on all requests.
 	 */
 	public static class CustomUserAgentInterceptor implements Interceptor {
+		@NotNull
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request newRequest = chain.request().newBuilder().header("User-Agent", USER_AGENT).build();
