@@ -86,7 +86,15 @@ public class FileSystemUtils {
 	 *                  files and directories are included.
 	 */
 	private static void listFilesRecursively(File directory, Collection<File> result, FileFilter filter) {
-		for (File file : directory.listFiles()) {
+		File[] files = directory.listFiles();
+		if (files == null) {
+			// From the docs of `listFiles`:
+			// 		"If this abstract pathname does not denote a directory, then this method returns null."
+			// Based on this, it seems to be ok to just return here without throwing an exception.
+			return;
+		}
+
+		for (File file : files) {
 			if (file.isDirectory()) {
 				listFilesRecursively(file, result, filter);
 			}
