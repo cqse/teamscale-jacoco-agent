@@ -19,11 +19,11 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
+import com.teamscale.jacoco.agent.util.FileSystemUtilsClone;
 import org.conqat.lib.commons.string.StringUtils;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 
-import com.teamscale.client.FileSystemUtils;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.IUploader;
@@ -91,7 +91,7 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		List<File> reuploadCandidates = FileSystemUtils.listFilesRecursively(parentPath.toFile(),
+		List<File> reuploadCandidates = FileSystemUtilsClone.listFilesRecursively(parentPath.toFile(),
 				filepath -> filepath.getName().endsWith(RETRY_UPLOAD_FILE_SUFFIX));
 		for (File file : reuploadCandidates) {
 			reuploadCoverageFromPropertiesFile(file, uploader);
