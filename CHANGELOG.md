@@ -6,6 +6,9 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 
+# 33.1.1
+- [fix] _agent_: NPE during agent startup probably due to missing read permissions in a shared folder
+
 # 33.1.0
 - [feature] _teamscale-maven-plugin_: Add new execution goal to batch convert .exec files into testwise coverage report.
 - [feature] _agent_: Extended list of packages excluded by default
