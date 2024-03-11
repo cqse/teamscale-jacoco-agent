@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _teamscale-maven-plugin_: Revision and end commit could not be set via command line (user property)
 
 # 33.1.1
 - [fix] _agent_: NPE during agent startup probably due to missing read permissions in a shared folder

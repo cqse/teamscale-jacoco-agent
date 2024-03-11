@@ -51,14 +51,14 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 * <p>
 	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
 	 */
-	@Parameter
+	@Parameter(property = "teamscale.endCommit")
 	public String endCommit;
 
 	/**
 	 * You can optionally use this property to override the revision to which the coverage will be uploaded.
 	 * If no revision is manually specified, the plugin will try to determine the current git revision.
 	 */
-	@Parameter
+	@Parameter(property = "teamscale.revision")
 	public String revision;
 
 	/**
