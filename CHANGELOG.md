@@ -6,8 +6,18 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] add installer for Windows
+
+# 33.1.2
+- [fix] _teamscale-maven-plugin_: Revision and end commit could not be set via command line (user property)
+
+# 33.1.1
+- [fix] _agent_: NPE during agent startup probably due to missing read permissions in a shared folder
+
+# 33.1.0
+- [feature] _teamscale-maven-plugin_: Add new execution goal to batch convert .exec files into testwise coverage report.
 - [feature] _agent_: Extended list of packages excluded by default
 - [maintenance] _agent_: Removed HTTP upload (i.e. `upload-url` option)
+- [feature] _agent_: New option `proxy-password-file` allows users to provide a file containing a proxy password
 
 # 33.0.0
 - [feature] add installer for system-wide installation (see agent/MIGRATION.md for a migration guide)

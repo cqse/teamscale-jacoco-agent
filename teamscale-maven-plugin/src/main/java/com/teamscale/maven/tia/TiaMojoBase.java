@@ -241,13 +241,12 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		if (parameterDom == null) {
 			return;
 		}
-
 		String value = parameterDom.getValue();
 		if (value != null && !value.equals("true")) {
-			throw new MojoFailureException(
-					"You configured the " + getTestPluginArtifact() + " plugin to not reuse forks via the reuseForks configuration parameter." +
-							" This is not supported when performing Test Impact analysis as it prevents properly recording testwise coverage." +
-							" Please enable fork reuse when running Test Impact analysis.");
+			getLog().warn(
+					"You configured surefire to not reuse forks." +
+							" This has been shown to lead to performance decreases in combination with the Teamscale Maven Plugin." +
+							" If you notice performance problems, please have a look at our troubleshooting section for possible solutions: https://docs.teamscale.com/howto/providing-testwise-coverage/#troubleshooting.");
 		}
 	}
 

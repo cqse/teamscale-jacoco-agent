@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import com.teamscale.jacoco.agent.util.FileSystemUtilsClone;
 import org.conqat.lib.commons.string.StringUtils;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -84,7 +84,14 @@ public class Agent extends AgentBase {
 			// Default fallback
 			outputPath = AgentUtils.getAgentDirectory().resolve("coverage");
 		}
-		List<File> reuploadCandidates = FileSystemUtils.listFilesRecursively(outputPath.getParent().toFile(),
+
+		Path parentPath = outputPath.getParent();
+		if (parentPath == null) {
+			logger.error("The output path '{}' does not have a parent path. Canceling upload retry.", outputPath.toAbsolutePath());
+			return;
+		}
+
+		List<File> reuploadCandidates = FileSystemUtilsClone.listFilesRecursively(parentPath.toFile(),
 				filepath -> filepath.getName().endsWith(RETRY_UPLOAD_FILE_SUFFIX));
 		for (File file : reuploadCandidates) {
 			reuploadCoverageFromPropertiesFile(file, uploader);

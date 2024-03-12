@@ -108,7 +108,10 @@ public class AgentOptions {
 	 * The directory to write the XML traces to.
 	 */
 	private Path outputDirectory;
-
+	/**
+	 * A path to the file that contains the password for the proxy authentication.
+	 */
+	/* package */ Path proxyPasswordPath;
 	/**
 	 * Additional meta data files to upload together with the coverage XML.
 	 */
@@ -224,6 +227,10 @@ public class AgentOptions {
 	 */
 	public String getOriginalOptionsString() {
 		return originalOptionsString;
+	}
+
+	public Path getProxyPasswordPath() {
+		return proxyPasswordPath;
 	}
 
 	/**

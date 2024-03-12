@@ -5,6 +5,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -24,16 +25,9 @@ public class TeamscaleServiceGenerator {
 	 */
 	public static <S> S createService(Class<S> serviceClass, HttpUrl baseUrl, String username, String accessToken,
 									  Duration readTimeout, Duration writeTimeout, Interceptor... interceptors) {
-		Retrofit retrofit = HttpUtils.createRetrofit(
-				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
-						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
-				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-						.addInterceptor(new AcceptJsonInterceptor())
-						.addNetworkInterceptor(new CustomUserAgentInterceptor())
-				, readTimeout, writeTimeout
-		);
-		return retrofit.create(serviceClass);
+		return createServiceWithRequestLogging(serviceClass, baseUrl, username, accessToken, null, readTimeout,
+				writeTimeout,
+				interceptors);
 	}
 
 	/**
@@ -46,11 +40,15 @@ public class TeamscaleServiceGenerator {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
 						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
-				okHttpBuilder -> addInterceptors(okHttpBuilder, interceptors)
-						.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-						.addInterceptor(new AcceptJsonInterceptor())
-						.addNetworkInterceptor(new CustomUserAgentInterceptor())
-						.addInterceptor(new FileLoggingInterceptor(logfile)),
+				okHttpBuilder -> {
+					addInterceptors(okHttpBuilder, interceptors)
+							.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
+							.addInterceptor(new AcceptJsonInterceptor())
+							.addNetworkInterceptor(new CustomUserAgentInterceptor());
+					if (logfile != null) {
+						okHttpBuilder.addInterceptor(new FileLoggingInterceptor(logfile));
+					}
+				},
 				readTimeout, writeTimeout
 		);
 		return retrofit.create(serviceClass);
@@ -69,6 +67,7 @@ public class TeamscaleServiceGenerator {
 	 */
 	private static class AcceptJsonInterceptor implements Interceptor {
 
+		@NotNull
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request newRequest = chain.request().newBuilder().header("Accept", "application/json").build();
@@ -80,6 +79,7 @@ public class TeamscaleServiceGenerator {
 	 * Sets the custom user agent {@link #USER_AGENT} header on all requests.
 	 */
 	public static class CustomUserAgentInterceptor implements Interceptor {
+		@NotNull
 		@Override
 		public Response intercept(Chain chain) throws IOException {
 			Request newRequest = chain.request().newBuilder().header("User-Agent", USER_AGENT).build();
