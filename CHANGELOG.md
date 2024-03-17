@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Read configuration file path from `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable
 
 # 33.1.2
 - [fix] _teamscale-maven-plugin_: Revision and end commit could not be set via command line (user property)
