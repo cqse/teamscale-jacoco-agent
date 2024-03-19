@@ -41,9 +41,10 @@ fun PublicationContainer.configureMavenPublication() {
     create<MavenPublication>("maven") {
         val publication = this
         var hasShadow = false
-        pluginManager.withPlugin("com.github.johnrengelman.shadow") {
+        pluginManager.withPlugin("io.github.goooler.shadow") {
             val shadowExtension = extensions.getByName<ShadowExtension>("shadow")
             shadowExtension.component(publication)
+            setArtifacts(listOf(tasks["shadowJar"]))
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
             hasShadow = true
