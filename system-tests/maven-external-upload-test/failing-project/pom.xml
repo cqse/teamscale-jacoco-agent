@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <tia.teamscale.fake.port>65432</tia.teamscale.fake.port>
+        <tia.teamscale.fake.port>${env.TEAMSCALE_PORT}</tia.teamscale.fake.port>
         <tia.agent.version>${env.AGENT_VERSION}</tia.agent.version>
     </properties>
 
