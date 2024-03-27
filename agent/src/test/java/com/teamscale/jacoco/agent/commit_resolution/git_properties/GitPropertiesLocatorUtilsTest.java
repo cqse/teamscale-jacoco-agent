@@ -1,23 +1,45 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class GitPropertiesLocatorUtilsTest {
 
+	/**
+	 * Registers a catch-all protocol handler so the test can construct URLs that are not supported by plain Java. E.g.
+	 * Spring boot registers the custom "nested" protocol that results in an exception without a custom handler.
+	 */
+	@BeforeAll
+	public static void registerCatchAllUrlProtocol() {
+		URL.setURLStreamHandlerFactory(protocol -> new URLStreamHandler() {
+			protected URLConnection openConnection(URL url) {
+				return null;
+			}
+		});
+	}
+
 	@Test
 	public void parseSpringBootCodeLocations() throws Exception {
-		Assertions.assertThat(GitPropertiesLocatorUtils
+		assertThat(GitPropertiesLocatorUtils
 				.extractGitPropertiesSearchRoot(new URL("jar:file:/home/k/demo.jar!/BOOT-INF/classes!/")).getFirst())
 				.isEqualTo(new File("/home/k/demo.jar"));
+
+		URL springBoot3Url = new URL(
+				"jar:nested:/home/k/proj/pnc-spring-boot/demo/build/libs/demo-0.0.1-SNAPSHOT.jar/!BOOT-INF/classes/!/.");
+		assertThat(GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(springBoot3Url).getFirst())
+				.isEqualTo(new File("/home/k/proj/pnc-spring-boot/demo/build/libs/demo-0.0.1-SNAPSHOT.jar"));
 	}
 
 	@Test
 	public void parseFileCodeLocations() throws Exception {
-		Assertions.assertThat(GitPropertiesLocatorUtils
+		assertThat(GitPropertiesLocatorUtils
 				.extractGitPropertiesSearchRoot(new URL("file:/home/k/demo.jar")).getFirst())
 				.isEqualTo(new File("/home/k/demo.jar"));
 	}
