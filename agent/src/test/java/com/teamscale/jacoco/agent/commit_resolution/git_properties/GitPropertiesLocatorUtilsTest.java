@@ -13,16 +13,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GitPropertiesLocatorUtilsTest {
 
 	/**
-	 * Registers a catch-all protocol handler so the test can construct URLs that are not supported by plain Java. E.g.
-	 * Spring boot registers the custom "nested" protocol that results in an exception without a custom handler.
+	 * Registers a protocol handler so the test can construct "nested:" URLs that are not supported by plain Java
+	 * but Spring boot.
 	 */
 	@BeforeAll
 	public static void registerCatchAllUrlProtocol() {
-		URL.setURLStreamHandlerFactory(protocol -> new URLStreamHandler() {
-			/** Returns null, since opening the connection is never done in the test.: */
-			protected URLConnection openConnection(URL url) {
+		URL.setURLStreamHandlerFactory(protocol -> {
+			if (!"nested".equals(protocol)) {
 				return null;
 			}
+			return new URLStreamHandler() {
+				/** Returns null, since opening the connection is never done in the test.: */
+				protected URLConnection openConnection(URL url) {
+					return null;
+				}
+			};
 		});
 	}
 
