@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Add support for git.properties in Spring Boot 3.2
 - [feature] Docker: agent copies itself to `/transfer` if this is mounted into the container
 
 # 33.1.2
