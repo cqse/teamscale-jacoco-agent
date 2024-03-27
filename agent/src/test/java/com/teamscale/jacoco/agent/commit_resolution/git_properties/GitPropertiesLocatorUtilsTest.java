@@ -19,6 +19,7 @@ class GitPropertiesLocatorUtilsTest {
 	@BeforeAll
 	public static void registerCatchAllUrlProtocol() {
 		URL.setURLStreamHandlerFactory(protocol -> new URLStreamHandler() {
+			/** Returns null, since opening the connection is never done in the test.: */
 			protected URLConnection openConnection(URL url) {
 				return null;
 			}
