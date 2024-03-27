@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] Add support for git.properties in Spring Boot 3.2
+- [feature] Docker: agent copies itself to `/transfer` if this is mounted into the container
 
 # 33.1.2
 - [fix] _teamscale-maven-plugin_: Revision and end commit could not be set via command line (user property)
