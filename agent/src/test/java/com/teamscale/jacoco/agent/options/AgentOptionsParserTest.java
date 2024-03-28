@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,13 +27,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class AgentOptionsParserTest {
 
 	private TeamscaleCredentials teamscaleCredentials;
-	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null);
+	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+	private Path configFile;
 	/** The mock server to run requests against. */
 	protected MockWebServer mockWebServer;
 
 	/** Starts the mock server. */
 	@BeforeEach
 	public void setup() throws Exception {
+		configFile = Paths.get(getClass().getResource("agent.properties").toURI());
 		mockWebServer = new MockWebServer();
 		mockWebServer.start();
 		teamscaleCredentials = new TeamscaleCredentials(mockWebServer.url("/"), "user", "key");
@@ -68,7 +72,7 @@ public class AgentOptionsParserTest {
 	@Test
 	public void testUploadMethodRecognitionWithTeamscaleProperties() throws Exception {
 		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, credentials);
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, credentials);
 
 		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
 		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
@@ -91,7 +95,7 @@ public class AgentOptionsParserTest {
 	}
 
 	@Test
-	public void environmentConfigOverridesCommandLineOptions() throws Exception {
+	public void environmentConfigIdOverridesCommandLineOptions() throws Exception {
 		ProfilerRegistration registration = new ProfilerRegistration();
 		registration.profilerId = UUID.randomUUID().toString();
 		registration.profilerConfiguration = new ProfilerConfiguration();
@@ -99,10 +103,34 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=foo";
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
-				teamscaleCredentials);
+				null, teamscaleCredentials);
 		AgentOptions options = parser.parse("teamscale-partition=bar");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("foo");
+	}
+
+	@Test
+	public void environmentConfigFileOverridesCommandLineOptions() throws Exception {
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, configFile.toString(),
+				teamscaleCredentials);
+		AgentOptions options = parser.parse("teamscale-partition=from-command-line");
+
+		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
+	}
+
+	@Test
+	public void environmentConfigFileOverridesConfigId() throws Exception {
+		ProfilerRegistration registration = new ProfilerRegistration();
+		registration.profilerId = UUID.randomUUID().toString();
+		registration.profilerConfiguration = new ProfilerConfiguration();
+		registration.profilerConfiguration.configurationId = "my-config";
+		registration.profilerConfiguration.configurationOptions = "teamscale-partition=from-config-id";
+		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config", configFile.toString(),
+				teamscaleCredentials);
+		AgentOptions options = parser.parse("teamscale-partition=from-command-line");
+
+		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
 	}
 
 	@Test
@@ -183,7 +211,8 @@ public class AgentOptionsParserTest {
 	public void environmentConfigIdDoesNotExist() {
 		mockWebServer.enqueue(new MockResponse().setResponseCode(404).setBody("invalid-config-id does not exist"));
 		assertThatThrownBy(
-				() -> new AgentOptionsParser(new CommandLineLogger(), "invalid-config-id", teamscaleCredentials).parse(
+				() -> new AgentOptionsParser(new CommandLineLogger(), "invalid-config-id", null,
+						teamscaleCredentials).parse(
 						"")
 		).isInstanceOf(AgentOptionParseException.class).hasMessageContaining("invalid-config-id does not exist");
 	}
@@ -203,7 +232,7 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, teamscaleCredentials);
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials);
 
 		assertThat(parser.parse("teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");

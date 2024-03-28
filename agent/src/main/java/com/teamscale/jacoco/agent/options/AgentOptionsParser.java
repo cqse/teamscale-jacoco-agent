@@ -50,27 +50,30 @@ public class AgentOptionsParser {
 	private final FilePatternResolver filePatternResolver;
 	private final TeamscaleConfig teamscaleConfig;
 	private final String environmentConfigId;
+	private final String environmentConfigFile;
 	private final TeamscaleCredentials credentials;
 
 	/**
 	 * Parses the given command-line options.
 	 *
-	 * @param environmentConfigId The Profiler configuration ID given via the
-	 *                            {@link com.teamscale.jacoco.agent.PreMain#CONFIG_ID_ENVIRONMENT_VARIABLE} environment
-	 *                            variable.
+	 * @param environmentConfigId   The Profiler configuration ID given via an environment variable.
+	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
 	 */
-	public static AgentOptions parse(String optionsString, String environmentConfigId,
+	public static AgentOptions parse(String optionsString, String environmentConfigId, String environmentConfigFile,
 									 TeamscaleCredentials credentials,
 									 ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
-		return new AgentOptionsParser(logger, environmentConfigId, credentials).parse(optionsString);
+		return new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials).parse(
+				optionsString);
 	}
 
 	@VisibleForTesting
-	AgentOptionsParser(ILogger logger, String environmentConfigId, TeamscaleCredentials credentials) {
+	AgentOptionsParser(ILogger logger, String environmentConfigId, String environmentConfigFile,
+					   TeamscaleCredentials credentials) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
 		this.environmentConfigId = environmentConfigId;
+		this.environmentConfigFile = environmentConfigFile;
 		this.credentials = credentials;
 	}
 
@@ -99,15 +102,30 @@ public class AgentOptionsParser {
 			}
 		}
 
-		if (environmentConfigId != null) {
-			handleOption(options, "config-id=" + environmentConfigId);
-		}
+		handleConfigFromEnvironment(options);
 
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
 		}
 		return options;
+	}
+
+	private void handleConfigFromEnvironment(
+			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+		if (environmentConfigId != null) {
+			handleOption(options, "config-id=" + environmentConfigId);
+		}
+
+		if (environmentConfigFile != null) {
+			handleOption(options, "config-file=" + environmentConfigFile);
+		}
+
+		if (environmentConfigId != null && environmentConfigFile != null) {
+			logger.warn("You specified both an ID for a profiler configuration in Teamscale and a config file." +
+					" The config file will override the Teamscale configuration." +
+					" Please use one or the other.");
+		}
 	}
 
 	/**
@@ -267,7 +285,8 @@ public class AgentOptionsParser {
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);
 		options.configurationViaTeamscale = configuration;
-		logger.debug("Received the following options from Teamscale: " + configuration.getProfilerConfiguration().configurationOptions);
+		logger.debug(
+				"Received the following options from Teamscale: " + configuration.getProfilerConfiguration().configurationOptions);
 		readConfigFromString(options, configuration.getProfilerConfiguration().configurationOptions);
 	}
 

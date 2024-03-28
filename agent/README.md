@@ -51,8 +51,9 @@ The following options are available:
 - `out` (optional): the path to a writable directory where the generated coverage XML files will be stored. (For details
   see path format section below). Defaults to the subdirectory `coverage` inside the agent's installation directory.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format
-  section below)
+  which are separated by line breaks. The file may also contain comments starting with `#`. For details see path format
+  section below.
+  Alternatively you can also set the `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable to that value.
 - `config-id` (optional): a profiler configuration ID as defined in Teamscale. This allows to centrally manage the 
   profiler configuration in Teamscale's UI (under Project Configuration > Profilers since Teamscale 9.4).
   Alternatively you can also set the `TEAMSCALE_JAVA_PROFILER_CONFIG_ID` environment variable to that value.

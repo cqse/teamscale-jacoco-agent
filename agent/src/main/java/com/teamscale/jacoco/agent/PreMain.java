@@ -42,8 +42,12 @@ public class PreMain {
 	 */
 	private static final String LOCKING_SYSTEM_PROPERTY = "TEAMSCALE_JAVA_PROFILER_ATTACHED";
 
-	/** Environment variable from which to read the config file to use. */
+	/** Environment variable from which to read the config ID to use.
+	 * This is an ID for a profiler configuration that is stored in Teamscale. */
 	private static final String CONFIG_ID_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG_ID";
+
+	/** Environment variable from which to read the config file to use. */
+	private static final String CONFIG_FILE_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG_FILE";
 
 	/**
 	 * Entry point for the agent, called by the JVM.
@@ -55,7 +59,8 @@ public class PreMain {
 		System.setProperty(LOCKING_SYSTEM_PROPERTY, "true");
 
 		String environmentConfigId = System.getenv(CONFIG_ID_ENVIRONMENT_VARIABLE);
-		if (StringUtils.isEmpty(options) && environmentConfigId == null) {
+		String environmentConfigFile = System.getenv(CONFIG_FILE_ENVIRONMENT_VARIABLE);
+		if (StringUtils.isEmpty(options) && environmentConfigId == null && environmentConfigFile == null) {
 			// profiler was registered globally and no config was set explicitly by the user, thus ignore this process
 			// and don't profile anything
 			return;
@@ -63,7 +68,7 @@ public class PreMain {
 
 		AgentOptions agentOptions;
 		try {
-			agentOptions = getAndApplyAgentOptions(options, environmentConfigId);
+			agentOptions = getAndApplyAgentOptions(options, environmentConfigId, environmentConfigFile);
 		} catch (AgentOptionReceiveException e) {
 			// When Teamscale is not available, we don't want to fail hard to still allow for testing even if no
 			// coverage is collected (see TS-33237)
@@ -85,8 +90,9 @@ public class PreMain {
 	}
 
 	@NotNull
-	private static AgentOptions getAndApplyAgentOptions(String options,
-														String environmentConfigId) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
+	private static AgentOptions getAndApplyAgentOptions(String options, String environmentConfigId,
+														String environmentConfigFile) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
+
 		DelayedLogger delayedLogger = new DelayedLogger();
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
@@ -103,7 +109,7 @@ public class PreMain {
 		}
 		AgentOptions agentOptions;
 		try {
-			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, credentials, delayedLogger);
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials, delayedLogger);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
@@ -112,7 +118,9 @@ public class PreMain {
 			}
 		} catch (AgentOptionReceiveException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
-				delayedLogger.errorAndStdErr( e.getMessage() + " The application should start up normally, but NO coverage will be collected!", e);
+				delayedLogger.errorAndStdErr(
+						e.getMessage() + " The application should start up normally, but NO coverage will be collected!",
+						e);
 				attemptLogAndThrow(delayedLogger);
 				throw e;
 			}
