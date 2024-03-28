@@ -86,6 +86,23 @@ public class AgentHttpServerTest {
 		assertThat(receivedPartition).isEqualTo(defaultPartition);
 	}
 
+	/** Test reading the commit to which the agent will upload. */
+	@Test
+	public void testGettingCommit() throws Exception {
+		String receivedCommit = getText("/commit");
+		assertThat(receivedCommit).isEqualTo("{\"type\":\"REVISION\",\"value\":null}");
+		receivedCommit = getJson("/commit");
+		assertThat(receivedCommit).isEqualTo("{\"type\":\"REVISION\",\"value\":null}");
+	}
+
+	/** Test reading the revision to which the agent will upload. */
+	@Test
+	public void testGettingRevision() throws Exception {
+		String receivedRevision = getText("/revision");
+		assertThat(receivedRevision).isEqualTo("{\"type\":\"REVISION\",\"value\":null}");
+		receivedRevision = getJson("/revision");
+		assertThat(receivedRevision).isEqualTo("{\"type\":\"REVISION\",\"value\":null}");
+	}
 
 	private void putText(String endpointPath, String newValue) throws Exception {
 		OkHttpClient client = new OkHttpClient();
@@ -103,6 +120,16 @@ public class AgentHttpServerTest {
 		HttpUrl endpointUrl = HttpUrl.get(baseUri.resolve(endpointPath));
 		Request request = new Request.Builder()
 				.url(endpointUrl)
+				.build();
+		Response response = client.newCall(request).execute();
+		return response.body() != null ? response.body().string() : "";
+	}
+
+	private String getJson(String endpointPath) throws Exception {
+		OkHttpClient client = new OkHttpClient();
+		HttpUrl endpointUrl = HttpUrl.get(baseUri.resolve(endpointPath));
+		Request request = new Request.Builder()
+				.url(endpointUrl).header("Accept", javax.ws.rs.core.MediaType.APPLICATION_JSON)
 				.build();
 		Response response = client.newCall(request).execute();
 		return response.body() != null ? response.body().string() : "";
