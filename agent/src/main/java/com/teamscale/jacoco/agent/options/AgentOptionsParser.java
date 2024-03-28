@@ -108,6 +108,12 @@ public class AgentOptionsParser {
 
 		if (environmentConfigFile != null) {
 			handleOption(options, "config-file=" + environmentConfigFile);
+
+			if (environmentConfigId != null) {
+				logger.warn("You specified both an ID for a profiler configuration in Teamscale and a config file." +
+						" The config file will override the Teamscale configuration." +
+						" Please use one or the other.");
+			}
 		}
 
 		Validator validator = options.getValidator();
