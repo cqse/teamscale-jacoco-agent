@@ -61,6 +61,14 @@ tasks.register<MavenExec>("publishToMavenLocal") {
 	)
 }
 
+tasks.withType<MavenExec> {
+	if (name != "clean") {
+		dependsOn(":agent:publishToMavenLocal")
+		dependsOn(":teamscale-client:publishToMavenLocal")
+		dependsOn(":impacted-test-engine:publishToMavenLocal")
+	}
+}
+
 if (project.hasProperty("sonatypeUsername") &&
 	project.hasProperty("sonatypePassword") &&
 	project.hasProperty("signing.keyId") &&
@@ -70,8 +78,6 @@ if (project.hasProperty("sonatypeUsername") &&
 	tasks.register<MavenExec>("publishMavenPublicationToSonatypeRepository") {
 		group = "publishing"
 		description = "Publishes the Maven publication to the Sonatype repository"
-		dependsOn(":agent:publishToMavenLocal")
-		dependsOn(":teamscale-client:publishToMavenLocal")
 		doFirst {
 			file("/tmp/maven-settings.xml").writeText(
 				"""

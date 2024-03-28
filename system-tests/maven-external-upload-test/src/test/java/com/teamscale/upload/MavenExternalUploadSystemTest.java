@@ -22,11 +22,6 @@ import static org.assertj.core.api.Assertions.fail;
  */
 public class MavenExternalUploadSystemTest {
 
-	/**
-	 * This port must match what is configured for the -javaagent line in the corresponding POM of the Maven test
-	 * project.
-	 */
-	private static final int FAKE_TEAMSCALE_PORT = 65432;
 	private static final String MAVEN_COVERAGE_UPLOAD_GOAL = "com.teamscale:teamscale-maven-plugin:upload-coverage";
 
 	private static TeamscaleMockServer teamscaleMockServer = null;
@@ -38,7 +33,7 @@ public class MavenExternalUploadSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(FAKE_TEAMSCALE_PORT).acceptingReportUploads();
+			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads();
 		}
 		teamscaleMockServer.uploadedReports.clear();
 	}
