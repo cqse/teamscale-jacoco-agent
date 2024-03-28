@@ -102,25 +102,30 @@ public class AgentOptionsParser {
 			}
 		}
 
-		if (environmentConfigId != null) {
-			handleOption(options, "config-id=" + environmentConfigId);
-		}
-
-		if (environmentConfigFile != null) {
-			handleOption(options, "config-file=" + environmentConfigFile);
-
-			if (environmentConfigId != null) {
-				logger.warn("You specified both an ID for a profiler configuration in Teamscale and a config file." +
-						" The config file will override the Teamscale configuration." +
-						" Please use one or the other.");
-			}
-		}
+		handleConfigFromEnvironment(options);
 
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
 			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
 		}
 		return options;
+	}
+
+	private void handleConfigFromEnvironment(
+			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+		if (environmentConfigId != null) {
+			handleOption(options, "config-id=" + environmentConfigId);
+		}
+
+		if (environmentConfigFile != null) {
+			handleOption(options, "config-file=" + environmentConfigFile);
+		}
+
+		if (environmentConfigId != null && environmentConfigFile != null) {
+			logger.warn("You specified both an ID for a profiler configuration in Teamscale and a config file." +
+					" The config file will override the Teamscale configuration." +
+					" Please use one or the other.");
+		}
 	}
 
 	/**
