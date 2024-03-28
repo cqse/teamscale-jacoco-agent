@@ -87,12 +87,12 @@ class LinuxInstallerTest {
 		assertThat(Files.getPosixFilePermissions(installedFile)).contains(OTHERS_READ);
 
 		assertThat(environmentFile).content().isEqualTo(ENVIRONMENT_CONTENT
-														+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
-														+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
+				+ "\nJAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+				+ "\n_JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 
 		assertThat(systemdConfig).content().isEqualTo("[Manager]"
-													  + "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
-													  + " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
+				+ "\nDefaultEnvironment=JAVA_TOOL_OPTIONS=-javaagent:" + installedAgentLibrary
+				+ " _JAVA_OPTIONS=-javaagent:" + installedAgentLibrary + "\n");
 	}
 
 	@Test
