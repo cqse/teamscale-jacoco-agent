@@ -1,6 +1,7 @@
 package com.teamscale.profiler.installer;
 
-import org.conqat.lib.commons.system.SystemUtils;
+import com.teamscale.profiler.installer.utils.TeamscaleUtils;
+import org.apache.commons.lang3.SystemUtils;
 import picocli.CommandLine;
 
 /**
@@ -44,7 +45,7 @@ public class RootCommand {
 
 	private static String getRootCommandName() {
 		String rootCommandName = "installer";
-		if (SystemUtils.isWindows()) {
+		if (SystemUtils.IS_OS_WINDOWS) {
 			return rootCommandName.concat(".exe");
 		}
 		return rootCommandName;
