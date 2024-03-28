@@ -40,8 +40,6 @@ tasks.register<MavenExec>("clean") {
 tasks.register<MavenExec>("build") {
 	group = "build"
 	description = "Builds the project and runs tests"
-	dependsOn(":agent:publishToMavenLocal")
-	dependsOn(":teamscale-client:publishToMavenLocal")
 	args(
 		"verify",
 		"-Drevision=${project.version}",
@@ -52,8 +50,6 @@ tasks.register<MavenExec>("build") {
 tasks.register<MavenExec>("publishToMavenLocal") {
 	group = "publishing"
 	description = "Publishes the project to the local Maven repository"
-	dependsOn(":agent:publishToMavenLocal")
-	dependsOn(":teamscale-client:publishToMavenLocal")
 	args(
 		"install",
 		"-Drevision=${project.version}",
