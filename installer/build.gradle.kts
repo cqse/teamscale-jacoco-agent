@@ -4,6 +4,7 @@ plugins {
 	application
 	com.teamscale.`java-convention`
 	com.teamscale.coverage
+	com.teamscale.`system-test-convention`
 	id("org.beryx.jlink") version ("3.0.1")
 }
 
@@ -74,6 +75,7 @@ dependencies {
 	implementation(libs.jna.platform)
 
 	testImplementation(libs.spark)
+	testImplementation(project(":common-system-test"))
 }
 
 tasks.processResources {

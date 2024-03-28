@@ -3,6 +3,7 @@ package com.teamscale.profiler.installer;
 import com.teamscale.profiler.installer.utils.MockRegistry;
 import com.teamscale.profiler.installer.utils.MockTeamscale;
 import com.teamscale.profiler.installer.utils.TestUtils;
+import com.teamscale.test.commons.SystemTestUtils;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,10 +22,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AllPlatformsInstallerTest {
 
-	private static final int TEAMSCALE_PORT = 8059;
 	private static final String FILE_TO_INSTALL_CONTENT = "install-me";
 	private static final String NESTED_FILE_CONTENT = "nested-file";
-	private static final String TEAMSCALE_URL = "http://localhost:" + TEAMSCALE_PORT + "/";
+	private static final String TEAMSCALE_URL = "http://localhost:" + SystemTestUtils.TEAMSCALE_PORT + "/";
 
 
 	private Path sourceDirectory;
@@ -58,7 +58,7 @@ class AllPlatformsInstallerTest {
 
 	@BeforeAll
 	static void startFakeTeamscale() {
-		mockTeamscale = new MockTeamscale(TEAMSCALE_PORT);
+		mockTeamscale = new MockTeamscale(SystemTestUtils.TEAMSCALE_PORT);
 	}
 
 	@AfterAll
@@ -105,14 +105,14 @@ class AllPlatformsInstallerTest {
 
 	@Test
 	void connectionRefused() {
-		assertThatThrownBy(() -> install("http://localhost:" + (TEAMSCALE_PORT + 1)))
+		assertThatThrownBy(() -> install("http://localhost:" + (SystemTestUtils.TEAMSCALE_PORT + 1)))
 				.hasMessageContaining("refused a connection");
 		assertThat(targetDirectory).doesNotExist();
 	}
 
 	@Test
 	void httpsInsteadOfHttp() {
-		assertThatThrownBy(() -> install("https://localhost:" + TEAMSCALE_PORT))
+		assertThatThrownBy(() -> install("https://localhost:" + (int) SystemTestUtils.TEAMSCALE_PORT))
 				.hasMessageContaining("configured for HTTPS, not HTTP");
 		assertThat(targetDirectory).doesNotExist();
 	}
