@@ -70,7 +70,8 @@ public class ProxySystemProperties {
 	}
 
 	/**
-	 * Read the http(s).proxyPort system variable
+	 * Read the http(s).proxyPort system variable.
+	 * Returns -1 if no or an invalid port was set.
 	 */
 	public int getProxyPort() {
 		return parsePort(System.getProperty(getProxyPortSystemPropertyName()));
@@ -100,6 +101,14 @@ public class ProxySystemProperties {
 	 */
 	public void setProxyPort(String proxyPort) {
 		System.setProperty(getProxyPortSystemPropertyName(), proxyPort);
+	}
+
+	/**
+	 * Removes the http(s).proxyPort system variable.
+	 * For testing.
+	 */
+	/*package*/ void removeProxyPort() {
+		System.clearProperty(getProxyPortSystemPropertyName());
 	}
 
 	@NotNull
@@ -146,7 +155,12 @@ public class ProxySystemProperties {
 		return protocol + PROXY_PASSWORD_SYSTEM_PROPERTY;
 	}
 
+	/** Parses the given port string. Returns -1 if the string is null or not a valid number. */
 	private int parsePort(String portString) {
+		if (portString == null) {
+			return -1;
+		}
+
 		try {
 			return Integer.parseInt(portString);
 		} catch (NumberFormatException e) {
