@@ -21,8 +21,8 @@ public interface IStep {
 	void uninstall(IUninstallErrorReporter errorReporter);
 
 	/** Determines whether this step should not be run, e.g. because this step is not applicable to the current OS. */
-	default boolean shouldNotRun() {
-		return false;
+	default boolean shouldRun() {
+		return true;
 	}
 
 	/**

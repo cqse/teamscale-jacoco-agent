@@ -1,8 +1,8 @@
 package com.teamscale.test.commons;
 
 import com.teamscale.report.testwise.model.TestInfo;
+import org.apache.commons.lang3.SystemUtils;
 import org.conqat.lib.commons.io.ProcessUtils;
-import org.conqat.lib.commons.system.SystemUtils;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.POST;
@@ -57,7 +57,7 @@ public class SystemTestUtils {
 		ProcessUtils.ExecutionResult result;
 		try {
 			List<String> arguments = new ArrayList<>();
-			if (SystemUtils.isWindows()) {
+			if (SystemUtils.IS_OS_WINDOWS) {
 				Collections.addAll(arguments, "cmd", "/c", "mvnw.cmd");
 			} else {
 				arguments.add("./mvnw");

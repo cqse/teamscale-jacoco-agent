@@ -158,7 +158,7 @@ public class Installer {
 	public void runInstall(TeamscaleCredentials credentials) throws FatalInstallerError {
 		TeamscaleUtils.checkTeamscaleConnection(credentials);
 		for (IStep step : steps) {
-			if (step.shouldNotRun()) {
+			if (!step.shouldRun()) {
 				continue;
 			}
 			step.install(credentials);
@@ -173,7 +173,7 @@ public class Installer {
 		UninstallerErrorReporter errorReporter = new UninstallerErrorReporter();
 		for (int i = steps.size() - 1; i >= 0; i--) {
 			IStep step = steps.get(i);
-			if (step.shouldNotRun()) {
+			if (!step.shouldRun()) {
 				continue;
 			}
 

@@ -8,8 +8,8 @@ on:
     branches: '**'
 
 jobs:
-  build-linux:
-    name: Build Linux & Deploy
+  build:
+    name: Build on Linux & Deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

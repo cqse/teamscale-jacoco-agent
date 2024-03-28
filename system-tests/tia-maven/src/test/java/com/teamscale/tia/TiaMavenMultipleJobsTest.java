@@ -1,8 +1,8 @@
 package com.teamscale.tia;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.io.ProcessUtils;
-import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -20,7 +20,7 @@ public class TiaMavenMultipleJobsTest {
 
 	private List<String> createMavenArguments(String... mavenCommands) {
 		List<String> arguments = new ArrayList<>();
-		if (SystemUtils.isWindows()) {
+		if (SystemUtils.IS_OS_WINDOWS) {
 			Collections.addAll(arguments, "cmd", "/c",
 					Paths.get("maven-dump-local-project", "mvnw.cmd").toUri().getPath());
 		} else {

@@ -1,6 +1,7 @@
 # --- build image ---
 
 FROM openjdk:17 as build
+# install xargs which is needed during the build
 RUN microdnf install findutils
 ADD . /src
 WORKDIR /src

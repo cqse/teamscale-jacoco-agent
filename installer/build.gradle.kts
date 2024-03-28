@@ -10,7 +10,6 @@ plugins {
 tasks.jar {
 	manifest {
 		attributes(
-			//"Automatic-Module-Name" to "com.teamscale.profiler.installer",
 			"Main-Class" to "com.teamscale.profiler.installer.RootCommand",
 		)
 	}
@@ -72,7 +71,7 @@ dependencies {
 	implementation(libs.commonsIo)
 	implementation(libs.picocli.core)
 	annotationProcessor(libs.picocli.codegen)
-	implementation("net.java.dev.jna:jna-platform:5.14.0")
+	implementation(libs.jna.platform)
 
 	testImplementation(libs.spark)
 }

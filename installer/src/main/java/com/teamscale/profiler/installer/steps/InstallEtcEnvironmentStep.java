@@ -28,8 +28,8 @@ public class InstallEtcEnvironmentStep implements IStep {
 	}
 
 	@Override
-	public boolean shouldNotRun() {
-		return !SystemUtils.IS_OS_LINUX;
+	public boolean shouldRun() {
+		return SystemUtils.IS_OS_LINUX;
 	}
 
 	@Override

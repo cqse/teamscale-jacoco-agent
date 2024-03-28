@@ -3,8 +3,8 @@ package com.teamscale.upload;
 import com.teamscale.test.commons.ExternalReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
+import org.apache.commons.lang3.SystemUtils;
 import org.conqat.lib.commons.io.ProcessUtils;
-import org.conqat.lib.commons.system.SystemUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,8 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Runs several Maven projects' Surefire and Failsafe tests that produce coverage via the Jacoco Maven plugin.
- * Checks that the Jacoco reports are correctly uploaded to a Teamscale instance.
+ * Runs several Maven projects' Surefire and Failsafe tests that produce coverage via the Jacoco Maven plugin. Checks
+ * that the Jacoco reports are correctly uploaded to a Teamscale instance.
  */
 public class MavenExternalUploadSystemTest {
 
@@ -46,13 +46,13 @@ public class MavenExternalUploadSystemTest {
 	private ProcessUtils.ExecutionResult runCoverageUploadGoal(String projectPath) {
 		File workingDirectory = new File(projectPath);
 		String executable = "./mvnw";
-		if (SystemUtils.isWindows()) {
+		if (SystemUtils.IS_OS_WINDOWS) {
 			executable = Paths.get(projectPath, "mvnw.cmd").toUri().getPath();
 		}
 		try {
-			return ProcessUtils.execute(new ProcessBuilder(executable , MAVEN_COVERAGE_UPLOAD_GOAL).directory(workingDirectory));
-		}
-		catch (IOException e) {
+			return ProcessUtils.execute(
+					new ProcessBuilder(executable, MAVEN_COVERAGE_UPLOAD_GOAL).directory(workingDirectory));
+		} catch (IOException e) {
 			fail(String.valueOf(e));
 		}
 		return null;
@@ -75,8 +75,9 @@ public class MavenExternalUploadSystemTest {
 		ProcessUtils.ExecutionResult result = runCoverageUploadGoal(FAILING_MAVEN_PROJECT_NAME);
 		assertThat(result).isNotNull();
 		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(0);
-		assertThat(result.getStdout()).contains(String.format("Skipping upload for %s as %s is not configured to produce XML reports",
-				FAILING_MAVEN_PROJECT_NAME, "org.jacoco:jacoco-maven-plugin"));
+		assertThat(result.getStdout()).contains(
+				String.format("Skipping upload for %s as %s is not configured to produce XML reports",
+						FAILING_MAVEN_PROJECT_NAME, "org.jacoco:jacoco-maven-plugin"));
 	}
 
 	@AfterAll

@@ -22,8 +22,8 @@ public class InstallWindowsSystemEnvironmentStep implements IStep {
 	}
 
 	@Override
-	public boolean shouldNotRun() {
-		return !SystemUtils.IS_OS_WINDOWS;
+	public boolean shouldRun() {
+		return SystemUtils.IS_OS_WINDOWS;
 	}
 
 	@Override
