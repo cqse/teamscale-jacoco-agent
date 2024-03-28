@@ -37,7 +37,6 @@ tasks.register<MavenExec>("clean") {
 tasks.register<MavenExec>("build") {
 	group = "build"
 	description = "Builds the project and runs tests"
-	dependsOn(":agent:publishToMavenLocal")
 	args(
 		"verify",
 		"-Drevision=${project.version}",
@@ -48,12 +47,19 @@ tasks.register<MavenExec>("build") {
 tasks.register<MavenExec>("publishToMavenLocal") {
 	group = "publishing"
 	description = "Publishes the project to the local Maven repository"
-	dependsOn(":agent:publishToMavenLocal")
 	args(
 		"install",
 		"-Drevision=${project.version}",
 		"-Dteamscale.agent.version=${project.version}"
 	)
+}
+
+tasks.withType<MavenExec> {
+	if (name != "clean") {
+		dependsOn(":agent:publishToMavenLocal")
+		dependsOn(":teamscale-client:publishToMavenLocal")
+		dependsOn(":impacted-test-engine:publishToMavenLocal")
+	}
 }
 
 if (project.hasProperty("sonatypeUsername") &&
@@ -65,8 +71,6 @@ if (project.hasProperty("sonatypeUsername") &&
 	tasks.register<MavenExec>("publishMavenPublicationToSonatypeRepository") {
 		group = "publishing"
 		description = "Publishes the Maven publication to the Sonatype repository"
-		dependsOn(":agent:publishToMavenLocal")
-		dependsOn(":teamscale-client:publishToMavenLocal")
 		doFirst {
 			file("/tmp/maven-settings.xml").writeText(
 				"""

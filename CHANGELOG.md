@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] Read configuration file path from `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable
+- [feature] Docker: agent copies itself to `/transfer` if this is mounted into the container
+- [fix] Disable warning about proxy port not being correct when no proxy port was set at all
 
 # 33.1.2
 - [fix] _teamscale-maven-plugin_: Revision and end commit could not be set via command line (user property)
