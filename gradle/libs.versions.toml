@@ -4,8 +4,8 @@ jersey = "2.42"
 jackson = "2.17.0"
 # When upgrading JaCoCo to a newer version make sure to
 # check the comment in the OpenAnalyzer.java, JaCoCoPreMain.java and CachingInstructionsBuilder.java
-# and update the internal_xxxxxx hash included in the imports in LenientCoverageTransformer.java.
-jacoco = "0.8.11"
+# and update the internal_xxxxxx hash included in the imports in LenientCoverageTransformer.java and JaCoCoPreMain.java.
+jacoco = "0.8.12"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
 logback = "1.3.14"
 retrofit = "2.11.0"
