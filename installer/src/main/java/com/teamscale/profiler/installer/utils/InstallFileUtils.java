@@ -1,4 +1,7 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
+
+import com.teamscale.profiler.installer.FatalInstallerError;
+import com.teamscale.profiler.installer.PermissionError;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,14 +15,6 @@ public class InstallFileUtils {
 		if (!path.toFile().setReadable(true, false)) {
 			throw new PermissionError(
 					"Failed to make " + path + " readable. Please check file permissions.");
-		}
-	}
-
-	/** Makes the given path world-writable. */
-	public static void makeWritable(Path path) throws FatalInstallerError {
-		if (!path.toFile().setWritable(true, false)) {
-			throw new PermissionError(
-					"Failed to make " + path + " writable. Please check file permissions.");
 		}
 	}
 

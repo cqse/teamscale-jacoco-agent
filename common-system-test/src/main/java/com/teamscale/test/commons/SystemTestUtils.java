@@ -1,8 +1,9 @@
 package com.teamscale.test.commons;
 
 import com.teamscale.report.testwise.model.TestInfo;
+import org.apache.commons.lang3.SystemUtils;
 import org.conqat.lib.commons.io.ProcessUtils;
-import org.conqat.lib.commons.system.SystemUtils;
+import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.POST;
@@ -12,6 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,20 +54,20 @@ public class SystemTestUtils {
 	 * @throws IOException if running Maven fails.
 	 */
 	public static void runMavenTests(String mavenProjectPath) throws IOException {
-		File workingDirectory = new File(mavenProjectPath);
+		runMaven(mavenProjectPath, "clean", "verify");
+	}
 
+	/**
+	 * Runs Maven in the given Maven project path with the given arguments.
+	 *
+	 * @throws IOException if running Maven fails.
+	 */
+	public static void runMaven(String mavenProjectPath, String... mavenArguments) throws IOException {
 		ProcessUtils.ExecutionResult result;
 		try {
-			String executable = "./mvnw";
-			if (SystemUtils.isWindows()) {
-				executable = Paths.get(mavenProjectPath, "mvnw.cmd").toUri().getPath();
-			}
-			result = ProcessUtils.execute(
-					new ProcessBuilder(executable, "clean", "verify").directory(workingDirectory));
+			result = ProcessUtils.execute(buildMavenProcess(mavenProjectPath, mavenArguments));
 		} catch (IOException e) {
-			throw new IOException(
-					"Failed to run ./mvnw clean verify in directory " + workingDirectory.getAbsolutePath(),
-					e);
+			throw new IOException("Failed to run ./mvnw clean verify in directory " + mavenProjectPath, e);
 		}
 
 		// in case the process succeeded, we still log stdout and stderr in case later assertions fail. This helps
@@ -74,6 +78,25 @@ public class SystemTestUtils {
 		if (result.terminatedByTimeoutOrInterruption()) {
 			throw new IOException("Running Maven failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
+	}
+
+	/**
+	 * Creates the command-line arguments that can be passed to {@link ProcessBuilder} to invoke Maven with the given
+	 * arguments.
+	 */
+	@NotNull
+	public static ProcessBuilder buildMavenProcess(String mavenProjectDirectory, String... mavenArguments) {
+		List<String> arguments = new ArrayList<>();
+		if (SystemUtils.IS_OS_WINDOWS) {
+			Collections.addAll(arguments, "cmd", "/c", "mvnw.cmd");
+		} else {
+			arguments.add("./mvnw");
+		}
+
+		arguments.addAll(Arrays.asList(mavenArguments));
+
+
+		return new ProcessBuilder(arguments).directory(new File(mavenProjectDirectory));
 	}
 
 	/** Retrieve all files in the `tia/reports` folder sorted by name. */

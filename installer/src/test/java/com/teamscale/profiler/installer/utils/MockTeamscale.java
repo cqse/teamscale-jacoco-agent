@@ -1,4 +1,4 @@
-package com.teamscale.profiler.installer;
+package com.teamscale.profiler.installer.utils;
 
 import spark.Request;
 import spark.Response;
@@ -8,17 +8,20 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 /**
- * Mocks a redirect server: redirects all requests to another server.
+ * Mocks Teamscale. Returns a fixed status code for all requests.
+ * By default: status 200
  */
 public class MockTeamscale {
 
 	private final Service service;
 
+	private int statusCode = SC_OK;
+
 	public MockTeamscale(int port) {
 		service = Service.ignite();
 		service.port(port);
 		service.get("/*", (Request request, Response response) -> {
-			response.status(SC_OK);
+			response.status(statusCode);
 			response.body("fake content");
 			return response;
 		});
@@ -29,6 +32,9 @@ public class MockTeamscale {
 		service.awaitInitialization();
 	}
 
+	public void setStatusCode(int statusCode) {
+		this.statusCode = statusCode;
+	}
 
 	/**
 	 * Shuts down the mock server and waits for it to be stopped.

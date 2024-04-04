@@ -1,14 +1,13 @@
 package com.teamscale.profiler.installer.steps;
 
-import com.teamscale.profiler.installer.EnvironmentMap;
+import com.teamscale.profiler.installer.JvmEnvironmentMap;
 import com.teamscale.profiler.installer.FatalInstallerError;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
-import org.conqat.lib.commons.system.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -20,21 +19,22 @@ import java.util.concurrent.TimeUnit;
 public class InstallSystemdStep implements IStep {
 
 	private final Path etcDirectory;
-	private final EnvironmentMap environmentVariables;
+	private final JvmEnvironmentMap environmentVariables;
 	private final boolean reloadSystemdDaemon;
 
-	public InstallSystemdStep(Path etcDirectory, EnvironmentMap environmentMap, boolean reloadSystemdDaemon) {
+	public InstallSystemdStep(Path etcDirectory, JvmEnvironmentMap environmentMap, boolean reloadSystemdDaemon) {
 		this.etcDirectory = etcDirectory;
 		this.environmentVariables = environmentMap;
 		this.reloadSystemdDaemon = reloadSystemdDaemon;
 	}
 
 	@Override
-	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
-		if (!SystemUtils.isLinux()) {
-			return;
-		}
+	public boolean shouldRun() {
+		return SystemUtils.IS_OS_LINUX;
+	}
 
+	@Override
+	public void install(TeamscaleCredentials credentials) throws FatalInstallerError {
 		if (!Files.exists(getSystemdEtcDirectory())) {
 			System.out.println("systemd could not be detected. Not installing profiler for systemd services.");
 			// system has no systemd installed
@@ -54,12 +54,12 @@ public class InstallSystemdStep implements IStep {
 		if (Files.exists(systemdConfigFile)) {
 			throw new PermissionError(
 					"Cannot create systemd configuration file " + systemdConfigFile + " because it already exists." +
-							"\nPlease uninstall any old profiler versions first");
+					"\nPlease uninstall any old profiler versions first");
 		}
 
 		String content = "[Manager]\nDefaultEnvironment=" + environmentVariables.getSystemdString() + "\n";
 		try {
-			Files.write(systemdConfigFile, content.getBytes(StandardCharsets.UTF_8));
+			Files.writeString(systemdConfigFile, content);
 		} catch (IOException e) {
 			throw new PermissionError("Could not create " + systemdConfigFile, e);
 		}
@@ -91,10 +91,10 @@ public class InstallSystemdStep implements IStep {
 	}
 
 	private void askUserToManuallyReloadDaemon() {
-		System.err.println(
-				"Failed to reload the systemd daemon. Systemd services can only be profiled after reloading the daemon." +
-						"\nPlease manually reload the daemon with:" +
-						"\nsystemctl daemon-reload");
+		System.err.println("""
+				Failed to reload the systemd daemon. Systemd services can only be profiled after reloading the daemon.
+				Please manually reload the daemon with:
+				systemctl daemon-reload""");
 	}
 
 	private Path getSystemdEtcDirectory() {
@@ -111,10 +111,6 @@ public class InstallSystemdStep implements IStep {
 
 	@Override
 	public void uninstall(IUninstallErrorReporter errorReporter) {
-		if (!SystemUtils.isLinux()) {
-			return;
-		}
-
 		Path systemdConfigFile = getSystemdConfigFile();
 		if (!Files.exists(systemdConfigFile)) {
 			return;
@@ -125,7 +121,7 @@ public class InstallSystemdStep implements IStep {
 		} catch (IOException e) {
 			errorReporter.report(
 					new PermissionError("Failed to remove systemd config file " + systemdConfigFile + "." +
-							" Manually remove this file or systemd Java services may fail to start.", e));
+										" Manually remove this file or systemd Java services may fail to start.", e));
 		}
 
 		daemonReload();

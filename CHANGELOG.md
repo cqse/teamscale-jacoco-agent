@@ -6,7 +6,12 @@ We use [semantic versioning](http://semver.org/):
 
 # Next Release
 - [feature] Add support for git.properties in Spring Boot 3.2
+- [feature] Read configuration file path from `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable
+- [feature] add installer for Windows
 - [feature] Docker: agent copies itself to `/transfer` if this is mounted into the container
+- [fix] Disable warning about proxy port not being correct when no proxy port was set at all
+- [fix] _agent_: `GET /commit` and `GET /revision` endpoints did return 500 error
+- [feature] _agent_: Added stable support for Java 22 and experimental support for Java 23
 
 # 33.1.2
 - [fix] _teamscale-maven-plugin_: Revision and end commit could not be set via command line (user property)

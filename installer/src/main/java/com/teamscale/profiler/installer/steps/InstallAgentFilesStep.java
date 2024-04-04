@@ -1,10 +1,11 @@
 package com.teamscale.profiler.installer.steps;
 
 import com.teamscale.profiler.installer.FatalInstallerError;
-import com.teamscale.profiler.installer.InstallFileUtils;
+import com.teamscale.profiler.installer.utils.InstallFileUtils;
 import com.teamscale.profiler.installer.PermissionError;
 import com.teamscale.profiler.installer.TeamscaleCredentials;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.apache.commons.io.file.PathUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,14 +27,6 @@ public class InstallAgentFilesStep implements IStep {
 		this.installDirectory = installDirectory;
 	}
 
-	private Path getCoverageDirectory() {
-		return installDirectory.resolve("coverage");
-	}
-
-	private Path getLogDirectory() {
-		return installDirectory.resolve("logs");
-	}
-
 	private Path getTeamscalePropertiesPath() {
 		return installDirectory.resolve("teamscale.properties");
 	}
@@ -44,7 +37,6 @@ public class InstallAgentFilesStep implements IStep {
 		createAgentDirectory();
 		copyAgentFiles();
 		writeTeamscaleProperties(credentials);
-		makeCoverageAndLogDirectoriesWorldWritable();
 		makeAllProfilerFilesWorldReadable();
 	}
 
@@ -53,21 +45,26 @@ public class InstallAgentFilesStep implements IStep {
 		if (!Files.exists(agentPath)) {
 			throw new FatalInstallerError(
 					"It looks like you moved the installer. Could not locate the profiler files at " + sourceDirectory + "."
-							+ "\nPlease start over by extracting the profiler files from the zip file you downloaded."
-							+ " Do not make any changes to the extracted files and directories or installation will fail.");
+					+ "\nPlease start over by extracting the profiler files from the zip file you downloaded."
+					+ " Do not make any changes to the extracted files and directories or installation will fail.");
 		}
 	}
 
 	@Override
 	public void uninstall(IUninstallErrorReporter errorReporter) {
+		if (SystemUtils.IS_OS_WINDOWS) {
+			System.out.println("Please manually delete " + installDirectory);
+			return;
+		}
+
 		if (!Files.exists(installDirectory)) {
 			return;
 		}
 
-		FileSystemUtils.deleteRecursively(installDirectory.toFile());
-
-		if (Files.exists(installDirectory)) {
-			errorReporter.report(new PermissionError("Failed to fully remove " + installDirectory));
+		try {
+			PathUtils.deleteDirectory(installDirectory);
+		} catch (IOException e) {
+			errorReporter.report(new FatalInstallerError("Failed to fully delete directory " + installDirectory, e));
 		}
 	}
 
@@ -80,15 +77,6 @@ public class InstallAgentFilesStep implements IStep {
 		} catch (IOException e) {
 			throw new PermissionError("Failed to list all files in " + installDirectory + ".", e);
 		}
-	}
-
-	private void makeCoverageAndLogDirectoriesWorldWritable() throws FatalInstallerError {
-		InstallFileUtils.createDirectory(getCoverageDirectory());
-		InstallFileUtils.makeWritable(getCoverageDirectory());
-
-		InstallFileUtils.createDirectory(getLogDirectory());
-		InstallFileUtils.makeWritable(getLogDirectory());
-
 	}
 
 	private void writeTeamscaleProperties(TeamscaleCredentials credentials) throws FatalInstallerError {
@@ -109,10 +97,10 @@ public class InstallAgentFilesStep implements IStep {
 
 	private void copyAgentFiles() throws FatalInstallerError {
 		try {
-			FileSystemUtils.copyFiles(sourceDirectory.toFile(), installDirectory.toFile(), null);
+			PathUtils.copyDirectory(sourceDirectory, installDirectory);
 		} catch (IOException e) {
 			throw new PermissionError("Failed to copy some files to " + installDirectory + "."
-					+ " Please manually clean up " + installDirectory, e);
+									  + " Please manually clean up " + installDirectory, e);
 		}
 	}
 

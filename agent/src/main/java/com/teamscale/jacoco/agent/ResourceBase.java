@@ -12,6 +12,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
@@ -48,6 +50,7 @@ public abstract class ResourceBase {
 	/** Returns revision information for the Teamscale upload. */
 	@GET
 	@Path("/revision")
+	@Produces(MediaType.APPLICATION_JSON)
 	public RevisionInfo getRevision() {
 		return this.getRevisionInfo();
 	}
@@ -55,6 +58,7 @@ public abstract class ResourceBase {
 	/** Returns revision information for the Teamscale upload. */
 	@GET
 	@Path("/commit")
+	@Produces(MediaType.APPLICATION_JSON)
 	public RevisionInfo getCommit() {
 		return this.getRevisionInfo();
 	}
