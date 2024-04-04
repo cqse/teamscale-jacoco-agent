@@ -12,16 +12,14 @@ public class FatalInstallerError extends Exception {
 	}
 
 	/**
-	 * Prints this error to stderr. The stack trace of this exception is suppressed, but stack traces of any cause are
-	 * printed.
-	 * <p>
-	 * we suppress stack traces of FatalInstallerErrors since these are errors we handled explicitly and the message
-	 * itself is supposed to be clear.
+	 * Prints this error to stderr. All stack traces of this exception are suppressed since these are errors we handled
+	 * explicitly and the message itself is supposed to be clear.
+	 * If the error has a cause, its message is printed.
 	 */
 	public void printToStderr() {
 		System.err.println(getMessage());
 		if (getCause() != null) {
-			getCause().printStackTrace(System.err);
+			System.err.println(getCause().getMessage());
 		}
 	}
 
