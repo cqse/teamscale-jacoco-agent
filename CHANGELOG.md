@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+
+# 33.2.0
 - [feature] Add support for git.properties in Spring Boot 3.2
 - [feature] Read configuration file path from `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable
 - [feature] add installer for Windows
