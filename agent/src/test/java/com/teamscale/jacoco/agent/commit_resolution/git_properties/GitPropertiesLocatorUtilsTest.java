@@ -38,9 +38,9 @@ class GitPropertiesLocatorUtilsTest {
 				.isEqualTo(new File("/home/k/demo.jar"));
 
 		URL springBoot3Url = new URL(
-				"jar:nested:/home/k/proj/pnc-spring-boot/demo/build/libs/demo-0.0.1-SNAPSHOT.jar/!BOOT-INF/classes/!/.");
+				"jar:nested:/home/k/proj/spring-boot/demo/build/libs/demo-0.0.1-SNAPSHOT.jar/!BOOT-INF/classes/!/.");
 		assertThat(GitPropertiesLocatorUtils.extractGitPropertiesSearchRoot(springBoot3Url).getFirst())
-				.isEqualTo(new File("/home/k/proj/pnc-spring-boot/demo/build/libs/demo-0.0.1-SNAPSHOT.jar"));
+				.isEqualTo(new File("/home/k/proj/spring-boot/demo/build/libs/demo-0.0.1-SNAPSHOT.jar"));
 	}
 
 	@Test
