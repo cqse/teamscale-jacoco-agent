@@ -42,7 +42,7 @@ public class GitPropertiesLocatorUtils {
 	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
 
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
-	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:file:(.*?)!/.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:(?:file|nested):(.*?)!.*", Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwea]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);

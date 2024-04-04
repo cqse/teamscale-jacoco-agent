@@ -128,6 +128,7 @@ public class TestwiseCoverageAgentTest {
 				@Query("include-non-impacted") boolean includeNonImpacted,
 				@Query("baseline") Long baseline
 		);
+
 	}
 
 	@Test
