@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] Read configuration file path from `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable
 - [feature] add installer for Windows
 - [feature] Docker: agent copies itself to `/transfer` if this is mounted into the container
 - [fix] Disable warning about proxy port not being correct when no proxy port was set at all
