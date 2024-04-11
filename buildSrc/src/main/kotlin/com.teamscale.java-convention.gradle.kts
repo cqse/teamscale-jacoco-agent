@@ -8,6 +8,13 @@ group = "com.teamscale"
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://build.shibboleth.net/maven/releases")
+        content {
+            includeGroup("org.opensaml")
+            includeGroupAndSubgroups("net.shibboleth")
+        }
+    }
 }
 
 java {
