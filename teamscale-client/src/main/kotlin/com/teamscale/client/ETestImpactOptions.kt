@@ -1,8 +1,7 @@
-package com.teamscale.client;
+package com.teamscale.client
 
-/** Described all feature toggles of the impacted-tests services. */
-public enum ETestImpactOptions {
-
+/** Described all feature toggles of the impacted-tests services.  */
+enum class ETestImpactOptions {
 	/**
 	 * Returns impacted tests first and then appends all non-impacted tests. This always returns all tests, but still
 	 * allows to fail faster as impacted tests are executed first.

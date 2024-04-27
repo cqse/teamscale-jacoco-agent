@@ -89,7 +89,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 
     val serverConfiguration
         @Input
-        get() = pluginExtension.server
+        get() = pluginExtension.configuration
 
     /**
      * The (current) commit at which test details should be uploaded to.
@@ -174,31 +174,31 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
             .union(listOf(project))
     }
 
-    private fun writeEngineProperty(name: String, value: String?) {
-        if (value != null) {
-            systemProperties["teamscale.test.impacted.$name"] = value
-        }
+    private fun String.writeProperty(name: String) {
+        systemProperties["teamscale.test.impacted.$name"] = this
     }
 
     private fun setImpactedTestEngineOptions(report: Report, options: JUnitPlatformOptions) {
         if (runImpacted) {
             assert(endCommit != null) { "When executing only impacted tests a branchName and timestamp must be specified!" }
-            serverConfiguration.validate()
-            writeEngineProperty("server.url", serverConfiguration.url!!)
-            writeEngineProperty("server.project", serverConfiguration.project!!)
-            writeEngineProperty("server.userName", serverConfiguration.userName!!)
-            writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
+            with(serverConfiguration) {
+                validate()
+                url?.writeProperty("server.url")
+                project?.writeProperty("server.project")
+                userName?.writeProperty("server.userName")
+                userAccessToken?.writeProperty("server.userAccessToken")
+            }
         }
-        writeEngineProperty("partition", report.partition.get())
-        writeEngineProperty("endCommit", endCommit?.toString())
-        writeEngineProperty("baseline", baseline?.toString())
-        writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
-        writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
-        writeEngineProperty("runImpacted", runImpacted.toString())
-        writeEngineProperty("runAllTests", runAllTests.toString())
-        writeEngineProperty("includeAddedTests", includeAddedTests.toString())
-        writeEngineProperty("includeFailedAndSkipped", includeFailedAndSkipped.toString())
-        writeEngineProperty("includedEngines", options.includeEngines.joinToString(","))
-        writeEngineProperty("excludedEngines", options.excludeEngines.joinToString(","))
+        report.partition.get().writeProperty("partition")
+        endCommit?.toString()?.writeProperty("endCommit")
+        baseline?.toString()?.writeProperty("baseline")
+        reportOutputDir.absolutePath.writeProperty("reportDirectory")
+        taskExtension.agent.getAllAgents().map { it.url }.joinToString(",").writeProperty("agentsUrls")
+        runImpacted.toString().writeProperty("runImpacted")
+        runAllTests.toString().writeProperty("runAllTests")
+        includeAddedTests.toString().writeProperty("includeAddedTests")
+        includeFailedAndSkipped.toString().writeProperty("includeFailedAndSkipped")
+        options.includeEngines.joinToString(",").writeProperty("includedEngines")
+        options.excludeEngines.joinToString(",").writeProperty("excludedEngines")
     }
 }

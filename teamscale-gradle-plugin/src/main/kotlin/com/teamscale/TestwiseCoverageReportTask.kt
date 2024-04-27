@@ -1,7 +1,7 @@
 package com.teamscale
 
 import com.teamscale.client.ClusteredTestDetails
-import com.teamscale.client.JsonUtils.serializeWriteToFile
+import com.teamscale.client.utils.JsonUtils.serializeWriteToFile
 import com.teamscale.config.*
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import com.teamscale.report.EDuplicateClassFileBehavior

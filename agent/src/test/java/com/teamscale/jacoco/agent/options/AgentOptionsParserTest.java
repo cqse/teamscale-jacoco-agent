@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
-import com.teamscale.client.JsonUtils;
+import com.teamscale.client.utils.JsonUtils;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;

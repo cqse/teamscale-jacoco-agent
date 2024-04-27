@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import com.teamscale.client.FileSystemUtils;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.FileSystemUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.jacoco.agent.options.ProjectRevision;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.conqat.lib.commons.collections.Pair;

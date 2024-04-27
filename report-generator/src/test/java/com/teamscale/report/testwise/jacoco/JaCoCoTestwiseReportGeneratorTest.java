@@ -2,7 +2,6 @@ package com.teamscale.report.testwise.jacoco;
 
 import com.teamscale.client.TestDetails;
 import com.teamscale.report.EDuplicateClassFileBehavior;
-import com.teamscale.report.ReportUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
@@ -21,7 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static com.teamscale.client.JsonUtils.serialize;
+import static com.teamscale.client.utils.JsonUtils.serialize;
 import static org.mockito.Mockito.mock;
 
 /** Tests for the {@link JaCoCoTestwiseReportGenerator} class. */

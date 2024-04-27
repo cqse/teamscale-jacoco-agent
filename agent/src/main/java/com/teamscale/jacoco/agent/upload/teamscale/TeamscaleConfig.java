@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;

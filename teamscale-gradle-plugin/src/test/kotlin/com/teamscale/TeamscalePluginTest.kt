@@ -1,8 +1,7 @@
 package com.teamscale
 
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
-import com.teamscale.client.JsonUtils
-import com.teamscale.client.JsonUtils.deserialize
+import com.teamscale.client.utils.JsonUtils.deserialize
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import com.teamscale.test.commons.TeamscaleMockServer

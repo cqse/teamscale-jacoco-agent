@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.JsonUtils;
+import com.teamscale.client.utils.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;

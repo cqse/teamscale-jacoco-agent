@@ -2,7 +2,7 @@ package com.teamscale.test_impacted.engine.executor;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTest;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.client.TestDetails;
 import com.teamscale.test_impacted.commons.LoggerUtils;
 import org.junit.platform.engine.TestEngine;

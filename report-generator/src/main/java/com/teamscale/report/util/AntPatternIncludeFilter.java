@@ -5,8 +5,8 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.report.util;
 
-import com.teamscale.client.AntPatternUtils;
-import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.utils.AntPatternUtils;
+import com.teamscale.client.utils.FileSystemUtils;
 
 import java.util.List;
 import java.util.function.Predicate;

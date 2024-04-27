@@ -2,9 +2,9 @@ package com.teamscale.test.commons
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.teamscale.client.*
-import com.teamscale.client.JsonUtils.deserialize
-import com.teamscale.client.JsonUtils.deserializeAsList
-import com.teamscale.client.JsonUtils.serialize
+import com.teamscale.client.utils.JsonUtils.deserialize
+import com.teamscale.client.utils.JsonUtils.deserializeAsList
+import com.teamscale.client.utils.JsonUtils.serialize
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import spark.Request
 import spark.Service

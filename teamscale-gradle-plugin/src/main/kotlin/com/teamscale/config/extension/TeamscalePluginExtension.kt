@@ -2,7 +2,7 @@ package com.teamscale.config.extension
 
 import com.teamscale.TeamscalePlugin
 import com.teamscale.config.Commit
-import com.teamscale.config.ServerConfiguration
+import com.teamscale.client.ServerConfiguration
 import com.teamscale.config.TopLevelReportConfiguration
 import groovy.lang.Closure
 import org.gradle.api.Action
@@ -19,16 +19,11 @@ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
  */
 open class TeamscalePluginExtension(val project: Project) {
 
-    val server = ServerConfiguration()
+    lateinit var configuration: ServerConfiguration
 
     /** Configures the Teamscale server. */
-    fun server(action: Action<in ServerConfiguration>) {
-        action.execute(server)
-    }
-
-    /** Overload for Groovy DSL compatibility. */
-    fun server(closure: Closure<*>) {
-        server { this@TeamscalePluginExtension.project.configure(this, closure) }
+    fun server(action: () -> ServerConfiguration) {
+        this.configuration = action()
     }
 
     val commit = Commit()

@@ -2,8 +2,8 @@ package com.teamscale.report.testwise;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.teamscale.client.JsonUtils;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.JsonUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.factory.TestInfoFactory;

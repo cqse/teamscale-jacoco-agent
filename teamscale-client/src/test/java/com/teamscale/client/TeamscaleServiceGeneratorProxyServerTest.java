@@ -1,5 +1,6 @@
 package com.teamscale.client;
 
+import com.teamscale.client.utils.HttpUtils;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.teamscale.client.HttpUtils.PROXY_AUTHORIZATION_HTTP_HEADER;
+import static com.teamscale.client.utils.HttpUtils.PROXY_AUTHORIZATION_HTTP_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -41,10 +42,12 @@ class TeamscaleServiceGeneratorProxyServerTest {
 		proxySystemProperties.setProxyUser(proxyUser);
 		proxySystemProperties.setProxyPassword(proxyPassword);
 
-		ITeamscaleService service = TeamscaleServiceGenerator.createService(ITeamscaleService.class,
+		ITeamscaleService service = TeamscaleServiceGenerator.createServiceWithRequestLogging(
+				ITeamscaleService.class,
 				HttpUrl.parse("http://localhost:1337"),
-				"someUser", "someAccesstoken", HttpUtils.DEFAULT_READ_TIMEOUT,
-				HttpUtils.DEFAULT_WRITE_TIMEOUT);
+				"someUser",
+				"someAccesstoken"
+		);
 
 		// First time Retrofit/OkHttp tires without proxy auth.
 		// When we return 407 Proxy Authentication Required, it retries with proxy authentication.

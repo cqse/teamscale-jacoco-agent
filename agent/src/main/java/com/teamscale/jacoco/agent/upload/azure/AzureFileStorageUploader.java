@@ -60,7 +60,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 	@Override
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
-				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
+				FileSystemUtils.normalizeSeparators(coverageFile.toString()),
 				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
 		try {
 			uploadMetadataFile.createNewFile();

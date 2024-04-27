@@ -1,5 +1,7 @@
 package com.teamscale.jacoco.agent.util;
 
+import com.teamscale.client.utils.FileSystemUtils;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ import java.util.List;
 public class FileSystemUtilsClone {
 	
 	/**
-	 * Clone of {@link com.teamscale.client.FileSystemUtils#listFilesRecursively(File, FileFilter)}
+	 * Clone of {@link FileSystemUtils#listFilesRecursively(File, FileFilter)}
 	 */
 	public static List<File> listFilesRecursively(File directory, FileFilter filter) {
 		if (directory == null || !directory.isDirectory()) {
@@ -27,7 +29,7 @@ public class FileSystemUtilsClone {
 	}
 
 	/**
-	 * Clone of {@link com.teamscale.client.FileSystemUtils#listFilesRecursively(File, Collection, FileFilter)} 
+	 * Clone of {@link FileSystemUtils#listFilesRecursively(File, Collection, FileFilter)}
 	 */
 	private static void listFilesRecursively(File directory, Collection<File> result, FileFilter filter) {
 		File[] files = directory.listFiles();

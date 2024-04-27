@@ -1,9 +1,9 @@
 package com.teamscale.tia.client;
 
 import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.JsonUtils;
+import com.teamscale.client.utils.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestExecution;
 import okhttp3.HttpUrl;

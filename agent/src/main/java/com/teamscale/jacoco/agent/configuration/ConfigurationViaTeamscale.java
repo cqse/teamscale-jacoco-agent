@@ -55,7 +55,7 @@ public class ConfigurationViaTeamscale {
 													 String userName,
 													 String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
-				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
+				.createServiceWithRequestLogging(ITeamscaleService.class, url, userName, userAccessToken, null, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
 			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
 			Response<ProfilerRegistration> response = teamscaleClient.registerProfiler(configurationId,

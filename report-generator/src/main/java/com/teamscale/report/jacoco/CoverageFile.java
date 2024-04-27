@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Objects;
 
-import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.utils.FileSystemUtils;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;

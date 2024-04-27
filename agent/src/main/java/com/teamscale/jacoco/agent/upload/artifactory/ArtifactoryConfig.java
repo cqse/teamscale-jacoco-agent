@@ -12,7 +12,7 @@ import java.util.Properties;
 import org.conqat.lib.commons.collections.Pair;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;

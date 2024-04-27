@@ -1,6 +1,6 @@
 package com.teamscale.tia.client
 
-import com.teamscale.client.JsonUtils.deserialize
+import com.teamscale.client.utils.JsonUtils.deserialize
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestInfo
 import com.teamscale.tia.client.TestRun.TestResultWithMessage

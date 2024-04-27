@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.ReportFormat;
-import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
@@ -83,7 +82,7 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 	@Override
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
-				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
+				FileSystemUtils.normalizeSeparators(coverageFile.toString()),
 				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
 		Properties serverProperties = this.createServerProperties();
 		try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(uploadMetadataFile.toPath()),
@@ -126,9 +125,8 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 		try {
 			// Cannot be executed in the constructor as this causes issues in WildFly server
 			// (See #100)
-			ITeamscaleService api = TeamscaleServiceGenerator.createService(ITeamscaleService.class,
-					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken,
-					HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
+			ITeamscaleService api = TeamscaleServiceGenerator.createServiceWithRequestLogging(ITeamscaleService.class,
+					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken);
 			api.uploadReport(teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
 					teamscaleServer.partition, ReportFormat.JACOCO, teamscaleServer.getMessage(),
 					coverageFile.createFormRequestBody());

@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import kotlin.Unit;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
-import com.teamscale.client.HttpUtils;
+import com.teamscale.client.utils.HttpUtils;
 import com.teamscale.jacoco.agent.util.Benchmark2;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
@@ -55,8 +56,14 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	/** Returns the API for creating request to the http uploader */
 	protected T getApi() {
 		if (api == null) {
-			Retrofit retrofit = HttpUtils.createRetrofit(retrofitBuilder -> retrofitBuilder.baseUrl(uploadUrl),
-					this::configureOkHttp);
+			// ToDo: On Kotlin migration, this can be replaced with a lambda
+			Retrofit retrofit = HttpUtils.createRetrofit(retrofitBuilder -> {
+				retrofitBuilder.baseUrl(uploadUrl);
+				return Unit.INSTANCE;
+			}, builder -> {
+				this.configureOkHttp(builder);
+				return Unit.INSTANCE;
+			});
 			api = retrofit.create(apiClass);
 		}
 

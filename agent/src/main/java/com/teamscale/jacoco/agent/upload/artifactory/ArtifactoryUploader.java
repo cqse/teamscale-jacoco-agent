@@ -17,8 +17,8 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.ReportFormat;
-import com.teamscale.client.HttpUtils;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.HttpUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.report.jacoco.CoverageFile;
@@ -55,7 +55,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 	@Override
 	public void markFileForUploadRetry(CoverageFile coverageFile) {
 		File uploadMetadataFile = new File(FileSystemUtils.replaceFilePathFilenameWith(
-				com.teamscale.client.FileSystemUtils.normalizeSeparators(coverageFile.toString()),
+				FileSystemUtils.normalizeSeparators(coverageFile.toString()),
 				coverageFile.getName() + RETRY_UPLOAD_FILE_SUFFIX));
 		Properties properties = createArtifactoryProperties();
 		try (FileWriter writer = new FileWriter(uploadMetadataFile)) {

@@ -18,8 +18,8 @@ abstract class TeamscaleUploadTask : DefaultTask() {
 
     /** The Teamscale server configuration. */
     @get:Input
-    val server
-        get() = extension.server
+    val configuration
+        get() = extension.configuration
 
     /** The commit for which the reports should be uploaded. */
     @get:Input
@@ -62,11 +62,8 @@ abstract class TeamscaleUploadTask : DefaultTask() {
             logger.info("Skipping upload. No reports enabled for uploading.")
             return
         }
-
-        server.validate()
-
         try {
-            logger.info("Uploading to $server at ${revision ?: commitDescriptor}...")
+            logger.info("Uploading to $configuration at ${revision ?: commitDescriptor}...")
             uploadReports(enabledReports)
         } catch (e: Exception) {
             if (ignoreFailures) {
@@ -83,20 +80,22 @@ abstract class TeamscaleUploadTask : DefaultTask() {
         // as one commit, so we group them before uploading them
         for ((key, reports) in enabledReports.groupBy { Triple(it.format, it.partition.get(), it.message.get()) }) {
             val (format, partition, message) = key
-            val reportFiles = reports.flatMap { it.reportFiles.files }.filter { it.exists() }.distinct()
+            val reportFiles = reports
+                .flatMap { it.reportFiles.files }
+                .filter { it.exists() }
+                .toSet()
             logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
             if (reportFiles.isEmpty()) {
                 logger.info("Skipped empty upload!")
                 continue
             }
-            logger.debug("Uploading $reportFiles")
+            logger.debug("Uploading {}", reportFiles)
 
             try {
                 // Prefer to upload to revision and fallback to branch timestamp
-                val commitDescriptorOrNull = if (revision != null) null else commitDescriptor!!
+                val commitDescriptorOrNull = if (revision != null) null else commitDescriptor
                 retry(3) {
-                    val client =
-                        TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
+                    val client = TeamscaleClient(configuration)
                     client.uploadReports(
                         format,
                         reportFiles,

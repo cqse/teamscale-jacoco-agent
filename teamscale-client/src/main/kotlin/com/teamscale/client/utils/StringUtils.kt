@@ -14,65 +14,67 @@
 | See the License for the specific language governing permissions and      |
 | limitations under the License.                                           |
 +-------------------------------------------------------------------------*/
-package com.teamscale.client;
+package com.teamscale.client.utils
 
-import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Map;
+import java.text.NumberFormat
+import kotlin.math.min
 
 /**
  * A utility class providing some advanced string functionality.
  */
-public class StringUtils {
+object StringUtils {
+	/** Line separator of the current platform.  */
+	val LINE_SEPARATOR: String = System.getProperty("line.separator")
 
-	/** Line separator of the current platform. */
-	public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
-	/** The empty string. */
-	public static final String EMPTY_STRING = "";
+	/** The empty string.  */
+	const val EMPTY_STRING: String = ""
 
 	/**
 	 * Checks if a string is empty (after trimming).
 	 *
 	 * @param text the string to check.
-	 * @return <code>true</code> if string is empty or <code>null</code>,
-	 * <code>false</code> otherwise.
+	 * @return `true` if string is empty or `null`,
+	 * `false` otherwise.
 	 */
-	public static boolean isEmpty(String text) {
+	@JvmStatic
+	fun isEmpty(text: String?): Boolean {
 		if (text == null) {
-			return true;
+			return true
 		}
-		return EMPTY_STRING.equals(text.trim());
+		return EMPTY_STRING == text.trim { it <= ' ' }
 	}
 
 	/**
-	 * Determine if the supplied {@link String} is <em>blank</em> (i.e., {@code null} or consisting only of whitespace
+	 * Determine if the supplied [String] is *blank* (i.e., `null` or consisting only of whitespace
 	 * characters).
 	 *
-	 * @param str the string to check; may be {@code null}
-	 * @return {@code true} if the string is blank
+	 * @param str the string to check; may be `null`
+	 * @return `true` if the string is blank
 	 */
-	public static boolean isBlank(String str) {
-		return (str == null || str.trim().isEmpty());
+	@JvmStatic
+	fun isBlank(str: String?): Boolean {
+		return (str == null || str.trim { it <= ' ' }.isEmpty())
 	}
 
 
 	/**
 	 * Returns the beginning of a String, cutting off the last part which is separated by the given character.
-	 * <p>
+	 *
+	 *
 	 * E.g., removeLastPart("org.conqat.lib.commons.string.StringUtils", '.') gives "org.conqat.lib.commons.string".
 	 *
 	 * @param string    the String
 	 * @param separator separation character
 	 * @return the String without the last part, or the original string if the separation character is not found.
 	 */
-	public static String removeLastPart(String string, char separator) {
-		int idx = string.lastIndexOf(separator);
+	@JvmStatic
+	fun removeLastPart(string: String, separator: Char): String {
+		val idx = string.lastIndexOf(separator)
 		if (idx == -1) {
-			return string;
+			return string
 		}
 
-		return string.substring(0, idx);
+		return string.substring(0, idx)
 	}
 
 	/**
@@ -82,11 +84,11 @@ public class StringUtils {
 	 * @param prefix the prefix
 	 * @return the string without the prefix or the original string if it does not start with the prefix.
 	 */
-	public static String stripPrefix(String string, String prefix) {
+	fun stripPrefix(string: String, prefix: String): String {
 		if (string.startsWith(prefix)) {
-			return string.substring(prefix.length());
+			return string.substring(prefix.length)
 		}
-		return string;
+		return string
 	}
 
 	/**
@@ -96,18 +98,12 @@ public class StringUtils {
 	 * @param suffix the suffix
 	 * @return the string without the suffix or the original string if it does not end with the suffix.
 	 */
-	public static String stripSuffix(String string, String suffix) {
+	@JvmStatic
+	fun stripSuffix(string: String, suffix: String): String {
 		if (string.endsWith(suffix)) {
-			return string.substring(0, string.length() - suffix.length());
+			return string.substring(0, string.length - suffix.length)
 		}
-		return string;
-	}
-
-	/**
-	 * Create string representation of a map.
-	 */
-	public static String toString(Map<?, ?> map) {
-		return toString(map, EMPTY_STRING);
+		return string
 	}
 
 	/**
@@ -116,33 +112,37 @@ public class StringUtils {
 	 * @param map    the map
 	 * @param indent a line indent
 	 */
-	public static String toString(Map<?, ?> map, String indent) {
-		StringBuilder result = new StringBuilder();
-		Iterator<?> keyIterator = map.keySet().iterator();
+	/**
+	 * Create string representation of a map.
+	 */
+	@JvmOverloads
+	fun toString(map: Map<*, *>, indent: String? = EMPTY_STRING): String {
+		val result = StringBuilder()
+		val keyIterator = map.keys.iterator()
 
 		while (keyIterator.hasNext()) {
-			result.append(indent);
-			Object key = keyIterator.next();
-			result.append(key);
-			result.append(" = ");
-			result.append(map.get(key));
+			result.append(indent)
+			val key = keyIterator.next()!!
+			result.append(key)
+			result.append(" = ")
+			result.append(map[key])
 			if (keyIterator.hasNext()) {
-				result.append(LINE_SEPARATOR);
+				result.append(LINE_SEPARATOR)
 			}
 		}
 
-		return result.toString();
+		return result.toString()
 	}
 
 	/**
 	 * Format number with number formatter, if number formatter is
-	 * <code>null</code>, this uses {@link String#valueOf(double)}.
+	 * `null`, this uses [String.valueOf].
 	 */
-	public static String format(double number, NumberFormat numberFormat) {
+	fun format(number: Double, numberFormat: NumberFormat?): String {
 		if (numberFormat == null) {
-			return String.valueOf(number);
+			return number.toString()
 		}
-		return numberFormat.format(number);
+		return numberFormat.format(number)
 	}
 
 	/**
@@ -151,41 +151,43 @@ public class StringUtils {
 	 * complexity is O(n+m), where n/m are the lengths of the strings. Note that due to the high running time, for long
 	 * strings the Diff class should be used, that has a more efficient algorithm, but only for insert/delete (not
 	 * replace operation).
-	 * <p>
+	 *
+	 *
 	 * Although this is a clean reimplementation, the basic algorithm is explained here:
 	 * http://en.wikipedia.org/wiki/Levenshtein_distance# Iterative_with_two_matrix_rows
 	 */
-	public static int editDistance(String s, String t) {
-		char[] sChars = s.toCharArray();
-		char[] tChars = t.toCharArray();
-		int m = s.length();
-		int n = t.length();
+	@JvmStatic
+	fun editDistance(s: String, t: String): Int {
+		val sChars = s.toCharArray()
+		val tChars = t.toCharArray()
+		val m = s.length
+		val n = t.length
 
-		int[] distance = new int[m + 1];
-		for (int i = 0; i <= m; ++i) {
-			distance[i] = i;
+		var distance = IntArray(m + 1)
+		for (i in 0..m) {
+			distance[i] = i
 		}
 
-		int[] oldDistance = new int[m + 1];
-		for (int j = 1; j <= n; ++j) {
-
+		var oldDistance = IntArray(m + 1)
+		for (j in 1..n) {
 			// swap distance and oldDistance
-			int[] tmp = oldDistance;
-			oldDistance = distance;
-			distance = tmp;
 
-			distance[0] = j;
-			for (int i = 1; i <= m; ++i) {
-				int cost = 1 + Math.min(distance[i - 1], oldDistance[i]);
-				if (sChars[i - 1] == tChars[j - 1]) {
-					cost = Math.min(cost, oldDistance[i - 1]);
+			val tmp = oldDistance
+			oldDistance = distance
+			distance = tmp
+
+			distance[0] = j
+			for (i in 1..m) {
+				var cost = (1 + min(distance[i - 1].toDouble(), oldDistance[i].toDouble())).toInt()
+				cost = if (sChars[i - 1] == tChars[j - 1]) {
+					min(cost.toDouble(), oldDistance[i - 1].toDouble()).toInt()
 				} else {
-					cost = Math.min(cost, 1 + oldDistance[i - 1]);
+					min(cost.toDouble(), (1 + oldDistance[i - 1]).toDouble()).toInt()
 				}
-				distance[i] = cost;
+				distance[i] = cost
 			}
 		}
 
-		return distance[m];
+		return distance[m]
 	}
 }

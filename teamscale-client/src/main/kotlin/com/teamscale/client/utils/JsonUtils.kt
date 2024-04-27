@@ -1,4 +1,4 @@
-package com.teamscale.client
+package com.teamscale.client.utils
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude

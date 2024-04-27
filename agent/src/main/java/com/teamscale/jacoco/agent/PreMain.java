@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.client.HttpUtils;
+import com.teamscale.client.utils.HttpUtils;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;

@@ -1,9 +1,8 @@
 package com.teamscale.report
 
-import com.teamscale.client.FileSystemUtils
-import com.teamscale.client.JsonUtils.deserialize
-import com.teamscale.client.JsonUtils.deserializeAsArray
-import com.teamscale.client.JsonUtils.serializeWriteToFile
+import com.teamscale.client.utils.FileSystemUtils
+import com.teamscale.client.utils.JsonUtils.deserializeAsArray
+import com.teamscale.client.utils.JsonUtils.serializeWriteToFile
 import com.teamscale.report.testwise.ETestArtifactFormat
 import java.io.File
 import java.io.IOException

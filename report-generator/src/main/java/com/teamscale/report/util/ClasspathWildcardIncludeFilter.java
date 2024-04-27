@@ -1,7 +1,7 @@
 package com.teamscale.report.util;
 
-import com.teamscale.client.FileSystemUtils;
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.FileSystemUtils;
+import com.teamscale.client.utils.StringUtils;
 import org.jacoco.core.runtime.WildcardMatcher;
 import org.jacoco.report.JavaNames;
 

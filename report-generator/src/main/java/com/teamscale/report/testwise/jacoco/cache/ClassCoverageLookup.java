@@ -1,6 +1,6 @@
 package com.teamscale.report.testwise.jacoco.cache;
 
-import com.teamscale.client.StringUtils;
+import com.teamscale.client.utils.StringUtils;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.util.ILogger;
 import com.teamscale.report.util.SortedIntList;
