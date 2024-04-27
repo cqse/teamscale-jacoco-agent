@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
@@ -98,7 +98,7 @@ public class TestwiseCoverageAgentTest {
 		runningTest.endTest(new TestRun.TestResultWithMessage(ETestExecutionResult.PASSED, "message"));
 
 		testRun.endTestRun(true);
-		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
+		verify(client).uploadReport(eq(ReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":true,\"tests\":[{\"uniformPath\":\"test1\",\"sourcePath\":\"test1\",\"content\":\"content\",\"paths\":[]},{\"uniformPath\":\"test2\",\"sourcePath\":\"test2\",\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"message\":\"message\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
 				any(), any(), any(), any());
 	}

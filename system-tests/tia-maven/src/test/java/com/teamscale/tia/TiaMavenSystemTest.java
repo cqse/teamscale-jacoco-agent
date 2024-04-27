@@ -26,7 +26,7 @@ public class TiaMavenSystemTest {
 					.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
 							"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer.getUploadedReports().clear();
 	}
 
 	@AfterEach
@@ -38,9 +38,9 @@ public class TiaMavenSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project");
 
-		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
+		assertThat(teamscaleMockServer.getAvailableTests()).extracting("partition").contains("MyPartition");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(2);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(2);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(unitTestReport.tests).hasSize(2);

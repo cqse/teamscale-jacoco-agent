@@ -1,11 +1,12 @@
 package com.teamscale
 
 import com.teamscale.client.ClusteredTestDetails
-import com.teamscale.client.TestDetails
+import com.teamscale.client.JsonUtils.serializeWriteToFile
 import com.teamscale.config.*
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import com.teamscale.report.EDuplicateClassFileBehavior
-import com.teamscale.report.ReportUtils
+import com.teamscale.report.ReportUtils.filterByFormat
+import com.teamscale.report.ReportUtils.readObjects
 import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator
 import com.teamscale.report.testwise.model.TestExecution
@@ -108,12 +109,11 @@ open class TestwiseCoverageReportTask : DefaultTask() {
         artifacts: MutableList<File>,
         jaCoCoTestwiseReportGenerator: JaCoCoTestwiseReportGenerator
     ) {
-        val testDetails =
-            ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, Array<ClusteredTestDetails>::class.java, artifacts)
-        val testExecutions = ReportUtils.readObjects(
-            ETestArtifactFormat.TEST_EXECUTION,
-            Array<TestExecution>::class.java,
-            artifacts
+        val testDetails = artifacts.readObjects<ClusteredTestDetails>(
+            ETestArtifactFormat.TEST_LIST
+        )
+        val testExecutions = artifacts.readObjects<TestExecution>(
+            ETestArtifactFormat.TEST_EXECUTION
         )
 
         val testwiseCoverage = buildTestwiseCoverage(artifacts, jaCoCoTestwiseReportGenerator) ?: return
@@ -122,7 +122,7 @@ open class TestwiseCoverageReportTask : DefaultTask() {
 
         val report = TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.tests, testExecutions, reportConfig.partial)
         logger.info("Writing report to ${reportConfig.reportFiles}")
-        ReportUtils.writeTestwiseCoverageReport(reportConfig.reportFiles.singleFile, report)
+        report.serializeWriteToFile(reportConfig.reportFiles.singleFile)
     }
 
     /** Collects JaCoCo's exec files from the artifacts folders and merges it with js coverage. */
@@ -130,7 +130,7 @@ open class TestwiseCoverageReportTask : DefaultTask() {
         artifacts: MutableList<File>,
         jaCoCoTestwiseReportGenerator: JaCoCoTestwiseReportGenerator
     ): TestwiseCoverage? {
-        val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, artifacts)
+        val jacocoExecutionData = artifacts.filterByFormat(ETestArtifactFormat.JACOCO)
         if (jacocoExecutionData.isEmpty()) {
             logger.error("No execution data provided!")
             return null

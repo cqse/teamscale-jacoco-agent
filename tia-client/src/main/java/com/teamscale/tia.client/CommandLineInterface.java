@@ -128,7 +128,11 @@ public class CommandLineInterface {
 		String json = readStdin();
 		List<ClusteredTestDetails> availableTests = Collections.emptyList();
 		if (!StringUtils.isEmpty(json)) {
-			availableTests = JsonUtils.deserializeList(json, ClusteredTestDetails.class);
+			// ToDo: Use JsonUtils.deserializeAsList()
+			availableTests = JsonUtils.getOBJECT_MAPPER().readValue(
+				json,
+				JsonUtils.getOBJECT_MAPPER().getTypeFactory().constructCollectionLikeType(List.class, ClusteredTestDetails.class)
+			);
 		}
 		return availableTests;
 	}

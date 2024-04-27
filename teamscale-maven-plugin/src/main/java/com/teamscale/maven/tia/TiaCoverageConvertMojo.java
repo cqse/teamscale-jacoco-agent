@@ -12,6 +12,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import shadow.com.teamscale.client.ReportFormat;
 import shadow.com.teamscale.client.TestDetails;
 import shadow.com.teamscale.report.EDuplicateClassFileBehavior;
 import shadow.com.teamscale.report.ReportUtils;
@@ -95,7 +96,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 		logger.info("Generating the testwise coverage report");
 		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator(classFileDirectories);
 		TestInfoFactory testInfoFactory = createTestInfoFactory(reportFileDirectories);
-		List<File> jacocoExecutionDataList = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, reportFileDirectories);
+		List<File> jacocoExecutionDataList = ReportUtils.filterByFormat(reportFileDirectories, ETestArtifactFormat.JACOCO);
 		String reportFilePath = Paths.get(outputFolder, "testwise-coverage.json").toString();
 
 		try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
@@ -122,10 +123,10 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 
 	private TestInfoFactory createTestInfoFactory(List<File> reportFiles) throws MojoFailureException {
 		try {
-			List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, TestDetails[].class,
+			List<TestDetails> testDetails = ReportUtils.readObjects(ETestArtifactFormat.TEST_LIST, TestDetails.class,
 					reportFiles);
 			List<TestExecution> testExecutions = ReportUtils.readObjects(ETestArtifactFormat.TEST_EXECUTION,
-					TestExecution[].class, reportFiles);
+					TestExecution.class, reportFiles);
 			logger.info("Writing report with " + testDetails.size() + " Details/" + testExecutions.size() + " Results");
 			return new TestInfoFactory(testDetails, testExecutions);
 		} catch (IOException e) {

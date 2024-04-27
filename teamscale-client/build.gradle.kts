@@ -1,4 +1,5 @@
 plugins {
+	kotlin("jvm") version "1.9.23"
 	`java-library`
 	com.teamscale.`java-convention`
 	com.teamscale.coverage

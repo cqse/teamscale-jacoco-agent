@@ -31,7 +31,7 @@ public class TiaClientSystemTest {
 			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads()
 					.withImpactedTests("testFoo", "testBar");
 		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer.getUploadedReports().clear();
 	}
 
 	@Test
@@ -39,7 +39,7 @@ public class TiaClientSystemTest {
 		CustomTestFramework customTestFramework = new CustomTestFramework(SystemTestUtils.AGENT_PORT);
 		customTestFramework.runTestsWithTia();
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(1);
 
 		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(report.tests).hasSize(2);
@@ -65,7 +65,7 @@ public class TiaClientSystemTest {
 
 		testRun.endTestRun(true);
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(1);
 
 		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(report.tests).hasSize(1);

@@ -18,14 +18,14 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.IUploader;
-import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.Benchmark2;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 
@@ -68,7 +68,7 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 	}
 
 	private void doUpload(CoverageFile coverageFile, TeamscaleServer teamscaleServer) {
-		try (Benchmark benchmark = new Benchmark("Uploading report to Teamscale")) {
+		try (Benchmark2 benchmark = new Benchmark2("Uploading report to Teamscale")) {
 			if (tryUploading(coverageFile, teamscaleServer)) {
 				deleteCoverageFile(coverageFile);
 			} else {
@@ -130,7 +130,7 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken,
 					HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 			api.uploadReport(teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
-					teamscaleServer.partition, EReportFormat.JACOCO, teamscaleServer.getMessage(),
+					teamscaleServer.partition, ReportFormat.JACOCO, teamscaleServer.getMessage(),
 					coverageFile.createFormRequestBody());
 			return true;
 		} catch (IOException e) {

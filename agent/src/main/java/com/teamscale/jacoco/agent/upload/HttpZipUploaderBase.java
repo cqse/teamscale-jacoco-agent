@@ -13,7 +13,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
 import com.teamscale.client.HttpUtils;
-import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.Benchmark2;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 
@@ -69,7 +69,7 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 
 	@Override
 	public void upload(CoverageFile coverageFile) {
-		try (Benchmark ignored = new Benchmark("Uploading report via HTTP")) {
+		try (Benchmark2 ignored = new Benchmark2("Uploading report via HTTP")) {
 			if (tryUpload(coverageFile)) {
 				coverageFile.delete();
 			} else {

@@ -12,7 +12,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import shadow.com.teamscale.client.CommitDescriptor;
-import shadow.com.teamscale.client.EReportFormat;
+import shadow.com.teamscale.client.ReportFormat;
 import shadow.com.teamscale.client.TeamscaleClient;
 
 import java.io.File;
@@ -205,15 +205,15 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			List<File> testwiseCoverageFiles = Arrays.asList(files);
 			getLog().debug("Uploading testwise coverage to partition " + testwisePartition);
 			uploadCoverage(testwiseCoverageFiles.stream().map(File::toPath).collect(Collectors.toList()),
-					testwisePartition, EReportFormat.TESTWISE_COVERAGE);
+					testwisePartition, ReportFormat.TESTWISE_COVERAGE);
 
 		}
-		uploadCoverage(reportGoalOutputFiles, unitTestPartition, EReportFormat.JACOCO);
-		uploadCoverage(reportIntegrationGoalOutputFiles, integrationTestPartition, EReportFormat.JACOCO);
-		uploadCoverage(reportAggregateGoalOutputFiles, aggregatedTestPartition, EReportFormat.JACOCO);
+		uploadCoverage(reportGoalOutputFiles, unitTestPartition, ReportFormat.JACOCO);
+		uploadCoverage(reportIntegrationGoalOutputFiles, integrationTestPartition, ReportFormat.JACOCO);
+		uploadCoverage(reportAggregateGoalOutputFiles, aggregatedTestPartition, ReportFormat.JACOCO);
 	}
 
-	private void uploadCoverage(List<Path> reportOutputFiles, String partition, EReportFormat format)
+	private void uploadCoverage(List<Path> reportOutputFiles, String partition, ReportFormat format)
 			throws IOException {
 		List<File> reports = new ArrayList<>();
 		getLog().debug(String.format("Scanning through %d locations for %s...", reportOutputFiles.size(), partition));

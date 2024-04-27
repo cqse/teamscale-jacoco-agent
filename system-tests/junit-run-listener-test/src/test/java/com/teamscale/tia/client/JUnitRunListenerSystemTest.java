@@ -23,7 +23,7 @@ public class JUnitRunListenerSystemTest {
 		if (teamscaleMockServer == null) {
 			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads();
 		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer.getUploadedReports().clear();
 	}
 
 	/** Tests the JUnit 5 TestExecutionListener. */
@@ -31,7 +31,7 @@ public class JUnitRunListenerSystemTest {
 	public void testJUnit5TestExecutionListener() throws Exception {
 		SystemTestUtils.runMavenTests("junit5-maven-project");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(1);
 		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(report.tests).hasSize(2);
 		assertAll(() -> {
@@ -49,7 +49,7 @@ public class JUnitRunListenerSystemTest {
 	public void testJUnit4RunListener() throws Exception {
 		SystemTestUtils.runMavenTests("junit4-maven-project");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(1);
 		TestwiseCoverageReport report = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(report.tests).hasSize(1);
 		assertAll(() -> {

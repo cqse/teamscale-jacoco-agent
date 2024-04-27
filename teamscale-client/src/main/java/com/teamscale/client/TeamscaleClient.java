@@ -167,8 +167,8 @@ public class TeamscaleClient {
 		}
 	}
 
-	/** Uploads multiple reports to Teamscale in the given {@link EReportFormat}. */
-	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
+	/** Uploads multiple reports to Teamscale in the given {@link ReportFormat}. */
+	public void uploadReports(ReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
 							  String revision,
 							  String partition, String message) throws IOException {
 		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, partition, message);
@@ -192,7 +192,7 @@ public class TeamscaleClient {
 	}
 
 	/** Uploads one in-memory report to Teamscale. */
-	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
+	public void uploadReport(ReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
 							 String revision, String partition, String message) throws IOException {
 		RequestBody requestBody = RequestBody.create(MultipartBody.FORM, report);
 		service.uploadReport(projectId, commitDescriptor, revision, partition, reportFormat, message, requestBody);

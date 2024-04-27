@@ -5,7 +5,7 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent.options;
 
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
@@ -583,11 +583,11 @@ public class AgentOptions {
 		return uploader;
 	}
 
-	private EReportFormat getReportFormat() {
+	private ReportFormat getReportFormat() {
 		if (useTestwiseCoverageMode()) {
-			return EReportFormat.TESTWISE_COVERAGE;
+			return ReportFormat.TESTWISE_COVERAGE;
 		}
-		return EReportFormat.JACOCO;
+		return ReportFormat.JACOCO;
 	}
 
 	/**

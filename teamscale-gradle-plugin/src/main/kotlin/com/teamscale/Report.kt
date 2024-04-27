@@ -1,6 +1,6 @@
 package com.teamscale
 
-import com.teamscale.client.EReportFormat
+import com.teamscale.client.ReportFormat
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -12,14 +12,14 @@ import org.gradle.api.tasks.Internal
  */
 data class Report(
 
-    @Input
+	@Input
     val upload: Property<Boolean>,
 
-    /** Report format. */
+	/** Report format. */
     @Input
-    val format: EReportFormat,
+    val format: ReportFormat,
 
-    /**
+	/**
      * The report files.
      *
      * Gradle currently fails to pick up the producer tasks of nested provider properties resulting in TS-31797
@@ -29,15 +29,15 @@ data class Report(
     @Internal
     val reportFiles: FileCollection,
 
-    /** The partition to upload the report to. */
+	/** The partition to upload the report to. */
     @Input
     val partition: Property<String>,
 
-    /** The commit message shown in Teamscale for the upload. */
+	/** The commit message shown in Teamscale for the upload. */
     @Input
     val message: Property<String>,
 
-    /** Whether the report only contains partial data (subset of tests). Only relevant for TESTWISE_COVERAGE. */
+	/** Whether the report only contains partial data (subset of tests). Only relevant for TESTWISE_COVERAGE. */
     @Input
     val partial: Boolean = false
 )

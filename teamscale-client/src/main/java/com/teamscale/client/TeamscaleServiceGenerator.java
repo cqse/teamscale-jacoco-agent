@@ -39,7 +39,7 @@ public class TeamscaleServiceGenerator {
 														Duration writeTimeout, Interceptor... interceptors) {
 		Retrofit retrofit = HttpUtils.createRetrofit(
 				retrofitBuilder -> retrofitBuilder.baseUrl(baseUrl)
-						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER)),
+						.addConverterFactory(JacksonConverterFactory.create(JsonUtils.getOBJECT_MAPPER())),
 				okHttpBuilder -> {
 					addInterceptors(okHttpBuilder, interceptors)
 							.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))

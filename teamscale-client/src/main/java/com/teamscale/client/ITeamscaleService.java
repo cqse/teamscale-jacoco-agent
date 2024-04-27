@@ -49,13 +49,13 @@ public interface ITeamscaleService {
 	);
 
 	/**
-	 * Report upload API with {@link EReportFormat}.
+	 * Report upload API with {@link ReportFormat}.
 	 *
 	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
 	 */
 	default Call<ResponseBody> uploadExternalReport(
 			String projectName,
-			EReportFormat format,
+			ReportFormat format,
 			CommitDescriptor commit,
 			String revision,
 			Boolean moveToLastCommit,
@@ -76,7 +76,7 @@ public interface ITeamscaleService {
 	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
 	Call<ResponseBody> uploadExternalReports(
 			@Path("projectName") String projectName,
-			@Query("format") EReportFormat format,
+			@Query("format") ReportFormat format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision,
 			@Query("movetolastcommit") boolean moveToLastCommit,
@@ -160,7 +160,7 @@ public interface ITeamscaleService {
 			CommitDescriptor commit,
 			String revision,
 			String partition,
-			EReportFormat reportFormat,
+			ReportFormat reportFormat,
 			String message,
 			RequestBody report
 	) throws IOException {

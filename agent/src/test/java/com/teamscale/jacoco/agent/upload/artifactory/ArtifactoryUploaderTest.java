@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
 import com.teamscale.jacoco.agent.upload.UploadTestBase;
@@ -29,7 +29,7 @@ public class ArtifactoryUploaderTest extends UploadTestBase {
 		HttpUrl serverUrl = mockWebServer.url("/artifactory/");
 		ArtifactoryConfig artifactoryConfig = generateBasicArtifactoryConfig(serverUrl);
 		artifactoryConfig.apiKey = "some_api_key";
-		uploader = new ArtifactoryUploader(artifactoryConfig, new ArrayList<>(), EReportFormat.JACOCO);
+		uploader = new ArtifactoryUploader(artifactoryConfig, new ArrayList<>(), ReportFormat.JACOCO);
 	}
 
 	/**

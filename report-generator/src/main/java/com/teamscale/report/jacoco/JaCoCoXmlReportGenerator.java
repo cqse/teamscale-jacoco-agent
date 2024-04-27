@@ -78,13 +78,11 @@ public class JaCoCoXmlReportGenerator {
 	}
 
 	private void checkForEmptyReport(IBundleCoverage coverage) throws EmptyReportException {
-		if (coverage.getPackages().size() == 0 || coverage.getLineCounter().getTotalCount() == 0) {
-			throw new EmptyReportException("The generated coverage report is empty. " + MOST_LIKELY_CAUSE_MESSAGE);
+		if (coverage.getPackages().isEmpty() || coverage.getLineCounter().getTotalCount() == 0) {
+			throw new EmptyReportException("The generated coverage report is empty.");
 		}
 		if (coverage.getLineCounter().getCoveredCount() == 0) {
-			throw new EmptyReportException(
-					"The generated coverage report does not contain any covered source code lines. " +
-							MOST_LIKELY_CAUSE_MESSAGE);
+			throw new EmptyReportException("The generated coverage report does not contain any covered source code lines.");
 		}
 	}
 

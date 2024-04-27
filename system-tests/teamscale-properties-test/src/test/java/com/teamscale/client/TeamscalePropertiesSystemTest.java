@@ -19,7 +19,7 @@ public class TeamscalePropertiesSystemTest {
 		new SystemUnderTest().foo();
 		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(1);
 		teamscaleMockServer.shutdown();
 	}
 

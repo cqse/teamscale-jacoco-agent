@@ -40,7 +40,7 @@ public class TiaMavenCucumberSystemTest {
 					.acceptingReportUploads()
 					.withImpactedTests(IMPACTED_TEST_PATHS);
 		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer.getUploadedReports().clear();
 	}
 
 	@AfterEach
@@ -52,9 +52,9 @@ public class TiaMavenCucumberSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project");
 
-		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
+		assertThat(teamscaleMockServer.getAvailableTests()).extracting("partition").contains("MyPartition");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getUploadedReports()).hasSize(1);
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(unitTestReport.tests).hasSize(IMPACTED_TEST_PATHS.length);

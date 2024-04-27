@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
@@ -64,7 +64,7 @@ public class CoverageToTeamscaleStrategyTest {
 		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
 		strategy.testRunEnd(false);
 
-		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
+		verify(client).uploadReport(eq(ReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":false,\"tests\":[{\"uniformPath\":\"mytest\",\"sourcePath\":\"mytest\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
 				any(), any(), any(), any());
 	}
@@ -93,7 +93,7 @@ public class CoverageToTeamscaleStrategyTest {
 		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
 		strategy.testRunEnd(true);
 
-		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
+		verify(client).uploadReport(eq(ReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":true,\"tests\":[{\"uniformPath\":\"mytest\",\"sourcePath\":\"mytest\",\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
 				any(), any(), any(), any());
 	}

@@ -1,7 +1,7 @@
 package com.teamscale.config
 
 import com.teamscale.TestImpacted
-import com.teamscale.client.EReportFormat
+import com.teamscale.client.ReportFormat
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -10,7 +10,7 @@ import java.io.File
 /** Configuration for the testwise coverage report. */
 @Suppress("MemberVisibilityCanBePrivate")
 open class TestwiseCoverageConfiguration(project: Project, task: TestImpacted) :
-    ReportConfigurationBase(EReportFormat.TESTWISE_COVERAGE, project, task) {
+    ReportConfigurationBase(ReportFormat.TESTWISE_COVERAGE, project, task) {
 
     /** The destination where the report should be written to/read from. */
     var destination: RegularFileProperty = project.objects.fileProperty()

@@ -8,7 +8,7 @@ import org.slf4j.Logger;
  * Use this in a try-with-resources. Time measurement starts when the resource
  * is created and ends when it is closed.
  */
-public class Benchmark implements AutoCloseable {
+public class Benchmark2 implements AutoCloseable {
 
 	/** The logger. */
 	private final Logger logger = LoggingUtils.getLogger(this);
@@ -20,7 +20,7 @@ public class Benchmark implements AutoCloseable {
 	private String description;
 
 	/** Constructor. */
-	public Benchmark(String description) {
+	public Benchmark2(String description) {
 		this.description = description;
 		startTime = System.nanoTime();
 	}

@@ -29,7 +29,7 @@ import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.Benchmark2;
 import com.teamscale.jacoco.agent.util.Timer;
 import com.teamscale.report.jacoco.CoverageFile;
 import com.teamscale.report.jacoco.EmptyReportException;
@@ -185,7 +185,7 @@ public class Agent extends AgentBase {
 			return;
 		}
 
-		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
+		try (Benchmark2 ignored = new Benchmark2("Generating the XML report")) {
 			File outputFile = options.createNewFileInOutputDirectory("jacoco", "xml");
 			CoverageFile coverageFile = generator.convert(dump, outputFile);
 			uploader.upload(coverageFile);

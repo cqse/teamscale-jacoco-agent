@@ -1,4 +1,5 @@
 plugins {
+	kotlin("jvm") version "1.9.23"
 	com.teamscale.`java-convention`
 	alias(libs.plugins.markdownToPdf)
 	application

@@ -27,7 +27,7 @@ public class TestDataWriter {
 	void dumpTestExecutions(List<TestExecution> testExecutions) {
 		File file = new File(reportDirectory, "test-execution.json");
 		try {
-			ReportUtils.writeTestExecutionReport(file, testExecutions);
+			ReportUtils.writeReportToFile(file, testExecutions);
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> "Error while writing report to file: " + file);
 		}
@@ -37,7 +37,7 @@ public class TestDataWriter {
 	void dumpTestDetails(List<? extends TestDetails> testDetails) {
 		File file = new File(reportDirectory, "test-list.json");
 		try {
-			ReportUtils.writeTestListReport(file, new ArrayList<>(testDetails));
+			ReportUtils.writeReportToFile(file, new ArrayList<>(testDetails));
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> "Error while writing report to file: " + file);
 		}

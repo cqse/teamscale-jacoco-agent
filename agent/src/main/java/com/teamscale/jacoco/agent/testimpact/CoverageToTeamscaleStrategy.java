@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
@@ -36,7 +36,7 @@ public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 	protected void handleTestwiseCoverageJsonReady(String json) throws IOException {
 		try {
 			teamscaleClient
-					.uploadReport(EReportFormat.TESTWISE_COVERAGE, json,
+					.uploadReport(ReportFormat.TESTWISE_COVERAGE, json,
 							agentOptions.getTeamscaleServerOptions().commit,
 							agentOptions.getTeamscaleServerOptions().revision,
 							agentOptions.getTeamscaleServerOptions().partition,

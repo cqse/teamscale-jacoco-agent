@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static com.teamscale.client.JsonUtils.serialize;
 import static org.mockito.Mockito.mock;
 
 /** Tests for the {@link JaCoCoTestwiseReportGenerator} class. */
@@ -54,7 +55,7 @@ public class JaCoCoTestwiseReportGeneratorTest extends TestDataBase {
 				Collections.singletonList(classFileFolder),
 				includeFilter, EDuplicateClassFileBehavior.IGNORE,
 				mock(ILogger.class)).convert(useTestFile(execFileName));
-		return ReportUtils.getTestwiseCoverageReportAsString(generateDummyReportFrom(testwiseCoverage));
+		return serialize(generateDummyReportFrom(testwiseCoverage));
 	}
 
 	/** Generates a dummy coverage report object that wraps the given {@link TestwiseCoverage}. */

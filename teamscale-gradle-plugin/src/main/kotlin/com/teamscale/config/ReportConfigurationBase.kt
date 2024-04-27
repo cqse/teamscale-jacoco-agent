@@ -1,14 +1,14 @@
 package com.teamscale.config
 
 import com.teamscale.Report
-import com.teamscale.client.EReportFormat
+import com.teamscale.client.ReportFormat
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Property
 
 /** Base configuration for all kinds of reports that we want to upload from Gradle. */
-abstract class ReportConfigurationBase(private val format: EReportFormat, val project: Project, task: Task) {
+abstract class ReportConfigurationBase(private val format: ReportFormat, val project: Project, task: Task) {
 
     /** The partition for which artifacts are uploaded. */
     var partition: Property<String> = project.objects.property(String::class.java).convention(task.name)

@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
-import com.teamscale.client.EReportFormat;
+import com.teamscale.client.ReportFormat;
 import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
 import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.UploaderException;
@@ -150,7 +150,7 @@ public class AzureFileStorageUploader extends HttpZipUploaderBase<IAzureUploadAp
 
 	/** Creates a file name for the zip-archive containing the coverage. */
 	private String createFileName() {
-		return String.format("%s-%s.zip", EReportFormat.JACOCO.name().toLowerCase(), System.currentTimeMillis());
+		return String.format("%s-%s.zip", ReportFormat.JACOCO.name().toLowerCase(), System.currentTimeMillis());
 	}
 
 	/** Checks if the file with the given name exists */
