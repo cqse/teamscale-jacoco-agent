@@ -24,7 +24,8 @@ object JsonUtils {
 	 * OBJECT_MAPPER are configured to include all fields when serializing or deserializing objects, regardless of their
 	 * visibility modifiers (public, private, etc.).
 	 */
-	@JvmStatic val OBJECT_MAPPER: ObjectMapper =
+	@JvmStatic
+	val OBJECT_MAPPER: ObjectMapper =
 		JsonMapper.builder()
 			.visibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
 			.visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
@@ -35,7 +36,8 @@ object JsonUtils {
 	/**
 	 * Creates a new instance of {@link JsonFactory} using the default {@link ObjectMapper}.
 	 */
-	@JvmStatic fun createFactory() = JsonFactory(OBJECT_MAPPER)
+	@JvmStatic
+	fun createFactory() = JsonFactory(OBJECT_MAPPER)
 
 	/**
 	 * Deserializes a JSON string into an object of the given class.
@@ -52,7 +54,8 @@ object JsonUtils {
 		OBJECT_MAPPER.readValue(this, T::class.java)
 
 	// ToDo: Remove when System tests are in Kotlin
-	@JvmStatic fun <T> String.deserialize(clazz: Class<*>) =
+	@JvmStatic
+	fun <T> String.deserialize(clazz: Class<*>) =
 		OBJECT_MAPPER.readValue(this, clazz) as T
 
 	// ToDo: Remove when System tests are in Kotlin
@@ -82,7 +85,8 @@ object JsonUtils {
 	 * Serializes an object into its JSON representation.
 	 * @throws JsonProcessingException if the serialization fails
 	 */
-	@JvmStatic fun Any.serialize(): String =
+	@JvmStatic
+	fun Any.serialize(): String =
 		OBJECT_MAPPER.writeValueAsString(this)
 
 	/**

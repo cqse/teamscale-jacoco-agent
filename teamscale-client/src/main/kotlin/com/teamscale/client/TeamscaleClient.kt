@@ -14,7 +14,7 @@ import java.time.Duration
 import java.util.*
 
 /** Helper class to interact with Teamscale.  */
-open class TeamscaleClient(
+open class TeamscaleClient @JvmOverloads constructor(
 	private val config: ServerConfiguration,
 	logfile: File? = null,
 	readTimeout: Duration = HttpUtils.DEFAULT_READ_TIMEOUT,

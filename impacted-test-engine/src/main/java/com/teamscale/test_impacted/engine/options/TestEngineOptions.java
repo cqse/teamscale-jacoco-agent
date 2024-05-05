@@ -1,6 +1,7 @@
 package com.teamscale.test_impacted.engine.options;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.ServerConfiguration;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.test_impacted.engine.ImpactedTestEngine;
 import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration;
@@ -105,9 +106,16 @@ public class TestEngineOptions {
 	}
 
 	private ImpactedTestsProvider createImpactedTestsProvider() {
-		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
-				serverOptions.getUserAccessToken(), serverOptions.getProject(),
-				new File(reportDirectory, "server-request.txt"));
+		ServerConfiguration serverConfiguration = new ServerConfiguration(
+				serverOptions.getUrl(),
+				serverOptions.getUserName(),
+				serverOptions.getUserAccessToken(),
+				serverOptions.getProject()
+		);
+		TeamscaleClient client = new TeamscaleClient(
+				serverConfiguration,
+				new File(reportDirectory, "server-request.txt")
+		);
 		return new ImpactedTestsProvider(client, baseline, endCommit, partition,
 				isRunAllTests(), isIncludeAddedTests(), isIncludeFailedAndSkipped());
 	}

@@ -1,7 +1,7 @@
 package com.teamscale.client
 
-import com.teamscale.client.utils.JsonUtils.OBJECT_MAPPER
 import com.teamscale.client.utils.HttpUtils
+import com.teamscale.client.utils.JsonUtils.OBJECT_MAPPER
 import okhttp3.*
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory

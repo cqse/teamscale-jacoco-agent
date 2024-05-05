@@ -4,6 +4,7 @@ import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import java.io.File
 import java.io.IOException
@@ -42,7 +43,7 @@ class FileLoggingInterceptor(
 					val content = body.string()
 					write(content)
 
-					wrappedBody = ResponseBody.create(contentType, content)
+					wrappedBody = content.toResponseBody(contentType)
 				}
 				return response.newBuilder().body(wrappedBody).build()
 			}

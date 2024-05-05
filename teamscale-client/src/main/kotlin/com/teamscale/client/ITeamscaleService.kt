@@ -19,9 +19,8 @@ interface ITeamscaleService {
 	 * timestamp is given.
 	 * @param partition        The name of the logical partition to store the results into. All existing data in this
 	 * partition will be invalidated. A partition typically corresponds to one analysis run,
-	 * i.e. if there are two independent builds/runs, they must use different partitions.
-	 * @see [
-	 * How to Upload External Analysis Results to Teamscale](https://docs.teamscale.com/howto/uploading-external-results/.upload-via-command-line) for details.
+	 * i.e., if there are two independent builds/runs, they must use different partitions.
+	 * @see [How to Upload External Analysis Results to Teamscale](https://docs.teamscale.com/howto/uploading-external-results/.upload-via-command-line) for details.
 	 */
 	@Multipart
 	@POST("api/v5.9.0/projects/{projectAliasOrId}/external-analysis/session/auto-create/report")

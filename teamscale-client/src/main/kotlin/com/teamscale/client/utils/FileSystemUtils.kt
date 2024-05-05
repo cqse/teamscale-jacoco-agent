@@ -144,7 +144,7 @@ object FileSystemUtils {
 	/**
 	 * Returns the name of the given file without extension. Example: 'data.dat' returns 'data'.
 	 */
-	fun getFilenameWithoutExtension(fileName: String): String? {
+	fun getFilenameWithoutExtension(fileName: String): String {
 		return StringUtils.removeLastPart(fileName, '.')
 	}
 }

@@ -1,7 +1,6 @@
 package com.teamscale.client
 
 import java.io.Serializable
-import java.util.*
 
 /** Holds the branch and timestamp of a commit.  */
 data class CommitDescriptor(

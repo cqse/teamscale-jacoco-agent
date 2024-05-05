@@ -397,7 +397,7 @@ public class AgentOptions {
 				teamscaleServer.userAccessToken,
 				teamscaleServer.project
 			);
-			return new TeamscaleClient(config, null, HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
+			return new TeamscaleClient(config);
 		}
 		return null;
 	}
