@@ -84,8 +84,8 @@ distributions {
 	named("shadow") {
 		distributionBaseName.set("teamscale-jacoco-agent")
 		contents {
-			from(project(":installer").tasks["nativeCompile"]) {
-				include("installer")
+			from(project(":installer").tasks["jlink"]) {
+				into("installer")
 			}
 
 			from(tasks.readmeToPdf) {

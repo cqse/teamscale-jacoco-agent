@@ -16,7 +16,7 @@ public class GitPropertiesLocatorTest {
 
 	private static final List<String> TEST_ARCHIVES = Arrays
 			.asList("plain-git-properties.jar", "spring-boot-git-properties.jar", "spring-boot-git-properties.war",
-					"full-git-properties.jar");
+					"full-git-properties.jar", "spring-boot-3.jar");
 
 	@Test
 	public void testReadingGitPropertiesFromArchive() throws Exception {
@@ -28,7 +28,8 @@ public class GitPropertiesLocatorTest {
 			String rev = GitPropertiesLocatorUtils
 					.getCommitInfoFromGitProperties(commits.get(0).getSecond(), "test",
 							new File("test.jar")).revision;
-			assertThat(rev).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
+			assertThat(rev).withFailMessage("Wrong commit found in " + archiveName)
+					.isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
 		}
 	}
 

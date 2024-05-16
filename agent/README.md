@@ -51,8 +51,9 @@ The following options are available:
 - `out` (optional): the path to a writable directory where the generated coverage XML files will be stored. (For details
   see path format section below). Defaults to the subdirectory `coverage` inside the agent's installation directory.
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
-  which are separated by line breaks. The file may also contain comments starting with `#`. (For details see path format
-  section below)
+  which are separated by line breaks. The file may also contain comments starting with `#`. For details see path format
+  section below.
+  Alternatively you can also set the `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable to that value.
 - `config-id` (optional): a profiler configuration ID as defined in Teamscale. This allows to centrally manage the 
   profiler configuration in Teamscale's UI (under Project Configuration > Profilers since Teamscale 9.4).
   Alternatively you can also set the `TEAMSCALE_JAVA_PROFILER_CONFIG_ID` environment variable to that value.
@@ -185,6 +186,8 @@ directories, you can get the commit info via
   - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
   - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
   - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
+  
+  Example `curl` command to set the partition: `curl --fail -X PUT -d "Manual Tests" -H "Content-Type: text/plain" http://PROFILERURL:PORT/partition`
 - `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon
   separated list of applications. Each application is specified as a fully qualified classname (referred to as marker
   class) and a Teamscale project alias or ID separated by a colon. The marker class must be guaranteed to be executed
