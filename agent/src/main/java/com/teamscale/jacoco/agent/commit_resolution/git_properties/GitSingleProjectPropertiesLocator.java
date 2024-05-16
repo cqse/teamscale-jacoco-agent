@@ -17,12 +17,6 @@ import java.util.concurrent.Executors;
  */
 public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocator {
 
-	/** The git.properties key that holds the commit time. */
-	public static final String GIT_PROPERTIES_GIT_COMMIT_TIME = "git.commit.time";
-
-	/** The git.properties key that holds the commit branch. */
-	public static final String GIT_PROPERTIES_GIT_BRANCH = "git.branch";
-
 	private final Logger logger = LoggingUtils.getLogger(GitSingleProjectPropertiesLocator.class);
 	private final Executor executor;
 	private T foundData = null;

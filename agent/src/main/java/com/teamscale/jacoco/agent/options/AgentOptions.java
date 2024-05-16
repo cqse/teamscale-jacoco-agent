@@ -476,7 +476,7 @@ public class AgentOptions {
 			return new TeamscaleUploader(teamscaleServer);
 		}
 
-		DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
+		DelayedUploader<ProjectAndCommit> uploader = createDelayedSingleProjectTeamscaleUploader();
 
 		if (gitPropertiesJar != null) {
 			logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
@@ -516,21 +516,21 @@ public class AgentOptions {
 		return uploader;
 	}
 
-	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectRevision> uploader,
+	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectAndCommit> uploader,
 												   File gitPropertiesJar) {
-		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
+		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
-	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectRevision> uploader,
+	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectAndCommit> uploader,
 													Instrumentation instrumentation) {
-		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
+		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 	}
 
-	private DelayedUploader<ProjectRevision> createDelayedSingleProjectTeamscaleUploader() {
+	private DelayedUploader<ProjectAndCommit> createDelayedSingleProjectTeamscaleUploader() {
 		return new DelayedUploader<>(
 				projectRevision -> {
 					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project
@@ -540,7 +540,7 @@ public class AgentOptions {
 										" Teamscale project '{}' specified in the agent configuration.",
 								teamscaleServer.project, projectRevision.getProject(), teamscaleServer.project);
 					}
-					teamscaleServer.revision = projectRevision.getRevision();
+					teamscaleServer.revision = projectRevision.getCommitInfo().revision; // TODO
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 	}

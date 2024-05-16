@@ -26,8 +26,8 @@ public class GitPropertiesLocatorTest {
 					.findGitPropertiesInArchive(jarInputStream, archiveName, true);
 			assertThat(commits.size()).isEqualTo(1);
 			String rev = GitPropertiesLocatorUtils
-					.getGitCommitPropertyValue(commits.get(0).getSecond(), "test",
-							new File("test.jar"));
+					.getCommitInfoFromGitProperties(commits.get(0).getSecond(), "test",
+							new File("test.jar")).revision;
 			assertThat(rev).isEqualTo("72c7b3f7e6c4802414283cdf7622e6127f3f8976");
 		}
 	}
@@ -42,9 +42,9 @@ public class GitPropertiesLocatorTest {
 				true, true);
 		assertThat(commits.size()).isEqualTo(2); // First git.properties in the root war, 2nd in the nested Jar
 		String rev = GitPropertiesLocatorUtils
-				.getGitCommitPropertyValue(commits.get(1).getSecond(),
+				.getCommitInfoFromGitProperties(commits.get(1).getSecond(),
 						"test",
-						new File("test.jar"));
+						new File("test.jar")).revision;
 		assertThat(rev).isEqualTo("5b3b2d44987be38f930fe57128274e317316423d");
 	}
 
@@ -69,7 +69,67 @@ public class GitPropertiesLocatorTest {
 		gitProperties.put("git.commit.time", "123ab");
 		gitProperties.put("git.branch", "master");
 		assertThatThrownBy(
-				() -> GitPropertiesLocatorUtils.getGitCommitPropertyValue(gitProperties, "test", new File("test.jar")))
+				() -> GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(gitProperties, "test",
+						new File("test.jar")))
 				.isInstanceOf(InvalidGitPropertiesException.class);
 	}
+
+	@Test
+	public void testReadingTeamscaleTimestampFromProperties() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String branchName = "myBranch";
+		String timestamp = "42";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
+				branchName + ":" + timestamp);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.commit.timestamp).isEqualTo(timestamp);
+		assertThat(commitInfo.commit.branchName).isEqualTo(branchName);
+	}
+
+	@Test
+	public void testTeamscaleTimestampIsOverwritingCommitBranchAndTime() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String teamscaleTimestampBranch = "myBranch1";
+		String teamscaleTimestampTime = "42";
+		String gitCommitBranch = "myBranch2";
+		String gitCommitTime = "2024-05-13T16:42:03+02:00";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
+				teamscaleTimestampBranch + ":" + teamscaleTimestampTime);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, gitCommitBranch);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, gitCommitTime);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.commit.timestamp).isEqualTo(teamscaleTimestampTime);
+		assertThat(commitInfo.commit.branchName).isEqualTo(teamscaleTimestampBranch);
+	}
+
+	@Test
+	public void testCommitBranchAndTimeIsUsedIfNoTeamscaleTimestampIsGiven() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String gitCommitBranch = "myBranch2";
+		String gitCommitTime = "2024-05-13T16:42:03+02:00";
+		String epochTimestamp = "1715611323000";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, gitCommitBranch);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, gitCommitTime);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.commit.timestamp).isEqualTo(epochTimestamp);
+		assertThat(commitInfo.commit.branchName).isEqualTo(gitCommitBranch);
+	}
+
+	@Test
+	public void testTeamscaleTimestampCanContainLocalTime() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String branchName = "myBranch";
+		String timestamp = "2024-05-13T16:42:03+02:00";
+		String epochTimestamp = "1715611323000";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
+				branchName + ":" + timestamp);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.commit.timestamp).isEqualTo(epochTimestamp);
+		assertThat(commitInfo.commit.branchName).isEqualTo(branchName);
+	}
+
 }

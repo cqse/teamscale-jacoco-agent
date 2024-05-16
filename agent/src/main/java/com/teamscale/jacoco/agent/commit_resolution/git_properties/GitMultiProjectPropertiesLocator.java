@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import com.teamscale.jacoco.agent.options.ProjectRevision;
+import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
@@ -52,11 +52,11 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	private void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching file {} for multiple git.properties", file.toString());
 		try {
-			List<ProjectRevision> projectRevisions = GitPropertiesLocatorUtils.getProjectRevisionsFromGitProperties(
+			List<ProjectAndCommit> projectAndCommits = GitPropertiesLocatorUtils.getProjectRevisionsFromGitProperties(
 					file,
 					isJarFile,
 					recursiveSearch);
-			if (projectRevisions.isEmpty()) {
+			if (projectAndCommits.isEmpty()) {
 				logger.debug("No git.properties file found in {}", file);
 				return;
 			}
@@ -65,8 +65,8 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 			// Therefore, we expect to find both the project (teamscale.project) and the revision
 			// (git.commit.id) in the git.properties file.
 
-			for (ProjectRevision projectRevision : projectRevisions) {
-				if (projectRevision.getProject() == null || projectRevision.getRevision() == null) {
+			for (ProjectAndCommit projectAndCommit : projectAndCommits) {
+				if (projectAndCommit.getProject() == null || projectAndCommit.getCommitInfo() == null) {
 					logger.error(
 							"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
 									" Teamscale project (teamscale.project) property, or does not specify the commit SHA (git.commit.id)." +
@@ -74,9 +74,9 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 							file);
 					return;
 				}
-				uploader.setTeamscaleProjectForRevision(projectRevision);
+				uploader.setTeamscaleProjectForRevision(projectAndCommit);
 				logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
-						projectRevision.getProject(), projectRevision.getRevision());
+						projectAndCommit.getProject(), projectAndCommit.getCommitInfo());
 			}
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", file, e);

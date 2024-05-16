@@ -1,9 +1,8 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.options.ProjectRevision;
-import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.DelayedMultiUploaderBase;
+import com.teamscale.jacoco.agent.upload.IUploader;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,8 +20,9 @@ public class DelayedTeamscaleMultiProjectUploader extends DelayedMultiUploaderBa
 	}
 
 	/** Sets the project and revision detected for the Teamscale project. */
-	public void setTeamscaleProjectForRevision(ProjectRevision projectRevision) {
-		IUploader uploader = uploaderFactory.apply(projectRevision.getProject(), projectRevision.getRevision());
+	public void setTeamscaleProjectForRevision(ProjectAndCommit projectAndCommit) {
+		IUploader uploader = uploaderFactory.apply(projectAndCommit.getProject(),
+				projectAndCommit.getCommitInfo().revision); // TODO
 		teamscaleUploaders.add(uploader);
 	}
 
