@@ -2,8 +2,8 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
-
 import okhttp3.HttpUrl;
 
 /**
@@ -16,8 +16,8 @@ public class TestAgentOptionsBuilder {
 	private final TeamscaleServer teamscaleServer = new TeamscaleServer();
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain AgentOptions#httpServerPort HTTP server port}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain AgentOptions#httpServerPort HTTP server port}.
 	 */
 	public TestAgentOptionsBuilder withHttpServerPort(Integer httpServerPort) {
 		this.httpServerPort = httpServerPort;
@@ -25,9 +25,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#partition
-	 * Teamscale partition}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#partition Teamscale partition}.
 	 */
 	public TestAgentOptionsBuilder withTeamscalePartition(String teamscalePartition) {
 		this.teamscaleServer.partition = teamscalePartition;
@@ -35,9 +34,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#message Teamscale
-	 * message}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#message Teamscale message}.
 	 */
 	public TestAgentOptionsBuilder withTeamscaleMessage(String teamscaleMessage) {
 		this.teamscaleServer.setMessage(teamscaleMessage);
@@ -45,9 +43,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#project Teamscale
-	 * project}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#project Teamscale project}.
 	 */
 	public TestAgentOptionsBuilder withTeamscaleProject(String project) {
 		this.teamscaleServer.project = project;
@@ -55,9 +52,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#url Teamscale
-	 * url}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#url Teamscale url}.
 	 */
 	public TestAgentOptionsBuilder withTeamscaleUrl(String url) {
 		this.teamscaleServer.url = HttpUrl.parse(url);
@@ -65,9 +61,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#userName Teamscale
-	 * username}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#userName Teamscale username}.
 	 */
 	public TestAgentOptionsBuilder withTeamscaleUser(String user) {
 		this.teamscaleServer.userName = user;
@@ -75,9 +70,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#userAccessToken
-	 * Teamscale access token}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#userAccessToken Teamscale access token}.
 	 */
 	public TestAgentOptionsBuilder withTeamscaleAccessToken(String accessToken) {
 		this.teamscaleServer.userAccessToken = accessToken;
@@ -85,9 +79,8 @@ public class TestAgentOptionsBuilder {
 	}
 
 	/**
-	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with
-	 * the given {@linkplain com.teamscale.client.TeamscaleServer#revision Teamscale
-	 * revision}.
+	 * Ensures that the {@link AgentOptions} are {@linkplain #create() built} with the given
+	 * {@linkplain com.teamscale.client.TeamscaleServer#revision Teamscale revision}.
 	 */
 	public TestAgentOptionsBuilder withTeamscaleRevision(String revision) {
 		this.teamscaleServer.revision = revision;
@@ -101,7 +94,7 @@ public class TestAgentOptionsBuilder {
 		artifactoryConfig.apiKey = apiKey;
 		artifactoryConfig.partition = partition;
 		artifactoryConfig.url = HttpUrl.parse(url);
-		artifactoryConfig.commitInfo = new ArtifactoryConfig.CommitInfo("fake_revision",
+		artifactoryConfig.commitInfo = new CommitInfo("fake_revision",
 				CommitDescriptor.parse("somebranch:0"));
 		return this;
 	}

@@ -11,6 +11,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitMultiProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
@@ -559,13 +560,13 @@ public class AgentOptions {
 	}
 
 	private IUploader createDelayedArtifactoryUploader(Instrumentation instrumentation) {
-		DelayedUploader<ArtifactoryConfig.CommitInfo> uploader = new DelayedUploader<>(
+		DelayedUploader<CommitInfo> uploader = new DelayedUploader<>(
 				commitInfo -> {
 					artifactoryConfig.commitInfo = commitInfo;
 					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles,
 							getReportFormat());
 				}, outputDirectory);
-		GitSingleProjectPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
+		GitSingleProjectPropertiesLocator<CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
 				uploader,
 				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
 						file, isJarFile, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),

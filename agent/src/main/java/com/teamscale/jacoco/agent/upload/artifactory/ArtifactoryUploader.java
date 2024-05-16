@@ -1,9 +1,20 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
-import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
+import com.google.common.base.Strings;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.EReportFormat;
+import com.teamscale.client.HttpUtils;
+import com.teamscale.client.StringUtils;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
+import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
+import com.teamscale.jacoco.agent.upload.IUploadRetry;
+import com.teamscale.report.jacoco.CoverageFile;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.ResponseBody;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import retrofit2.Response;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -12,22 +23,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-
-import com.google.common.base.Strings;
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.EReportFormat;
-import com.teamscale.client.HttpUtils;
-import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.upload.HttpZipUploaderBase;
-import com.teamscale.jacoco.agent.upload.IUploadRetry;
-import com.teamscale.report.jacoco.CoverageFile;
-
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
 
 /**
  * Uploads XMLs to Artifactory.
@@ -35,9 +34,8 @@ import retrofit2.Response;
 public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadApi> implements IUploadRetry {
 
 	/**
-	 * Header that can be used as alternative to basic authentication to
-	 * authenticate requests against artifactory. For details check
-	 * https://www.jfrog.com/confluence/display/JFROG/Artifactory+REST+API
+	 * Header that can be used as alternative to basic authentication to authenticate requests against artifactory. For
+	 * details check https://www.jfrog.com/confluence/display/JFROG/Artifactory+REST+API
 	 */
 	public static final String ARTIFACTORY_API_HEADER = "X-JFrog-Art-Api";
 	private final ArtifactoryConfig artifactoryConfig;
@@ -46,7 +44,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 
 	/** Constructor. */
 	public ArtifactoryUploader(ArtifactoryConfig config, List<Path> additionalMetaDataFiles,
-			EReportFormat reportFormat) {
+							   EReportFormat reportFormat) {
 		super(config.url, additionalMetaDataFiles, IArtifactoryUploadApi.class);
 		this.artifactoryConfig = config;
 		this.coverageFormat = reportFormat.name().toLowerCase();
@@ -79,7 +77,7 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		config.pathSuffix = artifactoryConfig.pathSuffix;
 		String revision = reuploadProperties.getProperty(REVISION.name());
 		String commitString = reuploadProperties.getProperty(COMMIT.name());
-		config.commitInfo = new ArtifactoryConfig.CommitInfo(revision, CommitDescriptor.parse(commitString));
+		config.commitInfo = new CommitInfo(revision, CommitDescriptor.parse(commitString));
 		config.gitPropertiesCommitTimeFormat = artifactoryConfig.gitPropertiesCommitTimeFormat;
 		config.apiKey = artifactoryConfig.apiKey;
 		config.partition = Strings.emptyToNull(reuploadProperties.getProperty(PARTITION.name()));
