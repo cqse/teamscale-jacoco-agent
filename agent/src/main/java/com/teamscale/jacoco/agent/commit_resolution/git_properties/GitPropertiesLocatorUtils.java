@@ -412,7 +412,7 @@ public class GitPropertiesLocatorUtils {
 				return new CommitDescriptor(branch, timestamp);
 			}
 
-			long epochTimestamp = 0;
+			long epochTimestamp;
 			try {
 				epochTimestamp = ZonedDateTime.parse(timestamp, dateTimeFormatter).toInstant().toEpochMilli();
 			} catch (DateTimeParseException e) {
@@ -436,7 +436,7 @@ public class GitPropertiesLocatorUtils {
 		String gitBranch = gitProperties.getProperty(GIT_PROPERTIES_GIT_BRANCH);
 		String gitTime = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_TIME);
 		if (!StringUtils.isEmpty(gitBranch) && !StringUtils.isEmpty(gitTime)) {
-			long gitTimestamp = 0;
+			long gitTimestamp;
 			try {
 				gitTimestamp = ZonedDateTime.parse(gitTime, dateTimeFormatter).toInstant().toEpochMilli();
 			} catch (DateTimeParseException e) {
