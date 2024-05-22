@@ -89,11 +89,11 @@ Check your applications console output for error messages.
 
 #### Testwise coverage
 
-If you want to collect testwise coverage, please have a look below in the [Testwise mode section](####Testwise-coverage-modes).
+If you want to collect testwise coverage, please have a look below in the [Testwise mode section](#testwise-coverage-modes).
 
 #### Path format
 
-All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant
+All paths supplied to the agent can be absolute or relative to the working directory. Furthermore, paths may contain ant
 patterns with `*`, `**` and `?`.
 
 ### Options for normal mode (do not apply to testwise mode)
