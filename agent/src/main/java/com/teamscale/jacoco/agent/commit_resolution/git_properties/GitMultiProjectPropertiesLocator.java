@@ -35,7 +35,7 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	}
 
 	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, Executor executor,
-											boolean recursiveSearch) {
+			boolean recursiveSearch) {
 		this.uploader = uploader;
 		this.executor = executor;
 		this.recursiveSearch = recursiveSearch;
@@ -67,12 +67,13 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 
 			for (ProjectAndCommit projectAndCommit : projectAndCommits) {
 				if (projectAndCommit.getProject() == null || projectAndCommit.getCommitInfo() == null) {
-					logger.error(
+					logger.debug(
 							"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
-									" Teamscale project (teamscale.project) property, or does not specify the commit SHA (git.commit.id)." +
-									" Please note that both of these properties are required in order to allow multi-project upload to Teamscale.",
+									" Teamscale project (teamscale.project) property, or does not specify the commit " +
+									"(git.commit.id, git.commit.branch + git.commit.time, or teamscale.timestamp) or ." +
+									" Will skip this git.properties file and try to continue with the other ones that were found during discovery.",
 							file);
-					return;
+					continue;
 				}
 				uploader.setTeamscaleProjectForRevision(projectAndCommit);
 				logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
