@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.timestamp` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscaletimestamp))
 
 # 33.2.0
 - [feature] _agent_: Add support for git.properties in Spring Boot 3.2

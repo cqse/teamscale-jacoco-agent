@@ -157,7 +157,9 @@ directories, you can get the commit info via
 - `git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
-  This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
+  This file must contain either 
+  - the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`) or
+  - the property `teamscale.timestamp` in the format `branch:timestamp`. In this case, the timestamp can either be an epoch timestamp or in one of the two formats above. 
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
@@ -564,6 +566,109 @@ jar {
 ```sh
 ./gradlew jar -Dbranch=master
 ```
+
+## Overwriting the git commit inside `git.properties` files with `teamscale.timestamp`
+There are scenarios, in which you need to use a different branch and time for the upload than provided with `git.commit.id` or `git.branch` and `git.commit.time` in a `git.properties` file.
+This can be achieved by providing a `teamscale.timestamp` property inside the `git.properties` file.
+This property must be provided in the format `branch:timestamp` and the timestamp within that either as epoch timestamp in milliseconds or in one of these two formats: `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`.
+
+The following explains, how to use the build timestamp instead of the commit timestamp for Maven and Gradle. Thus, we write `teamscale.timestamp=<branch>:<build-times>` into the `git.properties` file.
+
+### Maven
+* Set up the git-commit-id maven plugin (see also [docs](https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/using-the-plugin.md#basic-configuration--basic-usage-of-the-plugin)):
+    ```xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>8.0.2</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    ```
+
+* Set up custom entries in the `git.properties` file (see also [advanced docs](https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering)):
+  * Add a file called `git.properties` in the resources folder (usually `java/main/ressources`) of your application. The following one contains all default properties + the `teamscale.project` and `teamscale.timestamp` properties.
+    ```properties
+    git.tags=${git.tags}
+    git.branch=${git.branch}
+    git.local.branch.ahead=${git.local.branch.ahead}
+    git.local.branch.behind=${git.local.branch.behind}
+    git.dirty=${git.dirty}
+    git.remote.origin.url=${git.remote.origin.url}
+    git.commit.id=${git.commit.id.full}
+    git.commit.id.abbrev=${git.commit.id.abbrev}
+    git.commit.id.describe=${git.commit.id.describe}
+    git.commit.id.describe-short=${git.commit.id.describe-short}
+    git.commit.user.name=${git.commit.user.name}
+    git.commit.user.email=${git.commit.user.email}
+    git.commit.message.full=${git.commit.message.full}
+    git.commit.message.short=${git.commit.message.short}
+    git.commit.time=${git.commit.time}
+    git.closest.tag.name=${git.closest.tag.name}
+    git.closest.tag.commit.count=${git.closest.tag.commit.count}
+    git.build.user.name=${git.build.user.name}
+    git.build.user.email=${git.build.user.email}
+    git.build.time=${git.build.time}
+    git.build.host=${git.build.host}
+    git.build.version=${git.build.version}
+    git.build.number=${git.build.number}
+    git.build.number.unique=${git.build.number.unique}
+    teamscale.project=my-teamscale-project-id
+    teamscale.timestamp=${git.branch}:${git.build.time}
+    # alternatively via environment variables
+    # teamscale.timestamp=${@env.BRANCH}:${env.BUILD_TIME}
+    ```
+  * Add the following to your pom file so the commit id plugin picks up your custom `git.properties` file:
+    ```xml
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+    ```
+
+### Gradle
+* Set up the gradle commit id plugin by adding the following to your `build.gradle` file (see also [docs](https://github.com/n0mer/gradle-git-properties?tab=readme-ov-file#usage)):
+  ```groovy
+  plugins {
+    id "com.gorylenko.gradle-git-properties" version "2.4.2"
+  }
+  ```
+* Set up custom entries in the `git.properties` file (see [docs -> custom properties](https://github.com/n0mer/gradle-git-properties?tab=readme-ov-file#usage)):
+  ```groovy
+  gitProperties {
+    customProperty "teamscale.project", "my-teamscale-project-id"
+    customProperty "teamscale.timestamp", {
+        // If you have multiple git.properties, you can also add a custom project property at the start of your build. 
+        // See https://stackoverflow.com/a/7029021
+        "${it.branch.current().getName()}:${new Date().toInstant().toEpochMilli()}"
+        // alternatively via environment variables
+        //"${System.getenv("BRANCH")}:${System.getenv("BUILD_TIME")}"
+
+    }
+  }
+  ```
 
 ## Multi-project upload
 
