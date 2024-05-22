@@ -129,7 +129,7 @@ patterns with `*`, `**` and `?`.
   the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit
-  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `git-properties-jar`.
 
   If **Git** is your VCS, you can get the commit info via
 
@@ -211,7 +211,7 @@ directories, you can get the commit info via
   the default path and the uploaded artifact.
 - `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
   If not specified, Git commit information is extracted from the first found `git.properties` file.
-  See `teamscale-git-properties-jar` for details.
+  See `git-properties-jar` for details.
 - `artifactory-git-properties-commit-date-format` (optional):
   The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 
@@ -306,7 +306,7 @@ The agent's REST API has the following endpoints:
 - `[GET] /revision` Returns the source control revision or commit the system under test was build from. This is
   required to upload the coverage to Teamscale at the correct point in time. The information can be supplied using
   any of the options `teamscale-revision`, `teamscale-commit`, `teamscale-commit-manifest-jar`, or
-  `teamscale-git-properties-jar` above. Please note that git.properties auto-discovery is not yet supported for
+  `git-properties-jar` above. Please note that git.properties auto-discovery is not yet supported for
   testwise mode.
 
   The response is in json format:
@@ -507,7 +507,7 @@ Please ask CQSE for special tooling that is available to instrument Java Web Sta
 ## Store Commit in Jar file
 
 If you are using Git, you can use either a Maven or Gradle plugin to store the commit
-in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
+in any Jar/War/Ear/... file and tell the agent to read it via `git-properties-jar`.
 
 Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits,
 especially when tests are executed independently of the build. The following assumes that we are using a Git
@@ -691,7 +691,7 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 
 ## Error: "The application was shut down before a commit could be found", despite including a git.properties file in your jar/war/...
 When using application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which results in an "The application was shut down before a commit could be found" error.
-To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
+To resolve the problem, try specifying `git-properties-jar` explicitly.
 
 
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306
