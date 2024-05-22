@@ -12,6 +12,8 @@ public class CommitInfo {
 	/** The commit descriptor. */
 	public CommitDescriptor commit;
 
+	public boolean preferCommitDescriptorOverRevision = false;
+
 	/** Constructor. */
 	public CommitInfo(String revision, CommitDescriptor commit) {
 		this.revision = revision;

@@ -496,8 +496,12 @@ public class AgentOptions {
 	private DelayedTeamscaleMultiProjectUploader createTeamscaleMultiProjectUploader(
 			Instrumentation instrumentation) {
 		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
-				(project, revision) ->
-						new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+				(project, commitInfo) -> {
+					if (commitInfo.preferCommitDescriptorOverRevision) {
+						return new TeamscaleUploader(teamscaleServer.withProjectAndCommit(project, commitInfo.commit));
+					}
+					return new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, commitInfo.revision));
+				});
 
 		if (gitPropertiesJar != null) {
 			logger.info(
@@ -517,14 +521,14 @@ public class AgentOptions {
 	}
 
 	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectAndCommit> uploader,
-												   File gitPropertiesJar) {
+			File gitPropertiesJar) {
 		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
 	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectAndCommit> uploader,
-													Instrumentation instrumentation) {
+			Instrumentation instrumentation) {
 		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
@@ -532,28 +536,32 @@ public class AgentOptions {
 
 	private DelayedUploader<ProjectAndCommit> createDelayedSingleProjectTeamscaleUploader() {
 		return new DelayedUploader<>(
-				projectRevision -> {
-					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project
-							.equals(projectRevision.getProject())) {
+				projectAndCommit -> {
+					if (!StringUtils.isEmpty(projectAndCommit.getProject()) && !teamscaleServer.project
+							.equals(projectAndCommit.getProject())) {
 						logger.warn(
 								"Teamscale project '{}' specified in the agent configuration is not the same as the Teamscale project '{}' specified in git.properties file(s). Proceeding to upload to the" +
 										" Teamscale project '{}' specified in the agent configuration.",
-								teamscaleServer.project, projectRevision.getProject(), teamscaleServer.project);
+								teamscaleServer.project, projectAndCommit.getProject(), teamscaleServer.project);
 					}
-					teamscaleServer.revision = projectRevision.getCommitInfo().revision; // TODO
+					if (projectAndCommit.getCommitInfo().preferCommitDescriptorOverRevision) {
+						teamscaleServer.commit = projectAndCommit.getCommitInfo().commit;
+					} else {
+						teamscaleServer.revision = projectAndCommit.getCommitInfo().revision;
+					}
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 	}
 
 	private void startMultiGitPropertiesFileSearchInJarFile(DelayedTeamscaleMultiProjectUploader uploader,
-															File gitPropertiesJar) {
+			File gitPropertiesJar) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
 				this.searchGitPropertiesRecursively);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
 	private void registerMultiGitPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader,
-												   Instrumentation instrumentation) {
+			Instrumentation instrumentation) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
 				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));

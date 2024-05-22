@@ -72,21 +72,21 @@ public class GitPropertiesLocatorUtils {
 	public static final String JAR_FILE_ENDING = ".jar";
 
 	/**
-	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
-	 * git.properties file can be found, returns null.
+	 * Reads the git SHA1 and branch and timestamp from the given jar file's git.properties and builds a commit
+	 * descriptor out of it. If no git.properties file can be found, returns null.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static List<String> getRevisionsFromGitProperties(
+	public static List<CommitInfo> getCommitInfoFromGitProperties(
 			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
 				recursiveSearch);
-		List<String> result = new ArrayList<>();
+		List<CommitInfo> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			String revision = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
-					entryWithProperties.getFirst(), file).revision; // TODO
-			result.add(revision);
+			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
+					entryWithProperties.getFirst(), file);
+			result.add(commitInfo);
 		}
 		return result;
 	}
@@ -179,8 +179,8 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/**
-	 * Reads the 'teamscale.project' property values and the git SHA1s from all git.properties files contained in the
-	 * provided folder or archive file.
+	 * Reads the 'teamscale.project' property values and the git SHA1s or branch + timestamp from all git.properties
+	 * files contained in the provided folder or archive file.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
@@ -191,12 +191,11 @@ public class GitPropertiesLocatorUtils {
 				recursiveSearch);
 		List<ProjectAndCommit> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			String revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
-			if (StringUtils.isEmpty(revision)) {
-				revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID_FULL);
-			}
+			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
+					entryWithProperties.getFirst(), file);
 			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
-			if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
+			if (StringUtils.isEmpty(project)) {
+				// commitInfo is not empty, corresponding checks are implemented in getCommitInfoForGitProperties
 				throw new InvalidGitPropertiesException(
 						"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "'/'" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
 								"' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
@@ -204,7 +203,7 @@ public class GitPropertiesLocatorUtils {
 								.toString()
 				);
 			}
-			result.add(new ProjectAndCommit(project, new CommitInfo(revision, null))); // TODO
+			result.add(new ProjectAndCommit(project, commitInfo));
 		}
 		return result;
 	}
@@ -365,6 +364,7 @@ public class GitPropertiesLocatorUtils {
 			commitDescriptor = new CommitDescriptor(gitBranch, gitTimestamp);
 		}
 
+		boolean preferCommitDescriptorOverRevision = false;
 		String teamscaleTimestampProperty = gitProperties.getProperty(GIT_PROPERTIES_TEAMSCALE_TIMESTAMP);
 		if (!StringUtils.isEmpty(teamscaleTimestampProperty)) {
 			String[] split = teamscaleTimestampProperty.split(":");
@@ -396,6 +396,7 @@ public class GitPropertiesLocatorUtils {
 				}
 
 				commitDescriptor = new CommitDescriptor(branch, epochTimestamp);
+				preferCommitDescriptorOverRevision = true;
 			}
 		}
 
@@ -407,6 +408,8 @@ public class GitPropertiesLocatorUtils {
 							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties);
 		}
 
-		return new CommitInfo(revision, commitDescriptor);
+		CommitInfo commitInfo = new CommitInfo(revision, commitDescriptor);
+		commitInfo.preferCommitDescriptorOverRevision = preferCommitDescriptorOverRevision;
+		return commitInfo;
 	}
 }

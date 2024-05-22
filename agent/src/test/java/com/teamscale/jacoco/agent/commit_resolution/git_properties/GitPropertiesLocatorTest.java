@@ -140,8 +140,8 @@ public class GitPropertiesLocatorTest {
 		String timestamp = "2024-05-13T16:42:03+02:00";
 		String revision = "ab1337cd";
 		String epochTimestamp = "1715611323000";
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, branchName);
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, timestamp);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
+				branchName + ":" + timestamp);
 		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, revision);
 		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
 				"myEntry", new File("myJarFile"));
@@ -150,4 +150,27 @@ public class GitPropertiesLocatorTest {
 		assertThat(commitInfo.revision).isNotEmpty();
 	}
 
+	@Test
+	public void testPreferCommitDescriptorOverRevisionIsSetWhenTeamscaleTimestampIsPresentInGitProperties() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String branchName = "myBranch";
+		String timestamp = "2024-05-13T16:42:03+02:00";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
+				branchName + ":" + timestamp);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.preferCommitDescriptorOverRevision).isTrue();
+	}
+
+	@Test
+	public void testPreferCommitDescriptorOverRevisionIsNotSetWhenTeamscaleTimestampIsNotPresentInGitProperties() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String branchName = "myBranch";
+		String timestamp = "2024-05-13T16:42:03+02:00";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, branchName);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, timestamp);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.preferCommitDescriptorOverRevision).isFalse();
+	}
 }

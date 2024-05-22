@@ -219,8 +219,8 @@ public class ArtifactoryConfig {
 			CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties, entry, file,
 					gitPropertiesCommitTimeFormat);
 			result.add(commitInfo);
-
 		}
+
 		return result;
 	}
 
