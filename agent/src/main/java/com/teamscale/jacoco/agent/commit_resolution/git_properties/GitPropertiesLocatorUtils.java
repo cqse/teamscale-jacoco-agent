@@ -203,8 +203,7 @@ public class GitPropertiesLocatorUtils {
 			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
 					entryWithProperties.getFirst(), file);
 			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
-			if (StringUtils.isEmpty(project)) {
-				// commitInfo is not empty, corresponding checks are implemented in getCommitInfoForGitProperties
+			if (commitInfo.isEmpty() && StringUtils.isEmpty(project)) {
 				throw new InvalidGitPropertiesException(
 						"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "'/'" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
 								"' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +

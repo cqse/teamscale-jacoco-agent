@@ -4,6 +4,7 @@ import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -49,7 +50,8 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 		executor.execute(() -> searchFile(file, isJarFile));
 	}
 
-	private void searchFile(File file, boolean isJarFile) {
+	@VisibleForTesting
+	void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching file {} for multiple git.properties", file.toString());
 		try {
 			List<ProjectAndCommit> projectAndCommits = GitPropertiesLocatorUtils.getProjectRevisionsFromGitProperties(

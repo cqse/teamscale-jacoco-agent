@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.StringUtils;
 
 import java.util.Objects;
 
@@ -45,5 +46,12 @@ public class CommitInfo {
 	@Override
 	public int hashCode() {
 		return Objects.hash(revision, commit);
+	}
+
+	/**
+	 * Returns true if one of or both, revision and commit, are set
+	 */
+	public boolean isEmpty() {
+		return StringUtils.isEmpty(revision) && commit == null;
 	}
 }
