@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
-import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
@@ -13,7 +12,6 @@ import org.conqat.lib.commons.collections.Pair;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +121,7 @@ public class ArtifactoryConfig {
 	 * @return true if it has successfully process the given option.
 	 */
 	public static boolean handleArtifactoryOptions(ArtifactoryConfig options, FilePatternResolver filePatternResolver,
-												   String key, String value) throws AgentOptionParseException {
+			String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case ARTIFACTORY_URL_OPTION:
 				options.url = AgentOptionsParser.parseUrl(key, value);
@@ -181,8 +179,8 @@ public class ArtifactoryConfig {
 
 	/** Parses the commit information form a git.properties file. */
 	public static CommitInfo parseGitProperties(FilePatternResolver filePatternResolver,
-												DateTimeFormatter gitPropertiesCommitTimeFormat, String optionName,
-												String value)
+			DateTimeFormatter gitPropertiesCommitTimeFormat, String optionName,
+			String value)
 			throws AgentOptionParseException {
 		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
 		try {
@@ -207,8 +205,8 @@ public class ArtifactoryConfig {
 
 	/** Parses the commit information from a git.properties file. */
 	public static List<CommitInfo> parseGitProperties(File file, boolean isJarFile,
-													  DateTimeFormatter gitPropertiesCommitTimeFormat,
-													  boolean recursiveSearch)
+			DateTimeFormatter gitPropertiesCommitTimeFormat,
+			boolean recursiveSearch)
 			throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(file,
 				isJarFile, recursiveSearch);
@@ -218,14 +216,9 @@ public class ArtifactoryConfig {
 			String entry = entryWithProperties.getFirst();
 			Properties properties = entryWithProperties.getSecond();
 
-			String revision = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties, entry,
-					file).revision; //TODO
-			String branchName = getGitPropertiesValue(properties,
-					GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, entry, file);
-			long timestamp = ZonedDateTime.parse(getGitPropertiesValue(properties,
-							GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, entry, file),
-					gitPropertiesCommitTimeFormat).toInstant().toEpochMilli();
-			result.add(new CommitInfo(revision, new CommitDescriptor(branchName, timestamp)));
+			CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties, entry, file,
+					gitPropertiesCommitTimeFormat);
+			result.add(commitInfo);
 
 		}
 		return result;
