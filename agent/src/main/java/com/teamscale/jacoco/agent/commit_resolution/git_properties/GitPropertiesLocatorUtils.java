@@ -51,7 +51,7 @@ public class GitPropertiesLocatorUtils {
 
 	/**
 	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
-	 * href="https://cqse.atlassian.net/browse/TS-38561">...</a>.
+	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
 	 */
 	static final String GIT_PROPERTIES_TEAMSCALE_TIMESTAMP = "teamscale.timestamp";
 
@@ -65,7 +65,16 @@ public class GitPropertiesLocatorUtils {
 	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwea]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);
 
+	/**
+	 * Defined in <a
+	 * href="https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/ac05b16dfdcc2aebfa45ad3af4acf1254accffa3/src/main/java/pl/project13/maven/git/GitCommitIdMojo.java#L522">GitCommitIdMojo</a>
+	 */
 	private static final String GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+
+	/**
+	 * Defined in <a
+	 * href="https://github.com/n0mer/gradle-git-properties/blob/bb1c3353bb570495644b6c6c75e211296a8354fc/src/main/groovy/com/gorylenko/GitPropertiesPlugin.groovy#L68">GitPropertiesPlugin</a>
+	 */
 	private static final String GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
 	/** File ending of Java archive packages */
@@ -355,7 +364,7 @@ public class GitPropertiesLocatorUtils {
 			long gitTimestamp = 0;
 			try {
 				gitTimestamp = ZonedDateTime.parse(gitTime, dateTimeFormatter).toInstant().toEpochMilli();
-			} catch (Exception e) {
+			} catch (DateTimeParseException e) {
 				throw new InvalidGitPropertiesException(
 						"Could not parse the timestamp in property '" + GIT_PROPERTIES_GIT_COMMIT_TIME + "'." +
 								"\nIn " + entryName + " in " + jarFile + "." +

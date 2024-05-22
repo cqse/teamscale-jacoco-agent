@@ -223,20 +223,4 @@ public class ArtifactoryConfig {
 
 		return result;
 	}
-
-	/**
-	 * Returns a value from a git properties file.
-	 */
-	private static String getGitPropertiesValue(Properties gitProperties, String key, String entryName, File jarFile)
-			throws InvalidGitPropertiesException {
-		String value = gitProperties.getProperty(key);
-		if (StringUtils.isEmpty(value)) {
-			throw new InvalidGitPropertiesException("No entry or empty value for '" + key + "' in " + entryName + " in "
-					+ jarFile + "." + "\nContents of " + GitPropertiesLocatorUtils.GIT_PROPERTIES_FILE_NAME + ":\n"
-					+ gitProperties);
-		}
-
-		return value;
-	}
-
 }

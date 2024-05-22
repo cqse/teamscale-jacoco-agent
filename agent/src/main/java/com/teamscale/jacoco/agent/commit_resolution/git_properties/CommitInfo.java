@@ -12,6 +12,11 @@ public class CommitInfo {
 	/** The commit descriptor. */
 	public CommitDescriptor commit;
 
+	/**
+	 * If the commit property is set via the <code>teamscale.timestamp</code> property in a git.properties file, this
+	 * should be preferred to the revision. For details see <a
+	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
+	 */
 	public boolean preferCommitDescriptorOverRevision = false;
 
 	/** Constructor. */
