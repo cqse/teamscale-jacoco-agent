@@ -41,7 +41,7 @@ public class GitPropertiesLocatorUtils {
 	public static final String GIT_PROPERTIES_GIT_BRANCH = "git.branch";
 
 	/** The git.properties key that holds the commit hash. */
-	private static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
+	static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
 
 	/**
 	 * Alternative git.properties key that might also hold the commit hash, depending on the Maven git-commit-id plugin
@@ -59,7 +59,8 @@ public class GitPropertiesLocatorUtils {
 	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
 
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
-	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:(?:file|nested):(.*?)!.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:(?:file|nested):(.*?)!.*",
+			Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwea]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);
@@ -224,7 +225,7 @@ public class GitPropertiesLocatorUtils {
 	 * Searches for git properties in jar/war/ear/aar files
 	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file,
-																				 boolean recursiveSearch) throws IOException {
+			boolean recursiveSearch) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(Files.newInputStream(file.toPath())))) {
 			return findGitPropertiesInArchive(jarStream, file.getName(), recursiveSearch);

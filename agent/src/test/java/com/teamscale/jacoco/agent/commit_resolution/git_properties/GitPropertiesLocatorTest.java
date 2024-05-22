@@ -133,4 +133,21 @@ public class GitPropertiesLocatorTest {
 		assertThat(commitInfo.commit.branchName).isEqualTo(branchName);
 	}
 
+	@Test
+	public void testRevisionAndTimestampAreBothReadIfPresent() throws InvalidGitPropertiesException {
+		Properties properties = new Properties();
+		String branchName = "myBranch";
+		String timestamp = "2024-05-13T16:42:03+02:00";
+		String revision = "ab1337cd";
+		String epochTimestamp = "1715611323000";
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, branchName);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, timestamp);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, revision);
+		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
+				"myEntry", new File("myJarFile"));
+		assertThat(commitInfo.commit.timestamp).isEqualTo(epochTimestamp);
+		assertThat(commitInfo.commit.branchName).isEqualTo(branchName);
+		assertThat(commitInfo.revision).isNotEmpty();
+	}
+
 }
