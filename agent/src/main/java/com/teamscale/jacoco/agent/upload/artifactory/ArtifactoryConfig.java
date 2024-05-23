@@ -99,15 +99,9 @@ public class ArtifactoryConfig {
 	public CommitInfo commitInfo;
 
 	/**
-	 * We save the original dateTimeFormatter pattern, as it would be lost after creating the formatter otherwise. Can
-	 * be reused when retrying unsuccessful uploads.
-	 */
-	public String dateTimeFormatterPattern = "yyyy-MM-dd'T'HH:mm:ssZ";
-
-	/**
 	 * Related to {@link ArtifactoryConfig#ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION}
 	 */
-	public DateTimeFormatter gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(dateTimeFormatterPattern);
+	public DateTimeFormatter gitPropertiesCommitTimeFormat = null;
 
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} */
 	public String apiKey;
@@ -147,7 +141,6 @@ public class ArtifactoryConfig {
 				return true;
 			case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
 				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
-				options.dateTimeFormatterPattern = value;
 				return true;
 			case ARTIFACTORY_API_KEY_OPTION:
 				options.apiKey = value;

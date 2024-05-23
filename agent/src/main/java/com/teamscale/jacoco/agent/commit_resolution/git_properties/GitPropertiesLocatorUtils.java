@@ -6,7 +6,9 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.conqat.lib.commons.collections.Pair;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,7 +97,7 @@ public class GitPropertiesLocatorUtils {
 		List<CommitInfo> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
-					entryWithProperties.getFirst(), file);
+					entryWithProperties.getFirst(), file, null);
 			result.add(commitInfo);
 		}
 		return result;
@@ -201,7 +204,7 @@ public class GitPropertiesLocatorUtils {
 		List<ProjectAndCommit> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
-					entryWithProperties.getFirst(), file);
+					entryWithProperties.getFirst(), file, null);
 			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
 			if (commitInfo.isEmpty() && StringUtils.isEmpty(project)) {
 				throw new InvalidGitPropertiesException(
@@ -330,23 +333,15 @@ public class GitPropertiesLocatorUtils {
 	 * Returns the CommitInfo (revision & branch + timestmap) from a git properties file. The revision can be either in
 	 * {@link #GIT_PROPERTIES_GIT_COMMIT_ID} or {@link #GIT_PROPERTIES_GIT_COMMIT_ID_FULL}. The branch and timestamp in
 	 * {@link #GIT_PROPERTIES_GIT_BRANCH} + {@link #GIT_PROPERTIES_GIT_COMMIT_TIME} or in
-	 * {@link #GIT_PROPERTIES_TEAMSCALE_TIMESTAMP}
-	 */
-	public static CommitInfo getCommitInfoFromGitProperties(
-			Properties gitProperties, String entryName, File jarFile) throws InvalidGitPropertiesException {
-		return getCommitInfoFromGitProperties(gitProperties, entryName, jarFile, DateTimeFormatter.ofPattern(
-				String.format("[%s][%s]", GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT,
-						GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT)));
-	}
-
-	/**
-	 * Same as {@link #getCommitInfoFromGitProperties(Properties, String, File)} but with the option to provide a
-	 * DateTimeFormatter that is used to parse the times in {@link #GIT_PROPERTIES_GIT_COMMIT_TIME} and
-	 * {@link #GIT_PROPERTIES_TEAMSCALE_TIMESTAMP}
+	 * {@link #GIT_PROPERTIES_TEAMSCALE_TIMESTAMP} By default, times will be parsed with
+	 * {@link #GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT} and {@link #GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT}. An
+	 * additional format can be given with {@code dateTimeFormatter}
 	 */
 	public static CommitInfo getCommitInfoFromGitProperties(
 			Properties gitProperties, String entryName, File jarFile,
-			DateTimeFormatter dateTimeFormatter) throws InvalidGitPropertiesException {
+			@Nullable DateTimeFormatter additionalDateTimeFormatter) throws InvalidGitPropertiesException {
+
+		DateTimeFormatter dateTimeFormatter = createDateTimeFormatter(additionalDateTimeFormatter);
 
 		// Get Revision
 		String revision = getRevisionFromGitProperties(gitProperties);
@@ -380,6 +375,18 @@ public class GitPropertiesLocatorUtils {
 		CommitInfo commitInfo = new CommitInfo(revision, commitDescriptor);
 		commitInfo.preferCommitDescriptorOverRevision = preferCommitDescriptorOverRevision;
 		return commitInfo;
+	}
+
+	private static @NotNull DateTimeFormatter createDateTimeFormatter(
+			@org.jetbrains.annotations.Nullable DateTimeFormatter additionalDateTimeFormatter) {
+		DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern(
+				String.format("[%s][%s]", GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT,
+						GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT));
+		DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder().append(defaultDateTimeFormatter);
+		if (additionalDateTimeFormatter != null) {
+			builder.append(additionalDateTimeFormatter);
+		}
+		return builder.toFormatter();
 	}
 
 	private static String getRevisionFromGitProperties(Properties gitProperties) {
