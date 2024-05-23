@@ -497,7 +497,7 @@ public class AgentOptions {
 			Instrumentation instrumentation) {
 		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
 				(project, commitInfo) -> {
-					if (commitInfo.preferCommitDescriptorOverRevision) {
+					if (commitInfo.preferCommitDescriptorOverRevision || StringUtils.isEmpty(commitInfo.revision)) {
 						return new TeamscaleUploader(teamscaleServer.withProjectAndCommit(project, commitInfo.commit));
 					}
 					return new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, commitInfo.revision));
@@ -544,7 +544,8 @@ public class AgentOptions {
 										" Teamscale project '{}' specified in the agent configuration.",
 								teamscaleServer.project, projectAndCommit.getProject(), teamscaleServer.project);
 					}
-					if (projectAndCommit.getCommitInfo().preferCommitDescriptorOverRevision) {
+					if (projectAndCommit.getCommitInfo().preferCommitDescriptorOverRevision ||
+							StringUtils.isEmpty(projectAndCommit.getCommitInfo().revision)) {
 						teamscaleServer.commit = projectAndCommit.getCommitInfo().commit;
 					} else {
 						teamscaleServer.revision = projectAndCommit.getCommitInfo().revision;

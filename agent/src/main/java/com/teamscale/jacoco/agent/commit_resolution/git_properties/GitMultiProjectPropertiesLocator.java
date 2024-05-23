@@ -72,7 +72,7 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 					logger.debug(
 							"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
 									" Teamscale project (teamscale.project) property, or does not specify the commit " +
-									"(git.commit.id, git.commit.branch + git.commit.time, or teamscale.timestamp) or ." +
+									"(git.commit.id, git.commit.branch + git.commit.time, or teamscale.commit.branch + teamscale.commit.time) or ." +
 									" Will skip this git.properties file and try to continue with the other ones that were found during discovery.",
 							file);
 					continue;

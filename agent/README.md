@@ -158,8 +158,9 @@ directories, you can get the commit info via
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
   This file must contain either 
+  - the one of the properties `git.commit.id` or `git.commit.id.full` with the git SHA1
   - the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`) or
-  - the property `teamscale.timestamp` in the format `branch:timestamp`. In this case, the timestamp can either be an epoch timestamp or in one of the two formats above. 
+  - the properties `teamscale.commit.branch` and `teamscale.commit.time` (either as an epoch timestamp or in one of the two formats above)
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
@@ -567,12 +568,13 @@ jar {
 ./gradlew jar -Dbranch=master
 ```
 
-## Overwriting the git commit inside `git.properties` files with `teamscale.timestamp`
-There are scenarios, in which you need to use a different branch and time for the upload than provided with `git.commit.id` or `git.branch` and `git.commit.time` in a `git.properties` file.
-This can be achieved by providing a `teamscale.timestamp` property inside the `git.properties` file.
-This property must be provided in the format `branch:timestamp` and the timestamp within that either as epoch timestamp in milliseconds or in one of these two formats: `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`.
+## Overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time`
 
-The following explains, how to use the build timestamp instead of the commit timestamp for Maven and Gradle. Thus, we write `teamscale.timestamp=<branch>:<build-times>` into the `git.properties` file.
+There are scenarios, in which you need to use a different branch and time for the upload than provided with `git.commit.id` or `git.branch` and `git.commit.time` in a `git.properties` file.
+This can be achieved by providing the properties `teamscale.commt.branch` and `teamsacle.commit.time` inside the `git.properties` file.
+`teamscale.commit.time` must be provided either as epoch timestamp in milliseconds or in one of these two formats: `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`.
+
+The following explains, how to use the build timestamp instead of the commit timestamp for Maven and Gradle. Thus, we write `teamscale.commit.branch=<branch>` and `teamscale.commit.time=<build-time>` into the `git.properties` file.
 
 ### Maven
 * Set up the git-commit-id maven plugin (see also [docs](https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/using-the-plugin.md#basic-configuration--basic-usage-of-the-plugin)):
@@ -601,7 +603,7 @@ The following explains, how to use the build timestamp instead of the commit tim
     ```
 
 * Set up custom entries in the `git.properties` file (see also [advanced docs](https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering)):
-  * Add a file called `git.properties` in the resources folder (usually `java/main/ressources`) of your application. The following one contains all default properties + the `teamscale.project` and `teamscale.timestamp` properties.
+  * Add a file called `git.properties` in the resources folder (usually `java/main/ressources`) of your application. The following one contains all default properties + the `teamscale.project`, `teamscale.commit.branch` and `teamscale.commit.time` properties.
     ```properties
     git.tags=${git.tags}
     git.branch=${git.branch}
@@ -628,9 +630,11 @@ The following explains, how to use the build timestamp instead of the commit tim
     git.build.number=${git.build.number}
     git.build.number.unique=${git.build.number.unique}
     teamscale.project=my-teamscale-project-id
-    teamscale.timestamp=${git.branch}:${git.build.time}
+    teamscale.commit.branch=${git.branch}
+    teamscale.commit.time=${git.build.time}
     # alternatively via environment variables
-    # teamscale.timestamp=${@env.BRANCH}:${env.BUILD_TIME}
+    # teamscale.commit.branch=${@env.BRANCH}
+    # teamscale.commit.time=${env.BUILD_TIME}
     ```
   * Add the following to your pom file so the commit id plugin picks up your custom `git.properties` file:
     ```xml
@@ -659,13 +663,16 @@ The following explains, how to use the build timestamp instead of the commit tim
   ```groovy
   gitProperties {
     customProperty "teamscale.project", "my-teamscale-project-id"
-    customProperty "teamscale.timestamp", {
-        // If you have multiple git.properties, you can also add a custom project property at the start of your build. 
-        // See https://stackoverflow.com/a/7029021
-        "${it.branch.current().getName()}:${new Date().toInstant().toEpochMilli()}"
-        // alternatively via environment variables
-        //"${System.getenv("BRANCH")}:${System.getenv("BUILD_TIME")}"
-
+    customProperty "teamscale.commit.branch", {
+      // If you have multiple git.properties, you can also add a custom project property at the start of your build. See https://stackoverflow.com/a/7029021
+      "${it.branch.current().getName()}"
+      // alternatively via environment variable
+      // "${System.getenv("BRANCH")}"
+    }
+    customProperty "teamscale.commit.time", {
+      "${new Date().toInstant().toEpochMilli()}"
+      // alternatively via environment variable
+      // "${System.getenv("BUILD_TIME")}"
     }
   }
   ```

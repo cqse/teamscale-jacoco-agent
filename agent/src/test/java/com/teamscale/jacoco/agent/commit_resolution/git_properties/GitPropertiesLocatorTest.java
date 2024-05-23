@@ -81,8 +81,8 @@ public class GitPropertiesLocatorTest {
 		Properties properties = new Properties();
 		String branchName = "myBranch";
 		String timestamp = "42";
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
-				branchName + ":" + timestamp);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH, branchName);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME, timestamp);
 		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
 				"myEntry", new File("myJarFile"), null);
 		assertThat(commitInfo.commit.timestamp).isEqualTo(timestamp);
@@ -96,8 +96,9 @@ public class GitPropertiesLocatorTest {
 		String teamscaleTimestampTime = "42";
 		String gitCommitBranch = "myBranch2";
 		String gitCommitTime = "2024-05-13T16:42:03+02:00";
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
-				teamscaleTimestampBranch + ":" + teamscaleTimestampTime);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH,
+				teamscaleTimestampBranch);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME, teamscaleTimestampTime);
 		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH, gitCommitBranch);
 		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME, gitCommitTime);
 		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
@@ -126,8 +127,8 @@ public class GitPropertiesLocatorTest {
 		String branchName = "myBranch";
 		String timestamp = "2024-05-13T16:42:03+02:00";
 		String epochTimestamp = "1715611323000";
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
-				branchName + ":" + timestamp);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH, branchName);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME, timestamp);
 		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
 				"myEntry", new File("myJarFile"), null);
 		assertThat(commitInfo.commit.timestamp).isEqualTo(epochTimestamp);
@@ -141,8 +142,8 @@ public class GitPropertiesLocatorTest {
 		String timestamp = "2024-05-13T16:42:03+02:00";
 		String revision = "ab1337cd";
 		String epochTimestamp = "1715611323000";
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
-				branchName + ":" + timestamp);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH, branchName);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME, timestamp);
 		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID, revision);
 		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
 				"myEntry", new File("myJarFile"), null);
@@ -156,8 +157,8 @@ public class GitPropertiesLocatorTest {
 		Properties properties = new Properties();
 		String branchName = "myBranch";
 		String timestamp = "2024-05-13T16:42:03+02:00";
-		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_TIMESTAMP,
-				branchName + ":" + timestamp);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH, branchName);
+		properties.setProperty(GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME, timestamp);
 		CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties,
 				"myEntry", new File("myJarFile"), null);
 		assertThat(commitInfo.preferCommitDescriptorOverRevision).isTrue();

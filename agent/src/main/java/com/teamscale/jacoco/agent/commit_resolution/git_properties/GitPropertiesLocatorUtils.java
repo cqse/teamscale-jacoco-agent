@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
@@ -56,7 +55,13 @@ public class GitPropertiesLocatorUtils {
 	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
 	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
 	 */
-	static final String GIT_PROPERTIES_TEAMSCALE_TIMESTAMP = "teamscale.timestamp";
+	static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH = "teamscale.commit.branch";
+
+	/**
+	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
+	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
+	 */
+	static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME = "teamscale.commit.time";
 
 	/** The git.properties key that holds the Teamscale project name. */
 	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
@@ -333,9 +338,10 @@ public class GitPropertiesLocatorUtils {
 	 * Returns the CommitInfo (revision & branch + timestmap) from a git properties file. The revision can be either in
 	 * {@link #GIT_PROPERTIES_GIT_COMMIT_ID} or {@link #GIT_PROPERTIES_GIT_COMMIT_ID_FULL}. The branch and timestamp in
 	 * {@link #GIT_PROPERTIES_GIT_BRANCH} + {@link #GIT_PROPERTIES_GIT_COMMIT_TIME} or in
-	 * {@link #GIT_PROPERTIES_TEAMSCALE_TIMESTAMP} By default, times will be parsed with
-	 * {@link #GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT} and {@link #GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT}. An
-	 * additional format can be given with {@code dateTimeFormatter}
+	 * {@link #GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH} + {@link #GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME}. By default,
+	 * times will be parsed with {@link #GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT} and
+	 * {@link #GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT}. An additional format can be given with
+	 * {@code dateTimeFormatter}
 	 */
 	public static CommitInfo getCommitInfoFromGitProperties(
 			Properties gitProperties, String entryName, File jarFile,
@@ -348,16 +354,14 @@ public class GitPropertiesLocatorUtils {
 
 		// Get branch and timestamp from git.commit.branch and git.commit.id
 		CommitDescriptor commitDescriptor = getCommitDescriptorFromDefaultGitPropertyValues(gitProperties, entryName,
-				jarFile,
-				dateTimeFormatter);
+				jarFile, dateTimeFormatter);
 		// When read from these properties, we should prefer to upload to the revision
 		boolean preferCommitDescriptorOverRevision = false;
 
 
-		// Get branch and timestamp from teamscale.timestamp (TS-38561)
+		// Get branch and timestamp from teamscale.commit.branch and teamscale.commit.time (TS-38561)
 		CommitDescriptor teamscaleTimestampBasedCommitDescriptor = getCommitDescriptorFromTeamscaleTimestampProperty(
-				gitProperties,
-				entryName, jarFile, dateTimeFormatter);
+				gitProperties, entryName, jarFile, dateTimeFormatter);
 		if (teamscaleTimestampBasedCommitDescriptor != null) {
 			// In this case, as we specifically set this property, we should prefer branch and timestamp to the revision
 			preferCommitDescriptorOverRevision = true;
@@ -367,8 +371,8 @@ public class GitPropertiesLocatorUtils {
 		if (StringUtils.isEmpty(revision) && commitDescriptor == null) {
 			throw new InvalidGitPropertiesException(
 					"No entry or invalid value for '" + GIT_PROPERTIES_GIT_COMMIT_ID + "', '" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
-							"' and " + GIT_PROPERTIES_TEAMSCALE_TIMESTAMP + "'\n" +
-							"In " + entryName + " in " + jarFile + "." +
+							"', '" + GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH + "' and " + GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME + "'\n" +
+							"Location: Entry '" + entryName + "' in jar file '" + jarFile + "'." +
 							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties);
 		}
 
@@ -400,40 +404,33 @@ public class GitPropertiesLocatorUtils {
 	private static CommitDescriptor getCommitDescriptorFromTeamscaleTimestampProperty(Properties gitProperties,
 			String entryName, File jarFile,
 			DateTimeFormatter dateTimeFormatter) throws InvalidGitPropertiesException {
-		String teamscaleTimestampProperty = gitProperties.getProperty(GIT_PROPERTIES_TEAMSCALE_TIMESTAMP);
-		if (!StringUtils.isEmpty(teamscaleTimestampProperty)) {
-			String[] split = teamscaleTimestampProperty.split(":");
-			if (split.length < 2) {
-				throw new InvalidGitPropertiesException(
-						String.format("%s needs to be in the format <branch>:<timestamp>. You provided %s" +
-										"\nIn " + entryName + " in " + jarFile + "." +
-										"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties,
-								GIT_PROPERTIES_TEAMSCALE_TIMESTAMP, teamscaleTimestampProperty));
-			}
-			String branch = split[0];
-			String timestamp = String.join(":", Arrays.copyOfRange(split, 1, split.length));
-			String teamscaleTimestampRegex = "\\d*(?:p\\d*)?";
-			Matcher teamscaleTimestampMatcher = Pattern.compile(teamscaleTimestampRegex).matcher(timestamp);
-			if (teamscaleTimestampMatcher.matches()) {
-				return new CommitDescriptor(branch, timestamp);
-			}
+		String teamscaleCommitBranch = gitProperties.getProperty(GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH);
+		String teamscaleCommitTime = gitProperties.getProperty(GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME);
 
-			long epochTimestamp;
-			try {
-				epochTimestamp = ZonedDateTime.parse(timestamp, dateTimeFormatter).toInstant().toEpochMilli();
-			} catch (DateTimeParseException e) {
-				throw new InvalidGitPropertiesException(
-						"Cannot parse commit time '" + timestamp + "' in the '" + GIT_PROPERTIES_TEAMSCALE_TIMESTAMP +
-								"' property. It needs to be in the date formats '" + GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT +
-								"' or '" + GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT + "' or match the Teamscale timestamp format '"
-								+ teamscaleTimestampRegex + "'." +
-								"\nIn " + entryName + " in " + jarFile + "." +
-								"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties, e);
-			}
-
-			return new CommitDescriptor(branch, epochTimestamp);
+		if (StringUtils.isEmpty(teamscaleCommitBranch) || StringUtils.isEmpty(teamscaleCommitTime)) {
+			return null;
 		}
-		return null;
+
+		String teamscaleTimestampRegex = "\\d*(?:p\\d*)?";
+		Matcher teamscaleTimestampMatcher = Pattern.compile(teamscaleTimestampRegex).matcher(teamscaleCommitTime);
+		if (teamscaleTimestampMatcher.matches()) {
+			return new CommitDescriptor(teamscaleCommitBranch, teamscaleCommitTime);
+		}
+
+		long epochTimestamp;
+		try {
+			epochTimestamp = ZonedDateTime.parse(teamscaleCommitTime, dateTimeFormatter).toInstant().toEpochMilli();
+		} catch (DateTimeParseException e) {
+			throw new InvalidGitPropertiesException(
+					"Cannot parse commit time '" + teamscaleCommitTime + "' in the '" + GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME +
+							"' property. It needs to be in the date formats '" + GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT +
+							"' or '" + GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT + "' or match the Teamscale timestamp format '"
+							+ teamscaleTimestampRegex + "'." +
+							"\nLocation: Entry '" + entryName + "' in jar file '" + jarFile + "'." +
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties, e);
+		}
+
+		return new CommitDescriptor(teamscaleCommitBranch, epochTimestamp);
 	}
 
 	private static CommitDescriptor getCommitDescriptorFromDefaultGitPropertyValues(Properties gitProperties,
@@ -448,7 +445,7 @@ public class GitPropertiesLocatorUtils {
 			} catch (DateTimeParseException e) {
 				throw new InvalidGitPropertiesException(
 						"Could not parse the timestamp in property '" + GIT_PROPERTIES_GIT_COMMIT_TIME + "'." +
-								"\nIn " + entryName + " in " + jarFile + "." +
+								"\nLocation: Entry '" + entryName + "' in jar file '" + jarFile + "'." +
 								"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties, e);
 			}
 			return new CommitDescriptor(gitBranch, gitTimestamp);
