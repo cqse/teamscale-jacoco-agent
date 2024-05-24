@@ -158,7 +158,7 @@ directories, you can get the commit info via
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
   This file must contain either 
-  - the one of the properties `git.commit.id` or `git.commit.id.full` with the git SHA1
+  - one of the properties `git.commit.id` or `git.commit.id.full` with the git SHA1
   - the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`) or
   - the properties `teamscale.commit.branch` and `teamscale.commit.time` (either as an epoch timestamp or in one of the two formats above)
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
@@ -665,14 +665,14 @@ The following explains, how to use the build timestamp instead of the commit tim
     customProperty "teamscale.project", "my-teamscale-project-id"
     customProperty "teamscale.commit.branch", {
       // If you have multiple git.properties, you can also add a custom project property at the start of your build. See https://stackoverflow.com/a/7029021
-      "${it.branch.current().getName()}"
+      it.branch.current().getName()
       // alternatively via environment variable
-      // "${System.getenv("BRANCH")}"
+      // System.getenv("BRANCH")
     }
     customProperty "teamscale.commit.time", {
-      "${new Date().toInstant().toEpochMilli()}"
+      new Date().toInstant().toEpochMilli()
       // alternatively via environment variable
-      // "${System.getenv("BUILD_TIME")}"
+      // System.getenv("BUILD_TIME")
     }
   }
   ```
