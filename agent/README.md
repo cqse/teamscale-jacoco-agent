@@ -89,11 +89,11 @@ Check your applications console output for error messages.
 
 #### Testwise coverage
 
-If you want to collect testwise coverage, please have a look below in the [Testwise mode section](####Testwise-coverage-modes).
+If you want to collect testwise coverage, please have a look below in the [Testwise mode section](#testwise-coverage-modes).
 
 #### Path format
 
-All paths supplied to the agent can be absolute or relative to the working directory. Furthermore paths may contain ant
+All paths supplied to the agent can be absolute or relative to the working directory. Furthermore, paths may contain ant
 patterns with `*`, `**` and `?`.
 
 ### Options for normal mode (do not apply to testwise mode)
@@ -129,7 +129,7 @@ patterns with `*`, `**` and `?`.
   the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
 - `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
   Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit
-  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `teamscale-git-properties-jar`.
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `git-properties-jar`.
 
   If **Git** is your VCS, you can get the commit info via
 
@@ -157,7 +157,10 @@ directories, you can get the commit info via
 - `git-properties-jar` As an alternative to `teamscale-commit` and/or `teamscale-project` the agent accepts values supplied via
   a `git.properties` file generated with [the corresponding Maven or Gradle plugin][git-properties-spring] and stored in a jar/war/ear/...
   If nothing is configured, the agent automatically searches all loaded Jar/War/Ear/... files for a `git.properties` file.
-  This file must contain at least the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ`).
+  This file must contain either 
+  - one of the properties `git.commit.id` or `git.commit.id.full` with the git SHA1
+  - the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`) or
+  - the properties `teamscale.commit.branch` and `teamscale.commit.time` (either as an epoch timestamp or in one of the two formats above)
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
@@ -211,7 +214,7 @@ directories, you can get the commit info via
   the default path and the uploaded artifact.
 - `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
   If not specified, Git commit information is extracted from the first found `git.properties` file.
-  See `teamscale-git-properties-jar` for details.
+  See `git-properties-jar` for details.
 - `artifactory-git-properties-commit-date-format` (optional):
   The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 
@@ -306,7 +309,7 @@ The agent's REST API has the following endpoints:
 - `[GET] /revision` Returns the source control revision or commit the system under test was build from. This is
   required to upload the coverage to Teamscale at the correct point in time. The information can be supplied using
   any of the options `teamscale-revision`, `teamscale-commit`, `teamscale-commit-manifest-jar`, or
-  `teamscale-git-properties-jar` above. Please note that git.properties auto-discovery is not yet supported for
+  `git-properties-jar` above. Please note that git.properties auto-discovery is not yet supported for
   testwise mode.
 
   The response is in json format:
@@ -507,7 +510,7 @@ Please ask CQSE for special tooling that is available to instrument Java Web Sta
 ## Store Commit in Jar file
 
 If you are using Git, you can use either a Maven or Gradle plugin to store the commit
-in any Jar/War/Ear/... file and tell the agent to read it via `teamscale-git-properties-jar`.
+in any Jar/War/Ear/... file and tell the agent to read it via `git-properties-jar`.
 
 Alternatively, it is also convenient to use the MANIFEST entries via `teamscale-commit-manifest-jar` to link artifacts to commits,
 especially when tests are executed independently of the build. The following assumes that we are using a Git
@@ -564,6 +567,115 @@ jar {
 ```sh
 ./gradlew jar -Dbranch=master
 ```
+
+## Overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time`
+
+There are scenarios, in which you need to use a different branch and time for the upload than provided with `git.commit.id` or `git.branch` and `git.commit.time` in a `git.properties` file.
+This can be achieved by providing the properties `teamscale.commt.branch` and `teamsacle.commit.time` inside the `git.properties` file.
+`teamscale.commit.time` must be provided either as epoch timestamp in milliseconds or in one of these two formats: `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`.
+
+The following explains, how to use the build timestamp instead of the commit timestamp for Maven and Gradle. Thus, we write `teamscale.commit.branch=<branch>` and `teamscale.commit.time=<build-time>` into the `git.properties` file.
+
+### Maven
+* Set up the git-commit-id maven plugin (see also [docs](https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/using-the-plugin.md#basic-configuration--basic-usage-of-the-plugin)):
+    ```xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>8.0.2</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    ```
+
+* Set up custom entries in the `git.properties` file (see also [advanced docs](https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/docs/using-the-plugin-in-more-depth.md#maven-resource-filtering)):
+  * Add a file called `git.properties` in the resources folder (usually `java/main/ressources`) of your application. The following one contains all default properties + the `teamscale.project`, `teamscale.commit.branch` and `teamscale.commit.time` properties.
+    ```properties
+    git.tags=${git.tags}
+    git.branch=${git.branch}
+    git.local.branch.ahead=${git.local.branch.ahead}
+    git.local.branch.behind=${git.local.branch.behind}
+    git.dirty=${git.dirty}
+    git.remote.origin.url=${git.remote.origin.url}
+    git.commit.id=${git.commit.id.full}
+    git.commit.id.abbrev=${git.commit.id.abbrev}
+    git.commit.id.describe=${git.commit.id.describe}
+    git.commit.id.describe-short=${git.commit.id.describe-short}
+    git.commit.user.name=${git.commit.user.name}
+    git.commit.user.email=${git.commit.user.email}
+    git.commit.message.full=${git.commit.message.full}
+    git.commit.message.short=${git.commit.message.short}
+    git.commit.time=${git.commit.time}
+    git.closest.tag.name=${git.closest.tag.name}
+    git.closest.tag.commit.count=${git.closest.tag.commit.count}
+    git.build.user.name=${git.build.user.name}
+    git.build.user.email=${git.build.user.email}
+    git.build.time=${git.build.time}
+    git.build.host=${git.build.host}
+    git.build.version=${git.build.version}
+    git.build.number=${git.build.number}
+    git.build.number.unique=${git.build.number.unique}
+    teamscale.project=my-teamscale-project-id
+    teamscale.commit.branch=${git.branch}
+    teamscale.commit.time=${git.build.time}
+    # alternatively via environment variables
+    # teamscale.commit.branch=${@env.BRANCH}
+    # teamscale.commit.time=${env.BUILD_TIME}
+    ```
+  * Add the following to your pom file so the commit id plugin picks up your custom `git.properties` file:
+    ```xml
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+    ```
+
+### Gradle
+* Set up the gradle commit id plugin by adding the following to your `build.gradle` file (see also [docs](https://github.com/n0mer/gradle-git-properties?tab=readme-ov-file#usage)):
+  ```groovy
+  plugins {
+    id "com.gorylenko.gradle-git-properties" version "2.4.2"
+  }
+  ```
+* Set up custom entries in the `git.properties` file (see [docs -> custom properties](https://github.com/n0mer/gradle-git-properties?tab=readme-ov-file#usage)):
+  ```groovy
+  gitProperties {
+    customProperty "teamscale.project", "my-teamscale-project-id"
+    customProperty "teamscale.commit.branch", {
+      // If you have multiple git.properties, you can also add a custom project property at the start of your build. See https://stackoverflow.com/a/7029021
+      it.branch.current().getName()
+      // alternatively via environment variable
+      // System.getenv("BRANCH")
+    }
+    customProperty "teamscale.commit.time", {
+      new Date().toInstant().toEpochMilli()
+      // alternatively via environment variable
+      // System.getenv("BUILD_TIME")
+    }
+  }
+  ```
 
 ## Multi-project upload
 
@@ -691,7 +803,7 @@ Enable debug logging in the logging config. Warning: this may create a lot of lo
 
 ## Error: "The application was shut down before a commit could be found", despite including a git.properties file in your jar/war/...
 When using application servers, the `git.properties` file in your jar/war/... might not be detected automatically, which results in an "The application was shut down before a commit could be found" error.
-To resolve the problem, try specifying `teamscale-git-properties-jar` explicitly.
+To resolve the problem, try specifying `git-properties-jar` explicitly.
 
 
 [so-java-exec-answer]: https://stackoverflow.com/questions/31836498/sigterm-not-received-by-java-process-using-docker-stop-and-the-official-java-i#31840306

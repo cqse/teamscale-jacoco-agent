@@ -1,25 +1,24 @@
 package com.teamscale.jacoco.agent.upload.artifactory;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.EReportFormat;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
+import com.teamscale.jacoco.agent.upload.UploadTestBase;
+import com.teamscale.jacoco.agent.upload.UploaderException;
+import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.EReportFormat;
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.options.TestAgentOptionsBuilder;
-import com.teamscale.jacoco.agent.upload.UploadTestBase;
-import com.teamscale.jacoco.agent.upload.UploaderException;
-
-import okhttp3.HttpUrl;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.RecordedRequest;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArtifactoryUploaderTest extends UploadTestBase {
 
@@ -33,9 +32,8 @@ public class ArtifactoryUploaderTest extends UploadTestBase {
 	}
 
 	/**
-	 * Tests if the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} is set, it
-	 * will be used as authentication method against artifactory in the
-	 * {@link ArtifactoryUploader#ARTIFACTORY_API_HEADER}
+	 * Tests if the {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} is set, it will be used as authentication
+	 * method against artifactory in the {@link ArtifactoryUploader#ARTIFACTORY_API_HEADER}
 	 */
 	@Test
 	public void testUseApiKeyHeaderWhenOptionIsPresent() throws InterruptedException {
@@ -50,8 +48,7 @@ public class ArtifactoryUploaderTest extends UploadTestBase {
 	}
 
 	/**
-	 * Tests that an unsuccessful upload is automatically retried if the profiler is
-	 * started.
+	 * Tests that an unsuccessful upload is automatically retried if the profiler is started.
 	 */
 	@Test
 	public void testAutomaticUploadRetry() throws UploaderException {
@@ -66,7 +63,7 @@ public class ArtifactoryUploaderTest extends UploadTestBase {
 
 	private ArtifactoryConfig generateBasicArtifactoryConfig(HttpUrl serverUrl) {
 		ArtifactoryConfig config = new ArtifactoryConfig();
-		config.commitInfo = new ArtifactoryConfig.CommitInfo("some_revision", new CommitDescriptor("some_branch", 0));
+		config.commitInfo = new CommitInfo("some_revision", new CommitDescriptor("some_branch", 0));
 		config.url = serverUrl;
 		return config;
 	}

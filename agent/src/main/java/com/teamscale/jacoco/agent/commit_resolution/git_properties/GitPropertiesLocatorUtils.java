@@ -1,11 +1,14 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.FileSystemUtils;
 import com.teamscale.client.StringUtils;
-import com.teamscale.jacoco.agent.options.ProjectRevision;
+import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.conqat.lib.commons.collections.Pair;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +18,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -29,43 +36,74 @@ public class GitPropertiesLocatorUtils {
 	/** Name of the git.properties file. */
 	public static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
+	/** The git.properties key that holds the commit time. */
+	public static final String GIT_PROPERTIES_GIT_COMMIT_TIME = "git.commit.time";
+
+	/** The git.properties key that holds the commit branch. */
+	public static final String GIT_PROPERTIES_GIT_BRANCH = "git.branch";
+
 	/** The git.properties key that holds the commit hash. */
-	private static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
+	public static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
 
 	/**
 	 * Alternative git.properties key that might also hold the commit hash, depending on the Maven git-commit-id plugin
 	 * configuration.
 	 */
-	private static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
+	public static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
+
+	/**
+	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
+	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
+	 */
+	public static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH = "teamscale.commit.branch";
+
+	/**
+	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
+	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
+	 */
+	public static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME = "teamscale.commit.time";
 
 	/** The git.properties key that holds the Teamscale project name. */
-	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
+	public static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
 
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
-	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:(?:file|nested):(.*?)!.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:(?:file|nested):(.*?)!.*",
+			Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern NESTED_JAR_REGEX = Pattern.compile("[jwea]ar:file:(.*?)\\*(.*)",
 			Pattern.CASE_INSENSITIVE);
+
+	/**
+	 * Defined in <a
+	 * href="https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/ac05b16dfdcc2aebfa45ad3af4acf1254accffa3/src/main/java/pl/project13/maven/git/GitCommitIdMojo.java#L522">GitCommitIdMojo</a>
+	 */
+	private static final String GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+
+	/**
+	 * Defined in <a
+	 * href="https://github.com/n0mer/gradle-git-properties/blob/bb1c3353bb570495644b6c6c75e211296a8354fc/src/main/groovy/com/gorylenko/GitPropertiesPlugin.groovy#L68">GitPropertiesPlugin</a>
+	 */
+	private static final String GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
 	/** File ending of Java archive packages */
 	public static final String JAR_FILE_ENDING = ".jar";
 
 	/**
-	 * Reads the git SHA1 from the given jar file's git.properties and builds a commit descriptor out of it. If no
-	 * git.properties file can be found, returns null.
+	 * Reads the git SHA1 and branch and timestamp from the given jar file's git.properties and builds a commit
+	 * descriptor out of it. If no git.properties file can be found, returns null.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static List<String> getRevisionsFromGitProperties(
+	public static List<CommitInfo> getCommitInfoFromGitProperties(
 			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
 				recursiveSearch);
-		List<String> result = new ArrayList<>();
+		List<CommitInfo> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			String revision = getGitCommitPropertyValue(entryWithProperties.getSecond(),
-					entryWithProperties.getFirst(), file);
-			result.add(revision);
+			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
+					entryWithProperties.getFirst(), file, null);
+			result.add(commitInfo);
 		}
 		return result;
 	}
@@ -158,24 +196,22 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/**
-	 * Reads the 'teamscale.project' property values and the git SHA1s from all git.properties files contained in the
-	 * provided folder or archive file.
+	 * Reads the 'teamscale.project' property values and the git SHA1s or branch + timestamp from all git.properties
+	 * files contained in the provided folder or archive file.
 	 *
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static List<ProjectRevision> getProjectRevisionsFromGitProperties(
+	public static List<ProjectAndCommit> getProjectRevisionsFromGitProperties(
 			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
 				recursiveSearch);
-		List<ProjectRevision> result = new ArrayList<>();
+		List<ProjectAndCommit> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			String revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
-			if (StringUtils.isEmpty(revision)) {
-				revision = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_GIT_COMMIT_ID_FULL);
-			}
+			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
+					entryWithProperties.getFirst(), file, null);
 			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
-			if (StringUtils.isEmpty(revision) && StringUtils.isEmpty(project)) {
+			if (commitInfo.isEmpty() && StringUtils.isEmpty(project)) {
 				throw new InvalidGitPropertiesException(
 						"No entry or empty value for both '" + GIT_PROPERTIES_GIT_COMMIT_ID + "'/'" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
 								"' and '" + GIT_PROPERTIES_TEAMSCALE_PROJECT + "' in " + file + "." +
@@ -183,7 +219,7 @@ public class GitPropertiesLocatorUtils {
 								.toString()
 				);
 			}
-			result.add(new ProjectRevision(project, revision));
+			result.add(new ProjectAndCommit(project, commitInfo));
 		}
 		return result;
 	}
@@ -204,7 +240,7 @@ public class GitPropertiesLocatorUtils {
 	 * Searches for git properties in jar/war/ear/aar files
 	 */
 	private static List<Pair<String, Properties>> findGitPropertiesInArchiveFile(File file,
-																				 boolean recursiveSearch) throws IOException {
+			boolean recursiveSearch) throws IOException {
 		try (JarInputStream jarStream = new JarInputStream(
 				new BashFileSkippingInputStream(Files.newInputStream(file.toPath())))) {
 			return findGitPropertiesInArchive(jarStream, file.getName(), recursiveSearch);
@@ -299,23 +335,121 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/**
-	 * Returns a value from a git properties file for the Git SHA1. This can be either in
-	 * {@link #GIT_PROPERTIES_GIT_COMMIT_ID} or {@link #GIT_PROPERTIES_GIT_COMMIT_ID_FULL}.
+	 * Returns the CommitInfo (revision & branch + timestmap) from a git properties file. The revision can be either in
+	 * {@link #GIT_PROPERTIES_GIT_COMMIT_ID} or {@link #GIT_PROPERTIES_GIT_COMMIT_ID_FULL}. The branch and timestamp in
+	 * {@link #GIT_PROPERTIES_GIT_BRANCH} + {@link #GIT_PROPERTIES_GIT_COMMIT_TIME} or in
+	 * {@link #GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH} + {@link #GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME}. By default,
+	 * times will be parsed with {@link #GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT} and
+	 * {@link #GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT}. An additional format can be given with
+	 * {@code dateTimeFormatter}
 	 */
-	public static String getGitCommitPropertyValue(
-			Properties gitProperties, String entryName, File jarFile) throws InvalidGitPropertiesException {
-		String value = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
-		if (StringUtils.isEmpty(value)) {
-			value = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_ID_FULL);
-		}
-		if (StringUtils.isEmpty(value)) {
-			throw new InvalidGitPropertiesException(
-					"No entry or empty value for '" + GIT_PROPERTIES_GIT_COMMIT_ID + "' and '" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
-							"' in " + entryName + " in " + jarFile + "." +
-							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties
-			);
+	public static CommitInfo getCommitInfoFromGitProperties(
+			Properties gitProperties, String entryName, File jarFile,
+			@Nullable DateTimeFormatter additionalDateTimeFormatter) throws InvalidGitPropertiesException {
+
+		DateTimeFormatter dateTimeFormatter = createDateTimeFormatter(additionalDateTimeFormatter);
+
+		// Get Revision
+		String revision = getRevisionFromGitProperties(gitProperties);
+
+		// Get branch and timestamp from git.commit.branch and git.commit.id
+		CommitDescriptor commitDescriptor = getCommitDescriptorFromDefaultGitPropertyValues(gitProperties, entryName,
+				jarFile, dateTimeFormatter);
+		// When read from these properties, we should prefer to upload to the revision
+		boolean preferCommitDescriptorOverRevision = false;
+
+
+		// Get branch and timestamp from teamscale.commit.branch and teamscale.commit.time (TS-38561)
+		CommitDescriptor teamscaleTimestampBasedCommitDescriptor = getCommitDescriptorFromTeamscaleTimestampProperty(
+				gitProperties, entryName, jarFile, dateTimeFormatter);
+		if (teamscaleTimestampBasedCommitDescriptor != null) {
+			// In this case, as we specifically set this property, we should prefer branch and timestamp to the revision
+			preferCommitDescriptorOverRevision = true;
+			commitDescriptor = teamscaleTimestampBasedCommitDescriptor;
 		}
 
-		return value;
+		if (StringUtils.isEmpty(revision) && commitDescriptor == null) {
+			throw new InvalidGitPropertiesException(
+					"No entry or invalid value for '" + GIT_PROPERTIES_GIT_COMMIT_ID + "', '" + GIT_PROPERTIES_GIT_COMMIT_ID_FULL +
+							"', '" + GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH + "' and " + GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME + "'\n" +
+							"Location: Entry '" + entryName + "' in jar file '" + jarFile + "'." +
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties);
+		}
+
+		CommitInfo commitInfo = new CommitInfo(revision, commitDescriptor);
+		commitInfo.preferCommitDescriptorOverRevision = preferCommitDescriptorOverRevision;
+		return commitInfo;
+	}
+
+	private static @NotNull DateTimeFormatter createDateTimeFormatter(
+			@org.jetbrains.annotations.Nullable DateTimeFormatter additionalDateTimeFormatter) {
+		DateTimeFormatter defaultDateTimeFormatter = DateTimeFormatter.ofPattern(
+				String.format("[%s][%s]", GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT,
+						GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT));
+		DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder().append(defaultDateTimeFormatter);
+		if (additionalDateTimeFormatter != null) {
+			builder.append(additionalDateTimeFormatter);
+		}
+		return builder.toFormatter();
+	}
+
+	private static String getRevisionFromGitProperties(Properties gitProperties) {
+		String revision = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_ID);
+		if (StringUtils.isEmpty(revision)) {
+			revision = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_ID_FULL);
+		}
+		return revision;
+	}
+
+	private static CommitDescriptor getCommitDescriptorFromTeamscaleTimestampProperty(Properties gitProperties,
+			String entryName, File jarFile,
+			DateTimeFormatter dateTimeFormatter) throws InvalidGitPropertiesException {
+		String teamscaleCommitBranch = gitProperties.getProperty(GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH);
+		String teamscaleCommitTime = gitProperties.getProperty(GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME);
+
+		if (StringUtils.isEmpty(teamscaleCommitBranch) || StringUtils.isEmpty(teamscaleCommitTime)) {
+			return null;
+		}
+
+		String teamscaleTimestampRegex = "\\d*(?:p\\d*)?";
+		Matcher teamscaleTimestampMatcher = Pattern.compile(teamscaleTimestampRegex).matcher(teamscaleCommitTime);
+		if (teamscaleTimestampMatcher.matches()) {
+			return new CommitDescriptor(teamscaleCommitBranch, teamscaleCommitTime);
+		}
+
+		long epochTimestamp;
+		try {
+			epochTimestamp = ZonedDateTime.parse(teamscaleCommitTime, dateTimeFormatter).toInstant().toEpochMilli();
+		} catch (DateTimeParseException e) {
+			throw new InvalidGitPropertiesException(
+					"Cannot parse commit time '" + teamscaleCommitTime + "' in the '" + GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME +
+							"' property. It needs to be in the date formats '" + GIT_PROPERTIES_DEFAULT_MAVEN_DATE_FORMAT +
+							"' or '" + GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT + "' or match the Teamscale timestamp format '"
+							+ teamscaleTimestampRegex + "'." +
+							"\nLocation: Entry '" + entryName + "' in jar file '" + jarFile + "'." +
+							"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties, e);
+		}
+
+		return new CommitDescriptor(teamscaleCommitBranch, epochTimestamp);
+	}
+
+	private static CommitDescriptor getCommitDescriptorFromDefaultGitPropertyValues(Properties gitProperties,
+			String entryName, File jarFile,
+			DateTimeFormatter dateTimeFormatter) throws InvalidGitPropertiesException {
+		String gitBranch = gitProperties.getProperty(GIT_PROPERTIES_GIT_BRANCH);
+		String gitTime = gitProperties.getProperty(GIT_PROPERTIES_GIT_COMMIT_TIME);
+		if (!StringUtils.isEmpty(gitBranch) && !StringUtils.isEmpty(gitTime)) {
+			long gitTimestamp;
+			try {
+				gitTimestamp = ZonedDateTime.parse(gitTime, dateTimeFormatter).toInstant().toEpochMilli();
+			} catch (DateTimeParseException e) {
+				throw new InvalidGitPropertiesException(
+						"Could not parse the timestamp in property '" + GIT_PROPERTIES_GIT_COMMIT_TIME + "'." +
+								"\nLocation: Entry '" + entryName + "' in jar file '" + jarFile + "'." +
+								"\nContents of " + GIT_PROPERTIES_FILE_NAME + ":\n" + gitProperties, e);
+			}
+			return new CommitDescriptor(gitBranch, gitTimestamp);
+		}
+		return null;
 	}
 }

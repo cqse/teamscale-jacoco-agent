@@ -11,6 +11,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitMultiProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatingTransformer;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatorUtils;
@@ -475,7 +476,7 @@ public class AgentOptions {
 			return new TeamscaleUploader(teamscaleServer);
 		}
 
-		DelayedUploader<ProjectRevision> uploader = createDelayedSingleProjectTeamscaleUploader();
+		DelayedUploader<ProjectAndCommit> uploader = createDelayedSingleProjectTeamscaleUploader();
 
 		if (gitPropertiesJar != null) {
 			logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
@@ -495,8 +496,12 @@ public class AgentOptions {
 	private DelayedTeamscaleMultiProjectUploader createTeamscaleMultiProjectUploader(
 			Instrumentation instrumentation) {
 		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
-				(project, revision) ->
-						new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, revision)));
+				(project, commitInfo) -> {
+					if (commitInfo.preferCommitDescriptorOverRevision || StringUtils.isEmpty(commitInfo.revision)) {
+						return new TeamscaleUploader(teamscaleServer.withProjectAndCommit(project, commitInfo.commit));
+					}
+					return new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, commitInfo.revision));
+				});
 
 		if (gitPropertiesJar != null) {
 			logger.info(
@@ -515,57 +520,62 @@ public class AgentOptions {
 		return uploader;
 	}
 
-	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectRevision> uploader,
-												   File gitPropertiesJar) {
-		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
+	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectAndCommit> uploader,
+			File gitPropertiesJar) {
+		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
-	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectRevision> uploader,
-													Instrumentation instrumentation) {
-		GitSingleProjectPropertiesLocator<ProjectRevision> locator = new GitSingleProjectPropertiesLocator<>(uploader,
+	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectAndCommit> uploader,
+			Instrumentation instrumentation) {
+		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
 				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 	}
 
-	private DelayedUploader<ProjectRevision> createDelayedSingleProjectTeamscaleUploader() {
+	private DelayedUploader<ProjectAndCommit> createDelayedSingleProjectTeamscaleUploader() {
 		return new DelayedUploader<>(
-				projectRevision -> {
-					if (!StringUtils.isEmpty(projectRevision.getProject()) && !teamscaleServer.project
-							.equals(projectRevision.getProject())) {
+				projectAndCommit -> {
+					if (!StringUtils.isEmpty(projectAndCommit.getProject()) && !teamscaleServer.project
+							.equals(projectAndCommit.getProject())) {
 						logger.warn(
 								"Teamscale project '{}' specified in the agent configuration is not the same as the Teamscale project '{}' specified in git.properties file(s). Proceeding to upload to the" +
 										" Teamscale project '{}' specified in the agent configuration.",
-								teamscaleServer.project, projectRevision.getProject(), teamscaleServer.project);
+								teamscaleServer.project, projectAndCommit.getProject(), teamscaleServer.project);
 					}
-					teamscaleServer.revision = projectRevision.getRevision();
+					if (projectAndCommit.getCommitInfo().preferCommitDescriptorOverRevision ||
+							StringUtils.isEmpty(projectAndCommit.getCommitInfo().revision)) {
+						teamscaleServer.commit = projectAndCommit.getCommitInfo().commit;
+					} else {
+						teamscaleServer.revision = projectAndCommit.getCommitInfo().revision;
+					}
 					return new TeamscaleUploader(teamscaleServer);
 				}, outputDirectory);
 	}
 
 	private void startMultiGitPropertiesFileSearchInJarFile(DelayedTeamscaleMultiProjectUploader uploader,
-															File gitPropertiesJar) {
+			File gitPropertiesJar) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
 				this.searchGitPropertiesRecursively);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
 	private void registerMultiGitPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader,
-												   Instrumentation instrumentation) {
+			Instrumentation instrumentation) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
 				this.searchGitPropertiesRecursively);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 	}
 
 	private IUploader createDelayedArtifactoryUploader(Instrumentation instrumentation) {
-		DelayedUploader<ArtifactoryConfig.CommitInfo> uploader = new DelayedUploader<>(
+		DelayedUploader<CommitInfo> uploader = new DelayedUploader<>(
 				commitInfo -> {
 					artifactoryConfig.commitInfo = commitInfo;
 					return new ArtifactoryUploader(artifactoryConfig, additionalMetaDataFiles,
 							getReportFormat());
 				}, outputDirectory);
-		GitSingleProjectPropertiesLocator<ArtifactoryConfig.CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
+		GitSingleProjectPropertiesLocator<CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
 				uploader,
 				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
 						file, isJarFile, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
