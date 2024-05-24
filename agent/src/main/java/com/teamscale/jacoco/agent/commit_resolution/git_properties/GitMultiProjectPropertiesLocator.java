@@ -43,13 +43,18 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 	}
 
 	/**
-	 * Asynchronously searches the given jar file for a git.properties file.
+	 * Asynchronously searches the given jar file for git.properties files and adds a corresponding uploader to the
+	 * multi-project uploader.
 	 */
 	@Override
 	public void searchFileForGitPropertiesAsync(File file, boolean isJarFile) {
 		executor.execute(() -> searchFile(file, isJarFile));
 	}
 
+	/**
+	 * Synchronously searches the given jar file for git.properties files and adds a corresponding uploader to the
+	 * multi-project uploader.
+	 */
 	@VisibleForTesting
 	void searchFile(File file, boolean isJarFile) {
 		logger.debug("Searching file {} for multiple git.properties", file.toString());
@@ -62,19 +67,24 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 				logger.debug("No git.properties file found in {}", file);
 				return;
 			}
-			// this code only runs when 'teamscale-project' is not given via the agent properties,
-			// i.e., a multi-project upload is being attempted.
-			// Therefore, we expect to find both the project (teamscale.project) and the revision
-			// (git.commit.id) in the git.properties file.
 
 			for (ProjectAndCommit projectAndCommit : projectAndCommits) {
+				// this code only runs when 'teamscale-project' is not given via the agent properties,
+				// i.e., a multi-project upload is being attempted.
+				// Therefore, we expect to find both the project (teamscale.project) and the revision
+				// (git.commit.id) in the git.properties file.
 				if (projectAndCommit.getProject() == null || projectAndCommit.getCommitInfo() == null) {
 					logger.debug(
 							"Found inconsistent git.properties file: the git.properties file in {} either does not specify the" +
-									" Teamscale project (teamscale.project) property, or does not specify the commit " +
-									"(git.commit.id, git.commit.branch + git.commit.time, or teamscale.commit.branch + teamscale.commit.time) or ." +
+									" Teamscale project ({}) property, or does not specify the commit " +
+									"({}, {} + {}, or {} + {})." +
 									" Will skip this git.properties file and try to continue with the other ones that were found during discovery.",
-							file);
+							file, GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_PROJECT,
+							GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_ID,
+							GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_BRANCH,
+							GitPropertiesLocatorUtils.GIT_PROPERTIES_GIT_COMMIT_TIME,
+							GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH,
+							GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME);
 					continue;
 				}
 				uploader.setTeamscaleProjectForRevision(projectAndCommit);

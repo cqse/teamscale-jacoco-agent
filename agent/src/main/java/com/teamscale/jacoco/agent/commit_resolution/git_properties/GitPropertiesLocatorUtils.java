@@ -43,28 +43,28 @@ public class GitPropertiesLocatorUtils {
 	public static final String GIT_PROPERTIES_GIT_BRANCH = "git.branch";
 
 	/** The git.properties key that holds the commit hash. */
-	static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
+	public static final String GIT_PROPERTIES_GIT_COMMIT_ID = "git.commit.id";
 
 	/**
 	 * Alternative git.properties key that might also hold the commit hash, depending on the Maven git-commit-id plugin
 	 * configuration.
 	 */
-	private static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
+	public static final String GIT_PROPERTIES_GIT_COMMIT_ID_FULL = "git.commit.id.full";
 
 	/**
 	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
 	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
 	 */
-	static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH = "teamscale.commit.branch";
+	public static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH = "teamscale.commit.branch";
 
 	/**
 	 * You can provide a teamscale timestamp in git.properties files to overwrite the revision. See <a
 	 * href="https://cqse.atlassian.net/browse/TS-38561">TS-38561</a>.
 	 */
-	static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME = "teamscale.commit.time";
+	public static final String GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME = "teamscale.commit.time";
 
 	/** The git.properties key that holds the Teamscale project name. */
-	private static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
+	public static final String GIT_PROPERTIES_TEAMSCALE_PROJECT = "teamscale.project";
 
 	/** Matches the path to the jar file in a jar:file: URL in regex group 1. */
 	private static final Pattern JAR_URL_REGEX = Pattern.compile("jar:(?:file|nested):(.*?)!.*",
