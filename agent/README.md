@@ -633,7 +633,7 @@ The following explains, how to use the build timestamp instead of the commit tim
     teamscale.commit.branch=${git.branch}
     teamscale.commit.time=${git.build.time}
     # alternatively via environment variables
-    # teamscale.commit.branch=${@env.BRANCH}
+    # teamscale.commit.branch=${env.BRANCH}
     # teamscale.commit.time=${env.BUILD_TIME}
     ```
   * Add the following to your pom file so the commit id plugin picks up your custom `git.properties` file:
