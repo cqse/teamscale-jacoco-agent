@@ -115,9 +115,11 @@ public class SystemTestUtils {
 		@POST("/dump")
 		Call<Void> dump();
 
+		/** Changes the current partition. */
 		@PUT("/partition")
 		Call<Void> changePartition(@Body RequestBody newPartition);
 
+		/** Changes the current partition. Convenience method to pass a plain string. */
 		default Call<Void> changePartition(String newPartition) {
 			return changePartition(RequestBody.create(MediaType.parse("text/plain"), newPartition));
 		}
