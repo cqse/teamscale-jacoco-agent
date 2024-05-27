@@ -103,6 +103,26 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	}
 
 	/**
+	 * Sets the <code>resolvedRevision</code>, if not provided, via the GitCommit class
+	 *
+	 * @see GitCommit
+	 */
+	protected void resolveRevision() throws MojoFailureException {
+		if (StringUtils.isNotBlank(revision)) {
+			resolvedRevision = revision;
+		} else {
+			Path basedir = session.getCurrentProject().getBasedir().toPath();
+			try {
+				GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
+				resolvedRevision = commit.sha1;
+			} catch (IOException e) {
+				throw new MojoFailureException("There is no <revision> configured in the pom.xml" +
+						" and it was not possible to determine the current revision in " + basedir + " from Git", e);
+			}
+		}
+	}
+
+	/**
 	 * Retrieves the configuration of a goal execution for the given plugin
 	 * @param pluginArtifact The id of the plugin
 	 * @param pluginGoal The name of the goal

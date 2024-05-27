@@ -2,6 +2,7 @@ package com.teamscale.maven.tia;
 
 import com.teamscale.maven.TeamscaleMojoBase;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Plugin;
@@ -167,6 +168,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		createTargetDirectory();
 
 		resolveEndCommit();
+		resolveRevision();
 
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
@@ -362,7 +364,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
 				"\nteamscale-access-token=" + accessToken +
-				"\nteamscale-commit=" + resolvedCommit +
 				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath +
@@ -372,6 +373,14 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		}
 		if (ArrayUtils.isNotEmpty(excludes)) {
 			config += "\nexcludes=" + String.join(";", excludes);
+		}
+
+		// endCommit is only set via the config option in the pom. If the user sets it, prefer it over the revision.
+		// If not, prefer the revision
+		if (StringUtils.isEmpty(endCommit) && StringUtils.isNotEmpty(resolvedRevision)) {
+			config += "\nteamscale-revision=" + resolvedRevision;
+		} else {
+			config += "\nteamscale-commit=" + resolvedCommit;
 		}
 		return config;
 	}
