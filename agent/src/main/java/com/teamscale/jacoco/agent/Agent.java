@@ -31,13 +31,14 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
 import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /**
- * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
- * XML conversion based on a time interval.
+ * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
+ * interval.
  */
 public class Agent extends AgentBase {
 
@@ -73,9 +74,8 @@ public class Agent extends AgentBase {
 	}
 
 	/**
-	 * If we have coverage that was leftover because of previously unsuccessful
-	 * coverage uploads, we retry to upload them again with the same configuration
-	 * as in the previous try.
+	 * If we have coverage that was leftover because of previously unsuccessful coverage uploads, we retry to upload
+	 * them again with the same configuration as in the previous try.
 	 */
 	private void retryUnsuccessfulUploads(AgentOptions options, IUploader uploader) {
 		Path outputPath = options.getOutputDirectory();
@@ -86,7 +86,8 @@ public class Agent extends AgentBase {
 
 		Path parentPath = outputPath.getParent();
 		if (parentPath == null) {
-			logger.error("The output path '{}' does not have a parent path. Canceling upload retry.", outputPath.toAbsolutePath());
+			logger.error("The output path '{}' does not have a parent path. Canceling upload retry.",
+					outputPath.toAbsolutePath());
 			return;
 		}
 
@@ -111,7 +112,7 @@ public class Agent extends AgentBase {
 			} else {
 				logger.info("Reupload not implemented for uploader {}", uploader.describe());
 			}
-			file.delete();
+			Files.deleteIfExists(file.toPath());
 		} catch (IOException e) {
 			logger.error("Reuploading coverage failed. " + e);
 		}
@@ -146,22 +147,28 @@ public class Agent extends AgentBase {
 	}
 
 	/**
-	 * Delete a directory from disk if it is empty. This method does nothing if the
-	 * path provided does not exist or point to a file.
+	 * Delete a directory from disk if it is empty. This method does nothing if the path provided does not exist or
+	 * point to a file.
 	 *
-	 * @throws IOException
-	 *             if the deletion of the directory fails
+	 * @throws IOException if the deletion of the directory fails
 	 */
 	private static void deleteDirectoryIfEmpty(Path directory) throws IOException {
-		if (Files.isDirectory(directory) && Files.list(directory).toArray().length == 0) {
-			Files.delete(directory);
+		if (!Files.isDirectory(directory)) {
+			return;
 		}
+
+		try (Stream<Path> stream = Files.list(directory)) {
+			if (stream.count() == 0) {
+				return;
+			}
+		}
+
+		Files.delete(directory);
 	}
 
 	/**
-	 * Dumps the current execution data, converts it, writes it to the output
-	 * directory defined in {@link #options} and uploads it if an uploader is
-	 * configured. Logs any errors, never throws an exception.
+	 * Dumps the current execution data, converts it, writes it to the output directory defined in {@link #options} and
+	 * uploads it if an uploader is configured. Logs any errors, never throws an exception.
 	 */
 	@Override
 	public void dumpReport() {
