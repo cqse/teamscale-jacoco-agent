@@ -5,8 +5,21 @@
 +-------------------------------------------------------------------------*/
 package com.teamscale.jacoco.agent;
 
-import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
-import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.jacoco.agent.upload.IUploadRetry;
+import com.teamscale.jacoco.agent.upload.IUploader;
+import com.teamscale.jacoco.agent.upload.UploaderException;
+import com.teamscale.jacoco.agent.util.AgentUtils;
+import com.teamscale.jacoco.agent.util.Benchmark;
+import com.teamscale.jacoco.agent.util.FileSystemUtilsClone;
+import com.teamscale.jacoco.agent.util.Timer;
+import com.teamscale.report.jacoco.CoverageFile;
+import com.teamscale.report.jacoco.EmptyReportException;
+import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
+import com.teamscale.report.jacoco.dump.Dump;
+import org.conqat.lib.commons.string.StringUtils;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,22 +32,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
-import com.teamscale.jacoco.agent.util.FileSystemUtilsClone;
-import org.conqat.lib.commons.string.StringUtils;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
-
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.upload.IUploadRetry;
-import com.teamscale.jacoco.agent.upload.IUploader;
-import com.teamscale.jacoco.agent.upload.UploaderException;
-import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.util.Timer;
-import com.teamscale.report.jacoco.CoverageFile;
-import com.teamscale.report.jacoco.EmptyReportException;
-import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
-import com.teamscale.report.jacoco.dump.Dump;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and
@@ -164,6 +163,7 @@ public class Agent extends AgentBase {
 	 * directory defined in {@link #options} and uploads it if an uploader is
 	 * configured. Logs any errors, never throws an exception.
 	 */
+	@Override
 	public void dumpReport() {
 		logger.debug("Starting dump");
 

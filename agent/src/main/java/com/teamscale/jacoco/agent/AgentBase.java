@@ -158,4 +158,11 @@ public abstract class AgentBase {
 		// Template method to be overridden by subclasses.
 	}
 
+	/**
+	 * Dumps the current execution data, converts it, writes it to the output
+	 * directory defined in {@link #options} and uploads it if an uploader is
+	 * configured. Logs any errors, never throws an exception.
+	 */
+	public abstract void dumpReport();
+
 }
