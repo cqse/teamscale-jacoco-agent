@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.TestWithClusterId;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
+import com.teamscale.client.TestWithClusterId;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import spark.Request;
 import spark.Response;
@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -144,11 +145,13 @@ public class TeamscaleMockServer {
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(tempDir.toString());
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
-		Part file = request.raw().getPart("report");
+		Collection<Part> parts = request.raw().getParts();
 		String partition = request.queryParams("partition");
-		String reportString = IOUtils.toString(file.getInputStream());
-		uploadedReports.add(new ExternalReport(reportString, partition));
-		file.delete();
+		for (Part part : parts) {
+			String reportString = IOUtils.toString(part.getInputStream());
+			uploadedReports.add(new ExternalReport(reportString, partition));
+			part.delete();
+		}
 
 		return "success";
 	}
