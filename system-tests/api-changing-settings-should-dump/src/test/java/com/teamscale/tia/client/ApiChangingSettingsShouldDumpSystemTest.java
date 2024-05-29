@@ -13,6 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ApiChangingSettingsShouldDumpSystemTest {
 
+	private static final int METHOD_FOO_COVERABLE_LINE = 7;
+	private static final int METHOD_BAR_COVERABLE_LINE = 11;
+
 	@Test
 	public void systemTest() throws Exception {
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.StdErrLog");
@@ -25,9 +28,19 @@ public class ApiChangingSettingsShouldDumpSystemTest {
 		SystemTestUtils.changePartition(SystemTestUtils.AGENT_PORT, "some_other_value");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.uploadedReports.get(0).getPartition()).isEqualTo("partition_before_change");
 		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
 		// ensure that only the foo() method was covered, not the bar() method
-		assertThat(report).contains("<line nr=\"7\" mi=\"0\"").contains("<line nr=\"11\" mi=\"2\"");
+		assertThat(report).contains(coveredLine(METHOD_FOO_COVERABLE_LINE))
+				.contains(missedLine(METHOD_BAR_COVERABLE_LINE, 2));
+	}
+
+	private String missedLine(int lineNumber, int numberOfProbes) {
+		return "<line nr=\"" + lineNumber + "\" mi=\"" + numberOfProbes + "\"";
+	}
+
+	private String coveredLine(int lineNumber) {
+		return "<line nr=\"" + lineNumber + "\" mi=\"0\"";
 	}
 
 }

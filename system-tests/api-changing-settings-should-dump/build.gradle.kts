@@ -11,7 +11,7 @@ tasks.test {
             "teamscale-user" to "fake",
             "teamscale-access-token" to "fake",
             "teamscale-project" to "p",
-            "teamscale-partition" to "part",
+            "teamscale-partition" to "partition_before_change",
             "teamscale-commit" to "master:12345",
             "includes" to "**SystemUnderTest**",
         )

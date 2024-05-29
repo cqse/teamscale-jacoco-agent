@@ -158,7 +158,7 @@ public class Agent extends AgentBase {
 		}
 
 		try (Stream<Path> stream = Files.list(directory)) {
-			if (stream.count() == 0) {
+			if (stream.findFirst().isPresent()) {
 				return;
 			}
 		}
