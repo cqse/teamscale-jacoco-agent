@@ -73,6 +73,7 @@ public abstract class ResourceBase {
 		}
 
 		logger.debug("Changing partition name to " + partition);
+		agentBase.dumpReport();
 		agentBase.controller.setSessionId(partition);
 		agentBase.options.getTeamscaleServerOptions().partition = partition;
 		return Response.noContent().build();
@@ -87,6 +88,7 @@ public abstract class ResourceBase {
 			handleBadRequest("The new message is missing in the request body! Please add it as plain text.");
 		}
 
+		agentBase.dumpReport();
 		logger.debug("Changing message to " + message);
 		agentBase.options.getTeamscaleServerOptions().setMessage(message);
 
@@ -101,6 +103,8 @@ public abstract class ResourceBase {
 		if (revision == null || revision.isEmpty()) {
 			handleBadRequest("The new revision name is missing in the request body! Please add it as plain text.");
 		}
+
+		agentBase.dumpReport();
 		logger.debug("Changing revision name to " + revision);
 		agentBase.options.getTeamscaleServerOptions().revision = revision;
 
@@ -115,8 +119,9 @@ public abstract class ResourceBase {
 		if (commit == null || commit.isEmpty()) {
 			handleBadRequest("The new upload commit is missing in the request body! Please add it as plain text.");
 		}
-		agentBase.options.getTeamscaleServerOptions().commit = CommitDescriptor.parse(commit);
 
+		agentBase.dumpReport();
+		agentBase.options.getTeamscaleServerOptions().commit = CommitDescriptor.parse(commit);
 
 		return Response.noContent().build();
 	}

@@ -39,7 +39,7 @@ public class TestwiseCoverageAgent extends AgentBase {
 
 
 	public TestwiseCoverageAgent(AgentOptions options, TestExecutionWriter testExecutionWriter,
-								 JaCoCoTestwiseReportGenerator reportGenerator) throws IllegalStateException {
+			JaCoCoTestwiseReportGenerator reportGenerator) throws IllegalStateException {
 		super(options);
 		switch (options.getTestwiseCoverageMode()) {
 			case TEAMSCALE_UPLOAD:
@@ -63,5 +63,10 @@ public class TestwiseCoverageAgent extends AgentBase {
 		resourceConfig.property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE.toString());
 		TestwiseCoverageResource.setAgent(this);
 		return resourceConfig.register(TestwiseCoverageResource.class).register(GenericExceptionMapper.class);
+	}
+
+	@Override
+	public void dumpReport() {
+		// Dumping via the API is not supported in testwise mode. Ending the test run dumps automatically
 	}
 }

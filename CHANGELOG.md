@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
+- [fix] _agent_: Dump coverage when profiler settings are changed via the API.
 
 # 33.3.0
 - [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscalecommitbranch-and-teamscalecommittime))
