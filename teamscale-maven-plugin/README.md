@@ -1,10 +1,14 @@
 # Teamscale Maven Plugin Dev Setup
 
-# Import into IntelliJ 
-The JaCoCo agent repo uses gradle, but since we are developing a maven plugin, it also uses maven as nested build system. To get code completion etc. in IntelliJ, open the maven tool window and click on sync (🔄) there. This will un-sync the gradle projects but instead sync the `teamscale-maven-plugin` project
+## Import into IntelliJ 
+The JaCoCo agent repo uses gradle, but since we are developing a maven plugin, it also uses maven as nested build system.
+To get code completion etc. in IntelliJ, open the maven tool window and click on sync (🔄) there. 
+This will un-sync the gradle projects but instead sync the `teamscale-maven-plugin` project
 
-# Manual testing
-When doing manual tests, you can attach the IntelliJ debugger to the JVM in which the tests are run. Surefire (maven unit tests) creates its own JVM and you have to tell it to stop before the execution of the tests to attach a debugger. This can be done with `-Dmaven.surefire.debug`. 
+## Manual testing
+When doing manual tests, you can attach the IntelliJ debugger to the JVM in which the tests are run. 
+Surefire (maven unit tests) creates its own JVM and you have to tell it to stop before the execution of the tests to attach a debugger. 
+This can be done with `-Dmaven.surefire.debug` as parameter for the `mvn` call. 
 You also need to have a build of the plugin in your local maven cache (usually `$HOME/.m2`) by calling the `./gradlew publishToMavenLocal` in the root of this repository (not root the root of the maven plugin).
 
 So if you want to manually test the changes to the plugin you need to:
