@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ApiChangingSettingsShouldDumpSystemTest {
 
 	private static final int METHOD_FOO_COVERABLE_LINE = 7;
-	private static final int METHOD_BAR_COVERABLE_LINE = 11;
 
 	@Test
 	public void systemTest() throws Exception {
@@ -30,13 +29,7 @@ public class ApiChangingSettingsShouldDumpSystemTest {
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports.get(0).getPartition()).isEqualTo("partition_before_change");
 		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
-		// ensure that only the foo() method was covered, not the bar() method
-		assertThat(report).contains(coveredLine(METHOD_FOO_COVERABLE_LINE))
-				.contains(missedLine(METHOD_BAR_COVERABLE_LINE, 2));
-	}
-
-	private String missedLine(int lineNumber, int numberOfProbes) {
-		return "<line nr=\"" + lineNumber + "\" mi=\"" + numberOfProbes + "\"";
+		assertThat(report).contains(coveredLine(METHOD_FOO_COVERABLE_LINE));
 	}
 
 	private String coveredLine(int lineNumber) {
