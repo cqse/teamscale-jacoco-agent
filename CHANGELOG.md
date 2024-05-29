@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscalecommitbranch-and-teamscalecommittime))
 - [fix] _agent_: New default date format of the [git-commit-id-maven-plugin](https://github.com/git-commit-id/git-commit-id-maven-plugin) could not be parsed (see [GitHub Issue](https://github.com/cqse/teamscale-jacoco-agent/issues/464))
+- [fix] _Gradle Plugin_: Testwise Coverage reports did override each other when multiple modules upload to the same partition
 
 # 33.2.0
 - [feature] _agent_: Add support for git.properties in Spring Boot 3.2
