@@ -42,12 +42,18 @@ public class AgentUtils {
 		return mainTempDirectory;
 	}
 
-	/** Returns the directory that contains the agent or null if it can't be resolved. */
+	/** Returns the directory that contains the agent installation. */
 	public static Path getAgentDirectory() {
 		try {
 			URI jarFileUri = PreMain.class.getProtectionDomain().getCodeSource().getLocation().toURI();
 			// we assume that the dist zip is extracted and the agent jar not moved
-			return Paths.get(jarFileUri).getParent().getParent();
+			Path jarDirectory = Paths.get(jarFileUri).getParent();
+			Path installDirectory = jarDirectory.getParent();
+			if (installDirectory == null) {
+				// happens when the jar file is stored in the root directory
+				return jarDirectory;
+			}
+			return installDirectory;
 		} catch (URISyntaxException e) {
 			throw new RuntimeException("Failed to obtain agent directory. This is a bug, please report it.", e);
 		}
