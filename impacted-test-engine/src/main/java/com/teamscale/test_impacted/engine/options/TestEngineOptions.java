@@ -7,8 +7,8 @@ import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration;
 import com.teamscale.test_impacted.engine.TestDataWriter;
 import com.teamscale.test_impacted.engine.TestEngineRegistry;
 import com.teamscale.test_impacted.engine.executor.ITestSorter;
-import com.teamscale.test_impacted.engine.executor.ImpactedTestsSorter;
 import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider;
+import com.teamscale.test_impacted.engine.executor.ImpactedTestsSorter;
 import com.teamscale.test_impacted.engine.executor.NOPTestSorter;
 import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier;
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi;
@@ -51,8 +51,17 @@ public class TestEngineOptions {
 	 */
 	private String baseline;
 
+	//TODO Docs
+	private String baselineRevision;
+
 	/** The end commit used for TIA and for uploading the coverage. May not be null. */
 	private CommitDescriptor endCommit;
+
+	// TODO Docs
+	private String endRevision;
+
+	//TODO docs
+	private String repository;
 
 	/** The URLs (including port) at which the agents listen. May be empty but not null. */
 	private List<ITestwiseCoverageAgentApi> testwiseCoverageAgentApis = Collections.emptyList();
@@ -108,7 +117,7 @@ public class TestEngineOptions {
 		TeamscaleClient client = new TeamscaleClient(serverOptions.getUrl(), serverOptions.getUserName(),
 				serverOptions.getUserAccessToken(), serverOptions.getProject(),
 				new File(reportDirectory, "server-request.txt"));
-		return new ImpactedTestsProvider(client, baseline, endCommit, partition,
+		return new ImpactedTestsProvider(client, baseline, baselineRevision, endCommit, endRevision, repository, partition,
 				isRunAllTests(), isIncludeAddedTests(), isIncludeFailedAndSkipped());
 	}
 
@@ -173,9 +182,27 @@ public class TestEngineOptions {
 			return this;
 		}
 
+		/** @see #endRevision */
+		public Builder endRevision(String endRevision) {
+			testEngineOptions.endRevision = endRevision;
+			return this;
+		}
+
+		/** @see #repository */
+		public Builder repository(String repository) {
+			testEngineOptions.repository = repository;
+			return this;
+		}
+
 		/** @see #baseline */
 		public Builder baseline(String baseline) {
 			testEngineOptions.baseline = baseline;
+			return this;
+		}
+
+		/** @see #baselineRevision */
+		public Builder baselineRevision(String baselineRevision) {
+			testEngineOptions.baselineRevision = baselineRevision;
 			return this;
 		}
 
@@ -210,7 +237,9 @@ public class TestEngineOptions {
 
 		/** Checks field conditions and returns the built {@link TestEngineOptions}. */
 		public TestEngineOptions build() {
-			TestEngineOptionUtils.assertNotNull(testEngineOptions.endCommit, "End commit must be set.");
+			if (testEngineOptions.endCommit == null && testEngineOptions.endRevision == null) {
+				throw new AssertionError("End commit must be set via endCommit or endRevision.");
+			}
 			if (testEngineOptions.runImpacted) {
 				TestEngineOptionUtils.assertNotNull(testEngineOptions.serverOptions, "Server options must be set.");
 			}

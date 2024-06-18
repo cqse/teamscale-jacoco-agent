@@ -86,20 +86,21 @@ public class TeamscaleClient {
 	 * all prioritized tests.
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baseline,
+			List<ClusteredTestDetails> availableTests, String baseline, String baselineRevision,
 			CommitDescriptor endCommit,
+			String repository,
 			List<String> partitions,
 			boolean includeNonImpacted,
 			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
 		ETestImpactOptions[] selectedOptions = createSelectedOptionsArray(includeNonImpacted, includeAddedTests,
 				includeFailedAndSkipped);
-		return getImpactedTests(availableTests, baseline, null, endCommit, null, null, partitions,
+		return getImpactedTests(availableTests, baseline, baselineRevision, endCommit, null, repository, partitions,
 				selectedOptions);
 	}
 
 	// TODO documentation
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baselineRevision,
+			List<ClusteredTestDetails> availableTests, String baseline, String baselineRevision,
 			String endRevision,
 			String repository,
 			List<String> partitions,
@@ -107,7 +108,7 @@ public class TeamscaleClient {
 			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
 		ETestImpactOptions[] selectedOptions = createSelectedOptionsArray(includeNonImpacted, includeAddedTests,
 				includeFailedAndSkipped);
-		return getImpactedTests(availableTests, null, baselineRevision, null, endRevision, repository, partitions,
+		return getImpactedTests(availableTests, baseline, baselineRevision, null, endRevision, repository, partitions,
 				selectedOptions);
 	}
 
