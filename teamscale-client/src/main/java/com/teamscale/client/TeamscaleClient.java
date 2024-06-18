@@ -91,6 +91,28 @@ public class TeamscaleClient {
 			List<String> partitions,
 			boolean includeNonImpacted,
 			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
+		ETestImpactOptions[] selectedOptions = createSelectedOptionsArray(includeNonImpacted, includeAddedTests,
+				includeFailedAndSkipped);
+		return getImpactedTests(availableTests, baseline, null, endCommit, null, null, partitions,
+				selectedOptions);
+	}
+
+	// TODO documentation
+	public Response<List<PrioritizableTestCluster>> getImpactedTests(
+			List<ClusteredTestDetails> availableTests, String baselineRevision,
+			String endRevision,
+			String repository,
+			List<String> partitions,
+			boolean includeNonImpacted,
+			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
+		ETestImpactOptions[] selectedOptions = createSelectedOptionsArray(includeNonImpacted, includeAddedTests,
+				includeFailedAndSkipped);
+		return getImpactedTests(availableTests, null, baselineRevision, null, endRevision, repository, partitions,
+				selectedOptions);
+	}
+
+	private ETestImpactOptions[] createSelectedOptionsArray(boolean includeNonImpacted, boolean includeAddedTests,
+			boolean includeFailedAndSkipped) {
 		List<ETestImpactOptions> selectedOptions = new ArrayList<>(Collections.singletonList(ENSURE_PROCESSED));
 		if (includeNonImpacted) {
 			selectedOptions.add(INCLUDE_NON_IMPACTED);
@@ -101,9 +123,9 @@ public class TeamscaleClient {
 		if (includeFailedAndSkipped) {
 			selectedOptions.add(INCLUDE_FAILED_AND_SKIPPED);
 		}
-		return getImpactedTests(availableTests, baseline, endCommit, partitions,
-				selectedOptions.toArray(new ETestImpactOptions[0]));
+		return selectedOptions.toArray(new ETestImpactOptions[0]);
 	}
+
 
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or you
@@ -118,6 +140,7 @@ public class TeamscaleClient {
 	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
 	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
 	 *                       of the given commit.
+	 *                       TODO document new options
 	 * @param endCommit      The last commit for which changes should be considered.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
@@ -126,8 +149,12 @@ public class TeamscaleClient {
 	 * all prioritized tests.
 	 */
 	private Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baseline,
+			List<ClusteredTestDetails> availableTests,
+			String baseline,
+			String baselineRevision,
 			CommitDescriptor endCommit,
+			String endRevision,
+			String repository,
 			List<String> partitions,
 			ETestImpactOptions... options) throws IOException {
 		EnumSet<ETestImpactOptions> testImpactOptions = EnumSet.copyOf(Arrays.asList(options));
@@ -138,19 +165,18 @@ public class TeamscaleClient {
 
 		if (availableTests == null) {
 			return wrapInCluster(
-					service.getImpactedTests(projectId, baseline, endCommit, partitions,
+					service.getImpactedTests(projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
 									includeNonImpacted,
 									includeFailedAndSkipped,
 									ensureProcessed, includeAddedTests)
 							.execute());
 		} else {
 			return service
-					.getImpactedTests(projectId, baseline, endCommit, partitions,
+					.getImpactedTests(projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
 							includeNonImpacted,
 							includeFailedAndSkipped,
 							ensureProcessed, includeAddedTests, availableTests.stream()
-									.map(clusteredTestDetails -> TestWithClusterId.fromClusteredTestDetails(
-											clusteredTestDetails)).collect(
+									.map(TestWithClusterId::fromClusteredTestDetails).collect(
 											Collectors.toList()))
 					.execute();
 		}

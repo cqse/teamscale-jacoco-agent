@@ -106,11 +106,14 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
-	@PUT("api/v8.0.0/projects/{projectName}/impacted-tests")
+	@PUT("api/v9.4.0/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTestCluster>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") String baseline,
+			@Query("baseline-revision") String baselineRevision,
 			@Query("end") CommitDescriptor end,
+			@Query("end-revision") String endRevision,
+			@Query("repository") String repository,
 			@Query("partitions") List<String> partitions,
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
@@ -120,11 +123,14 @@ public interface ITeamscaleService {
 	);
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
-	@GET("api/v8.0.0/projects/{projectName}/impacted-tests")
+	@GET("api/v9.4.0/projects/{projectName}/impacted-tests")
 	Call<List<PrioritizableTest>> getImpactedTests(
 			@Path("projectName") String projectName,
 			@Query("baseline") String baseline,
+			@Query("baseline-revision") String baselineRevision,
 			@Query("end") CommitDescriptor end,
+			@Query("end-revision") String endRevision,
+			@Query("repository") String repository,
 			@Query("partitions") List<String> partitions,
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("include-failed-and-skipped") boolean includeFailedAndSkippedTests,
