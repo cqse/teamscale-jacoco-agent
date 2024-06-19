@@ -175,20 +175,26 @@ directories, you can get the commit info via
 - `azure-key`: the access key to the azure file storage. This key is bound to the account, not the share.
 - `http-server-port`: the port at which the agent should start an HTTP server that listens for commands.
   The agent's REST API has the following endpoints:
-  - `[GET] /partition` Returns the name of the currently configured partition name.
-  - `[PUT] /partition` Sets the name of the partition name to the string delivered in the request body in plain text.
+  - `[GET] /partition` Returns the name of the currently configured partition.
+  - `[PUT] /partition` Sets the name of the partition to the string delivered in the request body in plain text.
     This partition should be used for all followup report dumps (see `teamscale-partition`).
     For reports that are not directly sent to Teamscale the generated report will contain the partition name as session ID.
+    Before changing the partition, performs a dump of all coverage collected so far under the previous partition.
   - `[GET] /message` Returns the name of the currently configured commit message.
   - `[PUT] /message` Sets the commit message to the string delivered in the request body in plain text.
     This message should be used for all followup report dumps (see `teamscale-message`).
+    Before changing the message, performs a dump of all coverage collected so far under the previous message.
   - `[POST] /dump` Instructs the agent to dump the collected coverage.
   - `[POST] /reset` Instructs the agent to reset the collected coverage. This will discard all coverage collected in
     the current JVM session.
   - `[GET] /revision` Returns the current revision used for uploading to Teamscale.
+    Before changing the revision, performs a dump of all coverage collected so far under the previous revision.
   - `[PUT] /revision` Sets the revision to use for uploading to Teamscale. The revision must be in the request body in plain text.
+    Before changing the revision, performs a dump of all coverage collected so far under the previous revision.
   - `[GET] /commit` Returns the current commit used for uploading to Teamscale.
+    Before changing the commit, performs a dump of all coverage collected so far under the previous commit.
   - `[PUT] /commit` Sets the commit to use for uploading to Teamscale. The commit must be in the request body in plain thext in the format: branch:timestmap
+    Before changing the commit, performs a dump of all coverage collected so far under the previous commit.
   
   Example `curl` command to set the partition: `curl --fail -X PUT -d "Manual Tests" -H "Content-Type: text/plain" http://PROFILERURL:PORT/partition`
 - `sap-nwdi-applications` needed when profiling in a SAP NetWeaver Development Infrastructure. It must be a semicolon

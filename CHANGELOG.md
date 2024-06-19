@@ -5,10 +5,15 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next Release
-- [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscalecommitbranch-and-teamscalecommittime))
-- [fix] _agent_: New default date format of the [git-commit-id-maven-plugin](https://github.com/git-commit-id/git-commit-id-maven-plugin) could not be parsed (see [GitHub Issue](https://github.com/cqse/teamscale-jacoco-agent/issues/464))
+- [fix] _agent_: Dump coverage when profiler settings are changed via the API.
+- [fix] _agent_: NullPointerException when agent jar was located in the file system root.
 - [fix] _teamscale-maven-plugin_: Testwise coverage upload did not work in detached head state (e.g. in GitLab pipelines)
 
+# 33.3.0
+- [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscalecommitbranch-and-teamscalecommittime))
+- [fix] _agent_: New default date format of the [git-commit-id-maven-plugin](https://github.com/git-commit-id/git-commit-id-maven-plugin) could not be parsed (see [GitHub Issue](https://github.com/cqse/teamscale-jacoco-agent/issues/464))
+- [fix] _Gradle Plugin_: Testwise Coverage reports did override each other when multiple modules upload to the same partition
+- 
 # 33.2.0
 - [feature] _agent_: Add support for git.properties in Spring Boot 3.2
 - [feature] _agent_: Read configuration file path from `TEAMSCALE_JAVA_PROFILER_CONFIG_FILE` environment variable

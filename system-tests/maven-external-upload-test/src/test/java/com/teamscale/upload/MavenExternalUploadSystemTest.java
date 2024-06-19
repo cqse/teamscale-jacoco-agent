@@ -57,9 +57,9 @@ public class MavenExternalUploadSystemTest {
 	public void testMavenExternalUpload() throws Exception {
 		SystemTestUtils.runMavenTests(NESTED_MAVEN_PROJECT_NAME);
 		runCoverageUploadGoal(NESTED_MAVEN_PROJECT_NAME);
-		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(2);
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(6);
 		ExternalReport unitTests = teamscaleMockServer.uploadedReports.get(0);
-		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(1);
+		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(3);
 		assertThat(unitTests.getPartition()).isEqualTo("My Custom Unit Tests Partition");
 		assertThat(integrationTests.getPartition()).isEqualTo("Integration Tests");
 	}
@@ -69,7 +69,7 @@ public class MavenExternalUploadSystemTest {
 		SystemTestUtils.runMavenTests(FAILING_MAVEN_PROJECT_NAME);
 		ProcessUtils.ExecutionResult result = runCoverageUploadGoal(FAILING_MAVEN_PROJECT_NAME);
 		assertThat(result).isNotNull();
-		assertThat(teamscaleMockServer.uploadedReports.size()).isEqualTo(0);
+		assertThat(teamscaleMockServer.uploadedReports).isEmpty();
 		assertThat(result.getStdout()).contains(
 				String.format("Skipping upload for %s as %s is not configured to produce XML reports",
 						FAILING_MAVEN_PROJECT_NAME, "org.jacoco:jacoco-maven-plugin"));

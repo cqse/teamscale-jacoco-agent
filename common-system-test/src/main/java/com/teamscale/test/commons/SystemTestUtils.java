@@ -1,12 +1,16 @@
 package com.teamscale.test.commons;
 
 import com.teamscale.report.testwise.model.TestInfo;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import org.apache.commons.lang3.SystemUtils;
 import org.conqat.lib.commons.io.ProcessUtils;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Retrofit;
+import retrofit2.http.Body;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +85,29 @@ public class SystemTestUtils {
 	}
 
 	/**
+	 * Runs Gradle in the given Gradle project path with the given arguments.
+	 *
+	 * @throws IOException if running Gradle fails.
+	 */
+	public static void runGradle(String gradleProjectPath, String... gradleArguments) throws IOException {
+		ProcessUtils.ExecutionResult result;
+		try {
+			result = ProcessUtils.execute(buildGradleProcess(gradleProjectPath, gradleArguments));
+		} catch (IOException e) {
+			throw new IOException("Failed to run ./gradlew clean verify in directory " + gradleProjectPath, e);
+		}
+
+		// in case the process succeeded, we still log stdout and stderr in case later assertions fail. This helps
+		// debug test failures
+		System.out.println("Gradle stdout: " + result.getStdout());
+		System.out.println("Gradle stderr: " + result.getStderr());
+
+		if (result.terminatedByTimeoutOrInterruption()) {
+			throw new IOException("Running Gradle failed: " + result.getStdout() + "\n" + result.getStderr());
+		}
+	}
+
+	/**
 	 * Creates the command-line arguments that can be passed to {@link ProcessBuilder} to invoke Maven with the given
 	 * arguments.
 	 */
@@ -95,8 +122,25 @@ public class SystemTestUtils {
 
 		arguments.addAll(Arrays.asList(mavenArguments));
 
-
 		return new ProcessBuilder(arguments).directory(new File(mavenProjectDirectory));
+	}
+
+	/**
+	 * Creates the command-line arguments that can be passed to {@link ProcessBuilder} to invoke Gradle with the given
+	 * arguments.
+	 */
+	@NotNull
+	public static ProcessBuilder buildGradleProcess(String gradleProjectDirectory, String... gradleArguments) {
+		List<String> arguments = new ArrayList<>();
+		if (SystemUtils.IS_OS_WINDOWS) {
+			Collections.addAll(arguments, "cmd", "/c", "gradlew.bat");
+		} else {
+			arguments.add("./gradlew");
+		}
+
+		arguments.addAll(Arrays.asList(gradleArguments));
+		
+		return new ProcessBuilder(arguments).directory(new File(gradleProjectDirectory));
 	}
 
 	/** Retrieve all files in the `tia/reports` folder sorted by name. */
@@ -110,12 +154,27 @@ public class SystemTestUtils {
 		/** Dumps coverage */
 		@POST("/dump")
 		Call<Void> dump();
+
+		/** Changes the current partition. */
+		@PUT("/partition")
+		Call<Void> changePartition(@Body RequestBody newPartition);
+
+		/** Changes the current partition. Convenience method to pass a plain string. */
+		default Call<Void> changePartition(String newPartition) {
+			return changePartition(RequestBody.create(MediaType.parse("text/plain"), newPartition));
+		}
 	}
 
 	/** Instructs the agent via HTTP to dump the currently collected coverage. */
 	public static void dumpCoverage(int agentPort) throws IOException {
 		new Retrofit.Builder().baseUrl("http://localhost:" + agentPort).build()
 				.create(AgentService.class).dump().execute();
+	}
+
+	/** Instructs the agent via HTTP to change the partition. */
+	public static void changePartition(int agentPort, String newPartition) throws IOException {
+		new Retrofit.Builder().baseUrl("http://localhost:" + agentPort).build()
+				.create(AgentService.class).changePartition(newPartition).execute();
 	}
 
 }

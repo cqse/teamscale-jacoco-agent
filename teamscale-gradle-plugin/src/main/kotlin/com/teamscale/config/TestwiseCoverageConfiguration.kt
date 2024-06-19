@@ -22,7 +22,7 @@ open class TestwiseCoverageConfiguration(project: Project, task: TestImpacted) :
 
     init {
         destination.set(partition.map { partition ->
-            project.rootProject.layout.buildDirectory.file(
+            project.layout.buildDirectory.file(
                 "reports/testwise-coverage/${task.name}/${
                     partition.replace(
                         "[ /\\\\]".toRegex(),
