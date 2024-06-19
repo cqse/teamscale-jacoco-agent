@@ -7,6 +7,8 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - [fix] _agent_: Dump coverage when profiler settings are changed via the API.
 - [fix] _agent_: NullPointerException when agent jar was located in the file system root.
+
+[//]: # ( TODO update)
 - [fix] _teamscale-maven-plugin_: Testwise coverage upload did not work in detached head state (e.g. in GitLab pipelines)
 
 # 33.3.0
