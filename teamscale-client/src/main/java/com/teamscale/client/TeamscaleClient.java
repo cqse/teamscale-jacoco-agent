@@ -70,6 +70,7 @@ public class TeamscaleClient {
 	 * that the given commit has been processed by Teamscale and also considers previous failing tests for
 	 * re-execution.
 	 *
+	 * TODO add new parameters to doc
 	 * @param availableTests A list of tests that is locally available for execution. This allows TIA to consider newly
 	 *                       added tests in addition to those that are already known and allows to filter e.g. if the
 	 *                       user has already selected a subset of relevant tests. This can be <code>null</code> to
@@ -86,34 +87,15 @@ public class TeamscaleClient {
 	 * all prioritized tests.
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baseline, String baselineRevision,
+			List<ClusteredTestDetails> availableTests,
+			String baseline,
+			String baselineRevision,
 			CommitDescriptor endCommit,
-			String repository,
-			List<String> partitions,
-			boolean includeNonImpacted,
-			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
-		ETestImpactOptions[] selectedOptions = createSelectedOptionsArray(includeNonImpacted, includeAddedTests,
-				includeFailedAndSkipped);
-		return getImpactedTests(availableTests, baseline, baselineRevision, endCommit, null, repository, partitions,
-				selectedOptions);
-	}
-
-	// TODO documentation
-	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baseline, String baselineRevision,
 			String endRevision,
 			String repository,
 			List<String> partitions,
 			boolean includeNonImpacted,
 			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
-		ETestImpactOptions[] selectedOptions = createSelectedOptionsArray(includeNonImpacted, includeAddedTests,
-				includeFailedAndSkipped);
-		return getImpactedTests(availableTests, baseline, baselineRevision, null, endRevision, repository, partitions,
-				selectedOptions);
-	}
-
-	private ETestImpactOptions[] createSelectedOptionsArray(boolean includeNonImpacted, boolean includeAddedTests,
-			boolean includeFailedAndSkipped) {
 		List<ETestImpactOptions> selectedOptions = new ArrayList<>(Collections.singletonList(ENSURE_PROCESSED));
 		if (includeNonImpacted) {
 			selectedOptions.add(INCLUDE_NON_IMPACTED);
@@ -124,14 +106,15 @@ public class TeamscaleClient {
 		if (includeFailedAndSkipped) {
 			selectedOptions.add(INCLUDE_FAILED_AND_SKIPPED);
 		}
-		return selectedOptions.toArray(new ETestImpactOptions[0]);
+		return getImpactedTests(availableTests, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
+				selectedOptions.toArray(new ETestImpactOptions[0]));
 	}
-
 
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or you
 	 * want to exclude failed and skipped tests from previous test runs.
 	 *
+	 * TODO add new parameters to doc
 	 * @param availableTests A list of tests that is locally available for execution. This allows TIA to consider newly
 	 *                       added tests in addition to those that are already known and allows to filter e.g. if the
 	 *                       user has already selected a subset of relevant tests. This can be <code>null</code> to
@@ -141,7 +124,6 @@ public class TeamscaleClient {
 	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
 	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
 	 *                       of the given commit.
-	 *                       TODO document new options
 	 * @param endCommit      The last commit for which changes should be considered.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
@@ -149,7 +131,7 @@ public class TeamscaleClient {
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
-	private Response<List<PrioritizableTestCluster>> getImpactedTests(
+	 private Response<List<PrioritizableTestCluster>> getImpactedTests(
 			List<ClusteredTestDetails> availableTests,
 			String baseline,
 			String baselineRevision,

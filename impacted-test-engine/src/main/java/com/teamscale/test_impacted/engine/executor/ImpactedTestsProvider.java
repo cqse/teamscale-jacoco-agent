@@ -1,19 +1,19 @@
 package com.teamscale.test_impacted.engine.executor;
 
-import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.StringUtils;
-import com.teamscale.client.TeamscaleClient;
-import com.teamscale.test_impacted.commons.LoggerUtils;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.TeamscaleClient;
+import com.teamscale.test_impacted.commons.LoggerUtils;
+
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 
 /**
  * Class for retrieving the impacted {@link PrioritizableTestCluster}s corresponding to {@link ClusteredTestDetails}
@@ -66,20 +66,11 @@ public class ImpactedTestsProvider {
 			List<ClusteredTestDetails> availableTestDetails) {
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
-			Response<List<PrioritizableTestCluster>> response;
-			if (!StringUtils.isBlank(endRevision)) {
-				response = client
-						.getImpactedTests(availableTestDetails, baseline, baselineRevision, endRevision, repository, Collections.singletonList(partition),
-								includeNonImpacted, includeAddedTests, includeFailedAndSkipped);
-			} else if (endCommit != null){
-				response = client
-						.getImpactedTests(availableTestDetails, baseline, baselineRevision, endCommit, repository,
+			Response<List<PrioritizableTestCluster>> response = client
+						.getImpactedTests(availableTestDetails, baseline, baselineRevision, endCommit, endRevision, repository,
 								Collections.singletonList(partition),
 								includeNonImpacted, includeAddedTests, includeFailedAndSkipped);
-			} else {
-				LOGGER.severe(() -> "Retrieving impacted tests failed. Please either provide an endRevision or an endCommit.");
-				return null;
-			}
+
 			if (response.isSuccessful()) {
 				List<PrioritizableTestCluster> testClusters = response.body();
 				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {
