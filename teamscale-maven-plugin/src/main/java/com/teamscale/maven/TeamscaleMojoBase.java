@@ -1,5 +1,8 @@
 package com.teamscale.maven;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
@@ -9,9 +12,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * A base class for all Teamscale related maven Mojos.
@@ -60,6 +60,12 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 */
 	@Parameter(property = "teamscale.revision")
 	public String revision;
+
+	/**
+	 * TODO
+	 */
+	@Parameter(property = "teamscale.repository")
+	public String repository;
 
 	/**
 	 * Whether to skip the execution of this Mojo.

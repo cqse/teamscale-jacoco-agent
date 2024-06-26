@@ -178,6 +178,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedCommit);
 		setTiaProperty("endRevision", resolvedRevision);
+		setTiaProperty("repository", repository);
 		setTiaProperty("partition", getPartition());
 		if (agentPort.equals("0")) {
 			agentPort = findAvailablePort();
