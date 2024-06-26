@@ -99,12 +99,34 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         @Internal
         get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).first
 
+    /**
+     *  TODO
+     */
+    val endRevision
+        @Internal
+        get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).second
 
     /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
     val baseline
         @Input
         @Optional
         get() = pluginExtension.baseline
+
+    /**
+     * TODO
+     */
+    val baselineRevision
+        @Input
+        @Optional
+        get() = pluginExtension.baselineRevision
+
+    /**
+     * TODO
+     */
+    val repository
+        @Input
+        @Optional
+        get() = pluginExtension.repository
 
     /**
      * The directory to write the jacoco execution data to. Ensures that the directory
@@ -191,7 +213,10 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         }
         writeEngineProperty("partition", report.partition.get())
         writeEngineProperty("endCommit", endCommit?.toString())
+        writeEngineProperty("endRevision", endRevision)
         writeEngineProperty("baseline", baseline?.toString())
+        writeEngineProperty("baselineRevision", baselineRevision)
+        writeEngineProperty("repository", repository)
         writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
         writeEngineProperty("runImpacted", runImpacted.toString())

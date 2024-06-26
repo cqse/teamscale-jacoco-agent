@@ -55,6 +55,30 @@ open class TeamscalePluginExtension(val project: Project) {
         baseline { project.configure(this, closure) }
     }
 
+    var baselineRevision: String? = null
+
+    /** Configures the baselineRevision. */
+    fun baselineRevision(action: Action<in String?>) {
+        action.execute(baselineRevision)
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun baselineRevision(closure: Closure<*>) {
+        baselineRevision { project.configure(this, closure) }
+    }
+
+    var repository: String? = null
+
+    /** Configures the baselineRevision. */
+    fun repository(action: Action<in String?>) {
+        action.execute(repository)
+    }
+
+    /** Overload for Groovy DSL compatibility. */
+    fun repository(closure: Closure<*>) {
+        repository { project.configure(this, closure) }
+    }
+
     val report = TopLevelReportConfiguration(project)
 
     /** Configures the reports to be uploaded. */
