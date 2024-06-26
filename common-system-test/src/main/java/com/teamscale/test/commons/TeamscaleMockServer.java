@@ -43,6 +43,15 @@ public class TeamscaleMockServer {
 	/** All user agents that were present in the received requests. */
 	public final Set<String> collectedUserAgents = new HashSet<>();
 
+	/** A list of all commits to which an upload happened. Can either be branch:timestamp or revision */
+	public final List<String> uploadCommits = new ArrayList<>();
+	/** A list of all commits for which impacted tests were requested. Can either be branch:timestamp or revision */
+	public final List<String> impactedTestCommits = new ArrayList<>();
+	/** A list of all repositories to which an upload happened. */
+	public final List<String> uploadRepositories = new ArrayList<>();
+	/** A list of all repositories for which impacted tests were requested. */
+	public final List<String> impactedTestRepositories = new ArrayList<>();
+
 	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
 	public final Set<TestWithClusterId> availableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
@@ -111,6 +120,8 @@ public class TeamscaleMockServer {
 
 	private String handleImpactedTests(Request request, Response response) throws IOException {
 		collectedUserAgents.add(request.headers("User-Agent"));
+		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"));
+		impactedTestRepositories.add(request.queryParams("repository"));
 		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
 		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
@@ -144,6 +155,8 @@ public class TeamscaleMockServer {
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
 		collectedUserAgents.add(request.headers("User-Agent"));
+		uploadCommits.add(request.queryParams("revision") + ", " + request.queryParams("t"));
+		uploadRepositories.add(request.queryParams("repository"));
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(tempDir.toString());
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
@@ -165,4 +178,5 @@ public class TeamscaleMockServer {
 		service.stop();
 		service.awaitStop();
 	}
+
 }
