@@ -1,21 +1,8 @@
 package com.teamscale.test.commons;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.teamscale.client.JsonUtils;
-import com.teamscale.client.PrioritizableTest;
-import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.ProfilerConfiguration;
-import com.teamscale.client.ProfilerRegistration;
-import com.teamscale.client.TestWithClusterId;
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import spark.Request;
-import spark.Response;
-import spark.Service;
-import spark.utils.IOUtils;
+import static java.util.stream.Collectors.toList;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletException;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,8 +14,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.ServletException;
+import javax.servlet.http.Part;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.teamscale.client.JsonUtils;
+import com.teamscale.client.PrioritizableTest;
+import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.ProfilerConfiguration;
+import com.teamscale.client.ProfilerRegistration;
+import com.teamscale.client.TestWithClusterId;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+
+import spark.Request;
+import spark.Response;
+import spark.Service;
+import spark.utils.IOUtils;
 
 /**
  * Mocks a Teamscale server: returns predetermined impacted tests and stores all uploaded reports so tests can run
@@ -74,7 +76,7 @@ public class TeamscaleMockServer {
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
 		this.impactedTests = Arrays.asList(impactedTests);
-		service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		service.put("api/v9.4.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		return this;
 	}
 

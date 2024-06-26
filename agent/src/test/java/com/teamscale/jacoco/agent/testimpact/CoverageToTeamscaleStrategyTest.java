@@ -1,5 +1,24 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
@@ -15,26 +34,9 @@ import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
+
 import okhttp3.HttpUrl;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Response;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CoverageToTeamscaleStrategyTest {
@@ -74,7 +76,7 @@ public class CoverageToTeamscaleStrategyTest {
 		List<PrioritizableTestCluster> clusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("mytest"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(
+		when(client.getImpactedTests(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(
 				Response.success(clusters));
 
 		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
@@ -88,7 +90,7 @@ public class CoverageToTeamscaleStrategyTest {
 				Collections.singletonList(
 						new ClusteredTestDetails("mytest", "mytest", "content", "cluster", "partition")), false,
 				true, true,
-				null);
+				null, null);
 		strategy.testStart("mytest");
 		strategy.testEnd("mytest", new TestExecution("mytest", 0L, ETestExecutionResult.PASSED));
 		strategy.testRunEnd(true);
