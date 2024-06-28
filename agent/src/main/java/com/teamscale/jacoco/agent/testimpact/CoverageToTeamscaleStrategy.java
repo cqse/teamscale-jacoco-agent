@@ -14,7 +14,7 @@ import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 
 /**
  * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the
- * {@link #testRunStart(List, boolean, boolean, boolean, String)} event by retrieving tests to run from Teamscale.
+ * {@link #testRunStart(List, boolean, boolean, boolean, String, String)} event by retrieving tests to run from Teamscale.
  */
 public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 
