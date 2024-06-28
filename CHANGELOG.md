@@ -4,7 +4,7 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# Next Release
+# 33.3.1
 - [fix] _agent_: Dump coverage when profiler settings are changed via the API.
 - [fix] _agent_: NullPointerException when agent jar was located in the file system root.
 - [fix] _installer_: Did not support SSL certificates that use elliptic curve ciphers.
