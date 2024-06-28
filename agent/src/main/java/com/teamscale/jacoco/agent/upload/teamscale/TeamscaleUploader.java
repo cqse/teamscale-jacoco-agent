@@ -130,8 +130,8 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken,
 					HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 			api.uploadReport(teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
-					teamscaleServer.partition, EReportFormat.JACOCO, teamscaleServer.getMessage(),
-					coverageFile.createFormRequestBody());
+					teamscaleServer.repository, teamscaleServer.partition, EReportFormat.JACOCO,
+					teamscaleServer.getMessage(), coverageFile.createFormRequestBody());
 			return true;
 		} catch (IOException e) {
 			logger.error("Failed to upload coverage to {}", teamscaleServer, e);

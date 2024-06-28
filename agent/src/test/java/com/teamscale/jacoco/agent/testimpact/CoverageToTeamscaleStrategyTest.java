@@ -68,7 +68,7 @@ public class CoverageToTeamscaleStrategyTest {
 
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":false,\"tests\":[{\"uniformPath\":\"mytest\",\"sourcePath\":\"mytest\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
-				any(), any(), any(), any());
+				any(), any(), any(), any(), any());
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class CoverageToTeamscaleStrategyTest {
 
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":true,\"tests\":[{\"uniformPath\":\"mytest\",\"sourcePath\":\"mytest\",\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
-				any(), any(), any(), any());
+				any(), any(), any(), any(), any());
 	}
 
 	/** Returns a dummy testwise coverage object for a test with the given name that covers a few lines of Main.java. */

@@ -1,5 +1,8 @@
 package com.teamscale.client;
 
+import java.io.IOException;
+import java.util.List;
+
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -15,9 +18,6 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-
-import java.io.IOException;
-import java.util.List;
 
 /** {@link Retrofit} API specification for Teamscale. */
 public interface ITeamscaleService {
@@ -42,6 +42,7 @@ public interface ITeamscaleService {
 			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision,
+			@Query("repository") String repository,
 			@Query("movetolastcommit") Boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -51,26 +52,27 @@ public interface ITeamscaleService {
 	/**
 	 * Report upload API with {@link EReportFormat}.
 	 *
-	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
+	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, String, Boolean, String, String, RequestBody)
 	 */
 	default Call<ResponseBody> uploadExternalReport(
 			String projectName,
 			EReportFormat format,
 			CommitDescriptor commit,
 			String revision,
+			String repository,
 			Boolean moveToLastCommit,
 			String partition,
 			String message,
 			RequestBody report
 	) {
-		return uploadExternalReport(projectName, format.name(), commit, revision, moveToLastCommit,
+		return uploadExternalReport(projectName, format.name(), commit, revision, repository, moveToLastCommit,
 				partition, message, report);
 	}
 
 	/**
 	 * Report upload API for multiple reports at once.
 	 *
-	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
+	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, String, Boolean, String, String, RequestBody)
 	 */
 	@Multipart
 	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
@@ -79,6 +81,7 @@ public interface ITeamscaleService {
 			@Query("format") EReportFormat format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision,
+			@Query("repository") String repository,
 			@Query("movetolastcommit") boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -90,7 +93,7 @@ public interface ITeamscaleService {
 	 * format so that consumers can add support for new report formats without the requirement that the teamscale-client
 	 * needs to be adjusted beforehand.
 	 *
-	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, Boolean, String, String, RequestBody)
+	 * @see #uploadExternalReport(String, String, CommitDescriptor, String, String, Boolean, String, String, RequestBody)
 	 */
 	@Multipart
 	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
@@ -99,6 +102,7 @@ public interface ITeamscaleService {
 			@Query("format") String format,
 			@Query("t") CommitDescriptor commit,
 			@Query("revision") String revision,
+			@Query("repository") String repository,
 			@Query("movetolastcommit") boolean moveToLastCommit,
 			@Query("partition") String partition,
 			@Query("message") String message,
@@ -165,6 +169,7 @@ public interface ITeamscaleService {
 			String projectName,
 			CommitDescriptor commit,
 			String revision,
+			String repository,
 			String partition,
 			EReportFormat reportFormat,
 			String message,
@@ -183,6 +188,7 @@ public interface ITeamscaleService {
 					reportFormat,
 					commit,
 					revision,
+					repository,
 					moveToLastCommit,
 					partition,
 					message,

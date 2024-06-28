@@ -1,10 +1,9 @@
 package com.teamscale.client;
 
-import okhttp3.HttpUrl;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +16,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
+import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 
 /** Helper class to interact with Teamscale. */
 public class TeamscaleClient {
@@ -178,14 +178,14 @@ public class TeamscaleClient {
 
 	/** Uploads multiple reports to Teamscale in the given {@link EReportFormat}. */
 	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
-							  String revision,
+							  String revision, String repository,
 							  String partition, String message) throws IOException {
-		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, partition, message);
+		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, repository, partition, message);
 	}
 
 	/** Uploads multiple reports to Teamscale. */
 	public void uploadReports(String reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
-							  String revision,
+							  String revision, String repository,
 							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);
@@ -193,7 +193,7 @@ public class TeamscaleClient {
 		}).collect(Collectors.toList());
 
 		Response<ResponseBody> response = service
-				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, true, partition, message,
+				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message,
 						partList).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response));
@@ -202,8 +202,8 @@ public class TeamscaleClient {
 
 	/** Uploads one in-memory report to Teamscale. */
 	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
-							 String revision, String partition, String message) throws IOException {
+							 String revision, String repository, String partition, String message) throws IOException {
 		RequestBody requestBody = RequestBody.create(MultipartBody.FORM, report);
-		service.uploadReport(projectId, commitDescriptor, revision, partition, reportFormat, message, requestBody);
+		service.uploadReport(projectId, commitDescriptor, revision, repository, partition, reportFormat, message, requestBody);
 	}
 }

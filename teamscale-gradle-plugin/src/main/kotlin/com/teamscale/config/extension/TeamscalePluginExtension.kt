@@ -69,7 +69,7 @@ open class TeamscalePluginExtension(val project: Project) {
 
     var repository: String? = null
 
-    /** Configures the baselineRevision. */
+    /** Configures the repository in which the baseline should be resolved in Teamscale (esp. if there's more than one repo in the Teamscale project). */
     fun repository(action: Action<in String?>) {
         action.execute(repository)
     }
