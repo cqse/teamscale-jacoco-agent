@@ -36,25 +36,6 @@ interface ITeamscaleService {
 	): Call<ResponseBody>
 
 	/**
-	 * Report upload API with [ReportFormat].
-	 *
-	 * @see .uploadExternalReport
-	 */
-	fun uploadExternalReport(
-		projectName: String?,
-		format: ReportFormat,
-		commit: CommitDescriptor?,
-		revision: String?,
-		moveToLastCommit: Boolean?,
-		partition: String?,
-		message: String?,
-		report: RequestBody?
-	) = uploadExternalReport(
-		projectName, format.name, commit, revision, moveToLastCommit,
-		partition, message, report
-	)
-
-	/**
 	 * Report upload API for multiple reports at once.
 	 *
 	 * @see .uploadExternalReport
@@ -137,55 +118,57 @@ interface ITeamscaleService {
 	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
 	fun unregisterProfiler(@Path("profilerId") profilerId: String?): Call<ResponseBody?>?
 
-	/**
-	 * Uploads the given report body to Teamscale as blocking call with movetolastcommit set to false.
-	 *
-	 * @return Returns the request body if successful, otherwise throws an IOException.
-	 */
-	@Throws(IOException::class)
-	fun uploadReport(
-		projectName: String?,
-		commit: CommitDescriptor?,
-		revision: String?,
-		partition: String?,
-		reportFormat: ReportFormat,
-		message: String?,
-		report: RequestBody?
-	): String {
-		var descriptor = commit
-		var moveToLastCommit: Boolean? = false
-		revision?.let {
-			// When uploading to a revision, we don't need commit adjustment.
-			descriptor = null
-			moveToLastCommit = null
-		}
-
-		try {
-			val response = uploadExternalReport(
-				projectName,
-				reportFormat,
-				descriptor,
-				revision,
-				moveToLastCommit,
-				partition,
-				message,
-				report
-			).execute()
-
-			val body = response.body()
-			if (response.isSuccessful) {
-				if (body == null) {
-					return ""
-				}
-				return body.string()
+	companion object {
+		/**
+		 * Uploads the given report body to Teamscale as blocking call with movetolastcommit set to false.
+		 *
+		 * @return Returns the request body if successful, otherwise throws an IOException.
+		 */
+		@Throws(IOException::class)
+		fun ITeamscaleService.uploadReport(
+			projectName: String?,
+			commit: CommitDescriptor?,
+			revision: String?,
+			partition: String?,
+			reportFormat: ReportFormat,
+			message: String?,
+			report: RequestBody?
+		): String {
+			var descriptor = commit
+			var moveToLastCommit: Boolean? = false
+			revision?.let {
+				// When uploading to a revision, we don't need commit adjustment.
+				descriptor = null
+				moveToLastCommit = null
 			}
 
-			val errorBody = HttpUtils.getErrorBodyStringSafe(response)
-			throw IOException(
-				"Request failed with error code " + response.code() + ". Response body: " + errorBody
-			)
-		} catch (e: IOException) {
-			throw IOException("Failed to upload report. " + e.message, e)
+			try {
+				val response = uploadExternalReport(
+					projectName,
+					reportFormat.name,
+					descriptor,
+					revision,
+					moveToLastCommit,
+					partition,
+					message,
+					report
+				).execute()
+
+				val body = response.body()
+				if (response.isSuccessful) {
+					if (body == null) {
+						return ""
+					}
+					return body.string()
+				}
+
+				val errorBody = HttpUtils.getErrorBodyStringSafe(response)
+				throw IOException(
+					"Request failed with error code " + response.code() + ". Response body: " + errorBody
+				)
+			} catch (e: IOException) {
+				throw IOException("Failed to upload report. " + e.message, e)
+			}
 		}
 	}
 }

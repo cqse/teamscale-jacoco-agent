@@ -127,7 +127,9 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 			// (See #100)
 			ITeamscaleService api = TeamscaleServiceGenerator.createServiceWithRequestLogging(ITeamscaleService.class,
 					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken);
-			api.uploadReport(teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
+			// ToDo: On Kotlin conversion make uploadReport extension function.
+			//  cant be a normal interface function as retrofit cant handle it.
+			ITeamscaleService.Companion.uploadReport(api, teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
 					teamscaleServer.partition, ReportFormat.JACOCO, teamscaleServer.getMessage(),
 					coverageFile.createFormRequestBody());
 			return true;

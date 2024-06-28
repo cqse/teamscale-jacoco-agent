@@ -1,5 +1,6 @@
 package com.teamscale.client
 
+import com.teamscale.client.ITeamscaleService.Companion.uploadReport
 import com.teamscale.client.TeamscaleServiceGenerator.createServiceWithRequestLogging
 import com.teamscale.client.utils.HttpUtils
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
