@@ -48,7 +48,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 	 * all prioritized tests.
 	 */
 	@Throws(IOException::class)
-	fun getImpactedTests(
+	open fun getImpactedTests(
 		availableTests: List<ClusteredTestDetails>?,
 		baseline: String?,
 		endCommit: CommitDescriptor?,
@@ -127,7 +127,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 
 	/** Uploads multiple reports to Teamscale in the given [ReportFormat]. */
 	@Throws(IOException::class)
-	fun uploadReports(
+	open fun uploadReports(
 		reportFormat: ReportFormat,
 		reports: Collection<File>,
 		commitDescriptor: CommitDescriptor?,
@@ -140,7 +140,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 
 	/** Uploads multiple reports to Teamscale. */
 	@Throws(IOException::class)
-	fun uploadReports(
+	open fun uploadReports(
 		reportFormat: String?,
 		reports: Collection<File>,
 		commitDescriptor: CommitDescriptor?,
@@ -171,7 +171,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 
 	/** Uploads one in-memory report to Teamscale.  */
 	@Throws(IOException::class)
-	fun uploadReport(
+	open fun uploadReport(
 		reportFormat: ReportFormat,
 		report: String,
 		commitDescriptor: CommitDescriptor?,
