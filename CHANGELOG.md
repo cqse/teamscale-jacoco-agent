@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - [fix] _agent_: Dump coverage when profiler settings are changed via the API.
 - [fix] _agent_: NullPointerException when agent jar was located in the file system root.
+- [fix] _installer_: Did not support SSL certificates that use elliptic curve ciphers.
 
 # 33.3.0
 - [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscalecommitbranch-and-teamscalecommittime))
