@@ -7,9 +7,8 @@ We use [semantic versioning](http://semver.org/):
 # Next Release
 - [fix] _agent_: Dump coverage when profiler settings are changed via the API.
 - [fix] _agent_: NullPointerException when agent jar was located in the file system root.
-
-[//]: # ( TODO update)
-- [fix] _teamscale-maven-plugin_: Testwise coverage upload did not work in detached head state (e.g. in GitLab pipelines)
+- [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_: Support using revision for fetching impacted tests for both the baseline and the endCommit. This change is breaking because the Teamscale client API was changed. For the Maven and Gradle plugins this change is non-breaking.
+- [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_, _teamscale-jacoco-agent_: New parameter: `teamscale-repository` (agent), `repository` (Teamscale Client, Gradle and Maven Plugins). This parameter can be used to specify in which repository Teamscale should look up revisions in case there is more than one repository in a given Teamscale project. If no repository is given, Teamscale will look in all connected repositories. This change is breaking because the Teamscale client API was changed. For the JaCoCo agent and the Maven and Gradle plugins this change is non-breaking.
 
 # 33.3.0
 - [feature] _agent_: Support overwriting the git commit inside `git.properties` files with `teamscale.commit.branch` and `teamscale.commit.time` (see [docs](agent/README.md#overwriting-the-git-commit-inside-gitproperties-files-with-teamscalecommitbranch-and-teamscalecommittime))
