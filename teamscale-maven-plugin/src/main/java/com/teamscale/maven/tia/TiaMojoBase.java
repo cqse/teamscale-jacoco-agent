@@ -171,6 +171,14 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		resolveEndCommit();
 		resolveRevision();
 
+		setTiaProperties();
+
+		Path agentConfigFile = createAgentConfigFiles(agentPort);
+		Path logFilePath = targetDirectory.resolve("agent.log");
+		setArgLine(agentConfigFile, logFilePath);
+	}
+
+	private void setTiaProperties() {
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
 		setTiaProperty("server.project", projectId);
@@ -186,10 +194,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
-
-		Path agentConfigFile = createAgentConfigFiles(agentPort);
-		Path logFilePath = targetDirectory.resolve("agent.log");
-		setArgLine(agentConfigFile, logFilePath);
 	}
 
 	/**
