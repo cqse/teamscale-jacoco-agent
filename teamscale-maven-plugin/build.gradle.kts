@@ -22,7 +22,7 @@ abstract class MavenExec : Exec() {
 		project.file("pom.xml").writeText(
 			project.file("pom.xml").readText().replace(
 				Regex("<teamscale.agent.version>[^<]+</teamscale.agent.version>"),
-				"<teamscale.agent.version>29.0.0</teamscale.agent.version>"
+				"<teamscale.agent.version>34.0.0</teamscale.agent.version>"
 			).replace(
 				Regex("<revision>[^<]+</revision>"),
 				"<revision>1.0.0-SNAPSHOT</revision>"
