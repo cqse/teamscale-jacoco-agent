@@ -377,10 +377,13 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		if (ArrayUtils.isNotEmpty(excludes)) {
 			config += "\nexcludes=" + String.join(";", excludes);
 		}
+		if (StringUtils.isNotBlank(repository)) {
+			config += "\nteamscale-repository=" + repository;
+		}
 
 		// endCommit is only set via the config option in the pom. If the user sets it, prefer it over the revision.
 		// If not, prefer the revision
-		if (StringUtils.isEmpty(endCommit) && StringUtils.isNotEmpty(resolvedRevision)) {
+		if (StringUtils.isNotEmpty(resolvedRevision) && StringUtils.isEmpty(endCommit)) {
 			config += "\nteamscale-revision=" + resolvedRevision;
 		} else {
 			config += "\nteamscale-commit=" + resolvedCommit;

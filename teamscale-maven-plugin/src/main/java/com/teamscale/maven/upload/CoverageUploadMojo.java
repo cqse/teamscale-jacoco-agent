@@ -1,18 +1,5 @@
 package com.teamscale.maven.upload;
 
-import com.google.common.base.Strings;
-import com.teamscale.maven.TeamscaleMojoBase;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import shadow.com.teamscale.client.CommitDescriptor;
-import shadow.com.teamscale.client.EReportFormat;
-import shadow.com.teamscale.client.TeamscaleClient;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -22,6 +9,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+
+import com.google.common.base.Strings;
+import com.teamscale.maven.TeamscaleMojoBase;
+
+import shadow.com.teamscale.client.CommitDescriptor;
+import shadow.com.teamscale.client.EReportFormat;
+import shadow.com.teamscale.client.TeamscaleClient;
 
 /**
  * Run this goal after the Jacoco report generation to upload them to a
@@ -231,8 +233,8 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			getLog().info(
 					String.format("Uploading %d report for project %s to %s", reports.size(), projectId,
 					partition));
-			teamscaleClient.uploadReports(format, reports, CommitDescriptor.parse(resolvedCommit), revision, partition,
-					COVERAGE_UPLOAD_MESSAGE);
+			teamscaleClient.uploadReports(format, reports, CommitDescriptor.parse(resolvedCommit), revision, repository,
+					partition, COVERAGE_UPLOAD_MESSAGE);
 		} else {
 			getLog().info(String.format("Found no valid reports for %s", partition));
 		}

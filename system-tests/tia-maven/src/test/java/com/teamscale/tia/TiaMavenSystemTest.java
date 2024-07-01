@@ -1,15 +1,16 @@
 package com.teamscale.tia;
 
-import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import com.teamscale.test.commons.SystemTestUtils;
-import com.teamscale.test.commons.TeamscaleMockServer;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.SystemTestUtils;
+import com.teamscale.test.commons.TeamscaleMockServer;
 
 /**
  * Runs several Maven projects' Surefire tests that have the agent attached and one of our JUnit run listeners enabled.
@@ -41,6 +42,14 @@ public class TiaMavenSystemTest {
 		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(2);
+
+		assertThat(teamscaleMockServer.impactedTestRepositories).containsExactly("myRepoId", "myRepoId");
+		assertThat(teamscaleMockServer.uploadRepositories).containsExactly("myRepoId", "myRepoId");
+
+		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("abcd1337, .*");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("abcd1337, .*");
+		assertThat(teamscaleMockServer.uploadCommits.get(0)).matches("abcd1337, .*");
+		assertThat(teamscaleMockServer.uploadCommits.get(1)).matches("abcd1337, .*");
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(unitTestReport.tests).hasSize(2);
