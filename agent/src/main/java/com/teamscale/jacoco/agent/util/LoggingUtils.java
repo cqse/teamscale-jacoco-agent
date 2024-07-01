@@ -65,6 +65,9 @@ public class LoggingUtils {
 			configurator.setContext(loggerContext);
 			loggerContext.reset();
 			configurator.doConfigure(stream);
+
+			InputStream remoteLoggingStream = Agent.class.getResourceAsStream("logback-remote-logging.xml");
+			configurator.doConfigure(remoteLoggingStream);
 		} catch (JoranException je) {
 			// StatusPrinter will handle this
 		}

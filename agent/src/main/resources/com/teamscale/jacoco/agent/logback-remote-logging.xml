@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This configuration can be run after any other configuration to add the TeamscaleLogAppender. -->
+<configuration>
+    <appender name="Teamscale" class="com.teamscale.jacoco.agent.util.TeamscaleLogAppender">
+    </appender>
+
+    <root>
+        <appender-ref ref="Teamscale"/>
+    </root>
+</configuration>

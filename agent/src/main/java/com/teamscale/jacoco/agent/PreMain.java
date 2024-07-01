@@ -15,6 +15,7 @@ import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.util.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.util.TeamscaleLogAppender;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
@@ -104,9 +105,11 @@ public class PreMain {
 		}
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
+		TeamscaleLogAppender.start(credentials);
 		if (credentials == null) {
 			delayedLogger.warn("Did not find a teamscale.properties file!");
 		}
+
 		AgentOptions agentOptions;
 		try {
 			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials, delayedLogger);
@@ -129,6 +132,7 @@ public class PreMain {
 		initializeLogging(agentOptions, delayedLogger);
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
+
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 		return agentOptions;
 	}
