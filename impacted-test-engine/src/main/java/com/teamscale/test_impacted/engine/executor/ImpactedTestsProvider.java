@@ -1,18 +1,19 @@
 package com.teamscale.test_impacted.engine.executor;
 
-import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.CommitDescriptor;
-import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.TeamscaleClient;
-import com.teamscale.test_impacted.commons.LoggerUtils;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.TeamscaleClient;
+import com.teamscale.test_impacted.commons.LoggerUtils;
+
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 
 /**
  * Class for retrieving the impacted {@link PrioritizableTestCluster}s corresponding to {@link ClusteredTestDetails}
@@ -26,7 +27,13 @@ public class ImpactedTestsProvider {
 
 	private final String baseline;
 
+	private final String baselineRevision;
+
 	private final CommitDescriptor endCommit;
+
+	private final String endRevision;
+
+	private final String repository;
 
 	/**
 	 * The partition for the tests provided.
@@ -39,12 +46,15 @@ public class ImpactedTestsProvider {
 
 	private final boolean includeFailedAndSkipped;
 
-	public ImpactedTestsProvider(TeamscaleClient client, String baseline, CommitDescriptor endCommit, String partition,
+	public ImpactedTestsProvider(TeamscaleClient client, String baseline, String baselineRevision, CommitDescriptor endCommit, String endRevision, String repository, String partition,
 								 boolean includeNonImpacted, boolean includeAddedTests,
 								 boolean includeFailedAndSkipped) {
 		this.client = client;
 		this.baseline = baseline;
+		this.baselineRevision = baselineRevision;
 		this.endCommit = endCommit;
+		this.endRevision = endRevision;
+		this.repository = repository;
 		this.partition = partition;
 		this.includeNonImpacted = includeNonImpacted;
 		this.includeAddedTests = includeAddedTests;
@@ -57,8 +67,10 @@ public class ImpactedTestsProvider {
 		try {
 			LOGGER.info(() -> "Getting impacted tests...");
 			Response<List<PrioritizableTestCluster>> response = client
-					.getImpactedTests(availableTestDetails, baseline, endCommit, Collections.singletonList(partition),
-							includeNonImpacted, includeAddedTests, includeFailedAndSkipped);
+						.getImpactedTests(availableTestDetails, baseline, baselineRevision, endCommit, endRevision, repository,
+								Collections.singletonList(partition),
+								includeNonImpacted, includeAddedTests, includeFailedAndSkipped);
+
 			if (response.isSuccessful()) {
 				List<PrioritizableTestCluster> testClusters = response.body();
 				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {

@@ -1,5 +1,14 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import static java.util.stream.Collectors.toList;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTestCluster;
@@ -14,14 +23,6 @@ import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder;
-import org.slf4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Base for strategies that produce testwise coverage information in JSON and store or send this data further.
@@ -53,12 +54,12 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 	public List<PrioritizableTestCluster> testRunStart(List<ClusteredTestDetails> availableTests,
 													   boolean includeNonImpactedTests,
 													   boolean includeAddedTests, boolean includeFailedAndSkipped,
-													   String baseline) throws IOException {
+													   String baseline, String baselineRevision) throws IOException {
 		if (availableTests != null) {
 			this.availableTests = new ArrayList<>(availableTests);
 		}
 		return super.testRunStart(this.availableTests, includeNonImpactedTests, includeAddedTests,
-				includeFailedAndSkipped, baseline);
+				includeFailedAndSkipped, baseline, baselineRevision);
 	}
 
 	@Override

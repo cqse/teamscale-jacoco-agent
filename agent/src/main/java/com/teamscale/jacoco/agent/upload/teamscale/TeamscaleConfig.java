@@ -1,5 +1,11 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleServer;
@@ -8,12 +14,6 @@ import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 
 /** Config necessary for direct Teamscale upload. */
 public class TeamscaleConfig {
@@ -74,6 +74,9 @@ public class TeamscaleConfig {
 				return true;
 			case TEAMSCALE_REVISION_OPTION:
 				teamscaleServer.revision = value;
+				return true;
+			case "teamscale-repository":
+				teamscaleServer.repository = value;
 				return true;
 			case TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
 				teamscaleServer.revision = getRevisionFromManifest(

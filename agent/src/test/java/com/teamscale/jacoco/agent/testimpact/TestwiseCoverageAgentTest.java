@@ -1,5 +1,27 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
@@ -15,36 +37,16 @@ import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
 import com.teamscale.tia.client.TiaAgent;
+
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TestwiseCoverageAgentTest {
@@ -75,7 +77,7 @@ public class TestwiseCoverageAgentTest {
 		List<PrioritizableTestCluster> impactedClusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("test2"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
+		when(client.getImpactedTests(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
 		when(reportGenerator.convert(any(File.class)))
@@ -100,12 +102,12 @@ public class TestwiseCoverageAgentTest {
 		testRun.endTestRun(true);
 		verify(client).uploadReport(eq(EReportFormat.TESTWISE_COVERAGE),
 				matches("\\Q{\"partial\":true,\"tests\":[{\"uniformPath\":\"test1\",\"sourcePath\":\"test1\",\"content\":\"content\",\"paths\":[]},{\"uniformPath\":\"test2\",\"sourcePath\":\"test2\",\"content\":\"content\",\"duration\":\\E[^,]*\\Q,\"result\":\"PASSED\",\"message\":\"message\",\"paths\":[{\"path\":\"src/main/java\",\"files\":[{\"fileName\":\"Main.java\",\"coveredLines\":\"1-4\"}]}]}]}\\E"),
-				any(), any(), any(), any());
+				any(), any(), any(), any(), any());
 	}
 
 	@Test
 	public void testErrorHandling() throws Exception {
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
+		when(client.getImpactedTests(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
 				.thenReturn(Response.error(403, ResponseBody.create(FORBIDDEN_MESSAGE_PREFIX + MISSING_VIEW_PERMISSIONS,
 						PLAIN_TEXT)));
 
@@ -136,7 +138,7 @@ public class TestwiseCoverageAgentTest {
 		List<PrioritizableTestCluster> impactedClusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("test2"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
+		when(client.getImpactedTests(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean()))
 				.thenReturn(Response.success(impactedClusters));
 
 		int port = PORT_COUNTER.incrementAndGet();

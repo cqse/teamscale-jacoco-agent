@@ -1,5 +1,11 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.PrioritizableTestCluster;
@@ -11,12 +17,8 @@ import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestInfo;
-import org.slf4j.Logger;
-import retrofit2.Response;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import retrofit2.Response;
 
 /** Base class for strategies to handle test events. */
 public abstract class TestEventHandlerStrategyBase {
@@ -86,7 +88,7 @@ public abstract class TestEventHandlerStrategyBase {
 	public List<PrioritizableTestCluster> testRunStart(List<ClusteredTestDetails> availableTests,
 													   boolean includeNonImpactedTests,
 													   boolean includeAddedTests, boolean includeFailedAndSkipped,
-													   String baseline) throws IOException {
+													   String baseline, String baselineRevision) throws IOException {
 		int availableTestCount = 0;
 		if (availableTests != null) {
 			availableTestCount = availableTests.size();
@@ -96,7 +98,9 @@ public abstract class TestEventHandlerStrategyBase {
 		validateConfiguration();
 
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
-				.getImpactedTests(availableTests, baseline, agentOptions.getTeamscaleServerOptions().commit,
+				.getImpactedTests(availableTests, baseline, baselineRevision,
+						agentOptions.getTeamscaleServerOptions().commit, agentOptions.getTeamscaleServerOptions().revision,
+						agentOptions.getTeamscaleServerOptions().repository,
 						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition),
 						includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped);
 		if (response.isSuccessful()) {

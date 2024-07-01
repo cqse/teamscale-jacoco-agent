@@ -1,10 +1,9 @@
 package com.teamscale.client;
 
-import okhttp3.HttpUrl;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
+import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +16,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.teamscale.client.ETestImpactOptions.ENSURE_PROCESSED;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_ADDED_TESTS;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_FAILED_AND_SKIPPED;
-import static com.teamscale.client.ETestImpactOptions.INCLUDE_NON_IMPACTED;
+import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 
 /** Helper class to interact with Teamscale. */
 public class TeamscaleClient {
@@ -79,15 +79,23 @@ public class TeamscaleClient {
 	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
 	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
 	 *                       of the given commit.
+	 * @param baselineRevision Same as baseline but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
 	 * @param endCommit      The last commit for which changes should be considered.
+	 * @param endRevision    Same as endCommit but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
+	 * @param repository     The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * 						 Null or empty will lead to a lookup in all repositories in the Teamscale project.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
 	public Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baseline,
+			List<ClusteredTestDetails> availableTests,
+			String baseline,
+			String baselineRevision,
 			CommitDescriptor endCommit,
+			String endRevision,
+			String repository,
 			List<String> partitions,
 			boolean includeNonImpacted,
 			boolean includeAddedTests, boolean includeFailedAndSkipped) throws IOException {
@@ -101,7 +109,7 @@ public class TeamscaleClient {
 		if (includeFailedAndSkipped) {
 			selectedOptions.add(INCLUDE_FAILED_AND_SKIPPED);
 		}
-		return getImpactedTests(availableTests, baseline, endCommit, partitions,
+		return getImpactedTests(availableTests, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
 				selectedOptions.toArray(new ETestImpactOptions[0]));
 	}
 
@@ -118,16 +126,24 @@ public class TeamscaleClient {
 	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
 	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
 	 *                       of the given commit.
+	 * @param baselineRevision Same as baseline but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
 	 * @param endCommit      The last commit for which changes should be considered.
+	 * @param endRevision    Same as endCommit but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
+	 * @param repository     The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * 						 Null or empty will lead to a lookup in all repositories in the Teamscale project.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
 	 * @param options        A list of options (See {@link ETestImpactOptions} for more details)
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
-	private Response<List<PrioritizableTestCluster>> getImpactedTests(
-			List<ClusteredTestDetails> availableTests, String baseline,
+	 private Response<List<PrioritizableTestCluster>> getImpactedTests(
+			List<ClusteredTestDetails> availableTests,
+			String baseline,
+			String baselineRevision,
 			CommitDescriptor endCommit,
+			String endRevision,
+			String repository,
 			List<String> partitions,
 			ETestImpactOptions... options) throws IOException {
 		EnumSet<ETestImpactOptions> testImpactOptions = EnumSet.copyOf(Arrays.asList(options));
@@ -138,19 +154,18 @@ public class TeamscaleClient {
 
 		if (availableTests == null) {
 			return wrapInCluster(
-					service.getImpactedTests(projectId, baseline, endCommit, partitions,
+					service.getImpactedTests(projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
 									includeNonImpacted,
 									includeFailedAndSkipped,
 									ensureProcessed, includeAddedTests)
 							.execute());
 		} else {
 			return service
-					.getImpactedTests(projectId, baseline, endCommit, partitions,
+					.getImpactedTests(projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
 							includeNonImpacted,
 							includeFailedAndSkipped,
 							ensureProcessed, includeAddedTests, availableTests.stream()
-									.map(clusteredTestDetails -> TestWithClusterId.fromClusteredTestDetails(
-											clusteredTestDetails)).collect(
+									.map(TestWithClusterId::fromClusteredTestDetails).collect(
 											Collectors.toList()))
 					.execute();
 		}
@@ -169,14 +184,14 @@ public class TeamscaleClient {
 
 	/** Uploads multiple reports to Teamscale in the given {@link EReportFormat}. */
 	public void uploadReports(EReportFormat reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
-							  String revision,
+							  String revision, String repository,
 							  String partition, String message) throws IOException {
-		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, partition, message);
+		uploadReports(reportFormat.name(), reports, commitDescriptor, revision, repository, partition, message);
 	}
 
 	/** Uploads multiple reports to Teamscale. */
 	public void uploadReports(String reportFormat, Collection<File> reports, CommitDescriptor commitDescriptor,
-							  String revision,
+							  String revision, String repository,
 							  String partition, String message) throws IOException {
 		List<MultipartBody.Part> partList = reports.stream().map(file -> {
 			RequestBody requestBody = RequestBody.create(MultipartBody.FORM, file);
@@ -184,7 +199,7 @@ public class TeamscaleClient {
 		}).collect(Collectors.toList());
 
 		Response<ResponseBody> response = service
-				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, true, partition, message,
+				.uploadExternalReports(projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message,
 						partList).execute();
 		if (!response.isSuccessful()) {
 			throw new IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response));
@@ -193,8 +208,8 @@ public class TeamscaleClient {
 
 	/** Uploads one in-memory report to Teamscale. */
 	public void uploadReport(EReportFormat reportFormat, String report, CommitDescriptor commitDescriptor,
-							 String revision, String partition, String message) throws IOException {
+							 String revision, String repository, String partition, String message) throws IOException {
 		RequestBody requestBody = RequestBody.create(MultipartBody.FORM, report);
-		service.uploadReport(projectId, commitDescriptor, revision, partition, reportFormat, message, requestBody);
+		service.uploadReport(projectId, commitDescriptor, revision, repository, partition, reportFormat, message, requestBody);
 	}
 }

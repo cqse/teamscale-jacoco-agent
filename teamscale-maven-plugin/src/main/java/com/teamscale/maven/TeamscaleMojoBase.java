@@ -1,5 +1,8 @@
 package com.teamscale.maven;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
@@ -9,9 +12,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * A base class for all Teamscale related maven Mojos.
@@ -62,6 +62,13 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	public String revision;
 
 	/**
+	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
+	 */
+	@Parameter(property = "teamscale.repository")
+	public String repository;
+
+	/**
 	 * Whether to skip the execution of this Mojo.
 	 */
 	@Parameter(defaultValue = "false")
@@ -99,6 +106,26 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 		} catch (IOException e) {
 			throw new MojoFailureException("There is no <endCommit> configured in the pom.xml" +
 					" and it was not possible to determine the checked out commit in " + basedir + " from Git", e);
+		}
+	}
+
+	/**
+	 * Sets the <code>resolvedRevision</code>, if not provided, via the GitCommit class
+	 *
+	 * @see GitCommit
+	 */
+	protected void resolveRevision() throws MojoFailureException {
+		if (StringUtils.isNotBlank(revision)) {
+			resolvedRevision = revision;
+		} else {
+			Path basedir = session.getCurrentProject().getBasedir().toPath();
+			try {
+				GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
+				resolvedRevision = commit.sha1;
+			} catch (IOException e) {
+				throw new MojoFailureException("There is no <revision> configured in the pom.xml" +
+						" and it was not possible to determine the current revision in " + basedir + " from Git", e);
+			}
 		}
 	}
 

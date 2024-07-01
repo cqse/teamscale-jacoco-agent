@@ -4,6 +4,7 @@ import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProper
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.MESSAGE;
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PROJECT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REPOSITORY;
 import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
 
 import java.io.File;
@@ -60,6 +61,7 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 		server.commit = CommitDescriptor.parse(reuploadProperties.getProperty(COMMIT.name()));
 		server.partition = reuploadProperties.getProperty(PARTITION.name());
 		server.revision = Strings.emptyToNull(reuploadProperties.getProperty(REVISION.name()));
+		server.repository = Strings.emptyToNull(reuploadProperties.getProperty(REPOSITORY.name()));
 		server.userAccessToken = teamscaleServer.userAccessToken;
 		server.userName = teamscaleServer.userName;
 		server.url = teamscaleServer.url;
@@ -106,6 +108,7 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 		serverProperties.setProperty(PARTITION.name(), teamscaleServer.partition);
 		serverProperties.setProperty(COMMIT.name(), teamscaleServer.commit.toString());
 		serverProperties.setProperty(REVISION.name(), Strings.nullToEmpty(teamscaleServer.revision));
+		serverProperties.setProperty(REPOSITORY.name(), Strings.nullToEmpty(teamscaleServer.repository));
 		serverProperties.setProperty(MESSAGE.name(), teamscaleServer.getMessage());
 		return serverProperties;
 	}
@@ -130,8 +133,8 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken,
 					HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
 			api.uploadReport(teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
-					teamscaleServer.partition, EReportFormat.JACOCO, teamscaleServer.getMessage(),
-					coverageFile.createFormRequestBody());
+					teamscaleServer.repository, teamscaleServer.partition, EReportFormat.JACOCO,
+					teamscaleServer.getMessage(), coverageFile.createFormRequestBody());
 			return true;
 		} catch (IOException e) {
 			logger.error("Failed to upload coverage to {}", teamscaleServer, e);

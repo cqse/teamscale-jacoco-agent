@@ -1,7 +1,18 @@
 package com.teamscale.maven.tia;
 
-import com.teamscale.maven.TeamscaleMojoBase;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Plugin;
@@ -13,16 +24,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
+import com.teamscale.maven.TeamscaleMojoBase;
 
 /**
  * Base class for TIA Mojos. Provides all necessary functionality but can be subclassed to change the partition.
@@ -167,13 +169,24 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		createTargetDirectory();
 
 		resolveEndCommit();
+		resolveRevision();
 
+		setTiaProperties();
+
+		Path agentConfigFile = createAgentConfigFiles(agentPort);
+		Path logFilePath = targetDirectory.resolve("agent.log");
+		setArgLine(agentConfigFile, logFilePath);
+	}
+
+	private void setTiaProperties() {
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
 		setTiaProperty("server.project", projectId);
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
 		setTiaProperty("endCommit", resolvedCommit);
+		setTiaProperty("endRevision", resolvedRevision);
+		setTiaProperty("repository", repository);
 		setTiaProperty("partition", getPartition());
 		if (agentPort.equals("0")) {
 			agentPort = findAvailablePort();
@@ -181,10 +194,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
-
-		Path agentConfigFile = createAgentConfigFiles(agentPort);
-		Path logFilePath = targetDirectory.resolve("agent.log");
-		setArgLine(agentConfigFile, logFilePath);
 	}
 
 	/**
@@ -362,7 +371,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
 				"\nteamscale-access-token=" + accessToken +
-				"\nteamscale-commit=" + resolvedCommit +
 				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath +
@@ -372,6 +380,17 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		}
 		if (ArrayUtils.isNotEmpty(excludes)) {
 			config += "\nexcludes=" + String.join(";", excludes);
+		}
+		if (StringUtils.isNotBlank(repository)) {
+			config += "\nteamscale-repository=" + repository;
+		}
+
+		// endCommit is only set via the config option in the pom. If the user sets it, prefer it over the revision.
+		// If not, prefer the revision
+		if (StringUtils.isNotEmpty(resolvedRevision) && StringUtils.isEmpty(endCommit)) {
+			config += "\nteamscale-revision=" + resolvedRevision;
+		} else {
+			config += "\nteamscale-commit=" + resolvedCommit;
 		}
 		return config;
 	}

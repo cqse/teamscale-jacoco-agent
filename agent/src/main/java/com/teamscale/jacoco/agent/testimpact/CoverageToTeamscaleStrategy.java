@@ -1,19 +1,20 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+
 import com.teamscale.client.EReportFormat;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the
- * {@link #testRunStart(List, boolean, boolean, boolean, String)} event by retrieving tests to run from Teamscale.
+ * {@link #testRunStart(List, boolean, boolean, boolean, String, String)} event by retrieving tests to run from Teamscale.
  */
 public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 
@@ -39,6 +40,7 @@ public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 					.uploadReport(EReportFormat.TESTWISE_COVERAGE, json,
 							agentOptions.getTeamscaleServerOptions().commit,
 							agentOptions.getTeamscaleServerOptions().revision,
+							agentOptions.getTeamscaleServerOptions().repository,
 							agentOptions.getTeamscaleServerOptions().partition,
 							agentOptions.getTeamscaleServerOptions().getMessage());
 		} catch (IOException e) {

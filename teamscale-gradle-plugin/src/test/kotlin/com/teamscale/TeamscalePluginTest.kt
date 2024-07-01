@@ -141,6 +141,66 @@ class TeamscalePluginTest {
 	}
 
 	@Test
+	fun `prefer using revision and repository to upload reports`() {
+		val build = build(
+			true, true,
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"--run-all-tests",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.uploadCommits).contains("abcd1337, null")
+		assertThat(teamscaleMockServer.uploadRepositories).contains("myRepoId")
+	}
+
+	@Test
+	fun `use branch and timestamp to upload reports if revision is not available`() {
+		val build = build(
+			true, true,
+			"-PwithoutRevision=true",
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"--run-all-tests",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
+	}
+
+	@Test
+	fun `prefer using revision and repo for fetching impacted tests`() {
+		val build = build(
+			true, false,
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"teamscaleReportUpload"
+		)
+		// If both are provided, Teamscale itself prefers to use the revision.
+		// So we just check here, that the revision parameter was part of the request.
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, master:1544512967526")
+		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")
+	}
+
+	@Test
+	fun `use branch and timestamp to fetch impacted tests if revision is not available`() {
+		val build = build(
+			true, false,
+			"-PwithoutRevision=true",
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
+	}
+
+	@Test
 	fun `wrong include pattern produces error`() {
 		val build = build(
 			true, true,

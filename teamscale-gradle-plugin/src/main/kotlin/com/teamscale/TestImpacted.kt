@@ -99,12 +99,35 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         @Internal
         get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).first
 
+    /**
+     *  Can be used instead of [endCommit] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
+     */
+    val endRevision
+        @Internal
+        get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).second
 
     /** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
     val baseline
         @Input
         @Optional
         get() = pluginExtension.baseline
+
+    /**
+     * Can be used instead of [baseline] by using a revision (e.g. git SHA1) instead of a branch and timestamp
+     */
+    val baselineRevision
+        @Input
+        @Optional
+        get() = pluginExtension.baselineRevision
+
+    /**
+     * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+     * Null or empty will lead to a lookup in all repositories in the Teamscale project.
+     */
+    val repository
+        @Input
+        @Optional
+        get() = pluginExtension.repository
 
     /**
      * The directory to write the jacoco execution data to. Ensures that the directory
@@ -191,7 +214,10 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         }
         writeEngineProperty("partition", report.partition.get())
         writeEngineProperty("endCommit", endCommit?.toString())
+        writeEngineProperty("endRevision", endRevision)
         writeEngineProperty("baseline", baseline?.toString())
+        writeEngineProperty("baselineRevision", baselineRevision)
+        writeEngineProperty("repository", repository)
         writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
         writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
         writeEngineProperty("runImpacted", runImpacted.toString())
