@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
 
 /**
@@ -59,6 +60,7 @@ public class LoggingUtils {
 	 * href="https://logback.qos.ch/manual/configuration.html">https://logback.qos.ch/manual/configuration.html</a>
 	 */
 	private static void reconfigureLoggerContext(InputStream stream) {
+		StatusPrinter.setPrintStream(new PrintStream(new NullOutputStream()));
 		LoggerContext loggerContext = getLoggerContext();
 		try {
 			JoranConfigurator configurator = new JoranConfigurator();

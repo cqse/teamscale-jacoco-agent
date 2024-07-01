@@ -4,7 +4,10 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
+import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Builds {@link AgentOptions} for test purposes
@@ -103,7 +106,7 @@ public class TestAgentOptionsBuilder {
 	 * Builds the {@link AgentOptions}.
 	 **/
 	public AgentOptions create() {
-		AgentOptions agentOptions = new AgentOptions();
+		AgentOptions agentOptions = new AgentOptions(mock(ILogger.class));
 		agentOptions.teamscaleServer = teamscaleServer;
 		agentOptions.httpServerPort = httpServerPort;
 		agentOptions.artifactoryConfig = artifactoryConfig;

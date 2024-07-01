@@ -85,7 +85,7 @@ public class AgentOptionsParser {
 			optionsString = "";
 		}
 		logger.debug("Parsing options: " + optionsString);
-		AgentOptions options = new AgentOptions();
+		AgentOptions options = new AgentOptions(logger);
 		options.originalOptionsString = optionsString;
 
 		if (credentials != null) {

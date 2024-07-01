@@ -14,7 +14,6 @@ public class SutUsesLogbackTest {
 
 	@Test
 	public void systemTest() throws Exception {
-		// debug=true caused the problematic behaviour
 		ProcessUtils.ExecutionResult result = ProcessUtils.execute(
 				new String[]{"java", "-javaagent:" + AGENT_JAR + "=debug=true", "-jar", "build/libs/app.jar"});
 
@@ -24,7 +23,7 @@ public class SutUsesLogbackTest {
 
 		Path appLogFile = Paths.get("logTest/app.log");
 		assertThat(appLogFile).exists();
-		assertThat(appLogFile).content().contains("This error is to test logging in the SUT");
+		assertThat(appLogFile).content().contains("This warning is to test logging in the SUT");
 	}
 
 }
