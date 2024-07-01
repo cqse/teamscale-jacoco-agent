@@ -100,7 +100,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).first
 
     /**
-     *  TODO
+     *  Can be used instead of [endCommit] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
      */
     val endRevision
         @Internal
@@ -113,7 +113,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         get() = pluginExtension.baseline
 
     /**
-     * TODO
+     * Can be used instead of [baseline] by using a revision (e.g. git SHA1) instead of a branch and timestamp
      */
     val baselineRevision
         @Input
@@ -121,7 +121,8 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
         get() = pluginExtension.baselineRevision
 
     /**
-     * TODO
+     * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+     * Null or empty will lead to a lookup in all repositories in the Teamscale project.
      */
     val repository
         @Input

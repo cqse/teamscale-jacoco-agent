@@ -70,7 +70,6 @@ public class TeamscaleClient {
 	 * that the given commit has been processed by Teamscale and also considers previous failing tests for
 	 * re-execution.
 	 *
-	 * TODO add new parameters to doc
 	 * @param availableTests A list of tests that is locally available for execution. This allows TIA to consider newly
 	 *                       added tests in addition to those that are already known and allows to filter e.g. if the
 	 *                       user has already selected a subset of relevant tests. This can be <code>null</code> to
@@ -80,7 +79,11 @@ public class TeamscaleClient {
 	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
 	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
 	 *                       of the given commit.
+	 * @param baselineRevision Same as baseline but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
 	 * @param endCommit      The last commit for which changes should be considered.
+	 * @param endRevision    Same as endCommit but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
+	 * @param repository     The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * 						 Null or empty will lead to a lookup in all repositories in the Teamscale project.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
 	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
@@ -114,7 +117,6 @@ public class TeamscaleClient {
 	 * Tries to retrieve the impacted tests from Teamscale. Use this method if you want to query time range based or you
 	 * want to exclude failed and skipped tests from previous test runs.
 	 *
-	 * TODO add new parameters to doc
 	 * @param availableTests A list of tests that is locally available for execution. This allows TIA to consider newly
 	 *                       added tests in addition to those that are already known and allows to filter e.g. if the
 	 *                       user has already selected a subset of relevant tests. This can be <code>null</code> to
@@ -124,7 +126,11 @@ public class TeamscaleClient {
 	 *                       single commit with a known timestamp you can append a <code>"p1"</code> suffix to the
 	 *                       timestamp to indicate that you are interested in the changes that happened after the parent
 	 *                       of the given commit.
+	 * @param baselineRevision Same as baseline but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
 	 * @param endCommit      The last commit for which changes should be considered.
+	 * @param endRevision    Same as endCommit but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
+	 * @param repository     The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * 						 Null or empty will lead to a lookup in all repositories in the Teamscale project.
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 *                       <code>null</code> to indicate that tests from all partitions should be returned.
 	 * @param options        A list of options (See {@link ETestImpactOptions} for more details)

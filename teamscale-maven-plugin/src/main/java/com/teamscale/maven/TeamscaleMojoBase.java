@@ -62,7 +62,8 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	public String revision;
 
 	/**
-	 * TODO
+	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
 	 */
 	@Parameter(property = "teamscale.repository")
 	public String repository;

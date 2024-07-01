@@ -43,9 +43,12 @@ open class TeamscalePluginExtension(val project: Project) {
         commit { project.configure(this, closure) }
     }
 
+	/** See [baseline] */
     var baseline: Long? = null
 
-    /** Configures the baseline. */
+	/**
+	 * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
+	 */
     fun baseline(action: Action<in Long?>) {
         action.execute(baseline)
     }
@@ -55,9 +58,15 @@ open class TeamscalePluginExtension(val project: Project) {
         baseline { project.configure(this, closure) }
     }
 
+	/**
+	 * See [baselineRevision]
+	 */
     var baselineRevision: String? = null
 
-    /** Configures the baselineRevision. */
+    /**
+     * Impacted tests are calculated from baseline to endCommit.
+     * The baselineRevision sets the baseline with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
+	 */
     fun baselineRevision(action: Action<in String?>) {
         action.execute(baselineRevision)
     }
@@ -67,6 +76,7 @@ open class TeamscalePluginExtension(val project: Project) {
         baselineRevision { project.configure(this, closure) }
     }
 
+	/** See [repository] */
     var repository: String? = null
 
     /** Configures the repository in which the baseline should be resolved in Teamscale (esp. if there's more than one repo in the Teamscale project). */
