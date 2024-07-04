@@ -184,13 +184,19 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("server.project", projectId);
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
-		setTiaProperty("endCommit", resolvedCommit);
-		setTiaProperty("endRevision", resolvedRevision);
+
+		if (StringUtils.isNotEmpty(endCommit)) {
+			setTiaProperty("endCommit", resolvedCommit);
+		} else {
+			setTiaProperty("endRevision", resolvedRevision);
+		}
+
 		setTiaProperty("repository", repository);
 		setTiaProperty("partition", getPartition());
 		if (agentPort.equals("0")) {
 			agentPort = findAvailablePort();
 		}
+
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
