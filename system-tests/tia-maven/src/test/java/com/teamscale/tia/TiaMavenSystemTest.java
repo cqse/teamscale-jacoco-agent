@@ -3,6 +3,8 @@ package com.teamscale.tia;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +24,9 @@ public class TiaMavenSystemTest {
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
-		if (teamscaleMockServer == null) {
-			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads()
-					.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
-							"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
-		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads()
+				.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
+						"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 	}
 
 	@AfterEach
@@ -73,6 +72,16 @@ public class TiaMavenSystemTest {
 			assertThat(integrationTestReport.tests).extracting(SystemTestUtils::getCoverageString)
 					.containsExactly("SUT.java:3,6-7", "SUT.java:3,10-11");
 		});
+	}
+
+	@Test
+	public void testPreferBranchAndTimestampOverRevisionWhenProvidedManually() throws IOException {
+		SystemTestUtils.runMavenTests("maven-project", "-DteamscaleRevision=abcd1337", "-DteamscaleTimestamp=master:HEAD");
+
+		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("null, master:HEAD");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("null, master:HEAD");
+		assertThat(teamscaleMockServer.uploadCommits.get(0)).matches("null, master:HEAD");
+		assertThat(teamscaleMockServer.uploadCommits.get(1)).matches("null, master:HEAD");
 	}
 
 }
