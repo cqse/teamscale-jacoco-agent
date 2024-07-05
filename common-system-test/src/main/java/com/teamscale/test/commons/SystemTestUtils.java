@@ -63,6 +63,12 @@ public class SystemTestUtils {
 		runMavenTests(mavenProjectPath, new String[0]);
 	}
 
+
+	/**
+	 * Runs the clean and verify goal of the Maven project at the given path with the provided arguments
+	 *
+	 * @throws IOException if running Maven fails.
+	 */
 	public static void runMavenTests(String mavenProjectPath, String... args) throws IOException {
 		String[] allArguments = new String[2 + args.length];
 		allArguments[0] = "clean";
