@@ -31,10 +31,8 @@ class Commit : Serializable {
             field = value?.trim()
         }
 
-    /** Wraps branch and timestamp in a commit descriptor. */
-    private fun getCommitDescriptor(): CommitDescriptor {
-        return CommitDescriptor(branchName, timestamp)
-    }
+    private var resolvedRevision: String? = null
+    private var resolvedCommit: CommitDescriptor? = null
 
     /**
      * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
@@ -44,25 +42,20 @@ class Commit : Serializable {
         try {
             // If timestamp and branch are set manually, prefer to use them
             if (branchName != null && timestamp != null) {
-                return Pair(getCommitDescriptor(), null);
+                return Pair(CommitDescriptor(branchName, timestamp), null)
             }
             // If revision is set manually, use as 2nd option
             if (revision != null) {
-                return Pair(null, revision);
-            }
-            // Otherwise fall back to getting the information from the git repository
-            val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
-            branchName = branchName ?: commit.branchName
-            timestamp = timestamp ?: commit.timestamp
-            revision = revision ?: ref
-            return Pair(getCommitDescriptor(), this.revision)
-        } catch (e: IOException) {
-            if (branchName != null && timestamp != null) {
-                return Pair(getCommitDescriptor(), null)
-            }
-            if (revision != null) {
                 return Pair(null, revision)
             }
+            // Otherwise fall back to getting the information from the git repository
+            if (resolvedRevision == null && resolvedCommit == null) {
+                val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
+                resolvedRevision = ref
+                resolvedCommit = commit
+            }
+            return Pair(resolvedCommit, resolvedRevision)
+        } catch (e: IOException) {
             throw GradleException("Could not determine Teamscale upload commit", e)
         }
     }
