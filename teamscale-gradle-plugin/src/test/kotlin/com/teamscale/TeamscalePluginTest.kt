@@ -141,9 +141,24 @@ class TeamscalePluginTest {
 	}
 
 	@Test
-	fun `prefer using revision and repository to upload reports`() {
+	fun `prefer using branch and timestamp to upload reports when provided manually`() {
 		val build = build(
 			true, true,
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"--run-all-tests",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
+	}
+
+	@Test
+	fun `upload reports to repo and revision when timestamp is not provided manually`() {
+		val build = build(
+			true, true,
+			"-PwithoutTimestamp=true",
 			"--continue",
 			"clean",
 			"unitTest",
@@ -156,41 +171,9 @@ class TeamscalePluginTest {
 	}
 
 	@Test
-	fun `use branch and timestamp to upload reports if revision is not available`() {
-		val build = build(
-			true, true,
-			"-PwithoutRevision=true",
-			"--continue",
-			"clean",
-			"unitTest",
-			"--impacted",
-			"--run-all-tests",
-			"teamscaleReportUpload"
-		)
-		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
-	}
-
-	@Test
-	fun `prefer using revision and repo for fetching impacted tests`() {
+	fun `prefer using branch and timestamp to retrieve impacted tests when provided manually`() {
 		val build = build(
 			true, false,
-			"--continue",
-			"clean",
-			"unitTest",
-			"--impacted",
-			"teamscaleReportUpload"
-		)
-		// If both are provided, Teamscale itself prefers to use the revision.
-		// So we just check here, that the revision parameter was part of the request.
-		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, master:1544512967526")
-		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")
-	}
-
-	@Test
-	fun `use branch and timestamp to fetch impacted tests if revision is not available`() {
-		val build = build(
-			true, false,
-			"-PwithoutRevision=true",
 			"--continue",
 			"clean",
 			"unitTest",
@@ -198,6 +181,21 @@ class TeamscalePluginTest {
 			"teamscaleReportUpload"
 		)
 		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
+	}
+
+	@Test
+	fun `use repo and revision to retrieve impacted tests when timestamp is not provided manually`() {
+		val build = build(
+			true, false,
+			"-PwithoutTimestamp=true",
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, null")
+		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")
 	}
 
 	@Test

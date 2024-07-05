@@ -42,12 +42,19 @@ class Commit : Serializable {
      */
     fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor?, String?> {
         try {
-            if (branchName == null || timestamp == null || revision == null) {
-                val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
-                branchName = branchName ?: commit.branchName
-                timestamp = timestamp ?: commit.timestamp
-                this.revision = this.revision ?: ref
+            // If timestamp and branch are set manually, prefer to use them
+            if (branchName != null && timestamp != null) {
+                return Pair(getCommitDescriptor(), null);
             }
+            // If revision is set manually, use as 2nd option
+            if (revision != null) {
+                return Pair(null, revision);
+            }
+            // Otherwise fall back to getting the information from the git repository
+            val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
+            branchName = branchName ?: commit.branchName
+            timestamp = timestamp ?: commit.timestamp
+            revision = revision ?: ref
             return Pair(getCommitDescriptor(), this.revision)
         } catch (e: IOException) {
             if (branchName != null && timestamp != null) {
