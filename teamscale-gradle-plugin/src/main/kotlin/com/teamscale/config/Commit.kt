@@ -10,13 +10,23 @@ import java.io.Serializable
 /** The commit object which holds the end commit for which we do Test Impact Analysis. */
 class Commit : Serializable {
 
-    /** The branch to which the artifacts belong to. */
+    /**
+     * The branch to which the artifacts belong to.
+     * This field encapsulates the value set in the gradle config.
+     * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
+     * It falls back to retrieving the values from the git repository, if not given manually.
+     */
     var branchName: String? = null
         set(value) {
             field = value?.trim()
         }
 
-    /** The timestamp of the commit that has been used to generate the artifacts. */
+    /**
+     * The timestamp of the commit that has been used to generate the artifacts.
+     * This field encapsulates the value set in the gradle config.
+     * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
+     * It falls back to retrieving the values from the git repository, if not given manually.
+     */
     var timestamp: String? = null
         set(value) {
             field = value?.trim()
@@ -25,13 +35,18 @@ class Commit : Serializable {
     /**
      * The revision of the commit that the artifacts should be uploaded to.
      * This is e.g. the SHA1 hash of the commit in Git or the revision of the commit in SVN.
+     * This field encapsulates the value set in the gradle config.
+     * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
+     * It falls back to retrieving the values from the git repository, if not given manually.
      */
     var revision: String? = null
         set(value) {
             field = value?.trim()
         }
 
+    /** Read automatically in [getOrResolveCommitDescriptor] if [revision] is not set */
     private var resolvedRevision: String? = null
+    /** Read automatically in [getOrResolveCommitDescriptor] if [branchName] and [timestamp] are not set */
     private var resolvedCommit: CommitDescriptor? = null
 
     /**
