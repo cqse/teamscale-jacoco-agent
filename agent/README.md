@@ -125,30 +125,29 @@ patterns with `*`, `**` and `?`.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string
   which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in
   Teamscale's UI.
-- `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
-  Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit
-  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `git-properties-jar`.
-  If **Git** is your VCS, you can get the commit info via
-
-```bash
-echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
-```
-
-Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
-Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus
-returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used
-instead.
-
-If **Subversion** is your VCS and your repository follows the SVN convention with `trunk`, `branches`, and `tags`
-directories, you can get the commit info via
-
-  ```bash
- echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
-```
 - `teamscale-revision`: the source control revision (e.g. SVN revision or Git hash) that has been used to build
   the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
 - `teamscale-repository` The repository id in your Teamscale project which Teamscale should use to look up the revision, if given. Not setting this option will lead to a lookup in all repositories in the Teamscale project.
+- `teamscale-commit`: the commit (Format: `branch:timestamp`) which has been used to build the system under test.
+  Teamscale uses this to map the coverage to the corresponding source code. Thus, this must be the exact code commit
+  from the VCS that was deployed. For an alternative see `teamscale-commit-manifest-jar` and `git-properties-jar`.
+  
+  If **Git** is your VCS, you can get the commit info via
 
+  ```bash
+  echo `git rev-parse --abbrev-ref HEAD`:`git --no-pager log -n1 --format="%ct000"`
+  ```
+
+  Note: Getting the branch does most likely not work when called in the build pipeline, because Jenkins, GitLab,
+  Travis etc. checkout a specific commit by its SHA1, which leaves the repository in a detached head mode and thus
+  returns HEAD instead of the branch. In this case the environment variable provided by the build runner should be used
+  instead.
+
+  If **Subversion** is your VCS and your repository follows the SVN convention with `trunk`, `branches`, and `tags` directories, you can get the commit info via
+
+  ```bash
+  echo `svn info --show-item url | egrep -o '/(branches|tags)/[^/]+|trunk' | egrep -o '[^/]+$'`:`LANG=C svn info --show-item last-changed-date | date -f - +"%s%3N"`
+  ```
 - `teamscale-revision-manifest-jar` As an alternative to `teamscale-revision` the agent accepts the repository revision provided in the given jar/war's `META-INF/MANIFEST.MF` file (for details see path format
   section above). The revision must be supplied as an main attribute called `Revision` (preferred) or as an attribute called `Git_Commit`, which belongs to an entry called `Git`.
 - `teamscale-commit-manifest-jar` As an alternative to `teamscale-commit` the agent accepts values supplied via
