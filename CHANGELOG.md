@@ -5,7 +5,12 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+# 33.3.3
 - [fix] _agent_: Coverage for Kotlin code did sometimes produce incorrect line numbers
+
+# 33.3.2
+- Re-release of 33.3.1
 
 # 33.3.1
 - [fix] _agent_: Dump coverage when profiler settings are changed via the API.
