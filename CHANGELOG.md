@@ -4,9 +4,15 @@ We use [semantic versioning](http://semver.org/):
 - MINOR version when you add functionality in a backwards-compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-# Next Release
+# Next version
 - [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_: Support using revision for fetching impacted tests for both the baseline and the endCommit. This change is breaking because **this changes the minimum required Teamscale Server version from 8.0.0 to 9.4.0** and because the Teamscale client API was changed. For the Maven and Gradle plugins this change is non-breaking.
 - [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_, _teamscale-jacoco-agent_: New parameter: `teamscale-repository` (agent), `repository` (Teamscale Client, Gradle and Maven Plugins). This parameter can be used to specify in which repository Teamscale should look up revisions in case there is more than one repository in a given Teamscale project. If no repository is given, Teamscale will look in all connected repositories. This change is breaking because the Teamscale client API was changed. For the JaCoCo agent and the Maven and Gradle plugins this change is non-breaking.
+
+# 33.3.3
+- [fix] _agent_: Coverage for Kotlin code did sometimes produce incorrect line numbers
+
+# 33.3.2
+- Re-release of 33.3.1
 
 # 33.3.1
 - [fix] _agent_: Dump coverage when profiler settings are changed via the API.
