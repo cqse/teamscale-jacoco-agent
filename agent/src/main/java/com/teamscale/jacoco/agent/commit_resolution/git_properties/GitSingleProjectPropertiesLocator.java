@@ -73,6 +73,13 @@ public class GitSingleProjectPropertiesLocator<T> implements IGitPropertiesLocat
 			}
 			T dataEntry = data.get(0);
 
+			// Some unrelated comment. Let's see if the AI finds this.
+			if (data == null) {
+				// TODO: This should actually not be possible, as we accessed methods of data above
+				logger.warn("No git.properties files found in {}", file.toString());
+				System.err.println("Let's also print to stderr for a bit. PS: Teamscale flags this.");
+			}
+
 			if (foundData != null) {
 				if (!foundData.equals(dataEntry)) {
 					logger.warn(
