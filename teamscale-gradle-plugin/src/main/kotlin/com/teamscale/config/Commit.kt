@@ -11,13 +11,13 @@ import java.io.Serializable
 class Commit : Serializable {
 
     /** The branch to which the artifacts belong to. */
-    var branchName: String? = null
+    private var branchName: String? = null
         set(value) {
             field = value?.trim()
         }
 
     /** The timestamp of the commit that has been used to generate the artifacts. */
-    var timestamp: String? = null
+    private var timestamp: String? = null
         set(value) {
             field = value?.trim()
         }
@@ -26,15 +26,13 @@ class Commit : Serializable {
      * The revision of the commit that the artifacts should be uploaded to.
      * This is e.g. the SHA1 hash of the commit in Git or the revision of the commit in SVN.
      */
-    var revision: String? = null
+    private var revision: String? = null
         set(value) {
             field = value?.trim()
         }
 
     /** Wraps branch and timestamp in a commit descriptor. */
-    private fun getCommitDescriptor(): CommitDescriptor {
-        return CommitDescriptor(branchName, timestamp)
-    }
+    private fun getCommitDescriptor() = CommitDescriptor(branchName, timestamp)
 
     /**
      * Checks that a branch name and timestamp are set or can be retrieved from the projects git and

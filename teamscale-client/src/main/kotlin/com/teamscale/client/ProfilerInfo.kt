@@ -5,5 +5,5 @@ class ProfilerInfo(
 	/** Information about the machine and process the profiler is running on.  */
 	var processInformation: ProcessInformation,
 	/** Concrete config that the profiler is running with.  */
-	@JvmField var profilerConfiguration: ProfilerConfiguration
+	@JvmField var profilerConfiguration: ProfilerConfiguration?
 )

@@ -13,6 +13,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import shadow.com.teamscale.client.CommitDescriptor;
 import shadow.com.teamscale.client.ReportFormat;
+import shadow.com.teamscale.client.ServerConfiguration;
 import shadow.com.teamscale.client.TeamscaleClient;
 
 import java.io.File;
@@ -125,7 +126,8 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			getLog().debug("Skipping since upload should only happen in top project");
 			return;
 		}
-		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
+		ServerConfiguration serverConfiguration = new ServerConfiguration(teamscaleUrl, projectId, username, accessToken);
+		teamscaleClient = new TeamscaleClient(serverConfiguration);
 		getLog().debug("Resolving end commit");
 		resolveEndCommit();
 		resolveRevision();

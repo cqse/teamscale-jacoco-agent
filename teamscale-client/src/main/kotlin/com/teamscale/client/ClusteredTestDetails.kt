@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
  */
 class ClusteredTestDetails @JsonCreator constructor(
 	@JsonProperty("uniformPath") uniformPath: String,
-	@JsonProperty("sourcePath") sourcePath: String,
+	@JsonProperty("sourcePath") sourcePath: String?,
 	@JsonProperty("content") content: String?,
 	/**
 	 * A unique identifier for the cluster this test should be prioritized within. If null the test gets assigned its

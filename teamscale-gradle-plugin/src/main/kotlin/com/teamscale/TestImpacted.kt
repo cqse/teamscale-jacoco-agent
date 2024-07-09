@@ -183,10 +183,10 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
             assert(endCommit != null) { "When executing only impacted tests a branchName and timestamp must be specified!" }
             with(serverConfiguration) {
                 validate()
-                url?.writeProperty("server.url")
-                project?.writeProperty("server.project")
-                userName?.writeProperty("server.userName")
-                userAccessToken?.writeProperty("server.userAccessToken")
+                url.writeProperty("server.url")
+                project.writeProperty("server.project")
+                userName.writeProperty("server.userName")
+                userAccessToken.writeProperty("server.userAccessToken")
             }
         }
         report.partition.get().writeProperty("partition")
