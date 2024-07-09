@@ -20,7 +20,6 @@ import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocat
 import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
-import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
@@ -114,7 +113,7 @@ public class AgentOptions {
 	 */
 	/* package */ Path proxyPasswordPath;
 	/**
-	 * Additional meta data files to upload together with the coverage XML.
+	 * Additional metadata files to upload together with the coverage XML.
 	 */
 	/* package */ List<Path> additionalMetaDataFiles = new ArrayList<>();
 
@@ -167,9 +166,9 @@ public class AgentOptions {
 	/* package */ TeamscaleServer teamscaleServer = new TeamscaleServer();
 
 	/**
-	 * The configuration necessary to for TIA
+	 * How testwise coverage should be handled in test-wise mode.
 	 */
-	/* package */ TestImpactConfig testImpactConfig = new TestImpactConfig();
+	/*package*/ ETestwiseCoverageMode testwiseCoverageMode = ETestwiseCoverageMode.EXEC_FILE;
 
 	/**
 	 * The port on which the HTTP server should be listening.
@@ -276,8 +275,6 @@ public class AgentOptions {
 
 		validateSapNetWeaverConfig(validator);
 
-		validator.isFalse(!useTestwiseCoverageMode() && testImpactConfig.testEnvironmentVariable != null,
-				"You use 'test-env' but did not set 'mode' to 'TESTWISE'!");
 		if (useTestwiseCoverageMode()) {
 			validateTestwiseCoverageConfig(validator);
 		}
@@ -365,18 +362,12 @@ public class AgentOptions {
 	}
 
 	private void validateTestwiseCoverageConfig(Validator validator) {
-		boolean diskMode = testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.DISK;
-
 		validator.isFalse(
-				!diskMode && httpServerPort == null && testImpactConfig.testEnvironmentVariable == null,
-				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port', 'test-env', nor dumping to disk!" +
+				!(testwiseCoverageMode == ETestwiseCoverageMode.DISK) && httpServerPort == null,
+				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor dumping to disk!" +
 						" One of them is required!");
 
-		validator.isFalse(
-				httpServerPort != null && testImpactConfig.testEnvironmentVariable != null,
-				"You did set both 'http-server-port' and 'test-env'! Only one of them is allowed!");
-
-		validator.isFalse(testImpactConfig.testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
+		validator.isFalse(testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
 						&& !teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
 				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
@@ -688,13 +679,6 @@ public class AgentOptions {
 	}
 
 	/**
-	 * Returns the name of the environment variable to read the test uniform path from.
-	 */
-	public String getTestEnvironmentVariableName() {
-		return testImpactConfig.testEnvironmentVariable;
-	}
-
-	/**
 	 * @see #loggingConfig
 	 */
 	public Path getLoggingConfig() {
@@ -733,9 +717,8 @@ public class AgentOptions {
 		return shouldDumpOnExit;
 	}
 
-	/** @see TestImpactConfig#testwiseCoverageMode */
 	public ETestwiseCoverageMode getTestwiseCoverageMode() {
-		return testImpactConfig.testwiseCoverageMode;
+		return testwiseCoverageMode;
 	}
 
 	/** @see #ignoreUncoveredClasses */

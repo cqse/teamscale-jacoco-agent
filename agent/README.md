@@ -285,18 +285,6 @@ navigable within Teamscale.
 In the testwise coverage mode the agent only produces an exec file that needs to be converted and augmented with more
 data from the test system. Please refer to [the documentation for the Test Impact Analysis](../TEST_IMPACT_ANALYSIS_DOC.md) for more details.
 
-There are two basic scenarios to distinguish between.
-
-#### 1. The system under test is restarted for every test case
-
-To record coverage in this setting an environment variable must be set to the test's uniform path before starting the
-system under test. New coverage is always appended to the existing coverage file, so the test system is responsible for
-cleaning the output directory before starting a new test run.
-
-- `test-env` (required): the name of an environment variable that holds the name of the test's uniform path
-
-#### 2. The system under test is started once
-
 The test system (the application executing the test specification) __has to__  inform the agent of when a test started and
 finished via a REST API. The corresponding server listens at the specified port.
 

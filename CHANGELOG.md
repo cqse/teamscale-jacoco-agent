@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [breaking change] _agent_: removed currently unused `test-env` option. Use one of the other testwise coverage modes instead, please.
 
 # 33.3.3
 - [fix] _agent_: Coverage for Kotlin code did sometimes produce incorrect line numbers
