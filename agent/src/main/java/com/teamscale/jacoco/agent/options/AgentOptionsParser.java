@@ -11,7 +11,6 @@ import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
-import com.teamscale.jacoco.agent.testimpact.TestImpactConfig;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
@@ -148,9 +147,6 @@ public class AgentOptionsParser {
 				value)) {
 			return;
 		}
-		if (TestImpactConfig.handleTiaOptions(options.testImpactConfig, key, value)) {
-			return;
-		}
 		if (key.startsWith("artifactory-") && ArtifactoryConfig
 				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
 			return;
@@ -267,6 +263,10 @@ public class AgentOptionsParser {
 				return true;
 			case "sap-nwdi-applications":
 				options.sapNetWeaverJavaApplications = SapNwdiApplication.parseApplications(value);
+				return true;
+			case "tia-mode":
+				options.testwiseCoverageMode = AgentOptionsParser.parseEnumValue(key, value,
+						ETestwiseCoverageMode.class);
 				return true;
 			default:
 				return false;

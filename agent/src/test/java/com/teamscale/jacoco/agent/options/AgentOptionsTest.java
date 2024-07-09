@@ -105,14 +105,6 @@ public class AgentOptionsTest {
 
 	/** Tests the options for the Test Impact mode. */
 	@Test
-	public void testEnvironmentVariableOptions() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
-				"test-env=TEST");
-		assertThat(agentOptions.getTestEnvironmentVariableName()).isEqualTo("TEST");
-	}
-
-	/** Tests the options for the Test Impact mode. */
-	@Test
 	public void testHttpServerOptionsWithCoverageViaHttp() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,tia-mode=http");
