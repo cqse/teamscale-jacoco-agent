@@ -68,7 +68,7 @@ junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", v
 junit-platform-commons = { module = "org.junit.platform:junit-platform-commons", version.ref = "junitPlatform" }
 
 junit4 = { module = "junit:junit", version = "4.13.2" }
-assertj = { module = "org.assertj:assertj-core", version = "3.26.0" }
+assertj = { module = "org.assertj:assertj-core", version = "3.26.3" }
 jsonassert = { module = "org.skyscreamer:jsonassert", version = "1.5.3" }
 
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
