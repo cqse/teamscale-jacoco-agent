@@ -118,7 +118,7 @@ public class CommandLineInterface {
 	private void startTestRun() throws Exception {
 		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("include-non-impacted");
 		Long baseline = parseAndRemoveLongParameter("baseline");
-		String baselineRevision = parseAndRemoveStringParameter("baselineRevision");
+		String baselineRevision = parseAndRemoveStringParameter("baseline-revision");
 		List<ClusteredTestDetails> availableTests = parseAvailableTestsFromStdin();
 
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(() ->
@@ -160,7 +160,7 @@ public class CommandLineInterface {
 		return false;
 	}
 
-	private String parseAndRemoveStringParameter(String name) {
+	private String  parseAndRemoveStringParameter(String name) {
 		for (int i = 0; i < arguments.size(); i++) {
 			if (arguments.get(i).startsWith("--" + name + "=")) {
 				String argument = arguments.remove(i);

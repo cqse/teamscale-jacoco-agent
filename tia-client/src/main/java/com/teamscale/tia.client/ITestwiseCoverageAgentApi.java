@@ -63,7 +63,7 @@ public interface ITestwiseCoverageAgentApi {
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("baseline") Long baseline,
-			@Query("baselineRevision") String baselineRevision
+			@Query("baseline-revision") String baselineRevision
 	);
 
 	/**
@@ -73,7 +73,7 @@ public interface ITestwiseCoverageAgentApi {
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("baseline") Long baseline,
-			@Query("baselineRevision") String baselineRevision,
+			@Query("baseline-revision") String baselineRevision,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 

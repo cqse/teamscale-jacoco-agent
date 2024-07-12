@@ -88,7 +88,7 @@ public class TestwiseCoverageResource extends ResourceBase {
 			@QueryParam("include-added-tests") boolean includeAddedTests,
 			@QueryParam("include-failed-and-skipped") boolean includeFailedAndSkipped,
 			@QueryParam("baseline") String baseline,
-			@QueryParam("baselineRevision") String baselineRevision,
+			@QueryParam("baseline-revision") String baselineRevision,
 			List<ClusteredTestDetails> availableTests) throws IOException {
 
 		return testwiseCoverageAgent.testEventHandler.testRunStart(availableTests,
