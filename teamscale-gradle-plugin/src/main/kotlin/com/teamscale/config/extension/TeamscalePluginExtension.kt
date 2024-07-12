@@ -43,51 +43,19 @@ open class TeamscalePluginExtension(val project: Project) {
         commit { project.configure(this, closure) }
     }
 
-	/** See [baseline] */
+    /**
+     * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
+     */
     var baseline: Long? = null
-
-	/**
-	 * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
-	 */
-    fun baseline(action: Action<in Long?>) {
-        action.execute(baseline)
-    }
-
-    /** Overload for Groovy DSL compatibility. */
-    fun baseline(closure: Closure<*>) {
-        baseline { project.configure(this, closure) }
-    }
-
-	/**
-	 * See [baselineRevision]
-	 */
-    var baselineRevision: String? = null
 
     /**
      * Impacted tests are calculated from baseline to endCommit.
      * The baselineRevision sets the baseline with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
-	 */
-    fun baselineRevision(action: Action<in String?>) {
-        action.execute(baselineRevision)
-    }
-
-    /** Overload for Groovy DSL compatibility. */
-    fun baselineRevision(closure: Closure<*>) {
-        baselineRevision { project.configure(this, closure) }
-    }
-
-	/** See [repository] */
-    var repository: String? = null
+     */
+    var baselineRevision: String? = null
 
     /** Configures the repository in which the baseline should be resolved in Teamscale (esp. if there's more than one repo in the Teamscale project). */
-    fun repository(action: Action<in String?>) {
-        action.execute(repository)
-    }
-
-    /** Overload for Groovy DSL compatibility. */
-    fun repository(closure: Closure<*>) {
-        repository { project.configure(this, closure) }
-    }
+    var repository: String? = null
 
     val report = TopLevelReportConfiguration(project)
 
