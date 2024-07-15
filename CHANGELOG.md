@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+# 34.0.0
 - [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_: Support using revision for fetching impacted tests for both the baseline and the endCommit. This change is breaking because **this changes the minimum required Teamscale Server version from 8.0.0 to 9.4.0** and because the Teamscale client API was changed. For the Maven and Gradle plugins, this change is non-breaking.
 - [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_, _teamscale-jacoco-agent_: New parameter: `teamscale-repository` (agent), `repository` (Teamscale Client, Gradle and Maven Plugins). This parameter can be used to specify in which repository Teamscale should look up revisions in case there is more than one repository in a given Teamscale project. If no repository is given, Teamscale will look in all connected repositories. This change is breaking because the Teamscale client API was changed. For the JaCoCo agent and the Maven and Gradle plugins, this change is non-breaking.
 - [breaking] _tia-maven-plugin_: The `endCommit` option was renamed to `commit` in order to make it more understandable when using the upload task
