@@ -8,6 +8,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -106,6 +107,14 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 		} catch (IOException e) {
 			throw new MojoFailureException("There is no <endCommit> configured in the pom.xml" +
 					" and it was not possible to determine the checked out commit in " + basedir + " from Git", e);
+		}
+	}
+
+	@Override
+	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (StringUtils.isNotEmpty(revision) && StringUtils.isNotBlank(endCommit)) {
+			getLog().warn("Both revision and endCommit are set but only one of them is needed. " +
+					"Teamscale will prefer the revision. If that's not intended, please do not set the revision manually.");
 		}
 	}
 
