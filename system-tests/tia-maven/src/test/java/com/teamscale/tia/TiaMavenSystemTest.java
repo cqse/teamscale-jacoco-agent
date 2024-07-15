@@ -84,4 +84,18 @@ public class TiaMavenSystemTest {
 		assertThat(teamscaleMockServer.uploadCommits.get(1)).matches("null, master:HEAD");
 	}
 
+	@Test
+	public void testBaselineRevisionIsPreferred() throws IOException {
+		SystemTestUtils.runMavenTests("maven-project", "-DbaselineRevision=rev1", "-DbaselineCommit=master:1234");
+
+		assertThat(teamscaleMockServer.baselines).containsExactly("rev1, null", "rev1, null");
+	}
+
+	@Test
+	public void testBaselineCommitIsUsed() throws IOException {
+		SystemTestUtils.runMavenTests("maven-project", "-DbaselineCommit=master:1234");
+
+		assertThat(teamscaleMockServer.baselines).containsExactly("null, master:1234", "null, master:1234");
+	}
+
 }

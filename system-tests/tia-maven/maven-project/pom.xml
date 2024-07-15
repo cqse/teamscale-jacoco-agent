@@ -54,6 +54,8 @@
                     <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
                     <endCommit>${teamscaleTimestamp}</endCommit>
                     <revision>${teamscaleRevision}</revision>
+                    <baselineRevision>${baselineRevision}</baselineRevision>
+                    <baselineCommit>${baselineCommit}</baselineCommit>
                     <repository>myRepoId</repository>
                     <partition>MyPartition</partition>
                     <includes>

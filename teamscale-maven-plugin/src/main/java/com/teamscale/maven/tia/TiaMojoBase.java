@@ -71,6 +71,19 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
 
 	/**
+    * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
+    */
+	@Parameter
+	public String baselineCommit;
+
+    /**
+     * Impacted tests are calculated from baselineCommit to endCommit.
+     * The baselineRevision sets the baselineCommit with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
+     */
+	@Parameter
+	public String baselineRevision;
+
+	/**
 	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
 	 * to the fully qualified class names of the profiled system. Use {@code *} to match any number characters and
 	 * {@code ?} to match any single character.
@@ -156,6 +169,11 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	public void execute() throws MojoFailureException, MojoExecutionException {
 		super.execute();
 
+		if (StringUtils.isNotEmpty(baselineCommit) && StringUtils.isNotEmpty(baselineRevision)) {
+			getLog().warn("Both baselineRevision and baselineCommit are set but only one of them is needed. " +
+					"The revision will be preferred in this case. If that's not intended, please do not set the baselineRevision manually.");
+		}
+
 		if (skip) {
 			return;
 		}
@@ -192,6 +210,12 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 			setTiaProperty("endCommit", resolvedCommit);
 		} else {
 			setTiaProperty("endRevision", resolvedRevision);
+		}
+
+		if (StringUtils.isNotEmpty(baselineRevision)) {
+			setTiaProperty("baselineRevision", baselineRevision);
+		} else {
+			setTiaProperty("baseline", baselineCommit);
 		}
 
 		setTiaProperty("repository", repository);
