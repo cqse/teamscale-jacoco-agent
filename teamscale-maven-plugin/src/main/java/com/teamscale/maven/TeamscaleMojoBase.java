@@ -52,8 +52,8 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 * <p>
 	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
 	 */
-	@Parameter(property = "teamscale.endCommit")
-	public String endCommit;
+	@Parameter(property = "teamscale.commit")
+	public String commit;
 
 	/**
 	 * You can optionally use this property to override the revision to which the coverage will be uploaded.
@@ -92,12 +92,12 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	protected String resolvedRevision;
 
 	/**
-	 * Sets the <code>resolvedEndCommit</code> and <code>resolvedRevision</code>, if not provided, via the GitCommit class
+	 * Sets the <code>resolvedCommit</code> and <code>resolvedRevision</code>, if not provided, via the GitCommit class
 	 * @see GitCommit
 	 */
-	protected void resolveEndCommit() throws MojoFailureException {
-		if (StringUtils.isNotBlank(endCommit)) {
-			resolvedCommit = endCommit;
+	protected void resolveCommit() throws MojoFailureException {
+		if (StringUtils.isNotBlank(commit)) {
+			resolvedCommit = commit;
 			return;
 		}
 		Path basedir = session.getCurrentProject().getBasedir().toPath();
@@ -105,15 +105,15 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
 			resolvedCommit = commit.branch + ":" + commit.timestamp;
 		} catch (IOException e) {
-			throw new MojoFailureException("There is no <endCommit> configured in the pom.xml" +
+			throw new MojoFailureException("There is no <commit> configured in the pom.xml" +
 					" and it was not possible to determine the checked out commit in " + basedir + " from Git", e);
 		}
 	}
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		if (StringUtils.isNotEmpty(revision) && StringUtils.isNotBlank(endCommit)) {
-			getLog().warn("Both revision and endCommit are set but only one of them is needed. " +
+		if (StringUtils.isNotEmpty(revision) && StringUtils.isNotBlank(commit)) {
+			getLog().warn("Both revision and commit are set but only one of them is needed. " +
 					"Teamscale will prefer the revision. If that's not intended, please do not set the revision manually.");
 		}
 	}

@@ -71,13 +71,13 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
 
 	/**
-    * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
+    * Impacted tests are calculated from "baselineCommit" to "commit". This sets the baseline.
     */
 	@Parameter
 	public String baselineCommit;
 
     /**
-     * Impacted tests are calculated from baselineCommit to endCommit.
+     * Impacted tests are calculated from "baselineCommit" to "commit".
      * The baselineRevision sets the baselineCommit with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
      */
 	@Parameter
@@ -189,7 +189,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
-		resolveEndCommit();
+		resolveCommit();
 		resolveRevision();
 
 		setTiaProperties();
@@ -206,7 +206,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
 
-		if (StringUtils.isNotEmpty(endCommit)) {
+		if (StringUtils.isNotEmpty(commit)) {
 			setTiaProperty("endCommit", resolvedCommit);
 		} else {
 			setTiaProperty("endRevision", resolvedRevision);
@@ -418,9 +418,9 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 			config += "\nteamscale-repository=" + repository;
 		}
 
-		// endCommit is only set via the config option in the pom. If the user sets it, prefer it over the revision.
-		// If not, prefer the revision
-		if (StringUtils.isNotEmpty(resolvedRevision) && StringUtils.isEmpty(endCommit)) {
+		// "commit" (in contrast to "resolvedCommit") is only set via the config option in the pom.
+		// If the user sets it, prefer it over the revision. If not, prefer the revision
+		if (StringUtils.isNotEmpty(resolvedRevision) && StringUtils.isEmpty(commit)) {
 			config += "\nteamscale-revision=" + resolvedRevision;
 		} else {
 			config += "\nteamscale-commit=" + resolvedCommit;

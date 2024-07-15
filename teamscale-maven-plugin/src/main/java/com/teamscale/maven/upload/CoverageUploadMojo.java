@@ -127,7 +127,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		}
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
-		resolveEndCommit();
+		resolveCommit();
 		resolveRevision();
 		getLog().debug("Parsing Jacoco plugin configurations");
 		parseJacocoConfiguration();
