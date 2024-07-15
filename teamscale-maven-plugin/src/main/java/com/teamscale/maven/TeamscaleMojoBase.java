@@ -1,17 +1,18 @@
 package com.teamscale.maven;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * A base class for all Teamscale related maven Mojos.
@@ -51,8 +52,8 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 * <p>
 	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
 	 */
-	@Parameter(property = "teamscale.endCommit")
-	public String endCommit;
+	@Parameter(property = "teamscale.commit")
+	public String commit;
 
 	/**
 	 * You can optionally use this property to override the revision to which the coverage will be uploaded.
@@ -60,6 +61,13 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 */
 	@Parameter(property = "teamscale.revision")
 	public String revision;
+
+	/**
+	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
+	 */
+	@Parameter(property = "teamscale.repository")
+	public String repository;
 
 	/**
 	 * Whether to skip the execution of this Mojo.
@@ -84,12 +92,12 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	protected String resolvedRevision;
 
 	/**
-	 * Sets the <code>resolvedEndCommit</code> and <code>resolvedRevision</code>, if not provided, via the GitCommit class
+	 * Sets the <code>resolvedCommit</code> and <code>resolvedRevision</code>, if not provided, via the GitCommit class
 	 * @see GitCommit
 	 */
-	protected void resolveEndCommit() throws MojoFailureException {
-		if (StringUtils.isNotBlank(endCommit)) {
-			resolvedCommit = endCommit;
+	protected void resolveCommit() throws MojoFailureException {
+		if (StringUtils.isNotBlank(commit)) {
+			resolvedCommit = commit;
 			return;
 		}
 		Path basedir = session.getCurrentProject().getBasedir().toPath();
@@ -97,8 +105,36 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 			GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
 			resolvedCommit = commit.branch + ":" + commit.timestamp;
 		} catch (IOException e) {
-			throw new MojoFailureException("There is no <endCommit> configured in the pom.xml" +
+			throw new MojoFailureException("There is no <commit> configured in the pom.xml" +
 					" and it was not possible to determine the checked out commit in " + basedir + " from Git", e);
+		}
+	}
+
+	@Override
+	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (StringUtils.isNotEmpty(revision) && StringUtils.isNotBlank(commit)) {
+			getLog().warn("Both revision and commit are set but only one of them is needed. " +
+					"Teamscale will prefer the revision. If that's not intended, please do not set the revision manually.");
+		}
+	}
+
+	/**
+	 * Sets the <code>resolvedRevision</code>, if not provided, via the GitCommit class
+	 *
+	 * @see GitCommit
+	 */
+	protected void resolveRevision() throws MojoFailureException {
+		if (StringUtils.isNotBlank(revision)) {
+			resolvedRevision = revision;
+		} else {
+			Path basedir = session.getCurrentProject().getBasedir().toPath();
+			try {
+				GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
+				resolvedRevision = commit.sha1;
+			} catch (IOException e) {
+				throw new MojoFailureException("There is no <revision> configured in the pom.xml" +
+						" and it was not possible to determine the current revision in " + basedir + " from Git", e);
+			}
 		}
 	}
 

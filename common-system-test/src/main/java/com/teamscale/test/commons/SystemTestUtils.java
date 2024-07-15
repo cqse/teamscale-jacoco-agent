@@ -1,17 +1,5 @@
 package com.teamscale.test.commons;
 
-import com.teamscale.report.testwise.model.TestInfo;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import org.apache.commons.lang3.SystemUtils;
-import org.conqat.lib.commons.io.ProcessUtils;
-import org.jetbrains.annotations.NotNull;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.http.Body;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +11,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.SystemUtils;
+import org.conqat.lib.commons.io.ProcessUtils;
+import org.jetbrains.annotations.NotNull;
+
+import com.teamscale.report.testwise.model.TestInfo;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
 
 /**
  * Utilities for running system tests.
@@ -58,7 +60,21 @@ public class SystemTestUtils {
 	 * @throws IOException if running Maven fails.
 	 */
 	public static void runMavenTests(String mavenProjectPath) throws IOException {
-		runMaven(mavenProjectPath, "clean", "verify");
+		runMavenTests(mavenProjectPath, new String[0]);
+	}
+
+
+	/**
+	 * Runs the clean and verify goal of the Maven project at the given path with the provided arguments
+	 *
+	 * @throws IOException if running Maven fails.
+	 */
+	public static void runMavenTests(String mavenProjectPath, String... args) throws IOException {
+		String[] allArguments = new String[2 + args.length];
+		allArguments[0] = "clean";
+		allArguments[1] = "verify";
+		System.arraycopy(args, 0, allArguments, 2, args.length);
+		runMaven(mavenProjectPath, allArguments);
 	}
 
 	/**

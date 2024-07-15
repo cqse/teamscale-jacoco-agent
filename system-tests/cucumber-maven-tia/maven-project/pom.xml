@@ -116,7 +116,7 @@
                     <projectId>m</projectId>
                     <username>build</username>
                     <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
-                    <endCommit>master:HEAD</endCommit>
+                    <commit>master:HEAD</commit>
                     <partition>MyPartition</partition>
                     <includes>
                         <include>*hellocucumber*</include>

@@ -1,18 +1,5 @@
 package com.teamscale.maven.tia;
 
-import com.teamscale.maven.TeamscaleMojoBase;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.util.Strings;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,6 +10,22 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.teamscale.maven.TeamscaleMojoBase;
 
 /**
  * Base class for TIA Mojos. Provides all necessary functionality but can be subclassed to change the partition.
@@ -66,6 +69,19 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	 * engines</a>
 	 */
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
+
+	/**
+    * Impacted tests are calculated from "baselineCommit" to "commit". This sets the baseline.
+    */
+	@Parameter
+	public String baselineCommit;
+
+    /**
+     * Impacted tests are calculated from "baselineCommit" to "commit".
+     * The baselineRevision sets the baselineCommit with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
+     */
+	@Parameter
+	public String baselineRevision;
 
 	/**
 	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
@@ -150,7 +166,14 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	private Path targetDirectory;
 
 	@Override
-	public void execute() throws MojoFailureException {
+	public void execute() throws MojoFailureException, MojoExecutionException {
+		super.execute();
+
+		if (StringUtils.isNotEmpty(baselineCommit) && StringUtils.isNotEmpty(baselineRevision)) {
+			getLog().warn("Both baselineRevision and baselineCommit are set but only one of them is needed. " +
+					"The revision will be preferred in this case. If that's not intended, please do not set the baselineRevision manually.");
+		}
+
 		if (skip) {
 			return;
 		}
@@ -166,25 +189,44 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
-		resolveEndCommit();
+		resolveCommit();
+		resolveRevision();
 
+		setTiaProperties();
+
+		Path agentConfigFile = createAgentConfigFiles(agentPort);
+		Path logFilePath = targetDirectory.resolve("agent.log");
+		setArgLine(agentConfigFile, logFilePath);
+	}
+
+	private void setTiaProperties() {
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
 		setTiaProperty("server.project", projectId);
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
-		setTiaProperty("endCommit", resolvedCommit);
+
+		if (StringUtils.isNotEmpty(commit)) {
+			setTiaProperty("endCommit", resolvedCommit);
+		} else {
+			setTiaProperty("endRevision", resolvedRevision);
+		}
+
+		if (StringUtils.isNotEmpty(baselineRevision)) {
+			setTiaProperty("baselineRevision", baselineRevision);
+		} else {
+			setTiaProperty("baseline", baselineCommit);
+		}
+
+		setTiaProperty("repository", repository);
 		setTiaProperty("partition", getPartition());
 		if (agentPort.equals("0")) {
 			agentPort = findAvailablePort();
 		}
+
 		setTiaProperty("agentsUrls", "http://localhost:" + agentPort);
 		setTiaProperty("runImpacted", Boolean.valueOf(runImpacted).toString());
 		setTiaProperty("runAllTests", Boolean.valueOf(runAllTests).toString());
-
-		Path agentConfigFile = createAgentConfigFiles(agentPort);
-		Path logFilePath = targetDirectory.resolve("agent.log");
-		setArgLine(agentConfigFile, logFilePath);
 	}
 
 	/**
@@ -362,7 +404,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 				"\nteamscale-project=" + projectId +
 				"\nteamscale-user=" + username +
 				"\nteamscale-access-token=" + accessToken +
-				"\nteamscale-commit=" + resolvedCommit +
 				"\nteamscale-partition=" + getPartition() +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath +
@@ -372,6 +413,17 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		}
 		if (ArrayUtils.isNotEmpty(excludes)) {
 			config += "\nexcludes=" + String.join(";", excludes);
+		}
+		if (StringUtils.isNotBlank(repository)) {
+			config += "\nteamscale-repository=" + repository;
+		}
+
+		// "commit" (in contrast to "resolvedCommit") is only set via the config option in the pom.
+		// If the user sets it, prefer it over the revision. If not, prefer the revision
+		if (StringUtils.isNotEmpty(resolvedRevision) && StringUtils.isEmpty(commit)) {
+			config += "\nteamscale-revision=" + resolvedRevision;
+		} else {
+			config += "\nteamscale-commit=" + resolvedCommit;
 		}
 		return config;
 	}

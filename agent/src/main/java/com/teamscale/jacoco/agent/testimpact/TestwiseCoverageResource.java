@@ -1,12 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.jacoco.agent.JacocoRuntimeController;
-import com.teamscale.jacoco.agent.ResourceBase;
-import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
-import com.teamscale.report.testwise.model.TestExecution;
-import com.teamscale.report.testwise.model.TestInfo;
+import java.io.IOException;
+import java.util.List;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -17,8 +12,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.List;
+
+import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.jacoco.agent.JacocoRuntimeController;
+import com.teamscale.jacoco.agent.ResourceBase;
+import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
+import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.TestInfo;
 
 /**
  * The resource of the Jersey + Jetty http server holding all the endpoints specific for the
@@ -87,11 +88,12 @@ public class TestwiseCoverageResource extends ResourceBase {
 			@QueryParam("include-added-tests") boolean includeAddedTests,
 			@QueryParam("include-failed-and-skipped") boolean includeFailedAndSkipped,
 			@QueryParam("baseline") String baseline,
+			@QueryParam("baseline-revision") String baselineRevision,
 			List<ClusteredTestDetails> availableTests) throws IOException {
 
 		return testwiseCoverageAgent.testEventHandler.testRunStart(availableTests,
 				includeNonImpactedTests, includeAddedTests,
-				includeFailedAndSkipped, baseline);
+				includeFailedAndSkipped, baseline, baselineRevision);
 	}
 
 	/** Handles the end of a new testrun. */

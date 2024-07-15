@@ -1,20 +1,5 @@
 package com.teamscale.maven.upload;
 
-import com.google.common.base.Strings;
-import com.teamscale.maven.GitCommit;
-import com.teamscale.maven.TeamscaleMojoBase;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import shadow.com.teamscale.client.CommitDescriptor;
-import shadow.com.teamscale.client.EReportFormat;
-import shadow.com.teamscale.client.TeamscaleClient;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -24,6 +9,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+
+import com.google.common.base.Strings;
+import com.teamscale.maven.TeamscaleMojoBase;
+
+import shadow.com.teamscale.client.CommitDescriptor;
+import shadow.com.teamscale.client.EReportFormat;
+import shadow.com.teamscale.client.TeamscaleClient;
 
 /**
  * Run this goal after the Jacoco report generation to upload them to a
@@ -127,7 +127,7 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 		}
 		teamscaleClient = new TeamscaleClient(teamscaleUrl, username, accessToken, projectId);
 		getLog().debug("Resolving end commit");
-		resolveEndCommit();
+		resolveCommit();
 		resolveRevision();
 		getLog().debug("Parsing Jacoco plugin configurations");
 		parseJacocoConfiguration();
@@ -233,8 +233,8 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 			getLog().info(
 					String.format("Uploading %d report for project %s to %s", reports.size(), projectId,
 					partition));
-			teamscaleClient.uploadReports(format, reports, CommitDescriptor.parse(resolvedCommit), revision, partition,
-					COVERAGE_UPLOAD_MESSAGE);
+			teamscaleClient.uploadReports(format, reports, CommitDescriptor.parse(resolvedCommit), revision, repository,
+					partition, COVERAGE_UPLOAD_MESSAGE);
 		} else {
 			getLog().info(String.format("Found no valid reports for %s", partition));
 		}
@@ -267,20 +267,5 @@ public class CoverageUploadMojo extends TeamscaleMojoBase {
 
 	private Xpp3Dom getJacocoGoalExecutionConfiguration(MavenProject project, String pluginGoal) {
 		return super.getExecutionConfigurationDom(project, JACOCO_PLUGIN_NAME, pluginGoal);
-	}
-
-	private void resolveRevision() throws MojoFailureException {
-		if (StringUtils.isNotBlank(revision)) {
-			resolvedRevision = revision;
-		} else {
-			Path basedir = session.getCurrentProject().getBasedir().toPath();
-			try {
-				GitCommit commit = GitCommit.getGitHeadCommitDescriptor(basedir);
-				resolvedRevision = commit.sha1;
-			} catch (IOException e) {
-				throw new MojoFailureException("There is no <revision> configured in the pom.xml" +
-						" and it was not possible to determine the current revision in " + basedir + " from Git", e);
-			}
-		}
 	}
 }

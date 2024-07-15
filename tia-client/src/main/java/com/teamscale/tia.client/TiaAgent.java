@@ -1,11 +1,12 @@
 package com.teamscale.tia.client;
 
-import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.PrioritizableTestCluster;
-import okhttp3.HttpUrl;
-
 import java.time.Instant;
 import java.util.List;
+
+import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.PrioritizableTestCluster;
+
+import okhttp3.HttpUrl;
 
 /**
  * Communicates with one Teamscale JaCoCo agent in testwise coverage mode to facilitate the Test Impact analysis.
@@ -64,7 +65,7 @@ public class TiaAgent {
 	 */
 	public TestRunWithClusteredSuggestions startTestRun(
 			List<ClusteredTestDetails> availableTests) throws AgentHttpRequestFailedException {
-		return startTestRun(availableTests, null);
+		return startTestRun(availableTests, null, null);
 	}
 
 	/**
@@ -86,7 +87,7 @@ public class TiaAgent {
 	 *                                         report this problem so it can be fixed.
 	 */
 	public TestRunWithFlatSuggestions startTestRunAssumingUnchangedTests() throws AgentHttpRequestFailedException {
-		return startTestRunAssumingUnchangedTests(null);
+		return startTestRunAssumingUnchangedTests(null, null);
 	}
 
 	/**
@@ -98,11 +99,12 @@ public class TiaAgent {
 	 *                       list, no tests will be selected.The clustering information in this list is used to
 	 *                       construct the test clusters in the returned {@link TestRunWithClusteredSuggestions}.
 	 * @param baseline       Consider all code changes since this date when calculating the impacted tests.
+	 * @param baselineRevision Same as baseline but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
 	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
 	 *                                         occurs. You should simply fall back to running all tests in this case.
 	 */
 	public TestRunWithClusteredSuggestions startTestRun(List<ClusteredTestDetails> availableTests,
-														Instant baseline) throws AgentHttpRequestFailedException {
+														Instant baseline, String baselineRevision) throws AgentHttpRequestFailedException {
 		if (availableTests == null) {
 			throw new IllegalArgumentException("availableTests must not be null. If you cannot provide a list of" +
 					" available tests, please use startTestRunAssumingUnchangedTests instead - but please be aware" +
@@ -110,7 +112,7 @@ public class TiaAgent {
 		}
 		Long baselineTimestamp = calculateBaselineTimestamp(baseline);
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
-				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp, availableTests),
+				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp, baselineRevision, availableTests),
 				"Failed to start the test run");
 		return new TestRunWithClusteredSuggestions(api, clusters);
 	}
@@ -122,9 +124,9 @@ public class TiaAgent {
 	 * Using this method, Teamscale will perform the selection and prioritization based on the tests it currently knows
 	 * about. In this case, it will not automatically include changed or new tests in the selection (since it doesn't
 	 * know about these changes) and it may return deleted tests (since it doesn't know about the deletions). It will *
-	 * also not cluster the tests as {@link #startTestRun(List, Instant)} would.
+	 * also not cluster the tests as {@link #startTestRun(List, Instant, String)} would.
 	 * <p>
-	 * <strong>Thus, we recommend that, if possible, you use {@link #startTestRun(List, Instant)}
+	 * <strong>Thus, we recommend that, if possible, you use {@link #startTestRun(List, Instant, String)}
 	 * instead.</strong>
 	 *
 	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
@@ -134,10 +136,10 @@ public class TiaAgent {
 	 *                                         report this problem so it can be fixed.
 	 */
 	public TestRunWithFlatSuggestions startTestRunAssumingUnchangedTests(
-			Instant baseline) throws AgentHttpRequestFailedException {
+			Instant baseline, String baselineRevision) throws AgentHttpRequestFailedException {
 		Long baselineTimestamp = calculateBaselineTimestamp(baseline);
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(
-				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp),
+				() -> api.testRunStarted(includeNonImpactedTests, baselineTimestamp, baselineRevision),
 				"Failed to start the test run");
 		return new TestRunWithFlatSuggestions(api, clusters.get(0).tests);
 	}

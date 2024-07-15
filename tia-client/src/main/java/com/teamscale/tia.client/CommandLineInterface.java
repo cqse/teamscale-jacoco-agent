@@ -1,12 +1,6 @@
 package com.teamscale.tia.client;
 
-import com.teamscale.client.ClusteredTestDetails;
-import com.teamscale.client.JsonUtils;
-import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.StringUtils;
-import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.testwise.model.TestExecution;
-import okhttp3.HttpUrl;
+import static java.util.stream.Collectors.joining;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,7 +10,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.stream.Collectors.joining;
+import com.teamscale.client.ClusteredTestDetails;
+import com.teamscale.client.JsonUtils;
+import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.StringUtils;
+import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.testwise.model.TestExecution;
+
+import okhttp3.HttpUrl;
 
 /**
  * Simple command-line interface to expose the {@link TiaAgent} to non-Java test runners.
@@ -117,10 +118,11 @@ public class CommandLineInterface {
 	private void startTestRun() throws Exception {
 		boolean includeNonImpacted = parseAndRemoveBooleanSwitch("include-non-impacted");
 		Long baseline = parseAndRemoveLongParameter("baseline");
+		String baselineRevision = parseAndRemoveStringParameter("baseline-revision");
 		List<ClusteredTestDetails> availableTests = parseAvailableTestsFromStdin();
 
 		List<PrioritizableTestCluster> clusters = AgentCommunicationUtils.handleRequestError(() ->
-				api.testRunStarted(includeNonImpacted, baseline, availableTests), "Failed to start the test run");
+				api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests), "Failed to start the test run");
 		System.out.println(JsonUtils.serialize(clusters));
 	}
 
@@ -156,6 +158,16 @@ public class CommandLineInterface {
 			}
 		}
 		return false;
+	}
+
+	private String  parseAndRemoveStringParameter(String name) {
+		for (int i = 0; i < arguments.size(); i++) {
+			if (arguments.get(i).startsWith("--" + name + "=")) {
+				String argument = arguments.remove(i);
+				return argument.substring(name.length() + 3);
+			}
+		}
+		return null;
 	}
 
 }

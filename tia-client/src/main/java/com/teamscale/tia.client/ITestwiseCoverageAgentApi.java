@@ -1,8 +1,12 @@
 package com.teamscale.tia.client;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.report.testwise.model.TestExecution;
+
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -14,9 +18,6 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /** {@link Retrofit} API specification for the JaCoCo agent in test-wise coverage mode. */
 public interface ITestwiseCoverageAgentApi {
@@ -61,7 +62,8 @@ public interface ITestwiseCoverageAgentApi {
 	@POST("testrun/start")
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("include-non-impacted") boolean includeNonImpacted,
-			@Query("baseline") Long baseline
+			@Query("baseline") Long baseline,
+			@Query("baseline-revision") String baselineRevision
 	);
 
 	/**
@@ -71,6 +73,7 @@ public interface ITestwiseCoverageAgentApi {
 	Call<List<PrioritizableTestCluster>> testRunStarted(
 			@Query("include-non-impacted") boolean includeNonImpacted,
 			@Query("baseline") Long baseline,
+			@Query("baseline-revision") String baselineRevision,
 			@Body List<ClusteredTestDetails> availableTests
 	);
 

@@ -1,21 +1,8 @@
 package com.teamscale.test.commons;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.teamscale.client.JsonUtils;
-import com.teamscale.client.PrioritizableTest;
-import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.ProfilerConfiguration;
-import com.teamscale.client.ProfilerRegistration;
-import com.teamscale.client.TestWithClusterId;
-import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-import spark.Request;
-import spark.Response;
-import spark.Service;
-import spark.utils.IOUtils;
+import static java.util.stream.Collectors.toList;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletException;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,8 +14,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.ServletException;
+import javax.servlet.http.Part;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.teamscale.client.JsonUtils;
+import com.teamscale.client.PrioritizableTest;
+import com.teamscale.client.PrioritizableTestCluster;
+import com.teamscale.client.ProfilerConfiguration;
+import com.teamscale.client.ProfilerRegistration;
+import com.teamscale.client.TestWithClusterId;
+import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+
+import spark.Request;
+import spark.Response;
+import spark.Service;
+import spark.utils.IOUtils;
 
 /**
  * Mocks a Teamscale server: returns predetermined impacted tests and stores all uploaded reports so tests can run
@@ -40,6 +42,17 @@ public class TeamscaleMockServer {
 	public final List<ExternalReport> uploadedReports = new ArrayList<>();
 	/** All user agents that were present in the received requests. */
 	public final Set<String> collectedUserAgents = new HashSet<>();
+
+	/** A list of all commits to which an upload happened. Can either be branch:timestamp or revision */
+	public final List<String> uploadCommits = new ArrayList<>();
+	/** A list of all commits for which impacted tests were requested. Can either be branch:timestamp or revision */
+	public final List<String> impactedTestCommits = new ArrayList<>();
+	/** A list of all commits used as baseline for retrieving impacted tests */
+	public final List<String> baselines = new ArrayList<>();
+	/** A list of all repositories to which an upload happened. */
+	public final List<String> uploadRepositories = new ArrayList<>();
+	/** A list of all repositories for which impacted tests were requested. */
+	public final List<String> impactedTestRepositories = new ArrayList<>();
 
 	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
 	public final Set<TestWithClusterId> availableTests = new HashSet<>();
@@ -74,7 +87,7 @@ public class TeamscaleMockServer {
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
 		this.impactedTests = Arrays.asList(impactedTests);
-		service.put("api/v8.0.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		service.put("api/v9.4.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		return this;
 	}
 
@@ -109,6 +122,9 @@ public class TeamscaleMockServer {
 
 	private String handleImpactedTests(Request request, Response response) throws IOException {
 		collectedUserAgents.add(request.headers("User-Agent"));
+		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"));
+		impactedTestRepositories.add(request.queryParams("repository"));
+		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"));
 		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
 		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
@@ -142,6 +158,8 @@ public class TeamscaleMockServer {
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
 		collectedUserAgents.add(request.headers("User-Agent"));
+		uploadCommits.add(request.queryParams("revision") + ", " + request.queryParams("t"));
+		uploadRepositories.add(request.queryParams("repository"));
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(tempDir.toString());
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
@@ -163,4 +181,5 @@ public class TeamscaleMockServer {
 		service.stop();
 		service.awaitStop();
 	}
+
 }

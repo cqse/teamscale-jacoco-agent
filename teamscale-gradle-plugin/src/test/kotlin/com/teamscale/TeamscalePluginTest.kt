@@ -141,6 +141,64 @@ class TeamscalePluginTest {
 	}
 
 	@Test
+	fun `prefer using branch and timestamp to upload reports when provided manually`() {
+		val build = build(
+			true, true,
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"--run-all-tests",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
+	}
+
+	@Test
+	fun `upload reports to repo and revision when timestamp is not provided manually`() {
+		val build = build(
+			true, true,
+			"-PwithoutTimestamp=true",
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"--run-all-tests",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.uploadCommits).contains("abcd1337, null")
+		assertThat(teamscaleMockServer.uploadRepositories).contains("myRepoId")
+	}
+
+	@Test
+	fun `prefer using branch and timestamp to retrieve impacted tests when provided manually`() {
+		val build = build(
+			true, false,
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
+	}
+
+	@Test
+	fun `use repo and revision to retrieve impacted tests when timestamp is not provided manually`() {
+		val build = build(
+			true, false,
+			"-PwithoutTimestamp=true",
+			"--continue",
+			"clean",
+			"unitTest",
+			"--impacted",
+			"teamscaleReportUpload"
+		)
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, null")
+		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")
+	}
+
+	@Test
 	fun `wrong include pattern produces error`() {
 		val build = build(
 			true, true,

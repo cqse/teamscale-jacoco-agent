@@ -31,9 +31,13 @@ if (!project.hasProperty("withoutServerConfig")) {
 
 teamscale {
 	commit {
-		timestamp = 1544512967526L
-		branchName = "master"
+		if (!project.hasProperty("withoutTimestamp")) {
+			timestamp = 1544512967526L
+			branchName = "master"
+		}
+		revision = "abcd1337"
 	}
+	repository="myRepoId"
 	report {
 		testwiseCoverage {
 			partition = 'Unit Tests'

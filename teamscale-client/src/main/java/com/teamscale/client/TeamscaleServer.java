@@ -1,11 +1,11 @@
 package com.teamscale.client;
 
-import okhttp3.HttpUrl;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import okhttp3.HttpUrl;
 
 /** Holds Teamscale server details. */
 public class TeamscaleServer {
@@ -36,6 +36,12 @@ public class TeamscaleServer {
 	 * mode.
 	 */
 	public String revision;
+
+	/**
+	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
+	 */
+	public String repository;
 
 	/**
 	 * The configuration ID that was used to retrieve the profiler configuration. This is only set here to append it to
@@ -132,6 +138,9 @@ public class TeamscaleServer {
 		String at;
 		if (revision != null) {
 			at = "revision " + revision;
+			if (repository != null) {
+				at += "in repository " + repository;
+			}
 		} else {
 			at = "commit " + commit;
 		}
