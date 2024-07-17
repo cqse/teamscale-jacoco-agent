@@ -12,4 +12,5 @@ dependencies {
     api(libs.spark)
     api(libs.jackson.databind)
     api(libs.teamscaleLibCommons)
+    runtimeOnly(libs.log4j.core)
 }

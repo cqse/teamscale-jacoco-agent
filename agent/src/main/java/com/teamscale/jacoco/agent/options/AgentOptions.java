@@ -32,14 +32,13 @@ import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectU
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,7 +73,7 @@ public class AgentOptions {
 	 */
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*:java.*:org.jboss.*:org.wildfly.*:org.springframework.*:com.fasterxml.*:jakarta.*:org.aspectj.*:org.h2.*:org.hibernate.*:org.assertj.*:org.mockito.*:org.thymeleaf.*";
 
-	private final Logger logger = LoggingUtils.getLogger(this);
+	private final ILogger logger;
 
 	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
 	/* package */ File gitPropertiesJar;
@@ -208,7 +207,8 @@ public class AgentOptions {
 	 */
 	public ConfigurationViaTeamscale configurationViaTeamscale;
 
-	public AgentOptions() {
+	public AgentOptions(ILogger logger) {
+		this.logger = logger;
 		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));
 	}
 
@@ -531,9 +531,8 @@ public class AgentOptions {
 					if (!StringUtils.isEmpty(projectAndCommit.getProject()) && !teamscaleServer.project
 							.equals(projectAndCommit.getProject())) {
 						logger.warn(
-								"Teamscale project '{}' specified in the agent configuration is not the same as the Teamscale project '{}' specified in git.properties file(s). Proceeding to upload to the" +
-										" Teamscale project '{}' specified in the agent configuration.",
-								teamscaleServer.project, projectAndCommit.getProject(), teamscaleServer.project);
+								"Teamscale project '" + teamscaleServer.project + "' specified in the agent configuration is not the same as the Teamscale project '" + projectAndCommit.getProject() + "' specified in git.properties file(s). Proceeding to upload to the" +
+										" Teamscale project '" + teamscaleServer.project + "' specified in the agent configuration.");
 					}
 					if (projectAndCommit.getCommitInfo().preferCommitDescriptorOverRevision ||
 							StringUtils.isEmpty(projectAndCommit.getCommitInfo().revision)) {
