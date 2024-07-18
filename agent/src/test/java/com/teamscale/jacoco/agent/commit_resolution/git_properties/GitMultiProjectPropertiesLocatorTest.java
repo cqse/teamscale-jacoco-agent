@@ -48,7 +48,7 @@ class GitMultiProjectPropertiesLocatorTest {
 		assertThat(projectAndCommits.get(0).getCommitInfo().commit).isEqualTo(
 				new CommitDescriptor("master", "1645713803000"));
 		assertThat(projectAndCommits.get(1).getProject()).isEqualTo("demolib");
-		assertThat(projectAndCommits.get(0).getCommitInfo().revision).isEqualTo(
+		assertThat(projectAndCommits.get(1).getCommitInfo().revision).isEqualTo(
 				"05b9d066a0c0762be622987de403b5752fa01cc0");
 	}
 
