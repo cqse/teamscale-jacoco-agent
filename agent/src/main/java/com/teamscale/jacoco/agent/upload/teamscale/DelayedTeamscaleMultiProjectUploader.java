@@ -27,10 +27,11 @@ public class DelayedTeamscaleMultiProjectUploader extends DelayedMultiUploaderBa
 	 */
 	public boolean projectAndCommitAlreadyRegistered(ProjectAndCommit projectAndCommit) {
 		return teamscaleUploaders.stream().anyMatch(uploader -> {
-			TeamscaleUploader teamscaleUploader = (TeamscaleUploader) uploader;
+			// Might happen during testing.
 			if (uploader == null) {
 				return false;
 			}
+			TeamscaleUploader teamscaleUploader = (TeamscaleUploader) uploader;
 			TeamscaleServer teamscaleServer = teamscaleUploader.getTeamscaleServer();
 			if (!teamscaleServer.project.equals(projectAndCommit.getProject())) {
 				return false;

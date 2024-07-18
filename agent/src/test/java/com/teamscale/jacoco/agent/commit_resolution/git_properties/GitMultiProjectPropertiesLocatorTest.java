@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
+import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
@@ -44,7 +45,11 @@ class GitMultiProjectPropertiesLocatorTest {
 		locator.searchFile(jarFile, false);
 		assertThat(projectAndCommits.size()).isEqualTo(2);
 		assertThat(projectAndCommits.get(0).getProject()).isEqualTo("demo2");
+		assertThat(projectAndCommits.get(0).getCommitInfo().commit).isEqualTo(
+				new CommitDescriptor("master", "1645713803000"));
 		assertThat(projectAndCommits.get(1).getProject()).isEqualTo("demolib");
+		assertThat(projectAndCommits.get(0).getCommitInfo().revision).isEqualTo(
+				"05b9d066a0c0762be622987de403b5752fa01cc0");
 	}
 
 }
