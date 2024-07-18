@@ -87,6 +87,12 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 							GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME);
 					continue;
 				}
+				if (uploader.projectAndCommitAlreadyRegistered(projectAndCommit)) {
+					logger.debug(
+							"Project and commit in git.properties file {} are already registered as upload target. Coverage will not be uploaded multiple times to the same project {} and commit info {}.",
+							file, projectAndCommit.getProject(), projectAndCommit.getCommitInfo());
+					continue;
+				}
 				uploader.setTeamscaleProjectForRevision(projectAndCommit);
 				logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
 						projectAndCommit.getProject(), projectAndCommit.getCommitInfo());

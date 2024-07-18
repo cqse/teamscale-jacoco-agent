@@ -1,7 +1,9 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
+import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
+import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -24,6 +26,25 @@ class GitMultiProjectPropertiesLocatorTest {
 		locator.searchFile(jarFile, false);
 		assertThat(projectAndCommits.size()).isEqualTo(1);
 		assertThat(projectAndCommits.get(0).getProject()).isEqualTo("my-teamscale-project");
+	}
+
+	@Test
+	void testNoMultipleUploadsToSameProjectAndRevision() {
+		List<ProjectAndCommit> projectAndCommits = new ArrayList<>();
+		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(
+				new DelayedTeamscaleMultiProjectUploader((project, revision) -> {
+					projectAndCommits.add(new ProjectAndCommit(project, revision));
+					TeamscaleServer server = new TeamscaleServer();
+					server.project = project;
+					server.revision = revision.revision;
+					server.commit = revision.commit;
+					return new TeamscaleUploader(server);
+				}), true);
+		File jarFile = new File(getClass().getResource("multiple-same-target-git-properties-folder").getFile());
+		locator.searchFile(jarFile, false);
+		assertThat(projectAndCommits.size()).isEqualTo(2);
+		assertThat(projectAndCommits.get(0).getProject()).isEqualTo("demo2");
+		assertThat(projectAndCommits.get(1).getProject()).isEqualTo("demolib");
 	}
 
 }
