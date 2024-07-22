@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next version
 - [fix] _agent_: Error was reported when the system under test used logback
+- [fix] _teamscale-gradle-plugin_: Improved error message regarding minimum supported Gradle version
 
 # 34.0.0
 - [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_: Support using revision for fetching impacted tests for both the baseline and the endCommit. This change is breaking because **this changes the minimum required Teamscale Server version from 8.0.0 to 9.4.0** and because the Teamscale client API was changed. For the Maven and Gradle plugins, this change is non-breaking.
