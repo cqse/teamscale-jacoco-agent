@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+# 34.0.1
 - [fix] _agent_: Error was reported when the system under test used logback
 - [fix] _teamscale-gradle-plugin_: Improved error message regarding minimum supported Gradle version
 
