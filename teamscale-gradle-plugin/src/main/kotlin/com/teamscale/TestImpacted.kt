@@ -160,10 +160,11 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 
 			classpath = classpath.plus(testEngineConfiguration)
 
-			// Workaround to not cause the task to fail when no tests are executed, which might happen when no tests are impacted
-			// https://docs.gradle.org/8.8/userguide/upgrading_version_8.html#test_task_fail_on_no_test_executed
-			// https://github.com/gradle/gradle/blob/master/platforms/software/testing-base/src/main/java/org/gradle/api/tasks/testing/AbstractTestTask.java#L542
 			if (runImpacted) {
+				// Workaround to not cause the task to fail when no tests are executed, which might happen when no tests are impacted
+				// We do so by adding a useless filter, because the "no tests executed" can only be disabled for the case where filters are applied
+				// https://docs.gradle.org/8.8/userguide/upgrading_version_8.html#test_task_fail_on_no_test_executed
+				// https://github.com/gradle/gradle/blob/57cc16c8fbf4116a0ef0ad7b742c1a4a4e11a474/platforms/software/testing-base/src/main/java/org/gradle/api/tasks/testing/AbstractTestTask.java#L542
 				filter.excludeTestsMatching("dummy-test-name")
 				filter.isFailOnNoMatchingTests = false
 			}
