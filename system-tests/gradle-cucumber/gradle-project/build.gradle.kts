@@ -2,7 +2,7 @@ import com.teamscale.TestImpacted
 
 plugins {
     id("java")
-    id("com.teamscale") version "34.0.1"
+    id("com.teamscale") version "${System.getenv("AGENT_VERSION")}"
 }
 
 group = "org.example"
@@ -16,9 +16,9 @@ repositories {
 teamscale {
 
     server {
-        url = "http://localhost:8080/"
+        url = "http://localhost:${System.getenv("TEAMSCALE_PORT")}/"
         userName = "admin"
-        userAccessToken = "q4tu9vfAAjQZ1peCpPvQHSrLi5CeIcGY"
+        userAccessToken = "mrllRGxXJrsyL0UID3gGcJnZuQT4EyWr"
         project = "cucumber-gradle"
     }
 
@@ -26,6 +26,10 @@ teamscale {
         testwiseCoverage {
             partition.set("Cucumber Tests")
         }
+    }
+
+    commit {
+        revision = "abc1234"
     }
 }
 
