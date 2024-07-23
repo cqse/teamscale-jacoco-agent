@@ -1,22 +1,5 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.MESSAGE;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PROJECT;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REPOSITORY;
-import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Properties;
-
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.slf4j.Logger;
-
 import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
@@ -29,6 +12,22 @@ import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Properties;
+
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.COMMIT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.MESSAGE;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PARTITION;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.PROJECT;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REPOSITORY;
+import static com.teamscale.jacoco.agent.upload.teamscale.ETeamscaleServerProperties.REVISION;
 
 /** Uploads XML Coverage to a Teamscale instance. */
 public class TeamscaleUploader implements IUploader, IUploadRetry {
@@ -40,6 +39,10 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 
 	/** The logger. */
 	private final Logger logger = LoggingUtils.getLogger(this);
+
+	public TeamscaleServer getTeamscaleServer() {
+		return teamscaleServer;
+	}
 
 	/** Teamscale server details. */
 	private final TeamscaleServer teamscaleServer;

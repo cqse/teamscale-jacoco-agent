@@ -87,9 +87,9 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 							GitPropertiesLocatorUtils.GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME);
 					continue;
 				}
-				uploader.setTeamscaleProjectForRevision(projectAndCommit);
 				logger.debug("Found git.properties file in {} and found Teamscale project {} and revision {}", file,
 						projectAndCommit.getProject(), projectAndCommit.getCommitInfo());
+				uploader.addTeamscaleProjectAndCommit(file, projectAndCommit);
 			}
 		} catch (IOException | InvalidGitPropertiesException e) {
 			logger.error("Error during asynchronous search for git.properties in {}", file, e);

@@ -15,6 +15,6 @@ include(":sample-debugging-app")
 include(":teamscale-maven-plugin")
 include(":installer")
 
-file("system-tests").listFiles { file: File -> !file.isHidden }?.forEach { folder ->
+file("system-tests").listFiles { file: File -> !file.isHidden && file.isDirectory }?.forEach { folder ->
     include(":system-tests:${folder.name}")
 }

@@ -489,9 +489,9 @@ public class AgentOptions {
 		DelayedTeamscaleMultiProjectUploader uploader = new DelayedTeamscaleMultiProjectUploader(
 				(project, commitInfo) -> {
 					if (commitInfo.preferCommitDescriptorOverRevision || StringUtils.isEmpty(commitInfo.revision)) {
-						return new TeamscaleUploader(teamscaleServer.withProjectAndCommit(project, commitInfo.commit));
+						return teamscaleServer.withProjectAndCommit(project, commitInfo.commit);
 					}
-					return new TeamscaleUploader(teamscaleServer.withProjectAndRevision(project, commitInfo.revision));
+					return teamscaleServer.withProjectAndRevision(project, commitInfo.revision);
 				});
 
 		if (gitPropertiesJar != null) {
