@@ -51,6 +51,6 @@ tasks.test {
 tasks.register<com.teamscale.TestImpacted>("tiaTests") {
     useJUnitPlatform()
     configure<JacocoTaskExtension> {
-        includes = listOf("*org.example.*")
+        includes = listOf("*hellocucumber*")
     }
 }
