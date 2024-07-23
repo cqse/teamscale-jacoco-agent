@@ -2,7 +2,7 @@ import com.teamscale.TestImpacted
 
 plugins {
     id("java")
-    id("com.teamscale") version "31.0.0-cucumber-SNAPSHOT"
+    id("com.teamscale") version "34.0.1"
 }
 
 group = "org.example"
@@ -11,6 +11,22 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenLocal()
     mavenCentral()
+}
+
+teamscale {
+
+    server {
+        url = "http://localhost:8080/"
+        userName = "admin"
+        userAccessToken = "q4tu9vfAAjQZ1peCpPvQHSrLi5CeIcGY"
+        project = "cucumber-gradle"
+    }
+
+    report {
+        testwiseCoverage {
+            partition.set("Cucumber Tests")
+        }
+    }
 }
 
 dependencies {
@@ -28,14 +44,9 @@ tasks.test {
     systemProperty("cucumber.junit-platform.naming-strategy", "long")
 }
 
-tasks.register("tiaTests", TestImpacted::class) {
-    // Tried to fix with the following, but it makes no difference:
-    // systemProperty("cucumber.junit-platform.naming-strategy", "long")
-    // testClassesDirs = files("/Users/pete/Projects/cucumber-gradle/build/classes/java/test")
-
-    // Usual setup from here
+tasks.register<com.teamscale.TestImpacted>("tiaTests") {
     useJUnitPlatform()
-    jacoco {
-        include("*org.example.*")
+    configure<JacocoTaskExtension> {
+        includes = listOf("*org.example.*")
     }
 }
