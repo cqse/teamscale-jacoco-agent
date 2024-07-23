@@ -1,11 +1,11 @@
 package com.teamscale.client;
 
+import okhttp3.HttpUrl;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
-import okhttp3.HttpUrl;
 
 /** Holds Teamscale server details. */
 public class TeamscaleServer {
@@ -131,6 +131,17 @@ public class TeamscaleServer {
 	/** Returns whether either a commit or revision has been set. */
 	public boolean hasCommitOrRevision() {
 		return commit != null || revision != null;
+	}
+
+	/** Checks if another TeamscaleServer has the same project and revision/commit as this TeamscaleServer instance. */
+	public boolean hasSameProjectAndCommit(TeamscaleServer other) {
+		if (!this.project.equals(other.project)) {
+			return false;
+		}
+		if (this.revision != null) {
+			return this.revision.equals(other.revision);
+		}
+		return this.commit.equals(other.commit);
 	}
 
 	@Override
