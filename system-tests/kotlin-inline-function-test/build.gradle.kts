@@ -1,6 +1,6 @@
 plugins {
     com.teamscale.`system-test-convention`
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.24"
 }
 
 tasks.test {

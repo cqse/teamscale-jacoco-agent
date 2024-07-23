@@ -54,8 +54,8 @@ open class TeamscalePlugin : Plugin<Project> {
         val pluginExtension =
             project.extensions.create(teamscaleExtensionName, TeamscalePluginExtension::class.java, project)
 
-        if (GradleVersion.current() < GradleVersion.version("6.5")) {
-            throw GradleException("The teamscale plugin requires Gradle version 6.5 or higher")
+        if (GradleVersion.current() < GradleVersion.version("7.6.2")) {
+            throw GradleException("The teamscale plugin requires Gradle version 7.6.2 or higher")
         }
 
         // Add impacted tests executor to a custom configuration that will later be used to
@@ -119,6 +119,7 @@ open class TeamscalePlugin : Plugin<Project> {
             }
             teamscaleReportTask.uploadTask = teamscaleUploadTask
             teamscaleUploadTask.reports.add(extension.report.getReport())
+            teamscaleUploadTask.mustRunAfter(teamscaleReportTask)
         }
     }
 

@@ -5,8 +5,11 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
-- [fix] _agent_: Error was reported when the system under test used logback
 - [feature] _agent_: Prevent uploading coverage to the same project + revision or branch@timestamp when doing multi project upload via git.properties
+
+# 34.0.1
+- [fix] _agent_: Error was reported when the system under test used logback
+- [fix] _teamscale-gradle-plugin_: Improved error message regarding minimum supported Gradle version
 
 # 34.0.0
 - [breaking] _teamscale-client_, _teamscale-maven-plugin_, _teamscale-gradle-plugin_: Support using revision for fetching impacted tests for both the baseline and the endCommit. This change is breaking because **this changes the minimum required Teamscale Server version from 8.0.0 to 9.4.0** and because the Teamscale client API was changed. For the Maven and Gradle plugins, this change is non-breaking.
