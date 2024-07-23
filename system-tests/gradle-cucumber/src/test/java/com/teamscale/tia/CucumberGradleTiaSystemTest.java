@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 /**
- * Runs tests in all submodules and expects the results of both in the upload.
+ * Runs cucumber tests in the nested <code>gradle-project</code> folder
  */
 public class CucumberGradleTiaSystemTest {
 
@@ -20,6 +20,7 @@ public class CucumberGradleTiaSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT)
+				.withImpactedTests("hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers -1 & -10 #1")
 				.acceptingReportUploads();
 	}
 
@@ -29,15 +30,20 @@ public class CucumberGradleTiaSystemTest {
 	}
 
 	@Test
-	public void testCucumberTestsAreExecutedAndUploaded() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "teamscaleReportUpload", "--no-daemon");
+	public void testImpactedCucumberTestsAreRun() throws Exception {
+		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "--impacted", "teamscaleReportUpload", "--no-daemon");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Cucumber Tests"));
 
 		TestwiseCoverageReport testReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(testReport.tests).hasSize(4);
-		assertThat(testReport.tests).allMatch(test -> test.uniformPath.startsWith("hellocucumber/RunCucumberTest/hellocucumber/calculator.feature"));
+		// We can't just assert for testReport.test == 1 here because the Gradle plugin uploads all test cases.
+		// The ones that were not executed have a mostly empty body, though. E.g.
+		// {
+		//    "uniformPath" : "hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Add two numbers 10 & 15 #1",
+		//    "paths" : [ ]
+		//  }
+		assertThat(testReport.tests.stream().filter(test -> test.result != null).count()).isEqualTo(1);
 	}
 
 }
