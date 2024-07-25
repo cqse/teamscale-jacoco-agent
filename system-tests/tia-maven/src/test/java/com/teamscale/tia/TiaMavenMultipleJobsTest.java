@@ -2,7 +2,6 @@ package com.teamscale.tia;
 
 import com.teamscale.test.commons.SystemTestUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -13,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Test class to check if multiple maven plugins can be started with dynamic port allocation.
  */
-@Disabled("https://cqse.atlassian.net/browse/TS-38429")
 public class TiaMavenMultipleJobsTest {
 
 	/**
