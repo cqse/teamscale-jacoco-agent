@@ -3,13 +3,14 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent.util;
+package com.teamscale.jacoco.agent.logging;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.teamscale.jacoco.agent.Agent;
+import com.teamscale.jacoco.agent.util.NullOutputStream;
 import com.teamscale.report.util.ILogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

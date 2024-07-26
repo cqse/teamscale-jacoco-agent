@@ -3,7 +3,7 @@ package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 
