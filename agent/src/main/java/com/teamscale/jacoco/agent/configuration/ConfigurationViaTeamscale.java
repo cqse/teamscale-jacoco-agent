@@ -7,7 +7,7 @@ import com.teamscale.client.ProfilerInfo;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;

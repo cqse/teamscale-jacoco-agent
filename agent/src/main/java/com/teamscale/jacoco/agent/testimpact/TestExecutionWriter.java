@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.client.JsonUtils;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.testwise.model.TestExecution;
 import org.slf4j.Logger;
 

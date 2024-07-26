@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
