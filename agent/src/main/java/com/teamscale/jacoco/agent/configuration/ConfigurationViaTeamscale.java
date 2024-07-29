@@ -131,7 +131,5 @@ public class ConfigurationViaTeamscale {
 		}
 	}
 
-	public String getProfilerId() {
-		return profilerId;
-	}
+
 }

@@ -1,9 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
-import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
-import com.teamscale.jacoco.agent.logging.LogToTeamscaleAppender;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -13,7 +11,6 @@ import com.teamscale.jacoco.agent.options.TeamscaleCredentials;
 import com.teamscale.jacoco.agent.options.TeamscalePropertiesUtils;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.UploaderException;
-import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
@@ -33,8 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
-import static com.teamscale.jacoco.agent.logging.LoggingUtils.getLoggerContext;
 
 /** Container class for the premain entry point for the agent. */
 public class PreMain {
@@ -153,10 +148,6 @@ public class PreMain {
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
-		}
-
-		if (agentOptions.getTeamscaleServerOptions().isConfiguredForServerConnection()) {
-			LogToTeamscaleAppender.addTeamscaleAppenderTo(getLoggerContext(), agentOptions);
 		}
 	}
 
