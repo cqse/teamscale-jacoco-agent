@@ -3,7 +3,7 @@ package com.teamscale.jacoco.agent.commit_resolution.sapnwdi;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.string.StringUtils;
 import org.slf4j.Logger;

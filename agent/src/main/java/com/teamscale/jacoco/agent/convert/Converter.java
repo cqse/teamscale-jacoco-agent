@@ -3,7 +3,7 @@ package com.teamscale.jacoco.agent.convert;
 import com.teamscale.client.TestDetails;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static com.teamscale.jacoco.agent.logging.LoggingUtils.wrap;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /** Converts one .exec binary coverage file to XML. */
 public class Converter {

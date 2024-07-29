@@ -94,9 +94,9 @@ public class TeamscaleMockServer {
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withProfilerConfiguration(ProfilerConfiguration profilerConfiguration) {
 		this.profilerConfiguration = profilerConfiguration;
-		service.post("api/v2024.7.0/running-profilers", this::handleProfilerRegistration);
-		service.put("api/v2024.7.0/running-profilers/:profilerId", this::handleProfilerHeartbeat);
-		service.delete("api/v2024.7.0/running-profilers/:profilerId", this::handleProfilerUnregister);
+		service.post("api/v9.4.0/running-profilers", this::handleProfilerRegistration);
+		service.put("api/v9.4.0/running-profilers/:profilerId", this::handleProfilerHeartbeat);
+		service.delete("api/v9.4.0/running-profilers/:profilerId", this::handleProfilerUnregister);
 		return this;
 	}
 

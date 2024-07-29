@@ -34,7 +34,7 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
-import static com.teamscale.jacoco.agent.logging.LoggingUtils.wrap;
+import static com.teamscale.jacoco.agent.util.LoggingUtils.wrap;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time

@@ -146,21 +146,21 @@ public interface ITeamscaleService {
 	);
 
 	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with. */
-	@POST("api/v2024.7.0/profilers")
+	@POST("api/v9.4.0/running-profilers")
 	Call<ProfilerRegistration> registerProfiler(
 			@Query("configuration-id") String configurationId,
 			@Body ProcessInformation processInformation
 	);
 
 	/** Updates the profiler infos and sets the profiler to still alive. */
-	@PUT("api/v2024.7.0/profilers/{profilerId}")
+	@PUT("api/v9.4.0/running-profilers/{profilerId}")
 	Call<ResponseBody> sendHeartbeat(
 			@Path("profilerId") String profilerId,
 			@Body ProfilerInfo profilerInfo
 	);
 
 	/** Removes the profiler identified by given ID. */
-	@DELETE("api/v2024.7.0/profilers/{profilerId}")
+	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
 	Call<ResponseBody> unregisterProfiler(@Path("profilerId") String profilerId);
 
 	/**

@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;

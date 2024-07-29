@@ -41,6 +41,7 @@ public class ProcessInformationRetriever {
 		}
 	}
 
+
 	/**
 	 * Returns a string that <i>probably</i> contains the PID.
 	 * <p>

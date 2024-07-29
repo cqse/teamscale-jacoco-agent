@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 
 import okhttp3.HttpUrl;

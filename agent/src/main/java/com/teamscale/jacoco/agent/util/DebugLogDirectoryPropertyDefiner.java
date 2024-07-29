@@ -1,4 +1,4 @@
-package com.teamscale.jacoco.agent.logging;
+package com.teamscale.jacoco.agent.util;
 
 import java.nio.file.Path;
 

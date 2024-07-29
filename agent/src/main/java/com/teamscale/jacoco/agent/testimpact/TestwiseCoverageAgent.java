@@ -8,7 +8,7 @@ package com.teamscale.jacoco.agent.testimpact;
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.GenericExceptionMapper;
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
