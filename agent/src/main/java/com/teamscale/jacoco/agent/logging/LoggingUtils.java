@@ -52,7 +52,10 @@ public class LoggingUtils {
 		return new LoggingResources();
 	}
 
-	private static LoggerContext getLoggerContext() {
+	/**
+	 * Returns the logger context.
+	 */
+	public static LoggerContext getLoggerContext() {
 		return (LoggerContext) LoggerFactory.getILoggerFactory();
 	}
 
