@@ -163,6 +163,12 @@ public interface ITeamscaleService {
 	@DELETE("api/v2024.7.0/profilers/{profilerId}")
 	Call<ResponseBody> unregisterProfiler(@Path("profilerId") String profilerId);
 
+	@POST("api/v2024.7.0/profilers/{profilerId}/logs")
+	Call<Void> postProfilerLog(
+			@Path("profilerId") String profilerId,
+			@Body List<ProfilerLogEntry> logEntries
+	);
+
 	/**
 	 * Uploads the given report body to Teamscale as blocking call with movetolastcommit set to false.
 	 *

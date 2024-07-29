@@ -94,9 +94,10 @@ public class TeamscaleMockServer {
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withProfilerConfiguration(ProfilerConfiguration profilerConfiguration) {
 		this.profilerConfiguration = profilerConfiguration;
-		service.post("api/v2024.7.0/running-profilers", this::handleProfilerRegistration);
-		service.put("api/v2024.7.0/running-profilers/:profilerId", this::handleProfilerHeartbeat);
-		service.delete("api/v2024.7.0/running-profilers/:profilerId", this::handleProfilerUnregister);
+		service.post("api/v2024.7.0/profilers", this::handleProfilerRegistration);
+		service.put("api/v2024.7.0/profilers/:profilerId", this::handleProfilerHeartbeat);
+		service.delete("api/v2024.7.0/profilers/:profilerId", this::handleProfilerUnregister);
+		service.post("api/v2024.7.0/profilers/:profilerId/logs", this::handleProfilerLogs);
 		return this;
 	}
 
@@ -143,6 +144,12 @@ public class TeamscaleMockServer {
 	private String handleProfilerHeartbeat(Request request, Response response) {
 		collectedUserAgents.add(request.headers("User-Agent"));
 		profilerEvents.add("Profiler " + request.params(":profilerId") + " sent heartbeat");
+		return "";
+	}
+
+	private String handleProfilerLogs(Request request, Response response) {
+		collectedUserAgents.add(request.headers("User-Agent"));
+		profilerEvents.add("Profiler " + request.params(":profilerId") + " sent logs");
 		return "";
 	}
 
