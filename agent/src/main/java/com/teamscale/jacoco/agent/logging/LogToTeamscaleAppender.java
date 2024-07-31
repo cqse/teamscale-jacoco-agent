@@ -21,7 +21,16 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	private int batchSize = 10;
 	private Duration flushInterval = Duration.ofSeconds(3);
 	private final List<ProfilerLogEntry> logBuffer = new ArrayList<>();
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private final ScheduledExecutorService scheduler;
+
+	public LogToTeamscaleAppender() {
+		this.scheduler = Executors.newScheduledThreadPool(1, r -> {
+			// Make the thread a daemon so that it does not prevent the JVM from terminating.
+			Thread t = Executors.defaultThreadFactory().newThread(r);
+			t.setDaemon(true);
+			return t;
+		});
+	}
 
 	public void setTeamscaleClient(TeamscaleClient teamscaleClient) {
 		this.teamscaleClient = teamscaleClient;
@@ -113,6 +122,5 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 		Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
 		rootLogger.addAppender(logToTeamscaleAppender);
 	}
-
 
 }

@@ -36,8 +36,9 @@ public class TeamscaleProfilerConfigurationSystemTest {
 
 		teamscaleMockServer.shutdown();
 
-		assertThat(teamscaleMockServer.getProfilerEvents()).containsExactly(
-				"Profiler registered and requested configuration my-config", "Profiler 123 sent heartbeat",
+		assertThat(teamscaleMockServer.getProfilerEvents()).as("We expect a sequence of interactions with the mock. " +
+				"Note that unexpected interactions can be caused by old agent instances that have not been killed properly.") //
+				.containsExactly("Profiler registered and requested configuration my-config", "Profiler 123 sent heartbeat",
 				"Profiler 123 unregistered");
 	}
 
