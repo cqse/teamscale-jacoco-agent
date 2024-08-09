@@ -27,12 +27,14 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
 		Optional<String> featurePath = getFeaturePath(testDescriptor);
+		LOGGER.fine(() -> "Resolved feature" + featurePath);
 		if (!featurePath.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the feature classpath for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
 			return Optional.empty();
 		}
 		Optional<String> pickleName = getPickleName(testDescriptor);
+		LOGGER.fine(() -> "Resolved pickle name: " + pickleName);
 		if (!pickleName.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the pickle name for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
@@ -49,12 +51,16 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 			uniformPath += " #" + indexOfCurrentTest;
 		}
 
+		// IntelliJ complains without this that uniform path should be final when used in a lambda
+		uniformPath = removeDuplicatedSlashes(uniformPath);
+		final String finalUniformPath = uniformPath;
+		LOGGER.fine(() -> "Resolved uniform path: " + finalUniformPath);
 		return Optional.of(uniformPath);
 	}
 
 	@Override
 	public Optional<String> getClusterId(TestDescriptor testDescriptor) {
-		return getFeaturePath(testDescriptor);
+		return getFeaturePath(testDescriptor).map(this::removeDuplicatedSlashes);
 	}
 
 	@Override
@@ -71,6 +77,13 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 		Optional<String> featureClasspath = TestDescriptorUtils.getUniqueIdSegment(testDescriptor,
 				FEATURE_SEGMENT_TYPE);
 		return featureClasspath.map(featureClasspathString -> featureClasspathString.replaceAll("classpath:", ""));
+	}
+
+	/**
+	 * Remove duplicated "/" with one (due to <a href="https://cqse.atlassian.net/browse/TS-39915">TS-39915</a>)
+	 */
+	String removeDuplicatedSlashes(String string) {
+		return string.replaceAll("(?<!\\\\)/+", "/");
 	}
 
 	private Optional<String> getPickleName(TestDescriptor testDescriptor) {
@@ -152,7 +165,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	}
 
 	private List<TestDescriptor> flatListOfAllTestDescriptorChildrenWithPickleName(TestDescriptor testDescriptor,
-																				   String pickleName) {
+			String pickleName) {
 		if (testDescriptor.getChildren().isEmpty()) {
 			Optional<String> pickleId = getPickleName(testDescriptor);
 			if (pickleId.isPresent() && pickleName.equals(pickleId.get())) {
