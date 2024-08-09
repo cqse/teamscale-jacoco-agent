@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <define name="defaultLogDir" class="com.teamscale.jacoco.agent.util.LogDirectoryPropertyDefiner"/>
+    <define name="defaultLogDir" class="com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner"/>
 
 	<appender name="RollingFile" class="shadow.ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- TODO: adjust the path where the log file should be written -->

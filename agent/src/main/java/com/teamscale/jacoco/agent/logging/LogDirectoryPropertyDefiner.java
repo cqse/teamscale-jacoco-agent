@@ -1,6 +1,7 @@
-package com.teamscale.jacoco.agent.util;
+package com.teamscale.jacoco.agent.logging;
 
 import ch.qos.logback.core.PropertyDefinerBase;
+import com.teamscale.jacoco.agent.util.AgentUtils;
 
 import java.nio.file.Path;
 

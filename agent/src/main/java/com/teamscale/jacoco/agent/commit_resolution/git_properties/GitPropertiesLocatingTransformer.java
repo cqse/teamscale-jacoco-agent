@@ -1,6 +1,6 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.string.StringUtils;

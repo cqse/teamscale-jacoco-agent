@@ -7,7 +7,7 @@ import com.beust.jcommander.ParameterException;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.convert.ConvertCommand;
 import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.JaCoCo;
 import org.slf4j.Logger;
