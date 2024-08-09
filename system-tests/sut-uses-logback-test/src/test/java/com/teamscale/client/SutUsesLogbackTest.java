@@ -19,7 +19,7 @@ public class SutUsesLogbackTest {
 
 		assertThat(result.getStdout()).contains("This warning is to test logging in the SUT");
 		assertThat(result.getStdout()).doesNotContainIgnoringCase("error");
-		assertThat(result.getStderr()).isEmpty();
+		assertThat(result.getStderr()).isEqualToNormalizingNewlines("SLF4J(I): Connected with provider of type [shadow.ch.qos.logback.classic.spi.LogbackServiceProvider]\n");
 
 		Path appLogFile = Paths.get("logTest/app.log");
 		assertThat(appLogFile).exists();
