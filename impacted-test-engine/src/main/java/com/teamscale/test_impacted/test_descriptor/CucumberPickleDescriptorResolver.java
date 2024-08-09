@@ -51,13 +51,16 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 			uniformPath += " #" + indexOfCurrentTest;
 		}
 
+		// IntelliJ complains without this that uniform path should be final when used in a lambda
+		uniformPath = removeDuplicatedSlashes(uniformPath);
+		final String finalUniformPath = uniformPath;
 		LOGGER.fine(() -> "Resolved uniform path: " + finalUniformPath);
 		return Optional.of(uniformPath);
 	}
 
 	@Override
 	public Optional<String> getClusterId(TestDescriptor testDescriptor) {
-		return getFeaturePath(testDescriptor);
+		return getFeaturePath(testDescriptor).map(this::removeDuplicatedSlashes);
 	}
 
 	@Override
@@ -74,6 +77,13 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 		Optional<String> featureClasspath = TestDescriptorUtils.getUniqueIdSegment(testDescriptor,
 				FEATURE_SEGMENT_TYPE);
 		return featureClasspath.map(featureClasspathString -> featureClasspathString.replaceAll("classpath:", ""));
+	}
+
+	/**
+	 * Remove duplicated "/" with one (due to <a href="https://cqse.atlassian.net/browse/TS-39915">TS-39915</a>)
+	 */
+	String removeDuplicatedSlashes(String string) {
+		return string.replaceAll("(?<!\\\\)/+", "/");
 	}
 
 	private Optional<String> getPickleName(TestDescriptor testDescriptor) {
