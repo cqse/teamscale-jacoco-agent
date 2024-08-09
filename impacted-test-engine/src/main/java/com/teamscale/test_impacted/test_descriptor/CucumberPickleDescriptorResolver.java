@@ -27,12 +27,14 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
 		Optional<String> featurePath = getFeaturePath(testDescriptor);
+		LOGGER.fine(() -> "Resolved feature" + featurePath);
 		if (!featurePath.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the feature classpath for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
 			return Optional.empty();
 		}
 		Optional<String> pickleName = getPickleName(testDescriptor);
+		LOGGER.fine(() -> "Resolved pickle name: " + pickleName);
 		if (!pickleName.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the pickle name for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
@@ -49,6 +51,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 			uniformPath += " #" + indexOfCurrentTest;
 		}
 
+		LOGGER.fine(() -> "Resolved uniform path: " + finalUniformPath);
 		return Optional.of(uniformPath);
 	}
 
@@ -152,7 +155,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	}
 
 	private List<TestDescriptor> flatListOfAllTestDescriptorChildrenWithPickleName(TestDescriptor testDescriptor,
-																				   String pickleName) {
+			String pickleName) {
 		if (testDescriptor.getChildren().isEmpty()) {
 			Optional<String> pickleId = getPickleName(testDescriptor);
 			if (pickleId.isPresent() && pickleName.equals(pickleId.get())) {
