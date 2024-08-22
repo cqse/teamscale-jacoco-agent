@@ -1,8 +1,9 @@
 package com.teamscale.test_impacted.commons;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -43,14 +44,23 @@ public class LoggerUtils {
 	 * teach the log manager to use it.
 	 */
 	private static void useDefaultJULConfigFile() {
-		String loggingPropertiesFilePath = System.getProperty(JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY);
-		if (loggingPropertiesFilePath != null) {
-			File loggingPropertiesFile = new File(loggingPropertiesFilePath);
-			try {
-				LogManager.getLogManager().readConfiguration(Files.newInputStream(loggingPropertiesFile.toPath()));
-			} catch (IOException e) {
-				// Ignore, we cant load the logging config so we just use the defaults
+		String loggingPropertiesFilePathString = System.getProperty(JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY);
+		if (loggingPropertiesFilePathString == null) {
+			return;
+		}
+
+		Logger logger = Logger.getLogger(LoggerUtils.class.getName());
+		try {
+			Path loggingPropertiesFilePath = Paths.get(loggingPropertiesFilePathString);
+			if (!loggingPropertiesFilePath.toFile().exists()) {
+				logger.warning(
+						"Cannot find the file specified via " + JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY + ": " + loggingPropertiesFilePathString);
+				return;
 			}
+			LogManager.getLogManager().readConfiguration(Files.newInputStream(loggingPropertiesFilePath));
+		} catch (IOException e) {
+			logger.warning(
+					"Cannot load the file specified via " + JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY + ": " + loggingPropertiesFilePathString + ". " + e.getMessage());
 		}
 	}
 
