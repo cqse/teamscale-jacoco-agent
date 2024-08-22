@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next version
 - [feature] _agent_: Prevent uploading coverage to the same project + revision or branch@timestamp when doing multi project upload via git.properties
 - [fix] _impacted-test-engine_: Remove duplicated slashes in uniform paths and cluster ids for Cucumber Tests
+- [fix] _impacted-test-engine_: Ensure that the config file specified via `java.util.logging.config.file` is used when specified 
 
 # 34.0.1
 - [fix] _agent_: Error was reported when the system under test used logback
