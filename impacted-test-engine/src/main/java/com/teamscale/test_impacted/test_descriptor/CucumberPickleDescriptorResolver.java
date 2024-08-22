@@ -27,7 +27,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
 		Optional<String> featurePath = getFeaturePath(testDescriptor);
-		LOGGER.fine(() -> "Resolved feature" + featurePath);
+		LOGGER.fine(() -> "Resolved feature: " + featurePath);
 		if (!featurePath.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the feature classpath for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
