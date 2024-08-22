@@ -17,7 +17,7 @@ import java.util.logging.SimpleFormatter;
 public class LoggerUtils {
 
 	private static final Logger MAIN_LOGGER;
-	public static final String JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY = "java.util.logging.config.file";
+	private static final String JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY = "java.util.logging.config.file";
 
 	static {
 		// Needs to be at the very top so it also takes affect when setting the log level for Console handlers
