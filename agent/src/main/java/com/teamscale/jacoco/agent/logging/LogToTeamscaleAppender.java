@@ -14,42 +14,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+/**
+ * Appender for sending logs directly to Teamscale.
+ */
 public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
+	/** Flush the logs after N elements are in the queue */
+	private static final int BATCH_SIZE = 50;
+
+	/** Flush the logs in the given time interval */
+	private static final Duration FLUSH_INTERVAL = Duration.ofSeconds(3);
+
+	/** The unique ID of the profiler */
 	private String profilerId;
+
+	/** The service client for sending logs to Teamscale */
 	private TeamscaleClient teamscaleClient;
-	private int batchSize = 10;
-	private Duration flushInterval = Duration.ofSeconds(3);
+
+	/** Buffer for unsent logs */
 	private final List<ProfilerLogEntry> logBuffer = new ArrayList<>();
+
+	/** Scheduler for sending logs after the configured time interval */
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-	public void setTeamscaleClient(TeamscaleClient teamscaleClient) {
-		this.teamscaleClient = teamscaleClient;
-	}
-
-	public void setProfilerId(String profilerId) {
-		this.profilerId = profilerId;
-	}
-
-	public void setBatchSize(int batchSize) {
-		this.batchSize = batchSize;
-	}
-
-	public void setFlushInterval(Duration flushInterval) {
-		this.flushInterval = flushInterval;
-	}
-
+	/** Start the log appender and the thread that sends logs to Teamscale */
 	@Override
 	public void start() {
 		super.start();
-		scheduler.scheduleAtFixedRate(this::flush, flushInterval.toMillis(), flushInterval.toMillis(), TimeUnit.MILLISECONDS);
+		scheduler.scheduleAtFixedRate(this::flush, FLUSH_INTERVAL.toMillis(), FLUSH_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	@Override
 	protected void append(ILoggingEvent eventObject) {
 		synchronized (logBuffer) {
 			logBuffer.add(formatLog(eventObject));
-			if (logBuffer.size() >= batchSize) {
+			if (logBuffer.size() >= BATCH_SIZE) {
 				flush();
 			}
 		}
@@ -74,16 +73,17 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 		sendLogs(logsToSend);
 	}
 
+	/** Send logs in a separate thread */
 	private void sendLogs(List<ProfilerLogEntry> logs) {
 		CompletableFuture.runAsync(() -> {
 			try {
 				Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logs);
 				retrofit2.Response<Void> response = call.execute();
 				if (!response.isSuccessful()) {
-					throw new RuntimeException("Failed to send log: HTTP error code : " + response.code());
+					throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
 				}
 			} catch (Exception e) {
-				e.printStackTrace(); // Handle exceptions appropriately in production code
+				System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
 			}
 		});
 	}
@@ -98,20 +98,34 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 		} catch (InterruptedException e) {
 			scheduler.shutdownNow();
 		}
-		flush(); // Ensure remaining logs are sent
+
+		// Ensure remaining logs are sent
+		flush();
+
 		super.stop();
 	}
 
+	public void setTeamscaleClient(TeamscaleClient teamscaleClient) {
+		this.teamscaleClient = teamscaleClient;
+	}
 
+	public void setProfilerId(String profilerId) {
+		this.profilerId = profilerId;
+	}
+
+	/**
+	 * Add the {@link com.teamscale.jacoco.agent.util.TeamscaleLogAppender} to the logging configuration
+	 * and enable/start it.
+	 */
 	public static void addTeamscaleAppenderTo(LoggerContext context, AgentOptions agentOptions) {
-		LogToTeamscaleAppender logToTeamscaleAppender = new LogToTeamscaleAppender();
-		logToTeamscaleAppender.setContext(context);
-		logToTeamscaleAppender.setProfilerId(agentOptions.configurationViaTeamscale.getProfilerId());
-		logToTeamscaleAppender.setTeamscaleClient(agentOptions.createTeamscaleClient());
-		logToTeamscaleAppender.start();
+		LogToTeamscaleAppender appender = new LogToTeamscaleAppender();
+		appender.setContext(context);
+		appender.setProfilerId(agentOptions.configurationViaTeamscale.getProfilerId());
+		appender.setTeamscaleClient(agentOptions.createTeamscaleClient());
+		appender.start();
 
 		Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
-		rootLogger.addAppender(logToTeamscaleAppender);
+		rootLogger.addAppender(appender);
 	}
 
 

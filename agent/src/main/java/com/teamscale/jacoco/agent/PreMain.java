@@ -110,7 +110,6 @@ public class PreMain {
 		}
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
-		TeamscaleLogAppender.start(credentials);
 		if (credentials == null) {
 			delayedLogger.warn("Did not find a teamscale.properties file!");
 		}
