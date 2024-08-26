@@ -34,7 +34,6 @@ public class LoggerUtils {
 			}
 		});
 
-
 		MAIN_LOGGER.addHandler(handler);
 	}
 

@@ -74,6 +74,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	 * hellocucumber/calculator.feature/11/16/21
 	 */
 	private Optional<String> getFeaturePath(TestDescriptor testDescriptor) {
+		LOGGER.fine((() -> "Unique ID of cucumber test descriptor: " + testDescriptor.getUniqueId()));
 		Optional<String> featureSegment = TestDescriptorUtils.getUniqueIdSegment(testDescriptor,
 				FEATURE_SEGMENT_TYPE);
 		LOGGER.fine(() -> "Resolved feature segment: " + featureSegment);
