@@ -24,6 +24,7 @@ import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.upload.LocalDiskUploader;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
+import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryMultiUploader;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryUploader;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageUploader;
@@ -62,51 +63,43 @@ import java.util.stream.Stream;
 public class AgentOptions {
 
 	/**
-	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
-	 */
-	/* package */ static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
-			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
-
-	/**
 	 * The default excludes applied to JaCoCo. These are packages that should never be profiled. Excluding them makes
 	 * debugging traces easier and reduces trace size and warnings about unmatched classes in Teamscale.
 	 */
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*:java.*:org.jboss.*:org.wildfly.*:org.springframework.*:com.fasterxml.*:jakarta.*:org.aspectj.*:org.h2.*:org.hibernate.*:org.assertj.*:org.mockito.*:org.thymeleaf.*";
-
-	private final ILogger logger;
-
-	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
-	/* package */ File gitPropertiesJar;
-
 	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
 	public static final String GIT_PROPERTIES_JAR_OPTION = "git-properties-jar";
-
+	/**
+	 * Can be used to format {@link LocalDate} to the format "yyyy-MM-dd-HH-mm-ss.SSS"
+	 */
+	/* package */ static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS", Locale.ENGLISH);
+	private final ILogger logger;
+	/**
+	 * Helper class that holds the process information, Teamscale client and profiler configuration and allows to
+	 * continuously update the profiler's info in Teamscale in the background via
+	 * {@link ConfigurationViaTeamscale#startHeartbeatThreadAndRegisterShutdownHook()}.
+	 */
+	public ConfigurationViaTeamscale configurationViaTeamscale;
+	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
+	/* package */ File gitPropertiesJar;
 	/**
 	 * The original options passed to the agent.
 	 */
 	/* package */ String originalOptionsString;
-
 	/** Whether debug logging is active or not. */
 	/* package */ boolean debugLogging = false;
-
 	/** Explicitly defined log file. */
 	/* package */ Path debugLogDirectory = null;
-
 	/**
 	 * The directories and/or zips that contain all class files being profiled. Never null. If this is empty, classes
 	 * should be dumped to a temporary directory which should be used as the class-dir.
 	 */
 	/* package */ List<File> classDirectoriesOrZips = new ArrayList<>();
-
 	/**
 	 * The logging configuration file.
 	 */
 	/* package */ Path loggingConfig = null;
-
-	/**
-	 * The directory to write the XML traces to.
-	 */
-	private Path outputDirectory;
 	/**
 	 * A path to the file that contains the password for the proxy authentication.
 	 */
@@ -199,17 +192,27 @@ public class AgentOptions {
 	 * not.
 	 */
 	/* package */ boolean obfuscateSecurityRelatedOutputs = true;
-
 	/**
-	 * Helper class that holds the process information, Teamscale client and profiler configuration and allows to
-	 * continuously update the profiler's info in Teamscale in the background via
-	 * {@link ConfigurationViaTeamscale#startHeartbeatThreadAndRegisterShutdownHook()}.
+	 * The directory to write the XML traces to.
 	 */
-	public ConfigurationViaTeamscale configurationViaTeamscale;
+	private Path outputDirectory;
 
 	public AgentOptions(ILogger logger) {
 		this.logger = logger;
 		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));
+	}
+
+	private static Path safeFolderName(String folderName) {
+		String result = folderName.replaceAll("[<>:\"/|?*]", "")
+				.replaceAll("\\.+", "dot")
+				.replaceAll("\\x00", "")
+				.replaceAll("[. ]$", "");
+
+		if (result.isEmpty()) {
+			return Paths.get("default");
+		} else {
+			return Paths.get(result);
+		}
 	}
 
 	/** @see #debugLogging */
@@ -373,7 +376,6 @@ public class AgentOptions {
 						" a connection to Teamscale!");
 	}
 
-
 	/**
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a
 	 * Teamscale connection.
@@ -386,24 +388,11 @@ public class AgentOptions {
 		return null;
 	}
 
-	/** All available upload methods. */
-	/*package*/ enum EUploadMethod {
-		/** Saving coverage files on disk. */
-		LOCAL_DISK,
-		/** Sending coverage to a single Teamscale project. */
-		TEAMSCALE_SINGLE_PROJECT,
-		/** Sending coverage to multiple Teamscale projects. */
-		TEAMSCALE_MULTI_PROJECT,
-		/** Sending coverage to multiple Teamscale projects based on SAP NWDI application definitions. */
-		SAP_NWDI_TEAMSCALE,
-		/** Sending coverage to an Artifactory. */
-		ARTIFACTORY,
-		/** Sending coverage to Azure file storage. */
-		AZURE_FILE_STORAGE,
-	}
-
 	/** Determines the upload method that should be used based on the set options. */
 	/*package*/ EUploadMethod determineUploadMethod() {
+		if (artifactoryConfig.isConfiguredForMultiFolderUpload()) {
+			return EUploadMethod.ARTIFACTORY_MULTI_PROJECT;
+		}
 		if (artifactoryConfig.hasAllRequiredFieldsSet()) {
 			return EUploadMethod.ARTIFACTORY;
 		}
@@ -428,6 +417,8 @@ public class AgentOptions {
 	public IUploader createUploader(Instrumentation instrumentation) throws UploaderException {
 		EUploadMethod uploadMethod = determineUploadMethod();
 		switch (uploadMethod) {
+			case ARTIFACTORY_MULTI_PROJECT:
+				return createArtifactoryMultiProjectUploader(instrumentation);
 			case TEAMSCALE_MULTI_PROJECT:
 				return createTeamscaleMultiProjectUploader(instrumentation);
 			case TEAMSCALE_SINGLE_PROJECT:
@@ -448,6 +439,12 @@ public class AgentOptions {
 				throw new RuntimeException("Unhandled upload method " + uploadMethod + "."
 						+ " This is a bug, please report this to CQSE.");
 		}
+	}
+
+	private IUploader createArtifactoryMultiProjectUploader(Instrumentation instrumentation) {
+		ArtifactoryMultiUploader uploader = new ArtifactoryMultiUploader();
+		startArtifactoryGitPropertiesSearch(uploader, gitPropertiesJar); // will add artifactory configs to uploader
+		return uploader;
 	}
 
 	@NotNull
@@ -551,6 +548,11 @@ public class AgentOptions {
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
+	private void startArtifactoryGitPropertiesSearch(ArtifactoryMultiUploader uploader, File gitPropertiesJar) {
+		// create locator
+		// search files with locator (will add uploaders to Multiuploader)
+	}
+
 	private void registerMultiGitPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader,
 			Instrumentation instrumentation) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
@@ -628,19 +630,6 @@ public class AgentOptions {
 		org.conqat.lib.commons.filesystem.FileSystemUtils.ensureDirectoryExists(partitionOutputDir.toFile());
 		return partitionOutputDir.resolve(
 				prefix + "-" + LocalDateTime.now().format(DATE_TIME_FORMATTER) + "." + extension).toFile();
-	}
-
-	private static Path safeFolderName(String folderName) {
-		String result = folderName.replaceAll("[<>:\"/|?*]", "")
-				.replaceAll("\\.+", "dot")
-				.replaceAll("\\x00", "")
-				.replaceAll("[. ]$", "");
-
-		if (result.isEmpty()) {
-			return Paths.get("default");
-		} else {
-			return Paths.get(result);
-		}
 	}
 
 	/**
@@ -723,5 +712,23 @@ public class AgentOptions {
 	/** @see #ignoreUncoveredClasses */
 	public boolean shouldIgnoreUncoveredClasses() {
 		return ignoreUncoveredClasses;
+	}
+
+	/** All available upload methods. */
+	/*package*/ enum EUploadMethod {
+		/** Saving coverage files on disk. */
+		LOCAL_DISK,
+		/** Sending coverage to a single Teamscale project. */
+		TEAMSCALE_SINGLE_PROJECT,
+		/** Sending coverage to multiple Teamscale projects. */
+		TEAMSCALE_MULTI_PROJECT,
+		/** Sending coverage to multiple Teamscale projects based on SAP NWDI application definitions. */
+		SAP_NWDI_TEAMSCALE,
+		/** Sending coverage to an Artifactory. */
+		ARTIFACTORY,
+		/** Sending coverage to Azure file storage. */
+		AZURE_FILE_STORAGE,
+		/** Sending coverage to multiple folders in artifactory. */
+		ARTIFACTORY_MULTI_PROJECT,
 	}
 }

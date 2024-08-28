@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/** Config necessary to upload files to an azure file storage. */
+/** Config necessary to upload files to an Artifactory storage. */
 public class ArtifactoryConfig {
 	/**
 	 * Option to specify the artifactory URL. This shall be the entire path down to the directory to which the coverage
@@ -158,6 +158,11 @@ public class ArtifactoryConfig {
 		boolean requiredAuthOptionsSet = (user != null && password != null) || apiKey != null;
 		boolean partitionSet = partition != null || legacyPath;
 		return url != null && partitionSet && requiredAuthOptionsSet;
+	}
+
+	/** Checks if config indicates that coverage should be uploaded to multiple folders in artifactory */
+	public boolean isConfiguredForMultiFolderUpload() {
+		return user != null && password != null && url == null;
 	}
 
 	/** Checks if all required fields are null. */
