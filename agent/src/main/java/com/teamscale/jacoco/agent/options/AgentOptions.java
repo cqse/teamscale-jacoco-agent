@@ -11,6 +11,7 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.commandline.Validator;
+import com.teamscale.jacoco.agent.commit_resolution.git_properties.ArtifactoryMultiProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.CommitInfo;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitMultiProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitPropertiesLocatingTransformer;
@@ -549,8 +550,8 @@ public class AgentOptions {
 	}
 
 	private void startArtifactoryGitPropertiesSearch(ArtifactoryMultiUploader uploader, File gitPropertiesJar) {
-		// create locator
-		// search files with locator (will add uploaders to Multiuploader)
+		ArtifactoryMultiProjectPropertiesLocator locator = new ArtifactoryMultiProjectPropertiesLocator(uploader, this.searchGitPropertiesRecursively);
+		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
 	private void registerMultiGitPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader,
