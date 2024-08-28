@@ -33,6 +33,9 @@ import java.util.regex.Pattern;
 /** Utility methods to extract certain properties from git.properties files in archives and folders. */
 public class GitPropertiesLocatorUtils {
 
+	/** The git.properties key that holds the artifactory upload path. */
+	public static final String GIT_PROPERTIES_ARTIFACTORY_URL = "teamscale.artifactory-url";
+
 	/** Name of the git.properties file. */
 	public static final String GIT_PROPERTIES_FILE_NAME = "git.properties";
 
@@ -195,6 +198,18 @@ public class GitPropertiesLocatorUtils {
 		return artefactUrlBuilder.toString();
 	}
 
+	public static List<String> getAllArtifactoryUrlsFromGitProperties(File file, boolean isJarFile,
+			boolean recursiveSearch) throws IOException {
+		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
+				recursiveSearch);
+		List<String> result = new ArrayList<>();
+		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
+			String url = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_ARTIFACTORY_URL);
+			result.add(url);
+		}
+		return result;
+	}
+
 	/**
 	 * Reads the 'teamscale.project' property values and the git SHA1s or branch + timestamp from all git.properties
 	 * files contained in the provided folder or archive file.
@@ -202,6 +217,7 @@ public class GitPropertiesLocatorUtils {
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
+	// MARK
 	public static List<ProjectAndCommit> getProjectRevisionsFromGitProperties(
 			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
