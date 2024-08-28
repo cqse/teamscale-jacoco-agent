@@ -18,6 +18,9 @@ public class ArtifactoryMultiUploader extends DelayedMultiUploaderBase implement
 		artifactoryUploaders.add(newUploader);
 	}
 
+	public List<ArtifactoryUploader> getArtifactoryUploaders() {
+		return artifactoryUploaders;
+	}
 
 	@Override
 	protected Collection<IUploader> getWrappedUploaders() {
