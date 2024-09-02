@@ -52,10 +52,11 @@ public class ArtifactoryMultiProjectPropertiesLocator implements IGitPropertiesL
 					file, isJarFile, recursiveSearch);
 			for (String url : urls) {
 				ArtifactoryConfig artifactoryConfig = new ArtifactoryConfig();
-				artifactoryConfig.url = HttpUrl.parse(url);
+				//artifactoryConfig.url = HttpUrl.parse(url);
 				// TODO add username and password where do i get this?
 				// TODO instead of null parse actual parameters, check where ArtifactoryUploader constructor is called and what is passed there
 				uploader.addArtifactoryUploader(new ArtifactoryUploader(artifactoryConfig, null, null));
+				System.out.println("moin");
 			}
 
 		} catch (IOException e) {

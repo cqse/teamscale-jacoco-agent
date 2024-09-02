@@ -24,6 +24,7 @@ class GitMultiProjectPropertiesLocatorTest {
 					projectAndCommits.add(new ProjectAndCommit(project, revision));
 					return new TeamscaleServer();
 				}), true);
+		// is another constructor used here ? is that why for them there is no concurrency but for me there is so i check in the last line of my test before the executor even finishes? #left-off
 		File jarFile = new File(getClass().getResource("emptyTeamscaleProjectGitProperties").getFile());
 		locator.searchFile(jarFile, false);
 		assertThat(projectAndCommits.size()).isEqualTo(1);
