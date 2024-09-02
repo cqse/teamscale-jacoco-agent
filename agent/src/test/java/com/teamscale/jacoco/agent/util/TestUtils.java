@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.util;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -25,4 +26,11 @@ public class TestUtils {
 		}
 	}
 
+	/** Returns a new free TCP port number */
+	public static int getFreePort() throws IOException {
+		try (ServerSocket socket = new ServerSocket(0)) {
+			socket.setReuseAddress(true);
+			return socket.getLocalPort();
+		}
+	}
 }
