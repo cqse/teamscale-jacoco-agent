@@ -14,7 +14,7 @@ plugins {
 import com.teamscale.TestImpacted
 
 ext.junit4Version = '4.13.2'
-ext.junitVintageVersion = '5.10.3'
+ext.junitVintageVersion = '5.11.0'
 ext.junitPlatformVersion = '1.4.0'
 ext.junitJupiterVersion = '5.11.0'
 
