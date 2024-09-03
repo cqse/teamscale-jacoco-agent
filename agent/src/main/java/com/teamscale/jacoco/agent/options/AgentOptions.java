@@ -174,7 +174,7 @@ public class AgentOptions {
 	/* package */ boolean ignoreUncoveredClasses = false;
 
 	/**
-	 * The configuration necessary to upload files to an azure file storage
+	 * The configuration necessary to upload files to an artifactory project
 	 */
 	/* package */ ArtifactoryConfig artifactoryConfig = new ArtifactoryConfig();
 
