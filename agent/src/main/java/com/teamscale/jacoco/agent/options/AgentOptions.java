@@ -327,7 +327,7 @@ public class AgentOptions {
 	}
 
 	private void validateUploadConfig(Validator validator) {
-		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig
+		validator.isTrue((artifactoryConfig.hasAllRequiredFieldsSet() || artifactoryConfig.isConfiguredForMultiFolderUpload() || artifactoryConfig
 						.hasAllRequiredFieldsNull()),
 				String.format("If you want to upload data to Artifactory you need to provide " +
 								"'%s', '%s' and an authentication method (either '%s' and '%s' or '%s') ",
@@ -342,7 +342,7 @@ public class AgentOptions {
 						"'azure-url' and 'azure-key' ");
 
 		long configuredStores = Stream
-				.of(artifactoryConfig.hasAllRequiredFieldsSet(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
+				.of(artifactoryConfig.hasAllRequiredFieldsSet(), artifactoryConfig.isConfiguredForMultiFolderUpload(), azureFileStorageConfig.hasAllRequiredFieldsSet(),
 						teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
 						teamscaleServer.isConfiguredForMultiProjectUpload()).filter(x -> x)
 				.count();
