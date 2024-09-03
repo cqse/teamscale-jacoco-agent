@@ -4,9 +4,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,5 +52,14 @@ class GitPropertiesLocatorUtilsTest {
 		assertThat(GitPropertiesLocatorUtils
 				.extractGitPropertiesSearchRoot(new URL("file:/home/k/demo.jar")).getFirst())
 				.isEqualTo(new File("/home/k/demo.jar"));
+	}
+
+	@Test
+	public void getArtifactoryUrls() throws IOException {
+		List<String> testUrls = Arrays.asList("https://www.wikipedia.org/", "https://stackoverflow.com/");
+		File file = new File(getClass().getResource("artifactory-properties").getFile());
+		List<String> urls = GitPropertiesLocatorUtils.getAllArtifactoryUrlsFromGitProperties(file, false, true);
+		assertThat(urls).hasSize(testUrls.size());
+		assertThat(urls).containsAll(testUrls);
 	}
 }
