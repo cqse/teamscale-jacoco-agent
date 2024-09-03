@@ -11,7 +11,8 @@ val Task.agentJar: File
 /** Adds a convenient way to attach the Teamscale JaCoCo agent to the JVM with the given options in a readable map format. */
 fun JavaExec.teamscaleAgent(options: Map<String, String>) {
 	jvmArgs(
-		"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:5005","-javaagent:$agentJar=${options.entries.joinToString(separator = ",") { "${it.key}=${it.value}" }}"
+		"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:5005", // TODO create own run config for remote debugging
+		"-javaagent:$agentJar=${options.entries.joinToString(separator = ",") { "${it.key}=${it.value}" }}"
 	)
 }
 
