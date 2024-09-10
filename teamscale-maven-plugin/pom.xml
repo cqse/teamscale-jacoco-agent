@@ -99,7 +99,7 @@
         <dependency>
             <groupId>com.teamscale</groupId>
             <artifactId>teamscale-lib-commons</artifactId>
-            <version>9.4.1</version>
+            <version>2024.7.1</version>
         </dependency>
         <dependency>
             <groupId>com.teamscale</groupId>
