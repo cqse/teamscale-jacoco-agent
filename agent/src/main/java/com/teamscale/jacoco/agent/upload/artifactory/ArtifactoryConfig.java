@@ -112,7 +112,7 @@ public class ArtifactoryConfig {
 	/**
 	 * Handles all command-line options prefixed with 'artifactory-'
 	 *
-	 * @return true if it has successfully process the given option.
+	 * @return true if it has successfully processed the given option.
 	 */
 	public static boolean handleArtifactoryOptions(ArtifactoryConfig options, FilePatternResolver filePatternResolver,
 			String key, String value) throws AgentOptionParseException {

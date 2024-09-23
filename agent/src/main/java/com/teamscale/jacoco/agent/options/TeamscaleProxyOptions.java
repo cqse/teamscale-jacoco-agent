@@ -26,6 +26,11 @@ public class TeamscaleProxyOptions {
 	/* package */ String proxyUser;
 
 
+	/**
+	 * Handles all command-line options prefixed with 'proxy-'
+	 *
+	 * @return true if it has successfully processed the given option.
+	 */
 	public static boolean handleTeamscaleProxyOptions(TeamscaleProxyOptions options, String key, String value, FilePatternResolver filePatternResolver) throws AgentOptionParseException {
 		switch (key) {
 			case "proxy-password-file":
