@@ -4,13 +4,16 @@ import com.teamscale.test.commons.ExternalReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.apache.commons.lang3.SystemUtils;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.io.ProcessUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +76,23 @@ public class MavenExternalUploadSystemTest {
 		assertThat(result.getStdout()).contains(
 				String.format("Skipping upload for %s as %s is not configured to produce XML reports",
 						FAILING_MAVEN_PROJECT_NAME, "org.jacoco:jacoco-maven-plugin"));
+	}
+
+	/**
+	 * When no commit is given and no git repo is available, which is the usual fallback, a helpful error message should
+	 * be shown (TS-40425).
+	 */
+	@Test
+	public void testErrorMessageOnMissingCommit(@TempDir Path tmpDir) throws IOException {
+		FileSystemUtils.copyFiles(new File("missing-commit-project"), tmpDir.toFile(), file -> true);
+		tmpDir.resolve("mvnw").toFile().setExecutable(true);
+		String projectPath = tmpDir.toAbsolutePath().toString();
+		SystemTestUtils.runMavenTests(projectPath);
+		ProcessUtils.ExecutionResult result = runCoverageUploadGoal(projectPath);
+		assertThat(result).isNotNull();
+		assertThat(result.getReturnCode()).isNotEqualTo(0);
+		assertThat(teamscaleMockServer.uploadedReports).isEmpty();
+		assertThat(result.getStdout()).contains("There is no <commit> configured in the pom.xml and it was not possible to determine the checked out commit");
 	}
 
 	@AfterAll

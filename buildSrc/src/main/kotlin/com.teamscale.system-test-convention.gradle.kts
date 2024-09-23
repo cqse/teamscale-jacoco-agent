@@ -12,6 +12,10 @@ tasks.test {
 	teamscalePort = provider.get().pickFreePort()
 	agentPort = provider.get().pickFreePort()
 	systemProperties("agentPort" to agentPort, "teamscalePort" to teamscalePort)
+	environment("AGENT_VERSION", version)
+	environment("AGENT_PATH", agentJar)
+	environment("TEAMSCALE_PORT", teamscalePort)
+	environment("AGENT_PORT", agentPort)
 }
 
 dependencies {

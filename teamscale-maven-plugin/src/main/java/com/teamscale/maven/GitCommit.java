@@ -36,13 +36,18 @@ public class GitCommit {
 	 */
 	public static GitCommit getGitHeadCommitDescriptor(Path searchDirectory) throws IOException {
 		Path gitDirectory = findGitBaseDirectory(searchDirectory);
-		Git git = Git.open(gitDirectory.toFile());
-		Repository repository = git.getRepository();
-		String branch = repository.getBranch();
-		RevCommit commit = getCommit(repository, branch);
-		long commitTimeSeconds = commit.getCommitTime();
-		String ref = repository.getRefDatabase().findRef("HEAD").getObjectId().getName();
-		return new GitCommit(ref, commitTimeSeconds * 1000L, branch);
+		if (gitDirectory == null) {
+			throw new IOException("Could not find git directory in " + searchDirectory);
+		}
+		Repository repository;
+		try (Git git = Git.open(gitDirectory.toFile())) {
+			repository = git.getRepository();
+			String branch = repository.getBranch();
+			RevCommit commit = getCommit(repository, branch);
+			long commitTimeSeconds = commit.getCommitTime();
+			String ref = repository.getRefDatabase().findRef("HEAD").getObjectId().getName();
+			return new GitCommit(ref, commitTimeSeconds * 1000L, branch);
+		}
 	}
 
 	/**
