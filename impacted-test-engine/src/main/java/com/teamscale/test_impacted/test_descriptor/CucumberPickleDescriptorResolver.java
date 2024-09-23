@@ -40,21 +40,22 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
 			return Optional.empty();
 		}
-		String uniformPath = featurePath.get() + "/" + pickleName.get();
+		String picklePath = featurePath.get() + "/" + pickleName.get();
 
 		// Add an index to the end of the name in case multiple tests have the same name in the same feature file
 		Optional<TestDescriptor> featureFileTestDescriptor = getFeatureFileTestDescriptor(testDescriptor);
-		if (featureFileTestDescriptor.isPresent()) {
+		String indexSuffix;
+		if (!featureFileTestDescriptor.isPresent()) {
+			indexSuffix = "";
+		} else {
 			List<? extends TestDescriptor> siblingTestsWithTheSameName = flatListOfAllTestDescriptorChildrenWithPickleName(
 					featureFileTestDescriptor.get(), pickleName.get());
 			int indexOfCurrentTest = siblingTestsWithTheSameName.indexOf(testDescriptor) + 1;
-			uniformPath += " #" + indexOfCurrentTest;
+			indexSuffix = " #" + indexOfCurrentTest;
 		}
 
-		// IntelliJ complains without this that uniform path should be final when used in a lambda
-		uniformPath = removeDuplicatedSlashes(uniformPath);
-		final String finalUniformPath = uniformPath;
-		LOGGER.fine(() -> "Resolved uniform path: " + finalUniformPath);
+		String uniformPath = removeDuplicatedSlashes(picklePath + indexSuffix);
+		LOGGER.fine(() -> "Resolved uniform path: " + uniformPath);
 		return Optional.of(uniformPath);
 	}
 
