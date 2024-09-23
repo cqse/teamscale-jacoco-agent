@@ -4,6 +4,6 @@ plugins {
 
 tasks.test {
 	val logFilePath = "logTest"
-	environment("AGENT_VERSION", rootProject.extra["appVersion"].toString())
+	environment("AGENT_VERSION", version)
 	teamscaleAgent(mapOf("debug" to logFilePath))
 }
