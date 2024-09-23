@@ -55,10 +55,17 @@ public class TeamscaleProxyOptions {
 	}
 
 	private void putTeamscaleProxyOptionsIntoSystemPropertiesForProtocol(ProxySystemProperties.Protocol protocol) {
-		new TeamscaleProxySystemProperties(protocol).setProxyHost(proxyHost);
-		new TeamscaleProxySystemProperties(protocol).setProxyPort(proxyPort);
-		new TeamscaleProxySystemProperties(protocol).setProxyUser(proxyUser);
-		new TeamscaleProxySystemProperties(protocol).setProxyPassword(proxyPassword);
-
+		if (proxyHost != null) {
+			new TeamscaleProxySystemProperties(protocol).setProxyHost(proxyHost);
+		}
+		if (proxyPort > 0) {
+			new TeamscaleProxySystemProperties(protocol).setProxyPort(proxyPort);
+		}
+		if(proxyUser != null) {
+			new TeamscaleProxySystemProperties(protocol).setProxyUser(proxyUser);
+		}
+		if(proxyPassword != null) {
+			new TeamscaleProxySystemProperties(protocol).setProxyPassword(proxyPassword);
+		}
 	}
 }
