@@ -1,5 +1,8 @@
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.client.TeamscaleProxySystemProperties;
+
 import java.nio.file.Path;
 
 /**
@@ -43,5 +46,19 @@ public class TeamscaleProxyOptions {
 			default:
 				return false;
 		}
+	}
+
+	/** Stores the teamscale-specific proxy settings as system properties to make them always available. */
+	public void putTeamscaleProxyOptionsIntoSystemProperties() {
+		putTeamscaleProxyOptionsIntoSystemPropertiesForProtocol(ProxySystemProperties.Protocol.HTTP);
+		putTeamscaleProxyOptionsIntoSystemPropertiesForProtocol(ProxySystemProperties.Protocol.HTTPS);
+	}
+
+	private void putTeamscaleProxyOptionsIntoSystemPropertiesForProtocol(ProxySystemProperties.Protocol protocol) {
+		new TeamscaleProxySystemProperties(protocol).setProxyHost(proxyHost);
+		new TeamscaleProxySystemProperties(protocol).setProxyPort(proxyPort);
+		new TeamscaleProxySystemProperties(protocol).setProxyUser(proxyUser);
+		new TeamscaleProxySystemProperties(protocol).setProxyPassword(proxyPassword);
+
 	}
 }

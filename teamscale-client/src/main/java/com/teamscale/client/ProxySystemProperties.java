@@ -19,12 +19,20 @@ public class ProxySystemProperties {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProxySystemProperties.class);
 
-	private static final String PROXY_HOST_SYSTEM_PROPERTY = ".proxyHost";
-	private static final String PROXY_PORT_SYSTEM_PROPERTY = ".proxyPort";
-	private static final String PROXY_USER_SYSTEM_PROPERTY = ".proxyUser";
-	private static final String PROXY_PASSWORD_SYSTEM_PROPERTY = ".proxyPassword";
+	/** The property suffix specifying the proxy host. */
+	protected static final String PROXY_HOST_SYSTEM_PROPERTY = ".proxyHost";
 
-	private final Protocol protocol;
+	/** The property suffix specifying the proxy port. */
+	protected static final String PROXY_PORT_SYSTEM_PROPERTY = ".proxyPort";
+
+	/** The property suffix specifying the proxy user. */
+	protected static final String PROXY_USER_SYSTEM_PROPERTY = ".proxyUser";
+
+	/** The property suffix specifying the proxy password. */
+	protected static final String PROXY_PASSWORD_SYSTEM_PROPERTY = ".proxyPassword";
+
+	/** The protocol used by the proxy server addressed by these settings. */
+	protected final Protocol protocol;
 
 	/**
 	 * Indicates, whether the {@link ProxySystemProperties} should return values for the http.proxy* system properties
@@ -84,8 +92,9 @@ public class ProxySystemProperties {
 		System.setProperty(getProxyHostSystemPropertyName(), proxyHost);
 	}
 
+	/** @return the name of the system property specifying the proxy host. */
 	@NotNull
-	private String getProxyHostSystemPropertyName() {
+	protected String getProxyHostSystemPropertyName() {
 		return protocol + PROXY_HOST_SYSTEM_PROPERTY;
 	}
 
@@ -111,8 +120,9 @@ public class ProxySystemProperties {
 		System.clearProperty(getProxyPortSystemPropertyName());
 	}
 
+	/** @return the name of the system property specifying the proxy port. */
 	@NotNull
-	private String getProxyPortSystemPropertyName() {
+	protected String getProxyPortSystemPropertyName() {
 		return protocol + PROXY_PORT_SYSTEM_PROPERTY;
 	}
 
@@ -130,8 +140,9 @@ public class ProxySystemProperties {
 		System.setProperty(getProxyUserSystemPropertyName(), proxyUser);
 	}
 
+	/** @return the name of the system property specifying the proxy user. */
 	@NotNull
-	private String getProxyUserSystemPropertyName() {
+	protected String getProxyUserSystemPropertyName() {
 		return protocol + PROXY_USER_SYSTEM_PROPERTY;
 	}
 
@@ -150,8 +161,9 @@ public class ProxySystemProperties {
 		System.setProperty(getProxyPasswordSystemPropertyName(), proxyPassword);
 	}
 
+	/** @return the name of the system property specifying the proxy password. */
 	@NotNull
-	private String getProxyPasswordSystemPropertyName() {
+	protected String getProxyPasswordSystemPropertyName() {
 		return protocol + PROXY_PASSWORD_SYSTEM_PROPERTY;
 	}
 

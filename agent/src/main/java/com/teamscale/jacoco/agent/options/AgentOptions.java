@@ -724,4 +724,9 @@ public class AgentOptions {
 	public boolean shouldIgnoreUncoveredClasses() {
 		return ignoreUncoveredClasses;
 	}
+
+	/** @see #teamscaleProxyOptions */
+	public TeamscaleProxyOptions getTeamscaleProxyOptions() {
+		return teamscaleProxyOptions;
+	}
 }

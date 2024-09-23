@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -40,6 +41,7 @@ public abstract class AgentBase {
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		this.options = options;
+		options.getTeamscaleProxyOptions().putTeamscaleProxyOptionsIntoSystemProperties();
 		setProxyPasswordFromFile(options.getProxyPasswordPath());
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
@@ -69,6 +71,8 @@ public abstract class AgentBase {
 			String proxyPassword = FileSystemUtils.readFileUTF8(proxyPasswordFilePath.toFile()).trim();
 			new ProxySystemProperties(ProxySystemProperties.Protocol.HTTP).setProxyPassword(proxyPassword);
 			new ProxySystemProperties(ProxySystemProperties.Protocol.HTTPS).setProxyPassword(proxyPassword);
+			new TeamscaleProxySystemProperties(ProxySystemProperties.Protocol.HTTP).setProxyPassword(proxyPassword);
+			new TeamscaleProxySystemProperties(ProxySystemProperties.Protocol.HTTPS).setProxyPassword(proxyPassword);
 		} catch (IOException e) {
 			logger.error(
 					"Unable to open file containing proxy password. Please make sure the file exists and the user has the permissions to read the file.",

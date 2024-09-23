@@ -102,24 +102,34 @@ public class HttpUtils {
 
 	private static boolean setUpProxyServerForProtocol(ProxySystemProperties.Protocol protocol,
 													   OkHttpClient.Builder httpClientBuilder) {
+		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
+		ProxySystemProperties defaultProxySystemProperties = new ProxySystemProperties(protocol);
 
-		ProxySystemProperties proxySystemProperties = new ProxySystemProperties(protocol);
-		String proxyHost = proxySystemProperties.getProxyHost();
-		int proxyPort = proxySystemProperties.getProxyPort();
-		String proxyUser = proxySystemProperties.getProxyUser();
-		String proxyPassword = proxySystemProperties.getProxyPassword();
+		return setUpProxyServerAndAuthentication(teamscaleProxySystemProperties, defaultProxySystemProperties, httpClientBuilder);
+	}
 
-		if (proxySystemProperties.proxyServerIsSet()) {
-			useProxyServer(httpClientBuilder, proxyHost, proxyPort);
-
-			if (proxySystemProperties.proxyAuthIsSet()) {
-				useProxyAuthenticator(httpClientBuilder, proxyUser, proxyPassword);
-			}
-
-			return true;
+	private static boolean setUpProxyServerAndAuthentication(TeamscaleProxySystemProperties teamscaleProxySystemProperties, ProxySystemProperties defaultProxySystemProperties, OkHttpClient.Builder httpClientBuilder) {
+		// It is allowed to use for example global server settings, but teamscale-specific user settings.
+		// It is not allowed to mix global and teamscale-specific settings inside those categories, so for example
+		// user -> global setting
+		// password teamscale-specific
+		// is forbidden.
+		if (teamscaleProxySystemProperties.proxyServerIsSet()) {
+			useProxyServer(httpClientBuilder, teamscaleProxySystemProperties.getProxyHost(),
+					teamscaleProxySystemProperties.getProxyPort());
+		} else if (defaultProxySystemProperties.proxyAuthIsSet()) {
+			useProxyServer(httpClientBuilder, defaultProxySystemProperties.getProxyHost(), defaultProxySystemProperties.getProxyPort());
+		} else {
+			return false;
 		}
-		return false;
 
+		if (teamscaleProxySystemProperties.proxyAuthIsSet()) {
+			useProxyAuthenticator(httpClientBuilder, teamscaleProxySystemProperties.getProxyUser(), teamscaleProxySystemProperties.getProxyPassword());
+		} else if (defaultProxySystemProperties.proxyAuthIsSet()) {
+			useProxyAuthenticator(httpClientBuilder, defaultProxySystemProperties.getProxyUser(), defaultProxySystemProperties.getProxyPassword());
+		}
+
+		return true;
 	}
 
 	private static void useProxyServer(OkHttpClient.Builder httpClientBuilder, String proxyHost, int proxyPort) {
