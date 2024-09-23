@@ -156,6 +156,9 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
+		if (key.startsWith("proxy-") && TeamscaleProxyOptions.handleTeamscaleProxyOptions(options.teamscaleProxyOptions, key, value, filePatternResolver)) {
+			return;
+		}
 		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
@@ -206,9 +209,6 @@ public class AgentOptionsParser {
 				return true;
 			case LOGGING_CONFIG_OPTION:
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
-				return true;
-			case "proxy-password-file":
-				options.proxyPasswordPath = filePatternResolver.parsePath(key, value);
 				return true;
 			case "interval":
 				options.dumpIntervalInMinutes = parseInt(key, value);
