@@ -41,7 +41,9 @@ public abstract class AgentBase {
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		this.options = options;
-		options.getTeamscaleProxyOptions().putTeamscaleProxyOptionsIntoSystemProperties();
+		if (options.getTeamscaleProxyOptions() != null) {
+			options.getTeamscaleProxyOptions().putTeamscaleProxyOptionsIntoSystemProperties();
+		}
 		setProxyPasswordFromFile(options.getProxyPasswordPath());
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
