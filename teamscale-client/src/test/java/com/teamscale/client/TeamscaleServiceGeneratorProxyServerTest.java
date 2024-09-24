@@ -27,6 +27,7 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	private final TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(
 			ProxySystemProperties.Protocol.HTTP);
 
+	private static final String INCORRECT_VALUE = "incorrect";
 	private static final String PROXY_USER = "myProxyUser";
 	private static final String PROXY_PASSWORD = "myProxyPassword";
 	private static final String BASE_64_ENCODED_BASIC_AUTH = Base64.getEncoder().encodeToString((PROXY_USER + ":" + PROXY_PASSWORD).getBytes(
@@ -51,10 +52,10 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	@Test
 	void testTeamscaleProxyAuthentication() throws Exception {
 		// test that the teamscale-specific options take precedence over the global ones
-		proxySystemProperties.setProxyHost("incorrect");
-		proxySystemProperties.setProxyPort("incorrect");
-		proxySystemProperties.setProxyUser("incorrect");
-		proxySystemProperties.setProxyPassword("incorrect");
+		proxySystemProperties.setProxyHost(INCORRECT_VALUE);
+		proxySystemProperties.setProxyPort(INCORRECT_VALUE);
+		proxySystemProperties.setProxyUser(INCORRECT_VALUE);
+		proxySystemProperties.setProxyPassword(INCORRECT_VALUE);
 
 		teamscaleProxySystemProperties.setProxyHost(mockProxyServer.getHostName());
 		teamscaleProxySystemProperties.setProxyPort(mockProxyServer.getPort());
@@ -68,8 +69,8 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	void testMixingTeamscaleSpecificAndGlobalProxySettingsIsPossible() throws Exception {
 		proxySystemProperties.setProxyHost(mockProxyServer.getHostName());
 		proxySystemProperties.setProxyPort(mockProxyServer.getPort());
-		proxySystemProperties.setProxyUser("incorrect");
-		proxySystemProperties.setProxyPassword("incorrect");
+		proxySystemProperties.setProxyUser(INCORRECT_VALUE);
+		proxySystemProperties.setProxyPassword(INCORRECT_VALUE);
 
 		teamscaleProxySystemProperties.setProxyUser(PROXY_USER);
 		teamscaleProxySystemProperties.setProxyPassword(PROXY_PASSWORD);
@@ -79,8 +80,8 @@ class TeamscaleServiceGeneratorProxyServerTest {
 
 	@Test
 	void testMixingTeamscaleSpecificAndGlobalProxySettingsIsPossibleTheOtherWayAround() throws Exception {
-		proxySystemProperties.setProxyHost("incorrect");
-		proxySystemProperties.setProxyPort("incorrect");
+		proxySystemProperties.setProxyHost(INCORRECT_VALUE);
+		proxySystemProperties.setProxyPort(INCORRECT_VALUE);
 		proxySystemProperties.setProxyUser(PROXY_USER);
 		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
 
@@ -98,7 +99,7 @@ class TeamscaleServiceGeneratorProxyServerTest {
 		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
 
 		// if mixing the server settings works, reaching the host would be impossible
-		teamscaleProxySystemProperties.setProxyHost("incorrect");
+		teamscaleProxySystemProperties.setProxyHost(INCORRECT_VALUE);
 
 		assertProxyAuthenticationIsUsed();
 	}
@@ -111,7 +112,7 @@ class TeamscaleServiceGeneratorProxyServerTest {
 		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
 
 		// if mixing the authentication settings works, authentication would not work
-		teamscaleProxySystemProperties.setProxyUser("incorrect");
+		teamscaleProxySystemProperties.setProxyUser(INCORRECT_VALUE);
 
 		assertProxyAuthenticationIsUsed();
 	}
