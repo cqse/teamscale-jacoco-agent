@@ -1,16 +1,6 @@
 package com.teamscale.maven.tia;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-
+import com.teamscale.maven.TeamscaleMojoBase;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -25,7 +15,16 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.teamscale.maven.TeamscaleMojoBase;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Base class for TIA Mojos. Provides all necessary functionality but can be subclassed to change the partition.
@@ -189,8 +188,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
 		createTargetDirectory();
 
-		resolveCommit();
-		resolveRevision();
+		resolveCommitOrRevision();
 
 		setTiaProperties();
 

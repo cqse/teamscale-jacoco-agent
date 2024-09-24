@@ -92,7 +92,7 @@ public class MavenExternalUploadSystemTest {
 		assertThat(result).isNotNull();
 		assertThat(result.getReturnCode()).isNotEqualTo(0);
 		assertThat(teamscaleMockServer.uploadedReports).isEmpty();
-		assertThat(result.getStdout()).contains("There is no <commit> configured in the pom.xml and it was not possible to determine the checked out commit");
+		assertThat(result.getStdout()).contains("There is no <revision> or <commit> configured in the pom.xml and it was not possible to determine the current revision");
 	}
 
 	@AfterAll
