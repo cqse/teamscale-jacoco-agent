@@ -303,7 +303,7 @@ public class AgentOptionsTest {
 	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
-	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws Exception {
+	public void testArtifactoryBasicAuthSetPassesValidityCheck() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.user = "user";
@@ -338,6 +338,11 @@ public class AgentOptionsTest {
 		String expectedPassword = "password";
 		String optionsString = String.format("proxy-host=%s,proxy-port=%d,proxy-user=%s,proxy-password=%s", expectedHost, expectedPort, expectedUser, expectedPassword);
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(optionsString);
+
+		// clear to be sure the system properties are empty
+		clearTeamscaleProxySystemProperties(ProxySystemProperties.Protocol.HTTP);
+		clearTeamscaleProxySystemProperties(ProxySystemProperties.Protocol.HTTPS);
+
 		agentOptions.getTeamscaleProxyOptions().putTeamscaleProxyOptionsIntoSystemProperties();
 
 		assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol.HTTP, expectedHost, expectedPort, expectedUser, expectedPassword);
