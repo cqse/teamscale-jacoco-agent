@@ -28,6 +28,9 @@ public class CommitDescriptor implements Serializable {
 
 	/** Parses the given commit descriptor string. */
 	public static CommitDescriptor parse(String commit) {
+		if (commit == null) {
+			return null;
+		}
 		if (commit.contains(":")) {
 			String[] split = commit.split(":");
 			return new CommitDescriptor(split[0], split[1]);

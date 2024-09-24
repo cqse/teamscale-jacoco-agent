@@ -204,10 +204,10 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		setTiaProperty("server.userName", username);
 		setTiaProperty("server.userAccessToken", accessToken);
 
-		if (StringUtils.isNotEmpty(commit)) {
-			setTiaProperty("endCommit", resolvedCommit);
-		} else {
+		if (StringUtils.isNotEmpty(resolvedRevision)) {
 			setTiaProperty("endRevision", resolvedRevision);
+		} else {
+			setTiaProperty("endCommit", resolvedCommit);
 		}
 
 		if (StringUtils.isNotEmpty(baselineRevision)) {
@@ -416,9 +416,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 			config += "\nteamscale-repository=" + repository;
 		}
 
-		// "commit" (in contrast to "resolvedCommit") is only set via the config option in the pom.
-		// If the user sets it, prefer it over the revision. If not, prefer the revision
-		if (StringUtils.isNotEmpty(resolvedRevision) && StringUtils.isEmpty(commit)) {
+		if (StringUtils.isNotEmpty(resolvedRevision)) {
 			config += "\nteamscale-revision=" + resolvedRevision;
 		} else {
 			config += "\nteamscale-commit=" + resolvedCommit;

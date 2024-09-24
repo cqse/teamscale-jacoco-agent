@@ -1,18 +1,17 @@
 package com.teamscale.tia;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
-import java.io.IOException;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
  * Runs several Maven projects' Surefire tests that have the agent attached and one of our JUnit run listeners enabled.
@@ -78,10 +77,10 @@ public class TiaMavenSystemTest {
 	public void testPreferBranchAndTimestampOverRevisionWhenProvidedManually() throws IOException {
 		SystemTestUtils.runMavenTests("maven-project", "-DteamscaleRevision=abcd1337", "-DteamscaleTimestamp=master:HEAD");
 
-		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("null, master:HEAD");
-		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("null, master:HEAD");
-		assertThat(teamscaleMockServer.uploadCommits.get(0)).matches("null, master:HEAD");
-		assertThat(teamscaleMockServer.uploadCommits.get(1)).matches("null, master:HEAD");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("abcd1337, null");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("abcd1337, null");
+		assertThat(teamscaleMockServer.uploadCommits.get(0)).matches("abcd1337, null");
+		assertThat(teamscaleMockServer.uploadCommits.get(1)).matches("abcd1337, null");
 	}
 
 	@Test
