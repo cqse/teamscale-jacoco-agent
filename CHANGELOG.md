@@ -6,6 +6,7 @@ We use [semantic versioning](http://semver.org/):
 
 # Next version
 - [feature] _agent_: Prevent uploading coverage to the same project + revision or branch@timestamp when doing multi project upload via git.properties
+- [feature] _agent_: New options `proxy-host`/`-port`/`-user`/`-password` allows user to specify teamscale-specific proxy settings. 
 
 # 34.0.1
 - [fix] _agent_: Error was reported when the system under test used logback
