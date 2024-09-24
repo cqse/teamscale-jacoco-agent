@@ -24,6 +24,14 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	private final ProxySystemProperties proxySystemProperties = new ProxySystemProperties(
 			ProxySystemProperties.Protocol.HTTP);
 
+	private final TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(
+			ProxySystemProperties.Protocol.HTTP);
+
+	private final static String PROXY_USER = "myProxyUser";
+	private final static String PROXY_PASSWORD = "myProxyPassword";
+	private final static String BASE_64_ENCODED_BASIC_AUTH = Base64.getEncoder().encodeToString((PROXY_USER + ":" + PROXY_PASSWORD).getBytes(
+			StandardCharsets.UTF_8));
+
 	@BeforeEach
 	void setUp() throws IOException {
 		mockProxyServer = new MockWebServer();
@@ -31,15 +39,84 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	}
 
 	@Test
-	void testProxyAuthentication() throws IOException, InterruptedException {
-		String proxyUser = "myProxyUser";
-		String proxyPassword = "myProxyPassword";
-		String base64EncodedBasicAuth = Base64.getEncoder().encodeToString((proxyUser + ":" + proxyPassword).getBytes(
-				StandardCharsets.UTF_8));
+	void testProxyAuthentication() throws Exception {
 		proxySystemProperties.setProxyHost(mockProxyServer.getHostName());
 		proxySystemProperties.setProxyPort(mockProxyServer.getPort());
-		proxySystemProperties.setProxyUser(proxyUser);
-		proxySystemProperties.setProxyPassword(proxyPassword);
+		proxySystemProperties.setProxyUser(PROXY_USER);
+		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
+
+		assertProxyAuthenticationIsUsed();
+	}
+
+	@Test
+	void testTeamscaleProxyAuthentication() throws Exception {
+		// test that the teamscale-specific options take precedence over the global ones
+		proxySystemProperties.setProxyHost("incorrect");
+		proxySystemProperties.setProxyPort("incorrect");
+		proxySystemProperties.setProxyUser("incorrect");
+		proxySystemProperties.setProxyPassword("incorrect");
+
+		teamscaleProxySystemProperties.setProxyHost(mockProxyServer.getHostName());
+		teamscaleProxySystemProperties.setProxyPort(mockProxyServer.getPort());
+		teamscaleProxySystemProperties.setProxyUser(PROXY_USER);
+		teamscaleProxySystemProperties.setProxyPassword(PROXY_PASSWORD);
+
+		assertProxyAuthenticationIsUsed();
+	}
+
+	@Test
+	void testMixingTeamscaleSpecificAndGlobalProxySettingsIsPossible() throws Exception {
+		proxySystemProperties.setProxyHost(mockProxyServer.getHostName());
+		proxySystemProperties.setProxyPort(mockProxyServer.getPort());
+		proxySystemProperties.setProxyUser("incorrect");
+		proxySystemProperties.setProxyPassword("incorrect");
+
+		teamscaleProxySystemProperties.setProxyUser(PROXY_USER);
+		teamscaleProxySystemProperties.setProxyPassword(PROXY_PASSWORD);
+
+		assertProxyAuthenticationIsUsed();
+	}
+
+	@Test
+	void testMixingTeamscaleSpecificAndGlobalProxySettingsIsPossibleTheOtherWayAround() throws Exception {
+		proxySystemProperties.setProxyHost("incorrect");
+		proxySystemProperties.setProxyPort("incorrect");
+		proxySystemProperties.setProxyUser(PROXY_USER);
+		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
+
+		teamscaleProxySystemProperties.setProxyHost(mockProxyServer.getHostName());
+		teamscaleProxySystemProperties.setProxyPort(mockProxyServer.getPort());
+
+		assertProxyAuthenticationIsUsed();
+	}
+
+	@Test
+	void testPartiallyMixingTeamscaleSpecificAndGlobalProxyServerSettingsIsImpossible() throws Exception {
+		proxySystemProperties.setProxyHost(mockProxyServer.getHostName());
+		proxySystemProperties.setProxyPort(mockProxyServer.getPort());
+		proxySystemProperties.setProxyUser(PROXY_USER);
+		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
+
+		// if mixing the server settings works, reaching the host would be impossible
+		teamscaleProxySystemProperties.setProxyHost("incorrect");
+
+		assertProxyAuthenticationIsUsed();
+	}
+
+	@Test
+	void testPartiallyMixingTeamscaleSpecificAndGlobalProxyAuthenticationSettingsIsImpossible() throws Exception {
+		proxySystemProperties.setProxyHost(mockProxyServer.getHostName());
+		proxySystemProperties.setProxyPort(mockProxyServer.getPort());
+		proxySystemProperties.setProxyUser(PROXY_USER);
+		proxySystemProperties.setProxyPassword(PROXY_PASSWORD);
+
+		// if mixing the authentication settings works, authentication would not work
+		teamscaleProxySystemProperties.setProxyUser("incorrect");
+
+		assertProxyAuthenticationIsUsed();
+	}
+
+	private void assertProxyAuthenticationIsUsed() throws InterruptedException, IOException {
 
 		ITeamscaleService service = TeamscaleServiceGenerator.createService(ITeamscaleService.class,
 				HttpUrl.parse("http://localhost:1337"),
@@ -58,17 +135,22 @@ class TeamscaleServiceGeneratorProxyServerTest {
 		RecordedRequest requestWithProxyAuth = mockProxyServer.takeRequest();// Request we are actually interested in
 
 		assertThat(requestWithProxyAuth.getHeader(PROXY_AUTHORIZATION_HTTP_HEADER)).isEqualTo(
-				"Basic " + base64EncodedBasicAuth);
+				"Basic " + BASE_64_ENCODED_BASIC_AUTH);
 	}
 
 	@AfterEach
 	void tearDown() throws IOException {
+		clearProxySystemProperties(proxySystemProperties);
+		clearProxySystemProperties(teamscaleProxySystemProperties);
+
+		mockProxyServer.shutdown();
+		mockProxyServer.close();
+	}
+
+	private void clearProxySystemProperties(ProxySystemProperties proxySystemProperties) {
 		proxySystemProperties.setProxyHost("");
 		proxySystemProperties.setProxyPort("");
 		proxySystemProperties.setProxyUser("");
 		proxySystemProperties.setProxyPassword("");
-
-		mockProxyServer.shutdown();
-		mockProxyServer.close();
 	}
 }

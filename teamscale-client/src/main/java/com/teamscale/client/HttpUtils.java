@@ -117,7 +117,7 @@ public class HttpUtils {
 		if (teamscaleProxySystemProperties.proxyServerIsSet()) {
 			useProxyServer(httpClientBuilder, teamscaleProxySystemProperties.getProxyHost(),
 					teamscaleProxySystemProperties.getProxyPort());
-		} else if (defaultProxySystemProperties.proxyAuthIsSet()) {
+		} else if (defaultProxySystemProperties.proxyServerIsSet()) {
 			useProxyServer(httpClientBuilder, defaultProxySystemProperties.getProxyHost(), defaultProxySystemProperties.getProxyPort());
 		} else {
 			return false;
