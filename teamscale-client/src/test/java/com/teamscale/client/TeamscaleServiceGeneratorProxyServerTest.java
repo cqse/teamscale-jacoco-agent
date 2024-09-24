@@ -27,9 +27,9 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	private final TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(
 			ProxySystemProperties.Protocol.HTTP);
 
-	private final static String PROXY_USER = "myProxyUser";
-	private final static String PROXY_PASSWORD = "myProxyPassword";
-	private final static String BASE_64_ENCODED_BASIC_AUTH = Base64.getEncoder().encodeToString((PROXY_USER + ":" + PROXY_PASSWORD).getBytes(
+	private static final String PROXY_USER = "myProxyUser";
+	private static final String PROXY_PASSWORD = "myProxyPassword";
+	private static final String BASE_64_ENCODED_BASIC_AUTH = Base64.getEncoder().encodeToString((PROXY_USER + ":" + PROXY_PASSWORD).getBytes(
 			StandardCharsets.UTF_8));
 
 	@BeforeEach
