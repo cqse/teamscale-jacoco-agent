@@ -27,34 +27,41 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	@Override
 	public Optional<String> getUniformPath(TestDescriptor testDescriptor) {
 		Optional<String> featurePath = getFeaturePath(testDescriptor);
+		LOGGER.fine(() -> "Resolved feature: " + featurePath);
 		if (!featurePath.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the feature classpath for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
 			return Optional.empty();
 		}
 		Optional<String> pickleName = getPickleName(testDescriptor);
+		LOGGER.fine(() -> "Resolved pickle name: " + pickleName);
 		if (!pickleName.isPresent()) {
 			LOGGER.severe(() -> "Cannot resolve the pickle name for " +
 					testDescriptor + ". This is probably a bug. Please report to CQSE");
 			return Optional.empty();
 		}
-		String uniformPath = featurePath.get() + "/" + pickleName.get();
+		String picklePath = featurePath.get() + "/" + pickleName.get();
 
 		// Add an index to the end of the name in case multiple tests have the same name in the same feature file
 		Optional<TestDescriptor> featureFileTestDescriptor = getFeatureFileTestDescriptor(testDescriptor);
-		if (featureFileTestDescriptor.isPresent()) {
+		String indexSuffix;
+		if (!featureFileTestDescriptor.isPresent()) {
+			indexSuffix = "";
+		} else {
 			List<? extends TestDescriptor> siblingTestsWithTheSameName = flatListOfAllTestDescriptorChildrenWithPickleName(
 					featureFileTestDescriptor.get(), pickleName.get());
 			int indexOfCurrentTest = siblingTestsWithTheSameName.indexOf(testDescriptor) + 1;
-			uniformPath += " #" + indexOfCurrentTest;
+			indexSuffix = " #" + indexOfCurrentTest;
 		}
 
+		String uniformPath = removeDuplicatedSlashes(picklePath + indexSuffix);
+		LOGGER.fine(() -> "Resolved uniform path: " + uniformPath);
 		return Optional.of(uniformPath);
 	}
 
 	@Override
 	public Optional<String> getClusterId(TestDescriptor testDescriptor) {
-		return getFeaturePath(testDescriptor);
+		return getFeaturePath(testDescriptor).map(this::removeDuplicatedSlashes);
 	}
 
 	@Override
@@ -68,9 +75,18 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	 * hellocucumber/calculator.feature/11/16/21
 	 */
 	private Optional<String> getFeaturePath(TestDescriptor testDescriptor) {
-		Optional<String> featureClasspath = TestDescriptorUtils.getUniqueIdSegment(testDescriptor,
+		LOGGER.fine((() -> "Unique ID of cucumber test descriptor: " + testDescriptor.getUniqueId()));
+		Optional<String> featureSegment = TestDescriptorUtils.getUniqueIdSegment(testDescriptor,
 				FEATURE_SEGMENT_TYPE);
-		return featureClasspath.map(featureClasspathString -> featureClasspathString.replaceAll("classpath:", ""));
+		LOGGER.fine(() -> "Resolved feature segment: " + featureSegment);
+		return featureSegment.map(featureClasspathString -> featureClasspathString.replaceAll("classpath:", ""));
+	}
+
+	/**
+	 * Remove duplicated "/" with one (due to <a href="https://cqse.atlassian.net/browse/TS-39915">TS-39915</a>)
+	 */
+	String removeDuplicatedSlashes(String string) {
+		return string.replaceAll("(?<!\\\\)/+", "/");
 	}
 
 	private Optional<String> getPickleName(TestDescriptor testDescriptor) {
@@ -152,7 +168,7 @@ public class CucumberPickleDescriptorResolver implements ITestDescriptorResolver
 	}
 
 	private List<TestDescriptor> flatListOfAllTestDescriptorChildrenWithPickleName(TestDescriptor testDescriptor,
-																				   String pickleName) {
+			String pickleName) {
 		if (testDescriptor.getChildren().isEmpty()) {
 			Optional<String> pickleId = getPickleName(testDescriptor);
 			if (pickleId.isPresent() && pickleName.equals(pickleId.get())) {
