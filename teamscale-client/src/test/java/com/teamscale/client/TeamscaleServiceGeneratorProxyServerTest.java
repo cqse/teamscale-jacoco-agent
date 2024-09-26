@@ -56,8 +56,6 @@ class TeamscaleServiceGeneratorProxyServerTest {
 		assertProxyAuthenticationIsUsed(base64EncodedBasicAuth);
 	}
 
-	// TODO write a test that verifies the AgentBase correctly mixes teamscale-specific options and JVM-system properties for proxies
-
 	private void assertProxyAuthenticationIsUsed(String base64EncodedBasicAuth) throws InterruptedException, IOException {
 		ITeamscaleService service = TeamscaleServiceGenerator.createService(ITeamscaleService.class,
 				HttpUrl.parse("http://localhost:1337"),
