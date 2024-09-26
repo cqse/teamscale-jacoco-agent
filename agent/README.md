@@ -90,21 +90,15 @@ Check your applications console output for error messages.
 
 #### Teamscale-Specific Proxy Settings
 It is possible to specify teamscale-specific proxy settings that take prevalence over the system properties of the JVM.
-If only teamscale-specific proxy server settings are provided and no teamscale-specific proxy authentication settings,
-the agent will fall back to the system properties of the JVM, and the other way around.
+If no or not all teamscale-specific proxy settings are provided the agent will fall back to the system properties of the
+JVM.
 
 It is also possible to specify these options by prefixing the JVM flags for proxies with `teamscale.`,
 for example `-Dteamscale.https.proxyHost`.
 
 The following options are available:
-
-##### Server Settings
-If only one of the two options is provided, the  teamscale specific proxy server settings are ignored.
 - `proxy-host`: The host name of the proxy server.
 - `proxy-port`: The port of the proxy server.
-
-##### Authentication Settings
-If only one of the two options is provided, the  teamscale specific proxy authentication settings are ignored.
 - `proxy-user`: The username for the proxy server.
 - `proxy-password`: The password for the proxy user.
 
