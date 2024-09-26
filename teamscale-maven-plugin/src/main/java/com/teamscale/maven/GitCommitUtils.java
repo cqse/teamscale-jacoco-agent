@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Represents a single commit in a Git repository.
+ * Utils for working with a Git repository.
  */
 public class GitCommitUtils {
 

@@ -50,14 +50,18 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
 	 * {@code BRANCH:UNIX_EPOCH_TIMESTAMP_IN_MILLISECONDS}
 	 * <p>
-	 * If no end commit is manually specified, the plugin will try to determine the currently checked out Git commit.
+	 * If no commit and revision is manually specified, the plugin will try to determine the currently checked-out Git
+	 * commit. You should specify either commit or revision, not both. If both are specified, a warning is logged and
+	 * the revision takes precedence.
 	 */
 	@Parameter(property = "teamscale.commit")
 	public String commit;
 
 	/**
 	 * You can optionally use this property to override the revision to which the coverage will be uploaded. If no
-	 * revision is manually specified, the plugin will try to determine the current git revision.
+	 * commit and revision is manually specified, the plugin will try to determine the current git revision. You should
+	 * specify either commit or revision, not both. If both are specified, a warning is logged and the revision takes
+	 * precedence.
 	 */
 	@Parameter(property = "teamscale.revision")
 	public String revision;
