@@ -25,25 +25,7 @@ public class TeamscaleProxySystemProperties extends ProxySystemProperties {
 
 	@Override
 	@NotNull
-	protected String getProxyHostSystemPropertyName() {
-		return TEAMSCALE_PREFIX + super.getProxyHostSystemPropertyName();
-	}
-
-	@Override
-	@NotNull
-	protected String getProxyPortSystemPropertyName() {
-		return TEAMSCALE_PREFIX + super.getProxyPortSystemPropertyName();
-	}
-
-	@Override
-	@NotNull
-	protected String getProxyUserSystemPropertyName() {
-		return TEAMSCALE_PREFIX + super.getProxyUserSystemPropertyName();
-	}
-
-	@Override
-	@NotNull
-	protected String getProxyPasswordSystemPropertyName() {
-		return TEAMSCALE_PREFIX + super.getProxyPasswordSystemPropertyName();
+	protected String getPropertyPrefix() {
+		return TEAMSCALE_PREFIX;
 	}
 }

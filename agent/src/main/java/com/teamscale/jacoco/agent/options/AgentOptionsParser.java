@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -156,8 +158,22 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
-		if (key.startsWith("proxy-") && TeamscaleProxyOptions.handleTeamscaleProxyOptions(options.teamscaleProxyOptions, key, value, filePatternResolver)) {
-			return;
+		String proxyKeyword = "proxy-";
+		if (key.startsWith(proxyKeyword)) {
+			if (key.startsWith(proxyKeyword + ProxySystemProperties.Protocol.HTTPS)
+					&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(key, value)) {
+				return;
+			}
+			if (key.startsWith(proxyKeyword + ProxySystemProperties.Protocol.HTTP)
+					 && options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(key, value)) {
+				return;
+			}
+			if(key.equals("proxy-password-file")) {
+					Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
+					options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).proxyPasswordPath=proxyPasswordPath;
+					options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).proxyPasswordPath=proxyPasswordPath;
+					return;
+			}
 		}
 		if (handleAgentOptions(options, key, value)) {
 			return;

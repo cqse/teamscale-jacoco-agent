@@ -7,6 +7,7 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
@@ -108,8 +109,13 @@ public class AgentOptions {
 	 */
 	private Path outputDirectory;
 
-	/** Contains the options related to teamscale-specific proxy settings. */
-	/* package */ TeamscaleProxyOptions teamscaleProxyOptions = new TeamscaleProxyOptions();
+	/** Contains the options related to teamscale-specific proxy settings for http. */
+	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttp = new TeamscaleProxyOptions(
+			ProxySystemProperties.Protocol.HTTP);
+
+	/** Contains the options related to teamscale-specific proxy settings for https. */
+	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttps = new TeamscaleProxyOptions(
+			ProxySystemProperties.Protocol.HTTPS);
 
 	/**
 	 * Additional metadata files to upload together with the coverage XML.
@@ -227,10 +233,6 @@ public class AgentOptions {
 	 */
 	public String getOriginalOptionsString() {
 		return originalOptionsString;
-	}
-
-	public Path getProxyPasswordPath() {
-		return teamscaleProxyOptions.proxyPasswordPath;
 	}
 
 	/**
@@ -725,8 +727,11 @@ public class AgentOptions {
 		return ignoreUncoveredClasses;
 	}
 
-	/** @see #teamscaleProxyOptions */
-	public TeamscaleProxyOptions getTeamscaleProxyOptions() {
-		return teamscaleProxyOptions;
+	/** @return the {@link TeamscaleProxyOptions} for the given protocol. */
+	public TeamscaleProxyOptions getTeamscaleProxyOptions(ProxySystemProperties.Protocol protocol) {
+		if(protocol == ProxySystemProperties.Protocol.HTTP) {
+			return teamscaleProxyOptionsForHttp;
+		}
+		return teamscaleProxyOptionsForHttps;
 	}
 }
