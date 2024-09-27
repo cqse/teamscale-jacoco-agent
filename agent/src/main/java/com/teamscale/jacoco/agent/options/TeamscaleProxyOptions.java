@@ -2,10 +2,8 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.TeamscaleProxySystemProperties;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -40,7 +38,7 @@ public class TeamscaleProxyOptions {
 		this.logger = logger;
 		ProxySystemProperties proxySystemProperties = new ProxySystemProperties(protocol);
 		proxyHost = proxySystemProperties.getProxyHost();
-		proxyPort = proxySystemProperties.getProxyPort();
+		proxyPort = proxySystemProperties.getProxyPort(logger::warn);
 		proxyUser = proxySystemProperties.getProxyUser();
 		proxyPassword = proxySystemProperties.getProxyPassword();
 	}
@@ -55,8 +53,15 @@ public class TeamscaleProxyOptions {
 				proxyHost = value;
 				return true;
 			}
-			if (String.format("proxy-%s-port", protocol).equals(key)) {
-				proxyPort = Integer.parseInt(value);
+		String proxyPortOption = "proxy-%s-port";
+		if (String.format(proxyPortOption, protocol).equals(key)) {
+				try {
+					proxyPort = Integer.parseInt(value);
+				} catch (NumberFormatException e) {
+					logger.warn(String.format("Could not parse proxy port \"" + value +
+							"\" set via \"" + proxyPortOption + "\""));
+					return false;
+				}
 				return true;
 			}
 			if (String.format("proxy-%s-user", protocol).equals(key)) {

@@ -370,7 +370,7 @@ public class AgentOptionsTest {
 	private void assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol protocol, String expectedHost, int expectedPort, String expectedUser, String expectedPassword) {
 		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
 		assertThat(teamscaleProxySystemProperties.getProxyHost()).isEqualTo(expectedHost);
-		assertThat(teamscaleProxySystemProperties.getProxyPort()).isEqualTo(expectedPort);
+		assertThat(teamscaleProxySystemProperties.getProxyPort(logMessage -> new CommandLineLogger().warn(logMessage))).isEqualTo(expectedPort);
 		assertThat(teamscaleProxySystemProperties.getProxyUser()).isEqualTo(expectedUser);
 		assertThat(teamscaleProxySystemProperties.getProxyPassword()).isEqualTo(expectedPassword);
 	}

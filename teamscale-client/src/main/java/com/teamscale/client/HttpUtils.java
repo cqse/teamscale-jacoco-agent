@@ -102,13 +102,14 @@ public class HttpUtils {
 
 	private static boolean setUpProxyServerForProtocol(ProxySystemProperties.Protocol protocol,
 													   OkHttpClient.Builder httpClientBuilder) {
+		Consumer<String> logFunctionForTeamscaleProxySystemProperties = logMessage -> LoggerFactory.getLogger(ProxySystemProperties.class).warn(logMessage);
 		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
-		if (!teamscaleProxySystemProperties.proxyServerIsSet()) {
+		if (!teamscaleProxySystemProperties.proxyServerIsSet(logFunctionForTeamscaleProxySystemProperties)) {
 			return false;
 		}
 
 		useProxyServer(httpClientBuilder, teamscaleProxySystemProperties.getProxyHost(),
-				teamscaleProxySystemProperties.getProxyPort());
+				teamscaleProxySystemProperties.getProxyPort(logFunctionForTeamscaleProxySystemProperties));
 
 		if (teamscaleProxySystemProperties.proxyAuthIsSet()) {
 			useProxyAuthenticator(httpClientBuilder, teamscaleProxySystemProperties.getProxyUser(), teamscaleProxySystemProperties.getProxyPassword());

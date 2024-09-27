@@ -1,8 +1,8 @@
 package com.teamscale.client;
 
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
 
 /**
  * Reads and writes Java system properties values for
@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
  * These values set the proxy server and credentials that should be used later to reach Teamscale.
  */
 public class ProxySystemProperties {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(ProxySystemProperties.class);
 
 	private static final String PROXY_HOST_SYSTEM_PROPERTY = ".proxyHost";
 	private static final String PROXY_PORT_SYSTEM_PROPERTY = ".proxyPort";
@@ -60,8 +58,8 @@ public class ProxySystemProperties {
 	/**
 	 * Checks whether proxyHost and proxyPort are set
 	 */
-	public boolean proxyServerIsSet() {
-		return !StringUtils.isEmpty(getProxyHost()) && getProxyPort() > 0;
+	public boolean proxyServerIsSet(Consumer<String> logFunction) {
+		return !StringUtils.isEmpty(getProxyHost()) && getProxyPort(logFunction) > 0;
 	}
 
 	/** Checks whether proxyUser and proxyPassword are set */
@@ -75,8 +73,8 @@ public class ProxySystemProperties {
 	}
 
 	/** Read the http(s).proxyPort system variable. Returns -1 if no or an invalid port was set. */
-	public int getProxyPort() {
-		return parsePort(System.getProperty(getProxyPortSystemPropertyName()));
+	public int getProxyPort(Consumer<String> logFunction) {
+		return parsePort(System.getProperty(getProxyPortSystemPropertyName()), logFunction);
 	}
 
 	/** Set the http(s).proxyHost system variable. */
@@ -145,7 +143,7 @@ public class ProxySystemProperties {
 	}
 
 	/** Parses the given port string. Returns -1 if the string is null or not a valid number. */
-	private int parsePort(String portString) {
+	private int parsePort(String portString, Consumer<String> logFunction) {
 		if (portString == null) {
 			return -1;
 		}
@@ -153,7 +151,7 @@ public class ProxySystemProperties {
 		try {
 			return Integer.parseInt(portString);
 		} catch (NumberFormatException e) {
-			LOGGER.warn("Could not parse proxy port \"" + portString +
+			logFunction.accept("Could not parse proxy port \"" + portString +
 					"\" set via \"" + getProxyPortSystemPropertyName() + "\"");
 			return -1;
 		}
