@@ -19,13 +19,13 @@ class ProxySystemPropertiesTest {
 	void testPortParsing() {
 		properties.setProxyPort(9876);
 		Consumer<String> logFunction = logMessage -> {};
-		Assertions.assertThat(properties.getProxyPort(logFunction)).isEqualTo(9876);
+		Assertions.assertThat(properties.getProxyPort()).isEqualTo(9876);
 		properties.setProxyPort("");
-		Assertions.assertThat(properties.getProxyPort(logFunction)).isEqualTo(-1);
+		Assertions.assertThat(properties.getProxyPort()).isEqualTo(-1);
 		properties.setProxyPort("nonsense");
-		Assertions.assertThat(properties.getProxyPort(logFunction)).isEqualTo(-1);
+		Assertions.assertThat(properties.getProxyPort()).isEqualTo(-1);
 		properties.removeProxyPort();
-		Assertions.assertThat(properties.getProxyPort(logFunction)).isEqualTo(-1);
+		Assertions.assertThat(properties.getProxyPort()).isEqualTo(-1);
 	}
 
 }

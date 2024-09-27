@@ -38,7 +38,12 @@ public class TeamscaleProxyOptions {
 		this.logger = logger;
 		ProxySystemProperties proxySystemProperties = new ProxySystemProperties(protocol);
 		proxyHost = proxySystemProperties.getProxyHost();
-		proxyPort = proxySystemProperties.getProxyPort(logger::warn);
+		try {
+			proxyPort = proxySystemProperties.getProxyPort();
+		} catch (ProxySystemProperties.IncorrectPortFormatException e) {
+			proxyPort = -1;
+			logger.warn(e.getMessage());
+		}
 		proxyUser = proxySystemProperties.getProxyUser();
 		proxyPassword = proxySystemProperties.getProxyPassword();
 	}
@@ -48,7 +53,7 @@ public class TeamscaleProxyOptions {
 	 *
 	 * @return true if it has successfully processed the given option.
 	 */
-	public boolean handleTeamscaleProxyOptions(String key, String value) {
+	public boolean handleTeamscaleProxyOptions(String key, String value) throws AgentOptionParseException {
 			if (String.format("proxy-%s-host", protocol).equals(key)){
 				proxyHost = value;
 				return true;
@@ -58,9 +63,8 @@ public class TeamscaleProxyOptions {
 				try {
 					proxyPort = Integer.parseInt(value);
 				} catch (NumberFormatException e) {
-					logger.warn(String.format("Could not parse proxy port \"" + value +
-							"\" set via \"" + proxyPortOption + "\""));
-					return false;
+					throw new AgentOptionParseException("Could not parse proxy port \"" + value +
+							"\" set via \"" + proxyPortOption + "\"", e);
 				}
 				return true;
 			}

@@ -367,10 +367,10 @@ public class AgentOptionsTest {
 		clearTeamscaleProxySystemProperties(protocol);
 	}
 
-	private void assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol protocol, String expectedHost, int expectedPort, String expectedUser, String expectedPassword) {
+	private void assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol protocol, String expectedHost, int expectedPort, String expectedUser, String expectedPassword) throws ProxySystemProperties.IncorrectPortFormatException {
 		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
 		assertThat(teamscaleProxySystemProperties.getProxyHost()).isEqualTo(expectedHost);
-		assertThat(teamscaleProxySystemProperties.getProxyPort(logMessage -> new CommandLineLogger().warn(logMessage))).isEqualTo(expectedPort);
+		assertThat(teamscaleProxySystemProperties.getProxyPort()).isEqualTo(expectedPort);
 		assertThat(teamscaleProxySystemProperties.getProxyUser()).isEqualTo(expectedUser);
 		assertThat(teamscaleProxySystemProperties.getProxyPassword()).isEqualTo(expectedPassword);
 	}

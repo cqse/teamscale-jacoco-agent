@@ -2,8 +2,6 @@ package com.teamscale.client;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
-
 /**
  * Reads and writes Java system properties values for
  * <ul>
@@ -58,8 +56,8 @@ public class ProxySystemProperties {
 	/**
 	 * Checks whether proxyHost and proxyPort are set
 	 */
-	public boolean proxyServerIsSet(Consumer<String> logFunction) {
-		return !StringUtils.isEmpty(getProxyHost()) && getProxyPort(logFunction) > 0;
+	public boolean proxyServerIsSet() throws IncorrectPortFormatException {
+		return !StringUtils.isEmpty(getProxyHost()) && getProxyPort() > 0;
 	}
 
 	/** Checks whether proxyUser and proxyPassword are set */
@@ -73,8 +71,8 @@ public class ProxySystemProperties {
 	}
 
 	/** Read the http(s).proxyPort system variable. Returns -1 if no or an invalid port was set. */
-	public int getProxyPort(Consumer<String> logFunction) {
-		return parsePort(System.getProperty(getProxyPortSystemPropertyName()), logFunction);
+	public int getProxyPort() throws IncorrectPortFormatException {
+		return parsePort(System.getProperty(getProxyPortSystemPropertyName()));
 	}
 
 	/** Set the http(s).proxyHost system variable. */
@@ -142,8 +140,15 @@ public class ProxySystemProperties {
 		return getPropertyPrefix() + protocol + PROXY_PASSWORD_SYSTEM_PROPERTY;
 	}
 
+	public static class IncorrectPortFormatException extends IllegalArgumentException {
+
+		IncorrectPortFormatException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
+
 	/** Parses the given port string. Returns -1 if the string is null or not a valid number. */
-	private int parsePort(String portString, Consumer<String> logFunction) {
+	private int parsePort(String portString) throws IncorrectPortFormatException {
 		if (portString == null) {
 			return -1;
 		}
@@ -151,9 +156,8 @@ public class ProxySystemProperties {
 		try {
 			return Integer.parseInt(portString);
 		} catch (NumberFormatException e) {
-			logFunction.accept("Could not parse proxy port \"" + portString +
-					"\" set via \"" + getProxyPortSystemPropertyName() + "\"");
-			return -1;
+			throw new IncorrectPortFormatException("Could not parse proxy port \"" + portString +
+					"\" set via \"" + getProxyPortSystemPropertyName() + "\"", e);
 		}
 	}
 }
