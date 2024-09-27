@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # Next version
 - [feature] _agent_: New options `proxy-host`/`-port`/`-user`/`-password` allow user to specify teamscale-specific proxy settings.
+- [fix] _teamscale-maven-plugin_: NPE when no commit, nor revision was configured
+- [fix] _teamscale-maven-plugin_: Fixed commit was ignored in commit resolution
 
 # 34.0.2
 - [feature] _agent_: Prevent uploading coverage to the same project + revision or branch@timestamp when doing multi project upload via git.properties
