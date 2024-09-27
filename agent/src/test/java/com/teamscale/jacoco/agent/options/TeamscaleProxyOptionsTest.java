@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.report.util.CommandLineLogger;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +20,7 @@ class TeamscaleProxyOptionsTest {
 		String expectedPassword = "testPassword";
 		proxySystemProperties.setProxyPassword(expectedPassword);
 
-		TeamscaleProxyOptions teamscaleProxyOptions = new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP);
+		TeamscaleProxyOptions teamscaleProxyOptions = new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP, new CommandLineLogger());
 		assertThat(teamscaleProxyOptions.proxyHost).isEqualTo(expectedHost);
 		assertThat(teamscaleProxyOptions.proxyPort).isEqualTo(expectedPort);
 		assertThat(teamscaleProxyOptions.proxyUser).isEqualTo(expectedUser);

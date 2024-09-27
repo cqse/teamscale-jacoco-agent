@@ -14,6 +14,7 @@ import com.teamscale.jacoco.agent.options.TeamscaleProxyOptions;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
+import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
@@ -166,9 +167,9 @@ public class TestwiseCoverageAgentTest {
 		when(options.getTeamscaleProxyOptions(any(ProxySystemProperties.Protocol.class))).thenAnswer(invocation -> {
 			if (Objects.requireNonNull(
 					(ProxySystemProperties.Protocol) invocation.getArguments()[0]) == ProxySystemProperties.Protocol.HTTP) {
-				return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP);
+				return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP, new CommandLineLogger());
 			}
-			return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS);
+			return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS, new CommandLineLogger());
 		});
 
 		TeamscaleServer server = new TeamscaleServer();

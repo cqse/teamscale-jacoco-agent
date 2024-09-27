@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
 
@@ -14,7 +15,7 @@ import java.nio.file.Path;
  */
 public class TeamscaleProxyOptions {
 
-	private final Logger logger = LoggingUtils.getLogger(this);
+	private final ILogger logger;
 
 	/** The host of the proxy server.  */
 	/* package */ String proxyHost;
@@ -34,8 +35,9 @@ public class TeamscaleProxyOptions {
 	private final ProxySystemProperties.Protocol protocol;
 
 	/** Constructor. */
-	public TeamscaleProxyOptions(ProxySystemProperties.Protocol protocol) {
+	public TeamscaleProxyOptions(ProxySystemProperties.Protocol protocol, ILogger logger) {
 		this.protocol = protocol;
+		this.logger = logger;
 		ProxySystemProperties proxySystemProperties = new ProxySystemProperties(protocol);
 		proxyHost = proxySystemProperties.getProxyHost();
 		proxyPort = proxySystemProperties.getProxyPort();

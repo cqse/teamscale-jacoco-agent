@@ -110,12 +110,10 @@ public class AgentOptions {
 	private Path outputDirectory;
 
 	/** Contains the options related to teamscale-specific proxy settings for http. */
-	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttp = new TeamscaleProxyOptions(
-			ProxySystemProperties.Protocol.HTTP);
+	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttp;
 
 	/** Contains the options related to teamscale-specific proxy settings for https. */
-	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttps = new TeamscaleProxyOptions(
-			ProxySystemProperties.Protocol.HTTPS);
+	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttps;
 
 	/**
 	 * Additional metadata files to upload together with the coverage XML.
@@ -216,6 +214,10 @@ public class AgentOptions {
 	public AgentOptions(ILogger logger) {
 		this.logger = logger;
 		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));
+		teamscaleProxyOptionsForHttp = new TeamscaleProxyOptions(
+				ProxySystemProperties.Protocol.HTTP, logger);
+		teamscaleProxyOptionsForHttps = new TeamscaleProxyOptions(
+				ProxySystemProperties.Protocol.HTTPS, logger);
 	}
 
 	/** @see #debugLogging */
