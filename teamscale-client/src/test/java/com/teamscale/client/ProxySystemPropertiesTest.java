@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ProxySystemPropertiesTest {
 
-	private static ProxySystemProperties properties = new ProxySystemProperties(ProxySystemProperties.Protocol.HTTP);
+	private static final ProxySystemProperties properties = new ProxySystemProperties(ProxySystemProperties.Protocol.HTTP);
 
 	@AfterAll
 	static void teardown() {
