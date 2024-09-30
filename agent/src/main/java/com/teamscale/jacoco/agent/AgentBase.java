@@ -1,5 +1,6 @@
 package com.teamscale.jacoco.agent;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -63,8 +64,8 @@ public abstract class AgentBase {
 	/**
 	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites
 	 * the password with the password found in the proxy-password-file if necessary.
-	 * public for testing.
 	 */
+	@VisibleForTesting
 	 public static void putTeamscaleProxyOptionsIntoSystemProperties(AgentOptions options) {
 		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).putTeamscaleProxyOptionsIntoSystemProperties();
 		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).putTeamscaleProxyOptionsIntoSystemProperties();

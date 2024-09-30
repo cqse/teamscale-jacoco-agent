@@ -1,6 +1,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -82,16 +83,16 @@ public class TeamscaleProxyOptions {
 	/** Stores the teamscale-specific proxy settings as system properties to make them always available. */
 	public void putTeamscaleProxyOptionsIntoSystemProperties() {
 		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
-		if (proxyHost != null && !proxyHost.isEmpty()) {
+		if (StringUtils.isEmpty(proxyHost)) {
 			teamscaleProxySystemProperties.setProxyHost(proxyHost);
 		}
 		if (proxyPort > 0) {
 			teamscaleProxySystemProperties.setProxyPort(proxyPort);
 		}
-		if(proxyUser != null && !proxyUser.isEmpty()) {
+		if(!StringUtils.isEmpty(proxyUser)) {
 			teamscaleProxySystemProperties.setProxyUser(proxyUser);
 		}
-		if(proxyPassword != null && !proxyPassword.isEmpty()) {
+		if(StringUtils.isEmpty(proxyPassword)) {
 			teamscaleProxySystemProperties.setProxyPassword(proxyPassword);
 		}
 

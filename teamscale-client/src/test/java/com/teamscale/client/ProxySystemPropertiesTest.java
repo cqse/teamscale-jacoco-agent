@@ -1,10 +1,10 @@
 package com.teamscale.client;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.function.Consumer;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ProxySystemPropertiesTest {
 
@@ -18,14 +18,16 @@ class ProxySystemPropertiesTest {
 	@Test
 	void testPortParsing() {
 		properties.setProxyPort(9876);
-		Consumer<String> logFunction = logMessage -> {};
-		Assertions.assertThat(properties.getProxyPort()).isEqualTo(9876);
+		assertThat(properties.getProxyPort()).isEqualTo(9876);
 		properties.setProxyPort("");
-		Assertions.assertThat(properties.getProxyPort()).isEqualTo(-1);
-		properties.setProxyPort("nonsense");
-		Assertions.assertThat(properties.getProxyPort()).isEqualTo(-1);
+		assertThat(properties.getProxyPort()).isEqualTo(-1);
+		String incorrectFormatValue = "nonsense";
+		properties.setProxyPort(incorrectFormatValue);
+		ProxySystemProperties.IncorrectPortFormatException exception = assertThrows(ProxySystemProperties.IncorrectPortFormatException.class,
+				properties::getProxyPort);
+		assertThat(exception.getMessage()).isEqualTo(String.format("Could not parse proxy port \"%s\" set via \"%s\"", incorrectFormatValue, properties.getProxyPortSystemPropertyName()));
 		properties.removeProxyPort();
-		Assertions.assertThat(properties.getProxyPort()).isEqualTo(-1);
+		assertThat(properties.getProxyPort()).isEqualTo(-1);
 	}
 
 }

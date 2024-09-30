@@ -65,12 +65,12 @@ public class ProxySystemProperties {
 		return !StringUtils.isEmpty(getProxyUser()) && !StringUtils.isEmpty(getProxyPassword());
 	}
 
-	/** Read the http(s).proxyHost system variable */
+	/** @return the http(s).proxyHost system variable */
 	public String getProxyHost() {
 		return System.getProperty(getProxyHostSystemPropertyName());
 	}
 
-	/** Read the http(s).proxyPort system variable. Returns -1 if no or an invalid port was set. */
+	/** @return the http(s).proxyPort system variable. Returns -1 if no or an invalid port was set. */
 	public int getProxyPort() throws IncorrectPortFormatException {
 		return parsePort(System.getProperty(getProxyPortSystemPropertyName()));
 	}
@@ -107,7 +107,7 @@ public class ProxySystemProperties {
 		return getPropertyPrefix() + protocol + PROXY_PORT_SYSTEM_PROPERTY;
 	}
 
-	/** Get the http(s).proxyUser system variable. */
+	/** @return the http(s).proxyUser system variable. */
 	public String getProxyUser() {
 		return System.getProperty(getProxyUserSystemPropertyName());
 	}
@@ -123,7 +123,7 @@ public class ProxySystemProperties {
 		return getPropertyPrefix() + protocol + PROXY_USER_SYSTEM_PROPERTY;
 	}
 
-	/** Get the http(s).proxyPassword system variable. */
+	/** @return the http(s).proxyPassword system variable. */
 	public String getProxyPassword() {
 		return System.getProperty(getProxyPasswordSystemPropertyName());
 	}
@@ -140,6 +140,7 @@ public class ProxySystemProperties {
 		return getPropertyPrefix() + protocol + PROXY_PASSWORD_SYSTEM_PROPERTY;
 	}
 
+	/** Exception thrown if the port is in an unknown format and cannot be read from the system properties. */
 	public static class IncorrectPortFormatException extends IllegalArgumentException {
 
 		IncorrectPortFormatException(String message, Throwable cause) {
@@ -149,7 +150,7 @@ public class ProxySystemProperties {
 
 	/** Parses the given port string. Returns -1 if the string is null or not a valid number. */
 	private int parsePort(String portString) throws IncorrectPortFormatException {
-		if (portString == null) {
+		if (StringUtils.isEmpty(portString)) {
 			return -1;
 		}
 

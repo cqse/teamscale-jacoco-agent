@@ -99,7 +99,7 @@ public class AgentOptionsParser {
 		if (!StringUtils.isEmpty(optionsString)) {
 			String[] optionParts = optionsString.split(",");
 			for (String optionPart : optionParts) {
-				handleOption(options, optionPart);
+				handleOptionPart(options, optionPart);
 			}
 		}
 
@@ -115,11 +115,11 @@ public class AgentOptionsParser {
 	private void handleConfigFromEnvironment(
 			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (environmentConfigId != null) {
-			handleOption(options, "config-id=" + environmentConfigId);
+			handleOptionPart(options, "config-id=" + environmentConfigId);
 		}
 
 		if (environmentConfigFile != null) {
-			handleOption(options, "config-file=" + environmentConfigFile);
+			handleOptionPart(options, "config-file=" + environmentConfigFile);
 		}
 
 		if (environmentConfigId != null && environmentConfigFile != null) {
@@ -132,11 +132,16 @@ public class AgentOptionsParser {
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
-	private void handleOption(AgentOptions options,
-							  String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void handleOptionPart(AgentOptions options, String optionPart)  throws AgentOptionParseException, AgentOptionReceiveException {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
-		String key = keyAndValue.getFirst();
-		String value = keyAndValue.getSecond();
+		handleOption(options, keyAndValue.getFirst(), keyAndValue.getSecond());
+	}
+
+	/**
+	 * Parses and stores the option with the given key and value.
+	 */
+	private void handleOption(AgentOptions options,
+							  String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (key.startsWith("debug")) {
 			handleDebugOption(options, value);
 			return;
@@ -158,27 +163,31 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
-		String proxyKeyword = "proxy-";
-		if (key.startsWith(proxyKeyword)) {
-			if (key.startsWith(proxyKeyword + ProxySystemProperties.Protocol.HTTPS)
-					&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(key, value)) {
+   		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), key, filePatternResolver)){
 				return;
 			}
-			if (key.startsWith(proxyKeyword + ProxySystemProperties.Protocol.HTTP)
-					 && options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(key, value)) {
-				return;
-			}
-			if(key.equals("proxy-password-file")) {
-					Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
-					options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).proxyPasswordPath=proxyPasswordPath;
-					options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).proxyPasswordPath=proxyPasswordPath;
-					return;
-			}
-		}
 		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
+	}
+
+	private boolean handleProxyOptions(AgentOptions options, String key, String value, FilePatternResolver filePatternResolver) throws AgentOptionParseException {
+		if (key.startsWith(ProxySystemProperties.Protocol.HTTPS.toString())
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(key, value)) {
+			return true;
+		}
+		if (key.startsWith(ProxySystemProperties.Protocol.HTTP.toString())
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(key, value)) {
+			return true;
+		}
+		if(key.equals("password-file")) {
+			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).proxyPasswordPath=proxyPasswordPath;
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).proxyPasswordPath=proxyPasswordPath;
+			return true;
+		}
+		return false;
 	}
 
 	/** Parses and stores the debug logging file path if given. */
@@ -363,7 +372,7 @@ public class AgentOptionsParser {
 			if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
 				continue;
 			}
-			handleOption(options, optionKeyValue);
+			handleOptionPart(options, optionKeyValue);
 		}
 	}
 
