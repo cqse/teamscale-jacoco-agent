@@ -83,7 +83,7 @@ public class TeamscaleProxyOptions {
 	/** Stores the teamscale-specific proxy settings as system properties to make them always available. */
 	public void putTeamscaleProxyOptionsIntoSystemProperties() {
 		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
-		if (StringUtils.isEmpty(proxyHost)) {
+		if (!StringUtils.isEmpty(proxyHost)) {
 			teamscaleProxySystemProperties.setProxyHost(proxyHost);
 		}
 		if (proxyPort > 0) {
@@ -92,7 +92,7 @@ public class TeamscaleProxyOptions {
 		if(!StringUtils.isEmpty(proxyUser)) {
 			teamscaleProxySystemProperties.setProxyUser(proxyUser);
 		}
-		if(StringUtils.isEmpty(proxyPassword)) {
+		if(!StringUtils.isEmpty(proxyPassword)) {
 			teamscaleProxySystemProperties.setProxyPassword(proxyPassword);
 		}
 
@@ -101,7 +101,7 @@ public class TeamscaleProxyOptions {
 
 	/** Sets the proxy password JVM property from a file for the protocol in this instance of {@link TeamscaleProxyOptions}. */
 	private void setProxyPasswordFromFile(Path proxyPasswordFilePath) {
-		if (proxyPasswordFilePath == null) {
+		if (StringUtils.isEmpty(proxyPassword)) {
 			return;
 		}
 		try {
