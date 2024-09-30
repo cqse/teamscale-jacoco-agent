@@ -350,10 +350,10 @@ public class AgentOptionsTest {
 		int expectedPort = 9999;
 		String expectedUser = "user";
 		String expectedPassword = "password";
-		String proxyHostOption = String.format("proxy-%s-host=%s", protocol.name(), expectedHost);
-		String proxyPortOption = String.format("proxy-%s-port=%d", protocol.name(), expectedPort);
-		String proxyUserOption = String.format("proxy-%s-user=%s", protocol.name(), expectedUser);
-		String proxyPasswordOption = String.format("proxy-%s-password=%s", protocol.name(), expectedPassword);
+		String proxyHostOption = String.format("proxy-%s-host=%s", protocol, expectedHost);
+		String proxyPortOption = String.format("proxy-%s-port=%d", protocol, expectedPort);
+		String proxyUserOption = String.format("proxy-%s-user=%s", protocol, expectedUser);
+		String proxyPasswordOption = String.format("proxy-%s-password=%s", protocol, expectedPassword);
 		String optionsString = String.format("%s,%s,%s,%s", proxyHostOption, proxyPortOption, proxyUserOption, proxyPasswordOption);
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(optionsString);
 

@@ -50,17 +50,17 @@ public class TeamscaleProxyOptions {
 	}
 
 	/**
-	 * Handles all command-line options prefixed with 'proxy-'
+	 * Processes the command-line options for proxies.
 	 *
 	 * @return true if it has successfully processed the given option.
 	 */
 	public boolean handleTeamscaleProxyOptions(String key, String value) throws AgentOptionParseException {
-			if (String.format("proxy-%s-host", protocol).equals(key)){
+			if ("host".equals(key)){
 				proxyHost = value;
 				return true;
 			}
-		String proxyPortOption = "proxy-%s-port";
-		if (String.format(proxyPortOption, protocol).equals(key)) {
+		String proxyPortOption = "port";
+		if (proxyPortOption.equals(key)) {
 				try {
 					proxyPort = Integer.parseInt(value);
 				} catch (NumberFormatException e) {
@@ -69,11 +69,11 @@ public class TeamscaleProxyOptions {
 				}
 				return true;
 			}
-			if (String.format("proxy-%s-user", protocol).equals(key)) {
+			if ("user".equals(key)) {
 				proxyUser = value;
 				return true;
 			}
-			if (String.format("proxy-%s-password", protocol).equals(key)) {
+			if ("password".equals(key)) {
 				proxyPassword = value;
 				return true;
 			}
@@ -101,7 +101,7 @@ public class TeamscaleProxyOptions {
 
 	/** Sets the proxy password JVM property from a file for the protocol in this instance of {@link TeamscaleProxyOptions}. */
 	private void setProxyPasswordFromFile(Path proxyPasswordFilePath) {
-		if (StringUtils.isEmpty(proxyPassword)) {
+		if (proxyPasswordFilePath == null) {
 			return;
 		}
 		try {

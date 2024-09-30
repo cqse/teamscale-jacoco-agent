@@ -163,7 +163,7 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
-   		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), key, filePatternResolver)){
+   		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value, filePatternResolver)){
 				return;
 			}
 		if (handleAgentOptions(options, key, value)) {
@@ -173,14 +173,20 @@ public class AgentOptionsParser {
 	}
 
 	private boolean handleProxyOptions(AgentOptions options, String key, String value, FilePatternResolver filePatternResolver) throws AgentOptionParseException {
-		if (key.startsWith(ProxySystemProperties.Protocol.HTTPS.toString())
-				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(key, value)) {
+		String httpsPrefix = String.format("%s-", ProxySystemProperties.Protocol.HTTPS);
+		if (key.startsWith(httpsPrefix)
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+				key, httpsPrefix), value)) {
 			return true;
 		}
-		if (key.startsWith(ProxySystemProperties.Protocol.HTTP.toString())
-				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(key, value)) {
+
+		String httpPrefix = String.format("%s-", ProxySystemProperties.Protocol.HTTP);
+		if (key.startsWith(httpPrefix)
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+				key, httpPrefix), value)) {
 			return true;
 		}
+
 		if(key.equals("password-file")) {
 			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
 			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).proxyPasswordPath=proxyPasswordPath;
