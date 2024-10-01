@@ -96,11 +96,11 @@ JVM.
 It is also possible to specify these options by prefixing the JVM flags for proxies with `teamscale.`,
 for example `-Dteamscale.https.proxyHost`.
 
-The following options are available:
-- `proxy-host`: The host name of the proxy server.
-- `proxy-port`: The port of the proxy server.
-- `proxy-user`: The username for the proxy server.
-- `proxy-password`: The password for the proxy user.
+The following options are available both for `https` and `http`:
+- `proxy-https-host`/`proxy-http-host`: The host name of the proxy server.
+- `proxy-https-port`/`proxy-http-port`: The port of the proxy server.
+- `proxy-https-user`/`proxy-http-user`: The username for the proxy server.
+- `proxy-https-password`/`proxy-http-password`: The password for the proxy user.
 
 #### Testwise coverage
 

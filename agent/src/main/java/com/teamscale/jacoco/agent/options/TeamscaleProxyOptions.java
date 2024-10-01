@@ -25,6 +25,10 @@ public class TeamscaleProxyOptions {
 	/** The password for the proxy user. */
 	/* package */ String proxyPassword;
 
+	public void setProxyPasswordPath(Path proxyPasswordPath) {
+		this.proxyPasswordPath = proxyPasswordPath;
+	}
+
 	/** A path to the file that contains the password for the proxy authentication. */
 	/* package */ Path proxyPasswordPath;
 

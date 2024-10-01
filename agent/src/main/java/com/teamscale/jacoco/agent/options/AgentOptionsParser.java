@@ -189,8 +189,8 @@ public class AgentOptionsParser {
 
 		if(key.equals("password-file")) {
 			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
-			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).proxyPasswordPath=proxyPasswordPath;
-			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).proxyPasswordPath=proxyPasswordPath;
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).setProxyPasswordPath(proxyPasswordPath);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).setProxyPasswordPath(proxyPasswordPath);
 			return true;
 		}
 		return false;
