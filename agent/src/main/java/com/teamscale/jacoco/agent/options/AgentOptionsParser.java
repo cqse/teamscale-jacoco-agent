@@ -173,14 +173,14 @@ public class AgentOptionsParser {
 	}
 
 	private boolean handleProxyOptions(AgentOptions options, String key, String value, FilePatternResolver filePatternResolver) throws AgentOptionParseException {
-		String httpsPrefix = String.format("%s-", ProxySystemProperties.Protocol.HTTPS);
+		String httpsPrefix = ProxySystemProperties.Protocol.HTTPS + "-";
 		if (key.startsWith(httpsPrefix)
 				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
 				key, httpsPrefix), value)) {
 			return true;
 		}
 
-		String httpPrefix = String.format("%s-", ProxySystemProperties.Protocol.HTTP);
+		String httpPrefix = ProxySystemProperties.Protocol.HTTP + "-";
 		if (key.startsWith(httpPrefix)
 				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
 				key, httpPrefix), value)) {
