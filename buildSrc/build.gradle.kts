@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.2")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.3")
     implementation("com.xpdustry.ksr:com.xpdustry.ksr.gradle.plugin:1.0.0") {
         exclude(group = "com.github.johnrengelman")
     }
