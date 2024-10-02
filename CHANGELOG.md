@@ -5,7 +5,9 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
-- [feature] _agent_: New options `proxy-host`/`-port`/`-user`/`-password` allow user to specify teamscale-specific proxy settings.
+
+# 34.1.0
+- [feature] _agent_: New options `proxy-http(s)-host`/`-port`/`-user`/`-password` allow user to specify teamscale-specific proxy settings.
 - [fix] _teamscale-maven-plugin_: NPE when no commit, nor revision was configured
 - [fix] _teamscale-maven-plugin_: Fixed commit was ignored in commit resolution
 
