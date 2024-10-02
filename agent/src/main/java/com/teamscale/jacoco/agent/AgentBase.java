@@ -1,9 +1,10 @@
 package com.teamscale.jacoco.agent;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -14,9 +15,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.jacoco.agent.rt.RT;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Path;
 
 /**
  * Base class for agent implementations. Handles logger shutdown, store creation and instantiation of the
@@ -40,7 +39,9 @@ public abstract class AgentBase {
 	/** Constructor. */
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		this.options = options;
-		setProxyPasswordFromFile(options.getProxyPasswordPath());
+
+		putTeamscaleProxyOptionsIntoSystemProperties(options);
+
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
@@ -60,21 +61,14 @@ public abstract class AgentBase {
 		}
 	}
 
-	/** Sets the proxy password JVM property from a file for both http and https. */
-	private void setProxyPasswordFromFile(Path proxyPasswordFilePath) {
-		if (proxyPasswordFilePath == null) {
-			return;
-		}
-		try {
-			String proxyPassword = FileSystemUtils.readFileUTF8(proxyPasswordFilePath.toFile()).trim();
-			new ProxySystemProperties(ProxySystemProperties.Protocol.HTTP).setProxyPassword(proxyPassword);
-			new ProxySystemProperties(ProxySystemProperties.Protocol.HTTPS).setProxyPassword(proxyPassword);
-		} catch (IOException e) {
-			logger.error(
-					"Unable to open file containing proxy password. Please make sure the file exists and the user has the permissions to read the file.",
-					e);
-		}
-
+	/**
+	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites
+	 * the password with the password found in the proxy-password-file if necessary.
+	 */
+	@VisibleForTesting
+	 public static void putTeamscaleProxyOptionsIntoSystemProperties(AgentOptions options) {
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).putTeamscaleProxyOptionsIntoSystemProperties();
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).putTeamscaleProxyOptionsIntoSystemProperties();
 	}
 
 	/**

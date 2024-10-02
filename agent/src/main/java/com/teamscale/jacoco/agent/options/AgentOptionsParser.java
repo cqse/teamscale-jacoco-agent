@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -97,7 +99,7 @@ public class AgentOptionsParser {
 		if (!StringUtils.isEmpty(optionsString)) {
 			String[] optionParts = optionsString.split(",");
 			for (String optionPart : optionParts) {
-				handleOption(options, optionPart);
+				handleOptionPart(options, optionPart);
 			}
 		}
 
@@ -113,11 +115,11 @@ public class AgentOptionsParser {
 	private void handleConfigFromEnvironment(
 			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (environmentConfigId != null) {
-			handleOption(options, "config-id=" + environmentConfigId);
+			handleOptionPart(options, "config-id=" + environmentConfigId);
 		}
 
 		if (environmentConfigFile != null) {
-			handleOption(options, "config-file=" + environmentConfigFile);
+			handleOptionPart(options, "config-file=" + environmentConfigFile);
 		}
 
 		if (environmentConfigId != null && environmentConfigFile != null) {
@@ -130,11 +132,16 @@ public class AgentOptionsParser {
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
-	private void handleOption(AgentOptions options,
-							  String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void handleOptionPart(AgentOptions options, String optionPart)  throws AgentOptionParseException, AgentOptionReceiveException {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
-		String key = keyAndValue.getFirst();
-		String value = keyAndValue.getSecond();
+		handleOption(options, keyAndValue.getFirst(), keyAndValue.getSecond());
+	}
+
+	/**
+	 * Parses and stores the option with the given key and value.
+	 */
+	private void handleOption(AgentOptions options,
+							  String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (key.startsWith("debug")) {
 			handleDebugOption(options, value);
 			return;
@@ -156,10 +163,37 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
+   		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value, filePatternResolver)){
+				return;
+			}
 		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
+	}
+
+	private boolean handleProxyOptions(AgentOptions options, String key, String value, FilePatternResolver filePatternResolver) throws AgentOptionParseException {
+		String httpsPrefix = ProxySystemProperties.Protocol.HTTPS + "-";
+		if (key.startsWith(httpsPrefix)
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+				key, httpsPrefix), value)) {
+			return true;
+		}
+
+		String httpPrefix = ProxySystemProperties.Protocol.HTTP + "-";
+		if (key.startsWith(httpPrefix)
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+				key, httpPrefix), value)) {
+			return true;
+		}
+
+		if(key.equals("password-file")) {
+			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).setProxyPasswordPath(proxyPasswordPath);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).setProxyPasswordPath(proxyPasswordPath);
+			return true;
+		}
+		return false;
 	}
 
 	/** Parses and stores the debug logging file path if given. */
@@ -206,9 +240,6 @@ public class AgentOptionsParser {
 				return true;
 			case LOGGING_CONFIG_OPTION:
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
-				return true;
-			case "proxy-password-file":
-				options.proxyPasswordPath = filePatternResolver.parsePath(key, value);
 				return true;
 			case "interval":
 				options.dumpIntervalInMinutes = parseInt(key, value);
@@ -347,7 +378,7 @@ public class AgentOptionsParser {
 			if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
 				continue;
 			}
-			handleOption(options, optionKeyValue);
+			handleOptionPart(options, optionKeyValue);
 		}
 	}
 

@@ -1,7 +1,10 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
@@ -301,7 +304,7 @@ public class AgentOptionsTest {
 	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
-	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws Exception {
+	public void testArtifactoryBasicAuthSetPassesValidityCheck() throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.user = "user";
@@ -324,6 +327,61 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getValidator().isValid()).isTrue();
 	}
 
+	/**
+	 * Tests that the {@link TeamscaleProxyOptions} for HTTP are parsed correctly and correctly put into
+	 * system properties that can be read using {@link TeamscaleProxySystemProperties}.
+	 */
+	@Test
+	public void testTeamscaleProxyOptionsCorrectlySetSystemPropertiesForHttp() throws Exception {
+		testTeamscaleProxyOptionsCorrectlySetSystemProperties(ProxySystemProperties.Protocol.HTTP);
+	}
+
+	/**
+	 * Tests that the {@link TeamscaleProxyOptions} for HTTPS are parsed correctly and correctly put into
+	 * system properties that can be read using {@link TeamscaleProxySystemProperties}.
+	 */
+	@Test
+	public void testTeamscaleProxyOptionsCorrectlySetSystemPropertiesForHttps() throws Exception {
+		testTeamscaleProxyOptionsCorrectlySetSystemProperties(ProxySystemProperties.Protocol.HTTPS);
+	}
+
+	private void testTeamscaleProxyOptionsCorrectlySetSystemProperties(ProxySystemProperties.Protocol protocol) throws Exception {
+		String expectedHost = "host";
+		int expectedPort = 9999;
+		String expectedUser = "user";
+		String expectedPassword = "password";
+		String proxyHostOption = String.format("proxy-%s-host=%s", protocol, expectedHost);
+		String proxyPortOption = String.format("proxy-%s-port=%d", protocol, expectedPort);
+		String proxyUserOption = String.format("proxy-%s-user=%s", protocol, expectedUser);
+		String proxyPasswordOption = String.format("proxy-%s-password=%s", protocol, expectedPassword);
+		String optionsString = String.format("%s,%s,%s,%s", proxyHostOption, proxyPortOption, proxyUserOption, proxyPasswordOption);
+		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(optionsString);
+
+		// clear to be sure the system properties are empty
+		clearTeamscaleProxySystemProperties(protocol);
+
+		AgentBase.putTeamscaleProxyOptionsIntoSystemProperties(agentOptions);
+
+		assertTeamscaleProxySystemPropertiesAreCorrect(protocol, expectedHost, expectedPort, expectedUser, expectedPassword);
+
+		clearTeamscaleProxySystemProperties(protocol);
+	}
+
+	private void assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol protocol, String expectedHost, int expectedPort, String expectedUser, String expectedPassword) throws ProxySystemProperties.IncorrectPortFormatException {
+		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
+		assertThat(teamscaleProxySystemProperties.getProxyHost()).isEqualTo(expectedHost);
+		assertThat(teamscaleProxySystemProperties.getProxyPort()).isEqualTo(expectedPort);
+		assertThat(teamscaleProxySystemProperties.getProxyUser()).isEqualTo(expectedUser);
+		assertThat(teamscaleProxySystemProperties.getProxyPassword()).isEqualTo(expectedPassword);
+	}
+
+	private void clearTeamscaleProxySystemProperties(ProxySystemProperties.Protocol protocol) {
+		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
+		teamscaleProxySystemProperties.setProxyHost("");
+		teamscaleProxySystemProperties.setProxyPort("");
+		teamscaleProxySystemProperties.setProxyUser("");
+		teamscaleProxySystemProperties.setProxyPassword("");
+	}
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()

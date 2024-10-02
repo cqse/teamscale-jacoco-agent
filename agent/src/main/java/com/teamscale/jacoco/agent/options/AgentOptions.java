@@ -7,6 +7,7 @@ package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.FileSystemUtils;
+import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
@@ -107,10 +108,13 @@ public class AgentOptions {
 	 * The directory to write the XML traces to.
 	 */
 	private Path outputDirectory;
-	/**
-	 * A path to the file that contains the password for the proxy authentication.
-	 */
-	/* package */ Path proxyPasswordPath;
+
+	/** Contains the options related to teamscale-specific proxy settings for http. */
+	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttp;
+
+	/** Contains the options related to teamscale-specific proxy settings for https. */
+	/* package */ TeamscaleProxyOptions teamscaleProxyOptionsForHttps;
+
 	/**
 	 * Additional metadata files to upload together with the coverage XML.
 	 */
@@ -210,6 +214,10 @@ public class AgentOptions {
 	public AgentOptions(ILogger logger) {
 		this.logger = logger;
 		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));
+		teamscaleProxyOptionsForHttp = new TeamscaleProxyOptions(
+				ProxySystemProperties.Protocol.HTTP, logger);
+		teamscaleProxyOptionsForHttps = new TeamscaleProxyOptions(
+				ProxySystemProperties.Protocol.HTTPS, logger);
 	}
 
 	/** @see #debugLogging */
@@ -227,10 +235,6 @@ public class AgentOptions {
 	 */
 	public String getOriginalOptionsString() {
 		return originalOptionsString;
-	}
-
-	public Path getProxyPasswordPath() {
-		return proxyPasswordPath;
 	}
 
 	/**
@@ -723,5 +727,13 @@ public class AgentOptions {
 	/** @see #ignoreUncoveredClasses */
 	public boolean shouldIgnoreUncoveredClasses() {
 		return ignoreUncoveredClasses;
+	}
+
+	/** @return the {@link TeamscaleProxyOptions} for the given protocol. */
+	public TeamscaleProxyOptions getTeamscaleProxyOptions(ProxySystemProperties.Protocol protocol) {
+		if(protocol == ProxySystemProperties.Protocol.HTTP) {
+			return teamscaleProxyOptionsForHttp;
+		}
+		return teamscaleProxyOptionsForHttps;
 	}
 }

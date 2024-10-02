@@ -24,23 +24,39 @@ class TeamscaleServiceGeneratorProxyServerTest {
 	private final ProxySystemProperties proxySystemProperties = new ProxySystemProperties(
 			ProxySystemProperties.Protocol.HTTP);
 
+	private final TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(
+			ProxySystemProperties.Protocol.HTTP);
+
 	@BeforeEach
 	void setUp() throws IOException {
 		mockProxyServer = new MockWebServer();
 		mockProxyServer.start();
 	}
 
+
 	@Test
-	void testProxyAuthentication() throws IOException, InterruptedException {
+	void testTeamscaleProxyAuthentication() throws Exception {
+		String incorrectValue = "incorrect";
+		// the teamscale-specific options should take precedence over the global ones
+		proxySystemProperties.setProxyHost(incorrectValue);
+		proxySystemProperties.setProxyPort(incorrectValue);
+		proxySystemProperties.setProxyUser(incorrectValue);
+		proxySystemProperties.setProxyPassword(incorrectValue);
+
+		teamscaleProxySystemProperties.setProxyHost(mockProxyServer.getHostName());
+		teamscaleProxySystemProperties.setProxyPort(mockProxyServer.getPort());
+
 		String proxyUser = "myProxyUser";
 		String proxyPassword = "myProxyPassword";
 		String base64EncodedBasicAuth = Base64.getEncoder().encodeToString((proxyUser + ":" + proxyPassword).getBytes(
 				StandardCharsets.UTF_8));
-		proxySystemProperties.setProxyHost(mockProxyServer.getHostName());
-		proxySystemProperties.setProxyPort(mockProxyServer.getPort());
-		proxySystemProperties.setProxyUser(proxyUser);
-		proxySystemProperties.setProxyPassword(proxyPassword);
+		teamscaleProxySystemProperties.setProxyUser(proxyUser);
+		teamscaleProxySystemProperties.setProxyPassword(proxyPassword);
 
+		assertProxyAuthenticationIsUsed(base64EncodedBasicAuth);
+	}
+
+	private void assertProxyAuthenticationIsUsed(String base64EncodedBasicAuth) throws InterruptedException, IOException {
 		ITeamscaleService service = TeamscaleServiceGenerator.createService(ITeamscaleService.class,
 				HttpUrl.parse("http://localhost:1337"),
 				"someUser", "someAccesstoken", HttpUtils.DEFAULT_READ_TIMEOUT,
@@ -63,12 +79,17 @@ class TeamscaleServiceGeneratorProxyServerTest {
 
 	@AfterEach
 	void tearDown() throws IOException {
+		clearProxySystemProperties(proxySystemProperties);
+		clearProxySystemProperties(teamscaleProxySystemProperties);
+
+		mockProxyServer.shutdown();
+		mockProxyServer.close();
+	}
+
+	private void clearProxySystemProperties(ProxySystemProperties proxySystemProperties) {
 		proxySystemProperties.setProxyHost("");
 		proxySystemProperties.setProxyPort("");
 		proxySystemProperties.setProxyUser("");
 		proxySystemProperties.setProxyPassword("");
-
-		mockProxyServer.shutdown();
-		mockProxyServer.close();
 	}
 }
