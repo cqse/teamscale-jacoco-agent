@@ -6,7 +6,6 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.ReportFormat;
-import com.teamscale.client.ServerConfiguration;
 import com.teamscale.client.utils.FileSystemUtils;
 import com.teamscale.client.utils.HttpUtils;
 import com.teamscale.client.utils.StringUtils;
@@ -390,14 +389,8 @@ public class AgentOptions {
 	 */
 	public TeamscaleClient createTeamscaleClient() {
 		if (teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload()) {
-			// ToDo: Proper config conversion on Kotlin migration
-			ServerConfiguration config = new ServerConfiguration(
-				teamscaleServer.url.toString(),
-				teamscaleServer.userName,
-				teamscaleServer.userAccessToken,
-				teamscaleServer.project
-			);
-			return new TeamscaleClient(config);
+			return new TeamscaleClient(teamscaleServer.url.toString(), teamscaleServer.userName,
+					teamscaleServer.userAccessToken, teamscaleServer.project);
 		}
 		return null;
 	}

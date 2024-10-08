@@ -19,7 +19,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     /** The Teamscale server configuration. */
     @get:Input
     val configuration
-        get() = extension.configuration
+        get() = extension.server
 
     /** The commit for which the reports should be uploaded. */
     @get:Input
@@ -95,8 +95,12 @@ abstract class TeamscaleUploadTask : DefaultTask() {
                 // Prefer to upload to revision and fallback to branch timestamp
                 val commitDescriptorOrNull = if (revision != null) null else commitDescriptor
                 retry(3) {
-                    val client = TeamscaleClient(configuration)
-                    client.uploadReports(
+                    TeamscaleClient(
+                        configuration.url!!,
+                        configuration.project!!,
+                        configuration.userName!!,
+                        configuration.userAccessToken!!
+                    ).uploadReports(
                         format,
                         reportFiles,
                         commitDescriptorOrNull,

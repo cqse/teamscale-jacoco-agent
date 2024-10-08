@@ -18,12 +18,12 @@ ext.junitJupiterVersion = '5.10.2'
 
 if (!project.hasProperty("withoutServerConfig")) {
 	teamscale {
-		ServerConfiguration(
-			url = 'http://127.0.0.1:64000',
-			userName = 'build',
-			userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu', // Not a real access token
+		server {
+			url = 'http://127.0.0.1:64000'
+			userName = 'build'
+			userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
 			project = 'test'
-		)
+		}
 	}
 }
 

@@ -89,7 +89,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 
     val serverConfiguration
         @Input
-        get() = pluginExtension.configuration
+        get() = pluginExtension.server
 
     /**
      * The (current) commit at which test details should be uploaded to.
@@ -183,10 +183,10 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
             assert(endCommit != null) { "When executing only impacted tests a branchName and timestamp must be specified!" }
             with(serverConfiguration) {
                 validate()
-                url.writeProperty("server.url")
-                project.writeProperty("server.project")
-                userName.writeProperty("server.userName")
-                userAccessToken.writeProperty("server.userAccessToken")
+                url?.writeProperty("server.url")
+                project?.writeProperty("server.project")
+                userName?.writeProperty("server.userName")
+                userAccessToken?.writeProperty("server.userAccessToken")
             }
         }
         report.partition.get().writeProperty("partition")

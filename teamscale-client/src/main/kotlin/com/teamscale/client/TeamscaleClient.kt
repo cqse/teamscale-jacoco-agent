@@ -16,17 +16,20 @@ import java.util.*
 
 /** Helper class to interact with Teamscale.  */
 open class TeamscaleClient @JvmOverloads constructor(
-	private val config: ServerConfiguration,
+	url: String,
+	private val project: String,
+	private val userName: String,
+	private val userAccessToken: String,
 	logfile: File? = null,
 	readTimeout: Duration = HttpUtils.DEFAULT_READ_TIMEOUT,
 	writeTimeout: Duration = HttpUtils.DEFAULT_WRITE_TIMEOUT
 ) {
 	/** Teamscale service implementation.  */
-	val service: ITeamscaleService = config.url.toHttpUrlOrNull()?.let {
+	val service: ITeamscaleService = url.toHttpUrlOrNull()?.let { url ->
 		createServiceWithRequestLogging(
-			it, config.userName, config.userAccessToken, logfile, readTimeout, writeTimeout
+			url, userName, userAccessToken, logfile, readTimeout, writeTimeout
 		)
-	} ?: throw IllegalArgumentException("Invalid URL: ${config.url}")
+	} ?: throw IllegalArgumentException("Invalid URL: $url")
 
 	/**
 	 * Tries to retrieve the impacted tests from Teamscale. This should be used in a CI environment, because it ensures
@@ -104,7 +107,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 		return if (availableTests == null) {
 			wrapInCluster(
 				service.getImpactedTests(
-					config.project, baseline, endCommit, partitions,
+					project, baseline, endCommit, partitions,
 					includeNonImpacted,
 					includeFailedAndSkipped,
 					ensureProcessed, includeAddedTests
@@ -112,7 +115,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 			)
 		} else {
 			service.getImpactedTests(
-				config.project, baseline, endCommit, partitions,
+				project, baseline, endCommit, partitions,
 				includeNonImpacted,
 				includeFailedAndSkipped,
 				ensureProcessed,
@@ -155,7 +158,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 		}
 
 		val response = service.uploadExternalReports(
-			config.project,
+			project,
 			reportFormat,
 			commitDescriptor,
 			revision,
@@ -181,7 +184,7 @@ open class TeamscaleClient @JvmOverloads constructor(
 		message: String?
 	) {
 		val requestBody = report.toRequestBody(FORM)
-		service.uploadReport(config.project, commitDescriptor, revision, partition, reportFormat, message, requestBody)
+		service.uploadReport(project, commitDescriptor, revision, partition, reportFormat, message, requestBody)
 	}
 
 	companion object {

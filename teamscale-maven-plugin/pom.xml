@@ -53,12 +53,12 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <revision>1.0.0-SNAPSHOT</revision>
+        <revision>33.2.0-SNAPSHOT</revision>
         <!--
           The MavenExec tasks in build.gradle.kts will change this version to the current version and then revert it back to 29.0.0.
           This prevents frequent updates of this file in the repository.
         -->
-        <teamscale.agent.version>29.0.0</teamscale.agent.version>
+        <teamscale.agent.version>33.2.0-SNAPSHOT</teamscale.agent.version>
     </properties>
 
     <dependencies>
