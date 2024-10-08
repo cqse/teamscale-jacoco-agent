@@ -22,10 +22,10 @@ class TeamscalePluginTest {
 	companion object {
 
 		/** Set this to true to enable debugging of the Gradle Plugin via port 5005. */
-		private const val DEBUG_PLUGIN = true
+		private const val DEBUG_PLUGIN = false
 
 		/** Set this to true to enable debugging of the impacted tests engine via port 5005. */
-		private const val DEBUG_TEST_ENGINE = true
+		private const val DEBUG_TEST_ENGINE = false
 
 		/**
 		 * This port must match what is configured in the test project's build.gradle.
