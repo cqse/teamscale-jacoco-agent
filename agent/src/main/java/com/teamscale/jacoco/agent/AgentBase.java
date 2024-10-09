@@ -115,6 +115,14 @@ public abstract class AgentBase {
 	void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
+				if (true) {
+					try {
+						throw new RuntimeException("trying warning with error");
+					} catch (Exception e) {
+						logger.warn("warning with stack trace", e);
+					}
+					throw new RuntimeException("Simulated failure during shutdown hook");
+				}
 				logger.info("CQSE JaCoCo agent is shutting down...");
 				stopServer();
 				prepareShutdown();
