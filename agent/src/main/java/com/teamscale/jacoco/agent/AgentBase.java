@@ -1,8 +1,5 @@
 package com.teamscale.jacoco.agent;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.teamscale.client.ProxySystemProperties;
-import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.eclipse.jetty.server.Server;
@@ -40,8 +37,6 @@ public abstract class AgentBase {
 	public AgentBase(AgentOptions options) throws IllegalStateException {
 		this.options = options;
 
-		putTeamscaleProxyOptionsIntoSystemProperties(options);
-
 		try {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
@@ -61,15 +56,7 @@ public abstract class AgentBase {
 		}
 	}
 
-	/**
-	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites
-	 * the password with the password found in the proxy-password-file if necessary.
-	 */
-	@VisibleForTesting
-	 public static void putTeamscaleProxyOptionsIntoSystemProperties(AgentOptions options) {
-		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).putTeamscaleProxyOptionsIntoSystemProperties();
-		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).putTeamscaleProxyOptionsIntoSystemProperties();
-	}
+
 
 	/**
 	 * Lazily generated string representation of the command line arguments to print to the log.

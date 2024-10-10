@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _agent_: Loading a profiler configuration from Teamscale was not possible if the potentially necessary proxy settings were not set yet.
 
 # 34.1.0
 - [feature] _agent_: New options `proxy-http(s)-host`/`-port`/`-user`/`-password` allow user to specify teamscale-specific proxy settings.
