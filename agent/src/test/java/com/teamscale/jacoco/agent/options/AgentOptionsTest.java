@@ -455,8 +455,7 @@ public class AgentOptionsTest {
 		}
 
 		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.parse("http://localhost:80"), "unused", "unused");
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLoggerAndCredentials(credentials).parse(optionsString);
-		return agentOptions;
+		return getAgentOptionsParserWithDummyLoggerAndCredentials(credentials).parse(optionsString);
 	}
 
 	private void assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol protocol, String expectedHost, int expectedPort, String expectedUser, String expectedPassword) throws ProxySystemProperties.IncorrectPortFormatException {

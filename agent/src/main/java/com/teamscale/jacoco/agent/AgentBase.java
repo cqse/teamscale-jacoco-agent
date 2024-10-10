@@ -1,8 +1,5 @@
 package com.teamscale.jacoco.agent;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.teamscale.client.ProxySystemProperties;
-import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
 import org.eclipse.jetty.server.Server;
