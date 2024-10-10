@@ -8,6 +8,7 @@ package com.teamscale.jacoco.agent.options;
 import com.google.common.annotations.VisibleForTesting;
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
+import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
@@ -103,7 +104,11 @@ public class AgentOptionsParser {
 			}
 		}
 
-		handleConfigFromEnvironment(options);
+		// we have to put the proxy options into system properties before reading the configuration from Teamscale as we
+		// might need them to connect to Teamscale
+		putTeamscaleProxyOptionsIntoSystemProperties(options);
+
+		handleConfigId(options);
 
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
@@ -112,11 +117,27 @@ public class AgentOptionsParser {
 		return options;
 	}
 
-	private void handleConfigFromEnvironment(
-			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+	/**
+	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites
+	 * the password with the password found in the proxy-password-file if necessary.
+	 */
+	@VisibleForTesting
+	public static void putTeamscaleProxyOptionsIntoSystemProperties(AgentOptions options) {
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).putTeamscaleProxyOptionsIntoSystemProperties();
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).putTeamscaleProxyOptionsIntoSystemProperties();
+	}
+
+	private void handleConfigId(AgentOptions options) throws AgentOptionReceiveException, AgentOptionParseException {
 		if (environmentConfigId != null) {
+			if (options.teamscaleServer.configId != null) {
+				logger.warn("You specified an ID for a profiler configuration in Teamscale both in the agent options and using an environment variable." +
+						" The environment variable will override the ID specified using the agent options." +
+						" Please use one or the other.");
+			}
 			handleOptionPart(options, "config-id=" + environmentConfigId);
 		}
+
+		readConfigFromTeamscale(options);
 
 		if (environmentConfigFile != null) {
 			handleOptionPart(options, "config-file=" + environmentConfigFile);
@@ -233,7 +254,7 @@ public class AgentOptionsParser {
 			throws AgentOptionParseException, AgentOptionReceiveException {
 		switch (key) {
 			case "config-id":
-				readConfigFromTeamscale(options, value);
+				storeConfigIdForLaterUse(options, value);
 				return true;
 			case CONFIG_FILE_OPTION:
 				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
@@ -304,14 +325,20 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private void readConfigFromTeamscale(AgentOptions options,
-										 String configId) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void storeConfigIdForLaterUse(AgentOptions options, String configId) throws AgentOptionParseException {
 		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
 			throw new AgentOptionParseException(
 					"Has specified config-id '" + configId + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
 		}
 		options.teamscaleServer.configId = configId;
-		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, configId,
+	}
+
+	private void readConfigFromTeamscale(AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+		if(options.teamscaleServer.configId == null) {
+			return;
+		}
+
+		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, options.teamscaleServer.configId,
 				options.teamscaleServer.url,
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);
