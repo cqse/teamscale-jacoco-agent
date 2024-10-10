@@ -164,13 +164,7 @@ public class TestwiseCoverageAgentTest {
 	private AgentOptions mockOptions(int port) {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
-		when(options.getTeamscaleProxyOptions(any(ProxySystemProperties.Protocol.class))).thenAnswer(invocation -> {
-			if (Objects.requireNonNull(
-					(ProxySystemProperties.Protocol) invocation.getArguments()[0]) == ProxySystemProperties.Protocol.HTTP) {
-				return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP, new CommandLineLogger());
-			}
-			return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS, new CommandLineLogger());
-		});
+
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");

@@ -14,12 +14,10 @@ import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -361,8 +359,8 @@ public class AgentOptionsTest {
 	 * Temporary folder to create the password file for
 	 * {@link AgentOptionsTest#testTeamscaleProxyOptionsAreUsedWhileFetchingConfigFromTeamscale()}.
 	 */
-	@Rule
-	public TemporaryFolder temporaryFolder = new TemporaryFolder();
+	@TempDir
+	public File temporaryDirectory;
 
 	/**
 	 * Test that the proxy settings are put into system properties and used for fetching a profiler configuration from
@@ -384,10 +382,10 @@ public class AgentOptionsTest {
 
 
 			ProfilerConfiguration expectedProfilerConfiguration = new ProfilerConfiguration();
-			expectedProfilerConfiguration.configurationId = "bla";
-			expectedProfilerConfiguration.configurationOptions = "";
+			expectedProfilerConfiguration.configurationId = "config-id";
+			expectedProfilerConfiguration.configurationOptions = "mode=testwise\ntia-mode=disk";
 			ProfilerRegistration profilerRegistration = new ProfilerRegistration();
-			profilerRegistration.profilerId = "blub";
+			profilerRegistration.profilerId = "profiler-id";
 			profilerRegistration.profilerConfiguration = expectedProfilerConfiguration;
 
 			mockProxyServer.enqueue(new MockResponse().setResponseCode(407));
@@ -396,6 +394,7 @@ public class AgentOptionsTest {
 			AgentOptions agentOptions= parseProxyOptions("config-id=config,", ProxySystemProperties.Protocol.HTTP, expectedHost, expectedPort, expectedUser, unexpectedPassword, passwordFile);
 
 			assertThat(agentOptions.configurationViaTeamscale.getProfilerConfiguration().configurationId).isEqualTo(expectedProfilerConfiguration.configurationId);
+			assertThat(agentOptions.mode).isEqualTo(EMode.TESTWISE);
 
 			// 2 requests: one without proxy authentication, which failed (407), one with proxy authentication
 			assertThat(mockProxyServer.getRequestCount()).isEqualTo(2);
@@ -412,8 +411,7 @@ public class AgentOptionsTest {
 	}
 
 	private File writePasswortToPasswordFile(String expectedPassword) throws IOException {
-		temporaryFolder.create();
-		File passwordFile = temporaryFolder.newFile();
+		File passwordFile = new File(temporaryDirectory, "password.txt");
 
 		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(passwordFile));
 		bufferedWriter.write(expectedPassword);
