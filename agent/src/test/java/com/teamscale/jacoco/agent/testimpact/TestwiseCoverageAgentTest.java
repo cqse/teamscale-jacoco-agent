@@ -5,16 +5,13 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.PrioritizableTest;
 import com.teamscale.client.PrioritizableTestCluster;
-import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.ETestwiseCoverageMode;
-import com.teamscale.jacoco.agent.options.TeamscaleProxyOptions;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
-import com.teamscale.report.util.CommandLineLogger;
 import com.teamscale.tia.client.RunningTest;
 import com.teamscale.tia.client.TestRun;
 import com.teamscale.tia.client.TestRunWithClusteredSuggestions;
@@ -38,7 +35,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -164,13 +160,7 @@ public class TestwiseCoverageAgentTest {
 	private AgentOptions mockOptions(int port) {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient()).thenReturn(client);
-		when(options.getTeamscaleProxyOptions(any(ProxySystemProperties.Protocol.class))).thenAnswer(invocation -> {
-			if (Objects.requireNonNull(
-					(ProxySystemProperties.Protocol) invocation.getArguments()[0]) == ProxySystemProperties.Protocol.HTTP) {
-				return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP, new CommandLineLogger());
-			}
-			return new TeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS, new CommandLineLogger());
-		});
+
 
 		TeamscaleServer server = new TeamscaleServer();
 		server.commit = new CommitDescriptor("branch", "12345");
