@@ -109,6 +109,7 @@ public class AgentOptionsParser {
 		putTeamscaleProxyOptionsIntoSystemProperties(options);
 
 		handleConfigId(options);
+		handleConfigFile(options);
 
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
@@ -138,7 +139,9 @@ public class AgentOptionsParser {
 		}
 
 		readConfigFromTeamscale(options);
+	}
 
+	private void handleConfigFile(AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (environmentConfigFile != null) {
 			handleOptionPart(options, "config-file=" + environmentConfigFile);
 		}
@@ -254,7 +257,7 @@ public class AgentOptionsParser {
 			throws AgentOptionParseException, AgentOptionReceiveException {
 		switch (key) {
 			case "config-id":
-				storeConfigIdForLaterUse(options, value);
+				storeConfigId(options, value);
 				return true;
 			case CONFIG_FILE_OPTION:
 				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
@@ -325,7 +328,7 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private void storeConfigIdForLaterUse(AgentOptions options, String configId) throws AgentOptionParseException {
+	private void storeConfigId(AgentOptions options, String configId) throws AgentOptionParseException {
 		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
 			throw new AgentOptionParseException(
 					"Has specified config-id '" + configId + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
