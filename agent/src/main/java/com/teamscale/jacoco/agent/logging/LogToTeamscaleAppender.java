@@ -77,6 +77,11 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	private void sendLogs(List<ProfilerLogEntry> logs) {
 		CompletableFuture.runAsync(() -> {
 			try {
+				if (teamscaleClient == null) {
+					// There might be no connection configured.
+					return;
+				}
+
 				Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logs);
 				retrofit2.Response<Void> response = call.execute();
 				if (!response.isSuccessful()) {
@@ -90,6 +95,9 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 	@Override
 	public void stop() {
+		// Already flush here once to make sure that we do not miss too much.
+		flush();
+
 		scheduler.shutdown();
 		try {
 			if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -99,7 +107,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 			scheduler.shutdownNow();
 		}
 
-		// Ensure remaining logs are sent
+		// A final flush after the scheduler has been shut down.
 		flush();
 
 		super.stop();
@@ -118,10 +126,15 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	 * and enable/start it.
 	 */
 	public static void addTeamscaleAppenderTo(LoggerContext context, AgentOptions agentOptions) {
+		TeamscaleClient appenderTeamscaleClient = agentOptions.createTeamscaleClient();
+		if (appenderTeamscaleClient == null) {
+			LoggingUtils.getLogger(LogToTeamscaleAppender.class).error("Sending logs to Teamscale not possible. Misconfiguration.");
+		}
+
 		LogToTeamscaleAppender appender = new LogToTeamscaleAppender();
 		appender.setContext(context);
 		appender.setProfilerId(agentOptions.configurationViaTeamscale.getProfilerId());
-		appender.setTeamscaleClient(agentOptions.createTeamscaleClient());
+		appender.setTeamscaleClient(appenderTeamscaleClient);
 		appender.start();
 
 		Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
