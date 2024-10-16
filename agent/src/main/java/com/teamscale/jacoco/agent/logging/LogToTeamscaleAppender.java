@@ -91,7 +91,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 				Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logs);
 				retrofit2.Response<Void> response = call.execute();
 				if (!response.isSuccessful()) {
-					throw new RuntimeException("Failed to send log: HTTP error code : " + response.code());
+					throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
 				}
 			} catch (Exception e) {
 				System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
