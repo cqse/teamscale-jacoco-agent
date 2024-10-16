@@ -113,7 +113,7 @@ public class CoverageToTeamscaleStrategyTest {
 
 	private AgentOptions mockOptions() throws IOException {
 		AgentOptions options = mock(AgentOptions.class);
-		when(options.createTeamscaleClient()).thenReturn(client);
+		when(options.createTeamscaleClient(true)).thenReturn(client);
 		when(options.createNewFileInOutputDirectory(any(), any())).thenReturn(new File(tempDir, "test"));
 
 		TeamscaleServer server = new TeamscaleServer();
@@ -124,7 +124,7 @@ public class CoverageToTeamscaleStrategyTest {
 		server.partition = "partition";
 		when(options.getTeamscaleServerOptions()).thenReturn(server);
 
-		when(options.createTeamscaleClient()).thenReturn(client);
+		when(options.createTeamscaleClient(true)).thenReturn(client);
 		return options;
 	}
 

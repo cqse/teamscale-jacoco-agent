@@ -157,6 +157,7 @@ public class PreMain {
 
 		if (agentOptions.getTeamscaleServerOptions().isConfiguredForServerConnection()) {
 			LogToTeamscaleAppender.addTeamscaleAppenderTo(getLoggerContext(), agentOptions);
+			logger.info("Logs are being forwarded to Teamscale at " + agentOptions.getTeamscaleServerOptions().url);
 		}
 	}
 

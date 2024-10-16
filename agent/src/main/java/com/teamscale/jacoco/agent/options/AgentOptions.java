@@ -35,6 +35,7 @@ import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
 import com.teamscale.report.util.ILogger;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
@@ -378,8 +379,9 @@ public class AgentOptions {
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a
 	 * Teamscale connection.
 	 */
-	public TeamscaleClient createTeamscaleClient() {
-		if (teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload()) {
+	public @Nullable TeamscaleClient createTeamscaleClient(boolean requireSingleProjectUploadConfig) {
+		if (teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload() ||
+				!requireSingleProjectUploadConfig && teamscaleServer.isConfiguredForServerConnection()) {
 			return new TeamscaleClient(teamscaleServer.url.toString(), teamscaleServer.userName,
 					teamscaleServer.userAccessToken, teamscaleServer.project);
 		}

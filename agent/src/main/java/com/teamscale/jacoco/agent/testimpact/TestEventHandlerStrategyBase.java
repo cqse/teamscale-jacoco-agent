@@ -41,7 +41,7 @@ public abstract class TestEventHandlerStrategyBase {
 	protected TestEventHandlerStrategyBase(AgentOptions agentOptions, JacocoRuntimeController controller) {
 		this.controller = controller;
 		this.agentOptions = agentOptions;
-		this.teamscaleClient = agentOptions.createTeamscaleClient();
+		this.teamscaleClient = agentOptions.createTeamscaleClient(true);
 	}
 
 	/** Called when test test with the given name is about to start. */
