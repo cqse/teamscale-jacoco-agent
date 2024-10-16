@@ -8,11 +8,13 @@ import com.teamscale.client.ProfilerLogEntry;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.conqat.lib.commons.collections.IdentityHashSet;
 import retrofit2.Call;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
@@ -34,6 +36,9 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 	/** Scheduler for sending logs after the configured time interval */
 	private final ScheduledExecutorService scheduler;
+
+	/** Active log flushing threads */
+	private final Set<CompletableFuture<Void>> activeLogFlushes = new IdentityHashSet<>();
 
 	public LogToTeamscaleAppender() {
 		this.scheduler = Executors.newScheduledThreadPool(1, r -> {
@@ -81,7 +86,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 	/** Send logs in a separate thread */
 	private void sendLogs(List<ProfilerLogEntry> logs) {
-		CompletableFuture.runAsync(() -> {
+		activeLogFlushes.add(CompletableFuture.runAsync(() -> {
 			try {
 				if (teamscaleClient == null) {
 					// There might be no connection configured.
@@ -96,7 +101,9 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 			} catch (Exception e) {
 				System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
 			}
-		});
+		}).whenComplete((result, throwable) -> {
+			activeLogFlushes.removeIf(CompletableFuture::isDone);
+		}));
 	}
 
 	@Override
@@ -115,6 +122,9 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 		// A final flush after the scheduler has been shut down.
 		flush();
+
+		// Block until all flushes are done
+		CompletableFuture.allOf(activeLogFlushes.toArray(new CompletableFuture[0])).join();
 
 		super.stop();
 	}

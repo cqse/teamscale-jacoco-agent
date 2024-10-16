@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
-import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.logging.LogToTeamscaleAppender;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
@@ -13,7 +12,6 @@ import com.teamscale.jacoco.agent.options.TeamscaleCredentials;
 import com.teamscale.jacoco.agent.options.TeamscalePropertiesUtils;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.UploaderException;
-import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
