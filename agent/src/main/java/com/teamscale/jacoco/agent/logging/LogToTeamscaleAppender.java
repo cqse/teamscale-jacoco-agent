@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.conqat.lib.commons.collections.IdentityHashSet;
 import retrofit2.Call;
 
+import java.net.ConnectException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +58,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 		super.start();
 		scheduler.scheduleAtFixedRate(() -> {
 			synchronized (activeLogFlushes) {
+				activeLogFlushes.removeIf(CompletableFuture::isDone);
 				if (this.activeLogFlushes.isEmpty()) {
 					flush();
 				}
@@ -114,10 +116,15 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 						logsToSend.forEach(logBuffer::remove);
 					}
 				} catch (Exception e) {
-					System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
+					// We do not report on connection exceptions here.
+					if (!(e instanceof ConnectException)) {
+						System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
+					}
 				}
 			}).whenComplete((result, throwable) -> {
-				activeLogFlushes.removeIf(CompletableFuture::isDone);
+				synchronized (activeLogFlushes) {
+					activeLogFlushes.removeIf(CompletableFuture::isDone);
+				}
 			}));
 		}
 	}
