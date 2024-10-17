@@ -146,6 +146,28 @@ public interface ITeamscaleService {
 	);
 
 	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with. */
+	@Deprecated
+	@POST("api/v9.4.0/running-profilers")
+	Call<ProfilerRegistration> registerProfilerLegacy(
+			@Query("configuration-id") String configurationId,
+			@Body ProcessInformation processInformation
+	);
+
+	/** Updates the profiler infos and sets the profiler to still alive. */
+	@Deprecated
+	@PUT("api/v9.4.0/running-profilers/{profilerId}")
+	Call<ResponseBody> sendHeartbeatLegacy(
+			@Path("profilerId") String profilerId,
+			@Body ProfilerInfo profilerInfo
+	);
+
+	/** Removes the profiler identified by given ID. */
+	@Deprecated
+	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
+	Call<ResponseBody> unregisterProfilerLegacy(@Path("profilerId") String profilerId);
+
+
+	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with. */
 	@POST("api/v2024.7.0/profilers")
 	Call<ProfilerRegistration> registerProfiler(
 			@Query("configuration-id") String configurationId,
