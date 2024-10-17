@@ -13,6 +13,8 @@ import retrofit2.Call;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -31,8 +33,9 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	/** The service client for sending logs to Teamscale */
 	private TeamscaleClient teamscaleClient;
 
-	/** Buffer for unsent logs */
-	private final List<ProfilerLogEntry> logBuffer = new ArrayList<>();
+	/** Buffer for unsent logs. We use a set here to allow for removing
+	 * entries fast after sending them to Teamscale was successful. */
+	private final LinkedHashSet<ProfilerLogEntry> logBuffer = new LinkedHashSet<>();
 
 	/** Scheduler for sending logs after the configured time interval */
 	private final ScheduledExecutorService scheduler;
@@ -52,7 +55,13 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	@Override
 	public void start() {
 		super.start();
-		scheduler.scheduleAtFixedRate(this::flush, FLUSH_INTERVAL.toMillis(), FLUSH_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
+		scheduler.scheduleAtFixedRate(() -> {
+			synchronized (activeLogFlushes) {
+				if (this.activeLogFlushes.isEmpty()) {
+					flush();
+				}
+			}
+		}, FLUSH_INTERVAL.toMillis(), FLUSH_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -79,31 +88,38 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 				return;
 			}
 			logsToSend = new ArrayList<>(logBuffer);
-			logBuffer.clear();
 		}
 		sendLogs(logsToSend);
 	}
 
 	/** Send logs in a separate thread */
-	private void sendLogs(List<ProfilerLogEntry> logs) {
-		activeLogFlushes.add(CompletableFuture.runAsync(() -> {
-			try {
-				if (teamscaleClient == null) {
-					// There might be no connection configured.
-					return;
-				}
+	private void sendLogs(List<ProfilerLogEntry> logsToSend) {
+		synchronized (activeLogFlushes) {
+			activeLogFlushes.add(CompletableFuture.runAsync(() -> {
+				try {
+					if (teamscaleClient == null) {
+						// There might be no connection configured.
+						return;
+					}
 
-				Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logs);
-				retrofit2.Response<Void> response = call.execute();
-				if (!response.isSuccessful()) {
-					throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
+					Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logsToSend);
+					retrofit2.Response<Void> response = call.execute();
+					if (!response.isSuccessful()) {
+						throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
+					}
+
+					synchronized (logBuffer) {
+						// Removing the logs that have been sent after the fact.
+						// This handles problems with lost network connections.
+						logsToSend.forEach(logBuffer::remove);
+					}
+				} catch (Exception e) {
+					System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
 				}
-			} catch (Exception e) {
-				System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
-			}
-		}).whenComplete((result, throwable) -> {
-			activeLogFlushes.removeIf(CompletableFuture::isDone);
-		}));
+			}).whenComplete((result, throwable) -> {
+				activeLogFlushes.removeIf(CompletableFuture::isDone);
+			}));
+		}
 	}
 
 	@Override
