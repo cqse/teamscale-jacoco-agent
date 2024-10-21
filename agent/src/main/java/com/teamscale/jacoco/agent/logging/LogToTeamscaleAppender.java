@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.status.ErrorStatus;
 import com.teamscale.client.ProfilerLogEntry;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -14,11 +15,13 @@ import retrofit2.Call;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.teamscale.jacoco.agent.logging.LoggingUtils.getStackTraceFromEvent;
 
 public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
@@ -43,6 +46,10 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 	/** Active log flushing threads */
 	private final Set<CompletableFuture<Void>> activeLogFlushes = new IdentityHashSet<>();
+
+	/** Is performing a flush right now? */
+	private final AtomicBoolean isFlusing = new AtomicBoolean(false);
+
 
 	public LogToTeamscaleAppender() {
 		this.scheduler = Executors.newScheduledThreadPool(1, r -> {
@@ -80,45 +87,48 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 		long timestamp = eventObject.getTimeStamp();
 		String message = eventObject.getFormattedMessage();
 		String severity = eventObject.getLevel().toString();
-		return new ProfilerLogEntry(timestamp, message, severity);
+		String details = getStackTraceFromEvent(eventObject);
+		return new ProfilerLogEntry(timestamp, message, details, severity);
 	}
 
 	private void flush() {
-		List<ProfilerLogEntry> logsToSend;
-		synchronized (logBuffer) {
-			if (logBuffer.isEmpty()) {
-				return;
-			}
-			logsToSend = new ArrayList<>(logBuffer);
-		}
-		sendLogs(logsToSend);
+		sendLogs();
 	}
 
 	/** Send logs in a separate thread */
-	private void sendLogs(List<ProfilerLogEntry> logsToSend) {
+	private void sendLogs() {
 		synchronized (activeLogFlushes) {
 			activeLogFlushes.add(CompletableFuture.runAsync(() -> {
-				try {
-					if (teamscaleClient == null) {
-						// There might be no connection configured.
-						return;
-					}
+				if (isFlusing.compareAndSet(false, true)) {
+					try {
+						if (teamscaleClient == null) {
+							// There might be no connection configured.
+							return;
+						}
 
-					Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logsToSend);
-					retrofit2.Response<Void> response = call.execute();
-					if (!response.isSuccessful()) {
-						throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
-					}
+						List<ProfilerLogEntry> logsToSend;
+						synchronized (logBuffer) {
+							logsToSend = new ArrayList<>(logBuffer);
+						}
 
-					synchronized (logBuffer) {
-						// Removing the logs that have been sent after the fact.
-						// This handles problems with lost network connections.
-						logsToSend.forEach(logBuffer::remove);
-					}
-				} catch (Exception e) {
-					// We do not report on connection exceptions here.
-					if (!(e instanceof ConnectException)) {
-						System.err.println("Sending logs to Teamscale failed: " + e.getMessage());
+						Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logsToSend);
+						retrofit2.Response<Void> response = call.execute();
+						if (!response.isSuccessful()) {
+							throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
+						}
+
+						synchronized (logBuffer) {
+							// Removing the logs that have been sent after the fact.
+							// This handles problems with lost network connections.
+							logsToSend.forEach(logBuffer::remove);
+						}
+					} catch (Exception e) {
+						// We do not report on exceptions here.
+						if (!(e instanceof ConnectException)) {
+							addStatus(new ErrorStatus("Sending logs to Teamscale failed: " + e.getMessage(), this, e));
+						}
+					} finally {
+						isFlusing.set(false);
 					}
 				}
 			}).whenComplete((result, throwable) -> {

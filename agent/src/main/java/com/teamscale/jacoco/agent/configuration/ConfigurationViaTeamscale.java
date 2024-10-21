@@ -125,7 +125,8 @@ public class ConfigurationViaTeamscale {
 		}
 	}
 
-	private void unregisterProfiler() {
+	/** Unregisters the profiler in Teamscale (marks it as shut down). */
+	public void unregisterProfiler() {
 		try {
 			Response<ResponseBody> response = teamscaleClient.unregisterProfiler(profilerId).execute();
 			if (response.code() == 405) {

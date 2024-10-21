@@ -17,9 +17,9 @@ import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.conqat.lib.commons.collections.CollectionUtils;
+import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -69,9 +69,27 @@ public class PreMain {
 			return;
 		}
 
-		AgentOptions agentOptions;
+		AgentOptions agentOptions = null;
 		try {
-			agentOptions = getAndApplyAgentOptions(options, environmentConfigId, environmentConfigFile);
+			Pair<AgentOptions, List<Exception>> parseResult = getAndApplyAgentOptions(options, environmentConfigId,
+					environmentConfigFile);
+			agentOptions = parseResult.getFirst();
+
+			for (Exception exception : parseResult.getSecond()) {
+				throw new AgentOptionParseException("Failed to parse options: " + exception.getMessage(), exception);
+			}
+		} catch (AgentOptionParseException e) {
+			getLoggerContext().getLogger(PreMain.class).error(e.getMessage());
+
+			// Flush logs to Teamscale, if configured.
+			closeLoggingResources();
+
+			// Unregister the profiler from Teamscale.
+			if (agentOptions != null && agentOptions.configurationViaTeamscale != null) {
+				agentOptions.configurationViaTeamscale.unregisterProfiler();
+			}
+
+			throw e;
 		} catch (AgentOptionReceiveException e) {
 			// When Teamscale is not available, we don't want to fail hard to still allow for testing even if no
 			// coverage is collected (see TS-33237)
@@ -92,8 +110,7 @@ public class PreMain {
 		agent.registerShutdownHook();
 	}
 
-	@NotNull
-	private static AgentOptions getAndApplyAgentOptions(String options, String environmentConfigId,
+	private static Pair<AgentOptions, List<Exception>> getAndApplyAgentOptions(String options, String environmentConfigId,
 														String environmentConfigFile) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
 
 		DelayedLogger delayedLogger = new DelayedLogger();
@@ -110,9 +127,13 @@ public class PreMain {
 		if (credentials == null) {
 			delayedLogger.warn("Did not find a teamscale.properties file!");
 		}
+
+		Pair<AgentOptions, List<Exception>> parseResult;
 		AgentOptions agentOptions;
 		try {
-			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials, delayedLogger);
+			parseResult = AgentOptionsParser.parse(
+					options, environmentConfigId, environmentConfigFile, credentials, delayedLogger);
+			agentOptions = parseResult.getFirst();
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
@@ -133,7 +154,9 @@ public class PreMain {
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
-		return agentOptions;
+
+
+		return parseResult;
 	}
 
 	private static void attemptLogAndThrow(DelayedLogger delayedLogger) {
@@ -197,7 +220,7 @@ public class PreMain {
 	 * this and falls back to the default logger.
 	 */
 	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions,
-																		   DelayedLogger delayedLogger) {
+			DelayedLogger delayedLogger) {
 		if (premainOptions == null) {
 			return LoggingUtils.initializeDefaultLogging();
 		}
