@@ -79,7 +79,7 @@ public class PreMain {
 				throw new AgentOptionParseException("Failed to parse options: " + exception.getMessage(), exception);
 			}
 		} catch (AgentOptionParseException e) {
-			getLoggerContext().getLogger(PreMain.class).error(e.getMessage());
+			getLoggerContext().getLogger(PreMain.class).error(e.getMessage(), e);
 
 			// Flush logs to Teamscale, if configured.
 			closeLoggingResources();

@@ -84,11 +84,11 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	}
 
 	private ProfilerLogEntry formatLog(ILoggingEvent eventObject) {
+		String trace = getStackTraceFromEvent(eventObject);
 		long timestamp = eventObject.getTimeStamp();
 		String message = eventObject.getFormattedMessage();
 		String severity = eventObject.getLevel().toString();
-		String details = getStackTraceFromEvent(eventObject);
-		return new ProfilerLogEntry(timestamp, message, details, severity);
+		return new ProfilerLogEntry(timestamp, message, trace, severity);
 	}
 
 	private void flush() {
