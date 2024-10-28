@@ -129,7 +129,6 @@ public class PreMain {
 		initializeLogging(agentOptions, delayedLogger);
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
-		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 		return agentOptions;
 	}
 

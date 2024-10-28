@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleProxySystemProperties;
@@ -107,6 +108,7 @@ public class AgentOptionsParser {
 		// we have to put the proxy options into system properties before reading the configuration from Teamscale as we
 		// might need them to connect to Teamscale
 		putTeamscaleProxyOptionsIntoSystemProperties(options);
+		HttpUtils.setShouldValidateSsl(options.shouldValidateSsl());
 
 		handleConfigId(options);
 		handleConfigFile(options);
