@@ -121,7 +121,7 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 			if (execution == null) {
 				return null;
 			} else {
-				return execution.getUniformPath();
+				return execution.uniformPath;
 			}
 		}).collect(toList());
 
@@ -132,10 +132,9 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 		reportGenerator.updateClassDirCache();
 		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
 		logger.debug("Created testwise coverage report (containing coverage for tests `{}`)",
-				testwiseCoverage.getTests().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
+				testwiseCoverage.getTests().values().stream().map(test -> test.uniformPath).collect(toList()));
 
-		TestwiseCoverageReport report = TestwiseCoverageReportBuilder
-				.createFrom(availableTests, testwiseCoverage.getTests(), testExecutions, partial);
+		TestwiseCoverageReport report = TestwiseCoverageReportBuilder.createFrom(availableTests, testwiseCoverage.getTests().values(), testExecutions, partial);
 
 		testExecFile.delete();
 		testExecFile = null;

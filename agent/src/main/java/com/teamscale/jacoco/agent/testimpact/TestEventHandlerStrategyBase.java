@@ -65,7 +65,7 @@ public abstract class TestEventHandlerStrategyBase {
 	public TestInfo testEnd(String test,
 							TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		if (testExecution != null) {
-			testExecution.setUniformPath(test);
+			testExecution.uniformPath = test;
 			if (startTimestamp != -1) {
 				long endTimestamp = System.currentTimeMillis();
 				testExecution.setDurationMillis(endTimestamp - startTimestamp);

@@ -60,15 +60,15 @@ public class JaCoCoTestwiseReportGeneratorTest extends TestDataBase {
 	/** Generates a dummy coverage report object that wraps the given {@link TestwiseCoverage}. */
 	public static TestwiseCoverageReport generateDummyReportFrom(TestwiseCoverage testwiseCoverage) {
 		ArrayList<TestDetails> testDetails = new ArrayList<>();
-		for (TestCoverageBuilder test : testwiseCoverage.getTests()) {
-			testDetails.add(new TestDetails(test.getUniformPath(), "/path/to/source", "content"));
+		for (TestCoverageBuilder test : testwiseCoverage.getTests().values()) {
+			testDetails.add(new TestDetails(test.uniformPath, "/path/to/source", "content"));
 		}
 		ArrayList<TestExecution> testExecutions = new ArrayList<>();
-		for (TestCoverageBuilder test : testwiseCoverage.getTests()) {
-			testExecutions.add(new TestExecution(test.getUniformPath(), test.getUniformPath().length(),
+		for (TestCoverageBuilder test : testwiseCoverage.getTests().values()) {
+			testExecutions.add(new TestExecution(test.uniformPath, test.uniformPath.length(),
 					ETestExecutionResult.PASSED));
 		}
-		return TestwiseCoverageReportBuilder.createFrom(testDetails, testwiseCoverage.getTests(), testExecutions, true);
+		return TestwiseCoverageReportBuilder.Companion.createFrom(testDetails, testwiseCoverage.getTests().values(), testExecutions, true);
 	}
 
 }
