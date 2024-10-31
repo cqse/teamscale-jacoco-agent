@@ -23,10 +23,5 @@ interface ILogger {
 	fun error(throwable: Throwable)
 
 	/** Logs at error level. The given [Throwable] may be null. */
-	fun error(message: String, throwable: Throwable?)
-}
-
-/** Default implementation for `error(String message)` method. */
-fun ILogger.error(message: String) {
-	error(message, null)
+	fun error(message: String, throwable: Throwable? = null)
 }

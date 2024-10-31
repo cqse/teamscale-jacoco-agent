@@ -8,7 +8,6 @@ package com.teamscale.report.jacoco
 import com.teamscale.report.util.BashFileSkippingInputStream
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
-import com.teamscale.report.util.error
 import org.jacoco.core.analysis.ICoverageVisitor
 import org.jacoco.core.data.ExecutionDataStore
 import java.io.IOException
