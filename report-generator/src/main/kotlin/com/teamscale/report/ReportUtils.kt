@@ -65,7 +65,7 @@ object ReportUtils {
 		for (file: File? in files) {
 			val t: Array<T>? = JsonUtils.deserializeFile(file, clazz)
 			if (t != null) {
-				result.addAll(Arrays.asList(*t))
+				result.addAll(listOf(*t))
 			}
 		}
 		return result

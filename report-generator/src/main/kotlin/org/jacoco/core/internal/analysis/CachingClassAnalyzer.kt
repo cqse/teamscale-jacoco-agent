@@ -11,23 +11,19 @@ import org.objectweb.asm.tree.MethodNode
  *
  * A probe lookup holds for a single class which probe belongs to which lines. The actual filling of the
  * [ClassCoverageLookup] happens in [CachingInstructionsBuilder].
- */
-class CachingClassAnalyzer
-/**
- * Creates a new analyzer that builds coverage data for a class.
  *
  * @param classCoverageLookup cache for the class' probes
  * @param coverage            coverage node for the analyzed class data
  * @param stringPool          shared pool to minimize the number of [String] instances
- */(
-	/** The cache, which contains a probe lookups for the current class.  */
+ */
+class CachingClassAnalyzer(
 	private val classCoverageLookup: ClassCoverageLookup,
 	coverage: ClassCoverageImpl?,
 	stringPool: StringPool?
 ) : ClassAnalyzer(coverage, null, stringPool) {
 	override fun visitSource(source: String?, debug: String?) {
 		super.visitSource(source, debug)
-		classCoverageLookup.setSourceFileName(source)
+		classCoverageLookup.sourceFileName = source
 	}
 
 	override fun visitMethod(
@@ -45,9 +41,5 @@ class CachingClassAnalyzer
 				builder.fillCache()
 			}
 		}
-	}
-
-	override fun visitTotalProbeCount(count: Int) {
-		classCoverageLookup.setTotalProbeCount(count)
 	}
 }

@@ -3,7 +3,6 @@ package com.teamscale.report.testwise.jacoco.cache
 import com.teamscale.client.StringUtils
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
 import com.teamscale.report.util.ILogger
-import com.teamscale.report.util.SortedIntList
 import org.jacoco.core.data.ExecutionData
 
 /**
@@ -11,53 +10,21 @@ import org.jacoco.core.data.ExecutionData
  *
  *
  *
- *  *  Create an instance of this class for every analyzed java class.
- *  *  Set the file name of the java source file from which the class has been created.
- *  *  Then call [.addProbe] for all probes and lines that belong to that probe.
- *  *  Afterwards call [.getFileCoverage] to transform probes ([ ]) for this class into covered lines ([FileCoverageBuilder]).
- *
- */
-class ClassCoverageLookup
-/**
- * Constructor.
+ * Create an instance of this class for every analyzed java class.
+ * Set the file name of the java source file from which the class has been created.
+ * Then call [.addProbe] for all probes and lines that belong to that probe.
+ * Afterwards call [.getFileCoverage] to transform probes ([ ]) for this class into covered lines ([FileCoverageBuilder]).
  *
  * @param className Classname as stored in the bytecode e.g. com/company/Example
- */ internal constructor(
-	/** Fully qualified name of the class (with / as separators).  */
+ */
+class ClassCoverageLookup internal constructor(
 	private val className: String
 ) {
-	/** Name of the java source file.  */
-	private var sourceFileName: String? = null
+	var sourceFileName: String? = null
+	private val probes = mutableMapOf<Int, MutableSet<Int>>()
 
-	/**
-	 * Mapping from probe IDs to sets of covered lines. The index in this list corresponds to the probe ID.
-	 */
-	private val probes: MutableList<SortedIntList?> = ArrayList()
-
-	/** Sets the file name of the currently analyzed class (without path).  */
-	fun setSourceFileName(sourceFileName: String?) {
-		this.sourceFileName = sourceFileName
-	}
-
-	/** Adjusts the size of the probes list to the total probes count.  */
-	fun setTotalProbeCount(count: Int) {
-		ensureArraySize(count - 1)
-	}
-
-	/** Adds the probe with the given id to the method.  */
-	fun addProbe(probeId: Int, lines: SortedIntList?) {
-		ensureArraySize(probeId)
-		probes.set(probeId, lines)
-	}
-
-	/**
-	 * Ensures that the probes list is big enough to allow access to the given index. Intermediate list entries are
-	 * filled with null.
-	 */
-	private fun ensureArraySize(index: Int) {
-		while (index >= probes.size) {
-			probes.add(null)
-		}
+	fun addProbe(probeId: Int, lines: Set<Int>) {
+		probes[probeId] = lines.toSortedSet()
 	}
 
 	/**
@@ -66,71 +33,40 @@ class ClassCoverageLookup
 	 * object which is later merged with the [FileCoverageBuilder] of other classes that reside in the same file.
 	 */
 	@Throws(CoverageGenerationException::class)
-	fun getFileCoverage(
-		executionData: ExecutionData,
-		logger: ILogger
-	): FileCoverageBuilder? {
-		val executedProbes: BooleanArray = executionData.getProbes()
+	fun getFileCoverage(executionData: ExecutionData, logger: ILogger): FileCoverageBuilder? {
+		val executedProbes = executionData.probes
 
-		if (checkProbeInvariant(executedProbes)) {
-			throw CoverageGenerationException(
-				"Probe lookup does not match with actual probe size for " +
-						sourceFileName + " " + className + " (" + probes.size + " vs " + executedProbes.size + ")! " +
-						"This is a bug in the profiler tooling. Please report it back to CQSE."
+		when {
+			probes.size > executedProbes.size -> throw CoverageGenerationException(
+				"Probe lookup does not match with actual probe size for $sourceFileName $className (${probes.size} vs ${executedProbes.size})! This is a bug in the profiler tooling. Please report it back to CQSE."
 			)
-		}
-		if (sourceFileName == null) {
-			logger.warn(
-				"No source file name found for class " + className + "! This class was probably not compiled with " +
-						"debug information enabled!"
-			)
-			return null
+			sourceFileName == null -> {
+				logger.warn("No source file name found for class $className! This class was probably not compiled with debug information enabled!")
+				return null
+			}
 		}
 
-		// we model the default package as the empty string
-		var packageName: String = ""
-		if (className.contains("/")) {
-			packageName = StringUtils.removeLastPart(className, '/')
+		val packageName = if (className.contains("/")) StringUtils.removeLastPart(className, '/') else ""
+		return FileCoverageBuilder(packageName, sourceFileName!!).apply {
+			fillFileCoverage(this, executedProbes, logger)
 		}
-		val fileCoverage: FileCoverageBuilder = FileCoverageBuilder(
-			packageName,
-			sourceFileName!!
-		)
-		fillFileCoverage(fileCoverage, executedProbes, logger)
-
-		return fileCoverage
 	}
 
 	private fun fillFileCoverage(fileCoverage: FileCoverageBuilder, executedProbes: BooleanArray, logger: ILogger) {
-		for (i in probes.indices) {
-			val coveredLines: SortedIntList? = probes.get(i)
-			if (!executedProbes.get(i)) {
-				continue
-			}
-			// coveredLines is null if the probe is outside of a method
-			// Happens e.g. for methods generated by Lombok
-			if (coveredLines == null) {
+		probes.forEach { (probeId, coveredLines) ->
+			if (executedProbes.getOrNull(probeId) == true) {
+				when {
+					coveredLines.isEmpty() -> logger.debug(
+						"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
+					)
+					else -> fileCoverage.addLines(coveredLines)
+				}
+			} else {
 				logger.info(
-					sourceFileName + " " + className + " did contain a covered probe " + i + "(of " +
-							executedProbes.size + ") that could not be " +
-							"matched to any method. This could be a bug in the profiler tooling. Please report it back " +
-							"to CQSE."
+					"$sourceFileName $className contains a covered probe $probeId that could not be matched to any method. " +
+							"This could be a bug in the profiler tooling. Please report it back to CQSE."
 				)
-				continue
 			}
-			if (coveredLines.isEmpty) {
-				logger.debug(
-					sourceFileName + " " + className + " did contain a method with no line information. " +
-							"Does the class contain debug information?"
-				)
-				continue
-			}
-			fileCoverage.addLines(coveredLines)
 		}
-	}
-
-	/** Checks that the executed probes is not smaller than the cached probes.  */
-	private fun checkProbeInvariant(executedProbes: BooleanArray): Boolean {
-		return probes.size > executedProbes.size
 	}
 }
