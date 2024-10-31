@@ -132,7 +132,7 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 		reportGenerator.updateClassDirCache();
 		TestwiseCoverage testwiseCoverage = reportGenerator.convert(testExecFile);
 		logger.debug("Created testwise coverage report (containing coverage for tests `{}`)",
-				testwiseCoverage.getTests().values().stream().map(test -> test.uniformPath).collect(toList()));
+				testwiseCoverage.getTests().values().stream().map(TestCoverageBuilder::getUniformPath).collect(toList()));
 
 		TestwiseCoverageReport report = TestwiseCoverageReportBuilder.createFrom(availableTests, testwiseCoverage.getTests().values(), testExecutions, partial);
 

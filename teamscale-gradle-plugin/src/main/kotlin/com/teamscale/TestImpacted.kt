@@ -11,6 +11,7 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
+import org.gradle.kotlin.dsl.withType
 import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
@@ -203,7 +204,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		return project.configurations
 			.getByName("testRuntimeClasspath")
 			.allDependencies
-			.withType(ProjectDependency::class.java)
+			.withType<ProjectDependency>()
 			.map { it.dependencyProject }
 			.flatMap { collectAllDependentJavaProjects(it, seenProjects) }
 			.union(listOf(project))
@@ -219,10 +220,10 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		if (runImpacted) {
 			assert(endCommit != null) { "When executing only impacted tests a branchName and timestamp must be specified!" }
 			serverConfiguration.validate()
-			writeEngineProperty("server.url", serverConfiguration.url!!)
-			writeEngineProperty("server.project", serverConfiguration.project!!)
-			writeEngineProperty("server.userName", serverConfiguration.userName!!)
-			writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken!!)
+			writeEngineProperty("server.url", serverConfiguration.url)
+			writeEngineProperty("server.project", serverConfiguration.project)
+			writeEngineProperty("server.userName", serverConfiguration.userName)
+			writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken)
 		}
 		writeEngineProperty("partition", report.partition.get())
 		writeEngineProperty("endCommit", endCommit?.toString())
