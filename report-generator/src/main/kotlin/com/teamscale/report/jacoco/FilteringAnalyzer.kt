@@ -8,6 +8,7 @@ package com.teamscale.report.jacoco
 import com.teamscale.report.util.BashFileSkippingInputStream
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
+import com.teamscale.report.util.error
 import org.jacoco.core.analysis.ICoverageVisitor
 import org.jacoco.core.data.ExecutionDataStore
 import java.io.IOException
@@ -20,9 +21,11 @@ import java.util.zip.ZipInputStream
  */
 /* package */
 open class FilteringAnalyzer(
-	executionData: ExecutionDataStore?, coverageVisitor: ICoverageVisitor?,
+	executionData: ExecutionDataStore?,
+	coverageVisitor: ICoverageVisitor?,
 	/** The filter for the analyzed class files.  */
-	private val locationIncludeFilter: ClasspathWildcardIncludeFilter, private val logger: ILogger
+	private val locationIncludeFilter: ClasspathWildcardIncludeFilter,
+	private val logger: ILogger
 ) : OpenAnalyzer(executionData, coverageVisitor) {
 	/** {@inheritDoc}  */
 	@Throws(IOException::class)

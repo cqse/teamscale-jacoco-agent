@@ -8,6 +8,7 @@ import com.teamscale.report.testwise.jacoco.cache.ProbesCache
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
+import com.teamscale.report.util.error
 import org.jacoco.core.data.ExecutionData
 import org.jacoco.core.data.ExecutionDataStore
 import java.io.File
