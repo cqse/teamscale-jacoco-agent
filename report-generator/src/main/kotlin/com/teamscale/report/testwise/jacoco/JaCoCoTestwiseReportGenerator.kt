@@ -59,8 +59,9 @@ open class JaCoCoTestwiseReportGenerator(
 	@Throws(CoverageGenerationException::class)
 	open fun convert(dump: Dump): TestCoverageBuilder? {
 		val testCoverageBuilders = mutableListOf<TestCoverageBuilder>()
-		val dumpConsumer = executionDataReader.buildCoverageConsumer(locationIncludeFilter, testCoverageBuilders::add)
-		dumpConsumer.accept(dump)
+		executionDataReader
+			.buildCoverageConsumer(locationIncludeFilter, testCoverageBuilders::add)
+			.accept(dump)
 		return testCoverageBuilders.singleOrNull()
 	}
 

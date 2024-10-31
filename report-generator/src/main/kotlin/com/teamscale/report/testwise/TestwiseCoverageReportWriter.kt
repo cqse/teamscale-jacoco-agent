@@ -49,7 +49,7 @@ class TestwiseCoverageReportWriter(
 
 	@Throws(IOException::class)
 	override fun close() {
-		for (testInfo: TestInfo? in testInfoFactory.createTestInfosWithoutCoverage()) {
+		testInfoFactory.createTestInfosWithoutCoverage().forEach { testInfo ->
 			writeTestInfo(testInfo)
 		}
 		endReport()
@@ -58,18 +58,18 @@ class TestwiseCoverageReportWriter(
 	@Throws(IOException::class)
 	private fun startReport() {
 		testFileCounter++
-		val outputStream: OutputStream = Files.newOutputStream(getOutputFile(testFileCounter).toPath())
-		jsonGenerator = JsonUtils.createFactory().createGenerator(outputStream)
-		jsonGenerator?.setPrettyPrinter(DefaultPrettyPrinter())
-		jsonGenerator?.writeStartObject()
-		jsonGenerator?.writeFieldName("tests")
-		jsonGenerator?.writeStartArray()
+		val outputStream = Files.newOutputStream(getOutputFile(testFileCounter).toPath())
+		jsonGenerator = JsonUtils.createFactory().createGenerator(outputStream).apply {
+			prettyPrinter = DefaultPrettyPrinter()
+			writeStartObject()
+			writeFieldName("tests")
+			writeStartArray()
+		}
 	}
 
 	private fun getOutputFile(testFileCounter: Int): File {
-		var name: String = outputFile.getName()
-		name = StringUtils.stripSuffix(name, ".json")
-		name = name + "-" + testFileCounter + ".json"
+		var name = StringUtils.stripSuffix(outputFile.getName(), ".json")
+		name = "$name-$testFileCounter.json"
 		return File(outputFile.getParent(), name)
 	}
 
@@ -80,14 +80,16 @@ class TestwiseCoverageReportWriter(
 			testsWritten = 0
 			startReport()
 		}
-		jsonGenerator!!.writeObject(testInfo)
+		jsonGenerator?.writeObject(testInfo)
 		testsWritten++
 	}
 
 	@Throws(IOException::class)
 	private fun endReport() {
-		jsonGenerator!!.writeEndArray()
-		jsonGenerator!!.writeEndObject()
-		jsonGenerator!!.close()
+		jsonGenerator?.let {
+			it.writeEndArray()
+			it.writeEndObject()
+			it.close()
+		}
 	}
 }

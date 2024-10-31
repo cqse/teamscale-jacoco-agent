@@ -14,24 +14,20 @@ import java.util.stream.Collectors
 /**
  * Applies ANT include and exclude patterns to paths.
  */
-class AntPatternIncludeFilter(locationIncludeFilters: List<String?>, locationExcludeFilters: List<String?>) :
-	Predicate<String> {
+class AntPatternIncludeFilter(
+	locationIncludeFilters: List<String>,
+	locationExcludeFilters: List<String>
+) : Predicate<String> {
 	/** The include filters. Empty means include everything.  */
 	private val locationIncludeFilters: List<Pattern> =
-		locationIncludeFilters.stream().map { filter: String? -> AntPatternUtils.convertPattern(filter, false) }
-			.collect(Collectors.toList())
+		locationIncludeFilters.map { AntPatternUtils.convertPattern(it, false) }
 
 	/** The exclude filters. Empty means exclude nothing.  */
 	private val locationExcludeFilters: List<Pattern> =
-		locationExcludeFilters.stream().map { filter: String? -> AntPatternUtils.convertPattern(filter, false) }
-			.collect(
-				Collectors.toList()
-			)
+		locationExcludeFilters.map { AntPatternUtils.convertPattern(it, false) }
 
 	/** {@inheritDoc}  */
-	override fun test(path: String): Boolean {
-		return !isFiltered(FileSystemUtils.normalizeSeparators(path))
-	}
+	override fun test(path: String) = !isFiltered(FileSystemUtils.normalizeSeparators(path))
 
 	/**
 	 * Returns `true` if the given class file location (normalized to forward slashes as path separators)
@@ -42,12 +38,11 @@ class AntPatternIncludeFilter(locationIncludeFilters: List<String?>, locationExc
 	 */
 	private fun isFiltered(location: String): Boolean {
 		// first check includes
-		if (!locationIncludeFilters.isEmpty()
-			&& locationIncludeFilters.stream().noneMatch { filter: Pattern -> filter.matcher(location).matches() }
-		) {
+		val noneIncludes = locationIncludeFilters.none { it.matcher(location).matches() }
+		if (locationIncludeFilters.isNotEmpty() && noneIncludes) {
 			return true
 		}
 		// only if they match, check excludes
-		return locationExcludeFilters.stream().anyMatch { filter: Pattern -> filter.matcher(location).matches() }
+		return locationExcludeFilters.any { it.matcher(location).matches() }
 	}
 }

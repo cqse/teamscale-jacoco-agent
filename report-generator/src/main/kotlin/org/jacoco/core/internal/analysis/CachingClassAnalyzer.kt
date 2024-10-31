@@ -18,8 +18,8 @@ import org.objectweb.asm.tree.MethodNode
  */
 class CachingClassAnalyzer(
 	private val classCoverageLookup: ClassCoverageLookup,
-	coverage: ClassCoverageImpl?,
-	stringPool: StringPool?
+	coverage: ClassCoverageImpl,
+	stringPool: StringPool
 ) : ClassAnalyzer(coverage, null, stringPool) {
 	override fun visitSource(source: String?, debug: String?) {
 		super.visitSource(source, debug)

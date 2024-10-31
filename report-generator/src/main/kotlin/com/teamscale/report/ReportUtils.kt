@@ -38,15 +38,13 @@ object ReportUtils {
 	@JvmStatic
 	@Throws(JsonProcessingException::class)
 	fun getTestwiseCoverageReportAsString(
-		report: TestwiseCoverageReport?
-	): String {
-		return JsonUtils.serialize(report)
-	}
+		report: TestwiseCoverageReport
+	): String = JsonUtils.serialize(report)
 
 	/** Writes the report object to the given file as json.  */
 	@Throws(IOException::class)
 	private fun <T> writeReportToFile(reportFile: File, report: T) {
-		val directory: File = reportFile.getParentFile()
+		val directory = reportFile.getParentFile()
 		if (!directory.isDirectory() && !directory.mkdirs()) {
 			throw IOException("Failed to create directory " + directory.absolutePath)
 		}
@@ -56,26 +54,27 @@ object ReportUtils {
 	/** Recursively lists all files in the given directory that match the specified extension.  */
 	@Throws(IOException::class)
 	@JvmStatic
+	// ToDo: Should use reified type parameter when Converter is in kotlin
 	fun <T> readObjects(
-		format: ETestArtifactFormat, clazz: Class<Array<T>>?,
+		format: ETestArtifactFormat,
+		clazz: Class<Array<T>>,
 		directoriesOrFiles: List<File>
 	): List<T> {
-		val files: List<File> = listFiles(format, directoriesOrFiles)
-		val result: ArrayList<T> = ArrayList()
-		for (file: File? in files) {
-			val t: Array<T>? = JsonUtils.deserializeFile(file, clazz)
-			if (t != null) {
-				result.addAll(listOf(*t))
-			}
-		}
+		val files = listFiles(format, directoriesOrFiles)
+		val result = mutableListOf<T>()
+		files.mapNotNull { JsonUtils.deserializeFile(it, clazz) }
+			.forEach { result.addAll(listOf(*it)) }
 		return result
 	}
 
 	/** Recursively lists all files of the given artifact type.  */
 	@JvmStatic
-	fun listFiles(format: ETestArtifactFormat, directoriesOrFiles: List<File>): List<File> {
-		val filesWithSpecifiedArtifactType: MutableList<File> = ArrayList()
-		for (directoryOrFile: File in directoriesOrFiles) {
+	fun listFiles(
+		format: ETestArtifactFormat,
+		directoriesOrFiles: List<File>
+	): List<File> {
+		val filesWithSpecifiedArtifactType = mutableListOf<File>()
+		directoriesOrFiles.forEach { directoryOrFile ->
 			if (directoryOrFile.isDirectory()) {
 				filesWithSpecifiedArtifactType.addAll(
 					FileSystemUtils.listFilesRecursively(directoryOrFile) {
