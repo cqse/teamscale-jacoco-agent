@@ -67,7 +67,7 @@ class ProbesCache(
 	 * Adds a jar id along with the count of class files found in the jar.
 	 */
 	fun addJarId(jarId: Long, count: Int) {
-		containedJars.put(jarId, count)
+		containedJars[jarId] = count
 	}
 
 	/**

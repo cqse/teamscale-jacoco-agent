@@ -16,13 +16,16 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 /**
- * [Analyzer] that filters the analyzed class files based on a [Predicate].
+ * Analyzer that filters the analyzed class files based on a given predicate.
+ *
+ * @param executionData The execution data store.
+ * @param coverageVisitor The coverage visitor.
+ * @param locationIncludeFilter The filter for the analyzed class files.
+ * @param logger The logger.
  */
-/* package */
 open class FilteringAnalyzer(
 	executionData: ExecutionDataStore?,
 	coverageVisitor: ICoverageVisitor?,
-	/** The filter for the analyzed class files.  */
 	private val locationIncludeFilter: ClasspathWildcardIncludeFilter,
 	private val logger: ILogger
 ) : OpenAnalyzer(executionData, coverageVisitor) {
@@ -44,7 +47,7 @@ open class FilteringAnalyzer(
 		try {
 			analyzeClass(buffer)
 		} catch (cause: RuntimeException) {
-			if (isUnsupportedClassFile(cause)) {
+			if (cause.isUnsupportedClassFile()) {
 				logger.error(cause.message + " in " + location)
 			} else {
 				throw analyzerError(location, cause)
@@ -57,32 +60,22 @@ open class FilteringAnalyzer(
 	 * JaCoCo. The concrete error message seems to depend on the used JVM, so we only check for "Unsupported" which seems
 	 * to be common amongst all of them.
 	 */
-	private fun isUnsupportedClassFile(cause: RuntimeException): Boolean {
-		return cause is IllegalArgumentException && cause.message?.startsWith("Unsupported") == true
-	}
+	private fun RuntimeException.isUnsupportedClassFile() =
+		this is IllegalArgumentException && message?.startsWith("Unsupported") == true
 
-	/**
-	 * Copied from Analyzer.analyzeZip renamed to analyzeJar and added wrapping BashFileSkippingInputStream.
-	 */
 	@Throws(IOException::class)
 	protected open fun analyzeJar(input: InputStream, location: String): Int {
-		val zip = ZipInputStream(BashFileSkippingInputStream(input))
-		var entry: ZipEntry?
-		var count = 0
-		while ((nextEntry(zip, location).also { entry = it }) != null) {
-			count += analyzeAll(zip, location + "@" + entry!!.name)
+		ZipInputStream(BashFileSkippingInputStream(input)).use { zip ->
+			return generateSequence { zip.nextEntry(location) }
+				.map { entry -> analyzeAll(zip, "$location@${entry.name}") }
+				.sum()
 		}
-		return count
 	}
 
-	/** Copied from Analyzer.nextEntry.  */
 	@Throws(IOException::class)
-	private fun nextEntry(
-		input: ZipInputStream,
-		location: String
-	): ZipEntry? {
+	private fun ZipInputStream.nextEntry(location: String): ZipEntry? {
 		try {
-			return input.nextEntry
+			return nextEntry
 		} catch (e: IOException) {
 			throw analyzerError(location, e)
 		}

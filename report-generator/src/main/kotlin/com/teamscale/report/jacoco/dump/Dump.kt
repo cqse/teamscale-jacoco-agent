@@ -9,7 +9,7 @@ import org.jacoco.core.data.ExecutionDataStore
 import org.jacoco.core.data.SessionInfo
 
 /** All data received in one dump.  */
-class Dump(
+data class Dump(
 	val info: SessionInfo,
 	val store: ExecutionDataStore
 )

@@ -36,7 +36,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 /**
- * This is a copy of the [Analyzer] class from JaCoCo.
+ * This is a copy of the Analyzer class from JaCoCo.
  * The only changes are that the following methods are protected instead of private:
  * - [.analyzeClass]
  * - [.analyzerError]
@@ -45,11 +45,11 @@ import java.util.zip.ZipInputStream
  * When performing an update of JaCoCo we need to check that this file is still up-to-date.
  *
  *
- * An [Analyzer] instance processes a set of Java class files and
+ * An Analyzer instance processes a set of Java class files and
  * calculates coverage data for them. For each class file the result is reported
- * to a given [ICoverageVisitor] instance. In addition the
- * [Analyzer] requires a [ExecutionDataStore] instance that holds
- * the execution data for the classes to analyze. The [Analyzer] offers
+ * to a given [ICoverageVisitor] instance. In addition, the
+ * Analyzer requires a [ExecutionDataStore] instance that holds
+ * the execution data for the classes to analyze. The Analyzer offers
  * several methods to analyze classes from a variety of sources.
  */
 open class OpenAnalyzer(
@@ -157,7 +157,7 @@ open class OpenAnalyzer(
 
 	/** Creates an [IOException] which includes the affected file location and JaCoCo version.  */
 	protected fun analyzerError(
-		location: String?,
+		location: String,
 		cause: Exception?
 	): IOException {
 		val ex = IOException(

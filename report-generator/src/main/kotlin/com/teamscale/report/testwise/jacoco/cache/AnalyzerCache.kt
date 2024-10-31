@@ -17,44 +17,41 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
- * An [AnalyzerCache] instance processes a set of Java class/jar/war/... files and builds a [ ] for each of the classes.
+ * An `AnalyzerCache` instance processes a set of Java class/jar/war/... files and builds a cache for each of the classes.
  *
- *
- * For every class that gets found [.analyzeClass] is called. A class is identified by its class ID which
- * is a CRC64 checksum of the classfile. We process each class with [CachingClassAnalyzer] to fill a [ ].
+ * For every class that gets found, [analyzeClass] is called. A class is identified by its class ID, which
+ * is a CRC64 checksum of the class file. We process each class with `CachingClassAnalyzer` to fill a cache.
  */
-class AnalyzerCache
-/** Creates a new analyzer filling the given cache.  */(
-	/** The probes cache.  */
-	private val probesCache: ProbesCache, locationIncludeFilter: ClasspathWildcardIncludeFilter,
+class AnalyzerCache(
+	private val probesCache: ProbesCache,
+	locationIncludeFilter: ClasspathWildcardIncludeFilter,
 	logger: ILogger
 ) : FilteringAnalyzer(null, null, locationIncludeFilter, logger) {
-	private val stringPool: StringPool = StringPool()
+	private val stringPool = StringPool()
 
 	/**
-	 * Analyses the given class. Instead of the original implementation in [Analyzer.analyzeClass] we
+	 * Analyzes the given class. Instead of the original implementation in [Analyzer.analyzeClass] we
 	 * don't use concrete execution data, but instead build a probe cache to speed up repeated lookups.
 	 */
 	override fun analyzeClass(source: ByteArray) {
-		val classId: Long = CRC64.classId(source)
+		val classId = CRC64.classId(source)
 		if (probesCache.containsClassId(classId)) {
 			return
 		}
-		val reader: ClassReader = InstrSupport.classReaderFor(source)
-		val classCoverageLookup: ClassCoverageLookup = probesCache.createClass(classId, reader.getClassName())
+		val reader = InstrSupport.classReaderFor(source)
 
 		// Dummy class coverage object that allows us to subclass ClassAnalyzer with CachingClassAnalyzer and reuse its
 		// IFilterContext implementation
-		val dummyClassCoverage: ClassCoverageImpl = ClassCoverageImpl(
-			reader.getClassName(),
-			classId, false
+		val dummyClassCoverage = ClassCoverageImpl(
+			reader.className, classId, false
 		)
 
-		val classAnalyzer: CachingClassAnalyzer = CachingClassAnalyzer(
-			classCoverageLookup, dummyClassCoverage,
+		val classAnalyzer = CachingClassAnalyzer(
+			probesCache.createClass(classId, reader.className),
+			dummyClassCoverage,
 			stringPool
 		)
-		val visitor: ClassVisitor = ClassProbesAdapter(classAnalyzer, false)
+		val visitor = ClassProbesAdapter(classAnalyzer, false)
 		reader.accept(visitor, 0)
 	}
 
@@ -63,12 +60,12 @@ class AnalyzerCache
 	 */
 	@Throws(IOException::class)
 	override fun analyzeJar(input: InputStream, location: String): Int {
-		val jarId: Long = CRC64.classId(Files.readAllBytes(Paths.get(location)))
-		val probesCountForJarId: Int = probesCache.countForJarId(jarId)
+		val jarId = CRC64.classId(Files.readAllBytes(Paths.get(location)))
+		val probesCountForJarId = probesCache.countForJarId(jarId)
 		if (probesCountForJarId != 0) {
 			return probesCountForJarId
 		}
-		val count: Int = super.analyzeJar(input, location)
+		val count = super.analyzeJar(input, location)
 		probesCache.addJarId(jarId, count)
 		return count
 	}

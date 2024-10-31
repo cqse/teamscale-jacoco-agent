@@ -4,7 +4,6 @@ import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
-import org.jacoco.core.analysis.CoverageBuilder
 import org.jacoco.core.analysis.IBundleCoverage
 import org.jacoco.core.data.ExecutionDataStore
 import org.jacoco.core.data.SessionInfo
@@ -13,19 +12,20 @@ import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 
-/** Creates an XML report from binary execution data.  */
+/**
+ * Creates an XML report from binary execution data.
+ *
+ * @param codeDirectoriesOrArchives Directories and zip files that contain class files.
+ * @param locationIncludeFilter Include filter to apply to all locations during class file traversal.
+ * @param duplicateClassFileBehavior Whether to ignore non-identical duplicates of class files.
+ * @param ignoreUncoveredClasses Whether to remove uncovered classes from the report.
+ * @param logger The logger.
+ */
 class JaCoCoXmlReportGenerator(
-	/** Directories and zip files that contain class files.  */
 	private val codeDirectoriesOrArchives: List<File>,
-	/**
-	 * Include filter to apply to all locations during class file traversal.
-	 */
 	private val locationIncludeFilter: ClasspathWildcardIncludeFilter,
-	/** Whether to ignore non-identical duplicates of class files.  */
 	private val duplicateClassFileBehavior: EDuplicateClassFileBehavior,
-	/** Whether to remove uncovered classes from the report.  */
 	private val ignoreUncoveredClasses: Boolean,
-	/** The logger.  */
 	private val logger: ILogger
 ) {
 	/**
@@ -44,26 +44,22 @@ class JaCoCoXmlReportGenerator(
 	@Throws(IOException::class, EmptyReportException::class)
 	private fun convertToReport(coverageFile: CoverageFile, dump: Dump) {
 		val mergedStore = dump.store
-		val bundleCoverage = analyzeStructureAndAnnotateCoverage(mergedStore)
-		checkForEmptyReport(bundleCoverage)
-		coverageFile.outputStream.use { outputStream ->
-			createReport(
-				outputStream, bundleCoverage, dump.info,
-				mergedStore!!
-			)
+		analyzeStructureAndAnnotateCoverage(mergedStore).apply {
+			checkForEmptyReport()
+			coverageFile.outputStream.use { outputStream ->
+				createReport(
+					outputStream, this, dump.info, mergedStore)
+			}
 		}
 	}
 
 	@Throws(EmptyReportException::class)
-	private fun checkForEmptyReport(coverage: IBundleCoverage) {
-		if (coverage.packages.size == 0 || coverage.lineCounter.totalCount == 0) {
-			throw EmptyReportException("The generated coverage report is empty. " + MOST_LIKELY_CAUSE_MESSAGE)
+	private fun IBundleCoverage.checkForEmptyReport() {
+		if (packages.isEmpty() || lineCounter.totalCount == 0) {
+			throw EmptyReportException("The generated coverage report is empty. $MOST_LIKELY_CAUSE_MESSAGE")
 		}
-		if (coverage.lineCounter.coveredCount == 0) {
-			throw EmptyReportException(
-				"The generated coverage report does not contain any covered source code lines. " +
-						MOST_LIKELY_CAUSE_MESSAGE
-			)
+		if (lineCounter.coveredCount == 0) {
+			throw EmptyReportException("The generated coverage report does not contain any covered source code lines. $MOST_LIKELY_CAUSE_MESSAGE")
 		}
 	}
 
@@ -72,20 +68,14 @@ class JaCoCoXmlReportGenerator(
 	 * report with the coverage in the given store.
 	 */
 	@Throws(IOException::class)
-	private fun analyzeStructureAndAnnotateCoverage(store: ExecutionDataStore?): IBundleCoverage {
-		val coverageBuilder: CoverageBuilder = TeamscaleCoverageBuilder(
-			this.logger,
-			duplicateClassFileBehavior, ignoreUncoveredClasses
+	private fun analyzeStructureAndAnnotateCoverage(store: ExecutionDataStore): IBundleCoverage {
+		val coverageBuilder = TeamscaleCoverageBuilder(
+			logger, duplicateClassFileBehavior, ignoreUncoveredClasses
 		)
 
-		val analyzer = FilteringAnalyzer(
-			store, coverageBuilder,
-			locationIncludeFilter,
-			logger
-		)
-
-		for (file in codeDirectoriesOrArchives) {
-			analyzer.analyzeAll(file)
+		codeDirectoriesOrArchives.forEach { file ->
+			FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger)
+				.analyzeAll(file)
 		}
 
 		return coverageBuilder.getBundle("dummybundle")
@@ -102,15 +92,16 @@ class JaCoCoXmlReportGenerator(
 		/** Creates an XML report based on the given session and coverage data.  */
 		@Throws(IOException::class)
 		private fun createReport(
-			output: OutputStream, bundleCoverage: IBundleCoverage, sessionInfo: SessionInfo?,
+			output: OutputStream,
+			bundleCoverage: IBundleCoverage,
+			sessionInfo: SessionInfo?,
 			store: ExecutionDataStore
 		) {
-			val xmlFormatter = XMLFormatter()
-			val visitor = xmlFormatter.createVisitor(output)
-
-			visitor.visitInfo(listOf(sessionInfo), store.contents)
-			visitor.visitBundle(bundleCoverage, null)
-			visitor.visitEnd()
+			XMLFormatter().createVisitor(output).apply {
+				visitInfo(listOf(sessionInfo), store.contents)
+				visitBundle(bundleCoverage, null)
+				visitEnd()
+			}
 		}
 	}
 }

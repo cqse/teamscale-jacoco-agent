@@ -1,10 +1,8 @@
 package com.teamscale.report.jacoco
 
-import com.teamscale.client.FileSystemUtils
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.*
-import java.nio.file.Files
 import java.util.*
 
 /**
@@ -18,7 +16,7 @@ import java.util.*
  * to make the object aware that it was passed to another uploader and
  * [.delete] to signal that you no longer intend to access the file.
  */
-class CoverageFile(private val coverageFile: File) {
+data class CoverageFile(private val coverageFile: File) {
 	private var referenceCounter = 0
 
 	/**
@@ -36,20 +34,20 @@ class CoverageFile(private val coverageFile: File) {
 	 * avoid having to read the entire file into memory.
 	 */
 	@Throws(IOException::class)
-	fun copy(outputStream: OutputStream?) {
-		val inputStream = FileInputStream(coverageFile)
-		FileSystemUtils.copy(inputStream, outputStream)
-		inputStream.close()
+	fun copy(outputStream: OutputStream) {
+		coverageFile.inputStream().use { input ->
+			input.copyTo(outputStream)
+		}
 	}
 
+	/**
+	 * Get the filename of the coverage file on disk without its extension
+	 */
 	val nameWithoutExtension: String
-		/**
-		 * Get the filename of the coverage file on disk without its extension
-		 */
-		get() = FileSystemUtils.getFilenameWithoutExtension(coverageFile)
+		get() = coverageFile.name.substringBeforeLast('.')
 
+	/** Get the filename of the coverage file.  */
 	val name: String
-		/** Get the filename of the coverage file.  */
 		get() = coverageFile.name
 
 	/**
@@ -59,7 +57,7 @@ class CoverageFile(private val coverageFile: File) {
 	fun delete() {
 		referenceCounter--
 		if (referenceCounter <= 0) {
-			Files.delete(coverageFile.toPath())
+			coverageFile.delete()
 		}
 	}
 
@@ -67,26 +65,25 @@ class CoverageFile(private val coverageFile: File) {
 	 * Create a [okhttp3.MultipartBody] form body with the contents of the
 	 * coverage file.
 	 */
-	fun createFormRequestBody(): RequestBody {
-		return RequestBody.create(MultipartBody.FORM, File(coverageFile.absolutePath))
-	}
+	fun createFormRequestBody(): RequestBody =
+		RequestBody.create(MultipartBody.FORM, coverageFile)
 
+	/**
+	 * Get the [java.io.OutputStream] in order to write to the coverage file.
+	 *
+	 * @throws IOException
+	 * If the file did not exist yet and could not be created
+	 */
 	@get:Throws(IOException::class)
 	val outputStream: OutputStream
-		/**
-		 * Get the [java.io.OutputStream] in order to write to the coverage file.
-		 *
-		 * @throws IOException
-		 * If the file did not exist yet and could not be created
-		 */
 		get() {
-			try {
-				return FileOutputStream(coverageFile)
-			} catch (e: IOException) {
+			return runCatching {
+				coverageFile.outputStream()
+			}.getOrElse {
 				throw IOException(
 					("Could not create temporary coverage file" + this + ". "
 							+ "This is used to cache the coverage file on disk before uploading it to its final destination. "
-							+ "This coverage is lost. Please fix the underlying issue to avoid losing coverage."), e
+							+ "This coverage is lost. Please fix the underlying issue to avoid losing coverage."), it
 				)
 			}
 		}
@@ -94,28 +91,5 @@ class CoverageFile(private val coverageFile: File) {
 	/**
 	 * {@inheritDoc}
 	 */
-	override fun equals(o: Any?): Boolean {
-		if (this === o) {
-			return true
-		}
-		if (o == null || javaClass != o.javaClass) {
-			return false
-		}
-		val that = o as CoverageFile
-		return coverageFile == that.coverageFile
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	override fun hashCode(): Int {
-		return Objects.hash(coverageFile)
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	override fun toString(): String {
-		return coverageFile.absolutePath
-	}
+	override fun toString(): String = coverageFile.absolutePath
 }
