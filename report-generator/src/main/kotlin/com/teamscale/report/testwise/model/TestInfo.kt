@@ -29,5 +29,5 @@ class TestInfo @JsonCreator constructor(
 ) {
 	/** All paths that the test did cover.  */
 	@JvmField
-	val paths: MutableList<PathCoverage> = ArrayList()
+	val paths = mutableListOf<PathCoverage>()
 }

@@ -38,7 +38,7 @@ class TestwiseCoverageReportWriter(
 	}
 
 	override fun accept(testCoverageBuilder: TestCoverageBuilder) {
-		val testInfo: TestInfo? = testInfoFactory.createFor(testCoverageBuilder)
+		val testInfo = testInfoFactory.createFor(testCoverageBuilder)
 		try {
 			writeTestInfo(testInfo)
 		} catch (e: IOException) {

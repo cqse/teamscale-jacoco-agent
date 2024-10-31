@@ -20,7 +20,7 @@ open class CachingExecutionDataReader(
 	private val locationIncludeFilter: ClasspathWildcardIncludeFilter,
 	private val duplicateClassFileBehavior: EDuplicateClassFileBehavior
 ) {
-	private val probesCache: ProbesCache by lazy {
+	private val probeCache: ProbesCache by lazy {
 		ProbesCache(logger, duplicateClassFileBehavior)
 	}
 
@@ -32,7 +32,7 @@ open class CachingExecutionDataReader(
 			logger.warn("No class directories found for caching.")
 			return
 		}
-		val analyzer = AnalyzerCache(probesCache, locationIncludeFilter, logger)
+		val analyzer = AnalyzerCache(probeCache, locationIncludeFilter, logger)
 		val classCount = classesDirectories
 			.filter { it.exists() }
 			.sumOf { analyzeDirectory(it, analyzer) }
@@ -65,7 +65,7 @@ open class CachingExecutionDataReader(
 		val directoryList = classesDirectories.joinToString(",") { it.path }
 		when {
 			classCount == 0 -> logger.error("No class files found in directories: $directoryList")
-			probesCache.isEmpty -> logger.error(
+			probeCache.isEmpty -> logger.error(
 				"None of the $classCount class files found in the given directories match the configured include/exclude patterns! $directoryList"
 			)
 		}
@@ -102,11 +102,11 @@ open class CachingExecutionDataReader(
 		): TestCoverageBuilder {
 			val testCoverage = TestCoverageBuilder(testId)
 			executionDataStore.contents.forEach { executionData ->
-				probesCache.getCoverage(executionData, locationIncludeFilter)?.let {
+				probeCache.getCoverage(executionData, locationIncludeFilter)?.let {
 					testCoverage.add(it)
 				}
 			}
-			probesCache.flushLogger()
+			probeCache.flushLogger()
 			return testCoverage
 		}
 	}

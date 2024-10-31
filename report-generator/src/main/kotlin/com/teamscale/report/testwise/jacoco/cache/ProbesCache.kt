@@ -9,59 +9,52 @@ import org.jacoco.report.JavaNames
 
 /**
  * Holds [ClassCoverageLookup]s for all analyzed classes.
+ *
+ * @param logger The logger to use for logging.
+ * @param duplicateClassFileBehavior Whether to ignore non-identical duplicates of class files.
  */
 class ProbesCache(
-	/** The logger.  */
 	private val logger: ILogger,
-	/** Whether to ignore non-identical duplicates of class files.  */
 	private val duplicateClassFileBehavior: EDuplicateClassFileBehavior
 ) {
 	/** A mapping from class ID (CRC64 of the class file) to [ClassCoverageLookup].  */
-	private val classCoverageLookups: HashMap<Long, ClassCoverageLookup> = HashMap()
+	private val classCoverageLookups = hashMapOf<Long, ClassCoverageLookup>()
 
-	/** Holds all fully-qualified class names that are already contained in the cache.  */
-	private val containedClasses: MutableSet<String> = HashSet()
-
-	private val containedJars: MutableMap<Long, Int> = HashMap()
-
-	private val classNotFoundLogger: ClassNotFoundLogger
-
-	/** Constructor.  */
-	init {
-		this.classNotFoundLogger = ClassNotFoundLogger(logger)
-	}
+	/** Holds all fully qualified class names that are already contained in the cache.  */
+	private val containedClasses = mutableSetOf<String>()
+	private val containedJars = mutableMapOf<Long, Int>()
+	private val classNotFoundLogger = ClassNotFoundLogger(logger)
 
 	/** Adds a new class entry to the cache and returns its [ClassCoverageLookup].  */
 	fun createClass(classId: Long, className: String): ClassCoverageLookup {
 		if (containedClasses.contains(className)) {
 			if (duplicateClassFileBehavior != EDuplicateClassFileBehavior.IGNORE) {
 				logger.warn(
-					("Non-identical class file for class " + className + "."
-							+ " This happens when a class with the same fully-qualified name is loaded twice but the two loaded class files are not identical."
-							+ " A common reason for this is that the same library or shared code is included twice in your application but in two different versions."
-							+ " The produced coverage for this class may not be accurate or may even be unusable."
-							+ " To fix this problem, please resolve the conflict between both class files in your application.")
+					"Non-identical class file for class $className. This happens when a class with the " +
+							"same fully-qualified name is loaded twice but the two loaded class files are not identical. " +
+							"A common reason for this is that the same library or shared code is included twice in your " +
+							"application but in two different versions. The produced coverage for this class may not be " +
+							"accurate or may even be unusable. To fix this problem, please resolve the conflict between " +
+							"both class files in your application."
 				)
 			}
-			check(duplicateClassFileBehavior != EDuplicateClassFileBehavior.FAIL) { "Found non-identical class file for class " + className + ". See logs for more details." }
+			check(duplicateClassFileBehavior != EDuplicateClassFileBehavior.FAIL) { "Found non-identical class file for class $className. See logs for more details." }
 		}
 		containedClasses.add(className)
-		val classCoverageLookup: ClassCoverageLookup = ClassCoverageLookup(className)
-		classCoverageLookups.put(classId, classCoverageLookup)
+		val classCoverageLookup = ClassCoverageLookup(className)
+		classCoverageLookups[classId] = classCoverageLookup
 		return classCoverageLookup
 	}
 
 	/** Returns whether a class with the given class ID has already been analyzed.  */
-	fun containsClassId(classId: Long): Boolean {
-		return classCoverageLookups.containsKey(classId)
-	}
+	fun containsClassId(classId: Long) =
+		classCoverageLookups.containsKey(classId)
 
 	/**
 	 * Returns the number of found class files in a cached jar file. Otherwise 0.
 	 */
-	fun countForJarId(jarId: Long): Int {
-		return containedJars.getOrDefault(jarId, 0)
-	}
+	fun countForJarId(jarId: Long) =
+		containedJars.getOrDefault(jarId, 0)
 
 	/**
 	 * Adds a jar id along with the count of class files found in the jar.
@@ -79,10 +72,10 @@ class ProbesCache(
 		executionData: ExecutionData,
 		locationIncludeFilter: ClasspathWildcardIncludeFilter
 	): FileCoverageBuilder? {
-		val classId: Long = executionData.getId()
+		val classId = executionData.id
 		if (!containsClassId(classId)) {
-			val fullyQualifiedClassName: String = JavaNames().getQualifiedClassName(executionData.getName())
-			if (locationIncludeFilter.isIncluded(fullyQualifiedClassName + ".class")) {
+			val fullyQualifiedClassName = JavaNames().getQualifiedClassName(executionData.name)
+			if (locationIncludeFilter.isIncluded("$fullyQualifiedClassName.class")) {
 				classNotFoundLogger.log(fullyQualifiedClassName)
 			}
 			return null
@@ -91,16 +84,13 @@ class ProbesCache(
 			return null
 		}
 
-		return classCoverageLookups.get(classId)!!.getFileCoverage(executionData, logger)
+		return classCoverageLookups[classId]?.getFileCoverage(executionData, logger)
 	}
 
+	/** Returns true if the cache does not contain coverage for any class.  */
 	val isEmpty: Boolean
-		/** Returns true if the cache does not contain coverage for any class.  */
-		get() {
-			return classCoverageLookups.isEmpty()
-		}
+		get() = classCoverageLookups.isEmpty()
 
-	/** Prints a the collected class not found messages.  */
 	fun flushLogger() {
 		classNotFoundLogger.flush()
 	}

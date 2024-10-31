@@ -2,6 +2,7 @@ package com.teamscale.report.testwise.jacoco
 
 import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.jacoco.dump.Dump
+import com.teamscale.report.testwise.jacoco.CachingExecutionDataReader.*
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException
 import com.teamscale.report.testwise.model.TestwiseCoverage
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
@@ -17,7 +18,6 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import java.io.InputStream
 import java.util.function.Consumer
 
 /**
@@ -31,13 +31,13 @@ open class JaCoCoTestwiseReportGenerator(
 	duplicateClassFileBehavior: EDuplicateClassFileBehavior,
 	logger: ILogger
 ) {
-
 	/** The execution data reader and converter. */
-	private val executionDataReader: CachingExecutionDataReader = CachingExecutionDataReader(
+	private val executionDataReader = CachingExecutionDataReader(
 		logger, codeDirectoriesOrArchives, locationIncludeFilter, duplicateClassFileBehavior
 	)
 
 	init {
+		// This has to be unsafe as mockito does not support mocking final classes
 		updateClassDirCache()
 	}
 
@@ -58,10 +58,10 @@ open class JaCoCoTestwiseReportGenerator(
 	/** Converts the given dump to a report. */
 	@Throws(CoverageGenerationException::class)
 	open fun convert(dump: Dump): TestCoverageBuilder? {
-		val list = mutableListOf<TestCoverageBuilder>()
-		val dumpConsumer = executionDataReader.buildCoverageConsumer(locationIncludeFilter, list::add)
+		val testCoverageBuilders = mutableListOf<TestCoverageBuilder>()
+		val dumpConsumer = executionDataReader.buildCoverageConsumer(locationIncludeFilter, testCoverageBuilders::add)
 		dumpConsumer.accept(dump)
-		return if (list.size == 1) list[0] else null
+		return testCoverageBuilders.singleOrNull()
 	}
 
 	/** Converts the given dumps to a report. */
@@ -73,20 +73,20 @@ open class JaCoCoTestwiseReportGenerator(
 
 	/** Reads the dumps from the given *.exec file. */
 	@Throws(IOException::class)
-	private fun readAndConsumeDumps(executionDataFile: File, dumpConsumer: Consumer<Dump>) {
+	private fun readAndConsumeDumps(executionDataFile: File, dumpConsumer: DumpConsumer) {
 		BufferedInputStream(FileInputStream(executionDataFile)).use { input ->
-			val executionDataReader = ExecutionDataReader(input)
-			val dumpCallback = DumpCallback(dumpConsumer)
-			executionDataReader.setExecutionDataVisitor(dumpCallback)
-			executionDataReader.setSessionInfoVisitor(dumpCallback)
-			executionDataReader.read()
-			dumpCallback.processDump() // Ensure that the last read dump is also consumed
+			ExecutionDataReader(input).apply {
+				val dumpCallback = DumpCallback(dumpConsumer)
+				setExecutionDataVisitor(dumpCallback)
+				setSessionInfoVisitor(dumpCallback)
+				read()
+				dumpCallback.processDump()
+			}
 		}
 	}
 
 	/** Collects execution information per session and passes it to the consumer . */
-	private class DumpCallback(private val dumpConsumer: Consumer<Dump>) : IExecutionDataVisitor, ISessionInfoVisitor {
-
+	private class DumpCallback(private val consumer: DumpConsumer) : IExecutionDataVisitor, ISessionInfoVisitor {
 		/** The dump that is currently being read. */
 		private var currentDump: Dump? = null
 
@@ -95,8 +95,10 @@ open class JaCoCoTestwiseReportGenerator(
 
 		override fun visitSessionInfo(info: SessionInfo) {
 			processDump()
-			store = ExecutionDataStore()
-			currentDump = Dump(info, store!!)
+			ExecutionDataStore().let {
+				currentDump = Dump(info, it)
+				store = it
+			}
 		}
 
 		override fun visitClassExecution(data: ExecutionData) {
@@ -105,7 +107,7 @@ open class JaCoCoTestwiseReportGenerator(
 
 		fun processDump() {
 			currentDump?.let {
-				dumpConsumer.accept(it)
+				consumer.accept(it)
 				currentDump = null
 			}
 		}

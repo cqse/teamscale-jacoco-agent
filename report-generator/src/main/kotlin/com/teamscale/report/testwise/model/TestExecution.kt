@@ -18,93 +18,33 @@
 package com.teamscale.report.testwise.model
 
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.io.Serializable
 
-/** Representation of a single test (method) execution.  */
-class TestExecution : Serializable {
-	/** @see .uniformPath
-	 */
-	/** @see .uniformPath
-	 */
-	/**
-	 * The uniform path of the test (method) that was executed. This is an absolute (i.e. hierarchical) reference which
-	 * identifies the test uniquely in the scope of the Teamscale project. It may (but is not required to) correspond to
-	 * the path of some automated test case source code known to Teamscale. If the test was parameterized, this path is
-	 * expected to reflect the parameter in some manner.
-	 */
+/**
+ * Representation of a single test (method) execution.
+ *
+ * @param uniformPath The uniform path of the test (method) that was executed.
+ * This is an absolute reference that identifies the test uniquely within the Teamscale project.
+ * @param durationMillis Duration of the execution in milliseconds.
+ * @param result The result of the test execution.
+ * @param message Optional message given for test failures (normally contains a stack trace). May be `null`.
+ */
+data class TestExecution @JvmOverloads constructor(
 	@JvmField
-	var uniformPath: String? = null
+	var uniformPath: String? = null,
+	@Deprecated("Use durationSeconds instead.")
+	var durationMillis: Long = 0L,
+	@JvmField
+	val result: ETestExecutionResult? = null,
+	val message: String? = null,
+) : Serializable {
 
-	/** Duration of the execution in milliseconds.  */
-	@Deprecated("")
-	private var durationMillis: Long = 0
-
-	/** Duration of the execution in seconds.  */
+	/** Duration of the execution in seconds. */
 	@JsonProperty("duration")
 	@JsonAlias("durationSeconds")
 	private val duration: Double? = null
 
-	/** @see .result
-	 */
-	/** @see .result
-	 */
-	/** The actual execution result state.  */
-	@JvmField
-	var result: ETestExecutionResult? = null
-
-	/** @see .message
-	 */
-	/** @see .message
-	 */
-	/**
-	 * Optional message given for test failures (normally contains a stack trace). May be `null`.
-	 */
-	var message: String? = null
-
-	/**
-	 * Needed for Jackson deserialization.
-	 */
-	@JsonCreator
-	constructor()
-
-	@JvmOverloads
-	constructor(name: String?, durationMillis: Long, result: ETestExecutionResult?, message: String? = null) {
-		this.uniformPath = name
-		this.durationMillis = durationMillis
-		this.result = result
-		this.message = message
-	}
-
 	val durationSeconds: Double
-		/** @see .durationMillis
-		 */
-		get() {
-			if (duration != null) {
-				return duration
-			} else {
-				return durationMillis / 1000.0
-			}
-		}
-
-	/** @see .durationMillis
-	 */
-	fun setDurationMillis(durationMillis: Long) {
-		this.durationMillis = durationMillis
-	}
-
-	override fun toString(): String {
-		return "TestExecution{" +
-				"uniformPath='" + uniformPath + '\'' +
-				", durationMillis=" + durationMillis +
-				", duration=" + duration +
-				", result=" + result +
-				", message='" + message + '\'' +
-				'}'
-	}
-
-	companion object {
-		private const val serialVersionUID: Long = 1L
-	}
+		get() = duration ?: (durationMillis / 1000.0)
 }

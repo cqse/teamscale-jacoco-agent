@@ -33,41 +33,36 @@ class TestwiseCoverageReportBuilder {
 			partial: Boolean
 		): TestwiseCoverageReport {
 			val report = TestwiseCoverageReportBuilder()
-			for (testDetails: TestDetails in testDetailsList) {
-				val container = TestInfoBuilder(testDetails.uniformPath)
-				container.setDetails(testDetails)
-				report.tests[testDetails.uniformPath] = container
+			testDetailsList.forEach { testDetails ->
+				TestInfoBuilder(testDetails.uniformPath).also {
+					it.setDetails(testDetails)
+					report.tests[testDetails.uniformPath] = it
+				}
 			}
-			for (coverage: TestCoverageBuilder in testCoverage) {
-				val container = resolveUniformPath(report, coverage.uniformPath) ?: continue
-				container.setCoverage(coverage)
+			testCoverage.forEach { coverage ->
+				resolveUniformPath(report, coverage.uniformPath)?.setCoverage(coverage)
 			}
-			for (testExecution: TestExecution in testExecutions) {
-				val path = testExecution.uniformPath ?: continue
-				val container = resolveUniformPath(report, path) ?: continue
-				container.setExecution(testExecution)
+			testExecutions.forEach { testExecution ->
+				val path = testExecution.uniformPath ?: return@forEach
+				resolveUniformPath(report, path)?.setExecution(testExecution)
 			}
 			return report.build(partial)
 		}
 
-		private fun resolveUniformPath(report: TestwiseCoverageReportBuilder, uniformPath: String): TestInfoBuilder? {
-			val container = report.tests[uniformPath]
-			if (container != null) {
-				return container
+		private fun resolveUniformPath(report: TestwiseCoverageReportBuilder, uniformPath: String) =
+			if (report.tests.containsKey(uniformPath)) {
+				report.tests[uniformPath]
+			} else {
+				val shortenedUniformPath = stripParameterizedTestArguments(uniformPath)
+				report.tests[shortenedUniformPath]
+			} ?: run {
+				System.err.println("No container found for test '$uniformPath'!"); null
 			}
-			val shortenedUniformPath: String = stripParameterizedTestArguments(uniformPath)
-			val testInfoBuilder = report.tests[shortenedUniformPath]
-			if (testInfoBuilder == null) {
-				System.err.println("No container found for test '$uniformPath'!")
-			}
-			return testInfoBuilder
-		}
 
 		/**
 		 * Removes parameterized test arguments from the given uniform path.
 		 */
-		fun stripParameterizedTestArguments(uniformPath: String): String {
-			return uniformPath.replaceFirst("(.*\\))\\[.*]".toRegex(), "$1")
-		}
+		fun stripParameterizedTestArguments(uniformPath: String) =
+			uniformPath.replaceFirst("(.*\\))\\[.*]".toRegex(), "$1")
 	}
 }

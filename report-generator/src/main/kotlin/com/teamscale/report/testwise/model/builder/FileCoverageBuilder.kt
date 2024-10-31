@@ -39,7 +39,7 @@ class FileCoverageBuilder(
 	 * sorted. Individual ranges are separated by commas. E.g. 1-5,7,9-11.
 	 */
 	fun computeCompactifiedRangesAsString(): String =
-		compactifyToRanges(coveredLines).joinToString(",") { it.toReportString() }
+		compactifyToRanges(coveredLines).joinToString(",")
 
 	/** Returns true if there is no coverage for the file yet.  */
 	val isEmpty: Boolean get() = coveredLines.isEmpty()

@@ -13,20 +13,22 @@ import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
  */
 class TestInfoFactory(testDetails: List<TestDetails>, testExecutions: List<TestExecution>) {
 	/** Maps uniform paths to test details.  */
-	private val testDetailsMap: MutableMap<String, TestDetails> = HashMap()
+	private val testDetailsMap = mutableMapOf<String, TestDetails>()
 
 	/** Maps uniform paths to test executions.  */
-	private val testExecutionsMap: MutableMap<String?, TestExecution> = HashMap()
+	private val testExecutionsMap = mutableMapOf<String, TestExecution>()
 
 	/** Holds all uniform paths for tests that have been written to the outputFile.  */
-	private val processedTestUniformPaths: MutableSet<String?> = HashSet()
+	private val processedTestUniformPaths = mutableSetOf<String>()
 
 	init {
-		for (testDetail: TestDetails in testDetails) {
-			testDetailsMap.put(testDetail.uniformPath, testDetail)
+		testDetails.forEach { testDetail ->
+			testDetailsMap[testDetail.uniformPath] = testDetail
 		}
-		for (testExecution: TestExecution in testExecutions) {
-			testExecutionsMap.put(testExecution.uniformPath, testExecution)
+		testExecutions.forEach { testExecution ->
+			testExecution.uniformPath?.let {
+				testExecutionsMap[it] = testExecution
+			}
 		}
 	}
 
@@ -35,45 +37,39 @@ class TestInfoFactory(testDetails: List<TestDetails>, testExecutions: List<TestE
 	 * test executions.
 	 */
 	fun createFor(testCoverageBuilder: TestCoverageBuilder): TestInfo {
-		val resolvedUniformPath: String = resolveUniformPath(testCoverageBuilder.uniformPath)
+		val resolvedUniformPath = testCoverageBuilder.uniformPath.resolveUniformPath()
 		processedTestUniformPaths.add(resolvedUniformPath)
 
-		val container: TestInfoBuilder = TestInfoBuilder(resolvedUniformPath)
-		container.setCoverage(testCoverageBuilder)
-		val testDetails: TestDetails? = testDetailsMap.get(resolvedUniformPath)
-		if (testDetails == null) {
-			System.err.println("No test details found for " + resolvedUniformPath)
-		}
-		container.setDetails(testDetails)
-		val execution: TestExecution? = testExecutionsMap.get(resolvedUniformPath)
-		if (execution == null) {
-			System.err.println("No test execution found for " + resolvedUniformPath)
-		}
-		container.setExecution(execution)
-		return container.build()
+		return TestInfoBuilder(resolvedUniformPath).apply {
+			setCoverage(testCoverageBuilder)
+			testDetailsMap[resolvedUniformPath]?.let { testDetails ->
+				setDetails(testDetails)
+			} ?: System.err.println("No test details found for $resolvedUniformPath")
+			testExecutionsMap[resolvedUniformPath]?.let { execution ->
+				setExecution(execution)
+			} ?: System.err.println("No test execution found for $resolvedUniformPath")
+		}.build()
 	}
 
 	/** Returns [TestInfo]s for all tests that have not been used yet in [.createFor].  */
 	fun createTestInfosWithoutCoverage(): List<TestInfo> {
-		val results: ArrayList<TestInfo> = ArrayList()
-		for (testDetails: TestDetails in testDetailsMap.values) {
-			if (!processedTestUniformPaths.contains(testDetails.uniformPath)) {
-				val testInfo: TestInfoBuilder = TestInfoBuilder(testDetails.uniformPath)
-				testInfo.setDetails(testDetails)
-				testInfo.setExecution(testExecutionsMap.get(testDetails.uniformPath))
-				results.add(testInfo.build())
-				processedTestUniformPaths.add(testDetails.uniformPath)
-			}
+		val results = testDetailsMap.values.mapNotNull { testDetails ->
+			if (processedTestUniformPaths.contains(testDetails.uniformPath)) return@mapNotNull null
+
+			processedTestUniformPaths.add(testDetails.uniformPath)
+			TestInfoBuilder(testDetails.uniformPath).apply {
+				setDetails(testDetails)
+				testExecutionsMap[testDetails.uniformPath]?.let { setExecution(it) }
+			}.build()
 		}
-		for (testExecution: TestExecution in testExecutionsMap.values) {
-			if (!processedTestUniformPaths.contains(testExecution.uniformPath)) {
-				System.err.println(
-					"Test " + testExecution.uniformPath + " was executed but no coverage was found. " +
-							"Please make sure that you did provide all relevant exec files and that the test IDs passed to " +
-							"the agent match the ones from the provided test execution list."
-				)
-				processedTestUniformPaths.add(testExecution.uniformPath)
-			}
+		testExecutionsMap.values.forEach { testExecution ->
+			if (processedTestUniformPaths.contains(testExecution.uniformPath)) return@forEach
+			System.err.println(
+				"Test " + testExecution.uniformPath + " was executed but no coverage was found. " +
+						"Please make sure that you did provide all relevant exec files and that the test IDs passed to " +
+						"the agent match the ones from the provided test execution list."
+			)
+			testExecution.uniformPath?.let { processedTestUniformPaths.add(it) }
 		}
 		return results
 	}
@@ -82,12 +78,6 @@ class TestInfoFactory(testDetails: List<TestDetails>, testExecutions: List<TestE
 	 * Strips parameterized test arguments when the full path given in the coverage file cannot be found in the test
 	 * details.
 	 */
-	private fun resolveUniformPath(originalUniformPath: String?): String {
-		var uniformPath: String = originalUniformPath!!
-		val testDetails: TestDetails? = testDetailsMap.get(uniformPath)
-		if (testDetails == null) {
-			uniformPath = TestwiseCoverageReportBuilder.Companion.stripParameterizedTestArguments(uniformPath)
-		}
-		return uniformPath
-	}
+	private fun String.resolveUniformPath() =
+		testDetailsMap[this]?.uniformPath ?: TestwiseCoverageReportBuilder.stripParameterizedTestArguments(this)
 }

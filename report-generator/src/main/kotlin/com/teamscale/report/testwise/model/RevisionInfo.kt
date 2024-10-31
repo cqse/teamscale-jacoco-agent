@@ -10,7 +10,7 @@ class RevisionInfo : Serializable {
 	/** The type of revision information.  */
 	val type: ERevisionType
 
-	/** The value. Either a commit descriptor or a source control revision, depending on [.type].  */
+	/** The value. Either a commit descriptor or a source control revision, depending on [type].  */
 	val value: String?
 
 	@JsonCreator
@@ -19,21 +19,9 @@ class RevisionInfo : Serializable {
 		this.value = value
 	}
 
-	/** Constructor for Commit.  */
-	constructor(commit: CommitDescriptor) {
-		type = ERevisionType.COMMIT
-		value = commit.toString()
-	}
-
-	/** Constructor for Revision.  */
-	constructor(revision: String) {
-		type = ERevisionType.REVISION
-		value = revision
-	}
-
 	/**
 	 * Constructor in case you have both fields, and either may be null. If both are set, the commit wins. If both are
-	 * null, [.type] will be [ERevisionType.REVISION] and [.value] will be null.
+	 * null, [type] will be [ERevisionType.REVISION] and [value] will be null.
 	 */
 	constructor(commit: CommitDescriptor?, revision: String?) {
 		if (commit == null) {
@@ -43,9 +31,5 @@ class RevisionInfo : Serializable {
 			type = ERevisionType.COMMIT
 			value = commit.toString()
 		}
-	}
-
-	companion object {
-		private const val serialVersionUID: Long = 1L
 	}
 }
