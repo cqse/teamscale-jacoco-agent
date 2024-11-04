@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+# 34.2.0
 - [fix] _agent_: `search-git-properties-recursively` was not considered when jar was given via `artifactory-git-properties-jar`
 - [deprecation] _agent_: `artifactory-git-properties-jar` is deprecated now. Replace the option with `git-properties-jar`. The old option still works but is an alias now for `git-properties-jar`.
 - [feature] _agent_: Added `git-properties-commit-date-format` (replaces `artifactory-git-properties-commit-date-format`), which now also can be used in non-artifactory cases.
