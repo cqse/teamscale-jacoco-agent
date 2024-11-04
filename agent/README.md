@@ -176,6 +176,7 @@ patterns with `*`, `**` and `?`.
   - the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`) or
   - the properties `teamscale.commit.branch` and `teamscale.commit.time` (either as an epoch timestamp or in one of the two formats above)
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
+- `git-properties-commit-date-format` The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
@@ -232,11 +233,6 @@ patterns with `*`, `**` and `?`.
   This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-path-suffix` (optional): The path within the storage location between
   the default path and the uploaded artifact.
-- `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
-  If not specified, Git commit information is extracted from the first found `git.properties` file.
-  See `git-properties-jar` for details.
-- `artifactory-git-properties-commit-date-format` (optional):
-  The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 
 ### The new standard upload schema
 ```

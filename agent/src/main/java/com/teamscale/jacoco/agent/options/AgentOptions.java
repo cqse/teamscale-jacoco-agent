@@ -79,8 +79,18 @@ public class AgentOptions {
 	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
 	/* package */ File gitPropertiesJar;
 
+	/**
+	 * Related to {@link AgentOptions#GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION}
+	 */
+	public DateTimeFormatter gitPropertiesCommitTimeFormat = null;
+
 	/** Option name that allows to specify a jar file that contains the git commit hash in a git.properties file. */
 	public static final String GIT_PROPERTIES_JAR_OPTION = "git-properties-jar";
+
+	/**
+	 * Specifies the date format in which the commit timestamp in the git.properties file is formatted.
+	 */
+	public static final String GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION = "git-properties-commit-date-format";
 
 	/**
 	 * The original options passed to the agent.
@@ -455,7 +465,14 @@ public class AgentOptions {
 	}
 
 	@NotNull
-	private IUploader createArtifactoryUploader(Instrumentation instrumentation) {
+	private IUploader createArtifactoryUploader(Instrumentation instrumentation) throws UploaderException {
+		if (gitPropertiesJar != null) {
+			logger.info("You did not provide a commit to upload to directly, so the Agent will try to" +
+					"auto-detect it by searching the provided " + GIT_PROPERTIES_JAR_OPTION + " at " +
+					gitPropertiesJar.getAbsolutePath() + " for a git.properties file.");
+			artifactoryConfig.commitInfo = ArtifactoryConfig.parseGitProperties(gitPropertiesJar,
+					this.searchGitPropertiesRecursively, this.gitPropertiesCommitTimeFormat);
+		}
 		if (!artifactoryConfig.hasCommitInfo()) {
 			logger.info("You did not provide a commit to upload to directly, so the Agent will try and" +
 					" auto-detect it by searching all profiled Jar/War/Ear/... files for a git.properties file.");
@@ -518,14 +535,16 @@ public class AgentOptions {
 	private void startGitPropertiesSearchInJarFile(DelayedUploader<ProjectAndCommit> uploader,
 			File gitPropertiesJar) {
 		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
-				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
+				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively,
+				this.gitPropertiesCommitTimeFormat);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
 	private void registerSingleGitPropertiesLocator(DelayedUploader<ProjectAndCommit> uploader,
 			Instrumentation instrumentation) {
 		GitSingleProjectPropertiesLocator<ProjectAndCommit> locator = new GitSingleProjectPropertiesLocator<>(uploader,
-				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively);
+				GitPropertiesLocatorUtils::getProjectRevisionsFromGitProperties, this.searchGitPropertiesRecursively,
+				this.gitPropertiesCommitTimeFormat);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 	}
 
@@ -551,14 +570,14 @@ public class AgentOptions {
 	private void startMultiGitPropertiesFileSearchInJarFile(DelayedTeamscaleMultiProjectUploader uploader,
 			File gitPropertiesJar) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
-				this.searchGitPropertiesRecursively);
+				this.searchGitPropertiesRecursively, this.gitPropertiesCommitTimeFormat);
 		locator.searchFileForGitPropertiesAsync(gitPropertiesJar, true);
 	}
 
 	private void registerMultiGitPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader,
 			Instrumentation instrumentation) {
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(uploader,
-				this.searchGitPropertiesRecursively);
+				this.searchGitPropertiesRecursively, this.gitPropertiesCommitTimeFormat);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 	}
 
@@ -571,9 +590,8 @@ public class AgentOptions {
 				}, outputDirectory);
 		GitSingleProjectPropertiesLocator<CommitInfo> locator = new GitSingleProjectPropertiesLocator<>(
 				uploader,
-				(file, isJarFile, recursiveSearch) -> ArtifactoryConfig.parseGitProperties(
-						file, isJarFile, artifactoryConfig.gitPropertiesCommitTimeFormat, recursiveSearch),
-				this.searchGitPropertiesRecursively);
+				GitPropertiesLocatorUtils::getCommitInfoFromGitProperties,
+				this.searchGitPropertiesRecursively, this.gitPropertiesCommitTimeFormat);
 		instrumentation.addTransformer(new GitPropertiesLocatingTransformer(locator, getLocationIncludeFilter()));
 		return uploader;
 	}
@@ -731,7 +749,7 @@ public class AgentOptions {
 
 	/** @return the {@link TeamscaleProxyOptions} for the given protocol. */
 	public TeamscaleProxyOptions getTeamscaleProxyOptions(ProxySystemProperties.Protocol protocol) {
-		if(protocol == ProxySystemProperties.Protocol.HTTP) {
+		if (protocol == ProxySystemProperties.Protocol.HTTP) {
 			return teamscaleProxyOptionsForHttp;
 		}
 		return teamscaleProxyOptionsForHttps;

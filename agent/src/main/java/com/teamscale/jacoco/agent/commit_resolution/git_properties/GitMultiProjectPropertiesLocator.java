@@ -4,11 +4,13 @@ import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
 import com.teamscale.jacoco.agent.util.LoggingUtils;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -27,19 +29,22 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 
 	private final boolean recursiveSearch;
 
-	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, boolean recursiveSearch) {
+	private final @Nullable DateTimeFormatter gitPropertiesCommitTimeFormat;
+
+	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, boolean recursiveSearch, @Nullable DateTimeFormatter gitPropertiesCommitTimeFormat) {
 		// using a single threaded executor allows this class to be lock-free
 		this(uploader, Executors
 				.newSingleThreadExecutor(
 						new DaemonThreadFactory(GitMultiProjectPropertiesLocator.class,
-								"git.properties Jar scanner thread")), recursiveSearch);
+								"git.properties Jar scanner thread")), recursiveSearch, gitPropertiesCommitTimeFormat);
 	}
 
 	public GitMultiProjectPropertiesLocator(DelayedTeamscaleMultiProjectUploader uploader, Executor executor,
-			boolean recursiveSearch) {
+			boolean recursiveSearch, @Nullable DateTimeFormatter gitPropertiesCommitTimeFormat) {
 		this.uploader = uploader;
 		this.executor = executor;
 		this.recursiveSearch = recursiveSearch;
+		this.gitPropertiesCommitTimeFormat = gitPropertiesCommitTimeFormat;
 	}
 
 	/**
@@ -62,7 +67,7 @@ public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 			List<ProjectAndCommit> projectAndCommits = GitPropertiesLocatorUtils.getProjectRevisionsFromGitProperties(
 					file,
 					isJarFile,
-					recursiveSearch);
+					recursiveSearch, gitPropertiesCommitTimeFormat);
 			if (projectAndCommits.isEmpty()) {
 				logger.debug("No git.properties file found in {}", file);
 				return;

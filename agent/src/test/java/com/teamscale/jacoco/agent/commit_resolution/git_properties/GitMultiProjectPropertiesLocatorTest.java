@@ -23,7 +23,7 @@ class GitMultiProjectPropertiesLocatorTest {
 				new DelayedTeamscaleMultiProjectUploader((project, revision) -> {
 					projectAndCommits.add(new ProjectAndCommit(project, revision));
 					return new TeamscaleServer();
-				}), true);
+				}), true, null);
 		File jarFile = new File(getClass().getResource("emptyTeamscaleProjectGitProperties").getFile());
 		locator.searchFile(jarFile, false);
 		assertThat(projectAndCommits.size()).isEqualTo(1);
@@ -41,7 +41,7 @@ class GitMultiProjectPropertiesLocatorTest {
 					return server;
 				});
 		GitMultiProjectPropertiesLocator locator = new GitMultiProjectPropertiesLocator(
-				delayedTeamscaleMultiProjectUploader, true
+				delayedTeamscaleMultiProjectUploader, true, null
 		);
 		File jarFile = new File(getClass().getResource("multiple-same-target-git-properties-folder").getFile());
 		locator.searchFile(jarFile, false);

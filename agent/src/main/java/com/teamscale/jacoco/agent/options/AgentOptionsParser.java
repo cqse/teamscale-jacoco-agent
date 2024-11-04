@@ -29,9 +29,12 @@ import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION;
+import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -62,15 +65,15 @@ public class AgentOptionsParser {
 	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
 	 */
 	public static AgentOptions parse(String optionsString, String environmentConfigId, String environmentConfigFile,
-									 TeamscaleCredentials credentials,
-									 ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
+			TeamscaleCredentials credentials,
+			ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
 		return new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials).parse(
 				optionsString);
 	}
 
 	@VisibleForTesting
 	AgentOptionsParser(ILogger logger, String environmentConfigId, String environmentConfigFile,
-					   TeamscaleCredentials credentials) {
+			TeamscaleCredentials credentials) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
@@ -119,21 +122,24 @@ public class AgentOptionsParser {
 	}
 
 	/**
-	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites
-	 * the password with the password found in the proxy-password-file if necessary.
+	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites the password
+	 * with the password found in the proxy-password-file if necessary.
 	 */
 	@VisibleForTesting
 	public static void putTeamscaleProxyOptionsIntoSystemProperties(AgentOptions options) {
-		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).putTeamscaleProxyOptionsIntoSystemProperties();
-		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).putTeamscaleProxyOptionsIntoSystemProperties();
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
+				.putTeamscaleProxyOptionsIntoSystemProperties();
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
+				.putTeamscaleProxyOptionsIntoSystemProperties();
 	}
 
 	private void handleConfigId(AgentOptions options) throws AgentOptionReceiveException, AgentOptionParseException {
 		if (environmentConfigId != null) {
 			if (options.teamscaleServer.configId != null) {
-				logger.warn("You specified an ID for a profiler configuration in Teamscale both in the agent options and using an environment variable." +
-						" The environment variable will override the ID specified using the agent options." +
-						" Please use one or the other.");
+				logger.warn(
+						"You specified an ID for a profiler configuration in Teamscale both in the agent options and using an environment variable." +
+								" The environment variable will override the ID specified using the agent options." +
+								" Please use one or the other.");
 			}
 			handleOptionPart(options, "config-id=" + environmentConfigId);
 		}
@@ -156,7 +162,8 @@ public class AgentOptionsParser {
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
-	private void handleOptionPart(AgentOptions options, String optionPart)  throws AgentOptionParseException, AgentOptionReceiveException {
+	private void handleOptionPart(AgentOptions options,
+			String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
 		handleOption(options, keyAndValue.getFirst(), keyAndValue.getSecond());
 	}
@@ -165,7 +172,7 @@ public class AgentOptionsParser {
 	 * Parses and stores the option with the given key and value.
 	 */
 	private void handleOption(AgentOptions options,
-							  String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
+			String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (key.startsWith("debug")) {
 			handleDebugOption(options, value);
 			return;
@@ -179,7 +186,7 @@ public class AgentOptionsParser {
 			return;
 		}
 		if (key.startsWith("artifactory-") && ArtifactoryConfig
-				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
+				.handleArtifactoryOptions(options.artifactoryConfig, key, value)) {
 			return;
 		}
 		if (key.startsWith("azure-") && AzureFileStorageConfig
@@ -187,34 +194,40 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
-   		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value, filePatternResolver)){
-				return;
-			}
+		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value,
+				filePatternResolver)) {
+			return;
+		}
 		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
 	}
 
-	private boolean handleProxyOptions(AgentOptions options, String key, String value, FilePatternResolver filePatternResolver) throws AgentOptionParseException {
+	private boolean handleProxyOptions(AgentOptions options, String key, String value,
+			FilePatternResolver filePatternResolver) throws AgentOptionParseException {
 		String httpsPrefix = ProxySystemProperties.Protocol.HTTPS + "-";
 		if (key.startsWith(httpsPrefix)
-				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
-				key, httpsPrefix), value)) {
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
+				.handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+						key, httpsPrefix), value)) {
 			return true;
 		}
 
 		String httpPrefix = ProxySystemProperties.Protocol.HTTP + "-";
 		if (key.startsWith(httpPrefix)
-				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).handleTeamscaleProxyOptions(StringUtils.stripPrefix(
-				key, httpPrefix), value)) {
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
+				.handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+						key, httpPrefix), value)) {
 			return true;
 		}
 
-		if(key.equals("password-file")) {
+		if (key.equals("password-file")) {
 			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
-			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS).setProxyPasswordPath(proxyPasswordPath);
-			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP).setProxyPasswordPath(proxyPasswordPath);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
+					.setProxyPasswordPath(proxyPasswordPath);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
+					.setProxyPasswordPath(proxyPasswordPath);
 			return true;
 		}
 		return false;
@@ -296,8 +309,21 @@ public class AgentOptionsParser {
 			case "search-git-properties-recursively":
 				options.searchGitPropertiesRecursively = Boolean.parseBoolean(value);
 				return true;
+			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
+				logger.warn(
+						"The option " + ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION + " is deprecated. It still has an effect, " +
+								"but should be replaced with the equivalent option " + AgentOptions.GIT_PROPERTIES_JAR_OPTION + ".");
+				// intended fallthrough (acts as alias)
 			case AgentOptions.GIT_PROPERTIES_JAR_OPTION:
 				options.gitPropertiesJar = getGitPropertiesJarFile(value);
+				return true;
+			case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
+				logger.warn(
+						"The option " + ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION + " is deprecated. It still has an effect, " +
+								"but should be replaced with the equivalent option " + AgentOptions.GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION + ".");
+				// intended fallthrough (acts as alias)
+			case AgentOptions.GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
+				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
 				return true;
 			case "mode":
 				options.mode = parseEnumValue(key, value, EMode.class);
@@ -336,12 +362,14 @@ public class AgentOptionsParser {
 		options.teamscaleServer.configId = configId;
 	}
 
-	private void readConfigFromTeamscale(AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
-		if(options.teamscaleServer.configId == null) {
+	private void readConfigFromTeamscale(
+			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+		if (options.teamscaleServer.configId == null) {
 			return;
 		}
 
-		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, options.teamscaleServer.configId,
+		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger,
+				options.teamscaleServer.configId,
 				options.teamscaleServer.url,
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);
@@ -386,7 +414,7 @@ public class AgentOptionsParser {
 	 * excludes=third.party.*
 	 */
 	private void readConfigFromFile(AgentOptions options,
-									File configFile) throws AgentOptionParseException, AgentOptionReceiveException {
+			File configFile) throws AgentOptionParseException, AgentOptionReceiveException {
 		try {
 			String content = FileSystemUtils.readFileUTF8(configFile);
 			readConfigFromString(options, content);
@@ -400,7 +428,7 @@ public class AgentOptionsParser {
 	}
 
 	private void readConfigFromString(AgentOptions options,
-									  String content) throws AgentOptionParseException, AgentOptionReceiveException {
+			String content) throws AgentOptionParseException, AgentOptionReceiveException {
 		List<String> configFileKeyValues = org.conqat.lib.commons.string.StringUtils.splitLinesAsList(
 				content);
 		for (String optionKeyValue : configFileKeyValues) {
