@@ -88,6 +88,16 @@ public class AgentOptionsParser {
 	}
 
 	/**
+	 * Throw the first collected exception, if present.
+	 */
+	@VisibleForTesting
+	public void throwOnCollectedErrors() throws Exception {
+		for (Exception e : collectedErrors) {
+			throw e;
+		}
+	}
+
+	/**
 	 * Parses the given command-line options.
 	 */
 	/* package */ AgentOptions parse(

@@ -177,7 +177,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	public static void addTeamscaleAppenderTo(LoggerContext context, AgentOptions agentOptions) {
 		@Nullable TeamscaleClient client = agentOptions.createTeamscaleClient(
 				false);
-		if (client == null) {
+		if (client == null || agentOptions.configurationViaTeamscale == null) {
 			return;
 		}
 
