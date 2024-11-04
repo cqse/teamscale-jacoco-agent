@@ -78,7 +78,6 @@ public class ArtifactoryUploader extends HttpZipUploaderBase<IArtifactoryUploadA
 		String revision = reuploadProperties.getProperty(REVISION.name());
 		String commitString = reuploadProperties.getProperty(COMMIT.name());
 		config.commitInfo = new CommitInfo(revision, CommitDescriptor.parse(commitString));
-		config.gitPropertiesCommitTimeFormat = artifactoryConfig.gitPropertiesCommitTimeFormat;
 		config.apiKey = artifactoryConfig.apiKey;
 		config.partition = Strings.emptyToNull(reuploadProperties.getProperty(PARTITION.name()));
 		setUploadPath(coverageFile, config);
