@@ -138,6 +138,8 @@ public abstract class AgentBase {
 				stopServer();
 				prepareShutdown();
 				logger.info("CQSE JaCoCo agent successfully shut down.");
+			} catch (Exception e) {
+				logger.error("Exception during agent shutdown.", e);
 			} finally {
 				// Try to flush logging resources also in case of an exception during shutdown
 				PreMain.closeLoggingResources();
