@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class AgentOptionsParserTest {
 
 	private TeamscaleCredentials teamscaleCredentials;
-	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null);
 	private Path configFile;
 	/** The mock server to run requests against. */
 	protected MockWebServer mockWebServer;
@@ -104,7 +103,7 @@ public class AgentOptionsParserTest {
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
 				null, teamscaleCredentials);
-		AgentOptions options = parseAndThrow("teamscale-partition=bar");
+		AgentOptions options = parseAndThrow(parser, "teamscale-partition=bar");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("foo");
 	}
@@ -113,7 +112,7 @@ public class AgentOptionsParserTest {
 	public void environmentConfigFileOverridesCommandLineOptions() throws Exception {
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, configFile.toString(),
 				teamscaleCredentials);
-		AgentOptions options = parseAndThrow("teamscale-partition=from-command-line");
+		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
 	}
@@ -128,7 +127,7 @@ public class AgentOptionsParserTest {
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config", configFile.toString(),
 				teamscaleCredentials);
-		AgentOptions options = parseAndThrow("teamscale-partition=from-command-line");
+		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
 	}
@@ -232,19 +231,22 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials);
-
-		assertThat(parseAndThrow("teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
+		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials), "teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");
-		assertThat(parseAndThrow(
+		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials),
 				"teamscale-project=p,teamscale-partition=p,teamscale-user=user2").teamscaleServer.userName).isEqualTo(
 				"user2");
 	}
 
-	private AgentOptions parseAndThrow(String options) throws Exception {
+	private AgentOptions parseAndThrow(AgentOptionsParser parser, String options) throws Exception {
 		AgentOptions result = parser.parse(options);
 		parser.throwOnCollectedErrors();
 		return result;
+	}
+
+	private AgentOptions parseAndThrow(String options) throws Exception {
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+		return parseAndThrow(parser, options);
 	}
 
 	/**
