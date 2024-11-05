@@ -16,7 +16,7 @@ class Commit : Serializable {
      * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
      * It falls back to retrieving the values from the git repository, if not given manually.
      */
-    var branchName: String? = null
+	private var branchName: String? = null
         set(value) {
             field = value?.trim()
         }
@@ -27,7 +27,7 @@ class Commit : Serializable {
      * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
      * It falls back to retrieving the values from the git repository, if not given manually.
      */
-    var timestamp: String? = null
+	private var timestamp: String? = null
         set(value) {
             field = value?.trim()
         }
@@ -39,7 +39,7 @@ class Commit : Serializable {
      * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
      * It falls back to retrieving the values from the git repository, if not given manually.
      */
-    var revision: String? = null
+	private var revision: String? = null
         set(value) {
             field = value?.trim()
         }
@@ -56,20 +56,20 @@ class Commit : Serializable {
     fun getOrResolveCommitDescriptor(project: Project): Pair<CommitDescriptor?, String?> {
         try {
             // If timestamp and branch are set manually, prefer to use them
-            if (branchName != null && timestamp != null) {
-                return Pair(CommitDescriptor(branchName, timestamp), null)
-            }
+			branchName?.let { branch -> timestamp?.let { time ->
+				return CommitDescriptor(branch, time) to null
+			}}
             // If revision is set manually, use as 2nd option
-            if (revision != null) {
-                return Pair(null, revision)
-            }
+			revision?.let { rev ->
+				return null to rev
+			}
             // Otherwise fall back to getting the information from the git repository
             if (resolvedRevision == null && resolvedCommit == null) {
                 val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
                 resolvedRevision = ref
                 resolvedCommit = commit
             }
-            return Pair(resolvedCommit, resolvedRevision)
+            return resolvedCommit to resolvedRevision
         } catch (e: IOException) {
             throw GradleException("Could not determine Teamscale upload commit", e)
         }

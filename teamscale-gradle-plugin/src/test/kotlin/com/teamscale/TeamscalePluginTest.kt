@@ -38,9 +38,9 @@ class TeamscalePluginTest {
 
 	@BeforeEach
 	fun startFakeTeamscaleServer() {
-		teamscaleMockServer = TeamscaleMockServer(
-			FAKE_TEAMSCALE_PORT
-		).acceptingReportUploads().withImpactedTests("com/example/project/JUnit4Test/systemTest")
+		teamscaleMockServer = TeamscaleMockServer(FAKE_TEAMSCALE_PORT)
+			.acceptingReportUploads()
+			.withImpactedTests("com/example/project/JUnit4Test/systemTest")
 	}
 
 	@AfterEach

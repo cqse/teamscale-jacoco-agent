@@ -105,7 +105,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
                 val commitDescriptorOrNull = if (revision != null) null else commitDescriptor!!
                 retry(3) {
                     val client =
-                        TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
+                        TeamscaleClient(server.url!!, server.userName!!, server.userAccessToken!!, server.project!!)
                     client.uploadReports(
                         format,
                         reportFiles,
