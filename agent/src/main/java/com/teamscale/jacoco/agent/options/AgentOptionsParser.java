@@ -6,8 +6,9 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
+import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
+import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
@@ -27,12 +28,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION;
+import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -64,8 +69,8 @@ public class AgentOptionsParser {
 	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
 	 */
 	public static Pair<AgentOptions, List<Exception>> parse(String optionsString, String environmentConfigId, String environmentConfigFile,
-									 TeamscaleCredentials credentials,
-									 ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
+			TeamscaleCredentials credentials,
+			ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
 		AgentOptionsParser parser = new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials);
 		AgentOptions options = parser.parse(optionsString);
 		return Pair.createPair(options, parser.getCollectedErrors());
@@ -73,7 +78,7 @@ public class AgentOptionsParser {
 
 	@VisibleForTesting
 	AgentOptionsParser(ILogger logger, String environmentConfigId, String environmentConfigFile,
-					   TeamscaleCredentials credentials) {
+			TeamscaleCredentials credentials) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
@@ -121,14 +126,19 @@ public class AgentOptionsParser {
 			String[] optionParts = optionsString.split(",");
 			for (String optionPart : optionParts) {
 				try {
-					handleOption(options, optionPart);
+					handleOptionPart(options, optionPart);
 				} catch (Exception e) {
 					collectedErrors.add(e);
 				}
 			}
 		}
 
-		handleConfigFromEnvironment(options);
+		// we have to put the proxy options into system properties before reading the configuration from Teamscale as we
+		// might need them to connect to Teamscale
+		putTeamscaleProxyOptionsIntoSystemProperties(options);
+
+		handleConfigId(options);
+		handleConfigFile(options);
 
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
@@ -138,14 +148,35 @@ public class AgentOptionsParser {
 		return options;
 	}
 
-	private void handleConfigFromEnvironment(
-			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+	/**
+	 * Stores the agent options for proxies in the {@link TeamscaleProxySystemProperties} and overwrites the password
+	 * with the password found in the proxy-password-file if necessary.
+	 */
+	@VisibleForTesting
+	public static void putTeamscaleProxyOptionsIntoSystemProperties(AgentOptions options) {
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
+				.putTeamscaleProxyOptionsIntoSystemProperties();
+		options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
+				.putTeamscaleProxyOptionsIntoSystemProperties();
+	}
+
+	private void handleConfigId(AgentOptions options) throws AgentOptionReceiveException, AgentOptionParseException {
 		if (environmentConfigId != null) {
-			handleOption(options, "config-id=" + environmentConfigId);
+			if (options.teamscaleServer.configId != null) {
+				logger.warn(
+						"You specified an ID for a profiler configuration in Teamscale both in the agent options and using an environment variable." +
+								" The environment variable will override the ID specified using the agent options." +
+								" Please use one or the other.");
+			}
+			handleOptionPart(options, "config-id=" + environmentConfigId);
 		}
 
+		readConfigFromTeamscale(options);
+	}
+
+	private void handleConfigFile(AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (environmentConfigFile != null) {
-			handleOption(options, "config-file=" + environmentConfigFile);
+			handleOptionPart(options, "config-file=" + environmentConfigFile);
 		}
 
 		if (environmentConfigId != null && environmentConfigFile != null) {
@@ -158,11 +189,17 @@ public class AgentOptionsParser {
 	/**
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
-	private void handleOption(AgentOptions options,
-							  String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void handleOptionPart(AgentOptions options,
+			String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
-		String key = keyAndValue.getFirst();
-		String value = keyAndValue.getSecond();
+		handleOption(options, keyAndValue.getFirst(), keyAndValue.getSecond());
+	}
+
+	/**
+	 * Parses and stores the option with the given key and value.
+	 */
+	private void handleOption(AgentOptions options,
+			String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
 		if (key.startsWith("debug")) {
 			handleDebugOption(options, value);
 			return;
@@ -176,7 +213,7 @@ public class AgentOptionsParser {
 			return;
 		}
 		if (key.startsWith("artifactory-") && ArtifactoryConfig
-				.handleArtifactoryOptions(options.artifactoryConfig, filePatternResolver, key, value)) {
+				.handleArtifactoryOptions(options.artifactoryConfig, key, value)) {
 			return;
 		}
 		if (key.startsWith("azure-") && AzureFileStorageConfig
@@ -184,10 +221,43 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
+		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value,
+				filePatternResolver)) {
+			return;
+		}
 		if (handleAgentOptions(options, key, value)) {
 			return;
 		}
 		throw new AgentOptionParseException("Unknown option: " + key);
+	}
+
+	private boolean handleProxyOptions(AgentOptions options, String key, String value,
+			FilePatternResolver filePatternResolver) throws AgentOptionParseException {
+		String httpsPrefix = ProxySystemProperties.Protocol.HTTPS + "-";
+		if (key.startsWith(httpsPrefix)
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
+				.handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+						key, httpsPrefix), value)) {
+			return true;
+		}
+
+		String httpPrefix = ProxySystemProperties.Protocol.HTTP + "-";
+		if (key.startsWith(httpPrefix)
+				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
+				.handleTeamscaleProxyOptions(StringUtils.stripPrefix(
+						key, httpPrefix), value)) {
+			return true;
+		}
+
+		if (key.equals("password-file")) {
+			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
+					.setProxyPasswordPath(proxyPasswordPath);
+			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
+					.setProxyPasswordPath(proxyPasswordPath);
+			return true;
+		}
+		return false;
 	}
 
 	/** Parses and stores the debug logging file path if given. */
@@ -227,16 +297,13 @@ public class AgentOptionsParser {
 			throws AgentOptionParseException, AgentOptionReceiveException {
 		switch (key) {
 			case "config-id":
-				readConfigFromTeamscale(options, value);
+				storeConfigId(options, value);
 				return true;
 			case CONFIG_FILE_OPTION:
 				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
 				return true;
 			case LOGGING_CONFIG_OPTION:
 				options.loggingConfig = filePatternResolver.parsePath(key, value);
-				return true;
-			case "proxy-password-file":
-				options.proxyPasswordPath = filePatternResolver.parsePath(key, value);
 				return true;
 			case "interval":
 				options.dumpIntervalInMinutes = parseInt(key, value);
@@ -269,8 +336,21 @@ public class AgentOptionsParser {
 			case "search-git-properties-recursively":
 				options.searchGitPropertiesRecursively = Boolean.parseBoolean(value);
 				return true;
+			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
+				logger.warn(
+						"The option " + ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION + " is deprecated. It still has an effect, " +
+								"but should be replaced with the equivalent option " + AgentOptions.GIT_PROPERTIES_JAR_OPTION + ".");
+				// intended fallthrough (acts as alias)
 			case AgentOptions.GIT_PROPERTIES_JAR_OPTION:
 				options.gitPropertiesJar = getGitPropertiesJarFile(value);
+				return true;
+			case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
+				logger.warn(
+						"The option " + ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION + " is deprecated. It still has an effect, " +
+								"but should be replaced with the equivalent option " + AgentOptions.GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION + ".");
+				// intended fallthrough (acts as alias)
+			case AgentOptions.GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
+				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
 				return true;
 			case "mode":
 				options.mode = parseEnumValue(key, value, EMode.class);
@@ -301,14 +381,22 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private void readConfigFromTeamscale(AgentOptions options,
-										 String configId) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void storeConfigId(AgentOptions options, String configId) throws AgentOptionParseException {
 		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
 			throw new AgentOptionParseException(
 					"Has specified config-id '" + configId + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
 		}
 		options.teamscaleServer.configId = configId;
-		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, configId,
+	}
+
+	private void readConfigFromTeamscale(
+			AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+		if (options.teamscaleServer.configId == null) {
+			return;
+		}
+
+		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger,
+				options.teamscaleServer.configId,
 				options.teamscaleServer.url,
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);
@@ -353,7 +441,7 @@ public class AgentOptionsParser {
 	 * excludes=third.party.*
 	 */
 	private void readConfigFromFile(AgentOptions options,
-									File configFile) throws AgentOptionParseException, AgentOptionReceiveException {
+			File configFile) throws AgentOptionParseException, AgentOptionReceiveException {
 		try {
 			String content = FileSystemUtils.readFileUTF8(configFile);
 			readConfigFromString(options, content);
@@ -367,7 +455,7 @@ public class AgentOptionsParser {
 	}
 
 	private void readConfigFromString(AgentOptions options,
-									  String content) throws AgentOptionParseException, AgentOptionReceiveException {
+			String content) throws AgentOptionParseException, AgentOptionReceiveException {
 		List<String> configFileKeyValues = org.conqat.lib.commons.string.StringUtils.splitLinesAsList(
 				content);
 		for (String optionKeyValue : configFileKeyValues) {
@@ -376,7 +464,7 @@ public class AgentOptionsParser {
 				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
 					continue;
 				}
-				handleOption(options, optionKeyValue);
+				handleOptionPart(options, optionKeyValue);
 			} catch (Exception e) {
 				collectedErrors.add(e);
 			}

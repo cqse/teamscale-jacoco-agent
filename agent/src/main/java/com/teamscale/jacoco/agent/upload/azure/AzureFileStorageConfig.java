@@ -25,7 +25,7 @@ public class AzureFileStorageConfig {
 	/**
 	 * Handles all command-line options prefixed with 'azure-'
 	 *
-	 * @return true if it has successfully process the given option.
+	 * @return true if it has successfully processed the given option.
 	 */
 	public static boolean handleAzureFileStorageOptions(AzureFileStorageConfig azureFileStorageConfig, String key,
 														String value)

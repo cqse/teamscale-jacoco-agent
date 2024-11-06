@@ -81,7 +81,7 @@ dependencies {
 tasks.processResources {
 	filesMatching("**/app.properties") {
 		filter {
-			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", rootProject.ext["appVersion"].toString())
+			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", version.toString())
 		}
 	}
 }

@@ -27,4 +27,26 @@ class CucumberPickleDescriptorResolverTest {
 		expectedByInput.forEach((input, expected) -> Assertions.assertEquals(expected,
 				CucumberPickleDescriptorResolver.escapeSlashes(input)));
 	}
+
+	@Test
+	void testNoDuplicatedSlashesInUniformPath() {
+		CucumberPickleDescriptorResolver cucumberPickleDescriptorResolver = new CucumberPickleDescriptorResolver();
+		LinkedHashMap<String, String> expectedByInput = new LinkedHashMap<>();
+		expectedByInput.put("abc", "abc");
+		expectedByInput.put("ab/c", "ab/c");
+		expectedByInput.put("ab//c", "ab/c");
+		expectedByInput.put("ab///c", "ab/c");
+		expectedByInput.put("ab\\/\\//c", "ab\\/\\//c");
+		expectedByInput.put("a/", "a/");
+		expectedByInput.put("a//", "a/");
+		expectedByInput.put("/a", "/a");
+		expectedByInput.put("//a", "/a");
+		expectedByInput.put("/", "/");
+		expectedByInput.put("\\/", "\\/");
+		expectedByInput.put("\\", "\\");
+		expectedByInput.put("\\\\", "\\\\");
+
+		expectedByInput.forEach((input, expected) -> Assertions.assertEquals(expected,
+				cucumberPickleDescriptorResolver.removeDuplicatedSlashes(input)));
+	}
 }

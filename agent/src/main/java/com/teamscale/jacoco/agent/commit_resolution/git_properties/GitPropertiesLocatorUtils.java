@@ -7,8 +7,8 @@ import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import org.conqat.lib.commons.collections.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,9 +85,6 @@ public class GitPropertiesLocatorUtils {
 	 */
 	private static final String GIT_PROPERTIES_DEFAULT_GRADLE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
-	/** File ending of Java archive packages */
-	public static final String JAR_FILE_ENDING = ".jar";
-
 	/**
 	 * Reads the git SHA1 and branch and timestamp from the given jar file's git.properties and builds a commit
 	 * descriptor out of it. If no git.properties file can be found, returns null.
@@ -95,16 +92,23 @@ public class GitPropertiesLocatorUtils {
 	 * @throws IOException                   If reading the jar file fails.
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
-	public static List<CommitInfo> getCommitInfoFromGitProperties(
-			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
-		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
-				recursiveSearch);
+	public static List<CommitInfo> getCommitInfoFromGitProperties(File file, boolean isJarFile,
+			boolean recursiveSearch,
+			@Nullable DateTimeFormatter gitPropertiesCommitTimeFormat)
+			throws IOException, InvalidGitPropertiesException {
+		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(file,
+				isJarFile, recursiveSearch);
 		List<CommitInfo> result = new ArrayList<>();
+
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
-					entryWithProperties.getFirst(), file, null);
+			String entry = entryWithProperties.getFirst();
+			Properties properties = entryWithProperties.getSecond();
+
+			CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties, entry, file,
+					gitPropertiesCommitTimeFormat);
 			result.add(commitInfo);
 		}
+
 		return result;
 	}
 
@@ -122,8 +126,7 @@ public class GitPropertiesLocatorUtils {
 		switch (protocol) {
 			case "file":
 				File jarOrClassFolderFile = new File(jarOrClassFolderUrl.toURI());
-				if (jarOrClassFolderFile.isDirectory() || org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
-						jarOrClassFolderUrl.getPath().toLowerCase(), ".jar", ".war", ".ear", ".aar")) {
+				if (jarOrClassFolderFile.isDirectory() || isJarLikeFile(jarOrClassFolderUrl.getPath())) {
 					return Pair.createPair(new File(jarOrClassFolderUrl.toURI()), !jarOrClassFolderFile.isDirectory());
 				}
 				break;
@@ -183,8 +186,7 @@ public class GitPropertiesLocatorUtils {
 			String segment = pathSegments[segmentIdx];
 			artefactUrlBuilder.append(segment);
 			artefactUrlBuilder.append("/");
-			if (org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
-					segment, ".jar", ".war", ".ear", ".aar")) {
+			if (isJarLikeFile(segment)) {
 				break;
 			}
 			segmentIdx += 1;
@@ -195,6 +197,11 @@ public class GitPropertiesLocatorUtils {
 		return artefactUrlBuilder.toString();
 	}
 
+	private static boolean isJarLikeFile(String segment) {
+		return org.conqat.lib.commons.string.StringUtils.endsWithOneOf(
+				segment.toLowerCase(), ".jar", ".war", ".ear", ".aar");
+	}
+
 	/**
 	 * Reads the 'teamscale.project' property values and the git SHA1s or branch + timestamp from all git.properties
 	 * files contained in the provided folder or archive file.
@@ -203,13 +210,14 @@ public class GitPropertiesLocatorUtils {
 	 * @throws InvalidGitPropertiesException If a git.properties file is found but it is malformed.
 	 */
 	public static List<ProjectAndCommit> getProjectRevisionsFromGitProperties(
-			File file, boolean isJarFile, boolean recursiveSearch) throws IOException, InvalidGitPropertiesException {
+			File file, boolean isJarFile, boolean recursiveSearch,
+			@Nullable DateTimeFormatter gitPropertiesCommitTimeFormat) throws IOException, InvalidGitPropertiesException {
 		List<Pair<String, Properties>> entriesWithProperties = findGitPropertiesInFile(file, isJarFile,
 				recursiveSearch);
 		List<ProjectAndCommit> result = new ArrayList<>();
 		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
 			CommitInfo commitInfo = getCommitInfoFromGitProperties(entryWithProperties.getSecond(),
-					entryWithProperties.getFirst(), file, null);
+					entryWithProperties.getFirst(), file, gitPropertiesCommitTimeFormat);
 			String project = entryWithProperties.getSecond().getProperty(GIT_PROPERTIES_TEAMSCALE_PROJECT);
 			if (commitInfo.isEmpty() && StringUtils.isEmpty(project)) {
 				throw new InvalidGitPropertiesException(
@@ -273,7 +281,7 @@ public class GitPropertiesLocatorUtils {
 			File directoryFile) throws IOException {
 		List<Pair<String, Properties>> result = new ArrayList<>();
 		List<File> jarFiles = FileSystemUtils.listFilesRecursively(directoryFile,
-				file -> file.getName().endsWith(JAR_FILE_ENDING));
+				file -> isJarLikeFile(file.getName()));
 		for (File jarFile : jarFiles) {
 			JarInputStream is = new JarInputStream(Files.newInputStream(jarFile.toPath()));
 			String relativeFilePath = directoryFile.getName() + File.separator + directoryFile.toPath()
@@ -323,7 +331,7 @@ public class GitPropertiesLocatorUtils {
 				Properties gitProperties = new Properties();
 				gitProperties.load(in);
 				result.add(Pair.createPair(fullEntryName, gitProperties));
-			} else if (entry.getName().endsWith(JAR_FILE_ENDING) && recursiveSearch) {
+			} else if (isJarLikeFile(entry.getName()) && recursiveSearch) {
 				result.addAll(findGitPropertiesInArchive(new JarInputStream(in), fullEntryName, true));
 			}
 		}

@@ -1,6 +1,7 @@
 plugins {
 	com.teamscale.`java-convention`
 	application
+	com.teamscale.`agent-jar`
 }
 
 application {

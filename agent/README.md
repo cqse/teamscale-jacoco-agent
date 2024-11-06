@@ -63,6 +63,7 @@ The following options are available:
   `logging` folder, e.g. to enable debug logging or log directly to the console. (For details see path format section
   below)
 - `proxy-password-file` (optional): path to a file that contains the password for a proxy server authentication. This file may only contain the password and nothing else.
+- `proxy-` (optional): For other options regarding teamscale-specific proxy settings see [Teamscale-Specific-Proxy Section](#teamscale-specific-proxy-settings).
 - `mode` (optional): which coverage collection mode to use. Can be either `normal` or `testwise` (Default is `normal`)
 - `debug` (optional): `true`, `false` or a path to which the logs should be written to. `true` if no explicit value given.
   This option turns on debug mode. The logs will be written to console and the given file path. If no file path is given,
@@ -86,6 +87,20 @@ Note that defining `-Djava.io.tmpdir` will change the temp directory that is bei
 
 If there is no log file at that location, it means the agent didn't even start and you have not configured it correctly.
 Check your applications console output for error messages.
+
+#### Teamscale-Specific Proxy Settings
+It is possible to specify teamscale-specific proxy settings that take prevalence over the system properties of the JVM.
+If no or not all teamscale-specific proxy settings are provided the agent will fall back to the system properties of the
+JVM.
+
+It is also possible to specify these options by prefixing the JVM flags for proxies with `teamscale.`,
+for example `-Dteamscale.https.proxyHost`.
+
+The following options are available both for `https` and `http`:
+- `proxy-https-host`/`proxy-http-host`: The host name of the proxy server.
+- `proxy-https-port`/`proxy-http-port`: The port of the proxy server.
+- `proxy-https-user`/`proxy-http-user`: The username for the proxy server.
+- `proxy-https-password`/`proxy-http-password`: The password for the proxy user.
 
 #### Testwise coverage
 
@@ -161,6 +176,7 @@ patterns with `*`, `**` and `?`.
   - the properties `git.branch` and `git.commit.time` (in the format `yyyy-MM-dd'T'HH:mm:ssZ` or `yyyy-MM-dd'T'HH:mm:ssXXX`) or
   - the properties `teamscale.commit.branch` and `teamscale.commit.time` (either as an epoch timestamp or in one of the two formats above)
 - `search-git-properties-recursively` Specifies whether to search for git.properties files recursively in folders or archive (jar, war, ear, aar) files. Default: true.
+- `git-properties-commit-date-format` The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 - `teamscale-message` (optional): the commit message shown within Teamscale for the coverage upload (Default is "Agent
   coverage upload").
 - `config-file` (optional): a file which contains one or more of the previously named options as `key=value` entries
@@ -217,11 +233,6 @@ patterns with `*`, `**` and `?`.
   This can be used to encode e.g. a partition name that is parsed later on via Teamscale Artifactory connector options.
 - `artifactory-path-suffix` (optional): The path within the storage location between
   the default path and the uploaded artifact.
-- `artifactory-git-properties-jar` (optional): Specify a Jar to search a `git.properties` file within.
-  If not specified, Git commit information is extracted from the first found `git.properties` file.
-  See `git-properties-jar` for details.
-- `artifactory-git-properties-commit-date-format` (optional):
-  The Java data pattern `git.commit.time` is encoded with in `git.properties`. Defaults to `yyyy-MM-dd'T'HH:mm:ssZ`.
 
 ### The new standard upload schema
 ```

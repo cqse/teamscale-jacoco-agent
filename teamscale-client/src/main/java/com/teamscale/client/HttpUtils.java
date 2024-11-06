@@ -102,24 +102,26 @@ public class HttpUtils {
 
 	private static boolean setUpProxyServerForProtocol(ProxySystemProperties.Protocol protocol,
 													   OkHttpClient.Builder httpClientBuilder) {
-
-		ProxySystemProperties proxySystemProperties = new ProxySystemProperties(protocol);
-		String proxyHost = proxySystemProperties.getProxyHost();
-		int proxyPort = proxySystemProperties.getProxyPort();
-		String proxyUser = proxySystemProperties.getProxyUser();
-		String proxyPassword = proxySystemProperties.getProxyPassword();
-
-		if (proxySystemProperties.proxyServerIsSet()) {
-			useProxyServer(httpClientBuilder, proxyHost, proxyPort);
-
-			if (proxySystemProperties.proxyAuthIsSet()) {
-				useProxyAuthenticator(httpClientBuilder, proxyUser, proxyPassword);
+		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
+		try {
+			if (!teamscaleProxySystemProperties.proxyServerIsSet()) {
+				return false;
 			}
 
-			return true;
-		}
-		return false;
+			useProxyServer(httpClientBuilder, teamscaleProxySystemProperties.getProxyHost(),
+				teamscaleProxySystemProperties.getProxyPort());
 
+		} catch (ProxySystemProperties.IncorrectPortFormatException e)
+		{
+			LOGGER.warn(e.getMessage());
+			return false;
+		}
+
+		if (teamscaleProxySystemProperties.proxyAuthIsSet()) {
+			useProxyAuthenticator(httpClientBuilder, teamscaleProxySystemProperties.getProxyUser(), teamscaleProxySystemProperties.getProxyPassword());
+		}
+
+		return true;
 	}
 
 	private static void useProxyServer(OkHttpClient.Builder httpClientBuilder, String proxyHost, int proxyPort) {

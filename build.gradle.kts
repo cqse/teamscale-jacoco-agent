@@ -1,11 +1,12 @@
 plugins {
 	alias(libs.plugins.versions)
 	alias(libs.plugins.nexusPublish)
+	kotlin("jvm") apply false
 }
 
 group = "com.teamscale"
 
-val appVersion by extra("34.0.1")
+val appVersion by extra("34.2.0")
 
 val snapshotVersion = appVersion + if (VersionUtils.isTaggedRelease()) "" else "-SNAPSHOT"
 

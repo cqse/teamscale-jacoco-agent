@@ -107,9 +107,10 @@ tasks.shadowDistZip {
 }
 
 tasks.processResources {
+	inputs.property("version", project.version)
 	filesMatching("**/app.properties") {
 		filter {
-			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", appVersion)
+			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", version.toString())
 		}
 	}
 }

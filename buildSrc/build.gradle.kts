@@ -11,11 +11,11 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.goooler.shadow:shadow-gradle-plugin:8.1.8")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.5")
     implementation("com.xpdustry.ksr:com.xpdustry.ksr.gradle.plugin:1.0.0") {
         exclude(group = "com.github.johnrengelman")
     }
 
-    implementation("org.ow2.asm:asm:9.7")
-    implementation("org.ow2.asm:asm-commons:9.7")
+    implementation("org.ow2.asm:asm:9.7.1")
+    implementation("org.ow2.asm:asm-commons:9.7.1")
 }

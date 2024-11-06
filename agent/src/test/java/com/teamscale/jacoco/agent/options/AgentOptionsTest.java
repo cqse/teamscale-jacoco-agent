@@ -1,21 +1,34 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.JsonUtils;
+import com.teamscale.client.ProfilerConfiguration;
+import com.teamscale.client.ProfilerRegistration;
+import com.teamscale.client.ProxySystemProperties;
+import com.teamscale.client.TeamscaleProxySystemProperties;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
 import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.function.Predicate;
 
+import static com.teamscale.client.HttpUtils.PROXY_AUTHORIZATION_HTTP_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -301,7 +314,7 @@ public class AgentOptionsTest {
 	 * {@link ArtifactoryConfig#ARTIFACTORY_URL_OPTION}) passes the AgentOptions' validity check.
 	 */
 	@Test
-	public void testArtifactoryBasicAuthSetPassesValiditiyCheck() throws Exception {
+	public void testArtifactoryBasicAuthSetPassesValidityCheck() throws Exception {
 		AgentOptions agentOptions = parseAndMaybeThrow("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.user = "user";
@@ -324,6 +337,140 @@ public class AgentOptionsTest {
 		assertThat(agentOptions.getValidator().isValid()).isTrue();
 	}
 
+	/**
+	 * Tests that the {@link TeamscaleProxyOptions} for HTTP are parsed correctly and correctly put into
+	 * system properties that can be read using {@link TeamscaleProxySystemProperties}.
+	 */
+	@Test
+	public void testTeamscaleProxyOptionsCorrectlySetSystemPropertiesForHttp() throws Exception {
+		testTeamscaleProxyOptionsCorrectlySetSystemProperties(ProxySystemProperties.Protocol.HTTP);
+	}
+
+	/**
+	 * Tests that the {@link TeamscaleProxyOptions} for HTTPS are parsed correctly and correctly put into
+	 * system properties that can be read using {@link TeamscaleProxySystemProperties}.
+	 */
+	@Test
+	public void testTeamscaleProxyOptionsCorrectlySetSystemPropertiesForHttps() throws Exception {
+		testTeamscaleProxyOptionsCorrectlySetSystemProperties(ProxySystemProperties.Protocol.HTTPS);
+	}
+
+	/**
+	 * Temporary folder to create the password file for
+	 * {@link AgentOptionsTest#testTeamscaleProxyOptionsAreUsedWhileFetchingConfigFromTeamscale()}.
+	 */
+	@TempDir
+	public File temporaryDirectory;
+
+	/**
+	 * Test that the proxy settings are put into system properties and used for fetching a profiler configuration from
+	 * Teamscale. Also tests that it is possible to specify the proxy password in a file and that this overwrites the
+	 * password specified as agent option.
+	 */
+	@Test
+	public void testTeamscaleProxyOptionsAreUsedWhileFetchingConfigFromTeamscale() throws Exception {
+		String expectedUser = "user";
+		// this is the password passed as agent property, it should be overwritten by the password file
+		String unexpectedPassword = "not-my-password";
+
+		String expectedPassword = "password";
+		File passwordFile = writePasswortToPasswordFile(expectedPassword);
+
+		try (MockWebServer mockProxyServer = new MockWebServer()) {
+			String expectedHost = mockProxyServer.getHostName();
+			int expectedPort = mockProxyServer.getPort();
+
+
+			ProfilerConfiguration expectedProfilerConfiguration = new ProfilerConfiguration();
+			expectedProfilerConfiguration.configurationId = "config-id";
+			expectedProfilerConfiguration.configurationOptions = "mode=testwise\ntia-mode=disk";
+			ProfilerRegistration profilerRegistration = new ProfilerRegistration();
+			profilerRegistration.profilerId = "profiler-id";
+			profilerRegistration.profilerConfiguration = expectedProfilerConfiguration;
+
+			mockProxyServer.enqueue(new MockResponse().setResponseCode(407));
+			mockProxyServer.enqueue(new MockResponse().setResponseCode(200).setBody(JsonUtils.serialize(profilerRegistration)));
+
+			AgentOptions agentOptions= parseProxyOptions("config-id=config,", ProxySystemProperties.Protocol.HTTP, expectedHost, expectedPort, expectedUser, unexpectedPassword, passwordFile);
+
+			assertThat(agentOptions.configurationViaTeamscale.getProfilerConfiguration().configurationId).isEqualTo(expectedProfilerConfiguration.configurationId);
+			assertThat(agentOptions.mode).isEqualTo(EMode.TESTWISE);
+
+			// 2 requests: one without proxy authentication, which failed (407), one with proxy authentication
+			assertThat(mockProxyServer.getRequestCount()).isEqualTo(2);
+
+			mockProxyServer.takeRequest();
+			RecordedRequest requestWithProxyAuth = mockProxyServer.takeRequest(); // this is the interesting request
+
+			// check that the correct password was used
+			String base64EncodedBasicAuth = Base64.getEncoder().encodeToString((expectedUser + ":" + expectedPassword).getBytes(
+					StandardCharsets.UTF_8));
+			assertThat(requestWithProxyAuth.getHeader(PROXY_AUTHORIZATION_HTTP_HEADER)).isEqualTo("Basic " + base64EncodedBasicAuth);
+		}
+
+	}
+
+	private File writePasswortToPasswordFile(String expectedPassword) throws IOException {
+		File passwordFile = new File(temporaryDirectory, "password.txt");
+
+		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(passwordFile));
+		bufferedWriter.write(expectedPassword);
+		bufferedWriter.close();
+
+		return passwordFile;
+	}
+
+	private void testTeamscaleProxyOptionsCorrectlySetSystemProperties(ProxySystemProperties.Protocol protocol) throws Exception {
+		String expectedHost = "host";
+		int expectedPort = 9999;
+		String expectedUser = "user";
+		String expectedPassword = "password";
+		AgentOptions agentOptions = parseProxyOptions("", protocol,
+				expectedHost, expectedPort, expectedUser, expectedPassword, null);
+
+		// clear to be sure the system properties are empty
+		clearTeamscaleProxySystemProperties(protocol);
+
+		AgentOptionsParser.putTeamscaleProxyOptionsIntoSystemProperties(agentOptions);
+
+		assertTeamscaleProxySystemPropertiesAreCorrect(protocol, expectedHost, expectedPort, expectedUser, expectedPassword);
+
+		clearTeamscaleProxySystemProperties(protocol);
+	}
+
+	private static AgentOptions parseProxyOptions(String otherOptionsString, ProxySystemProperties.Protocol protocol,
+			String expectedHost, int expectedPort, String expectedUser,
+			String expectedPassword, File passwordFile) throws Exception {
+		String proxyHostOption = String.format("proxy-%s-host=%s", protocol, expectedHost);
+		String proxyPortOption = String.format("proxy-%s-port=%d", protocol, expectedPort);
+		String proxyUserOption = String.format("proxy-%s-user=%s", protocol, expectedUser);
+		String proxyPasswordOption = String.format("proxy-%s-password=%s", protocol, expectedPassword);
+		String optionsString = String.format("%s%s,%s,%s,%s", otherOptionsString, proxyHostOption, proxyPortOption, proxyUserOption, proxyPasswordOption);
+
+		if(passwordFile != null) {
+			String proxyPasswordFileOption = String.format("proxy-password-file=%s", passwordFile.getAbsoluteFile());
+			optionsString += "," + proxyPasswordFileOption;
+		}
+
+		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.parse("http://localhost:80"), "unused", "unused");
+		return getAgentOptionsParserWithDummyLoggerAndCredentials(credentials).parse(optionsString);
+	}
+
+	private void assertTeamscaleProxySystemPropertiesAreCorrect(ProxySystemProperties.Protocol protocol, String expectedHost, int expectedPort, String expectedUser, String expectedPassword) throws ProxySystemProperties.IncorrectPortFormatException {
+		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
+		assertThat(teamscaleProxySystemProperties.getProxyHost()).isEqualTo(expectedHost);
+		assertThat(teamscaleProxySystemProperties.getProxyPort()).isEqualTo(expectedPort);
+		assertThat(teamscaleProxySystemProperties.getProxyUser()).isEqualTo(expectedUser);
+		assertThat(teamscaleProxySystemProperties.getProxyPassword()).isEqualTo(expectedPassword);
+	}
+
+	private void clearTeamscaleProxySystemProperties(ProxySystemProperties.Protocol protocol) {
+		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
+		teamscaleProxySystemProperties.setProxyHost("");
+		teamscaleProxySystemProperties.setProxyPort("");
+		teamscaleProxySystemProperties.setProxyUser("");
+		teamscaleProxySystemProperties.setProxyPassword("");
+	}
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws Exception {
 		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger()
@@ -340,6 +487,10 @@ public class AgentOptionsTest {
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
 		return new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+	}
+
+	private static AgentOptionsParser getAgentOptionsParserWithDummyLoggerAndCredentials(TeamscaleCredentials credentials) {
+		return new AgentOptionsParser(new CommandLineLogger(), null, null, credentials);
 	}
 
 	/**

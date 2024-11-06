@@ -6,16 +6,14 @@ import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitProperties
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.InvalidGitPropertiesException;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
-import com.teamscale.jacoco.agent.options.FilePatternResolver;
+import com.teamscale.jacoco.agent.upload.UploaderException;
 import okhttp3.HttpUrl;
-import org.conqat.lib.commons.collections.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /** Config necessary to upload files to an azure file storage. */
 public class ArtifactoryConfig {
@@ -98,11 +96,6 @@ public class ArtifactoryConfig {
 	/** The information regarding a commit. */
 	public CommitInfo commitInfo;
 
-	/**
-	 * Related to {@link ArtifactoryConfig#ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION}
-	 */
-	public DateTimeFormatter gitPropertiesCommitTimeFormat = null;
-
 	/** Related to {@link ArtifactoryConfig#ARTIFACTORY_API_KEY_OPTION} */
 	public String apiKey;
 
@@ -112,10 +105,9 @@ public class ArtifactoryConfig {
 	/**
 	 * Handles all command-line options prefixed with 'artifactory-'
 	 *
-	 * @return true if it has successfully process the given option.
+	 * @return true if it has successfully processed the given option.
 	 */
-	public static boolean handleArtifactoryOptions(ArtifactoryConfig options, FilePatternResolver filePatternResolver,
-			String key, String value) throws AgentOptionParseException {
+	public static boolean handleArtifactoryOptions(ArtifactoryConfig options, String key, String value) throws AgentOptionParseException {
 		switch (key) {
 			case ARTIFACTORY_URL_OPTION:
 				options.url = AgentOptionsParser.parseUrl(key, value);
@@ -134,13 +126,6 @@ public class ArtifactoryConfig {
 				return true;
 			case ARTIFACTORY_PATH_SUFFIX:
 				options.pathSuffix = StringUtils.stripSuffix(value, "/");
-				return true;
-			case ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION:
-				options.commitInfo = ArtifactoryConfig.parseGitProperties(filePatternResolver,
-						options.gitPropertiesCommitTimeFormat, key, value);
-				return true;
-			case ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION:
-				options.gitPropertiesCommitTimeFormat = DateTimeFormatter.ofPattern(value);
 				return true;
 			case ARTIFACTORY_API_KEY_OPTION:
 				options.apiKey = value;
@@ -171,49 +156,22 @@ public class ArtifactoryConfig {
 	}
 
 	/** Parses the commit information form a git.properties file. */
-	public static CommitInfo parseGitProperties(FilePatternResolver filePatternResolver,
-			DateTimeFormatter gitPropertiesCommitTimeFormat, String optionName,
-			String value)
-			throws AgentOptionParseException {
-		File jarFile = filePatternResolver.parsePath(optionName, value).toFile();
+	public static CommitInfo parseGitProperties(
+			File jarFile, boolean searchRecursively, @Nullable DateTimeFormatter gitPropertiesCommitTimeFormat)
+			throws UploaderException {
 		try {
-			// We can't be sure that the search-git-properties-recursively option is parsed
-			// already.
-			// Since we only support one git.properties file for artifactory anyway,
-			// recursive search is disabled here.
-			List<CommitInfo> commitInfo = parseGitProperties(jarFile, true, gitPropertiesCommitTimeFormat, false);
+			List<CommitInfo> commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(jarFile, true, searchRecursively, gitPropertiesCommitTimeFormat);
 			if (commitInfo.isEmpty()) {
-				throw new AgentOptionParseException("Found no git.properties files in " + jarFile);
+				throw new UploaderException("Found no git.properties files in " + jarFile);
 			}
 			if (commitInfo.size() > 1) {
-				throw new AgentOptionParseException("Found multiple git.properties files in " + jarFile
+				throw new UploaderException("Found multiple git.properties files in " + jarFile
 						+ ". Uploading to multiple projects is currently not possible with Artifactory. "
 						+ "Please contact CQSE if you need this feature.");
 			}
 			return commitInfo.get(0);
 		} catch (IOException | InvalidGitPropertiesException e) {
-			throw new AgentOptionParseException("Could not locate a valid git.properties file in " + jarFile, e);
+			throw new UploaderException("Could not locate a valid git.properties file in " + jarFile, e);
 		}
-	}
-
-	/** Parses the commit information from a git.properties file. */
-	public static List<CommitInfo> parseGitProperties(File file, boolean isJarFile,
-			DateTimeFormatter gitPropertiesCommitTimeFormat,
-			boolean recursiveSearch)
-			throws IOException, InvalidGitPropertiesException {
-		List<Pair<String, Properties>> entriesWithProperties = GitPropertiesLocatorUtils.findGitPropertiesInFile(file,
-				isJarFile, recursiveSearch);
-		List<CommitInfo> result = new ArrayList<>();
-
-		for (Pair<String, Properties> entryWithProperties : entriesWithProperties) {
-			String entry = entryWithProperties.getFirst();
-			Properties properties = entryWithProperties.getSecond();
-
-			CommitInfo commitInfo = GitPropertiesLocatorUtils.getCommitInfoFromGitProperties(properties, entry, file,
-					gitPropertiesCommitTimeFormat);
-			result.add(commitInfo);
-		}
-
-		return result;
 	}
 }

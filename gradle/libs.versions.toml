@@ -1,7 +1,7 @@
 [versions]
-jetty = "9.4.55.v20240627"
-jersey = "2.43"
-jackson = "2.17.2"
+jetty = "9.4.56.v20240826"
+jersey = "2.45"
+jackson = "2.18.1"
 # When upgrading JaCoCo to a newer version make sure to
 # check the comment in the OpenAnalyzer.java, JaCoCoPreMain.java and CachingInstructionsBuilder.java
 # and update the internal_xxxxxx hash included in the imports in LenientCoverageTransformer.java and JaCoCoPreMain.java.
@@ -9,8 +9,8 @@ jacoco = "0.8.12"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
 logback = "1.3.14"
 retrofit = "2.11.0"
-junit = "5.10.3"
-junitPlatform = "1.10.3"
+junit = "5.11.3"
+junitPlatform = "1.11.3"
 okhttp = "4.12.0"
 mockito = "4.11.0"
 picocli = "4.7.6"
@@ -50,17 +50,17 @@ spark = { module = "com.sparkjava:spark-core", version = "2.9.4" }
 jcommander = { module = "com.beust:jcommander", version = "1.82" }
 teamscaleLibCommons = { module = "com.teamscale:teamscale-lib-commons", version = "9.4.1" }
 commonsCodec = { module = "commons-codec:commons-codec", version = "1.17.1" }
-commonsLang = { module = "org.apache.commons:commons-lang3", version = "3.15.0" }
-commonsIo = { module = "commons-io:commons-io", version = "2.16.1" }
-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.13" }
-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.10.0.202406032230-r" }
-okio = { module = "com.squareup.okio:okio", version = "3.9.0" }
+commonsLang = { module = "org.apache.commons:commons-lang3", version = "3.17.0" }
+commonsIo = { module = "commons-io:commons-io", version = "2.17.0" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.16" }
+jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.0.0.202409031743-r" }
+okio = { module = "com.squareup.okio:okio", version = "3.9.1" }
 
 picocli-core = { module = "info.picocli:picocli", version.ref = "picocli" }
 picocli-codegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
-jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.14.0" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.15.0" }
 
-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version = "2.23.1" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version = "2.24.1" }
 
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
@@ -76,11 +76,11 @@ jsonassert = { module = "org.skyscreamer:jsonassert", version = "1.5.3" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 
-springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.3.2" }
+springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.3.5" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }
 markdownToPdf = { id = "de.fntsoftware.gradle.markdown-to-pdf", version = "1.1.0" }
 nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
-pluginPublish = { id = "com.gradle.plugin-publish", version = "1.2.1" }
+pluginPublish = { id = "com.gradle.plugin-publish", version = "1.3.0" }
 gitProperties = { id = "com.gorylenko.gradle-git-properties", version = "2.4.2" }

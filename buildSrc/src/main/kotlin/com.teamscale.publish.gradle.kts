@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.ShadowExtension
-
 plugins {
     java
     `maven-publish`
@@ -42,8 +40,7 @@ fun PublicationContainer.configureMavenPublication() {
         val publication = this
         var hasShadow = false
         pluginManager.withPlugin("com.teamscale.shadow-convention") {
-            val shadowExtension = extensions.getByName<ShadowExtension>("shadow")
-            shadowExtension.component(publication)
+            publication.from(components.findByName("shadow"))
             setArtifacts(listOf(tasks["shadowJar"]))
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
