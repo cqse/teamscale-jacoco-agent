@@ -75,8 +75,10 @@ public class PreMain {
 					environmentConfigFile);
 			agentOptions = parseResult.getFirst();
 
+			// After parsing everything and configuring logging, we now
+			// can throw the caught exceptions.
 			for (Exception exception : parseResult.getSecond()) {
-				throw new AgentOptionParseException("Failed to parse options: " + exception.getMessage(), exception);
+				throw exception;
 			}
 		} catch (AgentOptionParseException e) {
 			getLoggerContext().getLogger(PreMain.class).error(e.getMessage(), e);
@@ -154,7 +156,6 @@ public class PreMain {
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 		delayedLogger.logTo(logger);
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
-
 
 		return parseResult;
 	}
