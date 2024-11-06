@@ -51,9 +51,8 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	/** Active log flushing threads */
 	private final Set<CompletableFuture<Void>> activeLogFlushes = new IdentityHashSet<>();
 
-	/** Is performing a flush right now? */
+	/** Is there a flush going on right now? */
 	private final AtomicBoolean isFlusing = new AtomicBoolean(false);
-
 
 	public LogToTeamscaleAppender() {
 		this.scheduler = Executors.newScheduledThreadPool(1, r -> {
