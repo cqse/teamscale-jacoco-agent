@@ -23,6 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamscale.jacoco.agent.logging.LoggingUtils.getStackTraceFromEvent;
 
+/**
+ * Custom log appender that sends logs to Teamscale; it buffers log that were not sent due to connection
+ * issues and sends them later.
+ */
 public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 	/** Flush the logs after N elements are in the queue */
