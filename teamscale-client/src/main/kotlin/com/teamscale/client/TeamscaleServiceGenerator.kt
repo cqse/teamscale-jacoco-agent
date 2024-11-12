@@ -45,25 +45,20 @@ object TeamscaleServiceGenerator {
 		readTimeout: Duration,
 		writeTimeout: Duration,
 		vararg interceptors: Interceptor
-	): S {
-		val retrofit = HttpUtils.createRetrofit(
-			{ retrofitBuilder: Retrofit.Builder ->
+	): S = HttpUtils.createRetrofit(
+			{ retrofitBuilder ->
 				retrofitBuilder.baseUrl(baseUrl)
 					.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER))
 			},
-			{ okHttpBuilder: OkHttpClient.Builder ->
+			{ okHttpBuilder ->
 				addInterceptors(okHttpBuilder, *interceptors)
 					.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 					.addInterceptor(AcceptJsonInterceptor())
 					.addNetworkInterceptor(CustomUserAgentInterceptor())
-				if (logfile != null) {
-					okHttpBuilder.addInterceptor(FileLoggingInterceptor(logfile))
-				}
+				logfile?.let { okHttpBuilder.addInterceptor(FileLoggingInterceptor(it)) }
 			},
 			readTimeout, writeTimeout
-		)
-		return retrofit.create(serviceClass)
-	}
+		).create(serviceClass)
 
 	private fun addInterceptors(builder: OkHttpClient.Builder, vararg interceptors: Interceptor): OkHttpClient.Builder {
 		interceptors.forEach { interceptor ->

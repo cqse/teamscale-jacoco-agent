@@ -14,7 +14,7 @@ import java.util.*
 /** Helper class to interact with Teamscale.  */
 open class TeamscaleClient {
 	/** Teamscale service implementation.  */
-	val service: ITeamscaleService
+	var service: ITeamscaleService
 
 	/** The project ID within Teamscale.  */
 	private val projectId: String
@@ -22,14 +22,14 @@ open class TeamscaleClient {
 	/** Constructor with parameters for read and write timeout in seconds.  */
 	@JvmOverloads
 	constructor(
-		baseUrl: String,
+		baseUrl: String?,
 		user: String,
 		accessToken: String,
 		projectId: String,
 		readTimeout: Duration = HttpUtils.DEFAULT_READ_TIMEOUT,
 		writeTimeout: Duration = HttpUtils.DEFAULT_WRITE_TIMEOUT
 	) {
-		val url = baseUrl.toHttpUrlOrNull() ?: throw IllegalArgumentException("Invalid URL: $baseUrl")
+		val url = baseUrl?.toHttpUrlOrNull() ?: throw IllegalArgumentException("Invalid URL: $baseUrl")
 		this.projectId = projectId
 		service = TeamscaleServiceGenerator.createService(
 			ITeamscaleService::class.java, url, user, accessToken, readTimeout, writeTimeout
@@ -39,7 +39,7 @@ open class TeamscaleClient {
 	/** Constructor with parameters for read and write timeout in seconds and logfile.  */
 	@JvmOverloads
 	constructor(
-		baseUrl: String,
+		baseUrl: String?,
 		user: String,
 		accessToken: String,
 		projectId: String,
@@ -47,7 +47,7 @@ open class TeamscaleClient {
 		readTimeout: Duration = HttpUtils.DEFAULT_READ_TIMEOUT,
 		writeTimeout: Duration = HttpUtils.DEFAULT_WRITE_TIMEOUT
 	) {
-		val url = baseUrl.toHttpUrlOrNull() ?: throw IllegalArgumentException("Invalid URL: $baseUrl")
+		val url = baseUrl?.toHttpUrlOrNull() ?: throw IllegalArgumentException("Invalid URL: $baseUrl")
 		this.projectId = projectId
 		service = TeamscaleServiceGenerator.createServiceWithRequestLogging(
 			ITeamscaleService::class.java, url, user, accessToken, logfile, readTimeout, writeTimeout
@@ -81,16 +81,17 @@ open class TeamscaleClient {
 	@Throws(IOException::class)
 	open fun getImpactedTests(
 		availableTests: List<ClusteredTestDetails>?,
-		baseline: String,
-		baselineRevision: String,
-		endCommit: CommitDescriptor,
-		endRevision: String,
-		repository: String,
+		baseline: String?,
+		baselineRevision: String?,
+		endCommit: CommitDescriptor?,
+		endRevision: String?,
+		repository: String?,
 		partitions: List<String>,
 		includeNonImpacted: Boolean,
-		includeAddedTests: Boolean, includeFailedAndSkipped: Boolean
+		includeAddedTests: Boolean,
+		includeFailedAndSkipped: Boolean
 	): Response<List<PrioritizableTestCluster>?> {
-		val selectedOptions: MutableList<ETestImpactOptions> = ArrayList(listOf(ETestImpactOptions.ENSURE_PROCESSED))
+		val selectedOptions = mutableListOf(ETestImpactOptions.ENSURE_PROCESSED)
 		if (includeNonImpacted) {
 			selectedOptions.add(ETestImpactOptions.INCLUDE_NON_IMPACTED)
 		}
@@ -133,11 +134,11 @@ open class TeamscaleClient {
 	@Throws(IOException::class)
 	private fun getImpactedTests(
 		availableTests: List<ClusteredTestDetails>?,
-		baseline: String,
-		baselineRevision: String,
-		endCommit: CommitDescriptor,
-		endRevision: String,
-		repository: String,
+		baseline: String?,
+		baselineRevision: String?,
+		endCommit: CommitDescriptor?,
+		endRevision: String?,
+		repository: String?,
 		partitions: List<String>,
 		vararg options: ETestImpactOptions
 	): Response<List<PrioritizableTestCluster>?> {

@@ -30,19 +30,18 @@ object AntPatternUtils {
 	/** Converts an ANT pattern to a regex pattern.  */
 	@Throws(PatternSyntaxException::class)
 	fun convertPattern(antPattern: String, caseSensitive: Boolean): Pattern {
-		var antPattern = antPattern
-		antPattern = normalizePattern(antPattern)
+		var normalized = normalizePattern(antPattern)
 
 		// ant specialty: trailing /** is optional
 		// for example **/e*/** will also match foo/entry
 		var addTrailAll = false
-		if (antPattern.endsWith("/**")) {
+		if (normalized.endsWith("/**")) {
 			addTrailAll = true
-			antPattern = StringUtils.stripSuffix(antPattern, "/**")
+			normalized = StringUtils.stripSuffix(normalized, "/**")
 		}
 
 		val patternBuilder = StringBuilder()
-		convertPlainPattern(antPattern, patternBuilder)
+		convertPlainPattern(normalized, patternBuilder)
 
 		if (addTrailAll) {
 			// the tail pattern is optional (i.e. we do not require the '/'),
@@ -50,7 +49,7 @@ object AntPatternUtils {
 			patternBuilder.append("(/.*)?")
 		}
 
-		return compileRegex(patternBuilder.toString(), antPattern, caseSensitive)
+		return compileRegex(patternBuilder.toString(), normalized, caseSensitive)
 	}
 
 	/** Compiles the given regex.  */
@@ -80,15 +79,14 @@ object AntPatternUtils {
 	 * Normalizes the given pattern by ensuring forward slashes and mapping trailing slash to '/ **'.
 	 */
 	private fun normalizePattern(antPattern: String): String {
-		var antPattern = antPattern
-		antPattern = FileSystemUtils.normalizeSeparators(antPattern)
+		var normalized = FileSystemUtils.normalizeSeparators(antPattern)
 
 		// ant pattern syntax: if a pattern ends with /, then ** is
 		// appended
-		if (antPattern.endsWith("/")) {
-			antPattern += "**"
+		if (normalized.endsWith("/")) {
+			normalized += "**"
 		}
-		return antPattern
+		return normalized
 	}
 
 	/**

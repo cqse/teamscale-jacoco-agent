@@ -249,7 +249,7 @@ class TeamscalePluginTest {
 
 	private fun assertFullCoverage(source: String) {
 		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
-		assertThat(testwiseCoverageReport!!)
+		assertThat(testwiseCoverageReport)
 			.hasPartial(false)
 			.containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
 			.containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)

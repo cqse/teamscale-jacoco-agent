@@ -102,11 +102,14 @@ abstract class TeamscaleUploadTask : DefaultTask() {
 
             try {
                 // Prefer to upload to revision and fallback to branch timestamp
-                val commitDescriptorOrNull = if (revision != null) null else commitDescriptor!!
+                val commitDescriptorOrNull = if (revision != null) null else commitDescriptor
                 retry(3) {
-                    val client =
-                        TeamscaleClient(server.url!!, server.userName!!, server.userAccessToken!!, server.project!!)
-                    client.uploadReports(
+					TeamscaleClient(
+						server.url,
+						server.userName!!,
+						server.userAccessToken!!,
+						server.project!!
+					).uploadReports(
                         format,
                         reportFiles,
                         commitDescriptorOrNull,
@@ -127,7 +130,7 @@ abstract class TeamscaleUploadTask : DefaultTask() {
 
 /**
  * Retries the given block numOfRetries-times catching any thrown exceptions.
- * If none of the retries succeeded the latest catched exception is rethrown.
+ * If none of the retries succeeded, the latest caught exception is rethrown.
  */
 fun <T> retry(numOfRetries: Int, block: () -> T): T {
     var throwable: Throwable? = null
