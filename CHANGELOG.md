@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _agent_: Warning about multiple agents being present is misleading  
 
 # 34.2.0
 - [fix] _agent_: `search-git-properties-recursively` was not considered when jar was given via `artifactory-git-properties-jar`
