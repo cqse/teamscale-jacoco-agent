@@ -2,29 +2,30 @@ package com.teamscale.report.testwise.jacoco.cache
 
 import com.teamscale.client.StringUtils
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder
+import com.teamscale.report.util.CompactLines
 import com.teamscale.report.util.ILogger
 import org.jacoco.core.data.ExecutionData
 
 /**
  * Holds information about a class' probes and to which line ranges they refer.
  *
- *
- *
  * Create an instance of this class for every analyzed java class.
  * Set the file name of the java source file from which the class has been created.
- * Then call [.addProbe] for all probes and lines that belong to that probe.
- * Afterwards call [.getFileCoverage] to transform probes ([ ]) for this class into covered lines ([FileCoverageBuilder]).
+ * Then call [addProbe] for all probes and lines that belong to that probe.
+ * Afterward call [getFileCoverage] to transform probes ([ExecutionData]) for this class into covered lines
+ * ([FileCoverageBuilder]).
  *
- * @param className Classname as stored in the bytecode e.g. com/company/Example
+ * @param className Classname as stored in the bytecode e.g., com/company/Example
  */
 class ClassCoverageLookup internal constructor(
 	private val className: String
 ) {
 	var sourceFileName: String? = null
-	private val probes = mutableMapOf<Int, MutableSet<Int>>()
+	private val probes = mutableMapOf<Int, CompactLines>()
 
-	fun addProbe(probeId: Int, lines: Set<Int>) {
-		probes[probeId] = lines.toSortedSet()
+	/** Adds the probe with the given id to the method. */
+	fun addProbe(probeId: Int, lines: CompactLines) {
+		probes[probeId] = lines
 	}
 
 	/**

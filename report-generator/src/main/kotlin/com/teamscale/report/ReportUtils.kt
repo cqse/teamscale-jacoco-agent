@@ -54,38 +54,31 @@ object ReportUtils {
 	/** Recursively lists all files in the given directory that match the specified extension.  */
 	@Throws(IOException::class)
 	@JvmStatic
-	// ToDo: Should use reified type parameter when Converter is in kotlin
 	fun <T> readObjects(
 		format: ETestArtifactFormat,
 		clazz: Class<Array<T>>,
 		directoriesOrFiles: List<File>
-	): List<T> {
-		val files = listFiles(format, directoriesOrFiles)
-		val result = mutableListOf<T>()
-		files.mapNotNull { JsonUtils.deserializeFile(it, clazz) }
-			.forEach { result.addAll(listOf(*it)) }
-		return result
-	}
+	) = listFiles(format, directoriesOrFiles)
+		.mapNotNull { JsonUtils.deserializeFile(it, clazz) }
+		.flatMap { listOf(*it) }
 
 	/** Recursively lists all files of the given artifact type.  */
 	@JvmStatic
 	fun listFiles(
 		format: ETestArtifactFormat,
 		directoriesOrFiles: List<File>
-	): List<File> {
-		val filesWithSpecifiedArtifactType = mutableListOf<File>()
-		directoriesOrFiles.forEach { directoryOrFile ->
-			if (directoryOrFile.isDirectory()) {
-				filesWithSpecifiedArtifactType.addAll(
-					FileSystemUtils.listFilesRecursively(directoryOrFile) {
-						it.isOfArtifactFormat(format)
-					}
-				)
-			} else if (directoryOrFile.isOfArtifactFormat(format)) {
-				filesWithSpecifiedArtifactType.add(directoryOrFile)
+	) = directoriesOrFiles.flatMap { directoryOrFile ->
+		when {
+			directoryOrFile.isDirectory() -> {
+				FileSystemUtils.listFilesRecursively(directoryOrFile) {
+					it.isOfArtifactFormat(format)
+				}
 			}
+			directoryOrFile.isOfArtifactFormat(format) -> {
+				listOf(directoryOrFile)
+			}
+			else -> emptyList<File>()
 		}
-		return filesWithSpecifiedArtifactType
 	}
 
 	private fun File.isOfArtifactFormat(format: ETestArtifactFormat) =

@@ -17,7 +17,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
- * An `AnalyzerCache` instance processes a set of Java class/jar/war/... files and builds a cache for each of the classes.
+ * An [AnalyzerCache] instance processes a set of Java class/jar/war/... files and builds a cache for each of the classes.
  *
  * For every class that gets found, [analyzeClass] is called. A class is identified by its class ID, which
  * is a CRC64 checksum of the class file. We process each class with `CachingClassAnalyzer` to fill a cache.

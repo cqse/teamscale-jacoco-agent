@@ -2,8 +2,8 @@ package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.report.testwise.model.FileCoverage
 import com.teamscale.report.testwise.model.LineRange
-import java.util.SortedSet
-import java.util.TreeSet
+import com.teamscale.report.util.CompactLines
+import com.teamscale.report.util.CompactLines.Companion.compactLinesOf
 
 /** Holds coverage of a single file.  */
 class FileCoverageBuilder(
@@ -15,7 +15,7 @@ class FileCoverageBuilder(
 	/**
 	 * A set of line numbers that have been covered. Ensures order and uniqueness.
 	 */
-	private val coveredLines = sortedSetOf<Int>()
+	private val coveredLines = compactLinesOf()
 
 	/** Adds a line as covered.  */
 	fun addLine(line: Int) = coveredLines.add(line)
@@ -24,14 +24,14 @@ class FileCoverageBuilder(
 	fun addLineRange(start: Int, end: Int) = (start..end).forEach { coveredLines.add(it) }
 
 	/** Adds a set of lines as covered.  */
-	fun addLines(lines: Set<Int>) = coveredLines.addAll(lines)
+	fun addLines(lines: CompactLines) = coveredLines merge lines
 
 	/** Merges the coverage of another [FileCoverageBuilder] into the current list.  */
 	fun merge(other: FileCoverageBuilder) {
 		require(other.fileName == fileName && other.path == path) {
 			"Cannot merge coverage of two different files! This is a bug!"
 		}
-		coveredLines.addAll(other.coveredLines)
+		coveredLines merge other.coveredLines
 	}
 
 	/**
@@ -53,7 +53,7 @@ class FileCoverageBuilder(
 		 * [[1-10],[12-14]]
 		 */
 		@JvmStatic
-		fun compactifyToRanges(lines: SortedSet<Int>): List<LineRange> =
+		fun compactifyToRanges(lines: CompactLines): List<LineRange> =
 			lines.fold(mutableListOf()) { ranges, line ->
 				if (ranges.isNotEmpty() && ranges.last().end >= line - 1) {
 					ranges.last().end = line

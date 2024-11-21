@@ -1,6 +1,7 @@
 package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder.Companion.compactifyToRanges
+import com.teamscale.report.util.CompactLines.Companion.compactLinesOf
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -11,8 +12,8 @@ internal class FileCoverageBuilderTest {
 	/** Tests the compactification algorithm for line ranges.  */
 	@Test
 	fun compactifyRanges() {
-		val sortedIntList = sortedSetOf(1, 3, 4, 6, 7, 10)
-		assertThat(compactifyToRanges(sortedIntList))
+		val compactLines = compactLinesOf(1, 3, 4, 6, 7, 10)
+		assertThat(compactifyToRanges(compactLines))
 			.hasToString("[1, 3-4, 6-7, 10]")
 	}
 

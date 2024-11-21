@@ -3,9 +3,7 @@ package com.teamscale.report.jacoco
 import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
-import com.teamscale.report.util.ILogger
 import com.teamscale.test.TestDataBase
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.jacoco.core.data.ExecutionData
@@ -116,7 +114,7 @@ class JaCoCoXmlReportGeneratorTest : TestDataBase() {
 			testFolderName, EDuplicateClassFileBehavior.FAIL, true,
 			ClasspathWildcardIncludeFilter("*", null),
 			createDummyDump(classId)
-		).copy(stream) // ToDo: copy has Unit as return type so why does it throw "Unused result of data class copy"
+		).copyStream(stream)
 
 		val xmlString = stream.toString(StandardCharsets.UTF_8.name())
 		assertThat(xmlString).contains("TestClass")
@@ -135,7 +133,7 @@ class JaCoCoXmlReportGeneratorTest : TestDataBase() {
 			testFolderName, EDuplicateClassFileBehavior.FAIL, false,
 			ClasspathWildcardIncludeFilter("*", null),
 			createDummyDump(classId)
-		).copy(stream)
+		).copyStream(stream)
 
 		val xmlString = stream.toString(StandardCharsets.UTF_8.name())
 		assertThat(xmlString).contains("TestClassTwo")

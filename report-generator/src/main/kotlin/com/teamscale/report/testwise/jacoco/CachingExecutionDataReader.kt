@@ -41,14 +41,6 @@ open class CachingExecutionDataReader(
 	}
 
 	/**
-	 * Builds a consumer for coverage data.
-	 */
-	fun buildCoverageConsumer(
-		locationIncludeFilter: ClasspathWildcardIncludeFilter,
-		nextConsumer: Consumer<TestCoverageBuilder>
-	) = DumpConsumer(logger, locationIncludeFilter, nextConsumer)
-
-	/**
 	 * Analyzes the specified directory, logging errors if any occur.
 	 */
 	private fun analyzeDirectory(classDir: File, analyzer: AnalyzerCache) =
@@ -57,6 +49,14 @@ open class CachingExecutionDataReader(
 					"Maybe the folder contains incompatible class files. Coverage for class files " +
 					"in this folder will be ignored.", e) }
 			.getOrDefault(0)
+
+	/**
+	 * Builds a consumer for coverage data.
+	 */
+	fun buildCoverageConsumer(
+		locationIncludeFilter: ClasspathWildcardIncludeFilter,
+		nextConsumer: Consumer<TestCoverageBuilder>
+	) = DumpConsumer(logger, locationIncludeFilter, nextConsumer)
 
 	/**
 	 * Logs errors if no classes were analyzed or if the filter excluded all files.

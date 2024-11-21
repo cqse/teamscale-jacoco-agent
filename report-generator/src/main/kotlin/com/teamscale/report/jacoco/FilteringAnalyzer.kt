@@ -16,7 +16,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 /**
- * Analyzer that filters the analyzed class files based on a given predicate.
+ * [org.jacoco.core.analysis.Analyzer] that filters the analyzed class files based on a given predicate.
  *
  * @param executionData The execution data store.
  * @param coverageVisitor The coverage visitor.
@@ -63,6 +63,10 @@ open class FilteringAnalyzer(
 	private fun RuntimeException.isUnsupportedClassFile() =
 		this is IllegalArgumentException && message?.startsWith("Unsupported") == true
 
+	/**
+	 * Copied from [org.jacoco.core.analysis.Analyzer.analyzeZip] renamed to analyzeJar
+	 * and added wrapping [BashFileSkippingInputStream].
+	 */
 	@Throws(IOException::class)
 	protected open fun analyzeJar(input: InputStream, location: String): Int {
 		ZipInputStream(BashFileSkippingInputStream(input)).use { zip ->
@@ -72,6 +76,7 @@ open class FilteringAnalyzer(
 		}
 	}
 
+	/** Copied from [org.jacoco.core.analysis.Analyzer.nextEntry].  */
 	@Throws(IOException::class)
 	private fun ZipInputStream.nextEntry(location: String): ZipEntry? {
 		try {

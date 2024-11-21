@@ -68,7 +68,8 @@ class TestwiseCoverageReportWriter(
 	}
 
 	private fun getOutputFile(testFileCounter: Int): File {
-		var name = StringUtils.stripSuffix(outputFile.getName(), ".json")
+		var name = outputFile.nameWithoutExtension
+
 		name = "$name-$testFileCounter.json"
 		return File(outputFile.getParent(), name)
 	}

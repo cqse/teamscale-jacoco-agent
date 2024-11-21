@@ -34,7 +34,7 @@ data class CoverageFile(private val coverageFile: File) {
 	 * avoid having to read the entire file into memory.
 	 */
 	@Throws(IOException::class)
-	fun copy(outputStream: OutputStream) {
+	fun copyStream(outputStream: OutputStream) {
 		coverageFile.inputStream().use { input ->
 			input.copyTo(outputStream)
 		}
@@ -44,7 +44,7 @@ data class CoverageFile(private val coverageFile: File) {
 	 * Get the filename of the coverage file on disk without its extension
 	 */
 	val nameWithoutExtension: String
-		get() = coverageFile.name.substringBeforeLast('.')
+		get() = coverageFile.nameWithoutExtension
 
 	/** Get the filename of the coverage file.  */
 	val name: String
