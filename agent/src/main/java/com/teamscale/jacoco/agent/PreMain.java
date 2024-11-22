@@ -42,8 +42,10 @@ public class PreMain {
 	 */
 	private static final String LOCKING_SYSTEM_PROPERTY = "TEAMSCALE_JAVA_PROFILER_ATTACHED";
 
-	/** Environment variable from which to read the config ID to use.
-	 * This is an ID for a profiler configuration that is stored in Teamscale. */
+	/**
+	 * Environment variable from which to read the config ID to use. This is an ID for a profiler configuration that is
+	 * stored in Teamscale.
+	 */
 	private static final String CONFIG_ID_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG_ID";
 
 	/** Environment variable from which to read the config file to use. */
@@ -91,12 +93,13 @@ public class PreMain {
 
 	@NotNull
 	private static AgentOptions getAndApplyAgentOptions(String options, String environmentConfigId,
-														String environmentConfigFile) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
+			String environmentConfigFile) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
 
 		DelayedLogger delayedLogger = new DelayedLogger();
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
-		if (javaAgents.size() > 1) {
+		// We allow multiple instances of the teamscale-jacoco-agent as we ensure with the #LOCKING_SYSTEM_PROPERTY to only use it once
+		if (!javaAgents.stream().allMatch(javaAgent -> javaAgent.contains("teamscale-jacoco-agent.jar"))) {
 			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
 		}
 		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
@@ -109,7 +112,8 @@ public class PreMain {
 		}
 		AgentOptions agentOptions;
 		try {
-			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials, delayedLogger);
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials,
+					delayedLogger);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
@@ -161,7 +165,7 @@ public class PreMain {
 	 * the HTTP server is used.
 	 */
 	private static AgentBase createAgent(AgentOptions agentOptions,
-										 Instrumentation instrumentation) throws UploaderException, IOException {
+			Instrumentation instrumentation) throws UploaderException, IOException {
 		if (agentOptions.useTestwiseCoverageMode()) {
 			return TestwiseCoverageAgent.create(agentOptions);
 		} else {
@@ -189,7 +193,7 @@ public class PreMain {
 	 * this and falls back to the default logger.
 	 */
 	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions,
-																		   DelayedLogger delayedLogger) {
+			DelayedLogger delayedLogger) {
 		if (premainOptions == null) {
 			return LoggingUtils.initializeDefaultLogging();
 		}
@@ -222,7 +226,7 @@ public class PreMain {
 
 	/** Creates a fallback logger using the given config file. */
 	private static LoggingUtils.LoggingResources createFallbackLoggerFromConfig(String configLocation,
-																				DelayedLogger delayedLogger) {
+			DelayedLogger delayedLogger) {
 		try {
 			return LoggingUtils.initializeLogging(
 					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
