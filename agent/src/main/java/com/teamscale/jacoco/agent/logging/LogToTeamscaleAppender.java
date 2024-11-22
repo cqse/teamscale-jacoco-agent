@@ -177,11 +177,11 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	 * Add the {@link com.teamscale.jacoco.agent.logging.LogToTeamscaleAppender} to the logging configuration
 	 * and enable/start it.
 	 */
-	public static void addTeamscaleAppenderTo(LoggerContext context, AgentOptions agentOptions) {
+	public static boolean addTeamscaleAppenderTo(LoggerContext context, AgentOptions agentOptions) {
 		@Nullable TeamscaleClient client = agentOptions.createTeamscaleClient(
 				false);
 		if (client == null || agentOptions.configurationViaTeamscale == null) {
-			return;
+			return false;
 		}
 
 		LogToTeamscaleAppender logToTeamscaleAppender = new LogToTeamscaleAppender();
@@ -192,6 +192,8 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 
 		Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
 		rootLogger.addAppender(logToTeamscaleAppender);
+
+		return true;
 	}
 
 }
