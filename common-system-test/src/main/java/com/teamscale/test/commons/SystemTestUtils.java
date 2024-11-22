@@ -49,7 +49,7 @@ public class SystemTestUtils {
 	 * Example: {@code file1.java:1,7-12;file2.java:9-22,33}
 	 */
 	public static String getCoverageString(TestInfo info) {
-		return info.paths.stream().flatMap(path -> path.getFiles().stream())
+		return info.paths.stream().flatMap(path -> path.files.stream())
 				.map(file -> file.fileName + ":" + file.coveredLines).collect(
 						Collectors.joining(";"));
 	}

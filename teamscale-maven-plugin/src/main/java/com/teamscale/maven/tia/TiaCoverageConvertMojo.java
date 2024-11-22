@@ -89,7 +89,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 			classFileDirectories = getClassDirectoriesOrZips(projectBuildDir);
 			findSubprojectReportAndClassDirectories(reportFileDirectories, classFileDirectories);
 		} catch (IOException | AgentOptionParseException e) {
-			logger.error("Could not create testwise report generator. Aborting.");
+			logger.error("Could not create testwise report generator. Aborting.", e);
 			throw new MojoFailureException(e);
 		}
 		logger.info("Generating the testwise coverage report");
@@ -129,10 +129,9 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 			logger.info("Writing report with " + testDetails.size() + " Details/" + testExecutions.size() + " Results");
 			return new TestInfoFactory(testDetails, testExecutions);
 		} catch (IOException e) {
-			logger.error("Could not read test details from reports. Aborting.");
+			logger.error("Could not read test details from reports. Aborting.", e);
 			throw new MojoFailureException(e);
 		}
-
 	}
 
 	private JaCoCoTestwiseReportGenerator createJaCoCoTestwiseReportGenerator(List<File> classFiles) {

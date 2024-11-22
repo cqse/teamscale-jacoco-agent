@@ -46,11 +46,11 @@ import java.util.zip.ZipInputStream;
  * - {@link #analyzeClass(byte[])}
  * - {@link #analyzerError(String, Exception)}
  * <p>
- * When performing an update of JaCoCo we need to check that this file is still up-to-date.
+ * When performing an update of JaCoCo we need to check that this file is still up to date.
  * <p>
  * An {@link Analyzer} instance processes a set of Java class files and
  * calculates coverage data for them. For each class file the result is reported
- * to a given {@link ICoverageVisitor} instance. In addition the
+ * to a given {@link ICoverageVisitor} instance. In addition, the
  * {@link Analyzer} requires a {@link ExecutionDataStore} instance that holds
  * the execution data for the classes to analyze. The {@link Analyzer} offers
  * several methods to analyze classes from a variety of sources.
@@ -73,7 +73,7 @@ public class OpenAnalyzer {
 	 *            class
 	 */
 	public OpenAnalyzer(final ExecutionDataStore executionData,
-						final ICoverageVisitor coverageVisitor) {
+			final ICoverageVisitor coverageVisitor) {
 		this.executionData = executionData;
 		this.coverageVisitor = coverageVisitor;
 		this.stringPool = new StringPool();
@@ -203,17 +203,17 @@ public class OpenAnalyzer {
 			throw analyzerError(location, e);
 		}
 		switch (detector.getType()) {
-		case ContentTypeDetector.CLASSFILE:
-			analyzeClass(detector.getInputStream(), location);
-			return 1;
-		case ContentTypeDetector.ZIPFILE:
-			return analyzeZip(detector.getInputStream(), location);
-		case ContentTypeDetector.GZFILE:
-			return analyzeGzip(detector.getInputStream(), location);
-		case ContentTypeDetector.PACK200FILE:
-			return analyzePack200(detector.getInputStream(), location);
-		default:
-			return 0;
+			case ContentTypeDetector.CLASSFILE:
+				analyzeClass(detector.getInputStream(), location);
+				return 1;
+			case ContentTypeDetector.ZIPFILE:
+				return analyzeZip(detector.getInputStream(), location);
+			case ContentTypeDetector.GZFILE:
+				return analyzeGzip(detector.getInputStream(), location);
+			case ContentTypeDetector.PACK200FILE:
+				return analyzePack200(detector.getInputStream(), location);
+			default:
+				return 0;
 		}
 	}
 
