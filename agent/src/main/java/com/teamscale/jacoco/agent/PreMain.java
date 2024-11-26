@@ -16,6 +16,7 @@ import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -259,7 +260,7 @@ public class PreMain {
 
 	/** Creates a fallback logger using the given config file. */
 	private static LoggingUtils.LoggingResources createFallbackLoggerFromConfig(String configLocation,
-			DelayedLogger delayedLogger) {
+			ILogger delayedLogger) {
 		try {
 			return LoggingUtils.initializeLogging(
 					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
