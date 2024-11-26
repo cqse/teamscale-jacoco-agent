@@ -44,19 +44,19 @@ object TeamscaleServiceGenerator {
 		writeTimeout: Duration,
 		vararg interceptors: Interceptor
 	): S = HttpUtils.createRetrofit(
-			{ retrofitBuilder ->
-				retrofitBuilder.baseUrl(baseUrl)
-					.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER))
-			},
-			{ okHttpBuilder ->
-				okHttpBuilder.addInterceptors(*interceptors)
-					.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
-					.addInterceptor(AcceptJsonInterceptor())
-					.addNetworkInterceptor(CustomUserAgentInterceptor())
-				logfile?.let { okHttpBuilder.addInterceptor(FileLoggingInterceptor(it)) }
-			},
-			readTimeout, writeTimeout
-		).create(serviceClass)
+		{ retrofitBuilder ->
+			retrofitBuilder.baseUrl(baseUrl)
+				.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER))
+		},
+		{ okHttpBuilder ->
+			okHttpBuilder.addInterceptors(*interceptors)
+				.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
+				.addInterceptor(AcceptJsonInterceptor())
+				.addNetworkInterceptor(CustomUserAgentInterceptor())
+			logfile?.let { okHttpBuilder.addInterceptor(FileLoggingInterceptor(it)) }
+		},
+		readTimeout, writeTimeout
+	).create(serviceClass)
 
 	private fun OkHttpClient.Builder.addInterceptors(
 		vararg interceptors: Interceptor

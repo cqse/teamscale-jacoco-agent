@@ -5,7 +5,6 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import java.io.IOException
 import java.nio.file.Path
-import java.security.MessageDigest
 
 /**
  * Represents additional test data to attach to [ClusteredTestDetails]. Use the [Builder] to create new

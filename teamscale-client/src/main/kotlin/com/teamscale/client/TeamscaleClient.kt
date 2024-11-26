@@ -128,7 +128,7 @@ open class TeamscaleClient {
 	 * @param partitions     The partitions that should be considered for retrieving impacted tests. Can be
 	 * `null` to indicate that tests from all partitions should be returned.
 	 * @param options        A list of options (See [ETestImpactOptions] for more details)
-	 * @return A list of test clusters to execute. If availableTests is null, a single dummy cluster is returned with
+	 * @return A list of test clusters to execute. If [availableTests] is null, a single dummy cluster is returned with
 	 * all prioritized tests.
 	 */
 	@Throws(IOException::class)
@@ -236,10 +236,12 @@ open class TeamscaleClient {
 		): Response<List<PrioritizableTestCluster>?> {
 			return if (testListResponse.isSuccessful) {
 				Response.success(
-					listOf(PrioritizableTestCluster(
-						"dummy",
-						testListResponse.body()
-					)),
+					listOf(
+						PrioritizableTestCluster(
+							"dummy",
+							testListResponse.body()
+						)
+					),
 					testListResponse.raw()
 				)
 			} else {

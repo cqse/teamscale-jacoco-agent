@@ -1,7 +1,6 @@
 package com.teamscale.client
 
 import java.io.*
-import java.nio.charset.StandardCharsets
 
 /**
  * File system utilities.

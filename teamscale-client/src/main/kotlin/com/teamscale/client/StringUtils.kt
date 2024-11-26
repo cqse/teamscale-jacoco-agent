@@ -17,7 +17,6 @@
 package com.teamscale.client
 
 import java.text.NumberFormat
-import kotlin.math.min
 
 /**
  * A utility class providing some advanced string functionality.

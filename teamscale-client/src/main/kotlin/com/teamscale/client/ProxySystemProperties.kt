@@ -49,7 +49,7 @@ open class ProxySystemProperties(private val protocol: Protocol) {
 
 	var proxyPassword: String?
 		get() = getProperty(PROXY_PASSWORD_SYSTEM_PROPERTY)
-	    set(value) {
+		set(value) {
 			setProperty(PROXY_PASSWORD_SYSTEM_PROPERTY, value)
 		}
 
