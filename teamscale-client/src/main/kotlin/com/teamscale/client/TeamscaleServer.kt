@@ -151,6 +151,18 @@ class TeamscaleServer {
 			}
 		}
 
+	/** Creates a copy of the [TeamscaleServer] configuration, but with the given project and commit set.  */
+	fun withProjectAndCommit(teamscaleProject: String, commitDescriptor: CommitDescriptor): TeamscaleServer {
+		val teamscaleServer = TeamscaleServer()
+		teamscaleServer.url = url
+		teamscaleServer.userName = userName
+		teamscaleServer.userAccessToken = userAccessToken
+		teamscaleServer.partition = partition
+		teamscaleServer.project = teamscaleProject
+		teamscaleServer.commit = commitDescriptor
+		return teamscaleServer
+	}
+
 	/** Creates a copy of the [TeamscaleServer] configuration, but with the given project and revision set.  */
 	fun withProjectAndRevision(project: String, revision: String): TeamscaleServer {
 		val server = TeamscaleServer()
