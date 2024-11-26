@@ -143,7 +143,7 @@ public abstract class HttpZipUploaderBase<T> implements IUploader {
 	 */
 	private void fillZipFile(ZipOutputStream zipOutputStream, CoverageFile coverageFile) throws IOException {
 		zipOutputStream.putNextEntry(new ZipEntry(getZipEntryCoverageFileName(coverageFile)));
-		coverageFile.copy(zipOutputStream);
+		coverageFile.copyStream(zipOutputStream);
 
 		for (Path additionalFile : additionalMetaDataFiles) {
 			zipOutputStream.putNextEntry(new ZipEntry(additionalFile.getFileName().toString()));

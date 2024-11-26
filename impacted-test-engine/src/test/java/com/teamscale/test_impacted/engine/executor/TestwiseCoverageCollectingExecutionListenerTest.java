@@ -85,9 +85,9 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 
 		assertThat(testExecutions).hasSize(2);
 		assertThat(testExecutions).anySatisfy(testExecution ->
-				assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/impactedTestCase()"));
+				assertThat(testExecution.uniformPath).isEqualTo("MyClass/impactedTestCase()"));
 		assertThat(testExecutions).anySatisfy(testExecution ->
-				assertThat(testExecution.getUniformPath()).isEqualTo("MyClass/regularSkippedTestCase()"));
+				assertThat(testExecution.uniformPath).isEqualTo("MyClass/regularSkippedTestCase()"));
 	}
 
 	@Test
@@ -125,6 +125,6 @@ class TestwiseCoverageCollectingExecutionListenerTest {
 
 		assertThat(testExecutions).hasSize(2);
 		assertThat(testExecutions)
-				.allMatch(testExecution -> testExecution.getResult().equals(ETestExecutionResult.SKIPPED));
+				.allMatch(testExecution -> testExecution.result.equals(ETestExecutionResult.SKIPPED));
 	}
 }

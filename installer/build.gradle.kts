@@ -5,7 +5,7 @@ plugins {
 	com.teamscale.`java-convention`
 	com.teamscale.coverage
 	com.teamscale.`system-test-convention`
-	id("org.beryx.jlink") version ("3.0.1")
+	id("org.beryx.jlink") version ("3.1.1")
 }
 
 tasks.jar {

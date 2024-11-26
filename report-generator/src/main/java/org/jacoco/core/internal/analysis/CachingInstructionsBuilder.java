@@ -1,7 +1,7 @@
 package org.jacoco.core.internal.analysis;
 
 import com.teamscale.report.testwise.jacoco.cache.ClassCoverageLookup;
-import com.teamscale.report.util.SortedIntList;
+import com.teamscale.report.util.CompactLines;
 import org.jacoco.core.analysis.ISourceNode;
 import org.jacoco.core.internal.flow.LabelInfo;
 import org.objectweb.asm.Label;
@@ -170,7 +170,7 @@ public class CachingInstructionsBuilder extends InstructionsBuilder {
 		// We need this because JaCoCo does not insert a probe after every line.
 		for (CoveredProbe coveredProbe : coveredProbes) {
 			Instruction instruction = coveredProbe.instruction;
-			SortedIntList coveredLines = new SortedIntList();
+			CompactLines coveredLines = new CompactLines();
 			while (instruction != null) {
 				if (instruction.getLine() != -1) {
 					// Only add the line number if one is associated with the instruction.

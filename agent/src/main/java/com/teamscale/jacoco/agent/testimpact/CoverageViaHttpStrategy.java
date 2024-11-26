@@ -11,6 +11,8 @@ import com.teamscale.report.testwise.model.TestInfo;
 import com.teamscale.report.testwise.model.builder.TestInfoBuilder;
 import org.slf4j.Logger;
 
+import java.util.Objects;
+
 /**
  * Strategy which directly converts the collected coverage into a JSON object in place and returns the result to the
  * caller as response to the http request. If a test execution is given it is merged into the representation and
@@ -36,12 +38,12 @@ public class CoverageViaHttpStrategy extends TestEventHandlerStrategyBase {
 		TestInfoBuilder builder = new TestInfoBuilder(test);
 		Dump dump = controller.dumpAndReset();
 		reportGenerator.updateClassDirCache();
-		builder.setCoverage(reportGenerator.convert(dump));
+		builder.setCoverage(Objects.requireNonNull(reportGenerator.convert(dump)));
 		if (testExecution != null) {
 			builder.setExecution(testExecution);
 		}
 		TestInfo testInfo = builder.build();
-		logger.debug("Generated test info {}", testInfo.toString());
+		logger.debug("Generated test info {}", testInfo);
 		return testInfo;
 	}
 }
