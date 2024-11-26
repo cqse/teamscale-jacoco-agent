@@ -45,13 +45,15 @@ internal class TeamscaleCoverageBuilder(
 					// we do not log the exception here as it does not provide additional valuable information
 					// and may confuse users into thinking there's a serious
 					// problem with the agent due to the stack traces in the log
-					logger.warn("Ignoring duplicate, non-identical class file for class ${coverage.name} compiled " +
-							"from source file ${coverage.sourceFileName}. This happens when a class with the same " +
-							"fully-qualified name is loaded twice but the two loaded class files are not identical. " +
-							"A common reason for this is that the same library or shared code is included twice in " +
-							"your application but in two different versions. The produced coverage for this class " +
-							"may not be accurate or may even be unusable. To fix this problem, please resolve the " +
-							"conflict between both class files in your application.")
+					logger.warn(
+						"Ignoring duplicate, non-identical class file for class ${coverage.name} compiled " +
+								"from source file ${coverage.sourceFileName}. This happens when a class with the same " +
+								"fully-qualified name is loaded twice but the two loaded class files are not identical. " +
+								"A common reason for this is that the same library or shared code is included twice in " +
+								"your application but in two different versions. The produced coverage for this class " +
+								"may not be accurate or may even be unusable. To fix this problem, please resolve the " +
+								"conflict between both class files in your application."
+					)
 					return
 				}
 

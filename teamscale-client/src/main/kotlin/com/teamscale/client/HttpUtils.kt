@@ -18,7 +18,7 @@ import java.util.function.Consumer
 import javax.net.ssl.*
 
 /**
- * Utility functions to set up [Retrofit] and [OkHttpClient].
+ * Utility functions to set up [Retrofit] and [okhttp3.OkHttpClient].
  */
 object HttpUtils {
 	private val LOGGER = LoggerFactory.getLogger(HttpUtils::class.java)
@@ -27,20 +27,20 @@ object HttpUtils {
 	 * Default read timeout in seconds.
 	 */
 	@JvmField
-	val DEFAULT_READ_TIMEOUT = Duration.ofSeconds(60)
+	val DEFAULT_READ_TIMEOUT: Duration = Duration.ofSeconds(60)
 
 	/**
 	 * Default write timeout in seconds.
 	 */
 	@JvmField
-	val DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(60)
+	val DEFAULT_WRITE_TIMEOUT: Duration = Duration.ofSeconds(60)
 
 	/**
 	 * HTTP header used for authenticating against a proxy server
 	 */
 	const val PROXY_AUTHORIZATION_HTTP_HEADER = "Proxy-Authorization"
 
-	/** Controls whether [OkHttpClient]s built with this class will validate SSL certificates.  */
+	/** Controls whether [okhttp3.OkHttpClient]s built with this class will validate SSL certificates.  */
 	private var shouldValidateSsl = true
 
 	/** @see .shouldValidateSsl
@@ -51,11 +51,11 @@ object HttpUtils {
 	}
 
 	/**
-	 * Creates a new [Retrofit] with proper defaults. The instance and the corresponding [OkHttpClient] can
+	 * Creates a new [Retrofit] with proper defaults. The instance and the corresponding [okhttp3.OkHttpClient] can
 	 * be customized with the given action. Timeouts for reading and writing can be customized.
 	 */
 	/**
-	 * Creates a new [Retrofit] with proper defaults. The instance and the corresponding [OkHttpClient] can
+	 * Creates a new [Retrofit] with proper defaults. The instance and the corresponding [okhttp3.OkHttpClient] can
 	 * be customized with the given action. Read and write timeouts are set according to the default values.
 	 */
 	@JvmOverloads
@@ -106,10 +106,8 @@ object HttpUtils {
 				return false
 			}
 
-			useProxyServer(
-				httpClientBuilder, proxySystemProperties.proxyHost!!,
-				proxySystemProperties.proxyPort
-			)
+			val host = proxySystemProperties.proxyHost ?: return false
+			useProxyServer(httpClientBuilder, host, proxySystemProperties.proxyPort)
 		} catch (e: ProxySystemProperties.IncorrectPortFormatException) {
 			LOGGER.warn(e.message)
 			return false
@@ -130,17 +128,15 @@ object HttpUtils {
 
 	private fun useProxyAuthenticator(httpClientBuilder: Builder, user: String, password: String) {
 		val proxyAuthenticator = Authenticator { _, response ->
-			val credential = basic(user, password)
 			response.request.newBuilder()
-				.header(PROXY_AUTHORIZATION_HTTP_HEADER, credential)
+				.header(PROXY_AUTHORIZATION_HTTP_HEADER, basic(user, password))
 				.build()
 		}
 		httpClientBuilder.proxyAuthenticator(proxyAuthenticator)
 	}
 
-
 	/**
-	 * Sets sensible defaults for the [OkHttpClient].
+	 * Sets sensible defaults for the [okhttp3.OkHttpClient].
 	 */
 	private fun Builder.setTimeouts(readTimeout: Duration, writeTimeout: Duration) {
 		connectTimeout(Duration.ofSeconds(60))
@@ -191,7 +187,7 @@ object HttpUtils {
 		val credentials = "$username:$password"
 		val basic = "Basic " + Base64.getEncoder().encodeToString(credentials.toByteArray())
 
-		return Interceptor { chain: Interceptor.Chain ->
+		return Interceptor { chain ->
 			val newRequest = chain.request().newBuilder().header("Authorization", basic).build()
 			chain.proceed(newRequest)
 		}

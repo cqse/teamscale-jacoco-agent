@@ -57,7 +57,7 @@ class BashFileSkippingInputStream(input: InputStream) : FilterInputStream(Buffer
 	 * @return The index where the ZIP header starts, or -1 if not found.
 	 */
 	private fun findZipHeader(buffer: ByteArray, length: Int) =
-		(0 .. length - ZIP_HEADER.size)
+		(0..length - ZIP_HEADER.size)
 			.firstOrNull {
 				buffer[it] == ZIP_HEADER[0]
 						&& buffer[it + 1] == ZIP_HEADER[1]

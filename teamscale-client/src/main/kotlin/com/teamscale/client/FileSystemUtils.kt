@@ -32,7 +32,7 @@ object FileSystemUtils {
 		if (directory == null || !directory.isDirectory) {
 			return emptyList()
 		}
-		val result: MutableList<File> = ArrayList()
+		val result = arrayListOf<File>()
 		listFilesRecursively(directory, result, filter)
 		return result
 	}
@@ -88,9 +88,8 @@ object FileSystemUtils {
 	 * Replace platform dependent separator char with forward slashes to create system-independent paths.
 	 */
 	@JvmStatic
-	fun normalizeSeparators(path: String): String {
-		return path.replace(File.separatorChar, UNIX_SEPARATOR)
-	}
+	fun normalizeSeparators(path: String) =
+		path.replace(File.separatorChar, UNIX_SEPARATOR)
 
 	/**
 	 * Copy an input stream to an output stream. This does *not* close the

@@ -47,8 +47,7 @@ class JaCoCoXmlReportGenerator(
 		analyzeStructureAndAnnotateCoverage(mergedStore).apply {
 			checkForEmptyReport()
 			coverageFile.outputStream.use { outputStream ->
-				createReport(
-					outputStream, this, dump.info, mergedStore)
+				createReport(outputStream, this, dump.info, mergedStore)
 			}
 		}
 	}

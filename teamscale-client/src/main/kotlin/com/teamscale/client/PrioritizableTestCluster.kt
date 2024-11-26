@@ -40,7 +40,8 @@ class PrioritizableTestCluster @JsonCreator constructor(
 	var rank: Int = 0
 
 	override fun toString() =
-		StringJoiner(", ", PrioritizableTestCluster::class.java.simpleName + "[", "]").add("clusterId='$clusterId'")
+		StringJoiner(", ", PrioritizableTestCluster::class.java.simpleName + "[", "]")
+			.add("clusterId='$clusterId'")
 			.add("score=$score")
 			.add("rank=$rank")
 			.add("tests=$tests")

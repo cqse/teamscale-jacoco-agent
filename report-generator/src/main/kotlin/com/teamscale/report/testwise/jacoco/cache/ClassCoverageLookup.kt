@@ -41,6 +41,7 @@ class ClassCoverageLookup internal constructor(
 			probes.size > executedProbes.size -> throw CoverageGenerationException(
 				"Probe lookup does not match with actual probe size for $sourceFileName $className (${probes.size} vs ${executedProbes.size})! This is a bug in the profiler tooling. Please report it back to CQSE."
 			)
+
 			sourceFileName == null -> {
 				logger.warn("No source file name found for class $className! This class was probably not compiled with debug information enabled!")
 				return null
@@ -60,6 +61,7 @@ class ClassCoverageLookup internal constructor(
 					coveredLines.isEmpty() -> logger.debug(
 						"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
 					)
+
 					else -> fileCoverage.addLines(coveredLines)
 				}
 			} else {

@@ -2,9 +2,7 @@ package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.client.TestDetails
 import com.teamscale.report.testwise.model.TestExecution
-import com.teamscale.report.testwise.model.TestInfo
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
-import java.util.function.Function
 
 /** Container for coverage produced by multiple tests.  */
 class TestwiseCoverageReportBuilder {

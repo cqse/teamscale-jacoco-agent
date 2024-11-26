@@ -12,7 +12,7 @@ import java.io.IOException
 import java.io.PrintWriter
 
 /**
- * OkHttpInterceptor which prints out the full request and server response of requests to a file.
+ * [okhttp3.Interceptor] which prints out the full request and server response of requests to a file.
  */
 class FileLoggingInterceptor(
 	private val logfile: File
