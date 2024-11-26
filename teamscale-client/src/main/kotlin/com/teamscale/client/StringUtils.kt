@@ -52,10 +52,7 @@ object StringUtils {
 	 * @return `true` if the string is blank
 	 */
 	@JvmStatic
-	fun isBlank(str: String?): Boolean {
-		return (str == null || str.trim { it <= ' ' }.isEmpty())
-	}
-
+	fun isBlank(str: String?) = (str == null || str.trim { it <= ' ' }.isEmpty())
 
 	/**
 	 * Returns the beginning of a String, cutting off the last part which is separated by the given character.
@@ -146,51 +143,56 @@ object StringUtils {
 	}
 
 	/**
-	 * Calculates the edit distance (aka Levenshtein distance) for two strings, i.e. the number of insert, delete or
-	 * replace operations required to transform one string into the other. The running time is O(n*m) and the space
-	 * complexity is O(n+m), where n/m are the lengths of the strings. Note that due to the high running time, for long
-	 * strings the Diff class should be used, that has a more efficient algorithm, but only for insert/delete (not
-	 * replace operation).
+	 * Calculates the Levenshtein distance between this CharSequence and another CharSequence.
+	 * The Levenshtein distance is a measure of the number of single-character edits (insertions, deletions, or substitutions)
+	 * required to change one string into the other.
 	 *
+	 * This implementation has a time complexity of O(n * m) and a space complexity of O(n), where n and m are the lengths
+	 * of the two strings.
 	 *
-	 * Although this is a clean reimplementation, the basic algorithm is explained here:
-	 * http://en.wikipedia.org/wiki/Levenshtein_distance# Iterative_with_two_matrix_rows
+	 * For more information, see [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance).
+	 *
+	 * @receiver The string to compare.
+	 * @param rhs The string to compare against.
+	 * @return The Levenshtein distance between the two strings.
 	 */
 	@JvmStatic
-	fun editDistance(s: String, t: String): Int {
-		val sChars = s.toCharArray()
-		val tChars = t.toCharArray()
-		val m = s.length
-		val n = t.length
-
-		var distance = IntArray(m + 1)
-		for (i in 0..m) {
-			distance[i] = i
+	fun CharSequence.levenshteinDistance(rhs: CharSequence): Int {
+		if (this == rhs) {
+			return 0
 		}
 
-		var oldDistance = IntArray(m + 1)
-		for (j in 1..n) {
-			// swap distance and oldDistance
+		if (isEmpty()) {
+			return rhs.length
+		}
 
-			val tmp = oldDistance
-			oldDistance = distance
-			distance = tmp
+		if (rhs.isEmpty()) {
+			return length
+		}
 
-			distance[0] = j
-			for (i in 1..m) {
-				var cost = (1 + min(
-					distance[i - 1].toDouble(),
-					oldDistance[i].toDouble()
-				)).toInt()
-				cost = if (sChars[i - 1] == tChars[j - 1]) {
-					min(cost.toDouble(), oldDistance[i - 1].toDouble()).toInt()
-				} else {
-					min(cost.toDouble(), (1 + oldDistance[i - 1]).toDouble()).toInt()
-				}
-				distance[i] = cost
+		val len0 = length + 1
+		val len1 = rhs.length + 1
+
+		var cost = IntArray(len0) { it }
+		var newCost = IntArray(len0) { 0 }
+
+		(1..<len1).forEach { i ->
+			newCost[0] = i
+
+			(1..<len0).forEach { j ->
+				val match = if (this[j - 1] == rhs[i - 1]) 0 else 1
+				val costReplace = cost[j - 1] + match
+				val costInsert = cost[j] + 1
+				val costDelete = newCost[j - 1] + 1
+
+				newCost[j] = minOf(costInsert, costDelete, costReplace)
 			}
+
+			val swap = cost
+			cost = newCost
+			newCost = swap
 		}
 
-		return distance[m]
+		return cost[len0 - 1]
 	}
 }
