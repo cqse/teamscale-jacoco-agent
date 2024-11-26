@@ -11,12 +11,12 @@ import java.security.MessageDigest
  * Represents additional test data to attach to [ClusteredTestDetails]. Use the [Builder] to create new
  * [TestData] objects.
  *
- *
- * Internally, the data you pass to the builder is hashed and only the hash is transferred as [ ][ClusteredTestDetails.content] to Teamscale to save network bandwidth and RAM. Whenever a test case's hash changes,
+ * Internally, the data you pass to the builder is hashed and only the hash is transferred as [ClusteredTestDetails.content]
+ * to Teamscale to save network bandwidth and RAM. Whenever a test case's hash changes,
  * Teamscale will select it for the next TIA test run.
  */
 class TestData private constructor(
-	/** The hash of the test data which will be sent to Teamscale as the [ClusteredTestDetails.content].  */ /*package*/
+	/** The hash of the test data which will be sent to Teamscale as the [ClusteredTestDetails.content].  */
 	val hash: String
 ) {
 	/**

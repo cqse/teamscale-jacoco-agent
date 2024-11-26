@@ -159,9 +159,7 @@ open class TeamscaleClient {
 			)
 		} else {
 			val availableTestsMap = availableTests.map { clusteredTestDetails ->
-				TestWithClusterId.fromClusteredTestDetails(
-					clusteredTestDetails
-				)
+				TestWithClusterId.fromClusteredTestDetails(clusteredTestDetails)
 			}
 			service.getImpactedTests(
 				projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,

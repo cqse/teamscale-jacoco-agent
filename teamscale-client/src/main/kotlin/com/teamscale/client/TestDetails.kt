@@ -36,7 +36,5 @@ open class TestDetails @JsonCreator constructor(
 				content == that.content
 	}
 
-	override fun hashCode(): Int {
-		return Objects.hash(uniformPath, sourcePath, content)
-	}
+	override fun hashCode() = Objects.hash(uniformPath, sourcePath, content)
 }

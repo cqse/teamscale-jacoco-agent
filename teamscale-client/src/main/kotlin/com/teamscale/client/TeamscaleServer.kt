@@ -2,7 +2,6 @@ package com.teamscale.client
 
 import okhttp3.HttpUrl
 import java.net.InetAddress
-import java.net.UnknownHostException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -16,7 +15,7 @@ class TeamscaleServer {
 	@JvmField
 	var project: String? = null
 
-	/** The user name used to authenticate against Teamscale.  */
+	/** The username used to authenticate against Teamscale.  */
 	@JvmField
 	var userName: String? = null
 
@@ -63,39 +62,40 @@ class TeamscaleServer {
 		 */
 		get() {
 			if (field == null) {
-				return createDefaultMessage()
+				return buildDefaultMessage()
 			}
 			return field
 		}
 
-	private fun createDefaultMessage(): String {
-		// we do not include the IP address here as one host may have
-		// - multiple network interfaces
-		// - each with multiple IP addresses
-		// - in either IPv4 or IPv6 format
-		// - and it is unclear which of those is "the right one" or even just which is useful (e.g. loopback or virtual
-		// adapters are not useful and might even confuse readers)
-		var hostnamePart = "uploaded from "
-		hostnamePart += try {
-			"hostname: " + InetAddress.getLocalHost().hostName
-		} catch (e: UnknownHostException) {
-			"an unknown computer"
+	/**
+	 * We do not include the IP address here as one host may have
+	 * - multiple network interfaces
+	 * - each with multiple IP addresses
+	 * - in either IPv4 or IPv6 format
+	 * - and it is unclear which of those is "the right one" or even just which is useful (e.g. loopback or virtual
+	 * adapters are not useful and might even confuse readers)
+	 */
+	private fun buildDefaultMessage() =
+		buildString {
+			append("$partition coverage uploaded at ")
+			append(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()))
+			append("\n\nuploaded from ")
+
+			val hostname = runCatching {
+				"hostname: " + InetAddress.getLocalHost().hostName
+			}.getOrElse {
+				"an unknown computer"
+			}
+			append(hostname)
+
+			if (revision != null) {
+				append("\nfor revision: $revision")
+			}
+
+			if (configId != null) {
+				append("\nprofiler configuration ID: $configId")
+			}
 		}
-
-		var revisionPart = ""
-		if (revision != null) {
-			revisionPart = "\nfor revision: $revision"
-		}
-
-		var configIdPart = ""
-		if (configId != null) {
-			configIdPart = "\nprofiler configuration ID: $configId"
-		}
-
-		return """$partition coverage uploaded at ${DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now())}
-
-$hostnamePart$revisionPart$configIdPart"""
-	}
 
 	val isConfiguredForSingleProjectTeamscaleUpload: Boolean
 		/** Checks if all fields required for a single-project Teamscale upload are non-null.  */
@@ -110,65 +110,56 @@ $hostnamePart$revisionPart$configIdPart"""
 		get() = url != null && userName != null && userAccessToken != null
 
 	/** Whether a URL, user and access token were provided.  */
-	fun canConnectToTeamscale(): Boolean {
-		return url != null && userName != null && userAccessToken != null
-	}
+	fun canConnectToTeamscale() =
+		url != null && userName != null && userAccessToken != null
 
 	/** Returns whether all fields are null.  */
-	fun hasAllFieldsNull(): Boolean {
-		return url == null && project == null && userName == null && userAccessToken == null && partition == null && commit == null && revision == null
-	}
+	fun hasAllFieldsNull() =
+		url == null
+				&& project == null
+				&& userName == null
+				&& userAccessToken == null
+				&& partition == null
+				&& commit == null
+				&& revision == null
 
 	/** Returns whether either a commit or revision has been set.  */
-	fun hasCommitOrRevision(): Boolean {
-		return commit != null || revision != null
-	}
+	fun hasCommitOrRevision() =
+		commit != null || revision != null
 
 	/** Checks if another TeamscaleServer has the same project and revision/commit as this TeamscaleServer instance.  */
 	fun hasSameProjectAndCommit(other: TeamscaleServer): Boolean {
-		if (this.project != other.project) {
+		if (project != other.project) {
 			return false
 		}
-		if (this.revision != null) {
-			return this.revision == other.revision
-		}
-		return this.commit == other.commit
-	}
-
-	override fun toString(): String {
-		var at: String
 		if (revision != null) {
-			at = "revision $revision"
-			if (repository != null) {
-				at += "in repository $repository"
-			}
-		} else {
-			at = "commit $commit"
+			return revision == other.revision
 		}
-		return "Teamscale $url as user $userName for $project to $partition at $at"
+		return commit == other.commit
 	}
 
-	/** Creates a copy of the [TeamscaleServer] configuration, but with the given project and commit set.  */
-	fun withProjectAndCommit(teamscaleProject: String?, commitDescriptor: CommitDescriptor?): TeamscaleServer {
-		val teamscaleServer = TeamscaleServer()
-		teamscaleServer.url = url
-		teamscaleServer.userName = userName
-		teamscaleServer.userAccessToken = userAccessToken
-		teamscaleServer.partition = partition
-		teamscaleServer.project = teamscaleProject
-		teamscaleServer.commit = commitDescriptor
-		return teamscaleServer
-	}
+	override fun toString() =
+		buildString {
+			append("Teamscale $url as user $userName for $project to $partition at ")
+			if (revision != null) {
+				append("revision $revision")
+				if (repository != null) {
+					append(" in repository $repository")
+				}
+			} else {
+				append("commit $commit")
+			}
+		}
 
 	/** Creates a copy of the [TeamscaleServer] configuration, but with the given project and revision set.  */
-	fun withProjectAndRevision(teamscaleProject: String?, revision: String?): TeamscaleServer {
-		val teamscaleServer = TeamscaleServer()
-		teamscaleServer.url = url
-		teamscaleServer.userName = userName
-		teamscaleServer.userAccessToken = userAccessToken
-		teamscaleServer.partition = partition
-		teamscaleServer.project = teamscaleProject
-		teamscaleServer.revision = revision
-		return teamscaleServer
+	fun withProjectAndRevision(project: String, revision: String): TeamscaleServer {
+		val server = TeamscaleServer()
+		server.url = url
+		server.userName = userName
+		server.userAccessToken = userAccessToken
+		server.partition = partition
+		server.project = project
+		server.revision = revision
+		return server
 	}
 }

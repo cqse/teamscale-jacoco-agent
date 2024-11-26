@@ -49,7 +49,7 @@ object TeamscaleServiceGenerator {
 					.addConverterFactory(JacksonConverterFactory.create(JsonUtils.OBJECT_MAPPER))
 			},
 			{ okHttpBuilder ->
-				addInterceptors(okHttpBuilder, *interceptors)
+				okHttpBuilder.addInterceptors(*interceptors)
 					.addInterceptor(HttpUtils.getBasicAuthInterceptor(username, accessToken))
 					.addInterceptor(AcceptJsonInterceptor())
 					.addNetworkInterceptor(CustomUserAgentInterceptor())
@@ -58,13 +58,14 @@ object TeamscaleServiceGenerator {
 			readTimeout, writeTimeout
 		).create(serviceClass)
 
-	private fun addInterceptors(builder: OkHttpClient.Builder, vararg interceptors: Interceptor): OkHttpClient.Builder {
+	private fun OkHttpClient.Builder.addInterceptors(
+		vararg interceptors: Interceptor
+	): OkHttpClient.Builder {
 		interceptors.forEach { interceptor ->
-			builder.addInterceptor(interceptor)
+			addInterceptor(interceptor)
 		}
-		return builder
+		return this
 	}
-
 
 	/**
 	 * Sets an `Accept: application/json` header on all requests.
