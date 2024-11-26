@@ -40,9 +40,7 @@ class ClusteredTestDetails @JsonCreator constructor(
 		fun createWithTestData(
 			uniformPath: String, sourcePath: String, testData: TestData,
 			clusterId: String, partition: String
-		): ClusteredTestDetails {
-			return ClusteredTestDetails(uniformPath, sourcePath, testData.hash, clusterId, partition)
-		}
+		) = ClusteredTestDetails(uniformPath, sourcePath, testData.hash, clusterId, partition)
 	}
 }
 

@@ -149,14 +149,12 @@ object AntPatternUtils {
 	 * Returns whether the given position exists in the string and equals the given character, and the given character
 	 * is either at the end or right before a slash.
 	 */
-	private fun isCharAtBeforeSlashOrEnd(s: String, position: Int, character: Char): Boolean {
-		return isCharAt(s, position, character) && (position + 1 == s.length || isCharAt(s, position + 1, '/'))
-	}
+	private fun isCharAtBeforeSlashOrEnd(s: String, position: Int, character: Char) =
+		isCharAt(s, position, character) && (position + 1 == s.length || isCharAt(s, position + 1, '/'))
 
 	/**
 	 * Returns whether the given position exists in the string and equals the given character.
 	 */
-	private fun isCharAt(s: String, position: Int, character: Char): Boolean {
-		return position < s.length && s[position] == character
-	}
+	private fun isCharAt(s: String, position: Int, character: Char) =
+		position < s.length && s[position] == character
 }

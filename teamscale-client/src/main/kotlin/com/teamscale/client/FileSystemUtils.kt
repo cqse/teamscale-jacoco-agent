@@ -7,23 +7,8 @@ import java.nio.charset.StandardCharsets
  * File system utilities.
  */
 object FileSystemUtils {
-	/** Encoding for UTF-8.  */
-	val UTF8_ENCODING: String = StandardCharsets.UTF_8.name()
-
 	/** Unix file path separator  */
 	private const val UNIX_SEPARATOR = '/'
-
-	/**
-	 * Checks if a directory exists. If not it creates the directory and all necessary parent directories.
-	 *
-	 * @throws IOException if directories couldn't be created.
-	 */
-	@Throws(IOException::class)
-	fun ensureDirectoryExists(directory: File) {
-		if (!directory.exists() && !directory.mkdirs()) {
-			throw IOException("Couldn't create directory: $directory")
-		}
-	}
 
 	/**
 	 * Returns a list of all files and directories contained in the given directory and all subdirectories matching the
@@ -129,20 +114,5 @@ object FileSystemUtils {
 			size += len
 		}
 		return size
-	}
-
-	/**
-	 * Returns the name of the given file without extension. Example:
-	 * '/home/joe/data.dat' returns 'data'.
-	 */
-	fun getFilenameWithoutExtension(file: File): String {
-		return getFilenameWithoutExtension(file.name)
-	}
-
-	/**
-	 * Returns the name of the given file without extension. Example: 'data.dat' returns 'data'.
-	 */
-	fun getFilenameWithoutExtension(fileName: String): String {
-		return StringUtils.removeLastPart(fileName, '.')
 	}
 }

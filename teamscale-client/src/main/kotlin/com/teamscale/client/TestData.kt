@@ -24,7 +24,7 @@ class TestData private constructor(
 	 * result in [OutOfMemoryError]s.
 	 */
 	class Builder {
-		private var digest: MessageDigest? = DigestUtils.getSha1Digest()
+		private var digest = DigestUtils.getSha1Digest()
 
 		/** Adds the given bytes as additional test data.  */
 		@Synchronized

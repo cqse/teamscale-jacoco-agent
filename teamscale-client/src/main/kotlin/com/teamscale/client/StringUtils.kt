@@ -24,10 +24,10 @@ import kotlin.math.min
  */
 object StringUtils {
 	/** Line separator of the current platform.  */
-	val LINE_SEPARATOR: String = System.getProperty("line.separator")
+	private val LINE_SEPARATOR: String = System.lineSeparator()
 
 	/** The empty string.  */
-	const val EMPTY_STRING: String = ""
+	private const val EMPTY_STRING: String = ""
 
 	/**
 	 * Checks if a string is empty (after trimming).

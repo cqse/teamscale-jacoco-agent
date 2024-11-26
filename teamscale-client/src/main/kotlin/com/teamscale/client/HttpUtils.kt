@@ -4,9 +4,6 @@ import okhttp3.Authenticator
 import okhttp3.Credentials.basic
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient.Builder
-import okhttp3.Response
-import okhttp3.Route
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
 import java.io.IOException
@@ -24,24 +21,24 @@ import javax.net.ssl.*
  * Utility functions to set up [Retrofit] and [OkHttpClient].
  */
 object HttpUtils {
-	private val LOGGER: Logger = LoggerFactory.getLogger(HttpUtils::class.java)
+	private val LOGGER = LoggerFactory.getLogger(HttpUtils::class.java)
 
 	/**
 	 * Default read timeout in seconds.
 	 */
 	@JvmField
-	val DEFAULT_READ_TIMEOUT: Duration = Duration.ofSeconds(60)
+	val DEFAULT_READ_TIMEOUT = Duration.ofSeconds(60)
 
 	/**
 	 * Default write timeout in seconds.
 	 */
 	@JvmField
-	val DEFAULT_WRITE_TIMEOUT: Duration = Duration.ofSeconds(60)
+	val DEFAULT_WRITE_TIMEOUT = Duration.ofSeconds(60)
 
 	/**
 	 * HTTP header used for authenticating against a proxy server
 	 */
-	const val PROXY_AUTHORIZATION_HTTP_HEADER: String = "Proxy-Authorization"
+	const val PROXY_AUTHORIZATION_HTTP_HEADER = "Proxy-Authorization"
 
 	/** Controls whether [OkHttpClient]s built with this class will validate SSL certificates.  */
 	private var shouldValidateSsl = true
@@ -68,10 +65,11 @@ object HttpUtils {
 		okHttpBuilderAction: Consumer<Builder>, readTimeout: Duration = DEFAULT_READ_TIMEOUT,
 		writeTimeout: Duration = DEFAULT_WRITE_TIMEOUT
 	): Retrofit {
-		val httpClientBuilder = Builder()
-		setTimeouts(httpClientBuilder, readTimeout, writeTimeout)
-		setUpSslValidation(httpClientBuilder)
-		setUpProxyServer(httpClientBuilder)
+		val httpClientBuilder = Builder().apply {
+			setTimeouts(readTimeout, writeTimeout)
+			setUpSslValidation()
+			setUpProxyServer()
+		}
 		okHttpBuilderAction.accept(httpClientBuilder)
 
 		val builder = Retrofit.Builder().client(httpClientBuilder.build())
@@ -88,13 +86,13 @@ object HttpUtils {
 	 * &
 	 * [https://stackoverflow.com/a/35567936](https://stackoverflow.com/a/35567936)
 	 */
-	private fun setUpProxyServer(httpClientBuilder: Builder) {
+	private fun Builder.setUpProxyServer() {
 		val setHttpsProxyWasSuccessful = setUpProxyServerForProtocol(
 			ProxySystemProperties.Protocol.HTTPS,
-			httpClientBuilder
+			this
 		)
 		if (!setHttpsProxyWasSuccessful) {
-			setUpProxyServerForProtocol(ProxySystemProperties.Protocol.HTTP, httpClientBuilder)
+			setUpProxyServerForProtocol(ProxySystemProperties.Protocol.HTTP, this)
 		}
 	}
 
@@ -102,27 +100,25 @@ object HttpUtils {
 		protocol: ProxySystemProperties.Protocol,
 		httpClientBuilder: Builder
 	): Boolean {
-		val teamscaleProxySystemProperties = TeamscaleProxySystemProperties(protocol)
+		val proxySystemProperties = TeamscaleProxySystemProperties(protocol)
 		try {
-			if (!teamscaleProxySystemProperties.isProxyServerSet()) {
+			if (!proxySystemProperties.isProxyServerSet()) {
 				return false
 			}
 
 			useProxyServer(
-				httpClientBuilder, teamscaleProxySystemProperties.proxyHost!!,
-				teamscaleProxySystemProperties.proxyPort
+				httpClientBuilder, proxySystemProperties.proxyHost!!,
+				proxySystemProperties.proxyPort
 			)
 		} catch (e: ProxySystemProperties.IncorrectPortFormatException) {
 			LOGGER.warn(e.message)
 			return false
 		}
 
-		if (teamscaleProxySystemProperties.isProxyAuthSet()) {
-			useProxyAuthenticator(
-				httpClientBuilder,
-				teamscaleProxySystemProperties.proxyUser!!,
-				teamscaleProxySystemProperties.proxyPassword!!
-			)
+		if (proxySystemProperties.isProxyAuthSet()) {
+			val user = proxySystemProperties.proxyUser ?: return false
+			val password = proxySystemProperties.proxyPassword ?: return false
+			useProxyAuthenticator(httpClientBuilder, user, password)
 		}
 
 		return true
@@ -133,7 +129,7 @@ object HttpUtils {
 	}
 
 	private fun useProxyAuthenticator(httpClientBuilder: Builder, user: String, password: String) {
-		val proxyAuthenticator = Authenticator { route: Route?, response: Response ->
+		val proxyAuthenticator = Authenticator { _, response ->
 			val credential = basic(user, password)
 			response.request.newBuilder()
 				.header(PROXY_AUTHORIZATION_HTTP_HEADER, credential)
@@ -146,16 +142,16 @@ object HttpUtils {
 	/**
 	 * Sets sensible defaults for the [OkHttpClient].
 	 */
-	private fun setTimeouts(builder: Builder, readTimeout: Duration, writeTimeout: Duration) {
-		builder.connectTimeout(Duration.ofSeconds(60))
-		builder.readTimeout(readTimeout)
-		builder.writeTimeout(writeTimeout)
+	private fun Builder.setTimeouts(readTimeout: Duration, writeTimeout: Duration) {
+		connectTimeout(Duration.ofSeconds(60))
+		readTimeout(readTimeout)
+		writeTimeout(writeTimeout)
 	}
 
 	/**
 	 * Enables or disables SSL certificate validation for the [Retrofit] instance
 	 */
-	private fun setUpSslValidation(builder: Builder) {
+	private fun Builder.setUpSslValidation() {
 		if (shouldValidateSsl) {
 			// this is the default behaviour of OkHttp, so we don't need to do anything
 			return
@@ -164,7 +160,7 @@ object HttpUtils {
 		val sslSocketFactory: SSLSocketFactory
 		try {
 			val sslContext = SSLContext.getInstance("TLS")
-			sslContext.init(null, arrayOf<TrustManager>(TrustAllCertificatesManager.INSTANCE), SecureRandom())
+			sslContext.init(null, arrayOf<TrustManager>(TrustAllCertificatesManager), SecureRandom())
 			sslSocketFactory = sslContext.socketFactory
 		} catch (e: GeneralSecurityException) {
 			LOGGER.error("Could not disable SSL certificate validation. Leaving it enabled", e)
@@ -172,9 +168,9 @@ object HttpUtils {
 		}
 
 		// this causes OkHttp to accept all certificates
-		builder.sslSocketFactory(sslSocketFactory, TrustAllCertificatesManager.INSTANCE)
+		sslSocketFactory(sslSocketFactory, TrustAllCertificatesManager)
 		// this causes it to ignore invalid host names in the certificates
-		builder.hostnameVerifier(HostnameVerifier { hostName: String?, session: SSLSession? -> true })
+		hostnameVerifier { _, _ -> true }
 	}
 
 	/**
@@ -204,11 +200,9 @@ object HttpUtils {
 	/**
 	 * A simple implementation of [X509TrustManager] that simple trusts every certificate.
 	 */
-	class TrustAllCertificatesManager : X509TrustManager {
+	object TrustAllCertificatesManager : X509TrustManager {
 		/** Returns `null`.  */
-		override fun getAcceptedIssuers(): Array<X509Certificate> {
-			return arrayOf()
-		}
+		override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
 
 		/** Does nothing.  */
 		override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) {
@@ -218,11 +212,6 @@ object HttpUtils {
 		/** Does nothing.  */
 		override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) {
 			// Nothing to do
-		}
-
-		companion object {
-			/** Singleton instance.  */ /*package*/
-			val INSTANCE: TrustAllCertificatesManager = TrustAllCertificatesManager()
 		}
 	}
 }

@@ -10,7 +10,7 @@ import java.time.Duration
 /** Helper class for generating a teamscale compatible service.  */
 object TeamscaleServiceGenerator {
 	/** Custom user agent of the requests, used to monitor API traffic.  */
-	const val USER_AGENT: String = "Teamscale JaCoCo Agent"
+	const val USER_AGENT = "Teamscale JaCoCo Agent"
 
 	/**
 	 * Generates a [Retrofit] instance for the given service, which uses basic auth to authenticate against the
@@ -18,7 +18,6 @@ object TeamscaleServiceGenerator {
 	 */
 	@JvmStatic
 	@JvmOverloads
-	// ToDo: Should use reified type parameter when all usages are in Kotlin
 	fun <S> createService(
 		serviceClass: Class<S>,
 		baseUrl: HttpUrl,
@@ -35,7 +34,6 @@ object TeamscaleServiceGenerator {
 	 * Generates a [Retrofit] instance for the given service, which uses basic auth to authenticate against the
 	 * server and which sets the accept-header to json. Logs requests and responses to the given logfile.
 	 */
-	// ToDo: Should use reified type parameter when all usages are in Kotlin
 	fun <S> createServiceWithRequestLogging(
 		serviceClass: Class<S>,
 		baseUrl: HttpUrl,

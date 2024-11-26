@@ -22,7 +22,7 @@ class PrioritizableTestCluster @JsonCreator constructor(
 	 */
 	@param:JsonProperty("clusterId") var clusterId: String,
 	/** The [PrioritizableTest]s in this cluster.  */
-	@JvmField @param:JsonProperty("tests") var tests: List<PrioritizableTest?>?
+	@JvmField @param:JsonProperty("tests") var tests: List<PrioritizableTest>?
 ) {
 	/**
 	 * The score determined by the TIA algorithm. The value is guaranteed to be positive. Higher values describe a
@@ -31,7 +31,7 @@ class PrioritizableTestCluster @JsonCreator constructor(
 	 * The value is 0 if no availableTests are given.
 	 */
 	@JsonProperty("currentScore")
-	var score: Double = 0.0
+	var score = 0.0
 
 	/**
 	 * Field for storing the tests rank. The rank is the 1-based index of the test
@@ -39,15 +39,10 @@ class PrioritizableTestCluster @JsonCreator constructor(
 	 */
 	var rank: Int = 0
 
-	override fun toString(): String {
-		return StringJoiner(
-			", ",
-			PrioritizableTestCluster::class.java.simpleName + "[", "]"
-		)
-			.add("clusterId='$clusterId'")
+	override fun toString() =
+		StringJoiner(", ", PrioritizableTestCluster::class.java.simpleName + "[", "]").add("clusterId='$clusterId'")
 			.add("score=$score")
 			.add("rank=$rank")
 			.add("tests=$tests")
 			.toString()
-	}
 }

@@ -30,53 +30,46 @@ object JsonUtils {
 	/**
 	 * Creates a new instance of [JsonFactory] using the default [ObjectMapper].
 	 */
-	fun createFactory(): JsonFactory {
-		return JsonFactory(OBJECT_MAPPER)
-	}
+	fun createFactory() = JsonFactory(OBJECT_MAPPER)
 
 	/**
 	 * Deserializes a JSON string into an object of the given class.
 	 */
 	@Throws(JsonProcessingException::class)
 	@JvmStatic
-	fun <T> deserialize(json: String?, clazz: Class<T>?): T {
-		return OBJECT_MAPPER.readValue(json, clazz)
-	}
+	fun <T> deserialize(json: String, clazz: Class<T>): T =
+		OBJECT_MAPPER.readValue(json, clazz)
 
 	/**
 	 * Deserializes the contents of the given file into an object of the given class.
 	 */
 	@Throws(IOException::class)
-	fun <T> deserializeFile(file: File?, clazz: Class<T>?): T {
-		return OBJECT_MAPPER.readValue(file, clazz)
-	}
+	fun <T> deserializeFile(file: File, clazz: Class<T>): T =
+		OBJECT_MAPPER.readValue(file, clazz)
 
 	/**
 	 * Deserializes a JSON string into a list of objects of the given class.
 	 */
 	@Throws(JsonProcessingException::class)
 	@JvmStatic
-	fun <T> deserializeList(json: String?, elementClass: Class<T>?): List<T> {
-		return OBJECT_MAPPER.readValue(
-			json,
-			OBJECT_MAPPER.typeFactory.constructCollectionLikeType(MutableList::class.java, elementClass)
+	fun <T> deserializeList(json: String, elementClass: Class<T>): List<T> =
+		OBJECT_MAPPER.readValue(
+			json, OBJECT_MAPPER.typeFactory.constructCollectionLikeType(MutableList::class.java, elementClass)
 		)
-	}
 
 	/**
 	 * Serializes an object into its JSON representation.
 	 */
 	@JvmStatic
 	@Throws(JsonProcessingException::class)
-	fun serialize(value: Any?): String {
-		return OBJECT_MAPPER.writeValueAsString(value)
-	}
+	fun serialize(value: Any): String =
+		OBJECT_MAPPER.writeValueAsString(value)
 
 	/**
 	 * Serializes an object to a file with pretty printing enabled.
 	 */
 	@Throws(IOException::class)
-	fun <T> serializeToFile(file: File?, value: T) {
+	fun <T> serializeToFile(file: File, value: T) {
 		OBJECT_MAPPER.writer().withDefaultPrettyPrinter().writeValue(file, value)
 	}
 }

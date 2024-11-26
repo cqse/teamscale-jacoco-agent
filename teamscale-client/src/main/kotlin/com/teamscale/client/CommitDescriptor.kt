@@ -4,8 +4,7 @@ import java.io.Serializable
 import java.util.*
 
 /** Holds the branch and timestamp of a commit.  */
-class CommitDescriptor
-/** Constructor.  */(
+data class CommitDescriptor(
 	/** Branch name of the commit.  */
 	@JvmField val branchName: String,
 	/**
@@ -18,25 +17,7 @@ class CommitDescriptor
 	constructor(branchName: String, timestamp: Long) : this(branchName, timestamp.toString())
 
 	/** Returns a string representation of the commit in a Teamscale REST API compatible format.  */
-	override fun toString(): String {
-		return "$branchName:$timestamp"
-	}
-
-	override fun equals(o: Any?): Boolean {
-		if (this === o) {
-			return true
-		}
-		if (o == null || javaClass != o.javaClass) {
-			return false
-		}
-		val that = o as CommitDescriptor
-		return branchName == that.branchName &&
-				timestamp == that.timestamp
-	}
-
-	override fun hashCode(): Int {
-		return Objects.hash(branchName, timestamp)
-	}
+	override fun toString() = "$branchName:$timestamp"
 
 	companion object {
 		/** Parses the given commit descriptor string.  */

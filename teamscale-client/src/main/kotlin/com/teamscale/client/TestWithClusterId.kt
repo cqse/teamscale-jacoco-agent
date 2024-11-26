@@ -10,7 +10,7 @@ class TestWithClusterId @JsonCreator constructor(
 	/**
 	 * The uniform path of the test (unescaped and without -test-execution- prefix).
 	 */
-	@param:JsonProperty("testName") val testName: String?,
+	@param:JsonProperty("testName") val testName: String,
 	/**
 	 * The hashed content of the test.
 	 */
@@ -28,11 +28,10 @@ class TestWithClusterId @JsonCreator constructor(
 		/**
 		 * Creates a #TestWithClusterId from a #ClusteredTestDetails object.
 		 */
-		fun fromClusteredTestDetails(clusteredTestDetails: ClusteredTestDetails): TestWithClusterId {
-			return TestWithClusterId(
+		fun fromClusteredTestDetails(clusteredTestDetails: ClusteredTestDetails) =
+			TestWithClusterId(
 				clusteredTestDetails.uniformPath, clusteredTestDetails.content,
 				clusteredTestDetails.partition, clusteredTestDetails.clusterId
 			)
-		}
 	}
 }

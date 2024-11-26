@@ -158,7 +158,7 @@ enum class EReportFormat(
 	/**
 	 * Coverage report generated with the Lauterbach Trace32 tool. See section for
 	 * [Supported
- * Upload Formats and Samples](https://docs.teamscale.com/reference/upload-formats-and-samples/) in the user guide for more information about
+ 	 * Upload Formats and Samples](https://docs.teamscale.com/reference/upload-formats-and-samples/) in the user guide for more information about
 	 * the Lauterbach Trace32 tool. See the `trace32_example_reports.zip` for
 	 * additional report examples.
 	 */
