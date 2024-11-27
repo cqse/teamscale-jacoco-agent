@@ -3,7 +3,6 @@ package com.teamscale.tia.client
 import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.client.JsonUtils.deserializeList
 import com.teamscale.client.JsonUtils.serialize
-import com.teamscale.client.PrioritizableTestCluster
 import com.teamscale.client.StringUtils.isEmpty
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestExecution
@@ -15,7 +14,6 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.*
-import java.util.function.Supplier
 import java.util.stream.Collectors
 
 /**
@@ -24,8 +22,7 @@ import java.util.stream.Collectors
 class CommandLineInterface(arguments: Array<String>) {
 	private class InvalidCommandLineException(message: String?) : RuntimeException(message)
 
-	private val arguments: MutableList<String> =
-		ArrayList(listOf(*arguments))
+	private val arguments = listOf(*arguments).toMutableList()
 	private val command: String
 	private val api: ITestwiseCoverageAgentApi
 
@@ -50,8 +47,7 @@ class CommandLineInterface(arguments: Array<String>) {
 			"endTest" -> endTest()
 			"endTestRun" -> endTestRun()
 			else -> throw InvalidCommandLineException(
-				"Unknown command '" + command + "'. Should be one of startTestRun, startTest, endTest," +
-						" endTestRun"
+				"Unknown command '$command'. Should be one of startTestRun, startTest, endTest, endTestRun"
 			)
 		}
 	}
@@ -72,13 +68,11 @@ class CommandLineInterface(arguments: Array<String>) {
 	private fun endTest() {
 		if (arguments.size < 2) {
 			throw InvalidCommandLineException(
-				"You must provide the uniform path of the test that is about to be started" +
-						" as the first argument of the endTest command and the test result as the second."
+				"You must provide the uniform path of the test that is about to be started as the first argument of the endTest command and the test result as the second."
 			)
 		}
 		val uniformPath = arguments.removeAt(0)
 		val result = ETestExecutionResult.valueOf(arguments.removeAt(0).uppercase(Locale.getDefault()))
-
 		val message = readStdin()
 
 		// the agent already records test duration, so we can simply provide a dummy value here
@@ -109,10 +103,13 @@ class CommandLineInterface(arguments: Array<String>) {
 		val baselineRevision = parseAndRemoveStringParameter("baseline-revision")
 		val availableTests = parseAvailableTestsFromStdin()
 
-		val clusters = handleRequestError(
+		handleRequestError(
 			"Failed to start the test run"
-		) { api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests) }
-		println(serialize(clusters!!))
+		) {
+			api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests)
+		}?.let {
+			println(it.serialize())
+		}
 	}
 
 	@Throws(IOException::class)

@@ -70,7 +70,7 @@ interface ITestwiseCoverageAgentApi {
 	): Call<List<PrioritizableTestCluster>>
 
 	/**
-	 * Test run finished. Generate test-wise coverage report and upload to Teamscale.
+	 * Test run finished. Generate a test-wise coverage report and upload to Teamscale.
 	 *
 	 * @param partial Whether the test recording only contains a subset of the available tests.
 	 */
