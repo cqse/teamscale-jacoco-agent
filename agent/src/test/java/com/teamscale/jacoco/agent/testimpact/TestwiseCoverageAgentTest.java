@@ -86,9 +86,9 @@ public class TestwiseCoverageAgentTest {
 		TiaAgent agent = new TiaAgent(false, HttpUrl.get("http://localhost:" + port));
 
 		TestRunWithClusteredSuggestions testRun = agent.startTestRun(availableTests);
-		assertThat(testRun.getPrioritizedClusters()).hasSize(1);
-		assertThat(testRun.getPrioritizedClusters().get(0).tests).hasSize(1);
-		PrioritizableTest test = testRun.getPrioritizedClusters().get(0).tests.get(0);
+		assertThat(testRun.prioritizedClusters).hasSize(1);
+		assertThat(testRun.prioritizedClusters.get(0).tests).hasSize(1);
+		PrioritizableTest test = testRun.prioritizedClusters.get(0).tests.get(0);
 		assertThat(test.testName).isEqualTo("test2");
 
 		RunningTest runningTest = testRun.startTest(test.testName);

@@ -44,7 +44,7 @@ public class CustomTestFramework {
 				allTests.keySet().stream().map(name -> new ClusteredTestDetails(name, name, null, null, null))
 						.collect(toList()));
 
-		for (PrioritizableTestCluster cluster : testRun.getPrioritizedClusters()) {
+		for (PrioritizableTestCluster cluster : testRun.prioritizedClusters) {
 			for (PrioritizableTest test : cluster.tests) {
 				Runnable runnable = allTests.get(test.testName);
 				RunningTest runningTest = testRun.startTest(test.testName);
