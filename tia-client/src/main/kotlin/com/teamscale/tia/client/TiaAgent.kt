@@ -56,8 +56,8 @@ class TiaAgent(private val includeNonImpactedTests: Boolean, url: HttpUrl) {
 
 	/**
 	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
-	 * considers all changes since the last time that test-wise coverage was uploaded. In most situations this is the
-	 * optimal behaviour.
+	 * has considered all changes since the last time that test-wise coverage was uploaded.
+	 * In most situations, this is the optimal behavior.
 	 *
 	 *
 	 * Using this method, Teamscale will perform the selection and prioritization based on the tests it currently knows
@@ -68,9 +68,9 @@ class TiaAgent(private val includeNonImpactedTests: Boolean, url: HttpUrl) {
 	 *
 	 * **Thus, we recommend that, if possible, you use [.startTestRun] instead.**
 	 *
-	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
+	 * @throws AgentHttpRequestFailedException e.g., if the agent or Teamscale is not reachable or an internal error
 	 * occurs. This method already retries the request once, so this is likely a
-	 * terminal failure. You should simply fall back to running all tests in
+	 * terminal failure. You should fall back to running all tests in
 	 * this case and not communicate further with the agent. You should visibly
 	 * report this problem so it can be fixed.
 	 */
@@ -80,16 +80,17 @@ class TiaAgent(private val includeNonImpactedTests: Boolean, url: HttpUrl) {
 
 	/**
 	 * Runs the TIA to determine which of the given available tests should be run and in which order. This method
-	 * considers all changes since the given baseline timestamp.
+	 * has considered all changes since the given baseline timestamp.
 	 *
-	 * @param availableTests A list of all available tests. This is used to determine which tests need to be run, e.g.
+	 * @param availableTests A list of all available tests. This is used to determine which tests need to be run, e.g.,
 	 * because they are completely new or changed since the last run. If you provide an empty
-	 * list, no tests will be selected.The clustering information in this list is used to
+	 * list, no tests will be selected. The clustering information in this list is used to
 	 * construct the test clusters in the returned [TestRunWithClusteredSuggestions].
 	 * @param baseline       Consider all code changes since this date when calculating the impacted tests.
-	 * @param baselineRevision Same as baseline but accepts a revision (e.g. git SHA1) instead of a branch and timestamp
-	 * @throws AgentHttpRequestFailedException e.g. if the agent or Teamscale is not reachable or an internal error
-	 * occurs. You should simply fall back to running all tests in this case.
+	 * @param baselineRevision Same as baseline but accepts a revision (e.g., git SHA1) instead of a branch and timestamp
+	 * @throws AgentHttpRequestFailedException e.g., if the agent or Teamscale is not reachable or an internal error
+	 * occurs.
+	 * You should fall back to running all tests in this case.
 	 */
 	@Throws(AgentHttpRequestFailedException::class)
 	fun startTestRun(
@@ -133,9 +134,8 @@ class TiaAgent(private val includeNonImpactedTests: Boolean, url: HttpUrl) {
 	fun startTestRunAssumingUnchangedTests(
 		baseline: Instant?, baselineRevision: String?
 	): TestRunWithFlatSuggestions {
-		val baselineTimestamp = baseline?.toEpochMilli()
 		val clusters = handleRequestError("Failed to start the test run") {
-			api.testRunStarted(includeNonImpactedTests, baselineTimestamp, baselineRevision)
+			api.testRunStarted(includeNonImpactedTests, baseline?.toEpochMilli(), baselineRevision)
 		}
 		return TestRunWithFlatSuggestions(api, clusters?.firstOrNull()?.tests ?: emptyList())
 	}

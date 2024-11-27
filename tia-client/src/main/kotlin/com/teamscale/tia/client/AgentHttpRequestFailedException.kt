@@ -6,7 +6,7 @@ package com.teamscale.tia.client
  * problems can be addressed.
  */
 class AgentHttpRequestFailedException : Exception {
-	constructor(message: String?) : super(message)
+	constructor(message: String) : super(message)
 
-	constructor(message: String?, cause: Throwable?) : super(message, cause)
+	constructor(message: String, cause: Throwable?) : super(message, cause)
 }
