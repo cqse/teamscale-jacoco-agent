@@ -1,6 +1,7 @@
 package com.teamscale.tia.client
 
 import com.teamscale.client.ClusteredTestDetails
+import com.teamscale.client.JsonUtils
 import com.teamscale.client.JsonUtils.deserializeList
 import com.teamscale.client.JsonUtils.serialize
 import com.teamscale.client.StringUtils.isEmpty
@@ -108,7 +109,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		) {
 			api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests)
 		}?.let {
-			println(it.serialize())
+			println(serialize(it))
 		}
 	}
 
