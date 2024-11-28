@@ -55,11 +55,11 @@ class TeamscaleServer {
 	@JvmField
 	var configId: String? = null
 
+	/**
+	 * The commit message shown in the Teamscale UI for the coverage upload. If the message is null, auto-generates a
+	 * sensible message.
+	 */
 	var message: String? = null
-		/**
-		 * The commit message shown in the Teamscale UI for the coverage upload. If the message is null, auto-generates a
-		 * sensible message.
-		 */
 		get() {
 			if (field == null) {
 				return buildDefaultMessage()
@@ -97,16 +97,16 @@ class TeamscaleServer {
 			}
 		}
 
+	/** Checks if all fields required for a single-project Teamscale upload are non-null.  */
 	val isConfiguredForSingleProjectTeamscaleUpload: Boolean
-		/** Checks if all fields required for a single-project Teamscale upload are non-null.  */
 		get() = isConfiguredForServerConnection && partition != null && project != null
 
+	/** Checks if all fields required for a Teamscale upload are non-null, except the project which must be null.  */
 	val isConfiguredForMultiProjectUpload: Boolean
-		/** Checks if all fields required for a Teamscale upload are non-null, except the project which must be null.  */
 		get() = isConfiguredForServerConnection && partition != null && project == null
 
+	/** Checks if all required fields to access a Teamscale server are non-null.  */
 	val isConfiguredForServerConnection: Boolean
-		/** Checks if all required fields to access a Teamscale server are non-null.  */
 		get() = url != null && userName != null && userAccessToken != null
 
 	/** Whether a URL, user and access token were provided.  */

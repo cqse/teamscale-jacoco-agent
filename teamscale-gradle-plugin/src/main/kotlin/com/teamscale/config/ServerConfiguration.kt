@@ -1,5 +1,6 @@
 package com.teamscale.config
 
+import com.teamscale.client.TeamscaleClient
 import org.gradle.api.GradleException
 import java.io.Serializable
 
@@ -27,4 +28,10 @@ data class ServerConfiguration(
             throw GradleException("Teamscale user access token must not be empty!")
         }
     }
+	fun toClient() = TeamscaleClient(
+		url,
+		project ?: throw GradleException("Teamscale project name must not be null!"),
+		userName ?: throw GradleException("Teamscale user name must not be null!"),
+		userAccessToken ?: throw GradleException("Teamscale user access token must not be null!")
+	)
 }

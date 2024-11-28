@@ -13,10 +13,9 @@ package com.teamscale.client
  * over the default proxy settings (see [ProxySystemProperties.ProxySystemProperties]).
  */
 class TeamscaleProxySystemProperties(protocol: Protocol) : ProxySystemProperties(protocol) {
+	/**
+	 * The prefix for Teamscale system properties.
+	 */
 	override val propertyPrefix: String
-		get() = TEAMSCALE_PREFIX
-
-	companion object {
-		const val TEAMSCALE_PREFIX = "teamscale."
-	}
+		get() = "teamscale."
 }

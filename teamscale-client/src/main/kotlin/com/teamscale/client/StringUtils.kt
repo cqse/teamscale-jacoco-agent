@@ -157,17 +157,9 @@ object StringUtils {
 	 */
 	@JvmStatic
 	fun CharSequence.levenshteinDistance(rhs: CharSequence): Int {
-		if (this == rhs) {
-			return 0
-		}
-
-		if (isEmpty()) {
-			return rhs.length
-		}
-
-		if (rhs.isEmpty()) {
-			return length
-		}
+		if (this == rhs) return 0
+		if (isEmpty()) return rhs.length
+		if (rhs.isEmpty()) return length
 
 		val len0 = length + 1
 		val len1 = rhs.length + 1

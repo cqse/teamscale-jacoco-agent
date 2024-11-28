@@ -3,7 +3,6 @@ package com.teamscale.jacoco.agent.upload.teamscale;
 import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
-import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.ITeamscaleServiceKt;
 import com.teamscale.client.TeamscaleServer;
