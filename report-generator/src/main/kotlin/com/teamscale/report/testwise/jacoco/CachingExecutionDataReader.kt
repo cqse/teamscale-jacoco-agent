@@ -45,9 +45,13 @@ open class CachingExecutionDataReader(
 	 */
 	private fun analyzeDirectory(classDir: File, analyzer: AnalyzerCache) =
 		runCatching { analyzer.analyzeAll(classDir) }
-			.onFailure { e -> logger.error("Failed to analyze class files in $classDir! " +
-					"Maybe the folder contains incompatible class files. Coverage for class files " +
-					"in this folder will be ignored.", e) }
+			.onFailure { e ->
+				logger.error(
+					"Failed to analyze class files in $classDir! " +
+							"Maybe the folder contains incompatible class files. Coverage for class files " +
+							"in this folder will be ignored.", e
+				)
+			}
 			.getOrDefault(0)
 
 	/**
@@ -73,7 +77,7 @@ open class CachingExecutionDataReader(
 
 	/**
 	 * Consumer for processing [Dump] objects and passing them to [TestCoverageBuilder].
-	 * 
+	 *
 	 * @param logger The logger to use for logging.
 	 * @param locationIncludeFilter The filter to use for including locations.
 	 * @param nextConsumer The consumer to pass the generated [TestCoverageBuilder] to.

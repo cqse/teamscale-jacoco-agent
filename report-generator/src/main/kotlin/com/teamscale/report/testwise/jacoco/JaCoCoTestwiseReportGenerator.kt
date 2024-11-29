@@ -87,7 +87,9 @@ open class JaCoCoTestwiseReportGenerator(
 	}
 
 	/** Collects execution information per session and passes it to the consumer . */
-	private class DumpCallback(private val consumer: DumpConsumer) : IExecutionDataVisitor, ISessionInfoVisitor {
+	private class DumpCallback(
+		private val consumer: DumpConsumer
+	) : IExecutionDataVisitor, ISessionInfoVisitor {
 		/** The dump that is currently being read. */
 		private var currentDump: Dump? = null
 

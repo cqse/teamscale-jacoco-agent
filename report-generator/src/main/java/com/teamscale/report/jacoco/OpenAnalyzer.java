@@ -54,6 +54,8 @@ import java.util.zip.ZipInputStream;
  * {@link Analyzer} requires a {@link ExecutionDataStore} instance that holds
  * the execution data for the classes to analyze. The {@link Analyzer} offers
  * several methods to analyze classes from a variety of sources.
+ * <p>
+ * CAUTION: Do not convert to Kotlin. This class has to stay in Java for future maintenance reasons!
  */
 public class OpenAnalyzer {
 

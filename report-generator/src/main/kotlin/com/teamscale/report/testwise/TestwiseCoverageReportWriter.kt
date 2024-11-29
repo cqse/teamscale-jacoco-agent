@@ -3,13 +3,11 @@ package com.teamscale.report.testwise
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.teamscale.client.JsonUtils
-import com.teamscale.client.StringUtils
 import com.teamscale.report.testwise.model.TestInfo
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder
 import com.teamscale.report.testwise.model.factory.TestInfoFactory
 import java.io.File
 import java.io.IOException
-import java.io.OutputStream
 import java.nio.file.Files
 import java.util.function.Consumer
 

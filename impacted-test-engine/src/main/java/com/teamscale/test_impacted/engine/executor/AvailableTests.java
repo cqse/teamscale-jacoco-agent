@@ -53,7 +53,7 @@ public class AvailableTests {
 			LOGGER.severe(() -> "Retrieved invalid test '" + test.testName + "' from Teamscale server!");
 			LOGGER.severe(() -> "The following seem related:");
 			uniformPathToUniqueIdMapping.keySet().stream().sorted(Comparator
-							.comparing(testPath -> StringUtils.editDistance(test.testName, testPath))).limit(5)
+							.comparing(testPath -> StringUtils.levenshteinDistance(test.testName, testPath))).limit(5)
 					.forEach(testAlternative -> LOGGER.severe(() -> " - " + testAlternative));
 		}
 		return Optional.ofNullable(clusterUniqueId);

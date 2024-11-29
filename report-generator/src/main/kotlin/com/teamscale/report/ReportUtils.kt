@@ -8,7 +8,6 @@ import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import java.io.File
-import java.io.FileFilter
 import java.io.IOException
 import java.util.*
 
@@ -39,7 +38,7 @@ object ReportUtils {
 	@Throws(JsonProcessingException::class)
 	fun getTestwiseCoverageReportAsString(
 		report: TestwiseCoverageReport
-	): String = JsonUtils.serialize(report)
+	) = JsonUtils.serialize(report)
 
 	/** Writes the report object to the given file as json.  */
 	@Throws(IOException::class)
@@ -59,7 +58,7 @@ object ReportUtils {
 		clazz: Class<Array<T>>,
 		directoriesOrFiles: List<File>
 	) = listFiles(format, directoriesOrFiles)
-		.mapNotNull { JsonUtils.deserializeFile(it, clazz) }
+		.map { JsonUtils.deserializeFile(it, clazz) }
 		.flatMap { listOf(*it) }
 
 	/** Recursively lists all files of the given artifact type.  */
@@ -70,14 +69,14 @@ object ReportUtils {
 	) = directoriesOrFiles.flatMap { directoryOrFile ->
 		when {
 			directoryOrFile.isDirectory() -> {
-				FileSystemUtils.listFilesRecursively(directoryOrFile) {
-					it.isOfArtifactFormat(format)
-				}
+				directoryOrFile.walkTopDown().filter { it.isOfArtifactFormat(format) }.toList()
 			}
+
 			directoryOrFile.isOfArtifactFormat(format) -> {
 				listOf(directoryOrFile)
 			}
-			else -> emptyList<File>()
+
+			else -> emptyList()
 		}
 	}
 
