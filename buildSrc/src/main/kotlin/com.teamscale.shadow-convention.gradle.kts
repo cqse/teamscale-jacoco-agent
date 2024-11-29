@@ -6,7 +6,7 @@ plugins {
 	// https://github.com/GradleUp/shadow
 	id("com.gradleup.shadow")
 	// https://github.com/xpdustry/kotlin-shadow-relocator
-	id("com.xpdustry.ksr")
+	id("com.xpdustry.kotlin-shadow-relocator")
 }
 
 tasks.named<ShadowJar>("shadowJar") {
