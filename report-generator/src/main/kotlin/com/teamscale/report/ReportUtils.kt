@@ -3,6 +3,7 @@ package com.teamscale.report
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.teamscale.client.FileSystemUtils
 import com.teamscale.client.JsonUtils
+import com.teamscale.client.JsonUtils.serialize
 import com.teamscale.client.TestDetails
 import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.model.TestExecution
@@ -38,9 +39,9 @@ object ReportUtils {
 	@Throws(JsonProcessingException::class)
 	fun getTestwiseCoverageReportAsString(
 		report: TestwiseCoverageReport
-	) = JsonUtils.serialize(report)
+	) = report.serialize()
 
-	/** Writes the report object to the given file as json.  */
+	/** Writes the report object to the given file as JSON.  */
 	@Throws(IOException::class)
 	private fun <T> writeReportToFile(reportFile: File, report: T) {
 		val directory = reportFile.getParentFile()

@@ -62,8 +62,8 @@ object JsonUtils {
 	 */
 	@JvmStatic
 	@Throws(JsonProcessingException::class)
-	fun serialize(value: Any): String =
-		OBJECT_MAPPER.writeValueAsString(value)
+	fun Any.serialize(): String =
+		OBJECT_MAPPER.writeValueAsString(this)
 
 	/**
 	 * Serializes an object to a file with pretty printing enabled.

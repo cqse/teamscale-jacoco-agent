@@ -34,7 +34,7 @@ public class CucumberGradleTiaSystemTest {
 		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "--impacted", "teamscaleReportUpload", "--no-daemon");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Cucumber Tests"));
+		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.partition.equals("Cucumber Tests"));
 
 		TestwiseCoverageReport testReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		// We can't just assert for testReport.test == 1 here because the Gradle plugin uploads all test cases.

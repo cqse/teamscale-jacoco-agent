@@ -24,7 +24,7 @@ public class DefaultExcludesSystemTest {
 		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
+		String report = teamscaleMockServer.uploadedReports.get(0).reportString;
 		assertThat(report).doesNotContain("shadow");
 		assertThat(report).doesNotContain("junit");
 		assertThat(report).doesNotContain("eclipse");
