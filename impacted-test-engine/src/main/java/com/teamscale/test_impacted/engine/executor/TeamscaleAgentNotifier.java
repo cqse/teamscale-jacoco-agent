@@ -33,7 +33,7 @@ public class TeamscaleAgentNotifier {
 	public void startTest(String testUniformPath) {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
-				apiService.testStarted(UrlUtils.percentEncode(testUniformPath)).execute();
+				apiService.testStarted(UrlUtils.encodeUrl(testUniformPath)).execute();
 			}
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> "Error while calling service api.");
@@ -45,9 +45,9 @@ public class TeamscaleAgentNotifier {
 		try {
 			for (ITestwiseCoverageAgentApi apiService : testwiseCoverageAgentApis) {
 				if (testExecution == null) {
-					apiService.testFinished(UrlUtils.percentEncode(testUniformPath)).execute();
+					apiService.testFinished(UrlUtils.encodeUrl(testUniformPath)).execute();
 				} else {
-					apiService.testFinished(UrlUtils.percentEncode(testUniformPath), testExecution).execute();
+					apiService.testFinished(UrlUtils.encodeUrl(testUniformPath), testExecution).execute();
 				}
 			}
 		} catch (IOException e) {
