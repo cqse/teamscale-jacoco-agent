@@ -96,6 +96,7 @@ public class LoggingUtils {
 			// StatusPrinter will handle this
 		}
 		StatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext);
+		DelayedLogAppender.logTo(loggerContext);
 	}
 
 	/**
