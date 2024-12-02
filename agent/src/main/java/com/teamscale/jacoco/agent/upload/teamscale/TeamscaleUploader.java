@@ -10,7 +10,7 @@ import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.upload.IUploadRetry;
 import com.teamscale.jacoco.agent.upload.IUploader;
 import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.jacoco.CoverageFile;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.slf4j.Logger;
@@ -109,7 +109,9 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 		Properties serverProperties = new Properties();
 		serverProperties.setProperty(PROJECT.name(), teamscaleServer.project);
 		serverProperties.setProperty(PARTITION.name(), teamscaleServer.partition);
-		serverProperties.setProperty(COMMIT.name(), teamscaleServer.commit.toString());
+		if (teamscaleServer.commit != null) {
+			serverProperties.setProperty(COMMIT.name(), teamscaleServer.commit.toString());
+		}
 		serverProperties.setProperty(REVISION.name(), Strings.nullToEmpty(teamscaleServer.revision));
 		serverProperties.setProperty(REPOSITORY.name(), Strings.nullToEmpty(teamscaleServer.repository));
 		serverProperties.setProperty(MESSAGE.name(), teamscaleServer.getMessage());

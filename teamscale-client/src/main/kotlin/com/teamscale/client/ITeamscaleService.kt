@@ -110,23 +110,51 @@ interface ITeamscaleService {
 		@Query("include-added-tests") includeAddedTests: Boolean
 	): Call<List<PrioritizableTest>>
 
-	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with. */
+	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with.  */
+	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
 	@POST("api/v9.4.0/running-profilers")
-	fun registerProfiler(
-		@Query("configuration-id") configurationId: String,
-		@Body processInformation: ProcessInformation
+	fun registerProfilerLegacy(
+		@Query("configuration-id") configurationId: String?,
+		@Body processInformation: ProcessInformation?
 	): Call<ProfilerRegistration>
 
-	/** Updates the profiler infos and sets the profiler to still alive. */
+	/** Updates the profiler infos and sets the profiler to still alive.  */
+	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
 	@PUT("api/v9.4.0/running-profilers/{profilerId}")
-	fun sendHeartbeat(
-		@Path("profilerId") profilerId: String,
-		@Body profilerInfo: ProfilerInfo
+	fun sendHeartbeatLegacy(
+		@Path("profilerId") profilerId: String?,
+		@Body profilerInfo: ProfilerInfo?
 	): Call<ResponseBody>
 
-	/** Removes the profiler identified by the given ID. */
+	/** Removes the profiler identified by given ID.  */
+	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
 	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
+	fun unregisterProfilerLegacy(@Path("profilerId") profilerId: String?): Call<ResponseBody>
+
+	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with.  */
+	@POST("api/v2024.7.0/profilers")
+	fun registerProfiler(
+		@Query("configuration-id") configurationId: String?,
+		@Body processInformation: ProcessInformation?
+	): Call<ProfilerRegistration>
+
+	/** Updates the profiler infos and sets the profiler to still alive.  */
+	@PUT("api/v2024.7.0/profilers/{profilerId}")
+	fun sendHeartbeat(
+		@Path("profilerId") profilerId: String,
+		@Body profilerInfo: ProfilerInfo?
+	): Call<ResponseBody>
+
+	/** Removes the profiler identified by given ID.  */
+	@DELETE("api/v2024.7.0/profilers/{profilerId}")
 	fun unregisterProfiler(@Path("profilerId") profilerId: String): Call<ResponseBody>
+
+	/** Send logs to Teamscale  */
+	@POST("api/v2024.7.0/profilers/{profilerId}/logs")
+	fun postProfilerLog(
+		@Path("profilerId") profilerId: String,
+		@Body logEntries: List<ProfilerLogEntry?>?
+	): Call<Void>
 }
 
 /**

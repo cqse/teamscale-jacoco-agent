@@ -27,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class AgentOptionsParserTest {
 
 	private TeamscaleCredentials teamscaleCredentials;
-	private final AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null);
 	private Path configFile;
 	/** The mock server to run requests against. */
 	protected MockWebServer mockWebServer;
@@ -49,21 +48,21 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void testUploadMethodRecognition() throws Exception {
-		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
-		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
+		assertThat(parseAndThrow(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
+		assertThat(parseAndThrow("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
 				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
-		assertThat(parser.parse(
+		assertThat(parseAndThrow(
 				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
 						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, "apikey",
 						ArtifactoryConfig.ARTIFACTORY_PARTITION, "partition")
 		).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.ARTIFACTORY);
 
 		String basicTeamscaleOptions = "teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p";
-		assertThat(parser.parse(basicTeamscaleOptions)
+		assertThat(parseAndThrow(basicTeamscaleOptions)
 				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_MULTI_PROJECT);
-		assertThat(parser.parse(basicTeamscaleOptions + ",teamscale-project=proj")
+		assertThat(parseAndThrow(basicTeamscaleOptions + ",teamscale-project=proj")
 				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_SINGLE_PROJECT);
-		assertThat(parser.parse(
+		assertThat(parseAndThrow(
 						basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 				.determineUploadMethod())
 				.isEqualTo(AgentOptions.EUploadMethod.SAP_NWDI_TEAMSCALE);
@@ -74,21 +73,21 @@ public class AgentOptionsParserTest {
 		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, credentials);
 
-		assertThat(parser.parse(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
-		assertThat(parser.parse("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
+		assertThat(parseAndThrow(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
+		assertThat(parseAndThrow("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
 				AgentOptions.EUploadMethod.AZURE_FILE_STORAGE);
-		assertThat(parser.parse(
+		assertThat(parseAndThrow(
 				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
 						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, "apikey",
 						ArtifactoryConfig.ARTIFACTORY_PARTITION, "partition")
 		).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.ARTIFACTORY);
 
 		String basicTeamscaleOptions = "teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p";
-		assertThat(parser.parse(basicTeamscaleOptions)
+		assertThat(parseAndThrow(basicTeamscaleOptions)
 				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_MULTI_PROJECT);
-		assertThat(parser.parse(basicTeamscaleOptions + ",teamscale-project=proj")
+		assertThat(parseAndThrow(basicTeamscaleOptions + ",teamscale-project=proj")
 				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_SINGLE_PROJECT);
-		assertThat(parser.parse(
+		assertThat(parseAndThrow(
 						basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 				.determineUploadMethod())
 				.isEqualTo(AgentOptions.EUploadMethod.SAP_NWDI_TEAMSCALE);
@@ -104,7 +103,7 @@ public class AgentOptionsParserTest {
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
 				null, teamscaleCredentials);
-		AgentOptions options = parser.parse("teamscale-partition=bar");
+		AgentOptions options = parseAndThrow(parser, "teamscale-partition=bar");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("foo");
 	}
@@ -113,7 +112,7 @@ public class AgentOptionsParserTest {
 	public void environmentConfigFileOverridesCommandLineOptions() throws Exception {
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, configFile.toString(),
 				teamscaleCredentials);
-		AgentOptions options = parser.parse("teamscale-partition=from-command-line");
+		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
 	}
@@ -128,7 +127,7 @@ public class AgentOptionsParserTest {
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config", configFile.toString(),
 				teamscaleCredentials);
-		AgentOptions options = parser.parse("teamscale-partition=from-command-line");
+		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
 	}
@@ -136,59 +135,59 @@ public class AgentOptionsParserTest {
 	@Test
 	public void notAllRequiredTeamscaleOptionsSet() {
 		assertThatCode(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj")
 		).doesNotThrowAnyException();
 		assertThatCode(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p")
 		).doesNotThrowAnyException();
 		assertThatCode(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token")
 		).doesNotThrowAnyException();
 
 		assertThatThrownBy(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-project=proj")
 		).hasMessageContaining("You configured a 'teamscale-project' but no 'teamscale-partition' to upload to.");
 
 		assertThatThrownBy(
-				() -> parser.parse("teamscale-server-url=teamscale.com")
+				() -> parseAndThrow("teamscale-server-url=teamscale.com")
 		).hasMessageContaining("not all required ones");
 		assertThatThrownBy(
-				() -> parser.parse("teamscale-server-url=teamscale.com,teamscale-user=user")
+				() -> parseAndThrow("teamscale-server-url=teamscale.com,teamscale-user=user")
 		).hasMessageContaining("not all required ones");
 		assertThatThrownBy(
-				() -> parser.parse("teamscale-server-url=teamscale.com,teamscale-access-token=token")
+				() -> parseAndThrow("teamscale-server-url=teamscale.com,teamscale-access-token=token")
 		).hasMessageContaining("not all required ones");
 		assertThatThrownBy(
-				() -> parser.parse("teamscale-user=user,teamscale-access-token=token")
+				() -> parseAndThrow("teamscale-user=user,teamscale-access-token=token")
 		).hasMessageContaining("not all required ones");
 		assertThatThrownBy(
-				() -> parser.parse("teamscale-revision=1234")
+				() -> parseAndThrow("teamscale-revision=1234")
 		).hasMessageContaining("not all required ones");
 		assertThatThrownBy(
-				() -> parser.parse("teamscale-commit=master:1234")
+				() -> parseAndThrow("teamscale-commit=master:1234")
 		).hasMessageContaining("not all required ones");
 	}
 
 	@Test
 	public void sapNwdiRequiresAllTeamscaleOptionsExceptProject() {
 		assertThatThrownBy(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 		).hasMessageContaining(
 				"You provided an SAP NWDI applications config, but the 'teamscale-' upload options are incomplete");
 
 		assertThatThrownBy(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 		).hasMessageContaining(
 				"The project must be specified via sap-nwdi-applications");
 
 		assertThatThrownBy(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj,sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 		).hasMessageContaining(
 						"You provided an SAP NWDI applications config and a teamscale-project")
@@ -198,11 +197,11 @@ public class AgentOptionsParserTest {
 	@Test
 	public void revisionOrCommitRequireProject() {
 		assertThatThrownBy(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-revision=12345")
 		).hasMessageContaining("you did not provide the 'teamscale-project'");
 		assertThatThrownBy(
-				() -> parser.parse(
+				() -> parseAndThrow(
 						"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-commit=master:HEAD")
 		).hasMessageContaining("you did not provide the 'teamscale-project'");
 	}
@@ -219,26 +218,35 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void notGivingAnyOptionsShouldBeOK() throws Exception {
-		parser.parse("");
-		parser.parse(null);
+		parseAndThrow("");
+		parseAndThrow(null);
 	}
 
 	@Test
 	public void mustPreserveDefaultExcludes() throws Exception {
-		assertThat(parser.parse("").jacocoExcludes).isEqualTo(AgentOptions.DEFAULT_EXCLUDES);
-		assertThat(parser.parse("excludes=**foo**").jacocoExcludes)
+		assertThat(parseAndThrow("").jacocoExcludes).isEqualTo(AgentOptions.DEFAULT_EXCLUDES);
+		assertThat(parseAndThrow("excludes=**foo**").jacocoExcludes)
 				.isEqualTo("**foo**:" + AgentOptions.DEFAULT_EXCLUDES);
 	}
 
 	@Test
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials);
-
-		assertThat(parser.parse("teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
+		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials), "teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");
-		assertThat(parser.parse(
+		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials),
 				"teamscale-project=p,teamscale-partition=p,teamscale-user=user2").teamscaleServer.userName).isEqualTo(
 				"user2");
+	}
+
+	private AgentOptions parseAndThrow(AgentOptionsParser parser, String options) throws Exception {
+		AgentOptions result = parser.parse(options);
+		parser.throwOnCollectedErrors();
+		return result;
+	}
+
+	private AgentOptions parseAndThrow(String options) throws Exception {
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+		return parseAndThrow(parser, options);
 	}
 
 	/**

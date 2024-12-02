@@ -7,7 +7,7 @@ import com.teamscale.client.ProfilerInfo;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
@@ -60,6 +60,10 @@ public class ConfigurationViaTeamscale {
 			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
 			Response<ProfilerRegistration> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
+			if (response.code() == 405) {
+				response = teamscaleClient.registerProfilerLegacy(configurationId,
+						processInformation).execute();
+			}
 			if (!response.isSuccessful()) {
 				if (response.code() >= 400 && response.code() < 500) {
 					throw new AgentOptionParseException(
@@ -109,6 +113,9 @@ public class ConfigurationViaTeamscale {
 	private void sendHeartbeat() {
 		try {
 			Response<ResponseBody> response = teamscaleClient.sendHeartbeat(profilerId, profilerInfo).execute();
+			if (response.code() == 405) {
+				response = teamscaleClient.sendHeartbeatLegacy(profilerId, profilerInfo).execute();
+			}
 			if (!response.isSuccessful()) {
 				LoggingUtils.getLogger(this)
 						.error("Failed to send heartbeat. Teamscale responded with: " + response.errorBody().string());
@@ -118,9 +125,13 @@ public class ConfigurationViaTeamscale {
 		}
 	}
 
-	private void unregisterProfiler() {
+	/** Unregisters the profiler in Teamscale (marks it as shut down). */
+	public void unregisterProfiler() {
 		try {
 			Response<ResponseBody> response = teamscaleClient.unregisterProfiler(profilerId).execute();
+			if (response.code() == 405) {
+				response = teamscaleClient.unregisterProfilerLegacy(profilerId).execute();
+			}
 			if (!response.isSuccessful()) {
 				LoggingUtils.getLogger(this)
 						.error("Failed to unregister profiler. Teamscale responded with: " + response.errorBody()
@@ -131,5 +142,7 @@ public class ConfigurationViaTeamscale {
 		}
 	}
 
-
+	public String getProfilerId() {
+		return profilerId;
+	}
 }

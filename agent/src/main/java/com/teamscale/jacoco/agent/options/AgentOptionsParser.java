@@ -19,6 +19,7 @@ import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
+import org.apache.commons.compress.utils.Lists;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
@@ -31,7 +32,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION;
 import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION;
@@ -57,6 +60,7 @@ public class AgentOptionsParser {
 	private final String environmentConfigId;
 	private final String environmentConfigFile;
 	private final TeamscaleCredentials credentials;
+	private final List<Exception> collectedErrors;
 
 	/**
 	 * Parses the given command-line options.
@@ -64,11 +68,12 @@ public class AgentOptionsParser {
 	 * @param environmentConfigId   The Profiler configuration ID given via an environment variable.
 	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
 	 */
-	public static AgentOptions parse(String optionsString, String environmentConfigId, String environmentConfigFile,
+	public static Pair<AgentOptions, List<Exception>> parse(String optionsString, String environmentConfigId, String environmentConfigFile,
 			TeamscaleCredentials credentials,
 			ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
-		return new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials).parse(
-				optionsString);
+		AgentOptionsParser parser = new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials);
+		AgentOptions options = parser.parse(optionsString);
+		return Pair.createPair(options, parser.getCollectedErrors());
 	}
 
 	@VisibleForTesting
@@ -80,6 +85,21 @@ public class AgentOptionsParser {
 		this.environmentConfigId = environmentConfigId;
 		this.environmentConfigFile = environmentConfigFile;
 		this.credentials = credentials;
+		this.collectedErrors = Lists.newArrayList();
+	}
+
+	private List<Exception> getCollectedErrors() {
+		return collectedErrors;
+	}
+
+	/**
+	 * Throw the first collected exception, if present.
+	 */
+	@VisibleForTesting
+	public void throwOnCollectedErrors() throws Exception {
+		for (Exception e : collectedErrors) {
+			throw e;
+		}
 	}
 
 	/**
@@ -87,10 +107,12 @@ public class AgentOptionsParser {
 	 */
 	/* package */ AgentOptions parse(
 			String optionsString) throws AgentOptionParseException, AgentOptionReceiveException {
+
 		if (optionsString == null) {
 			optionsString = "";
 		}
 		logger.debug("Parsing options: " + optionsString);
+
 		AgentOptions options = new AgentOptions(logger);
 		options.originalOptionsString = optionsString;
 
@@ -103,7 +125,11 @@ public class AgentOptionsParser {
 		if (!StringUtils.isEmpty(optionsString)) {
 			String[] optionParts = optionsString.split(",");
 			for (String optionPart : optionParts) {
-				handleOptionPart(options, optionPart);
+				try {
+					handleOptionPart(options, optionPart);
+				} catch (Exception e) {
+					collectedErrors.add(e);
+				}
 			}
 		}
 
@@ -116,8 +142,9 @@ public class AgentOptionsParser {
 
 		Validator validator = options.getValidator();
 		if (!validator.isValid()) {
-			throw new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage());
+			collectedErrors.add(new AgentOptionParseException("Invalid options given: " + validator.getErrorMessage()));
 		}
+
 		return options;
 	}
 
@@ -432,11 +459,15 @@ public class AgentOptionsParser {
 		List<String> configFileKeyValues = org.conqat.lib.commons.string.StringUtils.splitLinesAsList(
 				content);
 		for (String optionKeyValue : configFileKeyValues) {
-			String trimmedOption = optionKeyValue.trim();
-			if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
-				continue;
+			try {
+				String trimmedOption = optionKeyValue.trim();
+				if (trimmedOption.isEmpty() || trimmedOption.startsWith(COMMENT_PREFIX)) {
+					continue;
+				}
+				handleOptionPart(options, optionKeyValue);
+			} catch (Exception e) {
+				collectedErrors.add(e);
 			}
-			handleOptionPart(options, optionKeyValue);
 		}
 	}
 

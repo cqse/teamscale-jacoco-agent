@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -114,10 +114,17 @@ public abstract class AgentBase {
 	 */
 	void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			stopServer();
-			prepareShutdown();
-			logger.info("CQSE JaCoCo agent successfully shut down.");
-			PreMain.closeLoggingResources();
+			try {
+				logger.info("CQSE JaCoCo agent is shutting down...");
+				stopServer();
+				prepareShutdown();
+				logger.info("CQSE JaCoCo agent successfully shut down.");
+			} catch (Exception e) {
+				logger.error("Exception during agent shutdown.", e);
+			} finally {
+				// Try to flush logging resources also in case of an exception during shutdown
+				PreMain.closeLoggingResources();
+			}
 		}));
 	}
 

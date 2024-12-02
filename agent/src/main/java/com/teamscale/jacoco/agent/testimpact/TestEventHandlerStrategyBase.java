@@ -13,7 +13,7 @@ import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestInfo;
@@ -41,7 +41,7 @@ public abstract class TestEventHandlerStrategyBase {
 	protected TestEventHandlerStrategyBase(AgentOptions agentOptions, JacocoRuntimeController controller) {
 		this.controller = controller;
 		this.agentOptions = agentOptions;
-		this.teamscaleClient = agentOptions.createTeamscaleClient();
+		this.teamscaleClient = agentOptions.createTeamscaleClient(true);
 	}
 
 	/** Called when test test with the given name is about to start. */

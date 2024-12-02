@@ -70,11 +70,11 @@ public class AgentOptionsTest {
 	/** Interval options test. */
 	@Test
 	public void testIntervalOptions() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		AgentOptions agentOptions = parseAndMaybeThrow("");
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(480);
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=0");
+		agentOptions = parseAndMaybeThrow("interval=0");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(false);
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("interval=30");
+		agentOptions = parseAndMaybeThrow("interval=30");
 		assertThat(agentOptions.shouldDumpInIntervals()).isEqualTo(true);
 		assertThat(agentOptions.getDumpIntervalInMinutes()).isEqualTo(30);
 	}
@@ -82,7 +82,7 @@ public class AgentOptionsTest {
 	/** Tests the options for uploading coverage to teamscale. */
 	@Test
 	public void testTeamscaleUploadOptions() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
+		AgentOptions agentOptions = parseAndMaybeThrow("" +
 				"teamscale-server-url=127.0.0.1," +
 				"teamscale-project=test," +
 				"teamscale-user=build," +
@@ -104,7 +104,7 @@ public class AgentOptionsTest {
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptions() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+		AgentOptions agentOptions = parseAndMaybeThrow("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
@@ -112,14 +112,14 @@ public class AgentOptionsTest {
 	/** Tests the options http-server-port option for normal mode. */
 	@Test
 	public void testHttpServerOptionsForNormalMode() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("http-server-port=8081");
+		AgentOptions agentOptions = parseAndMaybeThrow("http-server-port=8081");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 	}
 
 	/** Tests the options for the Test Impact mode. */
 	@Test
 	public void testHttpServerOptionsWithCoverageViaHttp() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+		AgentOptions agentOptions = parseAndMaybeThrow("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,tia-mode=http");
 		assertThat(agentOptions.getHttpServerPort()).isEqualTo(8081);
 		assertThat(agentOptions.getTestwiseCoverageMode()).isEqualTo(ETestwiseCoverageMode.HTTP);
@@ -128,21 +128,21 @@ public class AgentOptionsTest {
 	/** Tests setting ignore-uncovered-classes works. */
 	@Test
 	public void testIgnoreUncoveredClasses() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("ignore-uncovered-classes=true");
+		AgentOptions agentOptions = parseAndMaybeThrow("ignore-uncovered-classes=true");
 		assertTrue(agentOptions.shouldIgnoreUncoveredClasses());
 	}
 
 	/** Tests default for ignore-uncovered-classes is false. */
 	@Test
 	public void testIgnoreUncoveredClassesDefault() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		AgentOptions agentOptions = parseAndMaybeThrow("");
 		assertFalse(agentOptions.shouldIgnoreUncoveredClasses());
 	}
 
 	/** Tests default for ignore-uncovered-classes is false. */
 	@Test
 	public void shouldAllowMinusForEnumConstants() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("tia-mode=exec-file");
+		AgentOptions agentOptions = parseAndMaybeThrow("tia-mode=exec-file");
 		assertThat(agentOptions.getTestwiseCoverageMode()).isEqualTo(ETestwiseCoverageMode.EXEC_FILE);
 	}
 
@@ -155,19 +155,19 @@ public class AgentOptionsTest {
 		File jar = new File(getClass().getResource("manifest-and-git-properties.jar").toURI());
 
 		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
+				() -> parseAndMaybeThrow(
 						"teamscale-revision=1234,teamscale-commit=master:1000"))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
+				() -> parseAndMaybeThrow(
 						"teamscale-revision=1234,teamscale-commit-manifest-jar=" + jar.getAbsolutePath()))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
+				() -> parseAndMaybeThrow(
 						"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-commit=master:1000"))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
+				() -> parseAndMaybeThrow(
 						"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-commit-manifest-jar=" + jar.getAbsolutePath()))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 	}
@@ -176,7 +176,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testTeamscaleRevisionManifestJarOption() throws Exception {
 		File jar = new File(getClass().getResource("manifest-with-git-commit-revision.jar").toURI());
-		AgentOptions options = getAgentOptionsParserWithDummyLogger().parse(
+		AgentOptions options = parseAndMaybeThrow(
 				"teamscale-revision-manifest-jar=" + jar.getAbsolutePath() + ",teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 
 		assertThat(options.getTeamscaleServerOptions().revision).isEqualTo("f364d58dc4966ca856260185e46a90f80ee5e9c6");
@@ -193,7 +193,7 @@ public class AgentOptionsTest {
 				" This is not possible, since you did not provide the 'teamscale-project' to upload to";
 
 		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
+				() -> parseAndMaybeThrow(
 						"teamscale-server-url=127.0.0.1," +
 								"teamscale-user=build," +
 								"teamscale-access-token=token," +
@@ -202,7 +202,7 @@ public class AgentOptionsTest {
 								"teamscale-message=\"This is my message\""))
 				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(message);
 		assertThatThrownBy(
-				() -> getAgentOptionsParserWithDummyLogger().parse(
+				() -> parseAndMaybeThrow(
 						"teamscale-server-url=127.0.0.1," +
 								"teamscale-user=build," +
 								"teamscale-access-token=token," +
@@ -219,7 +219,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testGitPropertiesJarOptionWithNonExistentFileDoesNotFailBadly() throws Exception {
 		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+		AgentOptions agentOptions = parseAndMaybeThrow(
 				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=doesNotExist" + File.separator + jarFile.getAbsolutePath());
 		assertThat(agentOptions.gitPropertiesJar).isNull();
 	}
@@ -228,7 +228,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testGitPropertiesJarOptionParsedCorrectly() throws Exception {
 		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+		AgentOptions agentOptions = parseAndMaybeThrow(
 				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=" + jarFile.getAbsolutePath());
 		assertThat(agentOptions.gitPropertiesJar).isNotNull();
 	}
@@ -240,7 +240,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testGitPropertiesJarDoesNotAcceptFolders() throws Exception {
 		File jarFile = new File(getClass().getResource("nested-jar.war").getFile());
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+		AgentOptions agentOptions = parseAndMaybeThrow(
 				AgentOptions.GIT_PROPERTIES_JAR_OPTION + "=" + jarFile.getParent());
 		assertThat(agentOptions.gitPropertiesJar).isNull();
 	}
@@ -248,11 +248,11 @@ public class AgentOptionsTest {
 	/** Tests that supplying version info is supported in Testwise mode. */
 	@Test
 	public void testVersionInfosInTestwiseMode() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+		AgentOptions agentOptions = parseAndMaybeThrow("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,teamscale-revision=1234,teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 		assertThat(agentOptions.getTeamscaleServerOptions().revision).isEqualTo("1234");
 
-		agentOptions = getAgentOptionsParserWithDummyLogger().parse("mode=TESTWISE,class-dir=.," +
+		agentOptions = parseAndMaybeThrow("mode=TESTWISE,class-dir=.," +
 				"http-server-port=8081,teamscale-commit=branch:1234,teamscale-server-url=ts.com,teamscale-user=u,teamscale-access-token=t,teamscale-project=p,teamscale-partition=p");
 		assertThat(agentOptions.getTeamscaleServerOptions().commit).isEqualTo(CommitDescriptor.parse("branch:1234"));
 	}
@@ -260,7 +260,7 @@ public class AgentOptionsTest {
 	/** Tests the options for azure file storage upload. */
 	@Test
 	public void testAzureFileStorageOptions() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
+		AgentOptions agentOptions = parseAndMaybeThrow("" +
 				"azure-url=https://mrteamscaleshdev.file.core.windows.net/tstestshare/," +
 				"azure-key=Ut0BQ2OEvgQXGnNJEjxnaEULAYgBpAK9+HukeKSzAB4CreIQkl2hikIbgNe4i+sL0uAbpTrFeFjOzh3bAtMMVg==");
 		assertThat(agentOptions.azureFileStorageConfig.url.toString())
@@ -272,7 +272,7 @@ public class AgentOptionsTest {
 	/** Tests the options for SAP NWDI applications. */
 	@Test
 	public void testValidSapNwdiOptions() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("" +
+		AgentOptions agentOptions = parseAndMaybeThrow("" +
 				"teamscale-server-url=http://your.teamscale.url," +
 				"teamscale-user=your-user-name," +
 				"teamscale-access-token=your-access-token," +
@@ -301,7 +301,7 @@ public class AgentOptionsTest {
 	@Test
 	public void testArtifactoryApiKeyOptionIsCorrectlyParsed() throws Exception {
 		String someArtifactoryApiKey = "some_api_key";
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse(
+		AgentOptions agentOptions = parseAndMaybeThrow(
 				String.format("%s=%s,%s=%s,%s=%s", ArtifactoryConfig.ARTIFACTORY_URL_OPTION, "http://some_url",
 						ArtifactoryConfig.ARTIFACTORY_API_KEY_OPTION, someArtifactoryApiKey,
 						ArtifactoryConfig.ARTIFACTORY_PARTITION, "partition"));
@@ -315,7 +315,7 @@ public class AgentOptionsTest {
 	 */
 	@Test
 	public void testArtifactoryBasicAuthSetPassesValidityCheck() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		AgentOptions agentOptions = parseAndMaybeThrow("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.user = "user";
 		agentOptions.artifactoryConfig.password = "password";
@@ -330,7 +330,7 @@ public class AgentOptionsTest {
 	 */
 	@Test
 	public void testArtifactoryApiKeySetPassesValidityCheck() throws Exception {
-		AgentOptions agentOptions = getAgentOptionsParserWithDummyLogger().parse("");
+		AgentOptions agentOptions = parseAndMaybeThrow("");
 		agentOptions.artifactoryConfig.url = HttpUrl.get("http://some_url");
 		agentOptions.artifactoryConfig.apiKey = "api_key";
 		agentOptions.artifactoryConfig.partition = "partition";
@@ -495,5 +495,12 @@ public class AgentOptionsTest {
 	@AfterAll
 	public static void teardown() throws IOException {
 		TestUtils.cleanAgentCoverageDirectory();
+	}
+
+	private AgentOptions parseAndMaybeThrow(String options) throws Exception {
+		AgentOptionsParser parser = getAgentOptionsParserWithDummyLogger();
+		AgentOptions result = parser.parse(options);
+		parser.throwOnCollectedErrors();
+		return result;
 	}
 }
