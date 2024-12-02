@@ -3,8 +3,8 @@ package com.teamscale.jacoco.agent.upload.teamscale;
 import com.google.common.base.Strings;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
-import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ITeamscaleService;
+import com.teamscale.client.ITeamscaleServiceKt;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.upload.IUploadRetry;
@@ -135,9 +135,8 @@ public class TeamscaleUploader implements IUploader, IUploadRetry {
 			// Cannot be executed in the constructor as this causes issues in WildFly server
 			// (See #100)
 			ITeamscaleService api = TeamscaleServiceGenerator.createService(ITeamscaleService.class,
-					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken,
-					HttpUtils.DEFAULT_READ_TIMEOUT, HttpUtils.DEFAULT_WRITE_TIMEOUT);
-			api.uploadReport(teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
+					teamscaleServer.url, teamscaleServer.userName, teamscaleServer.userAccessToken);
+			ITeamscaleServiceKt.uploadReport(api, teamscaleServer.project, teamscaleServer.commit, teamscaleServer.revision,
 					teamscaleServer.repository, teamscaleServer.partition, EReportFormat.JACOCO,
 					teamscaleServer.getMessage(), coverageFile.createFormRequestBody());
 			return true;

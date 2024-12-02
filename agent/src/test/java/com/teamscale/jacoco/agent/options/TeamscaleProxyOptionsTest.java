@@ -26,9 +26,6 @@ class TeamscaleProxyOptionsTest {
 		assertThat(teamscaleProxyOptions.proxyUser).isEqualTo(expectedUser);
 		assertThat(teamscaleProxyOptions.proxyPassword).isEqualTo(expectedPassword);
 
-		proxySystemProperties.setProxyHost("");
-		proxySystemProperties.setProxyPort("");
-		proxySystemProperties.setProxyUser("");
-		proxySystemProperties.setProxyPassword("");
+		proxySystemProperties.clear();
 	}
 }

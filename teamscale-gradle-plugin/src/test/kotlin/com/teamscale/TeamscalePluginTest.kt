@@ -38,9 +38,9 @@ class TeamscalePluginTest {
 
 	@BeforeEach
 	fun startFakeTeamscaleServer() {
-		teamscaleMockServer = TeamscaleMockServer(
-			FAKE_TEAMSCALE_PORT
-		).acceptingReportUploads().withImpactedTests("com/example/project/JUnit4Test/systemTest")
+		teamscaleMockServer = TeamscaleMockServer(FAKE_TEAMSCALE_PORT)
+			.acceptingReportUploads()
+			.withImpactedTests("com/example/project/JUnit4Test/systemTest")
 	}
 
 	@AfterEach
@@ -249,7 +249,7 @@ class TeamscalePluginTest {
 
 	private fun assertFullCoverage(source: String) {
 		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
-		assertThat(testwiseCoverageReport!!)
+		assertThat(testwiseCoverageReport)
 			.hasPartial(false)
 			.containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
 			.containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
@@ -273,7 +273,7 @@ class TeamscalePluginTest {
 
 	private fun assertPartialCoverage(source: String) {
 		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
-		assertThat(testwiseCoverageReport!!)
+		assertThat(testwiseCoverageReport)
 			.hasPartial(true)
 			.containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
 			.containsCoverage(

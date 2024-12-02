@@ -5,6 +5,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.status.ErrorStatus;
+import com.teamscale.client.ITeamscaleService;
 import com.teamscale.client.ProfilerLogEntry;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -18,7 +19,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.teamscale.jacoco.agent.logging.LoggingUtils.getStackTraceFromEvent;
@@ -39,7 +43,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 	private String profilerId;
 
 	/** The service client for sending logs to Teamscale */
-	private TeamscaleClient teamscaleClient;
+	private static ITeamscaleService teamscaleClient;
 
 	/** Buffer for unsent logs. We use a set here to allow for removing
 	 * entries fast after sending them to Teamscale was successful. */
@@ -114,7 +118,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 							logsToSend = new ArrayList<>(logBuffer);
 						}
 
-						Call<Void> call = teamscaleClient.service.postProfilerLog(profilerId, logsToSend);
+						Call<Void> call = teamscaleClient.postProfilerLog(profilerId, logsToSend);
 						retrofit2.Response<Void> response = call.execute();
 						if (!response.isSuccessful()) {
 							throw new IllegalStateException("Failed to send log: HTTP error code : " + response.code());
@@ -165,7 +169,7 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 		super.stop();
 	}
 
-	public void setTeamscaleClient(TeamscaleClient teamscaleClient) {
+	public void setTeamscaleClient(ITeamscaleService teamscaleClient) {
 		this.teamscaleClient = teamscaleClient;
 	}
 
@@ -184,10 +188,11 @@ public class LogToTeamscaleAppender extends AppenderBase<ILoggingEvent> {
 			return false;
 		}
 
+		ITeamscaleService serviceClient = client.getService();
 		LogToTeamscaleAppender logToTeamscaleAppender = new LogToTeamscaleAppender();
 		logToTeamscaleAppender.setContext(context);
 		logToTeamscaleAppender.setProfilerId(agentOptions.configurationViaTeamscale.getProfilerId());
-		logToTeamscaleAppender.setTeamscaleClient(client);
+		logToTeamscaleAppender.setTeamscaleClient(serviceClient);
 		logToTeamscaleAppender.start();
 
 		Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);

@@ -1,13 +1,14 @@
 package com.teamscale
 
+import com.teamscale.client.EReportFormat
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.extension.TeamscalePluginExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.*
-import java.net.ConnectException
-import java.net.SocketTimeoutException
+import java.io.File
+import java.io.IOException
 
 /** Handles report uploads to Teamscale. */
 abstract class TeamscaleUploadTask : DefaultTask() {
@@ -88,46 +89,63 @@ abstract class TeamscaleUploadTask : DefaultTask() {
     }
 
     private fun uploadReports(enabledReports: List<Report>) {
-        // We want to upload e.g. all JUnit test reports that go to the same partition
-        // as one commit, so we group them before uploading them
-        for ((key, reports) in enabledReports.groupBy { Triple(it.format, it.partition.get(), it.message.get()) }) {
-            val (format, partition, message) = key
-            val reportFiles = reports.flatMap { it.reportFiles.files }.filter { it.exists() }.distinct()
-            logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
-            if (reportFiles.isEmpty()) {
-                logger.info("Skipped empty upload!")
-                continue
-            }
-            logger.debug("Uploading $reportFiles")
+        // Group reports by format, partition, and message to upload similar reports together
+        val groupedReports = enabledReports.groupBy {
+            ReportGroupKey(it.format, it.partition.get(), it.message.get())
+        }
 
-            try {
-                // Prefer to upload to revision and fallback to branch timestamp
-                val commitDescriptorOrNull = if (revision != null) null else commitDescriptor!!
-                retry(3) {
-                    val client =
-                        TeamscaleClient(server.url, server.userName, server.userAccessToken, server.project)
-                    client.uploadReports(
-                        format,
-                        reportFiles,
-                        commitDescriptorOrNull,
-                        revision,
-                        repository,
-                        partition,
-                        message
-                    )
-                }
-            } catch (e: ConnectException) {
-                throw GradleException("Upload failed (${e.message})", e)
-            } catch (e: SocketTimeoutException) {
-                throw GradleException("Upload failed (${e.message})", e)
+        val teamscaleClient = server.toClient()
+
+        groupedReports.forEach { (key, reports) ->
+            val (format, partition, message) = key
+            val reportFiles = getExistingReportFiles(reports)
+
+            if (reportFiles.isEmpty()) {
+                logger.info("Skipped empty upload for ${format.name} reports to partition $partition.")
+                return@forEach
             }
+
+            logger.info("Uploading ${reportFiles.size} ${format.name} report(s) to partition $partition...")
+            logger.debug("Uploading {}", reportFiles)
+
+            teamscaleClient.uploadReportFiles(format, reportFiles, partition, message)
+        }
+    }
+
+    private data class ReportGroupKey(
+        val format: EReportFormat,
+        val partition: String,
+        val message: String
+    )
+
+    private fun getExistingReportFiles(reports: List<Report>) =
+        reports.flatMap { it.reportFiles.files }
+            .filter { it.exists() }
+            .distinct()
+
+    private fun TeamscaleClient.uploadReportFiles(
+        format: EReportFormat,
+        reportFiles: List<File>,
+        partition: String,
+        message: String
+    ) {
+        val commitDescriptorOrNull = if (revision == null) commitDescriptor else null
+        try {
+            retry(3) {
+                uploadReports(
+                    format, reportFiles, commitDescriptorOrNull,
+                    revision, repository, partition, message
+                )
+            }
+        } catch (e: IOException) {
+            throw GradleException("Upload failed (${e.message})", e)
         }
     }
 }
 
 /**
  * Retries the given block numOfRetries-times catching any thrown exceptions.
- * If none of the retries succeeded the latest catched exception is rethrown.
+ * If none of the retries succeeded, the latest caught exception is rethrown.
  */
 fun <T> retry(numOfRetries: Int, block: () -> T): T {
     var throwable: Throwable? = null

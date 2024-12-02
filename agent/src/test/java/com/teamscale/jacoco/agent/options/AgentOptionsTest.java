@@ -447,7 +447,7 @@ public class AgentOptionsTest {
 		String proxyPasswordOption = String.format("proxy-%s-password=%s", protocol, expectedPassword);
 		String optionsString = String.format("%s%s,%s,%s,%s", otherOptionsString, proxyHostOption, proxyPortOption, proxyUserOption, proxyPasswordOption);
 
-		if(passwordFile != null) {
+		if (passwordFile != null) {
 			String proxyPasswordFileOption = String.format("proxy-password-file=%s", passwordFile.getAbsoluteFile());
 			optionsString += "," + proxyPasswordFileOption;
 		}
@@ -465,11 +465,7 @@ public class AgentOptionsTest {
 	}
 
 	private void clearTeamscaleProxySystemProperties(ProxySystemProperties.Protocol protocol) {
-		TeamscaleProxySystemProperties teamscaleProxySystemProperties = new TeamscaleProxySystemProperties(protocol);
-		teamscaleProxySystemProperties.setProxyHost("");
-		teamscaleProxySystemProperties.setProxyPort("");
-		teamscaleProxySystemProperties.setProxyUser("");
-		teamscaleProxySystemProperties.setProxyPassword("");
+		new TeamscaleProxySystemProperties(protocol).clear();
 	}
 	/** Returns the include filter predicate for the given filter expression. */
 	private static Predicate<String> includeFilter(String filterString) throws Exception {

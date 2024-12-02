@@ -29,6 +29,8 @@ import java.util.Map;
  * <p>
  * When updating JaCoCo make a diff of the previous {@link org.jacoco.core.internal.analysis.InstructionsBuilder}
  * implementation and the new implementation and update this class accordingly.
+ * <p>
+ * CAUTION: Do not convert to Kotlin. This class has to stay in Java for future maintenance reasons!
  */
 public class CachingInstructionsBuilder extends InstructionsBuilder {
 

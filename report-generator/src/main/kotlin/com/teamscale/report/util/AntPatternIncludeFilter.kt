@@ -9,7 +9,6 @@ import com.teamscale.client.AntPatternUtils
 import com.teamscale.client.FileSystemUtils
 import java.util.function.Predicate
 import java.util.regex.Pattern
-import java.util.stream.Collectors
 
 /**
  * Applies ANT include and exclude patterns to paths.
