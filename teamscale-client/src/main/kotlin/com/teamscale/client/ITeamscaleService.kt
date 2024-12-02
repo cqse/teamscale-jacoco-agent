@@ -111,15 +111,15 @@ interface ITeamscaleService {
 	): Call<List<PrioritizableTest>>
 
 	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with.  */
-	@Deprecated("")
+	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
 	@POST("api/v9.4.0/running-profilers")
 	fun registerProfilerLegacy(
 		@Query("configuration-id") configurationId: String?,
 		@Body processInformation: ProcessInformation?
-	): Call<ProfilerRegistration?>?
+	): Call<ProfilerRegistration>
 
 	/** Updates the profiler infos and sets the profiler to still alive.  */
-	@Deprecated("")
+	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
 	@PUT("api/v9.4.0/running-profilers/{profilerId}")
 	fun sendHeartbeatLegacy(
 		@Path("profilerId") profilerId: String?,
@@ -127,7 +127,7 @@ interface ITeamscaleService {
 	): Call<ResponseBody>
 
 	/** Removes the profiler identified by given ID.  */
-	@Deprecated("")
+	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
 	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
 	fun unregisterProfilerLegacy(@Path("profilerId") profilerId: String?): Call<ResponseBody>
 
