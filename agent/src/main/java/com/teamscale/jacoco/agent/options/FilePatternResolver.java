@@ -1,10 +1,12 @@
 package com.teamscale.jacoco.agent.options;
 
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.AntPatternUtils;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +31,9 @@ public class FilePatternResolver {
 	/** Stand-in for the asterisk operator. */
 	private static final String ASTERISK_REPLACEMENT = "#@";
 
-	private final ILogger logger;
+	private final Logger logger = LoggingUtils.getLogger(this);
 
-	public FilePatternResolver(ILogger logger) {
-		this.logger = logger;
+	public FilePatternResolver() {
 	}
 
 	/**
@@ -120,9 +121,9 @@ public class FilePatternResolver {
 		private String suffixPattern;
 		private Path basePath;
 		private List<Path> matchingPaths;
-		private final ILogger logger;
+		private final Logger logger;
 
-		private FilePatternResolverRun(ILogger logger, String optionName, String pattern, File workingDirectory) {
+		private FilePatternResolverRun(Logger logger, String optionName, String pattern, File workingDirectory) {
 			this.logger = logger;
 			this.optionName = optionName;
 			this.pattern = pattern;

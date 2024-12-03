@@ -1,7 +1,8 @@
 package com.teamscale.jacoco.agent.configuration;
 
 import com.teamscale.client.ProcessInformation;
-import com.teamscale.report.util.ILogger;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import org.slf4j.Logger;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
@@ -13,10 +14,9 @@ import java.net.UnknownHostException;
  */
 public class ProcessInformationRetriever {
 
-	private final ILogger logger;
+	private final Logger logger = LoggingUtils.getLogger(this);
 
-	public ProcessInformationRetriever(ILogger logger) {
-		this.logger = logger;
+	public ProcessInformationRetriever() {
 	}
 
 	/**

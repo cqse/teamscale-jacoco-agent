@@ -4,7 +4,6 @@ import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
-import com.teamscale.report.util.CommandLineLogger;
 import okhttp3.HttpUrl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -339,7 +338,7 @@ public class AgentOptionsTest {
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+		return new AgentOptionsParser(null, null, null);
 	}
 
 	/**

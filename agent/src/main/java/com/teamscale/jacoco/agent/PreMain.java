@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
-import com.teamscale.client.TeamscaleServer;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.logging.LogToTeamscaleAppender;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
@@ -13,7 +12,6 @@ import com.teamscale.jacoco.agent.options.TeamscaleCredentials;
 import com.teamscale.jacoco.agent.options.TeamscalePropertiesUtils;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.UploaderException;
-import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
@@ -38,6 +36,8 @@ import static com.teamscale.jacoco.agent.logging.LoggingUtils.getLoggerContext;
 
 /** Container class for the premain entry point for the agent. */
 public class PreMain {
+
+	private static Logger logger = LoggingUtils.getLogger(PreMain.class);
 
 	private static LoggingUtils.LoggingResources loggingResources = null;
 
@@ -102,31 +102,29 @@ public class PreMain {
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
 		if (javaAgents.size() > 1) {
-			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
+			logger.warn("Using multiple java agents could interfere with coverage recording.");
 		}
 		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
-			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
+			logger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
 		}
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
 		if (credentials == null) {
-			delayedLogger.warn("Did not find a teamscale.properties file!");
+			logger.warn("Did not find a teamscale.properties file!");
 		}
 		AgentOptions agentOptions;
 		try {
-			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials, delayedLogger);
+			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials);
 		} catch (AgentOptionParseException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
-				delayedLogger.errorAndStdErr("Failed to parse agent options: " + e.getMessage(), e);
-				attemptLogAndThrow(delayedLogger);
+				String message = "Failed to parse agent options: " + e.getMessage();
+				logAndPrintError(e, message);
 				throw e;
 			}
 		} catch (AgentOptionReceiveException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
-				delayedLogger.errorAndStdErr(
-						e.getMessage() + " The application should start up normally, but NO coverage will be collected!",
-						e);
-				attemptLogAndThrow(delayedLogger);
+				String message = e.getMessage() + " The application should start up normally, but NO coverage will be collected!";
+				logAndPrintError(e, message);
 				throw e;
 			}
 		}
@@ -136,14 +134,6 @@ public class PreMain {
 		delayedLogger.logTo(logger);
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 		return agentOptions;
-	}
-
-	private static void attemptLogAndThrow(DelayedLogger delayedLogger) {
-		// We perform actual logging output after writing to console to
-		// ensure the console is reached even in case of logging issues
-		// (see TS-23151). We use the Agent class here (same as below)
-		Logger logger = LoggingUtils.getLogger(Agent.class);
-		delayedLogger.logTo(logger);
 	}
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
@@ -204,24 +194,24 @@ public class PreMain {
 		}
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
-				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);
+				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1]);
 			}
 
 			if (optionPart.startsWith(AgentOptionsParser.CONFIG_FILE_OPTION + "=")) {
 				String configFileValue = optionPart.split("=", 2)[1];
 				Optional<String> loggingConfigLine = Optional.empty();
 				try {
-					File configFile = new FilePatternResolver(delayedLogger).parsePath(
+					File configFile = new FilePatternResolver().parsePath(
 							AgentOptionsParser.CONFIG_FILE_OPTION, configFileValue).toFile();
 					loggingConfigLine = FileSystemUtils.readLinesUTF8(configFile).stream()
 							.filter(line -> line.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "="))
 							.findFirst();
 				} catch (IOException | AgentOptionParseException e) {
-					delayedLogger.error("Failed to load configuration from " + configFileValue + ": " + e.getMessage(),
-							e);
+					String message = "Failed to load configuration from " + configFileValue + ": " + e.getMessage();
+					logAndPrintError(e, message);
 				}
 				if (loggingConfigLine.isPresent()) {
-					return createFallbackLoggerFromConfig(loggingConfigLine.get().split("=", 2)[1], delayedLogger);
+					return createFallbackLoggerFromConfig(loggingConfigLine.get().split("=", 2)[1]);
 				}
 			}
 		}
@@ -230,19 +220,24 @@ public class PreMain {
 	}
 
 	/** Creates a fallback logger using the given config file. */
-	private static LoggingUtils.LoggingResources createFallbackLoggerFromConfig(String configLocation,
-																				DelayedLogger delayedLogger) {
+	private static LoggingUtils.LoggingResources createFallbackLoggerFromConfig(String configLocation) {
 		try {
 			return LoggingUtils.initializeLogging(
-					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
+					new FilePatternResolver().parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
 							configLocation));
 		} catch (IOException | AgentOptionParseException e) {
 			String message = "Failed to load log configuration from location " + configLocation + ": " + e.getMessage();
-			delayedLogger.error(message, e);
-			// output the message to console as well, as this might
-			// otherwise not make it to the user
-			System.err.println(message);
+			logAndPrintError(e, message);
 			return LoggingUtils.initializeDefaultLogging();
 		}
+	}
+
+	/**
+	 * Log the error and also print it to System Error, as the error might prevent the initialization of a real logger.
+	 */
+	private static void logAndPrintError(Exception e, String message) {
+		logger.error(message,
+				e);
+		System.err.println(message);
 	}
 }

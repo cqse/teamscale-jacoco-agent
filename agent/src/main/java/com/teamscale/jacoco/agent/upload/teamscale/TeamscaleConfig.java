@@ -9,11 +9,12 @@ import java.util.jar.Manifest;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleServer;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.util.BashFileSkippingInputStream;
-import com.teamscale.report.util.ILogger;
+import org.slf4j.Logger;
 
 /** Config necessary for direct Teamscale upload. */
 public class TeamscaleConfig {
@@ -30,11 +31,10 @@ public class TeamscaleConfig {
 	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
 	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
 
-	private final ILogger logger;
+	private final Logger logger = LoggingUtils.getLogger(this);
 	private final FilePatternResolver filePatternResolver;
 
-	public TeamscaleConfig(ILogger logger, FilePatternResolver filePatternResolver) {
-		this.logger = logger;
+	public TeamscaleConfig(FilePatternResolver filePatternResolver) {
 		this.filePatternResolver = filePatternResolver;
 	}
 

@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.jacoco.agent.util.TestUtils;
-import com.teamscale.report.util.CommandLineLogger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,7 +83,7 @@ public class FilePatternResolverTest {
 	}
 
 	private static FilePatternResolver getFilePatternResolverWithDummyLogger() {
-		return new FilePatternResolver(new CommandLineLogger());
+		return new FilePatternResolver();
 	}
 
 	@Test

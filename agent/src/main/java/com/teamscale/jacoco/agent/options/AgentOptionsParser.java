@@ -10,16 +10,17 @@ import com.teamscale.client.StringUtils;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.upload.azure.AzureFileStorageConfig;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
 import com.teamscale.report.EDuplicateClassFileBehavior;
-import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,12 +46,13 @@ public class AgentOptionsParser {
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
-	private final ILogger logger;
+	private final Logger logger = LoggingUtils.getLogger(this);
 	private final FilePatternResolver filePatternResolver;
 	private final TeamscaleConfig teamscaleConfig;
 	private final String environmentConfigId;
 	private final String environmentConfigFile;
 	private final TeamscaleCredentials credentials;
+
 
 	/**
 	 * Parses the given command-line options.
@@ -59,18 +61,16 @@ public class AgentOptionsParser {
 	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
 	 */
 	public static AgentOptions parse(String optionsString, String environmentConfigId, String environmentConfigFile,
-									 TeamscaleCredentials credentials,
-									 ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
-		return new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials).parse(
+									 TeamscaleCredentials credentials) throws AgentOptionParseException, AgentOptionReceiveException {
+		return new AgentOptionsParser(environmentConfigId, environmentConfigFile, credentials).parse(
 				optionsString);
 	}
 
 	@VisibleForTesting
-	AgentOptionsParser(ILogger logger, String environmentConfigId, String environmentConfigFile,
+	AgentOptionsParser(String environmentConfigId, String environmentConfigFile,
 					   TeamscaleCredentials credentials) {
-		this.logger = logger;
-		this.filePatternResolver = new FilePatternResolver(logger);
-		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
+		this.filePatternResolver = new FilePatternResolver();
+		this.teamscaleConfig = new TeamscaleConfig(filePatternResolver);
 		this.environmentConfigId = environmentConfigId;
 		this.environmentConfigFile = environmentConfigFile;
 		this.credentials = credentials;
@@ -84,8 +84,8 @@ public class AgentOptionsParser {
 		if (optionsString == null) {
 			optionsString = "";
 		}
-		logger.debug("Parsing options: " + optionsString);
-		AgentOptions options = new AgentOptions(logger);
+		logger.debug("Parsing options: {}", optionsString);
+		AgentOptions options = new AgentOptions();
 		options.originalOptionsString = optionsString;
 
 		if (credentials != null) {
@@ -280,7 +280,7 @@ public class AgentOptionsParser {
 					"Has specified config-id '" + configId + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
 		}
 		options.teamscaleServer.configId = configId;
-		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger, configId,
+		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(configId,
 				options.teamscaleServer.url,
 				options.teamscaleServer.userName,
 				options.teamscaleServer.userAccessToken);

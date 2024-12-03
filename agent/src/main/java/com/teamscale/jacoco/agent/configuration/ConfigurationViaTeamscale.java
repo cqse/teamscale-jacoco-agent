@@ -8,7 +8,6 @@ import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
-import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
@@ -51,13 +50,13 @@ public class ConfigurationViaTeamscale {
 	 * Tries to retrieve the profiler configuration from Teamscale. In case retrieval fails the method throws a
 	 * {@link AgentOptionReceiveException}.
 	 */
-	public static ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
+	public static ConfigurationViaTeamscale retrieve(String configurationId, HttpUrl url,
 													 String userName,
 													 String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
-			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
+			ProcessInformation processInformation = new ProcessInformationRetriever().getProcessInformation();
 			Response<ProfilerRegistration> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
 			if (!response.isSuccessful()) {

@@ -18,6 +18,7 @@ import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitProperties
 import com.teamscale.jacoco.agent.commit_resolution.git_properties.GitSingleProjectPropertiesLocator;
 import com.teamscale.jacoco.agent.commit_resolution.sapnwdi.NwdiMarkerClassLocatingTransformer;
 import com.teamscale.jacoco.agent.configuration.ConfigurationViaTeamscale;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.sapnwdi.DelayedSapNwdiMultiUploader;
 import com.teamscale.jacoco.agent.options.sapnwdi.SapNwdiApplication;
 import com.teamscale.jacoco.agent.upload.IUploader;
@@ -34,11 +35,11 @@ import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader;
 import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.report.EDuplicateClassFileBehavior;
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.assertion.CCSMAssert;
 import org.conqat.lib.commons.collections.PairList;
 import org.jacoco.core.runtime.WildcardMatcher;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class AgentOptions {
 	 */
 	public static final String DEFAULT_EXCLUDES = "shadow.*:com.sun.*:sun.*:org.eclipse.*:org.junit.*:junit.*:org.apache.*:org.slf4j.*:javax.*:org.gradle.*:java.*:org.jboss.*:org.wildfly.*:org.springframework.*:com.fasterxml.*:jakarta.*:org.aspectj.*:org.h2.*:org.hibernate.*:org.assertj.*:org.mockito.*:org.thymeleaf.*";
 
-	private final ILogger logger;
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	/** See {@link AgentOptions#GIT_PROPERTIES_JAR_OPTION} */
 	/* package */ File gitPropertiesJar;
@@ -207,8 +208,7 @@ public class AgentOptions {
 	 */
 	public ConfigurationViaTeamscale configurationViaTeamscale;
 
-	public AgentOptions(ILogger logger) {
-		this.logger = logger;
+	public AgentOptions() {
 		setParentOutputDirectory(AgentUtils.getMainTempDirectory().resolve("coverage"));
 	}
 
