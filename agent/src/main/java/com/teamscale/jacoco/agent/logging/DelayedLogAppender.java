@@ -1,6 +1,5 @@
 package com.teamscale.jacoco.agent.logging;
 
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
@@ -37,14 +36,4 @@ public class DelayedLogAppender extends AppenderBase<ILoggingEvent> {
 			BUFFER.clear();
 		}
 	}
-
-	public static void addAppenderTo(LoggerContext context) {
-		DelayedLogAppender appender = new DelayedLogAppender();
-		appender.setContext(context);
-		appender.start();
-
-		Logger rootLogger = context.getLogger(Logger.ROOT_LOGGER_NAME);
-		rootLogger.addAppender(appender);
-	}
-
 }

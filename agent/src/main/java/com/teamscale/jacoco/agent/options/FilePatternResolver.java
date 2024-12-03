@@ -1,7 +1,6 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
-import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.AntPatternUtils;

@@ -37,7 +37,7 @@ import static com.teamscale.jacoco.agent.logging.LoggingUtils.getLoggerContext;
 /** Container class for the premain entry point for the agent. */
 public class PreMain {
 
-	private static Logger logger = LoggingUtils.getLogger(PreMain.class);
+	private static final Logger logger = LoggingUtils.getLogger(PreMain.class);
 
 	private static LoggingUtils.LoggingResources loggingResources = null;
 
@@ -98,7 +98,6 @@ public class PreMain {
 	private static AgentOptions getAndApplyAgentOptions(String options, String environmentConfigId,
 														String environmentConfigFile) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
 
-		DelayedLogger delayedLogger = new DelayedLogger();
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
 		if (javaAgents.size() > 1) {
@@ -116,30 +115,28 @@ public class PreMain {
 		try {
 			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials);
 		} catch (AgentOptionParseException e) {
-			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
+			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options)) {
 				String message = "Failed to parse agent options: " + e.getMessage();
 				logAndPrintError(e, message);
 				throw e;
 			}
 		} catch (AgentOptionReceiveException e) {
-			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
+			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options)) {
 				String message = e.getMessage() + " The application should start up normally, but NO coverage will be collected!";
 				logAndPrintError(e, message);
 				throw e;
 			}
 		}
 
-		initializeLogging(agentOptions, delayedLogger);
-		Logger logger = LoggingUtils.getLogger(Agent.class);
-		delayedLogger.logTo(logger);
+		initializeLogging(agentOptions);
 		HttpUtils.setShouldValidateSsl(agentOptions.shouldValidateSsl());
 		return agentOptions;
 	}
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
-	private static void initializeLogging(AgentOptions agentOptions, DelayedLogger logger) throws IOException {
+	private static void initializeLogging(AgentOptions agentOptions) throws IOException {
 		if (agentOptions.isDebugLogging()) {
-			initializeDebugLogging(agentOptions, logger);
+			initializeDebugLogging(agentOptions);
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
 			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
@@ -172,7 +169,7 @@ public class PreMain {
 	 * Initializes debug logging during {@link #premain(String, Instrumentation)} and also logs the log directory if
 	 * given.
 	 */
-	private static void initializeDebugLogging(AgentOptions agentOptions, DelayedLogger logger) {
+	private static void initializeDebugLogging(AgentOptions agentOptions) {
 		loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
 		Path logDirectory = Paths.get(new DebugLogDirectoryPropertyDefiner().getPropertyValue());
 		if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
@@ -187,8 +184,7 @@ public class PreMain {
 	 * {@link #premain(String, Instrumentation)} (see TS-23151). This tries to extract the logging configuration and use
 	 * this and falls back to the default logger.
 	 */
-	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions,
-																		   DelayedLogger delayedLogger) {
+	private static LoggingUtils.LoggingResources initializeFallbackLogging(String premainOptions) {
 		if (premainOptions == null) {
 			return LoggingUtils.initializeDefaultLogging();
 		}
