@@ -3,7 +3,6 @@ package com.teamscale.test_impacted.test_descriptor
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.TestDescriptor
 import java.util.*
-import java.util.logging.Logger
 
 /** Test descriptor resolver for JUnit based [org.junit.platform.engine.TestEngine]s.  */
 abstract class JUnitClassBasedTestDescriptorResolverBase : ITestDescriptorResolver {

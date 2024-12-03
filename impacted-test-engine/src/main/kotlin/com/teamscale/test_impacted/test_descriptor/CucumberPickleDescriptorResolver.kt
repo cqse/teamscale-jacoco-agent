@@ -3,7 +3,6 @@ package com.teamscale.test_impacted.test_descriptor
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.TestDescriptor
 import java.lang.reflect.Field
-import java.lang.reflect.InvocationTargetException
 import java.util.*
 import java.util.logging.Logger
 

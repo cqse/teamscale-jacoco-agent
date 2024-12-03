@@ -1,7 +1,6 @@
 package com.teamscale.test_impacted.test_descriptor
 
 import org.junit.platform.engine.TestDescriptor
-import java.util.*
 
 /** Test default test descriptor resolver for the JUnit vintage [org.junit.platform.engine.TestEngine].  */
 class JUnitVintageTestDescriptorResolver : JUnitClassBasedTestDescriptorResolverBase() {

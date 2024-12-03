@@ -35,18 +35,15 @@ internal class ImpactedTestEngineWithDynamicTestsTest : ImpactedTestEngineTestBa
 	)
 	private val testRoot = SimpleTestDescriptor.testContainer(engineRootId, dynamicTestClassCase)
 
-	override val engines: List<TestEngine> by lazy {
-		listOf(DummyEngine(testRoot))
-	}
+	override val engines get() = listOf(DummyEngine(testRoot))
 
-	override val impactedTests: List<PrioritizableTestCluster> by lazy {
+	override val impactedTests get() =
 		listOf(
 			PrioritizableTestCluster(
 				"example/DynamicTest",
 				listOf(PrioritizableTest("example/DynamicTest/testFactory()"))
 			)
 		)
-	}
 
 	override fun verifyCallbacks(executionListener: EngineExecutionListener) {
 		// First the parents test descriptors are started in order.

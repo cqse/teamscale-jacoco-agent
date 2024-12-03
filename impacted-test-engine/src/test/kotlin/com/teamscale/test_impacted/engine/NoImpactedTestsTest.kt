@@ -29,12 +29,8 @@ internal class NoImpactedTestsTest : ImpactedTestEngineTestBase() {
 
 	private val testEngine1Root = SimpleTestDescriptor.testContainer(engine1RootId, firstTestClass)
 
-	override val engines: List<TestEngine> by lazy {
-		listOf(DummyEngine(testEngine1Root))
-	}
-
-	override val impactedTests: List<PrioritizableTestCluster>
-		get() = emptyList()
+	override val engines get() = listOf(DummyEngine(testEngine1Root))
+	override val impactedTests get() = emptyList<PrioritizableTestCluster>()
 
 	override fun verifyCallbacks(executionListener: EngineExecutionListener) {}
 

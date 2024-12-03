@@ -9,7 +9,6 @@ import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.ClassSource
 import org.junit.platform.engine.support.descriptor.MethodSource
 import java.util.*
-import java.util.logging.Logger
 import java.util.stream.Stream
 
 /** Class containing utility methods for [TestDescriptor]s.  */

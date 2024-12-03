@@ -4,8 +4,6 @@ import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
 import java.util.*
-import java.util.function.Function
-import java.util.logging.Logger
 
 /**
  * Test descriptor resolver for JUnit Platform Suite test (c.f.

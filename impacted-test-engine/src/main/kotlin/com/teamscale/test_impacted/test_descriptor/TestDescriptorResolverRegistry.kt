@@ -3,7 +3,6 @@ package com.teamscale.test_impacted.test_descriptor
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.commons.util.ClassLoaderUtils
 import java.util.*
-import java.util.logging.Logger
 
 /**
  * Registry containing the default and custom [ITestDescriptorResolver]s discovered by the java

@@ -99,14 +99,12 @@ internal class ImpactedTestEngineWithTwoEnginesTest : ImpactedTestEngineTestBase
 
 	private val testEngine2Root = SimpleTestDescriptor.testContainer(engine2RootId, otherTestClass)
 
-	override val engines: List<TestEngine> by lazy {
-		listOf(
-			DummyEngine(testEngine1Root),
-			DummyEngine(testEngine2Root)
-		)
-	}
+	override val engines get() = listOf(
+		DummyEngine(testEngine1Root),
+		DummyEngine(testEngine2Root)
+	)
 
-	override val impactedTests: List<PrioritizableTestCluster> by lazy {
+	override val impactedTests get() =
 		listOf(
 			PrioritizableTestCluster(
 				FIRST_TEST_CLASS,
@@ -128,7 +126,6 @@ internal class ImpactedTestEngineWithTwoEnginesTest : ImpactedTestEngineTestBase
 				)
 			)
 		)
-	}
 
 	override fun verifyCallbacks(executionListener: EngineExecutionListener) {
 		// Start of engine 1
