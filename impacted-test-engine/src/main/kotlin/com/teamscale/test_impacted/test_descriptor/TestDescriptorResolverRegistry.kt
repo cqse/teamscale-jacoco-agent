@@ -15,21 +15,21 @@ object TestDescriptorResolverRegistry {
 
 	init {
 		// Register default test descriptor resolvers
-		registerTestDescriptorResolver(JUnitJupiterTestDescriptorResolver())
-		registerTestDescriptorResolver(JUnitVintageTestDescriptorResolver())
-		registerTestDescriptorResolver(JUnitPlatformSuiteDescriptorResolver())
-		registerTestDescriptorResolver(CucumberPickleDescriptorResolver())
+		JUnitJupiterTestDescriptorResolver().register()
+		JUnitVintageTestDescriptorResolver().register()
+		JUnitPlatformSuiteDescriptorResolver().register()
+		CucumberPickleDescriptorResolver().register()
 
 		// Override existing or register new test descriptor resolvers
-		for (testDescriptorResolver in ServiceLoader
-			.load(ITestDescriptorResolver::class.java, ClassLoaderUtils.getDefaultClassLoader())) {
-			registerTestDescriptorResolver(testDescriptorResolver)
-		}
+		ServiceLoader
+			.load(ITestDescriptorResolver::class.java, ClassLoaderUtils.getDefaultClassLoader())
+			.forEach { testDescriptorResolver ->
+				testDescriptorResolver.register()
+			}
 	}
 
-	private fun registerTestDescriptorResolver(testDescriptorResolver: ITestDescriptorResolver) {
-		TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID[testDescriptorResolver.engineId] =
-			testDescriptorResolver
+	private fun ITestDescriptorResolver.register() {
+		TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID[engineId] = this
 	}
 
 	/** Returns the test descriptor resolver or null if none exists for the test engine.  */

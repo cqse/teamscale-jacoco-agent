@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.isTestRepresentative;
+import static com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.isRepresentative;
 
 /**
  * An execution listener which delegates events to another {@link EngineExecutionListener} and notifies Teamscale agents
@@ -61,9 +61,9 @@ public class TestwiseCoverageCollectingExecutionListener implements EngineExecut
 
 	@Override
 	public void executionSkipped(TestDescriptor testDescriptor, String reason) {
-		if (!TestDescriptorUtils.isTestRepresentative(testDescriptor)) {
+		if (!TestDescriptorUtils.isRepresentative(testDescriptor)) {
 			delegateEngineExecutionListener.executionStarted(testDescriptor);
-			testDescriptor.getChildren().forEach(child -> this.executionSkipped(child, reason));
+			testDescriptor.getChildren().forEach(child -> executionSkipped(child, reason));
 			delegateEngineExecutionListener.executionFinished(testDescriptor, TestExecutionResult.successful());
 			return;
 		}
@@ -76,7 +76,7 @@ public class TestwiseCoverageCollectingExecutionListener implements EngineExecut
 
 	@Override
 	public void executionStarted(TestDescriptor testDescriptor) {
-		if (isTestRepresentative(testDescriptor)) {
+		if (isRepresentative(testDescriptor)) {
 			testDescriptorResolver.getUniformPath(testDescriptor).ifPresent(teamscaleAgentNotifier::startTest);
 			executionStartTime = System.currentTimeMillis();
 		}
@@ -85,7 +85,7 @@ public class TestwiseCoverageCollectingExecutionListener implements EngineExecut
 
 	@Override
 	public void executionFinished(TestDescriptor testDescriptor, TestExecutionResult testExecutionResult) {
-		if (isTestRepresentative(testDescriptor)) {
+		if (isRepresentative(testDescriptor)) {
 			Optional<String> uniformPath = testDescriptorResolver.getUniformPath(testDescriptor);
 			if (!uniformPath.isPresent()) {
 				return;

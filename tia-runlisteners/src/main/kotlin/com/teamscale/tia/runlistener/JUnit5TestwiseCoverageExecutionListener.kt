@@ -10,7 +10,6 @@ import org.junit.platform.launcher.TestExecutionListener
 import org.junit.platform.launcher.TestIdentifier
 import org.junit.platform.launcher.TestPlan
 import java.util.*
-import java.util.function.Function
 
 /**
  * [TestExecutionListener] that uses the [TiaAgent] to record test-wise coverage.
@@ -20,21 +19,20 @@ class JUnit5TestwiseCoverageExecutionListener : TestExecutionListener {
 
 	override fun executionStarted(testIdentifier: TestIdentifier) {
 		if (!testIdentifier.isTest) return
-		val uniformPath = getUniformPath(testIdentifier)
+		val uniformPath = testIdentifier.getUniformPath()
 		bridge.testStarted(uniformPath)
 	}
 
-	private fun getUniformPath(testIdentifier: TestIdentifier) =
-		testIdentifier.source.flatMap { source ->
-			parseTestSource(source)
-		}.orElse(testIdentifier.displayName)
+	private fun TestIdentifier.getUniformPath() =
+		source.flatMap { source ->
+			source.parse()
+		}.orElse(displayName)
 
-	private fun parseTestSource(source: TestSource) =
-		when (source) {
-			is ClassSource -> Optional.of(source.className.replace('.', '/'))
+	private fun TestSource.parse() =
+		when (this) {
+			is ClassSource -> Optional.of(className.replace('.', '/'))
 			is MethodSource -> Optional.of(
-				source.className.replace('.', '/') + "/" +
-						source.methodName + "(" + source.methodParameterTypes + ")"
+				"${className.replace('.', '/')}/$methodName($methodParameterTypes)"
 			)
 			else -> Optional.empty()
 		}
@@ -43,7 +41,7 @@ class JUnit5TestwiseCoverageExecutionListener : TestExecutionListener {
 		if (!testIdentifier.isTest) {
 			return
 		}
-		val uniformPath = getUniformPath(testIdentifier)
+		val uniformPath = testIdentifier.getUniformPath()
 		val result = when (testExecutionResult.status) {
 			TestExecutionResult.Status.SUCCESSFUL -> ETestExecutionResult.PASSED
 			TestExecutionResult.Status.ABORTED -> ETestExecutionResult.ERROR
@@ -56,7 +54,7 @@ class JUnit5TestwiseCoverageExecutionListener : TestExecutionListener {
 
 	override fun executionSkipped(testIdentifier: TestIdentifier, reason: String) {
 		if (testIdentifier.isContainer) return
-		val uniformPath = getUniformPath(testIdentifier)
+		val uniformPath = testIdentifier.getUniformPath()
 		bridge.testSkipped(uniformPath, reason)
 	}
 

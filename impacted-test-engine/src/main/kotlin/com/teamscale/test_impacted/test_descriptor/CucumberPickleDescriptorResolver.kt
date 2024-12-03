@@ -1,6 +1,7 @@
 package com.teamscale.test_impacted.test_descriptor
 
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.getUniqueIdSegment
 import org.junit.platform.engine.TestDescriptor
 import java.lang.reflect.Field
 import java.util.*
@@ -11,44 +12,41 @@ import java.util.logging.Logger
  * [getPickleName]. The cluster id is the .feature file in which the tests are defined.
  */
 class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
-	override fun getUniformPath(testDescriptor: TestDescriptor): Optional<String> {
-		val featurePath = testDescriptor.featurePath()
+	override fun getUniformPath(descriptor: TestDescriptor): Optional<String> {
+		val featurePath = descriptor.featurePath()
 		LOGGER.fine { "Resolved feature: $featurePath" }
 		if (!featurePath.isPresent) {
 			LOGGER.severe {
-				"Cannot resolve the feature classpath for $testDescriptor. This is probably a bug. Please report to CQSE"
+				"Cannot resolve the feature classpath for ${descriptor}. This is probably a bug. Please report to CQSE"
 			}
 			return Optional.empty()
 		}
-		val pickleName = testDescriptor.getPickleName()
+		val pickleName = descriptor.getPickleName()
 		LOGGER.fine { "Resolved pickle name: $pickleName" }
 		if (!pickleName.isPresent) {
 			LOGGER.severe {
-				"Cannot resolve the pickle name for $testDescriptor. This is probably a bug. Please report to CQSE"
+				"Cannot resolve the pickle name for ${descriptor}. This is probably a bug. Please report to CQSE"
 			}
 			return Optional.empty()
 		}
-		val picklePath = "${featurePath.get()}/${pickleName.get()}"
 
 		// Add an index to the end of the name in case multiple tests have the same name in the same feature file
-		val featureFileTestDescriptor = getFeatureFileTestDescriptor(testDescriptor)
-		val indexSuffix = if (!featureFileTestDescriptor.isPresent) {
+		val featureDescriptor = descriptor.getFeatureFileTestDescriptor()
+		val indexSuffix = if (!featureDescriptor.isPresent) {
 			""
 		} else {
-			val testsWithTheSameName = flatListOfAllTestDescriptorChildrenWithPickleName(
-				featureFileTestDescriptor.get(), pickleName.get()
-			)
-			val indexOfCurrentTest = testsWithTheSameName.indexOf(testDescriptor) + 1
-			" #$indexOfCurrentTest"
+			val testsWithTheSameName = featureDescriptor.get().childrenWithPickleName(pickleName.get())
+			" #${testsWithTheSameName.indexOf(descriptor) + 1}"
 		}
 
+		val picklePath = "${featurePath.get()}/${pickleName.get()}"
 		val uniformPath = (picklePath + indexSuffix).removeDuplicatedSlashes()
 		LOGGER.fine { "Resolved uniform path: $uniformPath" }
 		return Optional.of(uniformPath)
 	}
 
-	override fun getClusterId(testDescriptor: TestDescriptor): Optional<String> =
-		testDescriptor.featurePath().map { it.removeDuplicatedSlashes() }
+	override fun getClusterId(descriptor: TestDescriptor): Optional<String> =
+		descriptor.featurePath().map { it.removeDuplicatedSlashes() }
 
 	override val engineId = CUCUMBER_ENGINE_ID
 
@@ -59,9 +57,7 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 	 */
 	private fun TestDescriptor.featurePath(): Optional<String> {
 		LOGGER.fine { "Unique ID of cucumber test descriptor: $uniqueId" }
-		val featureSegment = TestDescriptorUtils.getUniqueIdSegment(
-			this, FEATURE_SEGMENT_TYPE
-		)
+		val featureSegment = getUniqueIdSegment(FEATURE_SEGMENT_TYPE)
 		LOGGER.fine { "Resolved feature segment: $featureSegment" }
 		return featureSegment.map { it.replace("classpath:".toRegex(), "") }
 	}
@@ -94,7 +90,8 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 		try {
 			pickleField = javaClass.getDeclaredField("pickle")
 		} catch (e: NoSuchFieldException) {
-			// Pre cucumber 7.11.2, the field was called pickleEvent (see NodeDescriptor in this merge request: https://github.com/cucumber/cucumber-jvm/pull/2711/files)
+			// Pre cucumber 7.11.2, the field was called pickleEvent
+			// (see NodeDescriptor in this merge request: https://github.com/cucumber/cucumber-jvm/pull/2711/files)
 			// ...
 		}
 		return runCatching {
@@ -110,37 +107,34 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 				getNameMethod.isAccessible = true
 				val name = getNameMethod.invoke(pickle).toString()
 				Optional.of(name)
-					.map { input -> input.escapeSlashes() }
+					.map { it.escapeSlashes() }
 			} ?: Optional.empty()
 		}.getOrNull() ?: Optional.empty()
 	}
 
-	private fun getFeatureFileTestDescriptor(testDescriptor: TestDescriptor): Optional<TestDescriptor> {
-		if (!isFeatureFileTestDescriptor(testDescriptor)) {
-			if (!testDescriptor.parent.isPresent) {
+	private fun TestDescriptor.getFeatureFileTestDescriptor(): Optional<TestDescriptor> {
+		if (!isFeatureFileTestDescriptor()) {
+			if (!parent.isPresent) {
 				return Optional.empty()
 			}
-			return getFeatureFileTestDescriptor(testDescriptor.parent.get())
+			return parent.get().getFeatureFileTestDescriptor()
 		}
-		return Optional.of(testDescriptor)
+		return Optional.of(this)
 	}
 
-	private fun isFeatureFileTestDescriptor(cucumberTestDescriptor: TestDescriptor) =
-		cucumberTestDescriptor.uniqueId.lastSegment.type == FEATURE_SEGMENT_TYPE
+	private fun TestDescriptor.isFeatureFileTestDescriptor() =
+		uniqueId.lastSegment.type == FEATURE_SEGMENT_TYPE
 
-	private fun flatListOfAllTestDescriptorChildrenWithPickleName(
-		testDescriptor: TestDescriptor,
-		pickleName: String
-	): List<TestDescriptor> {
-		if (testDescriptor.children.isEmpty()) {
-			val pickleId = testDescriptor.getPickleName()
+	private fun TestDescriptor.childrenWithPickleName(pickleName: String): List<TestDescriptor> {
+		if (children.isEmpty()) {
+			val pickleId = getPickleName()
 			if (pickleId.isPresent && pickleName == pickleId.get()) {
-				return listOf(testDescriptor)
+				return listOf(this)
 			}
 			return emptyList()
 		}
-		return testDescriptor.children.flatMap { childDescriptor ->
-			flatListOfAllTestDescriptorChildrenWithPickleName(childDescriptor, pickleName)
+		return children.flatMap { childDescriptor ->
+			childDescriptor.childrenWithPickleName(pickleName)
 		}
 	}
 

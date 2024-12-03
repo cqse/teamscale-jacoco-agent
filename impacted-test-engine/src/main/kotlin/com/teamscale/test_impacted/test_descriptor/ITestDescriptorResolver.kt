@@ -6,10 +6,10 @@ import java.util.*
 /** Interface for implementation of mappings from [TestDescriptor]s to uniform paths.  */
 interface ITestDescriptorResolver {
 	/** Returns the uniform path or [Optional.empty] if no uniform path could be determined.  */
-	fun getUniformPath(testDescriptor: TestDescriptor): Optional<String>
+	fun getUniformPath(descriptor: TestDescriptor): Optional<String>
 
 	/** Returns the uniform path or [Optional.empty] if no cluster id could be determined.  */
-	fun getClusterId(testDescriptor: TestDescriptor): Optional<String>
+	fun getClusterId(descriptor: TestDescriptor): Optional<String>
 
 	/**
 	 * Returns the [org.junit.platform.engine.TestEngine.getId] of the [org.junit.platform.engine.TestEngine] to use this [ITestDescriptorResolver]

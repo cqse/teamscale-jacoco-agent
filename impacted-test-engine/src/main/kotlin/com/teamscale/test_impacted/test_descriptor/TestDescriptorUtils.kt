@@ -19,15 +19,15 @@ object TestDescriptorUtils {
 	@JvmStatic
 	fun getTestDescriptorAsString(testDescriptor: TestDescriptor): String {
 		val writer = IndentingWriter()
-		printTestDescriptor(writer, testDescriptor)
+		writer.printTestDescriptor(testDescriptor)
 		return writer.toString()
 	}
 
-	private fun printTestDescriptor(writer: IndentingWriter, testDescriptor: TestDescriptor) {
-		writer.writeLine(testDescriptor.uniqueId.toString())
-		writer.indent {
+	private fun IndentingWriter.printTestDescriptor(testDescriptor: TestDescriptor) {
+		writeLine(testDescriptor.uniqueId.toString())
+		indent {
 			testDescriptor.children.forEach { child ->
-				printTestDescriptor(writer, child)
+				printTestDescriptor(child)
 			}
 		}
 	}
@@ -38,11 +38,9 @@ object TestDescriptorUtils {
 	 * test cases.
 	 */
 	@JvmStatic
-	fun isTestRepresentative(testDescriptor: TestDescriptor): Boolean {
-		val isTestTemplateOrTestFactory = isTestTemplateOrTestFactory(testDescriptor)
-		val isNonParameterizedTest = testDescriptor.isTest && !isTestTemplateOrTestFactory(
-			testDescriptor.parent.get()
-		)
+	fun TestDescriptor.isRepresentative(): Boolean {
+		val isTestTemplateOrTestFactory = isTestTemplateOrTestFactory()
+		val isNonParameterizedTest = isTest && !parent.get().isTestTemplateOrTestFactory()
 		return isNonParameterizedTest || isTestTemplateOrTestFactory
 	}
 
@@ -55,11 +53,8 @@ object TestDescriptorUtils {
 	 *
 	 * `[engine:junit-jupiter]/[class:com.example.project.JUnit5Test]/[test-template:withValueSource(java.lang.String)]`
 	 */
-	private fun isTestTemplateOrTestFactory(testDescriptor: TestDescriptor?): Boolean {
-		if (testDescriptor == null) {
-			return false
-		}
-		val segments = testDescriptor.uniqueId.segments
+	private fun TestDescriptor.isTestTemplateOrTestFactory(): Boolean {
+		val segments = uniqueId.segments
 
 		if (segments.isEmpty()) {
 			return false
@@ -71,36 +66,32 @@ object TestDescriptorUtils {
 	}
 
 	/** Creates a stream of the test representatives contained by the [TestDescriptor].  */
-	private fun streamTestRepresentatives(testDescriptor: TestDescriptor): Stream<TestDescriptor> {
-		if (isTestRepresentative(testDescriptor)) {
-			return Stream.of(testDescriptor)
+	private fun TestDescriptor.streamTestRepresentatives(): Stream<TestDescriptor> {
+		if (isRepresentative()) {
+			return Stream.of(this)
 		}
-		return testDescriptor.children.stream().flatMap {
-			streamTestRepresentatives(it)
+		return children.stream().flatMap {
+			it.streamTestRepresentatives()
 		}
 	}
 
 	/**
-	 * Returns the [Segment.getValue] matching the type or [Optional.empty] if no matching segment can
+	 * Returns the [org.junit.platform.engine.UniqueId.Segment.getValue] matching the type or [Optional.empty] if no matching segment can
 	 * be found.
 	 */
-	fun getUniqueIdSegment(testDescriptor: TestDescriptor, type: String): Optional<String> =
-		testDescriptor.uniqueId.segments.stream()
+	fun TestDescriptor.getUniqueIdSegment(type: String): Optional<String> =
+		uniqueId.segments.stream()
 			.filter { it.type == type }
 			.findFirst().map { it.value }
 
-	/** Returns [TestDetails.sourcePath] for a [TestDescriptor].  */
-	private fun getSource(testDescriptor: TestDescriptor): String? {
-		val source = testDescriptor.source
-		if (source.isPresent && source.get() is MethodSource) {
-			val ms = source.get() as MethodSource
-			return ms.className.replace('.', '/')
+	/** Returns [com.teamscale.client.TestDetails.sourcePath] for a [TestDescriptor].  */
+	private fun TestDescriptor.source(): String? {
+		val source = source.orElse(null) ?: return null
+		return when (source) {
+			is MethodSource -> source.className.replace('.', '/')
+			is ClassSource -> source.className.replace('.', '/')
+			else -> null
 		}
-		if (source.isPresent && source.get() is ClassSource) {
-			val classSource = source.get() as ClassSource
-			return classSource.className.replace('.', '/')
-		}
-		return null
 	}
 
 	/** Returns the [AvailableTests] contained within the root [TestDescriptor].  */
@@ -111,8 +102,8 @@ object TestDescriptorUtils {
 	): AvailableTests {
 		val availableTests = AvailableTests()
 
-		streamTestRepresentatives(rootTestDescriptor)
-			.forEach { testDescriptor: TestDescriptor ->
+		rootTestDescriptor.streamTestRepresentatives()
+			.forEach { testDescriptor ->
 				val engineId = testDescriptor.uniqueId.engineId
 				if (!engineId.isPresent) {
 					LOGGER.severe { "Unable to determine engine ID for $testDescriptor!" }
@@ -122,7 +113,6 @@ object TestDescriptorUtils {
 				val testDescriptorResolver = TestDescriptorResolverRegistry.getTestDescriptorResolver(engineId.get())
 				val clusterId = testDescriptorResolver!!.getClusterId(testDescriptor)
 				val uniformPath = testDescriptorResolver.getUniformPath(testDescriptor)
-				val source = getSource(testDescriptor)
 
 				if (!uniformPath.isPresent) {
 					LOGGER.severe { "Unable to determine uniform path for test descriptor: $testDescriptor" }
@@ -135,8 +125,11 @@ object TestDescriptorUtils {
 				}
 
 				val testDetails = ClusteredTestDetails(
-					uniformPath.get(), source, null,
-					clusterId.get(), partition
+					uniformPath.get(),
+					testDescriptor.source(),
+					null,
+					clusterId.get(),
+					partition
 				)
 				availableTests.add(testDescriptor.uniqueId, testDetails)
 			}

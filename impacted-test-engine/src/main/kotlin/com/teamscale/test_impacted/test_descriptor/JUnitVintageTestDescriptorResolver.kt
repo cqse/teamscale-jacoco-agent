@@ -1,11 +1,12 @@
 package com.teamscale.test_impacted.test_descriptor
 
+import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.getUniqueIdSegment
 import org.junit.platform.engine.TestDescriptor
 
 /** Test default test descriptor resolver for the JUnit vintage [org.junit.platform.engine.TestEngine].  */
 class JUnitVintageTestDescriptorResolver : JUnitClassBasedTestDescriptorResolverBase() {
-	override fun getClassName(testDescriptor: TestDescriptor) =
-		TestDescriptorUtils.getUniqueIdSegment(testDescriptor, RUNNER_SEGMENT_TYPE)
+	override fun TestDescriptor.getClassName() =
+		getUniqueIdSegment(RUNNER_SEGMENT_TYPE)
 
 	override val engineId: String
 		get() = "junit-vintage"
