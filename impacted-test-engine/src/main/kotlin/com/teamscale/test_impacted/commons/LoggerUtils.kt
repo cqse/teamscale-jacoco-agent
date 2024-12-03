@@ -14,7 +14,7 @@ object LoggerUtils {
 	private const val JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY = "java.util.logging.config.file"
 
 	init {
-		// Needs to be at the very top so it also takes affect when setting the log level for Console handlers
+		// Needs to be at the very top, so it also takes effect when setting the log level for Console handlers
 		useDefaultJULConfigFile()
 
 		MAIN_LOGGER.useParentHandlers = false
