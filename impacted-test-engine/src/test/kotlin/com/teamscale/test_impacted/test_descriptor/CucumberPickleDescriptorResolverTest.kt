@@ -1,5 +1,7 @@
 package com.teamscale.test_impacted.test_descriptor
 
+import com.teamscale.test_impacted.test_descriptor.CucumberPickleDescriptorResolver.Companion.escapeSlashes
+import com.teamscale.test_impacted.test_descriptor.CucumberPickleDescriptorResolver.Companion.removeDuplicatedSlashes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -21,7 +23,7 @@ internal class CucumberPickleDescriptorResolverTest {
 			"\\" to "\\",
 			"http://link" to "http:\\/\\/link"
 		).forEach { (input, expected) ->
-			Assertions.assertEquals(expected, CucumberPickleDescriptorResolver.escapeSlashes(input))
+			Assertions.assertEquals(expected, input.escapeSlashes())
 		}
 	}
 
@@ -42,7 +44,7 @@ internal class CucumberPickleDescriptorResolverTest {
 			"\\" to "\\",
 			"\\\\" to "\\\\"
 		).forEach { (input, expected) ->
-			Assertions.assertEquals(expected, CucumberPickleDescriptorResolver().removeDuplicatedSlashes(input))
+			Assertions.assertEquals(expected, input.removeDuplicatedSlashes())
 		}
 	}
 }
