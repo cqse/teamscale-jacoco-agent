@@ -33,6 +33,7 @@ dependencies {
     testImplementation(lib("assertj"))
     testImplementation(lib("mockito-core"))
     testImplementation(lib("mockito-junit"))
+	testImplementation(lib("mockito-kotlin"))
 
     testRuntimeOnly(lib("junit-platform-launcher"))
     testRuntimeOnly(lib("junit-jupiter-engine"))

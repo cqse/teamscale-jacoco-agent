@@ -12,7 +12,8 @@ retrofit = "2.11.0"
 junit = "5.11.3"
 junitPlatform = "1.11.3"
 okhttp = "4.12.0"
-mockito = "4.11.0"
+mockito = "5.12.0"
+mockitoKotlin = "5.4.0"
 picocli = "4.7.6"
 
 [libraries]
@@ -75,6 +76,7 @@ jsonassert = { module = "org.skyscreamer:jsonassert", version = "1.5.3" }
 
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 
 springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.0" }
 

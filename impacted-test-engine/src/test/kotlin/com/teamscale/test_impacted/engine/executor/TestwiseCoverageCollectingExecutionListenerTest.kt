@@ -6,16 +6,15 @@ import com.teamscale.test_impacted.test_descriptor.ITestDescriptorResolver
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.platform.engine.EngineExecutionListener
-import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.UniqueId
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.*
 import java.util.*
 
+@Suppress("INLINE_FROM_HIGHER_PLATFORM")
 /** Tests for [TestwiseCoverageCollectingExecutionListener].  */
 internal class TestwiseCoverageCollectingExecutionListenerTest {
+
 	private val mockApi = mock<TeamscaleAgentNotifier>()
 
 	private val resolver = mock<ITestDescriptorResolver>()
@@ -42,54 +41,50 @@ internal class TestwiseCoverageCollectingExecutionListenerTest {
 		)
 		val testRoot = SimpleTestDescriptor.testContainer(rootId, testClass)
 
-		Mockito.`when`(resolver.getUniformPath(impactedTestCase))
+		whenever(resolver.getUniformPath(impactedTestCase))
 			.thenReturn(Optional.of("MyClass/impactedTestCase()"))
-		Mockito.`when`(resolver.getClusterId(impactedTestCase))
+		whenever(resolver.getClusterId(impactedTestCase))
 			.thenReturn(Optional.of("MyClass"))
-		Mockito.`when`(resolver.getUniformPath(regularSkippedTestCase))
+		whenever(resolver.getUniformPath(regularSkippedTestCase))
 			.thenReturn(Optional.of("MyClass/regularSkippedTestCase()"))
-		Mockito.`when`(resolver.getClusterId(regularSkippedTestCase))
+		whenever(resolver.getClusterId(regularSkippedTestCase))
 			.thenReturn(Optional.of("MyClass"))
 
 		// Start engine and class.
 		executionListener.executionStarted(testRoot)
-		Mockito.verify(executionListenerMock).executionStarted(testRoot)
+		verify(executionListenerMock).executionStarted(testRoot)
 		executionListener.executionStarted(testClass)
-		Mockito.verify(executionListenerMock).executionStarted(testClass)
+		verify(executionListenerMock).executionStarted(testClass)
 
 		// Execution of an impacted test case.
 		executionListener.executionStarted(impactedTestCase)
-		Mockito.verify(mockApi).startTest("MyClass/impactedTestCase()")
-		Mockito.verify(executionListenerMock).executionStarted(impactedTestCase)
+		verify(mockApi).startTest("MyClass/impactedTestCase()")
+		verify(executionListenerMock).executionStarted(impactedTestCase)
 		executionListener.executionFinished(impactedTestCase, TestExecutionResult.successful())
-		Mockito.verify(mockApi).endTest(ArgumentMatchers.eq("MyClass/impactedTestCase()"), ArgumentMatchers.any())
-		Mockito.verify(executionListenerMock).executionFinished(impactedTestCase, TestExecutionResult.successful())
+		verify(mockApi).endTest(eq("MyClass/impactedTestCase()"), any())
+		verify(executionListenerMock).executionFinished(impactedTestCase, TestExecutionResult.successful())
 
 		// Ignored or disabled impacted test case is skipped.
 		executionListener.executionSkipped(regularSkippedTestCase, "Test is disabled.")
-		Mockito.verify(executionListenerMock).executionSkipped(regularSkippedTestCase, "Test is disabled.")
+		verify(executionListenerMock).executionSkipped(regularSkippedTestCase, "Test is disabled.")
 
 		// Finish class and engine.
 		executionListener.executionFinished(testClass, TestExecutionResult.successful())
-		Mockito.verify(executionListenerMock).executionFinished(testClass, TestExecutionResult.successful())
+		verify(executionListenerMock).executionFinished(testClass, TestExecutionResult.successful())
 		executionListener.executionFinished(testRoot, TestExecutionResult.successful())
-		Mockito.verify(executionListenerMock).executionFinished(testRoot, TestExecutionResult.successful())
+		verify(executionListenerMock).executionFinished(testRoot, TestExecutionResult.successful())
 
-		Mockito.verifyNoMoreInteractions(mockApi)
-		Mockito.verifyNoMoreInteractions(executionListenerMock)
+		verifyNoMoreInteractions(mockApi)
+		verifyNoMoreInteractions(executionListenerMock)
 
 		val testExecutions = executionListener.testExecutions
 
 		Assertions.assertThat(testExecutions).hasSize(2)
 		Assertions.assertThat(testExecutions).anySatisfy { testExecution: TestExecution ->
-			Assertions.assertThat(
-				testExecution.uniformPath
-			).isEqualTo("MyClass/impactedTestCase()")
+			Assertions.assertThat(testExecution.uniformPath).isEqualTo("MyClass/impactedTestCase()")
 		}
 		Assertions.assertThat(testExecutions).anySatisfy { testExecution: TestExecution ->
-			Assertions.assertThat(
-				testExecution.uniformPath
-			).isEqualTo("MyClass/regularSkippedTestCase()")
+			Assertions.assertThat(testExecution.uniformPath).isEqualTo("MyClass/regularSkippedTestCase()")
 		}
 	}
 
@@ -104,29 +99,29 @@ internal class TestwiseCoverageCollectingExecutionListenerTest {
 		val testClass = SimpleTestDescriptor.testContainer(testClassId, testCase1, testCase2)
 		val testRoot = SimpleTestDescriptor.testContainer(rootId, testClass)
 
-		Mockito.`when`(resolver.getUniformPath(testCase1))
+		whenever(resolver.getUniformPath(testCase1))
 			.thenReturn(Optional.of("MyClass/testCase1()"))
-		Mockito.`when`(resolver.getClusterId(testCase1))
+		whenever(resolver.getClusterId(testCase1))
 			.thenReturn(Optional.of("MyClass"))
-		Mockito.`when`(resolver.getUniformPath(testCase2))
+		whenever(resolver.getUniformPath(testCase2))
 			.thenReturn(Optional.of("MyClass/testCase2()"))
-		Mockito.`when`(resolver.getClusterId(testCase2))
+		whenever(resolver.getClusterId(testCase2))
 			.thenReturn(Optional.of("MyClass"))
 
 		// Start engine and class.
 		executionListener.executionStarted(testRoot)
-		Mockito.verify(executionListenerMock).executionStarted(testRoot)
+		verify(executionListenerMock).executionStarted(testRoot)
 
 		executionListener.executionSkipped(testClass, "Test class is disabled.")
-		Mockito.verify(executionListenerMock).executionStarted(testClass)
-		Mockito.verify(executionListenerMock).executionSkipped(testCase1, "Test class is disabled.")
-		Mockito.verify(executionListenerMock).executionSkipped(testCase2, "Test class is disabled.")
-		Mockito.verify(executionListenerMock).executionFinished(testClass, TestExecutionResult.successful())
+		verify(executionListenerMock).executionStarted(testClass)
+		verify(executionListenerMock).executionSkipped(testCase1, "Test class is disabled.")
+		verify(executionListenerMock).executionSkipped(testCase2, "Test class is disabled.")
+		verify(executionListenerMock).executionFinished(testClass, TestExecutionResult.successful())
 
 		executionListener.executionFinished(testRoot, TestExecutionResult.successful())
-		Mockito.verify(executionListenerMock).executionFinished(testRoot, TestExecutionResult.successful())
+		verify(executionListenerMock).executionFinished(testRoot, TestExecutionResult.successful())
 
-		Mockito.verifyNoMoreInteractions(executionListenerMock)
+		verifyNoMoreInteractions(executionListenerMock)
 
 		val testExecutions = executionListener.testExecutions
 
