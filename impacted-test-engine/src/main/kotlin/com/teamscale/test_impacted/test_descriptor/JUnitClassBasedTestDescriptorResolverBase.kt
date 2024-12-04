@@ -1,11 +1,13 @@
 package com.teamscale.test_impacted.test_descriptor
 
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import org.junit.platform.engine.TestDescriptor
 import java.util.*
 
 /** Test descriptor resolver for JUnit based [org.junit.platform.engine.TestEngine]s.  */
 abstract class JUnitClassBasedTestDescriptorResolverBase : ITestDescriptorResolver {
+	private val LOGGER = createLogger()
+
 	override fun getUniformPath(descriptor: TestDescriptor): Optional<String> =
 		descriptor.getClassName().map { className ->
 			val dotName = className.replace(".", "/")
@@ -28,8 +30,4 @@ abstract class JUnitClassBasedTestDescriptorResolverBase : ITestDescriptorResolv
 
 	/** Returns the test class containing the test.  */
 	protected abstract fun TestDescriptor.getClassName(): Optional<String>
-
-	companion object {
-		private val LOGGER = getLogger(JUnitClassBasedTestDescriptorResolverBase::class.java)
-	}
 }

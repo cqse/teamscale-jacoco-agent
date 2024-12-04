@@ -37,7 +37,7 @@ object LoggerUtils {
 			System.getProperty(JAVA_UTIL_LOGGING_CONFIG_FILE_SYSTEM_PROPERTY)
 				?: return
 
-		val logger = getLogger(LoggerUtils::class.java)
+		val logger = createLogger()
 		try {
 			val propertiesFilePath = Paths.get(loggingPropertiesFilePathString)
 			if (!propertiesFilePath.toFile().exists()) {
@@ -59,4 +59,10 @@ object LoggerUtils {
 	 */
 	@JvmStatic
 	fun getLogger(clazz: Class<*>) = Logger.getLogger(clazz.name)
+
+	/**
+	 * Creates a logger for the given class.
+	 */
+	@JvmStatic
+	fun Any.createLogger(): Logger = Logger.getLogger(this::class.java.name)
 }

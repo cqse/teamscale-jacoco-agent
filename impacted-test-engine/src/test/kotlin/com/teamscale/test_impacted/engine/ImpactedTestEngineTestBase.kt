@@ -14,17 +14,11 @@ import org.mockito.Mockito.mock
 /** Base class for testing specific scenarios in the impacted test engine.  */
 abstract class ImpactedTestEngineTestBase {
 	private val testEngineRegistry = mock<TestEngineRegistry>()
-
 	private val testDataWriter = mock<TestDataWriter>()
-
 	private val impactedTestsProvider = mock<ImpactedTestsProvider>()
-
 	private val discoveryRequest = mock<EngineDiscoveryRequest>()
-
 	private val executionRequest = mock<ExecutionRequest>()
-
 	private val executionListener = mock<EngineExecutionListener>()
-
 	private val teamscaleAgentNotifier = mock<TeamscaleAgentNotifier>()
 
 	@Test

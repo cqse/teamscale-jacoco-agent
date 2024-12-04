@@ -99,12 +99,12 @@ internal class ImpactedTestEngineWithTwoEnginesTest : ImpactedTestEngineTestBase
 
 	private val testEngine2Root = SimpleTestDescriptor.testContainer(engine2RootId, otherTestClass)
 
-	override val engines get() = listOf(
+	override val engines = listOf(
 		DummyEngine(testEngine1Root),
 		DummyEngine(testEngine2Root)
 	)
 
-	override val impactedTests get() =
+	override val impactedTests =
 		listOf(
 			PrioritizableTestCluster(
 				FIRST_TEST_CLASS,

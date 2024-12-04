@@ -1,17 +1,18 @@
 package com.teamscale.test_impacted.test_descriptor
 
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.getUniqueIdSegment
 import org.junit.platform.engine.TestDescriptor
 import java.lang.reflect.Field
 import java.util.*
-import java.util.logging.Logger
 
 /**
  * Test descriptor resolver for Cucumber. For details how we extract the uniform path, see comment in
  * [getPickleName]. The cluster id is the .feature file in which the tests are defined.
  */
 class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
+	private val LOGGER = createLogger()
+
 	override fun getUniformPath(descriptor: TestDescriptor): Optional<String> {
 		val featurePath = descriptor.featurePath()
 		LOGGER.fine { "Resolved feature: $featurePath" }
@@ -144,8 +145,6 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 
 		/** Type of the unique id segment of a test descriptor representing a cucumber feature file  */
 		const val FEATURE_SEGMENT_TYPE = "feature"
-
-		private val LOGGER: Logger = getLogger(CucumberPickleDescriptorResolver::class.java)
 
 		/**
 		 * Escapes slashes (/) in a given input (usually a scenario name) with a backslash (\).

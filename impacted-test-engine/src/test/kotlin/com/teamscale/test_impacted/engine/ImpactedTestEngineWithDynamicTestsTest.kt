@@ -35,9 +35,9 @@ internal class ImpactedTestEngineWithDynamicTestsTest : ImpactedTestEngineTestBa
 	)
 	private val testRoot = SimpleTestDescriptor.testContainer(engineRootId, dynamicTestClassCase)
 
-	override val engines get() = listOf(DummyEngine(testRoot))
+	override val engines = listOf(DummyEngine(testRoot))
 
-	override val impactedTests get() =
+	override val impactedTests =
 		listOf(
 			PrioritizableTestCluster(
 				"example/DynamicTest",

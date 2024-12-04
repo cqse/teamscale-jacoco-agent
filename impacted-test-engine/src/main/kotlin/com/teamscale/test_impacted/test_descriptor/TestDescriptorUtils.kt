@@ -2,6 +2,7 @@ package com.teamscale.test_impacted.test_descriptor
 
 import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.test_impacted.commons.IndentingWriter
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import com.teamscale.test_impacted.engine.executor.AvailableTests
 import org.junit.platform.engine.TestDescriptor
@@ -13,7 +14,7 @@ import java.util.stream.Stream
 
 /** Class containing utility methods for [TestDescriptor]s.  */
 object TestDescriptorUtils {
-	private val LOGGER = getLogger(TestDescriptorUtils::class.java)
+	private val LOGGER = createLogger()
 
 	/** Returns the test descriptor as a formatted string with indented children.  */
 	@JvmStatic

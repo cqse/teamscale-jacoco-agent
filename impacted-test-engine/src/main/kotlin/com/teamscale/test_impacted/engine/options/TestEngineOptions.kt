@@ -104,7 +104,7 @@ class TestEngineOptions {
 			File(reportDirectory, "server-request.txt")
 		)
 		return ImpactedTestsProvider(
-			client, baseline, baselineRevision, endCommit, endRevision, repository, partition,
+			client, baseline!!, baselineRevision!!, endCommit!!, endRevision!!, repository!!, partition!!,
 			runAllTests, includeAddedTests, includeFailedAndSkipped
 		)
 	}

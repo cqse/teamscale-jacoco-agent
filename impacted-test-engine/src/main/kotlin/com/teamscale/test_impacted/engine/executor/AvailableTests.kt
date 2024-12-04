@@ -3,6 +3,7 @@ package com.teamscale.test_impacted.engine.executor
 import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.client.PrioritizableTest
 import com.teamscale.client.StringUtils.levenshteinDistance
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.UniqueId
 import java.util.*
@@ -13,6 +14,8 @@ import java.util.logging.Logger
  * by the Teamscale server to unique IDs used in JUnit Platform.
  */
 class AvailableTests {
+	private val LOGGER = createLogger()
+
 	/**
 	 * A mapping from the tests uniform path (Teamscale internal representation) to unique id (JUnit internal
 	 * representation).
@@ -42,9 +45,5 @@ class AvailableTests {
 				.forEach { LOGGER.severe { " - $it" } }
 		}
 		return Optional.ofNullable(clusterUniqueId)
-	}
-
-	companion object {
-		private val LOGGER: Logger = getLogger(AvailableTests::class.java)
 	}
 }

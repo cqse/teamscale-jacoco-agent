@@ -57,7 +57,7 @@ internal class TestwiseCoverageCollectingExecutionListenerTest {
 		executionListener.executionStarted(testClass)
 		Mockito.verify(executionListenerMock).executionStarted(testClass)
 
-		// Execution of impacted test case.
+		// Execution of an impacted test case.
 		executionListener.executionStarted(impactedTestCase)
 		Mockito.verify(mockApi).startTest("MyClass/impactedTestCase()")
 		Mockito.verify(executionListenerMock).executionStarted(impactedTestCase)
@@ -99,10 +99,10 @@ internal class TestwiseCoverageCollectingExecutionListenerTest {
 		val testCase1Id = testClassId.append("TEST_CASE", "testCase1()")
 		val testCase2Id = testClassId.append("TEST_CASE", "testCase2()")
 
-		val testCase1: TestDescriptor = SimpleTestDescriptor.testCase(testCase1Id)
-		val testCase2: TestDescriptor = SimpleTestDescriptor.testCase(testCase2Id)
-		val testClass: TestDescriptor = SimpleTestDescriptor.testContainer(testClassId, testCase1, testCase2)
-		val testRoot: TestDescriptor = SimpleTestDescriptor.testContainer(rootId, testClass)
+		val testCase1 = SimpleTestDescriptor.testCase(testCase1Id)
+		val testCase2 = SimpleTestDescriptor.testCase(testCase2Id)
+		val testClass = SimpleTestDescriptor.testContainer(testClassId, testCase1, testCase2)
+		val testRoot = SimpleTestDescriptor.testContainer(rootId, testClass)
 
 		Mockito.`when`(resolver.getUniformPath(testCase1))
 			.thenReturn(Optional.of("MyClass/testCase1()"))

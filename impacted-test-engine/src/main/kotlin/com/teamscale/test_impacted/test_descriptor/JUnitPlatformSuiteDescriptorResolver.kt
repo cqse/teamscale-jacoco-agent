@@ -1,5 +1,6 @@
 package com.teamscale.test_impacted.test_descriptor
 
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
@@ -24,7 +25,7 @@ class JUnitPlatformSuiteDescriptorResolver : ITestDescriptorResolver {
 		get() = "junit-platform-suite"
 
 	companion object {
-		private val LOGGER = getLogger(JUnitPlatformSuiteDescriptorResolver::class.java)
+		private val LOGGER = createLogger()
 
 		/** Type of the unique id segment of a test descriptor representing a test suite  */
 		private const val SUITE_SEGMENT_TYPE: String = "suite"

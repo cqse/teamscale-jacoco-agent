@@ -1,5 +1,6 @@
 package com.teamscale.test_impacted.test_descriptor
 
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.commons.util.ClassLoaderUtils
 import java.util.*
@@ -9,7 +10,7 @@ import java.util.*
  * [ServiceLoader].
  */
 object TestDescriptorResolverRegistry {
-	private val LOGGER = getLogger(TestDescriptorResolverRegistry::class.java)
+	private val LOGGER = createLogger()
 
 	private val TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID = mutableMapOf<String, ITestDescriptorResolver>()
 
