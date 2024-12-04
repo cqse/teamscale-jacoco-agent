@@ -21,5 +21,4 @@ dependencies {
     compileOnly(libs.junit.platform.commons)
     testImplementation(libs.junit.platform.engine)
     testImplementation(libs.junit.jupiter.params)
-	testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
