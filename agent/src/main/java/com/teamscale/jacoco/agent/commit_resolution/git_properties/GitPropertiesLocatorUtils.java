@@ -343,7 +343,7 @@ public class GitPropertiesLocatorUtils {
 	}
 
 	/**
-	 * Returns the CommitInfo (revision & branch + timestmap) from a git properties file. The revision can be either in
+	 * Returns the CommitInfo (revision and branch + timestmap) from a git properties file. The revision can be either in
 	 * {@link #GIT_PROPERTIES_GIT_COMMIT_ID} or {@link #GIT_PROPERTIES_GIT_COMMIT_ID_FULL}. The branch and timestamp in
 	 * {@link #GIT_PROPERTIES_GIT_BRANCH} + {@link #GIT_PROPERTIES_GIT_COMMIT_TIME} or in
 	 * {@link #GIT_PROPERTIES_TEAMSCALE_COMMIT_BRANCH} + {@link #GIT_PROPERTIES_TEAMSCALE_COMMIT_TIME}. By default,

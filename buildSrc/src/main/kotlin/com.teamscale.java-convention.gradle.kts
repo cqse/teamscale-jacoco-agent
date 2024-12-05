@@ -12,8 +12,17 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
+}
+
+tasks.compileJava {
+    options.release = 8
+    options.compilerArgs.add("-Xlint:-options")
+}
+
+tasks.compileTestJava {
+    options.release = 21
 }
 
 tasks.test {

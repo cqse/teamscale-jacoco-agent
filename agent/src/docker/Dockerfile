@@ -1,6 +1,6 @@
 # --- build image ---
 
-FROM openjdk:17 as build
+FROM openjdk:21 as build
 # install xargs which is needed during the build
 RUN microdnf install findutils
 ADD . /src
