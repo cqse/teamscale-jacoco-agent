@@ -1,6 +1,7 @@
 import org.beryx.jlink.util.JdkUtil
 
 plugins {
+	kotlin("jvm")
 	application
 	com.teamscale.`java-convention`
 	com.teamscale.coverage
