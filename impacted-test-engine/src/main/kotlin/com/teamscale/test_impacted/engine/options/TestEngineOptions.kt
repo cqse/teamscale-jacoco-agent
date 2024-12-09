@@ -99,12 +99,14 @@ class TestEngineOptions {
 
 	private fun createImpactedTestsProvider(): ImpactedTestsProvider {
 		val client = TeamscaleClient(
-			serverOptions?.url, serverOptions?.userName!!,
-			serverOptions?.userAccessToken!!, serverOptions?.project!!,
+			serverOptions?.url,
+			serverOptions?.userName!!,
+			serverOptions?.userAccessToken!!,
+			serverOptions?.project!!,
 			File(reportDirectory, "server-request.txt")
 		)
 		return ImpactedTestsProvider(
-			client, baseline!!, baselineRevision!!, endCommit!!, endRevision!!, repository!!, partition!!,
+			client, baseline, baselineRevision, endCommit, endRevision, repository, partition,
 			runAllTests, includeAddedTests, includeFailedAndSkipped
 		)
 	}
@@ -116,12 +118,12 @@ class TestEngineOptions {
 	class Builder {
 		private val testEngineOptions = TestEngineOptions()
 
-		fun serverOptions(serverOptions: ServerOptions): Builder {
+		fun serverOptions(serverOptions: ServerOptions?): Builder {
 			testEngineOptions.serverOptions = serverOptions
 			return this
 		}
 
-		fun partition(partition: String): Builder {
+		fun partition(partition: String?): Builder {
 			testEngineOptions.partition = partition
 			return this
 		}
@@ -146,27 +148,27 @@ class TestEngineOptions {
 			return this
 		}
 
-		fun endCommit(endCommit: CommitDescriptor): Builder {
+		fun endCommit(endCommit: CommitDescriptor?): Builder {
 			testEngineOptions.endCommit = endCommit
 			return this
 		}
 
-		fun endRevision(endRevision: String): Builder {
+		fun endRevision(endRevision: String?): Builder {
 			testEngineOptions.endRevision = endRevision
 			return this
 		}
 
-		fun repository(repository: String): Builder {
+		fun repository(repository: String?): Builder {
 			testEngineOptions.repository = repository
 			return this
 		}
 
-		fun baseline(baseline: String): Builder {
+		fun baseline(baseline: String?): Builder {
 			testEngineOptions.baseline = baseline
 			return this
 		}
 
-		fun baselineRevision(baselineRevision: String): Builder {
+		fun baselineRevision(baselineRevision: String?): Builder {
 			testEngineOptions.baselineRevision = baselineRevision
 			return this
 		}
@@ -192,7 +194,8 @@ class TestEngineOptions {
 			return this
 		}
 
-		fun reportDirectory(reportDirectory: String): Builder {
+		fun reportDirectory(reportDirectory: String?): Builder {
+			reportDirectory ?: return this
 			testEngineOptions.reportDirectory = File(reportDirectory)
 			return this
 		}
