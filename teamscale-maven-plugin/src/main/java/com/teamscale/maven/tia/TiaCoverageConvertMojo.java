@@ -151,7 +151,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 	private List<File> getClassDirectoriesOrZips(String projectBuildDir) throws AgentOptionParseException {
 		List<String> classDirectoriesOrZips = new ArrayList<>();
 		classDirectoriesOrZips.add(projectBuildDir);
-		return ClasspathUtils.resolveClasspathTextFiles("classes", new FilePatternResolver(new CommandLineLogger()),
+		return ClasspathUtils.resolveClasspathTextFiles("classes", new FilePatternResolver(),
 				classDirectoriesOrZips);
 	}
 }
