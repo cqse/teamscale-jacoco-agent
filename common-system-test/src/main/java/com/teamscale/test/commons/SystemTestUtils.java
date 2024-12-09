@@ -166,7 +166,7 @@ public class SystemTestUtils {
 		}
 	}
 
-	private interface AgentService {
+	public interface AgentService {
 		/** Dumps coverage */
 		@POST("/dump")
 		Call<Void> dump();

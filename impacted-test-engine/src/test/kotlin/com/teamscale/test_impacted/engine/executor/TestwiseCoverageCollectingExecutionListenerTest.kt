@@ -11,7 +11,6 @@ import org.junit.platform.engine.UniqueId
 import org.mockito.kotlin.*
 import java.util.*
 
-@Suppress("INLINE_FROM_HIGHER_PLATFORM")
 /** Tests for [TestwiseCoverageCollectingExecutionListener].  */
 internal class TestwiseCoverageCollectingExecutionListenerTest {
 
