@@ -32,9 +32,6 @@ public class FilePatternResolver {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
-	public FilePatternResolver() {
-	}
-
 	/**
 	 * Interprets the given pattern as an Ant pattern and resolves it to one existing {@link Path}. If the given path is
 	 * relative, it is resolved relative to the current working directory. If more than one file matches the pattern,

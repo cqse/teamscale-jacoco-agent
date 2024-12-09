@@ -37,7 +37,7 @@ import static com.teamscale.jacoco.agent.logging.LoggingUtils.getLoggerContext;
 /** Container class for the premain entry point for the agent. */
 public class PreMain {
 
-	private static final Logger logger = LoggingUtils.getLogger(PreMain.class);
+	private static final Logger LOGGER = LoggingUtils.getLogger(PreMain.class);
 
 	private static LoggingUtils.LoggingResources loggingResources = null;
 
@@ -82,7 +82,7 @@ public class PreMain {
 
 		Logger logger = LoggingUtils.getLogger(Agent.class);
 
-		logger.info("Teamscale Java profiler version " + AgentUtils.VERSION);
+		logger.info("Teamscale Java profiler version {}", AgentUtils.VERSION);
 		logger.info("Starting JaCoCo's agent");
 		JacocoAgentOptionsBuilder agentBuilder = new JacocoAgentOptionsBuilder(agentOptions);
 		JaCoCoPreMain.premain(agentBuilder.createJacocoAgentOptions(), instrumentation, logger);
@@ -101,15 +101,15 @@ public class PreMain {
 		List<String> javaAgents = CollectionUtils.filter(ManagementFactory.getRuntimeMXBean().getInputArguments(),
 				s -> s.contains("-javaagent"));
 		if (javaAgents.size() > 1) {
-			logger.warn("Using multiple java agents could interfere with coverage recording.");
+			LOGGER.warn("Using multiple java agents could interfere with coverage recording.");
 		}
 		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
-			logger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
+			LOGGER.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
 		}
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
 		if (credentials == null) {
-			logger.warn("Did not find a teamscale.properties file!");
+			LOGGER.warn("Did not find a teamscale.properties file!");
 		}
 		AgentOptions agentOptions;
 		try {
@@ -139,7 +139,7 @@ public class PreMain {
 			initializeDebugLogging(agentOptions);
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
-			logger.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
+			LOGGER.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
 		}
 
 		if (agentOptions.getTeamscaleServerOptions().isConfiguredForServerConnection()) {
@@ -173,9 +173,9 @@ public class PreMain {
 		loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
 		Path logDirectory = Paths.get(new DebugLogDirectoryPropertyDefiner().getPropertyValue());
 		if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
-			logger.info("Logging to " + logDirectory);
+			LOGGER.info("Logging to " + logDirectory);
 		} else {
-			logger.warn("Could not create " + logDirectory + ". Logging to console only.");
+			LOGGER.warn("Could not create " + logDirectory + ". Logging to console only.");
 		}
 	}
 
@@ -232,7 +232,7 @@ public class PreMain {
 	 * Log the error and also print it to System Error, as the error might prevent the initialization of a real logger.
 	 */
 	private static void logAndPrintError(Exception e, String message) {
-		logger.error(message,
+		LOGGER.error(message,
 				e);
 		System.err.println(message);
 	}

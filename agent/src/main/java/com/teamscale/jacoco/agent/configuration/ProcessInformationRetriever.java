@@ -16,9 +16,6 @@ public class ProcessInformationRetriever {
 
 	private final Logger logger = LoggingUtils.getLogger(this);
 
-	public ProcessInformationRetriever() {
-	}
-
 	/**
 	 * Retrieves the process information, including the host name and process ID.
 	 */
