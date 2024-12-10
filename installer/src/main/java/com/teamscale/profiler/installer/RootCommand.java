@@ -16,10 +16,10 @@ import picocli.CommandLine;
 		description = "Installs or uninstalls the profiler system-wide. Must be run as root/Administrator.")
 public class RootCommand {
 
-	/** Exit code for programming errors, i.e. bugs the user should report. */
+	/** Exit code for programming errors, i.e., bugs the user should report. */
 	public static final int EXIT_CODE_PROGRAMMING_ERROR = 3;
 
-	/** Exit code for permission errors, i.e. the user likely needs to run the installer as root. */
+	/** Exit code for permission errors, i.e., the user likely needs to run the installer as root. */
 	public static final int EXIT_CODE_PERMISSION_ERROR = 4;
 
 	/** Exit code for all other errors. */
