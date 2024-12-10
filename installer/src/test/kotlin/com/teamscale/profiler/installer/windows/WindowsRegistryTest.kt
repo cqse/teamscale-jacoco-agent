@@ -21,19 +21,19 @@ internal class WindowsRegistryTest {
 	@Test
 	@Throws(Exception::class)
 	fun testAllFunctions() {
-		Assertions.assertThat(WindowsRegistry.INSTANCE.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
+		Assertions.assertThat(WindowsRegistry.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
 			.isNull()
 
-		WindowsRegistry.INSTANCE.setHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE, "foobar")
-		Assertions.assertThat(WindowsRegistry.INSTANCE.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
+		WindowsRegistry.setHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE, "foobar")
+		Assertions.assertThat(WindowsRegistry.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
 			.isEqualTo("foobar")
 
-		WindowsRegistry.INSTANCE.setHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE, "goo")
-		Assertions.assertThat(WindowsRegistry.INSTANCE.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
+		WindowsRegistry.setHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE, "goo")
+		Assertions.assertThat(WindowsRegistry.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
 			.isEqualTo("goo")
 
-		WindowsRegistry.INSTANCE.deleteHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE)
-		Assertions.assertThat(WindowsRegistry.INSTANCE.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
+		WindowsRegistry.deleteHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE)
+		Assertions.assertThat(WindowsRegistry.getHklmValue(WindowsRegistry.ENVIRONMENT_REGISTRY_KEY, VARIABLE))
 			.isNull()
 	}
 

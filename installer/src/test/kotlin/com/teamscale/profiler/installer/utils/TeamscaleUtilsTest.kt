@@ -2,6 +2,7 @@ package com.teamscale.profiler.installer.utils
 
 import com.teamscale.profiler.installer.FatalInstallerError
 import com.teamscale.profiler.installer.TeamscaleCredentials
+import com.teamscale.profiler.installer.utils.TeamscaleUtils.checkTeamscaleConnection
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
@@ -30,7 +31,7 @@ internal class TeamscaleUtilsTest {
 
 	@Throws(FatalInstallerError::class)
 	private fun checkTeamscaleConnection(url: String) {
-		TeamscaleUtils.checkTeamscaleConnection(TeamscaleCredentials(url.toHttpUrl(), "user", "key"))
+		TeamscaleCredentials(url.toHttpUrl(), "user", "key").checkTeamscaleConnection()
 	}
 
 	companion object {

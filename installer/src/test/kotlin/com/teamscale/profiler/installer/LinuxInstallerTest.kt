@@ -167,17 +167,19 @@ internal class LinuxInstallerTest {
 
 	@Throws(FatalInstallerError::class)
 	private fun install() {
-		Installer(sourceDirectory, targetDirectory, etcDirectory, false, WindowsRegistry.INSTANCE).runInstall(
+		Installer(sourceDirectory, targetDirectory, etcDirectory, false, WindowsRegistry).runInstall(
 			TeamscaleCredentials(TEAMSCALE_URL.toHttpUrl(), "user", "accesskey")
 		)
 	}
 
-	private fun uninstall(): UninstallerErrorReporter {
-		return Installer(
-			sourceDirectory, targetDirectory,
-			etcDirectory, false, WindowsRegistry.INSTANCE
+	private fun uninstall() =
+		Installer(
+			sourceDirectory,
+			targetDirectory,
+			etcDirectory,
+			false,
+			WindowsRegistry
 		).runUninstall()
-	}
 
 	companion object {
 		private const val TEAMSCALE_PORT = 8059

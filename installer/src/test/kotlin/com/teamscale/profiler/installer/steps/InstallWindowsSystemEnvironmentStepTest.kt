@@ -4,6 +4,8 @@ import com.teamscale.profiler.installer.FatalInstallerError
 import com.teamscale.profiler.installer.Installer.UninstallerErrorReporter
 import com.teamscale.profiler.installer.JvmEnvironmentMap
 import com.teamscale.profiler.installer.TeamscaleCredentials
+import com.teamscale.profiler.installer.steps.InstallWindowsSystemEnvironmentStep.Companion.addProfiler
+import com.teamscale.profiler.installer.steps.InstallWindowsSystemEnvironmentStep.Companion.removeProfiler
 import com.teamscale.profiler.installer.utils.MockRegistry
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.assertj.core.api.Assertions
@@ -43,29 +45,29 @@ internal class InstallWindowsSystemEnvironmentStepTest {
 	fun addAndRemoveProfiler() {
 		val registry = MockRegistry()
 
-		InstallWindowsSystemEnvironmentStep.addProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry)
+		registry.addProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar")
 		Assertions.assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo("-javaagent:foo.jar")
 
-		InstallWindowsSystemEnvironmentStep.removeProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry)
+		registry.removeProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar")
 		Assertions.assertThat(registry.getVariable("_JAVA_OPTIONS")).isNullOrEmpty()
 	}
 
 	@Test
 	@Throws(FatalInstallerError::class)
 	fun addAndRemoveProfilerWithPreviousValue() {
-		val registry = MockRegistry()
+		MockRegistry().apply {
+			setVariable("_JAVA_OPTIONS", "-javaagent:other.jar")
+			addProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar")
+			Assertions.assertThat(getVariable("_JAVA_OPTIONS"))
+				.isEqualTo("-javaagent:foo.jar -javaagent:other.jar")
 
-		registry.setVariable("_JAVA_OPTIONS", "-javaagent:other.jar")
-		InstallWindowsSystemEnvironmentStep.addProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry)
-		Assertions.assertThat(registry.getVariable("_JAVA_OPTIONS"))
-			.isEqualTo("-javaagent:foo.jar -javaagent:other.jar")
+			removeProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar")
+			Assertions.assertThat(getVariable("_JAVA_OPTIONS")).isEqualTo("-javaagent:other.jar")
 
-		InstallWindowsSystemEnvironmentStep.removeProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry)
-		Assertions.assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo("-javaagent:other.jar")
-
-		// removing it again should do nothing
-		InstallWindowsSystemEnvironmentStep.removeProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar", registry)
-		Assertions.assertThat(registry.getVariable("_JAVA_OPTIONS")).isEqualTo("-javaagent:other.jar")
+			// removing it again should do nothing
+			removeProfiler("_JAVA_OPTIONS", "-javaagent:foo.jar")
+			Assertions.assertThat(getVariable("_JAVA_OPTIONS")).isEqualTo("-javaagent:other.jar")
+		}
 	}
 
 	companion object {
