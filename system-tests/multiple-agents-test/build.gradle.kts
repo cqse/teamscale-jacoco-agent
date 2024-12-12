@@ -6,7 +6,7 @@ val jacocoAgent by configurations.creating
 
 dependencies {
     // This version should differ from the version we currently use for the Teamscale JaCoCo agent itself
-    jacocoAgent("org.jacoco:org.jacoco.agent:0.7.8:runtime")
+    jacocoAgent("org.jacoco:org.jacoco.agent:0.8.10:runtime")
 }
 
 tasks.test {
@@ -19,10 +19,6 @@ tasks.test {
         delete(logFilePath)
     }
 
-    teamscaleAgent(
-        mapOf(
-            "debug" to logFilePath
-        )
-    )
+    teamscaleAgent(mapOf("debug" to logFilePath))
 }
 
