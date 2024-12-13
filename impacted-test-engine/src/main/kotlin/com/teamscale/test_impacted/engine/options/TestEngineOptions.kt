@@ -17,28 +17,28 @@ class TestEngineOptions {
 	/** The server options. May not be null.  */
 	private var serverOptions: ServerOptions? = null
 
-	/** @see .partition
+	/** The partition to upload test details to and get impacted tests from. If null, all partitions are used.
+	 * @see [partition]
 	 */
-	/** The partition to upload test details to and get impacted tests from. If null all partitions are used.  */
 	var partition: String? = null
 		private set
 
-	/** @see .runAllTests
+	/** Executes all tests, not only impacted ones if set. Defaults to false.
+	 * @see [runAllTests]
 	 */
-	/** Executes all tests, not only impacted ones if set. Defaults to false.  */
 	private var runAllTests = false
 
 	/** Executes only impacted tests, not all ones if set. Defaults to true.  */
 	private var runImpacted = true
 
-	/** @see .includeAddedTests
+	/** Includes added tests in the list of tests to execute. Defaults to true
+	 * @see [includeAddedTests]
 	 */
-	/** Includes added tests in the list of tests to execute. Defaults to true  */
 	private var includeAddedTests = true
 
-	/** @see .includeFailedAndSkipped
+	/** Includes failed and skipped tests in the list of tests to execute. Defaults to true
+	 * @see [includeFailedAndSkipped]
 	 */
-	/** Includes failed and skipped tests in the list of tests to execute. Defaults to true  */
 	private var includeFailedAndSkipped = true
 
 	/**
@@ -48,7 +48,7 @@ class TestEngineOptions {
 	private var baseline: String? = null
 
 	/**
-	 * Can be used instead of [.baseline] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
+	 * Can be used instead of [baseline] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
 	 */
 	private var baselineRevision: String? = null
 
@@ -56,7 +56,7 @@ class TestEngineOptions {
 	private var endCommit: CommitDescriptor? = null
 
 	/**
-	 * Can be used instead of [.endCommit] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
+	 * Can be used instead of [endCommit] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
 	 */
 	private var endRevision: String? = null
 

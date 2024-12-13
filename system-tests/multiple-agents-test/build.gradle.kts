@@ -2,7 +2,7 @@ plugins {
     com.teamscale.`system-test-convention`
 }
 
-val jacocoAgent by configurations.creating
+val jacocoAgent: Configuration by configurations.creating
 
 dependencies {
     // This version should differ from the version we currently use for the Teamscale JaCoCo agent itself
