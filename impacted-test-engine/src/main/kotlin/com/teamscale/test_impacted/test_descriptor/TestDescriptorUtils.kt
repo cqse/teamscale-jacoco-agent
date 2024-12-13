@@ -99,7 +99,7 @@ object TestDescriptorUtils {
 	@JvmStatic
 	fun getAvailableTests(
 		rootTestDescriptor: TestDescriptor,
-		partition: String?
+		partition: String
 	): AvailableTests {
 		val availableTests = AvailableTests()
 

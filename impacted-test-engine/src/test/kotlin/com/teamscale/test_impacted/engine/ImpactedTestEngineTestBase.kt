@@ -22,6 +22,11 @@ abstract class ImpactedTestEngineTestBase {
 
 	@Test
 	fun testEngineExecution() {
+		whenever(impactedTestsProvider.getImpactedTestsFromTeamscale(any()))
+			.thenReturn(impactedTests)
+		whenever(impactedTestsProvider.partition)
+			.thenReturn("partition")
+
 		val testEngine = createInternalImpactedTestEngine(engines)
 
 		val engineDescriptor = testEngine
@@ -33,8 +38,6 @@ abstract class ImpactedTestEngineTestBase {
 			.thenReturn(executionListener)
 		whenever(executionRequest.rootTestDescriptor)
 			.thenReturn(engineDescriptor)
-		whenever(impactedTestsProvider.getImpactedTestsFromTeamscale(any()))
-			.thenReturn(impactedTests)
 
 		testEngine.execute(executionRequest)
 
