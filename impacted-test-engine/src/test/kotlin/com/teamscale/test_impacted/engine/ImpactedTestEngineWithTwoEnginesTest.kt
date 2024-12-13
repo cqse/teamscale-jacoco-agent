@@ -6,8 +6,9 @@ import com.teamscale.test_impacted.engine.executor.DummyEngine
 import com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver
 import org.junit.platform.engine.*
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 import java.util.*
 
 /** Test setup for a mixture of impacted and no impacted tests and two test engines.  */
@@ -68,16 +69,12 @@ internal class ImpactedTestEngineWithTwoEnginesTest : ImpactedTestEngineTestBase
 
 	private val impactedTestCase1 = SimpleTestDescriptor.testCase(impactedTestCase1Id)
 	private val nonImpactedTestCase1 = SimpleTestDescriptor.testCase(nonImpactedTestCase1Id)
-	private val firstTestClass = SimpleTestDescriptor.testContainer(
-		firstTestClassId,
-		impactedTestCase1, nonImpactedTestCase1
-	)
+	private val firstTestClass = SimpleTestDescriptor.testContainer(firstTestClassId, impactedTestCase1, nonImpactedTestCase1)
 
 	private val impactedTestCase2 = SimpleTestDescriptor.testCase(impactedTestCase2Id)
 	private val nonImpactedTestCase2 = SimpleTestDescriptor.testCase(nonImpactedTestCase2Id)
 	private val ignoredTestClass = SimpleTestDescriptor.testContainer(
-		ignoredTestClassId,
-		impactedTestCase2, nonImpactedTestCase2
+		ignoredTestClassId, impactedTestCase2, nonImpactedTestCase2
 	).skip()
 
 	private val failed = TestExecutionResult.failed(NullPointerException())
@@ -86,7 +83,8 @@ internal class ImpactedTestEngineWithTwoEnginesTest : ImpactedTestEngineTestBase
 		SimpleTestDescriptor.testCase(skippedImpactedTestCaseId).skip()
 	private val secondTestClass = SimpleTestDescriptor.testContainer(
 		secondTestClassId,
-		impactedTestCase3, skippedImpactedTestCase
+		impactedTestCase3,
+		skippedImpactedTestCase
 	)
 
 	private val impactedTestCase4 = SimpleTestDescriptor.testCase(impactedTestCase4Id)
@@ -129,46 +127,43 @@ internal class ImpactedTestEngineWithTwoEnginesTest : ImpactedTestEngineTestBase
 
 	override fun verifyCallbacks(executionListener: EngineExecutionListener) {
 		// Start of engine 1
-		Mockito.verify(executionListener).executionStarted(testEngine1Root)
+		verify(executionListener).executionStarted(testEngine1Root)
 
 		// Execute FirstTestClass.
-		Mockito.verify(executionListener).executionStarted(firstTestClass)
-		Mockito.verify(executionListener).executionStarted(impactedTestCase1)
-		Mockito.verify(executionListener)
-			.executionFinished(ArgumentMatchers.eq(impactedTestCase1), ArgumentMatchers.any())
-		Mockito.verify(executionListener).executionFinished(ArgumentMatchers.eq(firstTestClass), ArgumentMatchers.any())
+		verify(executionListener).executionStarted(firstTestClass)
+		verify(executionListener).executionStarted(impactedTestCase1)
+		verify(executionListener)
+			.executionFinished(eq(impactedTestCase1), any())
+		verify(executionListener).executionFinished(eq(firstTestClass), any())
 
 		// Execute IgnoredTestClass.
-		Mockito.verify(executionListener).executionStarted(ignoredTestClass)
-		Mockito.verify(executionListener)
-			.executionSkipped(ArgumentMatchers.eq(impactedTestCase2), ArgumentMatchers.any())
-		Mockito.verify(executionListener).executionFinished(ignoredTestClass, TestExecutionResult.successful())
+		verify(executionListener).executionStarted(ignoredTestClass)
+		verify(executionListener)
+			.executionSkipped(eq(impactedTestCase2), any())
+		verify(executionListener).executionFinished(ignoredTestClass, TestExecutionResult.successful())
 
 		// Execute SecondTestClass.
-		Mockito.verify(executionListener).executionStarted(secondTestClass)
-		Mockito.verify(executionListener).executionStarted(ArgumentMatchers.eq(impactedTestCase3))
-		Mockito.verify(executionListener).executionFinished(
-			impactedTestCase3,
-			failed
-		)
-		Mockito.verify(executionListener)
-			.executionSkipped(ArgumentMatchers.eq(skippedImpactedTestCase), ArgumentMatchers.any())
-		Mockito.verify(executionListener).executionFinished(secondTestClass, TestExecutionResult.successful())
+		verify(executionListener).executionStarted(secondTestClass)
+		verify(executionListener).executionStarted(eq(impactedTestCase3))
+		verify(executionListener).executionFinished(impactedTestCase3, failed)
+		verify(executionListener)
+			.executionSkipped(eq(skippedImpactedTestCase), any())
+		verify(executionListener).executionFinished(secondTestClass, TestExecutionResult.successful())
 
 		// Finish test engine 1
-		Mockito.verify(executionListener).executionFinished(testEngine1Root, TestExecutionResult.successful())
+		verify(executionListener).executionFinished(testEngine1Root, TestExecutionResult.successful())
 
 		// Start of engine 2
-		Mockito.verify(executionListener).executionStarted(testEngine2Root)
+		verify(executionListener).executionStarted(testEngine2Root)
 
 		// Execute OtherTestClass.
-		Mockito.verify(executionListener).executionStarted(otherTestClass)
-		Mockito.verify(executionListener).executionStarted(impactedTestCase4)
-		Mockito.verify(executionListener).executionFinished(impactedTestCase4, TestExecutionResult.successful())
-		Mockito.verify(executionListener).executionFinished(otherTestClass, TestExecutionResult.successful())
+		verify(executionListener).executionStarted(otherTestClass)
+		verify(executionListener).executionStarted(impactedTestCase4)
+		verify(executionListener).executionFinished(impactedTestCase4, TestExecutionResult.successful())
+		verify(executionListener).executionFinished(otherTestClass, TestExecutionResult.successful())
 
 		// Finish test engine 2
-		Mockito.verify(executionListener).executionFinished(testEngine2Root, TestExecutionResult.successful())
+		verify(executionListener).executionFinished(testEngine2Root, TestExecutionResult.successful())
 	}
 
 	companion object {

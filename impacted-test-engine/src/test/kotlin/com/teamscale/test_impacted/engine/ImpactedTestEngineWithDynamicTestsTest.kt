@@ -6,7 +6,7 @@ import com.teamscale.test_impacted.engine.executor.DummyEngine
 import com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver
 import org.junit.platform.engine.*
-import org.mockito.Mockito
+import org.mockito.kotlin.verify
 
 /** Test setup for JUnit Jupiter dynamic tests.  */
 internal class ImpactedTestEngineWithDynamicTestsTest : ImpactedTestEngineTestBase() {
@@ -47,20 +47,20 @@ internal class ImpactedTestEngineWithDynamicTestsTest : ImpactedTestEngineTestBa
 
 	override fun verifyCallbacks(executionListener: EngineExecutionListener) {
 		// First the parents test descriptors are started in order.
-		Mockito.verify(executionListener).executionStarted(testRoot)
-		Mockito.verify(executionListener).executionStarted(dynamicTestClassCase)
-		Mockito.verify(executionListener).executionStarted(dynamicTestCase)
+		verify(executionListener).executionStarted(testRoot)
+		verify(executionListener).executionStarted(dynamicTestClassCase)
+		verify(executionListener).executionStarted(dynamicTestCase)
 
 		// Test case is added dynamically and executed.
 		dynamicTestCase.addChild(dynamicallyRegisteredTestCase)
-		Mockito.verify(executionListener).dynamicTestRegistered(dynamicallyRegisteredTestCase)
-		Mockito.verify(executionListener).executionStarted(dynamicallyRegisteredTestCase)
-		Mockito.verify(executionListener)
+		verify(executionListener).dynamicTestRegistered(dynamicallyRegisteredTestCase)
+		verify(executionListener).executionStarted(dynamicallyRegisteredTestCase)
+		verify(executionListener)
 			.executionFinished(dynamicallyRegisteredTestCase, TestExecutionResult.successful())
 
 		// Parent test descriptors are also finished.
-		Mockito.verify(executionListener).executionFinished(dynamicTestCase, TestExecutionResult.successful())
-		Mockito.verify(executionListener).executionFinished(dynamicTestClassCase, TestExecutionResult.successful())
-		Mockito.verify(executionListener).executionFinished(testRoot, TestExecutionResult.successful())
+		verify(executionListener).executionFinished(dynamicTestCase, TestExecutionResult.successful())
+		verify(executionListener).executionFinished(dynamicTestClassCase, TestExecutionResult.successful())
+		verify(executionListener).executionFinished(testRoot, TestExecutionResult.successful())
 	}
 }

@@ -4,7 +4,6 @@ import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
-import java.util.*
 
 /** A basic implementation of a [TestDescriptor] that can be used during tests.  */
 class SimpleTestDescriptor private constructor(

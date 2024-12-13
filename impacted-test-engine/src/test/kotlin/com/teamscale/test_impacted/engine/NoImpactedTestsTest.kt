@@ -5,8 +5,6 @@ import com.teamscale.test_impacted.engine.executor.DummyEngine
 import com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver
 import org.junit.platform.engine.EngineExecutionListener
-import org.junit.platform.engine.TestDescriptor
-import org.junit.platform.engine.TestEngine
 import org.junit.platform.engine.UniqueId
 
 /** Test setup where no test is impacted.  */

@@ -7,9 +7,8 @@ import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.platform.engine.*
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.*
 
 /** Base class for testing specific scenarios in the impacted test engine.  */
 abstract class ImpactedTestEngineTestBase {
@@ -30,11 +29,11 @@ abstract class ImpactedTestEngineTestBase {
 		Assertions.assertThat(engineDescriptor.uniqueId)
 			.isEqualTo(UniqueId.forEngine(ImpactedTestEngine.ENGINE_ID))
 
-		Mockito.`when`(executionRequest.engineExecutionListener)
+		whenever(executionRequest.engineExecutionListener)
 			.thenReturn(executionListener)
-		Mockito.`when`(executionRequest.rootTestDescriptor)
+		whenever(executionRequest.rootTestDescriptor)
 			.thenReturn(engineDescriptor)
-		Mockito.`when`(impactedTestsProvider.getImpactedTestsFromTeamscale(ArgumentMatchers.any()))
+		whenever(impactedTestsProvider.getImpactedTestsFromTeamscale(any()))
 			.thenReturn(impactedTests)
 
 		testEngine.execute(executionRequest)
@@ -42,11 +41,11 @@ abstract class ImpactedTestEngineTestBase {
 		verifyCallbacks(executionListener)
 
 		// Ensure test data is written.
-		Mockito.verify(testDataWriter).dumpTestDetails(ArgumentMatchers.any())
-		Mockito.verify(testDataWriter).dumpTestExecutions(ArgumentMatchers.any())
+		verify(testDataWriter).dumpTestDetails(any())
+		verify(testDataWriter).dumpTestExecutions(any())
 
-		Mockito.verifyNoMoreInteractions(executionListener)
-		Mockito.verifyNoMoreInteractions(testDataWriter)
+		verifyNoMoreInteractions(executionListener)
+		verifyNoMoreInteractions(testDataWriter)
 	}
 
 	/** Returns the available engines that should be assumed by the impacted test engine.  */
@@ -60,10 +59,10 @@ abstract class ImpactedTestEngineTestBase {
 
 	private fun createInternalImpactedTestEngine(engines: List<TestEngine>): InternalImpactedTestEngine {
 		engines.forEach { engine ->
-			Mockito.`when`(testEngineRegistry.getTestEngine(ArgumentMatchers.eq(engine.id)))
+			whenever(testEngineRegistry.getTestEngine(eq(engine.id)))
 				.thenReturn(engine)
 		}
-		Mockito.`when`<Iterator<TestEngine>>(testEngineRegistry.iterator()).thenReturn(engines.iterator())
+		whenever<Iterator<TestEngine>>(testEngineRegistry.iterator()).thenReturn(engines.iterator())
 
 		return InternalImpactedTestEngine(
 			ImpactedTestEngineConfiguration(

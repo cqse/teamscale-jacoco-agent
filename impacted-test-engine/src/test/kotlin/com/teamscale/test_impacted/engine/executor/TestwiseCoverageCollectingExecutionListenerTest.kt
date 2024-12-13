@@ -13,11 +13,8 @@ import java.util.*
 
 /** Tests for [TestwiseCoverageCollectingExecutionListener].  */
 internal class TestwiseCoverageCollectingExecutionListenerTest {
-
 	private val mockApi = mock<TeamscaleAgentNotifier>()
-
 	private val resolver = mock<ITestDescriptorResolver>()
-
 	private val executionListenerMock = mock<EngineExecutionListener>()
 
 	private val executionListener = TestwiseCoverageCollectingExecutionListener(
