@@ -20,7 +20,7 @@ open class ImpactedTestsProvider(
 	private val endCommit: CommitDescriptor,
 	private val endRevision: String,
 	private val repository: String,
-	@JvmField val partition: String,
+	val partition: String,
 	private val includeNonImpacted: Boolean,
 	private val includeAddedTests: Boolean,
 	private val includeFailedAndSkipped: Boolean
@@ -36,8 +36,7 @@ open class ImpactedTestsProvider(
 			val response = client
 				.getImpactedTests(
 					availableTestDetails, baseline, baselineRevision, endCommit, endRevision, repository,
-					listOf(partition),
-					includeNonImpacted, includeAddedTests, includeFailedAndSkipped
+					listOf(partition), includeNonImpacted, includeAddedTests, includeFailedAndSkipped
 				)
 
 			if (response.isSuccessful) {
@@ -75,7 +74,7 @@ open class ImpactedTestsProvider(
 		availableTestDetails: List<ClusteredTestDetails>
 	): Boolean {
 		val returnedTests = testClusters.stream().mapToLong {
-			it.tests!!.size.toLong()
+			it.tests?.size?.toLong() ?: 0
 		}.sum()
 		if (!includeNonImpacted) {
 			logger.info { "Received $returnedTests impacted tests of ${availableTestDetails.size} available tests." }

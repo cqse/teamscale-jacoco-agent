@@ -1,7 +1,6 @@
 package com.teamscale.test_impacted.engine
 
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingExecutionListener
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorResolverRegistry.getTestDescriptorResolver
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.getAvailableTests

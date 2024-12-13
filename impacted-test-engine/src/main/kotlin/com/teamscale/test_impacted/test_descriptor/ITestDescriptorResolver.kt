@@ -12,8 +12,8 @@ interface ITestDescriptorResolver {
 	fun getClusterId(descriptor: TestDescriptor): Optional<String>
 
 	/**
-	 * Returns the [org.junit.platform.engine.TestEngine.getId] of the [org.junit.platform.engine.TestEngine] to use this [ITestDescriptorResolver]
-	 * for.
+	 * Returns the [org.junit.platform.engine.TestEngine.getId] of the [org.junit.platform.engine.TestEngine]
+	 * to use this [ITestDescriptorResolver] for.
 	 */
 	val engineId: String
 

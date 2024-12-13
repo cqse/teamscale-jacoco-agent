@@ -62,7 +62,7 @@ abstract class ImpactedTestEngineTestBase {
 			whenever(testEngineRegistry.getTestEngine(eq(engine.id)))
 				.thenReturn(engine)
 		}
-		whenever<Iterator<TestEngine>>(testEngineRegistry.iterator()).thenReturn(engines.iterator())
+		whenever(testEngineRegistry.iterator()).thenReturn(engines.iterator())
 
 		return InternalImpactedTestEngine(
 			ImpactedTestEngineConfiguration(
