@@ -6,6 +6,7 @@ import com.teamscale.test_impacted.engine.executor.SimpleTestDescriptor
 import com.teamscale.test_impacted.test_descriptor.JUnitJupiterTestDescriptorResolver
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.UniqueId
+import org.mockito.kotlin.*
 
 /** Test setup where no test is impacted.  */
 internal class NoImpactedTestsTest : ImpactedTestEngineTestBase() {
@@ -30,7 +31,18 @@ internal class NoImpactedTestsTest : ImpactedTestEngineTestBase() {
 	override val engines = listOf(DummyEngine(testEngine1Root))
 	override val impactedTests = emptyList<PrioritizableTestCluster>()
 
-	override fun verifyCallbacks(executionListener: EngineExecutionListener) {}
+	override fun verifyCallbacks(executionListener: EngineExecutionListener) {
+		// Verify that the root container (engine) starts and finishes
+		verify(executionListener).executionStarted(testEngine1Root)
+		verify(executionListener).executionFinished(eq(testEngine1Root), any())
+
+		// Verify that each non-impacted test starts and finishes correctly
+		verify(executionListener).executionStarted(firstTestClass)
+		verify(executionListener).executionFinished(eq(firstTestClass), any())
+
+		verify(executionListener).executionStarted(nonImpactedTestCase1)
+		verify(executionListener).executionFinished(eq(nonImpactedTestCase1), any())
+	}
 
 	companion object {
 		private const val FIRST_TEST_CLASS = "FirstTestClass"
