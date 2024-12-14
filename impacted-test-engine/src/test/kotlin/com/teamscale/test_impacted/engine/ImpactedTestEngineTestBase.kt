@@ -7,7 +7,6 @@ import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.platform.engine.*
-import org.mockito.Mockito.mock
 import org.mockito.kotlin.*
 
 /** Base class for testing specific scenarios in the impacted test engine.  */
