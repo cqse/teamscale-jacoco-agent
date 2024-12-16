@@ -235,6 +235,5 @@ public class PreMain {
 		LOGGER.error(message,
 				e);
 		System.err.println(message);
-		// TODO
 	}
 }
