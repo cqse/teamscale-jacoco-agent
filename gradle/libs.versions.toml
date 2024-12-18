@@ -1,6 +1,6 @@
 [versions]
 jetty = "9.4.56.v20240826"
-jersey = "2.45"
+jersey = "2.46"
 jackson = "2.18.2"
 # When upgrading JaCoCo to a newer version make sure to
 # check the comment in the OpenAnalyzer.java, JaCoCoPreMain.java and CachingInstructionsBuilder.java
