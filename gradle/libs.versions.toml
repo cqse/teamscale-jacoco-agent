@@ -76,7 +76,7 @@ jsonassert = { module = "org.skyscreamer:jsonassert", version = "1.5.3" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 
-springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.0" }
+springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.1" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }
