@@ -5,11 +5,9 @@ import com.teamscale.report.ReportUtils.writeTestExecutionReport
 import com.teamscale.report.ReportUtils.writeTestListReport
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import java.io.File
 import java.io.IOException
 import java.util.logging.Level
-import java.util.logging.Logger
 
 /** Class for writing test data to a report directory.  */
 open class TestDataWriter(private val reportDirectory: File) {
@@ -19,7 +17,7 @@ open class TestDataWriter(private val reportDirectory: File) {
 		try {
 			writeTestExecutionReport(file, testExecutions)
 		} catch (e: IOException) {
-			LOGGER.log(Level.SEVERE, e) { "Error while writing report to file: $file" }
+			LOG.log(Level.SEVERE, e) { "Error while writing report to file: $file" }
 		}
 	}
 
@@ -29,11 +27,11 @@ open class TestDataWriter(private val reportDirectory: File) {
 		try {
 			writeTestListReport(file, ArrayList(testDetails))
 		} catch (e: IOException) {
-			LOGGER.log(Level.SEVERE, e) { "Error while writing report to file: $file" }
+			LOG.log(Level.SEVERE, e) { "Error while writing report to file: $file" }
 		}
 	}
 
 	companion object {
-		private val LOGGER = createLogger()
+		private val LOG = createLogger()
 	}
 }

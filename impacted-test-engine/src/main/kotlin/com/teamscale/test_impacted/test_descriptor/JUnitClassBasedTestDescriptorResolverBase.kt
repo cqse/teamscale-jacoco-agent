@@ -6,7 +6,9 @@ import java.util.*
 
 /** Test descriptor resolver for JUnit based [org.junit.platform.engine.TestEngine]s.  */
 abstract class JUnitClassBasedTestDescriptorResolverBase : ITestDescriptorResolver {
-	private val LOGGER = createLogger()
+	companion object {
+		private val LOG = createLogger()
+	}
 
 	override fun getUniformPath(descriptor: TestDescriptor): Optional<String> =
 		descriptor.getClassName().map { className ->
@@ -18,7 +20,7 @@ abstract class JUnitClassBasedTestDescriptorResolverBase : ITestDescriptorResolv
 		val classSegmentName = descriptor.getClassName()
 
 		if (!classSegmentName.isPresent) {
-			LOGGER.severe {
+			LOG.severe {
 				"Falling back to unique ID as cluster id because class segment name could not be determined for test descriptor: $descriptor"
 			}
 			// Default to uniform path.

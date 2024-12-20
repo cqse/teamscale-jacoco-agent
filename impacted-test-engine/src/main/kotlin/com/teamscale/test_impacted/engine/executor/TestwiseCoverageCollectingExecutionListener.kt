@@ -24,7 +24,9 @@ class TestwiseCoverageCollectingExecutionListener(
 	private val testDescriptorResolver: ITestDescriptorResolver,
 	private val delegateEngineExecutionListener: EngineExecutionListener
 ) : EngineExecutionListener {
-	private val LOGGER = createLogger()
+	companion object {
+		private val LOG = createLogger()
+	}
 
 	/** List of tests that have been executed, skipped or failed.  */
 	val testExecutions = mutableListOf<TestExecution>()
@@ -151,7 +153,7 @@ class TestwiseCoverageCollectingExecutionListener(
 			)
 
 			else -> {
-				LOGGER.severe { "Got unexpected test execution result status: $status" }
+				LOG.severe { "Got unexpected test execution result status: $status" }
 				return null
 			}
 		}

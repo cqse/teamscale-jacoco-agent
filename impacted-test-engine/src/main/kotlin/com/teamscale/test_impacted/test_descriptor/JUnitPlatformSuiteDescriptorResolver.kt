@@ -1,7 +1,6 @@
 package com.teamscale.test_impacted.test_descriptor
 
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
 import java.util.*
@@ -25,7 +24,7 @@ class JUnitPlatformSuiteDescriptorResolver : ITestDescriptorResolver {
 		get() = "junit-platform-suite"
 
 	companion object {
-		private val LOGGER = createLogger()
+		private val LOG = createLogger()
 
 		/** Type of the unique id segment of a test descriptor representing a test suite  */
 		private const val SUITE_SEGMENT_TYPE: String = "suite"
@@ -36,7 +35,7 @@ class JUnitPlatformSuiteDescriptorResolver : ITestDescriptorResolver {
 		): Optional<String> {
 			val segments = uniqueId.segments
 			if (verifySegments(segments)) {
-				LOGGER.severe {
+				LOG.severe {
 					"Assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine] for junit-platform-suite tests. Using $uniqueId as $nameOfValueToExtractForLogs as fallback."
 				}
 				return Optional.of(uniqueId.toString())
@@ -49,7 +48,7 @@ class JUnitPlatformSuiteDescriptorResolver : ITestDescriptorResolver {
 				secondaryEngineSegments.first().value
 			)
 			if (descriptorResolver == null) {
-				LOGGER.severe {
+				LOG.severe {
 					"Cannot find a secondary engine nested under the junit-platform-suite engine (assuming structure [engine:junit-platform-suite]/[suite:mySuite]/[engine:anotherEngine]). Using $uniqueId as $nameOfValueToExtractForLogs as fallback."
 				}
 				return Optional.of(uniqueId.toString())
@@ -57,7 +56,7 @@ class JUnitPlatformSuiteDescriptorResolver : ITestDescriptorResolver {
 
 			val idOrUniformPath = uniformPathOrClusterIdExtractor(descriptorResolver)
 			if (!idOrUniformPath.isPresent) {
-				LOGGER.severe {
+				LOG.severe {
 					"Secondary test descriptor resolver for engine ${secondaryEngineSegments.first().value} was not able to resolve the $nameOfValueToExtractForLogs. Using $uniqueId as fallback."
 				}
 				return Optional.of(uniqueId.toString())

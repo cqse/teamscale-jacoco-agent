@@ -17,7 +17,7 @@ class ImpactedTestsSorter(private val impactedTestsProvider: ImpactedTestsProvid
 		val testClusters = impactedTestsProvider.getImpactedTestsFromTeamscale(availableTests.testList)
 
 		if (testClusters.isEmpty()) {
-			ImpactedTestEngine.LOGGER.fine { "Falling back to execute all!" }
+			ImpactedTestEngine.LOG.fine { "Falling back to execute all!" }
 			return
 		}
 
@@ -30,12 +30,12 @@ class ImpactedTestsSorter(private val impactedTestsProvider: ImpactedTestsProvid
 		allTests.forEach { test ->
 			val uniqueId = availableTests.convertToUniqueId(test)
 			if (!uniqueId.isPresent) {
-				ImpactedTestEngine.LOGGER.severe { "Falling back to execute all..." }
+				ImpactedTestEngine.LOG.severe { "Falling back to execute all..." }
 				return
 			}
 			val availableTest = testDescriptor.findByUniqueId(uniqueId.get())
 			if (!availableTest.isPresent) {
-				ImpactedTestEngine.LOGGER.severe { "Falling back to execute all..." }
+				ImpactedTestEngine.LOG.severe { "Falling back to execute all..." }
 				return
 			}
 			val descriptor = availableTest.get()

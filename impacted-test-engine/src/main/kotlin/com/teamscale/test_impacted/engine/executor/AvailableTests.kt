@@ -4,17 +4,17 @@ import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.client.PrioritizableTest
 import com.teamscale.client.StringUtils.levenshteinDistance
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.engine.UniqueId
 import java.util.*
-import java.util.logging.Logger
 
 /**
  * Holds a list of test details that can currently be executed. Provides the ability to translate uniform paths returned
  * by the Teamscale server to unique IDs used in JUnit Platform.
  */
 class AvailableTests {
-	private val LOGGER = createLogger()
+	companion object {
+		private val LOG = createLogger()
+	}
 
 	/**
 	 * A mapping from the tests uniform path (Teamscale internal representation) to unique id (JUnit internal
@@ -37,12 +37,12 @@ class AvailableTests {
 	fun convertToUniqueId(test: PrioritizableTest): Optional<UniqueId> {
 		val clusterUniqueId = uniformPathToUniqueIdMapping[test.testName]
 		if (clusterUniqueId == null) {
-			LOGGER.severe { "Retrieved invalid test '${test.testName}' from Teamscale server!" }
-			LOGGER.severe { "The following seem related:" }
+			LOG.severe { "Retrieved invalid test '${test.testName}' from Teamscale server!" }
+			LOG.severe { "The following seem related:" }
 			uniformPathToUniqueIdMapping.keys
 				.sortedBy { test.testName.levenshteinDistance(it) }
 				.take(5)
-				.forEach { LOGGER.severe { " - $it" } }
+				.forEach { LOG.severe { " - $it" } }
 		}
 		return Optional.ofNullable(clusterUniqueId)
 	}

@@ -1,7 +1,6 @@
 package com.teamscale.test_impacted.test_descriptor
 
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import org.junit.platform.commons.util.ClassLoaderUtils
 import java.util.*
 
@@ -10,7 +9,7 @@ import java.util.*
  * [ServiceLoader].
  */
 object TestDescriptorResolverRegistry {
-	private val LOGGER = createLogger()
+	private val LOG = createLogger()
 
 	private val TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID = mutableMapOf<String, ITestDescriptorResolver>()
 
@@ -37,7 +36,7 @@ object TestDescriptorResolverRegistry {
 	@JvmStatic
 	fun getTestDescriptorResolver(testEngineId: String): ITestDescriptorResolver? {
 		if (!TEST_DESCRIPTOR_RESOLVER_BY_ENGINE_ID.containsKey(testEngineId)) {
-			LOGGER.warning {
+			LOG.warning {
 				testEngineId + " is not officially supported! You can add support by " +
 						"implementing the ITestDescriptorResolver interface and making the implementation " +
 						"discoverable via the Java Service Loader mechanism!"

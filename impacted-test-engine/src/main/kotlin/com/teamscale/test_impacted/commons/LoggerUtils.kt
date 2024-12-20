@@ -55,14 +55,7 @@ object LoggerUtils {
 	}
 
 	/**
-	 * Returns a logger for the given class.
-	 */
-	@JvmStatic
-	fun getLogger(clazz: Class<*>) = Logger.getLogger(clazz.name)
-
-	/**
 	 * Creates a logger for the given class.
 	 */
-	@JvmStatic
 	fun Any.createLogger(): Logger = Logger.getLogger(this::class.java.name)
 }

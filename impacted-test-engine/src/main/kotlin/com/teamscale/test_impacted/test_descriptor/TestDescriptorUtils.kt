@@ -3,7 +3,6 @@ package com.teamscale.test_impacted.test_descriptor
 import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.test_impacted.commons.IndentingWriter
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
 import com.teamscale.test_impacted.engine.executor.AvailableTests
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
@@ -14,10 +13,9 @@ import java.util.stream.Stream
 
 /** Class containing utility methods for [TestDescriptor]s.  */
 object TestDescriptorUtils {
-	private val LOGGER = createLogger()
+	private val LOG = createLogger()
 
 	/** Returns the test descriptor as a formatted string with indented children.  */
-	@JvmStatic
 	fun getTestDescriptorAsString(testDescriptor: TestDescriptor): String {
 		val writer = IndentingWriter()
 		writer.printTestDescriptor(testDescriptor)
@@ -38,7 +36,6 @@ object TestDescriptorUtils {
 	 * either a regular test that was not dynamically generated or a test container that dynamically registers multiple
 	 * test cases.
 	 */
-	@JvmStatic
 	fun TestDescriptor.isRepresentative(): Boolean {
 		val isTestTemplateOrTestFactory = isTestTemplateOrTestFactory()
 		val isNonParameterizedTest = isTest && !parent.get().isTestTemplateOrTestFactory()
@@ -96,7 +93,6 @@ object TestDescriptorUtils {
 	}
 
 	/** Returns the [AvailableTests] contained within the root [TestDescriptor].  */
-	@JvmStatic
 	fun getAvailableTests(
 		rootTestDescriptor: TestDescriptor,
 		partition: String
@@ -107,7 +103,7 @@ object TestDescriptorUtils {
 			.forEach { testDescriptor ->
 				val engineId = testDescriptor.uniqueId.engineId
 				if (!engineId.isPresent) {
-					LOGGER.severe { "Unable to determine engine ID for $testDescriptor!" }
+					LOG.severe { "Unable to determine engine ID for $testDescriptor!" }
 					return@forEach
 				}
 
@@ -116,12 +112,12 @@ object TestDescriptorUtils {
 				val uniformPath = testDescriptorResolver.getUniformPath(testDescriptor)
 
 				if (!uniformPath.isPresent) {
-					LOGGER.severe { "Unable to determine uniform path for test descriptor: $testDescriptor" }
+					LOG.severe { "Unable to determine uniform path for test descriptor: $testDescriptor" }
 					return@forEach
 				}
 
 				if (!clusterId.isPresent) {
-					LOGGER.severe { "Unable to determine cluster id path for test descriptor: $testDescriptor" }
+					LOG.severe { "Unable to determine cluster id path for test descriptor: $testDescriptor" }
 					return@forEach
 				}
 

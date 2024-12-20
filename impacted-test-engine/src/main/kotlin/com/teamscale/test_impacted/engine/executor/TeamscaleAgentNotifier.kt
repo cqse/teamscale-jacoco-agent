@@ -17,7 +17,9 @@ open class TeamscaleAgentNotifier(
 	 */
 	private val partial: Boolean
 ) {
-	private val logger = createLogger()
+	companion object {
+		private val LOG = createLogger()
+	}
 
 	/** Reports the start of a test to the Teamscale JaCoCo agent.  */
 	open fun startTest(testUniformPath: String) {
@@ -26,7 +28,7 @@ open class TeamscaleAgentNotifier(
 				apiService.testStarted(testUniformPath.encodeUrl()).execute()
 			}
 		} catch (e: IOException) {
-			logger.log(
+			LOG.log(
 				Level.SEVERE, e
 			) { "Error while calling service api." }
 		}
@@ -44,7 +46,7 @@ open class TeamscaleAgentNotifier(
 				}
 			}
 		} catch (e: IOException) {
-			logger.log(
+			LOG.log(
 				Level.SEVERE, e
 			) { "Error contacting test wise coverage agent." }
 		}
@@ -57,7 +59,7 @@ open class TeamscaleAgentNotifier(
 				apiService.testRunFinished(partial).execute()
 			}
 		} catch (e: IOException) {
-			logger.log(
+			LOG.log(
 				Level.SEVERE, e
 			) { "Error contacting test wise coverage agent." }
 		}

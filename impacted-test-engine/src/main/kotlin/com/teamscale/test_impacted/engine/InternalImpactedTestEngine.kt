@@ -10,7 +10,6 @@ import org.junit.platform.engine.ExecutionRequest
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
-import java.util.logging.Logger
 
 /**
  * Test engine called internally to allow testing without needing a [ServiceLoader] for [TestEngine] setup.
@@ -31,10 +30,10 @@ internal class InternalImpactedTestEngine(
 	fun discover(discoveryRequest: EngineDiscoveryRequest?, uniqueId: UniqueId?): TestDescriptor {
 		val engineDescriptor = EngineDescriptor(uniqueId, "Teamscale Impacted Tests")
 
-		LOGGER.fine { "Starting test discovery for engine " + ImpactedTestEngine.ENGINE_ID }
+		LOG.fine { "Starting test discovery for engine " + ImpactedTestEngine.ENGINE_ID }
 
 		testEngineRegistry.forEach { delegateTestEngine ->
-			LOGGER.fine { "Starting test discovery for delegate engine: " + delegateTestEngine.id }
+			LOG.fine { "Starting test discovery for delegate engine: " + delegateTestEngine.id }
 			val delegateEngineDescriptor = delegateTestEngine.discover(
 				discoveryRequest,
 				UniqueId.forEngine(delegateTestEngine.id)
@@ -43,7 +42,7 @@ internal class InternalImpactedTestEngine(
 			engineDescriptor.addChild(delegateEngineDescriptor)
 		}
 
-		LOGGER.fine {
+		LOG.fine {
 			"Discovered test descriptor for engine ${ImpactedTestEngine.ENGINE_ID}:\n${
 				getTestDescriptorAsString(engineDescriptor)
 			}"
@@ -60,7 +59,7 @@ internal class InternalImpactedTestEngine(
 		val rootTestDescriptor = request.rootTestDescriptor
 		val availableTests = getAvailableTests(rootTestDescriptor, partition)
 
-		LOGGER.fine {
+		LOG.fine {
 			"Starting selection and sorting ${ImpactedTestEngine.ENGINE_ID}:\n${
 				getTestDescriptorAsString(rootTestDescriptor)
 			}"
@@ -68,7 +67,7 @@ internal class InternalImpactedTestEngine(
 
 		testSorter.selectAndSort(rootTestDescriptor)
 
-		LOGGER.fine {
+		LOG.fine {
 			"Starting execution of request for engine ${ImpactedTestEngine.ENGINE_ID}:\n${
 				getTestDescriptorAsString(rootTestDescriptor)
 			}"
@@ -85,7 +84,7 @@ internal class InternalImpactedTestEngine(
 		rootTestDescriptor.children.flatMap { engineTestDescriptor ->
 			val engineId = engineTestDescriptor.uniqueId.engineId
 			if (!engineId.isPresent) {
-				LOGGER.severe { "Engine ID for test descriptor $engineTestDescriptor not present. Skipping execution of the engine." }
+				LOG.severe { "Engine ID for test descriptor $engineTestDescriptor not present. Skipping execution of the engine." }
 				return@flatMap emptyList()
 			}
 
@@ -109,6 +108,6 @@ internal class InternalImpactedTestEngine(
 		}
 
 	companion object {
-		private val LOGGER: Logger = createLogger()
+		private val LOG = createLogger()
 	}
 }

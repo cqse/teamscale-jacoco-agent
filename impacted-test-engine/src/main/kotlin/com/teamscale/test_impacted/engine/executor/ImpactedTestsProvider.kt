@@ -15,24 +15,22 @@ import java.util.logging.Level
  */
 open class ImpactedTestsProvider(
 	private val client: TeamscaleClient,
-	private val baseline: String,
-	private val baselineRevision: String,
-	private val endCommit: CommitDescriptor,
-	private val endRevision: String,
-	private val repository: String,
+	private val baseline: String?,
+	private val baselineRevision: String?,
+	private val endCommit: CommitDescriptor?,
+	private val endRevision: String?,
+	private val repository: String?,
 	val partition: String,
 	private val includeNonImpacted: Boolean,
 	private val includeAddedTests: Boolean,
 	private val includeFailedAndSkipped: Boolean
 ) {
-	private val logger = createLogger()
-	
 	/** Queries Teamscale for impacted tests.  */
 	fun getImpactedTestsFromTeamscale(
 		availableTestDetails: List<ClusteredTestDetails>
 	): List<PrioritizableTestCluster> {
 		try {
-			logger.info { "Getting impacted tests..." }
+			LOG.info { "Getting impacted tests..." }
 			val response = client
 				.getImpactedTests(
 					availableTestDetails, baseline, baselineRevision, endCommit, endRevision, repository,
@@ -44,21 +42,21 @@ open class ImpactedTestsProvider(
 				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {
 					return testClusters
 				}
-				logger.severe(
+				LOG.severe(
 					"""
 					Teamscale was not able to determine impacted tests:
 					${response.body()}
 					""".trimIndent()
 				)
 			} else {
-				logger.severe(
+				LOG.severe(
 					"Retrieval of impacted tests failed: ${response.code()} ${response.message()}\n${
 						getErrorBody(response)
 					}"
 				)
 			}
 		} catch (e: IOException) {
-			logger.log(
+			LOG.log(
 				Level.SEVERE, e
 			) { "Retrieval of impacted tests failed." }
 		}
@@ -77,13 +75,13 @@ open class ImpactedTestsProvider(
 			it.tests?.size?.toLong() ?: 0
 		}.sum()
 		if (!includeNonImpacted) {
-			logger.info { "Received $returnedTests impacted tests of ${availableTestDetails.size} available tests." }
+			LOG.info { "Received $returnedTests impacted tests of ${availableTestDetails.size} available tests." }
 			return true
 		}
 		if (returnedTests == availableTestDetails.size.toLong()) {
 			return true
 		} else {
-			logger.severe {
+			LOG.severe {
 				"Retrieved $returnedTests tests from Teamscale, but expected ${availableTestDetails.size}."
 			}
 			return false
@@ -91,6 +89,8 @@ open class ImpactedTestsProvider(
 	}
 
 	companion object {
+		private val LOG = createLogger()
+
 		@Throws(IOException::class)
 		private fun getErrorBody(response: Response<*>): String {
 			response.errorBody().use { error ->

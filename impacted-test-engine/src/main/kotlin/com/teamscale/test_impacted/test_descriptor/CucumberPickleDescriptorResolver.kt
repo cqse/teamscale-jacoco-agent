@@ -11,21 +11,19 @@ import java.util.*
  * [getPickleName]. The cluster id is the .feature file in which the tests are defined.
  */
 class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
-	private val LOGGER = createLogger()
-
 	override fun getUniformPath(descriptor: TestDescriptor): Optional<String> {
 		val featurePath = descriptor.featurePath()
-		LOGGER.fine { "Resolved feature: $featurePath" }
+		LOG.fine { "Resolved feature: $featurePath" }
 		if (!featurePath.isPresent) {
-			LOGGER.severe {
+			LOG.severe {
 				"Cannot resolve the feature classpath for ${descriptor}. This is probably a bug. Please report to CQSE"
 			}
 			return Optional.empty()
 		}
 		val pickleName = descriptor.getPickleName()
-		LOGGER.fine { "Resolved pickle name: $pickleName" }
+		LOG.fine { "Resolved pickle name: $pickleName" }
 		if (!pickleName.isPresent) {
-			LOGGER.severe {
+			LOG.severe {
 				"Cannot resolve the pickle name for ${descriptor}. This is probably a bug. Please report to CQSE"
 			}
 			return Optional.empty()
@@ -42,7 +40,7 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 
 		val picklePath = "${featurePath.get()}/${pickleName.get()}"
 		val uniformPath = (picklePath + indexSuffix).removeDuplicatedSlashes()
-		LOGGER.fine { "Resolved uniform path: $uniformPath" }
+		LOG.fine { "Resolved uniform path: $uniformPath" }
 		return Optional.of(uniformPath)
 	}
 
@@ -57,9 +55,9 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 	 * hellocucumber/calculator.feature/11/16/21
 	 */
 	private fun TestDescriptor.featurePath(): Optional<String> {
-		LOGGER.fine { "Unique ID of cucumber test descriptor: $uniqueId" }
+		LOG.fine { "Unique ID of cucumber test descriptor: $uniqueId" }
 		val featureSegment = getUniqueIdSegment(FEATURE_SEGMENT_TYPE)
-		LOGGER.fine { "Resolved feature segment: $featureSegment" }
+		LOG.fine { "Resolved feature segment: $featureSegment" }
 		return featureSegment.map { it.replace("classpath:".toRegex(), "") }
 	}
 
@@ -140,6 +138,8 @@ class CucumberPickleDescriptorResolver : ITestDescriptorResolver {
 	}
 
 	companion object {
+		private val LOG = createLogger()
+
 		/** Name of the cucumber test engine as used in the unique id of the test descriptor  */
 		const val CUCUMBER_ENGINE_ID = "cucumber"
 
