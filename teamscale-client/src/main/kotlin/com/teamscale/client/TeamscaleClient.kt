@@ -152,9 +152,7 @@ open class TeamscaleClient {
 			wrapInCluster(
 				service.getImpactedTests(
 					projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
-					includeNonImpacted,
-					includeFailedAndSkipped,
-					ensureProcessed, includeAddedTests
+					includeNonImpacted, includeFailedAndSkipped, ensureProcessed, includeAddedTests
 				).execute()
 			)
 		} else {

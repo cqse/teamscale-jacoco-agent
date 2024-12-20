@@ -3,8 +3,6 @@ package com.teamscale.test_impacted.engine
 import org.junit.platform.commons.util.ClassLoaderUtils
 import org.junit.platform.engine.TestEngine
 import java.util.*
-import java.util.function.Function
-import java.util.stream.Collectors
 
 /** The test engine registry containing all  */
 open class TestEngineRegistry(

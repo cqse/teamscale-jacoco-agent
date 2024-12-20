@@ -1,10 +1,9 @@
 package com.teamscale.test_impacted.engine
 
-import com.teamscale.test_impacted.commons.LoggerUtils.getLogger
+import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.engine.options.TestEngineOptionUtils
 import org.junit.platform.engine.*
 import java.util.*
-import java.util.logging.Logger
 
 /** Test engine for executing impacted tests.  */
 class ImpactedTestEngine : TestEngine {
@@ -18,7 +17,7 @@ class ImpactedTestEngine : TestEngine {
 	): TestDescriptor {
 		val engineOptions = TestEngineOptionUtils
 			.getEngineOptions(discoveryRequest.configurationParameters)
-		val configuration = engineOptions.createTestEngineConfiguration()
+		val configuration = engineOptions.testEngineConfiguration
 		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition!!)
 
 		// Re-initialize the configuration for this discovery (and optional following execution).
@@ -30,7 +29,7 @@ class ImpactedTestEngine : TestEngine {
 	override fun execute(request: ExecutionRequest) {
 		// According to the TestEngine interface the request must correspond to the last execution request. Therefore, we
 		// may re-use the configuration initialized during discovery.
-		check(internalImpactedTestEngine != null) {
+		requireNotNull(internalImpactedTestEngine) {
 			"Can't execute request without discovering it first."
 		}
 		internalImpactedTestEngine?.execute(request)
@@ -44,7 +43,6 @@ class ImpactedTestEngine : TestEngine {
 		/** The id of the [ImpactedTestEngine].  */
 		const val ENGINE_ID = "teamscale-test-impacted"
 
-		@JvmField
-		val LOGGER: Logger = getLogger(ImpactedTestEngine::class.java)
+		val LOG = createLogger()
 	}
 }
