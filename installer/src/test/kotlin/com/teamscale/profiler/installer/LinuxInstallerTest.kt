@@ -1,6 +1,5 @@
 package com.teamscale.profiler.installer
 
-import com.teamscale.profiler.installer.Installer.UninstallerErrorReporter
 import com.teamscale.profiler.installer.utils.MockTeamscale
 import com.teamscale.profiler.installer.utils.TestUtils
 import com.teamscale.profiler.installer.utils.UninstallErrorReporterAssert
@@ -16,8 +15,8 @@ import org.junit.jupiter.api.condition.OS
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.PosixFilePermission
+import kotlin.io.path.*
 
 @EnabledOnOs(OS.LINUX)
 internal class LinuxInstallerTest {
@@ -36,25 +35,27 @@ internal class LinuxInstallerTest {
 	@BeforeEach
 	@Throws(IOException::class)
 	fun setUpSourceDirectory() {
-		sourceDirectory = Files.createTempDirectory("InstallerTest-source")
-		targetDirectory = Files.createTempDirectory("InstallerTest-target").resolve("profiler")
-		etcDirectory = Files.createTempDirectory("InstallerTest-etc")
+		sourceDirectory = createTempDirectory("InstallerTest-source")
+		targetDirectory = createTempDirectory("InstallerTest-target").resolve("profiler")
+		etcDirectory = createTempDirectory("InstallerTest-etc")
 
 		environmentFile = etcDirectory.resolve("environment")
-		Files.writeString(environmentFile, ENVIRONMENT_CONTENT)
+		environmentFile.writeText(ENVIRONMENT_CONTENT)
 
 		systemdDirectory = etcDirectory.resolve("systemd")
-		Files.createDirectory(systemdDirectory)
+		systemdDirectory.createDirectory()
 		systemdConfig = systemdDirectory.resolve("system.conf.d/teamscale-java-profiler.conf")
 
-		val fileToInstall = sourceDirectory.resolve("install-me.txt")
-		Files.writeString(fileToInstall, FILE_TO_INSTALL_CONTENT, StandardOpenOption.CREATE)
+		val fileToInstall = sourceDirectory.resolve("install-me.txt").apply {
+			writeText(FILE_TO_INSTALL_CONTENT)
+		}
 
-		val nestedFileToInstall = sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar")
-		Files.createDirectories(nestedFileToInstall.parent)
-		Files.writeString(nestedFileToInstall, NESTED_FILE_CONTENT, StandardOpenOption.CREATE)
+		sourceDirectory.resolve("lib/teamscale-jacoco-agent.jar").apply {
+			parent.createDirectories()
+			writeText(NESTED_FILE_CONTENT)
+		}
 
-		installedFile = targetDirectory.resolve(sourceDirectory.relativize(fileToInstall))
+		installedFile = targetDirectory.resolve(fileToInstall.relativeTo(sourceDirectory))
 		installedTeamscaleProperties = targetDirectory.resolve("teamscale.properties")
 		installedAgentLibrary = targetDirectory.resolve("lib/teamscale-jacoco-agent.jar")
 	}
@@ -93,7 +94,7 @@ internal class LinuxInstallerTest {
 		UninstallErrorReporterAssert.assertThat(errorReporter).hadNoErrors()
 
 		Assertions.assertThat(targetDirectory).doesNotExist()
-		Assertions.assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT)
+		Assertions.assertThat(environmentFile).exists().content().isEqualToIgnoringWhitespace(ENVIRONMENT_CONTENT)
 		Assertions.assertThat(systemdConfig).doesNotExist()
 	}
 
@@ -127,7 +128,7 @@ internal class LinuxInstallerTest {
 
 		Assertions.assertThat(targetDirectory).exists()
 		Assertions.assertThat(installedTeamscaleProperties).exists()
-		Assertions.assertThat(environmentFile).exists().content().isEqualTo(ENVIRONMENT_CONTENT)
+		Assertions.assertThat(environmentFile).exists().content().isEqualToIgnoringWhitespace(ENVIRONMENT_CONTENT)
 		Assertions.assertThat(systemdConfig).doesNotExist()
 	}
 

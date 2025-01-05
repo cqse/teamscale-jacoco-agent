@@ -36,7 +36,7 @@ class Installer(
 	 * permissions.
 	 */
 	init {
-		val environmentVariables = getEnvironmentVariables(installDirectory)
+		val environmentVariables = installDirectory.environmentVariables()
 		steps = listOf(
 			InstallAgentFilesStep(sourceDirectory, installDirectory),
 			InstallWindowsSystemEnvironmentStep(environmentVariables, registry),
@@ -98,10 +98,9 @@ class Installer(
 	 *  * JAVA_TOOL_OPTIONS is recognized by all JVMs but may be overridden by application start scripts
 	 *  * _JAVA_OPTIONS is not officially documented but currently well-supported and unlikely to be used
 	 * by application start scripts
-	 *
 	 */
-	private fun getEnvironmentVariables(installDirectory: Path): JvmEnvironmentMap {
-		val javaAgentArgument = "-javaagent:" + getAgentJarPath(installDirectory)
+	private fun Path.environmentVariables(): JvmEnvironmentMap {
+		val javaAgentArgument = "-javaagent:" + getAgentJarPath(this)
 		return JvmEnvironmentMap(
 			"JAVA_TOOL_OPTIONS", javaAgentArgument,
 			"_JAVA_OPTIONS", javaAgentArgument
