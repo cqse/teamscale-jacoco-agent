@@ -74,15 +74,12 @@ object TeamscaleUtils {
 				location = "<server did not provide a location header>"
 			}
 			throw FatalInstallerError(
-				("You provided an incorrect URL."
-						+ " The server responded with a redirect to " + "'" + location + "'."
-						+ " This may e.g. happen if you used HTTP instead of HTTPS."
-						+ " Please use the correct URL for Teamscale instead.")
+				"You provided an incorrect URL. The server responded with a redirect to '$location'. This may e.g. happen if you used HTTP instead of HTTPS. Please use the correct URL for Teamscale instead."
 			)
 		}
 
 		if (response.code == 401) {
-			val editUserUrl = getEditUserUrl(credentials.url!!, credentials.username)
+			val editUserUrl = credentials.url!!.getEditUserUrl(credentials.username)
 			throw FatalInstallerError(
 				"""
 				You provided incorrect credentials. Either the user '${credentials.username}' does not exist in Teamscale or the access key you provided is incorrect. Please check both the username and access key in Teamscale under Admin > Users: $editUserUrl
@@ -98,19 +95,10 @@ object TeamscaleUtils {
 		}
 	}
 
-
 	/** Returns a URL to the edit page of the given user.  */
-	private fun getEditUserUrl(teamscaleBaseUrl: HttpUrl, username: String?) =
-		fixFragment(
-			teamscaleBaseUrl.newBuilder().addPathSegment("admin.html#users")
-				.addQueryParameter("action", "edit").addQueryParameter("username", username)
-		)
+	private fun HttpUrl.getEditUserUrl(username: String?) =
+		newBuilder().addPathSegment("admin").addPathSegment("users")
+			.addQueryParameter("action", "edit").addQueryParameter("username", username)
+			.build().toString()
 
-	/**
-	 * Teamscale requires that the fragment be present before the query parameters. OkHttp always encodes the fragment
-	 * after the query parameters. So we have to encode the fragment in the path, which unfortunately escapes the "#"
-	 * separator. This function undoes this unwanted encoding.
-	 */
-	private fun fixFragment(url: HttpUrl.Builder) =
-		url.toString().replaceFirst("%23".toRegex(), "#")
 }
