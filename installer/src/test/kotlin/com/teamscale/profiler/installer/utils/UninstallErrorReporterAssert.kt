@@ -3,7 +3,14 @@ package com.teamscale.profiler.installer.utils
 import com.teamscale.profiler.installer.Installer.UninstallerErrorReporter
 import org.assertj.core.api.AbstractAssert
 
-/** Assertions for [com.teamscale.profiler.installer.Installer.UninstallerErrorReporter]  */
+/**
+ * Assertion class for verifying the behavior of the `UninstallerErrorReporter` during uninstallation
+ * processes.
+ * Provides utility methods to assert whether errors were reported or not.
+ *
+ * @param uninstallerErrorReporter The `UninstallerErrorReporter` instance to run assertions on.
+ * @param selfType Class type of the custom assertion implementation.
+ */
 class UninstallErrorReporterAssert(
 	uninstallerErrorReporter: UninstallerErrorReporter,
 	selfType: Class<*>

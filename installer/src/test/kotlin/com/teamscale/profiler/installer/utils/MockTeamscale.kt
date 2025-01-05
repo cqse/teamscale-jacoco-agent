@@ -4,8 +4,14 @@ import spark.Service
 import javax.servlet.http.HttpServletResponse
 
 /**
- * Mocks Teamscale. Returns a fixed status code for all requests.
- * By default: status 200
+ * A mock HTTP server designed to simulate the behavior of a Teamscale server. It can be used in tests
+ * to validate interactions with a Teamscale server without the need for an actual server instance.
+ *
+ * @constructor Initializes the mock server on the specified port and waits for it to start.
+ * By default, it responds with a 200 OK status and a "fake content" response body.
+ * Custom exceptions will return a 500 Internal Server Error response.
+ *
+ * @param port The port on which the mock server will be hosted.
  */
 class MockTeamscale(port: Int) {
 	private val service = Service.ignite()

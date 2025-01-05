@@ -1,8 +1,16 @@
 package com.teamscale.profiler.installer
 
 /**
- * Map of JVM-specific environment variables and their values. Also handles quoting to ensure the environment variables
- * are parsed correctly by the JVM.
+ * Represents a mapping of JVM environment variables.
+ * This class allows flexible handling of environment variable mappings, including formatting for use in
+ * various contexts such as `/etc/environment` and systemd configurations.
+ *
+ * @constructor Initializes the environment map using the provided key-value pairs. Each pair of elements in
+ * `keysAndValues` represents an environment variable and its corresponding value. For example, providing arguments
+ * "A", "B", "C", "D" will construct an environment map containing A=B and C=D.
+ *
+ * @param keysAndValues A vararg list of strings representing keys and their corresponding values. Each pair of strings
+ * must have a key followed by its value.
  */
 class JvmEnvironmentMap(vararg keysAndValues: String) {
 	private val environment = mutableMapOf<String, String>()
@@ -36,19 +44,17 @@ class JvmEnvironmentMap(vararg keysAndValues: String) {
 	private fun sortedEntries() =
 		environment.entries.sortedBy { it.key }
 
+	/** Returns a list of lines that can be appended to /etc/environment. Lines are quoted if necessary. */
 	val etcEnvironmentLinesList
-		/**
-		 * Returns a list of lines that can be appended to /etc/environment. Lines are quoted if necessary.
-		 */
 		get() = sortedEntries()
 			.map { entry -> "${entry.key}=${entry.value.quoteIfNecessary()}" }
 			.toList()
 
+	/**
+	 * Returns a string that can be used in the DefaultEnvironment setting of a global systemd config file. Entries are
+	 * quoted if necessary.
+	 */
 	val systemdString
-		/**
-		 * Returns a string that can be used in the DefaultEnvironment setting of a global systemd config file. Entries are
-		 * quoted if necessary.
-		 */
 		get() = sortedEntries()
 			.joinToString(" ") { entry ->
 				"${entry.key}=${entry.value}".quoteIfNecessary()

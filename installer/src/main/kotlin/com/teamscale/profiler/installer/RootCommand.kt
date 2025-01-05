@@ -18,6 +18,13 @@ import kotlin.system.exitProcess
 	description = ["Installs or uninstalls the profiler system-wide. Must be run as root/Administrator."]
 )
 object RootCommand {
+	/**
+	 * Disables SSL certificate validation during the installation process to allow the use of
+	 * self-signed or invalid SSL certificates. This setting only applies during the installation
+	 * phase and does not impact the SSL validation of the installed profiler.
+	 *
+	 * @param insecure When set to true, SSL validation will be disabled during installation.
+	 */
 	@CommandLine.Option(
 		names = ["--insecure"],
 		description = [("""Disable SSL certificate validation during the installation, e.g. to accept self-signed or broken certificates.

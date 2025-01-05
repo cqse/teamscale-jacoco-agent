@@ -77,7 +77,9 @@ class Installer(
 	 * Reports errors during installation to stderr.
 	 */
 	class UninstallerErrorReporter : IUninstallErrorReporter {
+		/** Indicates whether errors have been reported during the process. */
 		var errorsReported: Boolean = false
+		/** A flag indicating whether a permission error occurred during the uninstall process. */
 		var hadPermissionError: Boolean = false
 
 		/** Whether at least one error was reported.  */
