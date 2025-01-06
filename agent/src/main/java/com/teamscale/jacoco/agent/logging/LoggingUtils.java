@@ -3,13 +3,18 @@
 | Copyright (c) 2009-2018 CQSE GmbH                                        |
 |                                                                          |
 +-------------------------------------------------------------------------*/
-package com.teamscale.jacoco.agent.util;
+package com.teamscale.jacoco.agent.logging;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.classic.spi.StackTraceElementProxy;
+import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.teamscale.jacoco.agent.Agent;
+import com.teamscale.jacoco.agent.util.NullOutputStream;
 import com.teamscale.report.util.ILogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +56,28 @@ public class LoggingUtils {
 		return new LoggingResources();
 	}
 
-	private static LoggerContext getLoggerContext() {
+	/**
+	 * Returns the logger context.
+	 */
+	public static LoggerContext getLoggerContext() {
 		return (LoggerContext) LoggerFactory.getILoggerFactory();
+	}
+
+	/**
+	 * Extracts the stack trace from an ILoggingEvent using ThrowableProxyUtil.
+	 *
+	 * @param event the logging event containing the exception
+	 * @return the stack trace as a String, or null if no exception is associated
+	 */
+	public static String getStackTraceFromEvent(ILoggingEvent event) {
+		IThrowableProxy throwableProxy = event.getThrowableProxy();
+
+		if (throwableProxy != null) {
+			// Use ThrowableProxyUtil to convert the IThrowableProxy to a String
+			return ThrowableProxyUtil.asString(throwableProxy);
+		}
+
+		return null;
 	}
 
 	/**
