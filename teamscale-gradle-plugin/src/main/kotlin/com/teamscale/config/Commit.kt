@@ -16,7 +16,8 @@ class Commit : Serializable {
 	 * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
 	 * It falls back to retrieving the values from the git repository, if not given manually.
 	 */
-	private var branchName: String? = null
+	@Suppress("MemberVisibilityCanBePrivate")
+	var branchName: String? = null
 		set(value) {
 			field = value?.trim()
 		}
@@ -27,7 +28,8 @@ class Commit : Serializable {
 	 * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
 	 * It falls back to retrieving the values from the git repository, if not given manually.
 	 */
-	private var timestamp: String? = null
+	@Suppress("MemberVisibilityCanBePrivate")
+	var timestamp: String? = null
 		set(value) {
 			field = value?.trim()
 		}
@@ -39,7 +41,8 @@ class Commit : Serializable {
 	 * Use [getOrResolveCommitDescriptor] to get a revision or branch and timestamp.
 	 * It falls back to retrieving the values from the git repository, if not given manually.
 	 */
-	private var revision: String? = null
+	@Suppress("MemberVisibilityCanBePrivate")
+	var revision: String? = null
 		set(value) {
 			field = value?.trim()
 		}
@@ -64,7 +67,7 @@ class Commit : Serializable {
 			revision?.let { rev ->
 				return null to rev
 			}
-			// Otherwise fall back to getting the information from the git repository
+			// Otherwise, fall back to getting the information from the git repository
 			if (resolvedRevision == null && resolvedCommit == null) {
 				val (commit, ref) = GitRepositoryHelper.getHeadCommitDescriptor(project.rootDir)
 				resolvedRevision = ref

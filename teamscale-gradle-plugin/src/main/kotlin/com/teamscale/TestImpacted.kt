@@ -210,35 +210,33 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 			.union(listOf(project))
 	}
 
-	private fun writeEngineProperty(name: String, value: String?) {
-		if (value != null) {
-			systemProperties["teamscale.test.impacted.$name"] = value
-		}
+	private infix fun String.writeProperty(value: Any?) {
+		value?.let { systemProperties["teamscale.test.impacted.${this}"] = it.toString() }
 	}
 
 	private fun setImpactedTestEngineOptions(report: Report, options: JUnitPlatformOptions) {
 		if (runImpacted) {
 			// ToDo: TeamscalePluginTest -> upload reports to repo and revision when timestamp is not provided manually fails with this?
-//			requireNotNull(endCommit) { "When executing only impacted tests a branchName and timestamp must be specified!" }
+			requireNotNull(endCommit) { "When executing only impacted tests a branchName and timestamp must be specified!" }
 			serverConfiguration.validate()
-			writeEngineProperty("server.url", serverConfiguration.url)
-			writeEngineProperty("server.project", serverConfiguration.project)
-			writeEngineProperty("server.userName", serverConfiguration.userName)
-			writeEngineProperty("server.userAccessToken", serverConfiguration.userAccessToken)
+			"server.url".writeProperty(serverConfiguration.url)
+			"server.project".writeProperty(serverConfiguration.project)
+			"server.userName".writeProperty(serverConfiguration.userName)
+			"server.userAccessToken".writeProperty(serverConfiguration.userAccessToken)
 		}
-		writeEngineProperty("partition", report.partition.get())
-		writeEngineProperty("endCommit", endCommit?.toString())
-		writeEngineProperty("endRevision", endRevision)
-		writeEngineProperty("baseline", baseline?.toString())
-		writeEngineProperty("baselineRevision", baselineRevision)
-		writeEngineProperty("repository", repository)
-		writeEngineProperty("reportDirectory", reportOutputDir.absolutePath)
-		writeEngineProperty("agentsUrls", taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
-		writeEngineProperty("runImpacted", runImpacted.toString())
-		writeEngineProperty("runAllTests", runAllTests.toString())
-		writeEngineProperty("includeAddedTests", includeAddedTests.toString())
-		writeEngineProperty("includeFailedAndSkipped", includeFailedAndSkipped.toString())
-		writeEngineProperty("includedEngines", options.includeEngines.joinToString(","))
-		writeEngineProperty("excludedEngines", options.excludeEngines.joinToString(","))
+		"partition".writeProperty(report.partition.get())
+		"endCommit".writeProperty(endCommit)
+		"endRevision".writeProperty(endRevision)
+		"baseline".writeProperty(baseline)
+		"baselineRevision".writeProperty(baselineRevision)
+		"repository".writeProperty(repository)
+		"reportDirectory".writeProperty(reportOutputDir.absolutePath)
+		"agentsUrls".writeProperty(taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
+		"runImpacted".writeProperty(runImpacted)
+		"runAllTests".writeProperty(runAllTests)
+		"includeAddedTests".writeProperty(includeAddedTests)
+		"includeFailedAndSkipped".writeProperty(includeFailedAndSkipped)
+		"includedEngines".writeProperty(options.includeEngines.joinToString(","))
+		"excludedEngines".writeProperty(options.excludeEngines.joinToString(","))
 	}
 }
