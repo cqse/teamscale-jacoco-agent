@@ -7,14 +7,15 @@ import com.teamscale.tia.client.UrlUtils.encodeUrl
 import java.io.IOException
 import java.util.logging.Level
 
-/** Communicates test start and end to the agent and the end of the overall test execution.  */
+/**
+ * A notifier class responsible for communicating with the Teamscale JaCoCo agent in test-wise coverage mode.
+ * It sends signals for test start, test end, and test run completion events to the specified APIs.
+ *
+ * @param testwiseCoverageAgentApis A list of API services used to signal test actions to the Teamscale agent.
+ * @param partial Indicates whether only a subset of tests is executed (`true`) or all tests are executed (`false`).
+ */
 open class TeamscaleAgentNotifier(
-	/** A list of API services to signal test start and end to the agent.  */
 	private val testwiseCoverageAgentApis: List<ITestwiseCoverageAgentApi>,
-	/**
-	 * Whether only a part of the tests is being executed (`true`) or whether all tests are executed
-	 * (`false`).
-	 */
 	private val partial: Boolean
 ) {
 	companion object {

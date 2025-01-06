@@ -15,11 +15,18 @@ import java.io.StringWriter
 import java.util.*
 
 /**
- * An execution listener which delegates events to another [EngineExecutionListener] and notifies Teamscale agents
- * collecting test wise coverage.
+ * An implementation of [EngineExecutionListener] that collects test-wise coverage information during
+ * test execution and notifies the corresponding Teamscale agent.
+ *
+ * This class acts as a bridge between the JUnit Platform test execution lifecycle and the
+ * Teamscale JaCoCo agent to record test-wise coverage results. It tracks test execution status
+ * (e.g. started, skipped, finished) and aggregates results for individual tests or groups of tests.
+ *
+ * @param teamscaleAgentNotifier The notifier responsible for signaling test events to the Teamscale JaCoCo agent.
+ * @param testDescriptorResolver A resolver interface used to map [TestDescriptor] objects to uniform paths.
+ * @param delegateEngineExecutionListener The underlying [EngineExecutionListener] to which events are delegated.
  */
 class TestwiseCoverageCollectingExecutionListener(
-	/** An API to signal test start and end to the agent.  */
 	private val teamscaleAgentNotifier: TeamscaleAgentNotifier,
 	private val testDescriptorResolver: ITestDescriptorResolver,
 	private val delegateEngineExecutionListener: EngineExecutionListener
@@ -143,15 +150,12 @@ class TestwiseCoverageCollectingExecutionListener(
 			TestExecutionResult.Status.SUCCESSFUL -> return TestExecution(
 				testUniformPath, duration, ETestExecutionResult.PASSED
 			)
-
 			TestExecutionResult.Status.ABORTED -> return TestExecution(
 				testUniformPath, duration, ETestExecutionResult.ERROR, message
 			)
-
 			TestExecutionResult.Status.FAILED -> return TestExecution(
 				testUniformPath, duration, ETestExecutionResult.FAILURE, message
 			)
-
 			else -> {
 				LOG.severe { "Got unexpected test execution result status: $status" }
 				return null
@@ -161,9 +165,7 @@ class TestwiseCoverageCollectingExecutionListener(
 
 	/** Extracts the stacktrace from the given [Throwable] into a string or returns null if no throwable is given.  */
 	private fun Optional<Throwable>.buildStacktrace(): String? {
-		if (!isPresent) {
-			return null
-		}
+		if (!isPresent) return null
 
 		val sw = StringWriter()
 		val pw = PrintWriter(sw)
