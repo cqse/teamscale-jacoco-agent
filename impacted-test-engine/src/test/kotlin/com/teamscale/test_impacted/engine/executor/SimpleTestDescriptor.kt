@@ -5,7 +5,18 @@ import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 
-/** A basic implementation of a [TestDescriptor] that can be used during tests.  */
+/**
+ * Represents a simple implementation of a test descriptor for managing test cases and test containers within a
+ * test engine framework. This class is designed to provide functionality for defining the structure and behavior
+ * of test descriptors.
+ *
+ * @constructor Private constructor for creating an instance of this class. Instances can only be created through
+ * companion object functions.
+ *
+ * @param uniqueId The unique identifier for the test descriptor.
+ * @param type The type of the test descriptor, represented by [TestDescriptor.Type].
+ * @param displayName The display name for the test descriptor.
+ */
 class SimpleTestDescriptor private constructor(
 	uniqueId: UniqueId,
 	private val type: TestDescriptor.Type,
@@ -13,8 +24,16 @@ class SimpleTestDescriptor private constructor(
 ) : AbstractTestDescriptor(uniqueId, displayName) {
 	private var shouldSkip = false
 
+	/**
+	 * A mutable list that holds dynamic test descriptors for a test case. These tests are registered dynamically
+	 * during test execution and can include child tests or nested dynamic executions.
+	 */
 	val dynamicTests = mutableListOf<TestDescriptor>()
 
+	/**
+	 * Represents the execution result of a test, indicating whether the test was successful, failed, or aborted.
+	 * This property is updated during the test execution process when the result of the test is determined.
+	 */
 	var executionResult: TestExecutionResult = TestExecutionResult.successful()
 		private set
 

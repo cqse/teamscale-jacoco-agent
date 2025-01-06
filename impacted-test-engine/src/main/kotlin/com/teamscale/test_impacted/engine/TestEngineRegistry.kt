@@ -4,7 +4,14 @@ import org.junit.platform.commons.util.ClassLoaderUtils
 import org.junit.platform.engine.TestEngine
 import java.util.*
 
-/** The test engine registry containing all  */
+/**
+ * A registry for managing and accessing available [TestEngine] implementations.
+ * This class utilizes a filtering mechanism based on included and excluded test engine IDs
+ * to determine the available engines in the current environment.
+ *
+ * @param includedTestEngineIds Set of test engine IDs to explicitly include.
+ * @param excludedTestEngineIds Set of test engine IDs to explicitly exclude.
+ */
 open class TestEngineRegistry(
 	includedTestEngineIds: Set<String>,
 	excludedTestEngineIds: Set<String>

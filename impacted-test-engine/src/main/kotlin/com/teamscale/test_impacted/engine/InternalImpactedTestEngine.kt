@@ -12,7 +12,14 @@ import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 
 /**
- * Test engine called internally to allow testing without needing a [ServiceLoader] for [TestEngine] setup.
+ * Internal test engine implementation for executing impacted tests. This class provides functionality
+ * for discovering and executing tests based on their impacted status, as determined by the provided
+ * configuration and partitioning logic.
+ *
+ * @constructor Initializes the test engine with the given configuration and partition.
+ * @param configuration The configuration object that provides dependencies such as test engine registry,
+ * test sorter, and test data writer.
+ * @param partition The partition identifier used to divide tests and manage their execution.
  */
 internal class InternalImpactedTestEngine(
 	configuration: ImpactedTestEngineConfiguration,

@@ -5,7 +5,7 @@ import org.junit.platform.engine.ConfigurationParameters
 import java.util.*
 
 object TestEngineOptionUtils {
-
+	/** Represents the constant prefix used for property keys in the configuration parameters for the test engine. */
 	private const val PREFIX = "teamscale.test.impacted."
 
 	/** Returns the [TestEngineOptions] configured in the [Properties].  */
@@ -48,15 +48,42 @@ object TestEngineOptionUtils {
 		private val prefix: String,
 		private val configurationParameters: ConfigurationParameters
 	) {
+		/**
+		 * Retrieves the string value associated with a given property name.
+		 *
+		 * @param propertyName The name of the property to retrieve.
+		 * @return The string value of the property if it exists, or null if not found.
+		 */
 		fun getString(propertyName: String): String? =
 			configurationParameters[prefix + propertyName].orElse(null)
 
+		/**
+		 * Retrieves the boolean value associated with a specified property name.
+		 *
+		 * @param propertyName The name of the property for which the boolean value should be retrieved.
+		 * @param defaultValue The default value to return if the property is not found or cannot be converted to a boolean.
+		 * @return The boolean value of the property if it exists and can be converted, otherwise the specified default value.
+		 */
 		fun getBoolean(propertyName: String, defaultValue: Boolean): Boolean =
 			configurationParameters[prefix + propertyName].map { it.toBoolean() }.orElse(defaultValue)
 
+		/**
+		 * Retrieves a [CommitDescriptor] associated with the specified property name from the configuration parameters.
+		 * The property value is parsed into a [CommitDescriptor] object if present.
+		 *
+		 * @param propertyName The name of the property to retrieve and parse.
+		 * @return The parsed `CommitDescriptor` if the property exists and is valid, otherwise null.
+		 */
 		fun getCommitDescriptor(propertyName: String): CommitDescriptor? =
 			configurationParameters[prefix + propertyName].map { CommitDescriptor.parse(it) }.orElse(null)
 
+		/**
+		 * Retrieves a list of strings associated with the specified property name.
+		 *
+		 * @param propertyName The name of the property for which the string list should be retrieved.
+		 * @return A list of non-blank, trimmed strings derived from the property value.
+		 *         If the property does not exist, an empty list is returned.
+		 */
 		fun getStringList(propertyName: String): List<String> =
 			configurationParameters[prefix + propertyName]
 				.map { it.split(",").map(String::trim).filterNot(String::isBlank) }

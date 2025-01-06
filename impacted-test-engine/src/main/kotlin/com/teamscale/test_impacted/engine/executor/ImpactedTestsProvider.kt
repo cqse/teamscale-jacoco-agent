@@ -10,8 +10,18 @@ import java.io.IOException
 import java.util.logging.Level
 
 /**
- * Class for retrieving the impacted [PrioritizableTestCluster]s corresponding to [ClusteredTestDetails]
- * available for test execution.
+ * Provides functionality to query impacted tests from Teamscale based on various configurable conditions.
+ *
+ * @property client The Teamscale client used to communicate with the Teamscale server.
+ * @property baseline The baseline identifier for comparison, if applicable.
+ * @property baselineRevision The specific baseline revision, if applicable.
+ * @property endCommit The commit descriptor indicating the end of the revision range.
+ * @property endRevision The specific end revision, if applicable.
+ * @property repository The repository name to be used for querying impacted tests.
+ * @property partition The partition key used to categorize tests for querying.
+ * @property includeNonImpacted Whether to include non-impacted tests in the results.
+ * @property includeAddedTests Whether to include tests that were newly added.
+ * @property includeFailedAndSkipped Whether to include failed and skipped tests in the impact analysis.
  */
 open class ImpactedTestsProvider(
 	private val client: TeamscaleClient,
@@ -42,18 +52,12 @@ open class ImpactedTestsProvider(
 				if (testClusters != null && testCountIsPlausible(testClusters, availableTestDetails)) {
 					return testClusters
 				}
-				LOG.severe(
-					"""
+				LOG.severe("""
 					Teamscale was not able to determine impacted tests:
 					${response.body()}
-					""".trimIndent()
-				)
+					""".trimIndent())
 			} else {
-				LOG.severe(
-					"Retrieval of impacted tests failed: ${response.code()} ${response.message()}\n${
-						getErrorBody(response)
-					}"
-				)
+				LOG.severe("Retrieval of impacted tests failed: ${response.code()} ${response.message()}\n${getErrorBody(response)}")
 			}
 		} catch (e: IOException) {
 			LOG.log(
@@ -65,7 +69,7 @@ open class ImpactedTestsProvider(
 
 	/**
 	 * Checks that the number of tests returned by Teamscale matches the number of available tests when running with
-	 * [.includeNonImpacted].
+	 * [includeNonImpacted].
 	 */
 	private fun testCountIsPlausible(
 		testClusters: List<PrioritizableTestCluster>,

@@ -43,6 +43,7 @@ class ImpactedTestEngine : TestEngine {
 		/** The id of the [ImpactedTestEngine].  */
 		const val ENGINE_ID = "teamscale-test-impacted"
 
+		/** Logger instance */
 		val LOG = createLogger()
 	}
 }

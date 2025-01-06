@@ -166,6 +166,9 @@ public class SystemTestUtils {
 		}
 	}
 
+	/**
+	 * Interface for interacting with an agent service that enables coverage dumping and partition management.
+	 */
 	public interface AgentService {
 		/** Dumps coverage */
 		@POST("/dump")
