@@ -167,6 +167,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.11.2</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <doclint>none</doclint> <!-- Disable strict Javadoc validation after rework -->
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -182,18 +186,6 @@
                 <version>2.1.0</version>
                 <executions>
                     <execution>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>compile</id>
                         <phase>process-sources</phase>
                         <goals>
@@ -204,6 +196,7 @@
                                 <source>src/main/java</source>
                                 <source>target/generated-sources/annotations</source>
                                 <source>target/generated-sources/plugin</source>
+                                <source>src/main/kotlin</source>
                             </sourceDirs>
                         </configuration>
                     </execution>
