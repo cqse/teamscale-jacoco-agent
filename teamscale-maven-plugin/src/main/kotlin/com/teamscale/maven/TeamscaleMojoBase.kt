@@ -8,7 +8,6 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import org.codehaus.plexus.util.xml.Xpp3Dom
 import java.io.IOException
-import java.nio.file.Path
 
 /**
  * A base class for all Teamscale-related Maven Mojos. Offers basic attributes and functionality related to Teamscale
@@ -19,31 +18,27 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	/**
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
-	@JvmField
 	@Parameter
-	var teamscaleUrl: String? = null
+	lateinit var teamscaleUrl: String
 
 	/**
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
-	@JvmField
 	@Parameter
-	var projectId: String? = null
+	lateinit var projectId: String
 
 	/**
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the [projectId].
 	 * Can also be specified via the Maven property `teamscale.username`.
 	 */
-	@JvmField
 	@Parameter(property = "teamscale.username")
-	var username: String? = null
+	lateinit var username: String
 
 	/**
 	 * Teamscale access token of the [username]. Can also be specified via the Maven property `teamscale.accessToken`.
 	 */
-	@JvmField
 	@Parameter(property = "teamscale.accessToken")
-	var accessToken: String? = null
+	lateinit var accessToken: String
 
 	/**
 	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
@@ -54,7 +49,7 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	 * the revision takes precedence.
 	 */
 	@Parameter(property = "teamscale.commit")
-	var commit: String? = null
+	lateinit var commit: String
 
 	/**
 	 * You can optionally use this property to override the revision to which the coverage will be uploaded. If no
@@ -62,17 +57,15 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	 * specify either commit or revision, not both. If both are specified, a warning is logged and the revision takes
 	 * precedence.
 	 */
-	@JvmField
 	@Parameter(property = "teamscale.revision")
-	var revision: String? = null
+	lateinit var revision: String
 
 	/**
 	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given. Null or
 	 * empty will lead to a lookup in all repositories in the Teamscale project.
 	 */
-	@JvmField
 	@Parameter(property = "teamscale.repository")
-	var repository: String? = null
+	lateinit var repository: String
 
 	/**
 	 * Whether to skip the execution of this Mojo.
@@ -101,7 +94,7 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 
 	@Throws(MojoExecutionException::class, MojoFailureException::class)
 	override fun execute() {
-		if (!revision.isNullOrBlank() && !commit.isNullOrBlank()) {
+		if (revision.isNotBlank() && commit.isNotBlank()) {
 			log.warn(
 				"Both revision and commit are set but only one of them is needed. " +
 						"Teamscale will prefer the revision. If that's not intended, please do not set the revision manually."
@@ -118,10 +111,10 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	@Throws(MojoFailureException::class)
 	protected fun resolveCommitOrRevision() {
 		when {
-			!revision.isNullOrBlank() -> {
+			revision.isNotBlank() -> {
 				resolvedRevision = revision
 			}
-			!commit.isNullOrBlank() -> {
+			commit.isNotBlank() -> {
 				resolvedCommit = commit
 			}
 			else -> {
