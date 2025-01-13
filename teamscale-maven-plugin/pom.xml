@@ -193,10 +193,10 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
+                                <source>src/main/kotlin</source>
                                 <source>src/main/java</source>
                                 <source>target/generated-sources/annotations</source>
                                 <source>target/generated-sources/plugin</source>
-                                <source>src/main/kotlin</source>
                             </sourceDirs>
                         </configuration>
                     </execution>

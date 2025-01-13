@@ -5,6 +5,7 @@ import org.eclipse.jgit.lib.Repository
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 object GitCommitUtils {
 	private const val HEAD_REF = "HEAD"
@@ -40,5 +41,5 @@ object GitCommitUtils {
 	 */
 	private fun findGitDirectory(searchDirectory: Path?) =
 		generateSequence(searchDirectory) { it.parent }
-			.firstOrNull { Files.exists(it.resolve(".git")) }
+			.firstOrNull { it.resolve(".git").exists() }
 }
