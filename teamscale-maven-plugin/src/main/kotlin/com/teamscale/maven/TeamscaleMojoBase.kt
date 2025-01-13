@@ -1,7 +1,5 @@
 package com.teamscale.maven
 
-import com.teamscale.maven.GitCommitUtils.getGitHeadRevision
-import org.apache.commons.lang3.StringUtils
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecutionException
@@ -10,13 +8,14 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import org.codehaus.plexus.util.xml.Xpp3Dom
 import java.io.IOException
-import kotlin.io.path.pathString
+import java.nio.file.Path
 
 /**
- * A base class for all Teamscale related maven Mojos. Offers basic attributes and functionality related to Teamscale
+ * A base class for all Teamscale-related Maven Mojos. Offers basic attributes and functionality related to Teamscale
  * and Maven.
  */
 abstract class TeamscaleMojoBase : AbstractMojo() {
+
 	/**
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
@@ -32,15 +31,15 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	var projectId: String? = null
 
 	/**
-	 * The username to use to perform the upload. Must have the "Upload external data" permission for the [ ][.projectId]. Can also be specified via the Maven property `teamscale.username`.
+	 * The username to use to perform the upload. Must have the "Upload external data" permission for the [projectId].
+	 * Can also be specified via the Maven property `teamscale.username`.
 	 */
 	@JvmField
 	@Parameter(property = "teamscale.username")
 	var username: String? = null
 
 	/**
-	 * Teamscale access token of the [.username]. Can also be specified via the Maven property
-	 * `teamscale.accessToken`.
+	 * Teamscale access token of the [username]. Can also be specified via the Maven property `teamscale.accessToken`.
 	 */
 	@JvmField
 	@Parameter(property = "teamscale.accessToken")
@@ -49,7 +48,6 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	/**
 	 * You can optionally use this property to override the code commit to which the coverage will be uploaded. Format:
 	 * `BRANCH:UNIX_EPOCH_TIMESTAMP_IN_MILLISECONDS`
-	 *
 	 *
 	 * If no commit and revision is manually specified, the plugin will try to determine the currently checked-out Git
 	 * commit. You should specify either commit or revision, not both. If both are specified, a warning is logged and
@@ -86,9 +84,8 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	/**
 	 * The running Maven session. Provided automatically by Maven.
 	 */
-	@JvmField
 	@Parameter(defaultValue = "\${session}")
-	var session: MavenSession? = null
+	lateinit var session: MavenSession
 
 	/**
 	 * The resolved commit, either provided by the user or determined via the GitCommit class
@@ -104,9 +101,12 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 
 	@Throws(MojoExecutionException::class, MojoFailureException::class)
 	override fun execute() {
-		if (revision.isNullOrBlank()) return
-		if (commit.isNullOrBlank()) return
-		log.warn("Both revision and commit are set but only one of them is needed. Teamscale will prefer the revision. If that's not intended, please do not set the revision manually.")
+		if (!revision.isNullOrBlank() && !commit.isNullOrBlank()) {
+			log.warn(
+				"Both revision and commit are set but only one of them is needed. " +
+						"Teamscale will prefer the revision. If that's not intended, please do not set the revision manually."
+			)
+		}
 	}
 
 	/**
@@ -117,21 +117,23 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	 */
 	@Throws(MojoFailureException::class)
 	protected fun resolveCommitOrRevision() {
-		if (!revision.isNullOrBlank()) {
-			resolvedRevision = revision
-			return
-		}
-		if (!commit.isNullOrBlank()) {
-			resolvedCommit = commit
-			return
-		}
-		session?.currentProject?.basedir?.toPath()?.let { dir ->
-			try {
-				resolvedRevision = getGitHeadRevision(dir)
-			} catch (e: IOException) {
-				throw MojoFailureException(
-					"There is no <revision> or <commit> configured in the pom.xml and it was not possible to determine the current revision in ${dir.pathString} from Git", e
-				)
+		when {
+			!revision.isNullOrBlank() -> {
+				resolvedRevision = revision
+			}
+			!commit.isNullOrBlank() -> {
+				resolvedCommit = commit
+			}
+			else -> {
+				val basedir = session.currentProject.basedir.toPath()
+				try {
+					resolvedRevision = GitCommitUtils.getGitHeadRevision(basedir)
+				} catch (e: IOException) {
+					throw MojoFailureException(
+						"There is no <revision> or <commit> configured in the pom.xml" +
+								" and it was not possible to determine the current revision in $basedir from Git", e
+					)
+				}
 			}
 		}
 	}
@@ -139,23 +141,16 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	/**
 	 * Retrieves the configuration of a goal execution for the given plugin
 	 *
-	 * @param pluginArtifact The id of the plugin
-	 * @param pluginGoal     The name of the goal
+	 * @receiver The maven project
+	 * @param pluginArtifact  The id of the plugin
+	 * @param pluginGoal      The name of the goal
 	 * @return The configuration DOM if present, otherwise `null`
 	 */
-	protected fun getExecutionConfigurationDom(
-		project: MavenProject,
-		pluginArtifact: String?,
-		pluginGoal: String?
-	): Xpp3Dom? {
-		val plugin = project.getPlugin(pluginArtifact) ?: return null
-
-		plugin.executions.forEach { pluginExecution ->
-			if (pluginExecution.goals.contains(pluginGoal)) {
-				return pluginExecution.configuration as Xpp3Dom
-			}
-		}
-
-		return null
-	}
+	protected fun MavenProject.getExecutionConfigurationDom(
+		pluginArtifact: String,
+		pluginGoal: String
+	) = getPlugin(pluginArtifact)
+		?.executions
+		?.firstOrNull { it.goals.contains(pluginGoal) }
+		?.configuration as? Xpp3Dom
 }
