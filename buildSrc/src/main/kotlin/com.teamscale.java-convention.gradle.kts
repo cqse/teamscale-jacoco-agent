@@ -36,4 +36,8 @@ dependencies {
 
     testRuntimeOnly(lib("junit-platform-launcher"))
     testRuntimeOnly(lib("junit-jupiter-engine"))
+
+    constraints {
+        implementation("org.apache.commons:commons-compress:1.27.1")
+    }
 }
