@@ -44,7 +44,8 @@ object SystemTestUtils {
 	 */
 	@JvmStatic
 	fun getCoverageString(info: TestInfo) =
-		info.paths.flatMap { it.files }
+		info.paths
+			.flatMap { it.files }
 			.joinToString(";") { it.fileName + ":" + it.coveredLines }
 
 	/**
@@ -55,8 +56,9 @@ object SystemTestUtils {
 	@JvmStatic
 	@Throws(IOException::class)
 	fun runMavenTests(mavenProjectPath: String, vararg args: String) {
-		val allArguments = mutableListOf("clean", "verify")
-		allArguments.addAll(args)
+		val allArguments = mutableListOf("clean", "verify").apply {
+			addAll(args)
+		}
 		runMaven(mavenProjectPath, *allArguments.toTypedArray())
 	}
 
@@ -77,8 +79,8 @@ object SystemTestUtils {
 
 		// in case the process succeeded, we still log stdout and stderr in case later assertions fail. This helps
 		// debug test failures
-		println("Maven stdout: " + result.stdout)
-		println("Maven stderr: " + result.stderr)
+		println("Maven stdout: ${result.stdout}")
+		println("Maven stderr: ${result.stderr}")
 
 		if (result.terminatedByTimeoutOrInterruption()) {
 			throw IOException(
@@ -173,7 +175,6 @@ object SystemTestUtils {
 	}
 
 	/** Instructs the agent via HTTP to change the partition.  */
-	@JvmStatic
 	@Throws(IOException::class)
 	fun changePartition(agentPort: Int, newPartition: String) {
 		val requestBody = RequestBody.create(MediaType.parse("text/plain"), newPartition)

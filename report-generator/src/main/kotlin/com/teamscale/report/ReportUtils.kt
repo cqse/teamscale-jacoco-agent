@@ -34,13 +34,6 @@ object ReportUtils {
 		writeReportToFile(reportFile, report)
 	}
 
-	/** Converts to given report to a json string. For testing only.  */
-	@JvmStatic
-	@Throws(JsonProcessingException::class)
-	fun getTestwiseCoverageReportAsString(
-		report: TestwiseCoverageReport
-	) = report.serialize()
-
 	/** Writes the report object to the given file as JSON.  */
 	@Throws(IOException::class)
 	private fun <T> writeReportToFile(reportFile: File, report: T) {
