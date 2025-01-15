@@ -190,7 +190,7 @@ class CoverageUploadMojo : TeamscaleMojoBase() {
 		jacocoDirectory: String,
 		reportOutputFiles: MutableList<Path>
 	) {
-		val defaultOutputDirectory = Paths.get(project.reporting.outputDirectory)
+		val defaultOutputDirectory = Paths.get(project.model.reporting.outputDirectory)
 		// If a Dom is null it means the execution goal uses default parameters which work correctly
 		val reportConfigurationDom = getJacocoGoalExecutionConfiguration(project, reportGoal)
 		if (!validateReportFormat(reportConfigurationDom)) {

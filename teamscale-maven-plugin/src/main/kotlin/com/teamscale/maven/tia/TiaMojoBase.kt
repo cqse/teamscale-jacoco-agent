@@ -268,13 +268,10 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 		configurationDom: Xpp3Dom,
 		xmlConfigurationName: String
 	) {
-		val engines = configurationDom.getChild(xmlConfigurationName)
-		if (engines != null) {
+		configurationDom.getChild(xmlConfigurationName)?.let {
 			throw MojoFailureException(
 				"You configured JUnit 5 engines in the $testPluginArtifact plugin via the $xmlConfigurationName configuration parameter. This is currently not supported when performing Test Impact analysis. Please add the $xmlConfigurationName via the ${
-					getPropertyName(
-						xmlConfigurationName
-					)
+					getPropertyName(xmlConfigurationName)
 				} property."
 			)
 		}

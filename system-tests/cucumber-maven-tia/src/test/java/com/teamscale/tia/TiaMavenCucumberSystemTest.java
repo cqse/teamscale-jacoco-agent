@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
- * Runs several Maven projects' Surefire tests that have the agent attached and one of our JUnit run listeners enabled.
+ * Runs several Maven projects' Surefire tests that have the agent attached, and one of our JUnit run listeners enabled.
  * Checks that this produces a correct coverage report.
  */
 public class TiaMavenCucumberSystemTest {
