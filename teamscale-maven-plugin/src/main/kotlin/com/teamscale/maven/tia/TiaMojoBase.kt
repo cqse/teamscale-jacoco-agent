@@ -339,10 +339,12 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 		}
 
 		ArgLine.cleanOldArgLines(session, log)
-		ArgLine.applyToMavenProject(
-			ArgLine(additionalAgentOptions, agentLogLevel, findAgentJarFile(), agentConfigFile, logFilePath),
-			session, log, propertyName, isIntegrationTest
-		)
+		findAgentJarFile()?.let { agentJarFile ->
+			ArgLine.applyToMavenProject(
+				ArgLine(additionalAgentOptions, agentLogLevel, agentJarFile, agentConfigFile, logFilePath),
+				session, log, propertyName, isIntegrationTest
+			)
+		}
 	}
 
 	@Throws(MojoFailureException::class)
