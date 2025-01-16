@@ -44,7 +44,7 @@ class TeamscaleMockServer(port: Int) {
 
 	/** A list of all repositories to which an upload happened.  */
 	@JvmField
-	val uploadRepositories = mutableListOf<String>()
+	val uploadRepositories = mutableListOf<String?>()
 
 	/** A list of all repositories for which impacted tests were requested.  */
 	@JvmField
