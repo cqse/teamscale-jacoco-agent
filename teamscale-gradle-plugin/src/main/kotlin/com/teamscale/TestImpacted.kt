@@ -216,8 +216,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 
 	private fun setImpactedTestEngineOptions(report: Report, options: JUnitPlatformOptions) {
 		if (runImpacted) {
-			// ToDo: TeamscalePluginTest -> upload reports to repo and revision when timestamp is not provided manually fails with this?
-			requireNotNull(endCommit) { "When executing only impacted tests a branchName and timestamp must be specified!" }
+			require(endRevision != null || endCommit != null) { "When executing only impacted tests a reference commit must be specified in the form of endRevision or endCommit!" }
 			serverConfiguration.validate()
 			"server.url".writeProperty(serverConfiguration.url)
 			"server.project".writeProperty(serverConfiguration.project)
