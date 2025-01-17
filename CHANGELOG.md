@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _teamscale-gradle-plugin_: 401 Unauthorized error when trying to upload reports to Teamscale 
 
 # 34.2.1
 - [fix] _agent_: Warning about multiple agents being present is misleading
