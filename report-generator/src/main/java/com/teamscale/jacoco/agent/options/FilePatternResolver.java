@@ -42,7 +42,7 @@ public class FilePatternResolver {
 	 * deterministic, i.e. if you run the pattern twice and get the same set of files, the same file will be picked each
 	 * time.
 	 */
-	public Path parsePath(String optionName, String pattern) throws AgentOptionParseException {
+	public Path parsePath(String optionName, String pattern) throws IOException {
 		return parsePath(optionName, pattern, new File("."));
 	}
 
@@ -50,7 +50,7 @@ public class FilePatternResolver {
 	 * Interprets the given pattern as an Ant pattern and resolves it to one or multiple existing {@link File}s. If the
 	 * given path is relative, it is resolved relative to the current working directory.
 	 */
-	public List<File> resolveToMultipleFiles(String optionName, String pattern) throws AgentOptionParseException {
+	public List<File> resolveToMultipleFiles(String optionName, String pattern) throws IOException {
 		return resolveToMultipleFiles(optionName, pattern, new File("."));
 	}
 
@@ -61,7 +61,7 @@ public class FilePatternResolver {
 	 * Visible for testing only.
 	 */
 	/* package */ List<File> resolveToMultipleFiles(String optionName, String pattern,
-													File workingDirectory) throws AgentOptionParseException {
+													File workingDirectory) throws IOException {
 		if (isPathWithPattern(pattern)) {
 			return CollectionUtils
 					.map(parseFileFromPattern(optionName, pattern, workingDirectory).getAllMatchingPaths(),
@@ -70,7 +70,7 @@ public class FilePatternResolver {
 		try {
 			return Collections.singletonList(workingDirectory.toPath().resolve(Paths.get(pattern)).toFile());
 		} catch (InvalidPathException e) {
-			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + pattern, e);
+			throw new IOException("Invalid path given for option " + optionName + ": " + pattern, e);
 		}
 	}
 
@@ -82,21 +82,21 @@ public class FilePatternResolver {
 	 * time.
 	 */
 	/* package */ Path parsePath(String optionName, String pattern,
-								 File workingDirectory) throws AgentOptionParseException {
+								 File workingDirectory) throws IOException {
 		if (isPathWithPattern(pattern)) {
 			return parseFileFromPattern(optionName, pattern, workingDirectory).getSinglePath();
 		}
 		try {
 			return workingDirectory.toPath().resolve(Paths.get(pattern));
 		} catch (InvalidPathException e) {
-			throw new AgentOptionParseException("Invalid path given for option " + optionName + ": " + pattern, e);
+			throw new IOException("Invalid path given for option " + optionName + ": " + pattern, e);
 		}
 	}
 
 	/** Parses the pattern as a Ant pattern to one or multiple files or directories. */
 	private FilePatternResolverRun parseFileFromPattern(String optionName,
 														String pattern,
-														File workingDirectory) throws AgentOptionParseException {
+														File workingDirectory) throws IOException {
 		return new FilePatternResolverRun(logger, optionName, pattern, workingDirectory).resolve();
 	}
 
@@ -134,7 +134,7 @@ public class FilePatternResolver {
 		 * Resolves the pattern. The results can be retrieved via {@link #getSinglePath()} or {@link
 		 * #getAllMatchingPaths()}.
 		 */
-		private FilePatternResolverRun resolve() throws AgentOptionParseException {
+		private FilePatternResolverRun resolve() throws IOException {
 			Pattern pathRegex = AntPatternUtils.convertPattern(suffixPattern, false);
 			Predicate<Path> filter = path -> pathRegex
 					.matcher(FileSystemUtils.normalizeSeparators(basePath.relativize(path).toString())).matches();
@@ -142,7 +142,7 @@ public class FilePatternResolver {
 			try {
 				matchingPaths = Files.walk(basePath).filter(filter).sorted().collect(toList());
 			} catch (IOException e) {
-				throw new AgentOptionParseException(
+				throw new IOException(
 						"Could not recursively list files in directory " + basePath + " in order to resolve pattern " + suffixPattern + " given for option " + optionName,
 						e);
 			}
@@ -176,9 +176,9 @@ public class FilePatternResolver {
 		}
 
 		/** Returns the result of a resolution as a single Path and warns when multiple paths match. */
-		private Path getSinglePath() throws AgentOptionParseException {
+		private Path getSinglePath() throws IOException {
 			if (this.matchingPaths.isEmpty()) {
-				throw new AgentOptionParseException(
+				throw new IOException(
 						"Invalid path given for option " + optionName + ": " + this.pattern + ". The pattern " + this.suffixPattern +
 								" did not match any files in " + this.basePath.toAbsolutePath());
 			} else if (this.matchingPaths.size() > 1) {

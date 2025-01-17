@@ -32,20 +32,20 @@ public class FilePatternResolverTest {
 
 	/** Tests path resolution with absolute path. */
 	@Test
-	void testPathResolutionForAbsolutePath() throws AgentOptionParseException {
+	void testPathResolutionForAbsolutePath() throws IOException {
 		assertInputInWorkingDirectoryMatches(".", testFolder.getAbsolutePath(), "");
 	}
 
 	/** Tests path resolution with relative paths. */
 	@Test
-	void testPathResolutionForRelativePath() throws AgentOptionParseException {
+	void testPathResolutionForRelativePath() throws IOException {
 		assertInputInWorkingDirectoryMatches(".", ".", "");
 		assertInputInWorkingDirectoryMatches("plugins", "../file_with_manifest1.jar", "file_with_manifest1.jar");
 	}
 
 	/** Tests path resolution with patterns and relative paths. */
 	@Test
-	public void testPathResolutionWithPatternsAndRelativePaths() throws AgentOptionParseException {
+	public void testPathResolutionWithPatternsAndRelativePaths() throws IOException {
 		assertInputInWorkingDirectoryMatches(".", "plugins/file_*.jar", "plugins/file_with_manifest2.jar");
 		assertInputInWorkingDirectoryMatches(".", "*/file_*.jar", "plugins/file_with_manifest2.jar");
 		assertInputInWorkingDirectoryMatches("plugins/inner", "..", "plugins");
@@ -54,13 +54,13 @@ public class FilePatternResolverTest {
 
 	/** Tests path resolution with patterns and absolute paths. */
 	@Test
-	void testPathResolutionWithPatternsAndAbsolutePaths() throws AgentOptionParseException {
+	void testPathResolutionWithPatternsAndAbsolutePaths() throws IOException {
 		assertInputInWorkingDirectoryMatches("plugins", testFolder.getAbsolutePath() + "/plugins/file_*.jar",
 				"plugins/file_with_manifest2.jar");
 	}
 
 	private void assertInputInWorkingDirectoryMatches(String workingDir, String input,
-													  String expected) throws AgentOptionParseException {
+			String expected) throws IOException {
 		File workingDirectory = new File(testFolder, workingDir);
 		File actualFile = getFilePatternResolverWithDummyLogger().parsePath("option-name", input, workingDirectory)
 				.toFile();
@@ -78,9 +78,9 @@ public class FilePatternResolverTest {
 	void testPathResolutionWithPatternErrorCases() {
 		assertThatThrownBy(
 				() -> getFilePatternResolverWithDummyLogger().parsePath("option-name", "**.war", testFolder))
-				.isInstanceOf(AgentOptionParseException.class).hasMessageContaining(
-				"Invalid path given for option option-name: " +
-						"**.war. The pattern **.war did not match any files in");
+				.isInstanceOf(IOException.class).hasMessageContaining(
+						"Invalid path given for option option-name: " +
+								"**.war. The pattern **.war did not match any files in");
 	}
 
 	private static FilePatternResolver getFilePatternResolverWithDummyLogger() {
@@ -88,14 +88,14 @@ public class FilePatternResolverTest {
 	}
 
 	@Test
-	void resolveToMultipleFilesWithPattern() throws AgentOptionParseException {
+	void resolveToMultipleFilesWithPattern() throws IOException {
 		List<File> files = getFilePatternResolverWithDummyLogger()
 				.resolveToMultipleFiles("option-name", "**.jar", testFolder);
 		assertThat(files).hasSize(3);
 	}
 
 	@Test
-	void resolveToMultipleFilesWithoutPattern() throws AgentOptionParseException {
+	void resolveToMultipleFilesWithoutPattern() throws IOException {
 		List<File> files = getFilePatternResolverWithDummyLogger()
 				.resolveToMultipleFiles("option-name", "plugins/file_with_manifest2.jar", testFolder);
 		assertThat(files).hasSize(1);

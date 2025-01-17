@@ -10,18 +10,15 @@ public class AgentOptionParseException extends Exception {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Constructor.
-	 */
 	public AgentOptionParseException(String message) {
 		super(message);
 	}
 
-	/**
-	 * Constructor.
-	 */
+	public AgentOptionParseException(Exception e) {
+		super(e.getMessage(), e);
+	}
+
 	public AgentOptionParseException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
 }

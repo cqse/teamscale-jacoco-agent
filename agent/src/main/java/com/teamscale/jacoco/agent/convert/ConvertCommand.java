@@ -10,7 +10,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.teamscale.jacoco.agent.commandline.ICommand;
 import com.teamscale.jacoco.agent.commandline.Validator;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.ClasspathUtils;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.EDuplicateClassFileBehavior;
@@ -20,6 +19,7 @@ import org.conqat.lib.commons.filesystem.FileSystemUtils;
 import org.conqat.lib.commons.string.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,7 +93,7 @@ public class ConvertCommand implements ICommand {
 	private int splitAfter = 5000;
 
 	/** @see #classDirectoriesOrZips */
-	public List<File> getClassDirectoriesOrZips() throws AgentOptionParseException {
+	public List<File> getClassDirectoriesOrZips() throws IOException {
 		return ClasspathUtils
 				.resolveClasspathTextFiles("class-dir", new FilePatternResolver(new CommandLineLogger()),
 						classDirectoriesOrZips);

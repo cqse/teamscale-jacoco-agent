@@ -1,10 +1,5 @@
 # Teamscale Maven Plugin Dev Setup
 
-## Import into IntelliJ 
-The JaCoCo agent repo uses gradle, but since we are developing a maven plugin, it also uses maven as nested build system.
-To get code completion etc. in IntelliJ, open the maven tool window and click on sync (🔄) there. 
-This will un-sync the gradle projects but instead sync the `teamscale-maven-plugin` project
-
 ## Manual testing
 When doing manual tests, you can attach the IntelliJ debugger to the JVM in which the tests are run. 
 Surefire (maven unit tests) creates its own JVM and you have to tell it to stop before the execution of the tests to attach a debugger. 

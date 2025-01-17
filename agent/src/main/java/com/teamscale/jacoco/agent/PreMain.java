@@ -245,7 +245,7 @@ public class PreMain {
 					loggingConfigLine = FileSystemUtils.readLinesUTF8(configFile).stream()
 							.filter(line -> line.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "="))
 							.findFirst();
-				} catch (IOException | AgentOptionParseException e) {
+				} catch (IOException e) {
 					delayedLogger.error("Failed to load configuration from " + configFileValue + ": " + e.getMessage(),
 							e);
 				}
@@ -265,7 +265,7 @@ public class PreMain {
 			return LoggingUtils.initializeLogging(
 					new FilePatternResolver(delayedLogger).parsePath(AgentOptionsParser.LOGGING_CONFIG_OPTION,
 							configLocation));
-		} catch (IOException | AgentOptionParseException e) {
+		} catch (IOException e) {
 			String message = "Failed to load log configuration from location " + configLocation + ": " + e.getMessage();
 			delayedLogger.error(message, e);
 			// output the message to console as well, as this might

@@ -66,8 +66,12 @@ public class TeamscaleConfig {
 				teamscaleServer.commit = parseCommit(value);
 				return true;
 			case TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
-				teamscaleServer.commit = getCommitFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
+				try {
+					teamscaleServer.commit = getCommitFromManifest(
+							filePatternResolver.parsePath(key, value).toFile());
+				} catch (IOException e) {
+					throw new AgentOptionParseException(e);
+				}
 				return true;
 			case "teamscale-message":
 				teamscaleServer.setMessage(value);
@@ -79,8 +83,12 @@ public class TeamscaleConfig {
 				teamscaleServer.repository = value;
 				return true;
 			case TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
-				teamscaleServer.revision = getRevisionFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
+				try {
+					teamscaleServer.revision = getRevisionFromManifest(
+							filePatternResolver.parsePath(key, value).toFile());
+				} catch (IOException e) {
+					throw new AgentOptionParseException(e);
+				}
 				return true;
 			default:
 				return false;
