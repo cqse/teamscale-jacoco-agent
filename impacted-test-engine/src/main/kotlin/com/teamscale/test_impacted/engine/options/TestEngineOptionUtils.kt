@@ -4,6 +4,12 @@ import com.teamscale.client.CommitDescriptor
 import org.junit.platform.engine.ConfigurationParameters
 import java.util.*
 
+/**
+ * Utility object for creating and retrieving `TestEngineOptions` based on
+ * provided configuration parameters.
+ * It assists in reading configuration values with a specific prefix
+ * and ensures that the `TestEngineOptions` are properly constructed.
+ */
 object TestEngineOptionUtils {
 	/** Represents the constant prefix used for property keys in the configuration parameters for the test engine. */
 	private const val PREFIX = "teamscale.test.impacted."
