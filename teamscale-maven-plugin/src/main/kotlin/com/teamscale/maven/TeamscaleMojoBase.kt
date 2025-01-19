@@ -19,13 +19,13 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	 * The URL of the Teamscale instance to which the recorded coverage will be uploaded.
 	 */
 	@Parameter
-	lateinit var teamscaleUrl: String
+	var teamscaleUrl: String? = null
 
 	/**
 	 * The Teamscale project to which the recorded coverage will be uploaded
 	 */
 	@Parameter
-	lateinit var projectId: String
+	var projectId: String? = null
 
 	/**
 	 * The username to use to perform the upload. Must have the "Upload external data" permission for the [projectId].
@@ -70,7 +70,6 @@ abstract class TeamscaleMojoBase : AbstractMojo() {
 	/**
 	 * Whether to skip the execution of this Mojo.
 	 */
-	@JvmField
 	@Parameter(defaultValue = "false")
 	var skip: Boolean = false
 

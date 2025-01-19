@@ -45,14 +45,14 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 	 * Impacted tests are calculated from [baselineCommit] to [commit]. This sets the baseline.
 	 */
 	@Parameter
-	lateinit var baselineCommit: String
+	var baselineCommit: String? = null
 
 	/**
 	 * Impacted tests are calculated from [baselineCommit] to [commit].
 	 * The [baselineRevision] sets the [baselineCommit] with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
 	 */
 	@Parameter
-	lateinit var baselineRevision: String
+	var baselineRevision: String? = null
 
 	/**
 	 * You can optionally specify which code should be included in the coverage instrumentation. Each pattern is applied
@@ -62,7 +62,7 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 	 * Classes that match any of the include patterns are included, unless any exclude pattern excludes them.
 	 */
 	@Parameter
-	lateinit var includes: Array<String>
+	var includes = emptyArray<String>()
 
 	/**
 	 * You can optionally specify which code should be excluded from the coverage instrumentation. Each pattern is
@@ -72,7 +72,7 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 	 * Classes that match any of the exclude patterns are excluded, even if they are included by an include pattern.
 	 */
 	@Parameter
-	lateinit var excludes: Array<String>
+	var excludes = emptyArray<String>()
 
 	/**
 	 * To instrument the system under test, a Java agent must be attached to the JVM of the system. The JVM
@@ -82,7 +82,7 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 	 * under test is started by some other plugin like the Spring boot starter.
 	 */
 	@Parameter
-	lateinit var propertyName: String
+	var propertyName: String? = null
 
 	/**
 	 * Port on which the Java agent listens for commands from this plugin. The default value 0 will tell the agent to
@@ -95,7 +95,7 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 	 * Optional additional arguments to send to the agent. Each argument must be of the form `KEY=VALUE`.
 	 */
 	@Parameter
-	lateinit var additionalAgentOptions: Array<String>
+	var additionalAgentOptions = emptyArray<String>()
 
 	/**
 	 * Changes the log level of the agent to DEBUG.
@@ -139,7 +139,7 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 	override fun execute() {
 		super.execute()
 
-		if (baselineCommit.isNotBlank() && baselineRevision.isNotBlank()) {
+		if (!baselineCommit.isNullOrBlank() && !baselineRevision.isNullOrBlank()) {
 			log.warn(
 				"Both baselineRevision and baselineCommit are set but only one of them is needed. " +
 						"The revision will be preferred in this case. If that's not intended, please do not set the baselineRevision manually."
@@ -339,7 +339,7 @@ abstract class TiaMojoBase : TeamscaleMojoBase() {
 		findAgentJarFile()?.let { agentJarFile ->
 			ArgLine.applyToMavenProject(
 				ArgLine(additionalAgentOptions, agentLogLevel, agentJarFile, agentConfigFile, logFilePath),
-				session, log, propertyName, isIntegrationTest
+				session, log, propertyName ?: "None", isIntegrationTest
 			)
 		}
 	}

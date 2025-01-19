@@ -62,7 +62,7 @@ class CoverageUploadMojo : TeamscaleMojoBase() {
 	 * testwise coverage is uploaded.
 	 */
 	@Parameter
-	lateinit var testwiseCoverageOutputFolder: String
+	var testwiseCoverageOutputFolder: String? = null
 
 	/**
 	 * The Teamscale partition name to which testwise coverage reports will be
@@ -140,21 +140,22 @@ class CoverageUploadMojo : TeamscaleMojoBase() {
 	 */
 	@Throws(MojoFailureException::class)
 	private fun parseJacocoConfiguration() {
-		collectReportOutputDirectory(session.topLevelProject, "report", "jacoco", reportGoalOutputFiles)
+		val project = session.topLevelProject ?: return
+		collectReportOutputDirectory(project, "report", "jacoco", reportGoalOutputFiles)
 		collectReportOutputDirectory(
-			session.topLevelProject,
+			project,
 			"report-integration",
 			"jacoco-it",
 			reportIntegrationGoalOutputFiles
 		)
 		collectReportOutputDirectory(
-			session.topLevelProject,
+			project,
 			"report-aggregate",
 			"jacoco-aggregate",
 			reportAggregateGoalOutputFiles
 		)
-		log.debug("Found ${session.topLevelProject.collectedProjects.size} sub-modules")
-		session.topLevelProject.collectedProjects.forEach { subProject ->
+		log.debug("Found ${project.collectedProjects.size} sub-modules")
+		project.collectedProjects.forEach { subProject ->
 			collectReportOutputDirectory(subProject, "report", "jacoco", reportGoalOutputFiles)
 			collectReportOutputDirectory(
 				subProject,
@@ -205,7 +206,7 @@ class CoverageUploadMojo : TeamscaleMojoBase() {
 
 	@Throws(IOException::class)
 	private fun uploadCoverageReports() {
-		val reportPath = if (testwiseCoverageOutputFolder.isBlank()) {
+		val reportPath = if (testwiseCoverageOutputFolder.isNullOrBlank()) {
 			Paths.get(projectBuildDir, "tia", "reports")
 		} else {
 			Paths.get(testwiseCoverageOutputFolder)
