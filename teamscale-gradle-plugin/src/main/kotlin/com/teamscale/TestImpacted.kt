@@ -186,7 +186,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 				reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
 			}
 
-			setImpactedTestEngineOptions(report, testFrameworkOptions)
+			report.setImpactedTestEngineOptions(testFrameworkOptions)
 			testFrameworkOptions.includeEngines = setOf(IMPACTED_TEST_ENGINE)
 		}
 		super.executeTests()
@@ -214,28 +214,28 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		value?.let { systemProperties["teamscale.test.impacted.${this}"] = it.toString() }
 	}
 
-	private fun setImpactedTestEngineOptions(report: Report, options: JUnitPlatformOptions) {
+	private fun Report.setImpactedTestEngineOptions(options: JUnitPlatformOptions) {
 		if (runImpacted) {
 			require(endRevision != null || endCommit != null) { "When executing only impacted tests a reference commit must be specified in the form of endRevision or endCommit!" }
 			serverConfiguration.validate()
-			"server.url".writeProperty(serverConfiguration.url)
-			"server.project".writeProperty(serverConfiguration.project)
-			"server.userName".writeProperty(serverConfiguration.userName)
-			"server.userAccessToken".writeProperty(serverConfiguration.userAccessToken)
+			"server.url" writeProperty serverConfiguration.url
+			"server.project" writeProperty serverConfiguration.project
+			"server.userName" writeProperty serverConfiguration.userName
+			"server.userAccessToken" writeProperty serverConfiguration.userAccessToken
 		}
-		"partition".writeProperty(report.partition.get())
-		"endCommit".writeProperty(endCommit)
-		"endRevision".writeProperty(endRevision)
-		"baseline".writeProperty(baseline)
-		"baselineRevision".writeProperty(baselineRevision)
-		"repository".writeProperty(repository)
-		"reportDirectory".writeProperty(reportOutputDir.absolutePath)
-		"agentsUrls".writeProperty(taskExtension.agent.getAllAgents().map { it.url }.joinToString(","))
-		"runImpacted".writeProperty(runImpacted)
-		"runAllTests".writeProperty(runAllTests)
-		"includeAddedTests".writeProperty(includeAddedTests)
-		"includeFailedAndSkipped".writeProperty(includeFailedAndSkipped)
-		"includedEngines".writeProperty(options.includeEngines.joinToString(","))
-		"excludedEngines".writeProperty(options.excludeEngines.joinToString(","))
+		"partition" writeProperty partition.get()
+		"endCommit" writeProperty endCommit
+		"endRevision" writeProperty endRevision
+		"baseline" writeProperty baseline
+		"baselineRevision" writeProperty baselineRevision
+		"repository" writeProperty repository
+		"reportDirectory" writeProperty reportOutputDir.absolutePath
+		"agentsUrls" writeProperty taskExtension.agent.getAllAgents().map { it.url }.joinToString(",")
+		"runImpacted" writeProperty runImpacted
+		"runAllTests" writeProperty runAllTests
+		"includeAddedTests" writeProperty includeAddedTests
+		"includeFailedAndSkipped" writeProperty includeFailedAndSkipped
+		"includedEngines" writeProperty options.includeEngines.joinToString(",")
+		"excludedEngines" writeProperty options.excludeEngines.joinToString(",")
 	}
 }
