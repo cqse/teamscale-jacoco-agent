@@ -8,14 +8,6 @@ WORKDIR /src
 RUN ./gradlew :agent:shadowJar
 
 # --- production image ---
-
-FROM alpine:latest
-
-RUN mkdir -p /agent
-COPY --from=build /src/agent/build/libs/teamscale-jacoco-agent.jar /agent
-
-VOLUME /agent
-
 FROM alpine:latest
 
 RUN mkdir -p /agent
