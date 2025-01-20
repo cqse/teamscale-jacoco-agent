@@ -59,6 +59,8 @@ class TeamscaleMockServer(port: Int) {
 	private var impactedTests = listOf<String>()
 	private val profilerEvents = mutableListOf<String>()
 	private var profilerConfiguration: ProfilerConfiguration? = null
+	private var username: String? = null
+	private var accessToken: String? = null
 
 	init {
 		service.port(port)
@@ -72,6 +74,13 @@ class TeamscaleMockServer(port: Int) {
 		}
 		service.init()
 		service.awaitInitialization()
+	}
+
+	/** Enables authentication for the mock server by setting the provided username and access token.  */
+	fun withAuthentication(username: String, accessToken: String): TeamscaleMockServer {
+		this.username = username
+		this.accessToken = accessToken
+		return this
 	}
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval.  */
@@ -90,9 +99,10 @@ class TeamscaleMockServer(port: Int) {
 	/** Configures the server to answer all impacted test calls with the given tests.  */
 	fun withProfilerConfiguration(profilerConfiguration: ProfilerConfiguration?): TeamscaleMockServer {
 		this.profilerConfiguration = profilerConfiguration
-		service.post("api/v9.4.0/running-profilers", ::handleProfilerRegistration)
-		service.put("api/v9.4.0/running-profilers/:profilerId", ::handleProfilerHeartbeat)
-		service.delete("api/v9.4.0/running-profilers/:profilerId", ::handleProfilerUnregister)
+		service.post("api/v2024.7.0/profilers", ::handleProfilerRegistration)
+		service.put("api/v2024.7.0/profilers/:profilerId", ::handleProfilerHeartbeat)
+		service.delete("api/v2024.7.0/profilers/:profilerId", ::handleProfilerUnregister)
+		service.post("api/v2024.7.0/profilers/:profilerId/logs", ::handleProfilerLogs);
 		return this
 	}
 
@@ -118,36 +128,50 @@ class TeamscaleMockServer(port: Int) {
 
 	@Throws(IOException::class)
 	private fun handleImpactedTests(request: Request, response: Response): String {
+		requireAuthentication(request, response)
+
 		request.collectUserAgent()
-		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"))
+		impactedTestCommits.add("${request.queryParams("end-revision")}, ${request.queryParams("end")}")
 		impactedTestRepositories.add(request.queryParams("repository"))
-		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"))
-		availableTests.addAll(deserializeList(
-			request.body(), TestWithClusterId::class.java
-		))
+		baselines.add("${request.queryParams("baseline-revision")}, ${request.queryParams("baseline")}")
+		availableTests.addAll(deserializeList(request.body(), TestWithClusterId::class.java))
 		val tests = impactedTests.map { testName -> PrioritizableTest(testName) }
 		return listOf(PrioritizableTestCluster("cluster", tests)).serialize()
 	}
 
 	@Throws(JsonProcessingException::class)
 	private fun handleProfilerRegistration(request: Request, response: Response): String {
+		requireAuthentication(request, response)
+
 		request.collectUserAgent()
 		profilerEvents.add(
 			"Profiler registered and requested configuration ${request.queryParams("configuration-id")}"
 		)
-		val registration = ProfilerRegistration()
-		registration.profilerConfiguration = this.profilerConfiguration
-		registration.profilerId = "123"
-		return registration.serialize()
+		return ProfilerRegistration().apply {
+			profilerConfiguration = this@TeamscaleMockServer.profilerConfiguration
+			profilerId = "123"
+		}.serialize()
 	}
 
 	private fun handleProfilerHeartbeat(request: Request, response: Response): String {
+		requireAuthentication(request, response)
+
 		request.collectUserAgent()
 		profilerEvents.add("Profiler ${request.params(":profilerId")} sent heartbeat")
 		return ""
 	}
 
+	private fun handleProfilerLogs(request: Request, response: Response): String {
+		requireAuthentication(request, response)
+
+		request.collectUserAgent()
+		profilerEvents.add("Profiler ${request.params(":profilerId")} sent logs")
+		return ""
+	}
+
 	private fun handleProfilerUnregister(request: Request, response: Response): String {
+		requireAuthentication(request, response)
+
 		request.collectUserAgent()
 		profilerEvents.add("Profiler ${request.params(":profilerId")} unregistered")
 		return "foo"
@@ -157,6 +181,8 @@ class TeamscaleMockServer(port: Int) {
 
 	@Throws(IOException::class, ServletException::class)
 	private fun handleReport(request: Request, response: Response): String {
+		requireAuthentication(request, response)
+
 		request.collectUserAgent()
 		uploadCommits.add("${request.queryParams("revision")}, ${request.queryParams("t")}")
 		uploadRepositories.add(request.queryParams("repository"))
@@ -184,5 +210,20 @@ class TeamscaleMockServer(port: Int) {
 	fun shutdown() {
 		service.stop()
 		service.awaitStop()
+	}
+
+	private fun requireAuthentication(request: Request, response: Response) {
+		username?.let { user -> accessToken?.let { token ->
+			val authHeader = request.headers("Authorization")
+			if (authHeader == null || authHeader != buildBasicAuthHeader(user, token)) {
+				response.status(401)
+				throw IllegalArgumentException("Unauthorized")
+			}
+		}}
+	}
+
+	private fun buildBasicAuthHeader(username: String, accessToken: String): String {
+		val credentials = "$username:$accessToken"
+		return "Basic " + Base64.getEncoder().encodeToString(credentials.toByteArray())
 	}
 }
