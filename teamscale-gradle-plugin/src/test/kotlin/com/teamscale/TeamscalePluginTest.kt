@@ -39,6 +39,7 @@ class TeamscalePluginTest {
 	@BeforeEach
 	fun startFakeTeamscaleServer() {
 		teamscaleMockServer = TeamscaleMockServer(FAKE_TEAMSCALE_PORT)
+			.withAuthentication("build", "82l1jtkIx6xG7DDG34FLsKhejcHz1cMu")
 			.acceptingReportUploads()
 			.withImpactedTests("com/example/project/JUnit4Test/systemTest")
 	}

@@ -5,7 +5,13 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
-- [fix] _agent_: Warning about multiple agents being present is misleading  
+
+# 34.2.2
+- [fix] _teamscale-gradle-plugin_: 401 Unauthorized error when trying to upload reports to Teamscale 
+
+# 34.2.1
+- [fix] _agent_: Warning about multiple agents being present is misleading
+- [fix] _agent_: CVE-2024-26308
 
 # 34.2.0
 - [fix] _agent_: `search-git-properties-recursively` was not considered when jar was given via `artifactory-git-properties-jar`

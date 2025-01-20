@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions;
 import org.conqat.lib.commons.io.ProcessUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashSet;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -36,8 +38,11 @@ public class TeamscaleProfilerConfigurationSystemTest {
 
 		teamscaleMockServer.shutdown();
 
-		assertThat(teamscaleMockServer.getProfilerEvents()).containsExactly(
-				"Profiler registered and requested configuration my-config", "Profiler 123 sent heartbeat",
+		assertThat(new LinkedHashSet<>(teamscaleMockServer.getProfilerEvents())).as("We expect a sequence of interactions with the mock. " +
+				"Note that unexpected interactions can be caused by old agent instances that have not been killed properly.") //
+				.containsExactly("Profiler registered and requested configuration my-config",
+						"Profiler 123 sent logs",
+						"Profiler 123 sent heartbeat",
 				"Profiler 123 unregistered");
 	}
 

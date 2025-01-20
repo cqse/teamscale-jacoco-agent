@@ -2,7 +2,7 @@ package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
 import com.teamscale.jacoco.agent.upload.delay.DelayedUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
-import com.teamscale.jacoco.agent.util.LoggingUtils;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 

@@ -159,7 +159,7 @@ public class TestwiseCoverageAgentTest {
 
 	private AgentOptions mockOptions(int port) {
 		AgentOptions options = mock(AgentOptions.class);
-		when(options.createTeamscaleClient()).thenReturn(client);
+		when(options.createTeamscaleClient(true)).thenReturn(client);
 
 
 		TeamscaleServer server = new TeamscaleServer();
@@ -172,7 +172,7 @@ public class TestwiseCoverageAgentTest {
 		when(options.getHttpServerPort()).thenReturn(port);
 		when(options.getTestwiseCoverageMode()).thenReturn(ETestwiseCoverageMode.TEAMSCALE_UPLOAD);
 
-		when(options.createTeamscaleClient()).thenReturn(client);
+		when(options.createTeamscaleClient(true)).thenReturn(client);
 		return options;
 	}
 }
