@@ -7,6 +7,7 @@ import org.apache.commons.lang3.SystemUtils
 import org.conqat.lib.commons.io.ProcessUtils
 import retrofit2.Call
 import retrofit2.Retrofit
+import retrofit2.create
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -17,6 +18,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.streams.asSequence
 
 /**
  * Utilities for running system tests.
@@ -44,8 +46,7 @@ object SystemTestUtils {
 	 */
 	@JvmStatic
 	fun getCoverageString(info: TestInfo) =
-		info.paths
-			.flatMap { it.files }
+		info.paths.flatMap { it.files }
 			.joinToString(";") { it.fileName + ":" + it.coveredLines }
 
 	/**
@@ -162,7 +163,7 @@ object SystemTestUtils {
 	@Throws(IOException::class)
 	fun getReportFileNames(mavenProjectPath: String): List<Path> {
 		Files.walk(Paths.get(mavenProjectPath, "target", "tia", "reports")).use { stream ->
-			return stream.filter { Files.isRegularFile(it) }.sorted().collect(Collectors.toList())
+			return stream.asSequence().filter { Files.isRegularFile(it) }.sorted().toList()
 		}
 	}
 
@@ -171,7 +172,7 @@ object SystemTestUtils {
 	@Throws(IOException::class)
 	fun dumpCoverage(agentPort: Int) {
 		Retrofit.Builder().baseUrl("http://localhost:$agentPort").build()
-			.create(AgentService::class.java).dump().execute()
+			.create<AgentService>().dump().execute()
 	}
 
 	/** Instructs the agent via HTTP to change the partition.  */
@@ -179,7 +180,7 @@ object SystemTestUtils {
 	fun changePartition(agentPort: Int, newPartition: String) {
 		val requestBody = RequestBody.create(MediaType.parse("text/plain"), newPartition)
 		Retrofit.Builder().baseUrl("http://localhost:$agentPort").build()
-			.create(AgentService::class.java)
+			.create<AgentService>()
 			.changePartition(requestBody)
 			.execute()
 	}
