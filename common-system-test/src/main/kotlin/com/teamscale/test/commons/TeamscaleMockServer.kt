@@ -28,7 +28,7 @@ class TeamscaleMockServer(port: Int) {
 
 	/** All user agents that were present in the received requests.  */
 	@JvmField
-	val collectedUserAgents = mutableListOf<String>()
+	val collectedUserAgents = mutableSetOf<String>()
 
 	/** A list of all commits to which an upload happened. Can either be branch:timestamp or revision  */
 	@JvmField
@@ -48,11 +48,12 @@ class TeamscaleMockServer(port: Int) {
 
 	/** A list of all repositories for which impacted tests were requested.  */
 	@JvmField
-	val impactedTestRepositories = mutableListOf<String>()
+	val impactedTestRepositories = mutableListOf<String?>()
 
 	/** All tests that the test engine has signaled to Teamscale as being available for execution.  */
 	@JvmField
 	val availableTests = mutableSetOf<TestWithClusterId>()
+
 	private val tempDir = Files.createTempDirectory("TeamscaleMockServer")
 	private val service = Service.ignite()
 	private var impactedTests = listOf<String>()
@@ -117,7 +118,7 @@ class TeamscaleMockServer(port: Int) {
 
 	@Throws(IOException::class)
 	private fun handleImpactedTests(request: Request, response: Response): String {
-		collectedUserAgents.add(request.headers("User-Agent"))
+		request.collectUserAgent()
 		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"))
 		impactedTestRepositories.add(request.queryParams("repository"))
 		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"))
@@ -130,7 +131,7 @@ class TeamscaleMockServer(port: Int) {
 
 	@Throws(JsonProcessingException::class)
 	private fun handleProfilerRegistration(request: Request, response: Response): String {
-		collectedUserAgents.add(request.headers("User-Agent"))
+		request.collectUserAgent()
 		profilerEvents.add(
 			"Profiler registered and requested configuration ${request.queryParams("configuration-id")}"
 		)
@@ -141,13 +142,13 @@ class TeamscaleMockServer(port: Int) {
 	}
 
 	private fun handleProfilerHeartbeat(request: Request, response: Response): String {
-		collectedUserAgents.add(request.headers("User-Agent"))
+		request.collectUserAgent()
 		profilerEvents.add("Profiler ${request.params(":profilerId")} sent heartbeat")
 		return ""
 	}
 
 	private fun handleProfilerUnregister(request: Request, response: Response): String {
-		collectedUserAgents.add(request.headers("User-Agent"))
+		request.collectUserAgent()
 		profilerEvents.add("Profiler ${request.params(":profilerId")} unregistered")
 		return "foo"
 	}
@@ -156,7 +157,7 @@ class TeamscaleMockServer(port: Int) {
 
 	@Throws(IOException::class, ServletException::class)
 	private fun handleReport(request: Request, response: Response): String {
-		collectedUserAgents.add(request.headers("User-Agent"))
+		request.collectUserAgent()
 		uploadCommits.add("${request.queryParams("revision")}, ${request.queryParams("t")}")
 		uploadRepositories.add(request.queryParams("repository"))
 		val multipartConfigElement = MultipartConfigElement(tempDir.toString())
@@ -171,6 +172,10 @@ class TeamscaleMockServer(port: Int) {
 		}
 
 		return "success"
+	}
+
+	private fun Request.collectUserAgent() {
+		collectedUserAgents.add(headers("User-Agent"))
 	}
 
 	/**

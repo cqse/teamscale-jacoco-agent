@@ -94,8 +94,8 @@ class TeamscalePluginTest {
 		assertFullCoverage(testwiseCoverageReportFile.readText())
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		assertFullCoverage(teamscaleMockServer.uploadedReports[0].reportString)
-		assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("Unit Tests")
+		assertFullCoverage(teamscaleMockServer.uploadedReports.first().reportString)
+		assertThat(teamscaleMockServer.uploadedReports.first().partition).isEqualTo("Unit Tests")
 	}
 
 	@Test
@@ -116,8 +116,8 @@ class TeamscalePluginTest {
 		assertPartialCoverage(testwiseCoverageReportFile.readText())
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		assertPartialCoverage(teamscaleMockServer.uploadedReports[0].reportString)
-		assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("Unit Tests")
+		assertPartialCoverage(teamscaleMockServer.uploadedReports.first().reportString)
+		assertThat(teamscaleMockServer.uploadedReports.first().partition).isEqualTo("Unit Tests")
 	}
 
 	@Test

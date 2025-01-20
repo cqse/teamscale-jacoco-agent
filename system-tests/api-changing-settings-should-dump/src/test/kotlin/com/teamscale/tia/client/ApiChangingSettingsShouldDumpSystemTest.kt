@@ -26,8 +26,8 @@ class ApiChangingSettingsShouldDumpSystemTest {
 		changePartition(SystemTestUtils.AGENT_PORT, "some_other_value")
 
 		Assertions.assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		Assertions.assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("partition_before_change")
-		val report = teamscaleMockServer.uploadedReports[0].reportString
+		Assertions.assertThat(teamscaleMockServer.uploadedReports.first().partition).isEqualTo("partition_before_change")
+		val report = teamscaleMockServer.uploadedReports.first().reportString
 		Assertions.assertThat(report).contains(
 			"<line nr=\"$METHOD_FOO_COVERABLE_LINE\" mi=\"0\""
 		)
