@@ -1,23 +1,5 @@
 package com.teamscale.test.commons;
 
-import static java.util.stream.Collectors.toList;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletException;
-import javax.servlet.http.Part;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.teamscale.client.JsonUtils;
 import com.teamscale.client.PrioritizableTest;
@@ -26,11 +8,28 @@ import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TestWithClusterId;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
-
 import spark.Request;
 import spark.Response;
 import spark.Service;
 import spark.utils.IOUtils;
+
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.ServletException;
+import javax.servlet.http.Part;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 /**
  * Mocks a Teamscale server: returns predetermined impacted tests and stores all uploaded reports so tests can run
@@ -61,6 +60,8 @@ public class TeamscaleMockServer {
 	private List<String> impactedTests;
 	private final List<String> profilerEvents = new ArrayList<>();
 	private ProfilerConfiguration profilerConfiguration;
+	private String username = null;
+	private String accessToken = null;
 
 	public TeamscaleMockServer(int port) throws IOException {
 		service = Service.ignite();
@@ -75,6 +76,13 @@ public class TeamscaleMockServer {
 		});
 		service.init();
 		service.awaitInitialization();
+	}
+
+	/** Enables authentication for the mock server by setting the provided username and access token. */
+	public TeamscaleMockServer withAuthentication(String username, String accessToken) {
+		this.username = username;
+		this.accessToken = accessToken;
+		return this;
 	}
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
@@ -122,6 +130,8 @@ public class TeamscaleMockServer {
 	}
 
 	private String handleImpactedTests(Request request, Response response) throws IOException {
+		requireAuthentication(request, response);
+
 		collectedUserAgents.add(request.headers("User-Agent"));
 		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"));
 		impactedTestRepositories.add(request.queryParams("repository"));
@@ -132,6 +142,8 @@ public class TeamscaleMockServer {
 	}
 
 	private String handleProfilerRegistration(Request request, Response response) throws JsonProcessingException {
+		requireAuthentication(request, response);
+
 		collectedUserAgents.add(request.headers("User-Agent"));
 		profilerEvents.add(
 				"Profiler registered and requested configuration " + request.queryParams("configuration-id"));
@@ -142,18 +154,24 @@ public class TeamscaleMockServer {
 	}
 
 	private String handleProfilerHeartbeat(Request request, Response response) {
+		requireAuthentication(request, response);
+
 		collectedUserAgents.add(request.headers("User-Agent"));
 		profilerEvents.add("Profiler " + request.params(":profilerId") + " sent heartbeat");
 		return "";
 	}
 
 	private String handleProfilerLogs(Request request, Response response) {
+		requireAuthentication(request, response);
+
 		collectedUserAgents.add(request.headers("User-Agent"));
 		profilerEvents.add("Profiler " + request.params(":profilerId") + " sent logs");
 		return "";
 	}
 
 	private String handleProfilerUnregister(Request request, Response response) {
+		requireAuthentication(request, response);
+
 		collectedUserAgents.add(request.headers("User-Agent"));
 		profilerEvents.add("Profiler " + request.params(":profilerId") + " unregistered");
 		return "foo";
@@ -164,6 +182,8 @@ public class TeamscaleMockServer {
 	}
 
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
+		requireAuthentication(request, response);
+
 		collectedUserAgents.add(request.headers("User-Agent"));
 		uploadCommits.add(request.queryParams("revision") + ", " + request.queryParams("t"));
 		uploadRepositories.add(request.queryParams("repository"));
@@ -189,4 +209,18 @@ public class TeamscaleMockServer {
 		service.awaitStop();
 	}
 
+	private void requireAuthentication(Request request, Response response) {
+		if (username != null && accessToken != null) {
+			String authHeader = request.headers("Authorization");
+			if (authHeader == null || !authHeader.equals(buildBasicAuthHeader(username, accessToken))) {
+				response.status(401);
+				throw new IllegalArgumentException("Unauthorized");
+			}
+		}
+	}
+
+	private String buildBasicAuthHeader(String username, String accessToken) {
+		String credentials = username + ":" + accessToken;
+		return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+	}
 }

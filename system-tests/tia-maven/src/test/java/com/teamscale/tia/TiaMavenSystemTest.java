@@ -23,7 +23,9 @@ public class TiaMavenSystemTest {
 
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
-		teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads()
+		teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT)
+				.withAuthentication("build", "6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4")
+				.acceptingReportUploads()
 				.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
 						"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 	}

@@ -30,8 +30,8 @@ data class ServerConfiguration(
     }
 	fun toClient() = TeamscaleClient(
 		url,
-		project ?: throw GradleException("Teamscale project name must not be null!"),
 		userName ?: throw GradleException("Teamscale user name must not be null!"),
-		userAccessToken ?: throw GradleException("Teamscale user access token must not be null!")
+		userAccessToken ?: throw GradleException("Teamscale user access token must not be null!"),
+		project ?: throw GradleException("Teamscale project name must not be null!")
 	)
 }
