@@ -13,6 +13,10 @@ java {
     }
 }
 
+tasks.withType<JavaCompile> {
+    options.release = 11
+}
+
 publishAs {
     readableName.set("Teamscale Gradle Plugin")
     description.set("A Gradle plugin that supports collecting Testwise Coverage and uploading reports to Teamscale.")

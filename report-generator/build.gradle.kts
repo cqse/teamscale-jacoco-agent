@@ -1,9 +1,8 @@
 plugins {
     `java-library`
-    com.teamscale.`java-convention`
+    com.teamscale.`kotlin-convention`
     com.teamscale.coverage
     com.teamscale.publish
-    kotlin("jvm")
 }
 
 publishAs {

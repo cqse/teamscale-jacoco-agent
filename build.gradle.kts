@@ -1,7 +1,6 @@
 plugins {
 	alias(libs.plugins.versions)
 	alias(libs.plugins.nexusPublish)
-	kotlin("jvm") apply false
 }
 
 group = "com.teamscale"

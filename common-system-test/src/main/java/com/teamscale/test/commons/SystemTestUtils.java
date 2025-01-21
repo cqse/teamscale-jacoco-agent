@@ -166,7 +166,10 @@ public class SystemTestUtils {
 		}
 	}
 
-	private interface AgentService {
+	/**
+	 * Interface for interacting with an agent service that enables coverage dumping and partition management.
+	 */
+	public interface AgentService {
 		/** Dumps coverage */
 		@POST("/dump")
 		Call<Void> dump();

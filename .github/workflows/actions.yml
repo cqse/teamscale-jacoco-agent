@@ -16,7 +16,7 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
     - name: Build with Gradle
       run: ./gradlew build
     - name: Upload Release Assets
@@ -79,7 +79,7 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
     - name: Build with Gradle
       run: ./gradlew build
     - name: Upload coverage to Teamscale

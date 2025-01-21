@@ -18,12 +18,6 @@ tasks.test {
 	}
 }
 
-java {
-	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(11))
-	}
-}
-
 tasks.withType<Jar> {
 	archiveFileName.set("app.jar")
 	manifest {
