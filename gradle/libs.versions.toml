@@ -78,7 +78,7 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 
-springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.1" }
+springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.2" }
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.52.0" }
