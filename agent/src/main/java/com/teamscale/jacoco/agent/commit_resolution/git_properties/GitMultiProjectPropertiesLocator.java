@@ -1,9 +1,9 @@
 package com.teamscale.jacoco.agent.commit_resolution.git_properties;
 
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.ProjectAndCommit;
 import com.teamscale.jacoco.agent.upload.teamscale.DelayedTeamscaleMultiProjectUploader;
 import com.teamscale.jacoco.agent.util.DaemonThreadFactory;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
  */
 public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 
-	private final Logger logger = LoggingUtils.getLogger(GitSingleProjectPropertiesLocator.class);
+	private final Logger logger = LoggingUtils.getLogger(GitMultiProjectPropertiesLocator.class);
 
 	private final Executor executor;
 	private final DelayedTeamscaleMultiProjectUploader uploader;
