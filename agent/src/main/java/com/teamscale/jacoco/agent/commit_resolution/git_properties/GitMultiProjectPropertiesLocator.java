@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
  */
 public class GitMultiProjectPropertiesLocator implements IGitPropertiesLocator {
 
-	private final Logger logger = LoggingUtils.getLogger(GitMultiProjectPropertiesLocator.class);
+	private final Logger logger = LoggingUtils.getLogger(this);
 
 	private final Executor executor;
 	private final DelayedTeamscaleMultiProjectUploader uploader;
