@@ -12,4 +12,5 @@ dependencies {
 
     implementation("org.ow2.asm:asm:9.7.1")
     implementation("org.ow2.asm:asm-commons:9.7.1")
+    implementation("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:2.1.10")
 }

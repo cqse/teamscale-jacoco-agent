@@ -69,7 +69,7 @@ public final class JaCoCoPreMain {
 			final Class<InjectedClassRuntime> clazz = module
 					.loadClassInModule(InjectedClassRuntime.class);
 			return clazz.getConstructor(Class.class, String.class)
-					.newInstance(Object.class, "$JaCoCo");
+					.newInstance(Object.class, "$TeamscaleJaCoCo");
 		}
 
 		return ModifiedSystemClassRuntime.createFor(inst,

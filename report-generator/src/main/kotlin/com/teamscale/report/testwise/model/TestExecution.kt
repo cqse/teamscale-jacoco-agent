@@ -46,5 +46,6 @@ data class TestExecution @JvmOverloads constructor(
 	private val duration: Double? = null
 
 	val durationSeconds: Double
+		@Suppress("DEPRECATION")
 		get() = duration ?: (durationMillis / 1000.0)
 }

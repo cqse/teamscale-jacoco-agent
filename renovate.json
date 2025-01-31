@@ -40,12 +40,6 @@
       "allowedVersions": "< 2"
     },
     {
-      "matchPackagePrefixes": [
-        "org.mockito"
-      ],
-      "allowedVersions": "< 5"
-    },
-    {
       "matchPaths": ["installer/build.gradle.kts"],
       "matchPackageNames": [
         "com.squareup.okhttp3:okhttp"

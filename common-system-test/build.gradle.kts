@@ -1,7 +1,6 @@
 plugins {
-    kotlin("jvm")
     `java-library`
-    com.teamscale.`java-convention`
+    com.teamscale.`kotlin-convention`
     // we do not enable code coverage recording for the system tests as we already need our agent attached
     // it would conflict with JaCoCo's
 }

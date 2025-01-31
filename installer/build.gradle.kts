@@ -23,6 +23,10 @@ java {
 	}
 }
 
+tasks.withType<JavaCompile> {
+	options.release = 17
+}
+
 application {
 	applicationName = "installer"
 	mainClass = "com.teamscale.profiler.installer.RootCommand"

@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    com.teamscale.`java-convention`
+    com.teamscale.`kotlin-convention`
     com.teamscale.coverage
     com.teamscale.`shadow-convention`
     com.teamscale.publish
@@ -18,6 +18,7 @@ dependencies {
 
     compileOnly(libs.junit.platform.engine)
     compileOnly(libs.junit.platform.commons)
-    testImplementation(libs.junit.platform.engine)
+	testImplementation(libs.junit.platform.engine)
     testImplementation(libs.junit.jupiter.params)
+	testImplementation(libs.mockito.kotlin)
 }

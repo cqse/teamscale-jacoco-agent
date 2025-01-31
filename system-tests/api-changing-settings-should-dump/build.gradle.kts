@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm")
+    com.teamscale.`kotlin-convention`
     com.teamscale.`system-test-convention`
 }
 
