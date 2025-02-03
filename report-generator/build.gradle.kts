@@ -25,6 +25,7 @@ dependencies {
     }
 
     implementation(libs.jackson.databind)
+    implementation(libs.teamscaleLibCommons)
 
     testImplementation(libs.jsonassert)
     testImplementation(libs.teamscaleLibCommons)

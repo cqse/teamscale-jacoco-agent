@@ -14,7 +14,7 @@ public class ClasspathUtils {
 
 	/** Replaces all txt files in the given list with the file names written in the txt file separated by new lines. */
 	public static List<File> resolveClasspathTextFiles(String key, FilePatternResolver filePatternResolver,
-													   List<String> patterns) throws AgentOptionParseException {
+													   List<String> patterns) throws IOException {
 		List<File> resolvedPaths = new ArrayList<>();
 		for (String pattern : patterns) {
 			resolvedPaths.addAll(filePatternResolver.resolveToMultipleFiles(key, pattern));
@@ -29,12 +29,12 @@ public class ClasspathUtils {
 	}
 
 	private static List<File> resolveClassPathEntries(String key, FilePatternResolver filePatternResolver,
-													  File txtFile) throws AgentOptionParseException {
+													  File txtFile) throws IOException {
 		List<String> filePaths;
 		try {
 			filePaths = FileSystemUtils.readLinesUTF8(txtFile);
 		} catch (IOException e) {
-			throw new AgentOptionParseException("Failed read class path entries from the provided " + txtFile +
+			throw new IOException("Failed read class path entries from the provided " + txtFile +
 					" in the `" + key + "` option.", e);
 		}
 		List<File> resolvedFiles = new ArrayList<>();

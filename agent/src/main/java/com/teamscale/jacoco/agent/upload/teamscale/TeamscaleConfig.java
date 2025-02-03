@@ -1,11 +1,5 @@
 package com.teamscale.jacoco.agent.upload.teamscale;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
-
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleServer;
@@ -14,6 +8,14 @@ import com.teamscale.jacoco.agent.options.AgentOptionsParser;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import com.teamscale.report.util.BashFileSkippingInputStream;
 import com.teamscale.report.util.ILogger;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+
+import static com.teamscale.jacoco.agent.options.AgentOptionsParser.parsePath;
 
 /** Config necessary for direct Teamscale upload. */
 public class TeamscaleConfig {
@@ -44,7 +46,7 @@ public class TeamscaleConfig {
 	 * @return true if it has successfully processed the given option.
 	 */
 	public boolean handleTeamscaleOptions(TeamscaleServer teamscaleServer,
-										  String key, String value)
+			String key, String value)
 			throws AgentOptionParseException {
 		switch (key) {
 			case "teamscale-server-url":
@@ -67,7 +69,7 @@ public class TeamscaleConfig {
 				return true;
 			case TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION:
 				teamscaleServer.commit = getCommitFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
+						parsePath(filePatternResolver, key, value).toFile());
 				return true;
 			case "teamscale-message":
 				teamscaleServer.setMessage(value);
@@ -80,7 +82,7 @@ public class TeamscaleConfig {
 				return true;
 			case TEAMSCALE_REVISION_MANIFEST_JAR_OPTION:
 				teamscaleServer.revision = getRevisionFromManifest(
-						filePatternResolver.parsePath(key, value).toFile());
+						parsePath(filePatternResolver, key, value).toFile());
 				return true;
 			default:
 				return false;

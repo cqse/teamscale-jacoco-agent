@@ -32,9 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_COMMIT_DATE_FORMAT_OPTION;
 import static com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig.ARTIFACTORY_GIT_PROPERTIES_JAR_OPTION;
@@ -68,10 +66,12 @@ public class AgentOptionsParser {
 	 * @param environmentConfigId   The Profiler configuration ID given via an environment variable.
 	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
 	 */
-	public static Pair<AgentOptions, List<Exception>> parse(String optionsString, String environmentConfigId, String environmentConfigFile,
+	public static Pair<AgentOptions, List<Exception>> parse(String optionsString, String environmentConfigId,
+			String environmentConfigFile,
 			TeamscaleCredentials credentials,
 			ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
-		AgentOptionsParser parser = new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile, credentials);
+		AgentOptionsParser parser = new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile,
+				credentials);
 		AgentOptions options = parser.parse(optionsString);
 		return Pair.createPair(options, parser.getCollectedErrors());
 	}
@@ -221,8 +221,8 @@ public class AgentOptionsParser {
 						value)) {
 			return;
 		}
-		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value,
-				filePatternResolver)) {
+		if (key.startsWith("proxy-") && handleProxyOptions(options, StringUtils.stripPrefix(key, "proxy-"), value
+		)) {
 			return;
 		}
 		if (handleAgentOptions(options, key, value)) {
@@ -231,8 +231,7 @@ public class AgentOptionsParser {
 		throw new AgentOptionParseException("Unknown option: " + key);
 	}
 
-	private boolean handleProxyOptions(AgentOptions options, String key, String value,
-			FilePatternResolver filePatternResolver) throws AgentOptionParseException {
+	private boolean handleProxyOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
 		String httpsPrefix = ProxySystemProperties.Protocol.HTTPS + "-";
 		if (key.startsWith(httpsPrefix)
 				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
@@ -250,7 +249,7 @@ public class AgentOptionsParser {
 		}
 
 		if (key.equals("password-file")) {
-			Path proxyPasswordPath = filePatternResolver.parsePath(key, value);
+			Path proxyPasswordPath = parsePath(filePatternResolver, key, value);
 			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
 					.setProxyPasswordPath(proxyPasswordPath);
 			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
@@ -300,10 +299,10 @@ public class AgentOptionsParser {
 				storeConfigId(options, value);
 				return true;
 			case CONFIG_FILE_OPTION:
-				readConfigFromFile(options, filePatternResolver.parsePath(key, value).toFile());
+				readConfigFromFile(options, parsePath(filePatternResolver, key, value).toFile());
 				return true;
 			case LOGGING_CONFIG_OPTION:
-				options.loggingConfig = filePatternResolver.parsePath(key, value);
+				options.loggingConfig = parsePath(filePatternResolver, key, value);
 				return true;
 			case "interval":
 				options.dumpIntervalInMinutes = parseInt(key, value);
@@ -312,7 +311,7 @@ public class AgentOptionsParser {
 				options.validateSsl = Boolean.parseBoolean(value);
 				return true;
 			case "out":
-				options.setParentOutputDirectory(filePatternResolver.parsePath(key, value));
+				options.setParentOutputDirectory(parsePath(filePatternResolver, key, value));
 				return true;
 			case "upload-metadata":
 				try {
@@ -363,8 +362,12 @@ public class AgentOptionsParser {
 				return true;
 			case "class-dir":
 				List<String> list = splitMultiOptionValue(value);
-				options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver,
-						list);
+				try {
+					options.classDirectoriesOrZips = ClasspathUtils.resolveClasspathTextFiles(key, filePatternResolver,
+							list);
+				} catch (IOException e) {
+					throw new AgentOptionParseException(e);
+				}
 				return true;
 			case "http-server-port":
 				options.httpServerPort = parseInt(key, value);
@@ -476,6 +479,21 @@ public class AgentOptionsParser {
 			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {
 			throw new AgentOptionParseException("Invalid non-numeric value for option `" + key + "`: " + value);
+		}
+	}
+
+	/**
+	 * Interprets the given pattern as an Ant pattern and resolves it to one existing {@link Path}. If the given path is
+	 * relative, it is resolved relative to the current working directory. If more than one file matches the pattern,
+	 * one of the matching files is used without any guarantees as to which. The selection is, however, guaranteed to be
+	 * deterministic, i.e. if you run the pattern twice and get the same set of files, the same file will be picked each
+	 * time.
+	 */
+	public static Path parsePath(FilePatternResolver filePatternResolver, String optionName, String pattern) throws AgentOptionParseException {
+		try {
+			return filePatternResolver.parsePath(optionName, pattern);
+		} catch (IOException e) {
+			throw new AgentOptionParseException(e);
 		}
 	}
 
