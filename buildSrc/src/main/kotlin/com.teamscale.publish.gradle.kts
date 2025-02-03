@@ -52,6 +52,9 @@ fun PublicationContainer.configureMavenPublication() {
             pluginManager.withPlugin("java-library") {
                 from(components["java"])
             }
+            pluginManager.withPlugin("org.gradlex.maven-plugin-development") {
+                from(components["java"])
+            }
         }
     }
 }

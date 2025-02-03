@@ -1,7 +1,6 @@
 package com.teamscale.maven.tia;
 
 import com.google.common.base.Strings;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.ClasspathUtils;
 import com.teamscale.jacoco.agent.options.FilePatternResolver;
 import org.apache.maven.execution.MavenSession;
@@ -12,17 +11,17 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import shadow.com.teamscale.client.TestDetails;
-import shadow.com.teamscale.report.EDuplicateClassFileBehavior;
-import shadow.com.teamscale.report.ReportUtils;
-import shadow.com.teamscale.report.testwise.ETestArtifactFormat;
-import shadow.com.teamscale.report.testwise.TestwiseCoverageReportWriter;
-import shadow.com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-import shadow.com.teamscale.report.testwise.model.TestExecution;
-import shadow.com.teamscale.report.testwise.model.factory.TestInfoFactory;
-import shadow.com.teamscale.report.util.ClasspathWildcardIncludeFilter;
-import shadow.com.teamscale.report.util.CommandLineLogger;
-import shadow.com.teamscale.report.util.ILogger;
+import com.teamscale.client.TestDetails;
+import com.teamscale.report.EDuplicateClassFileBehavior;
+import com.teamscale.report.ReportUtils;
+import com.teamscale.report.testwise.ETestArtifactFormat;
+import com.teamscale.report.testwise.TestwiseCoverageReportWriter;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
+import com.teamscale.report.testwise.model.TestExecution;
+import com.teamscale.report.testwise.model.factory.TestInfoFactory;
+import com.teamscale.report.util.ClasspathWildcardIncludeFilter;
+import com.teamscale.report.util.CommandLineLogger;
+import com.teamscale.report.util.ILogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +76,6 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoFailureException {
-
 		List<File> reportFileDirectories = new ArrayList<>();
 		reportFileDirectories.add(Paths.get(projectBuildDir, "tia").toAbsolutePath().resolve("reports").toFile());
 		List<File> classFileDirectories;
@@ -88,7 +86,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 			Files.createDirectories(Paths.get(outputFolder));
 			classFileDirectories = getClassDirectoriesOrZips(projectBuildDir);
 			findSubprojectReportAndClassDirectories(reportFileDirectories, classFileDirectories);
-		} catch (IOException | AgentOptionParseException e) {
+		} catch (IOException e) {
 			logger.error("Could not create testwise report generator. Aborting.", e);
 			throw new MojoFailureException(e);
 		}
@@ -110,7 +108,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 	}
 
 	private void findSubprojectReportAndClassDirectories(List<File> reportFiles,
-														 List<File> classFiles) throws AgentOptionParseException {
+														 List<File> classFiles) throws IOException {
 
 		for (MavenProject subProject : session.getTopLevelProject().getCollectedProjects()) {
 			String subprojectBuildDirectory = subProject.getBuild().getDirectory();
@@ -147,7 +145,7 @@ public class TiaCoverageConvertMojo extends AbstractMojo {
 				new ClasspathWildcardIncludeFilter(includes, excludes), EDuplicateClassFileBehavior.WARN, logger);
 	}
 
-	private List<File> getClassDirectoriesOrZips(String projectBuildDir) throws AgentOptionParseException {
+	private List<File> getClassDirectoriesOrZips(String projectBuildDir) throws IOException {
 		List<String> classDirectoriesOrZips = new ArrayList<>();
 		classDirectoriesOrZips.add(projectBuildDir);
 		return ClasspathUtils.resolveClasspathTextFiles("classes", new FilePatternResolver(new CommandLineLogger()),

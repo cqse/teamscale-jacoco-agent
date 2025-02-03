@@ -10,9 +10,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import shadow.com.teamscale.client.CommitDescriptor;
-import shadow.com.teamscale.client.EReportFormat;
-import shadow.com.teamscale.client.TeamscaleClient;
+import com.teamscale.client.CommitDescriptor;
+import com.teamscale.client.EReportFormat;
+import com.teamscale.client.TeamscaleClient;
 
 import java.io.File;
 import java.io.IOException;
