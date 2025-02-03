@@ -249,7 +249,7 @@ public class AgentOptionsParser {
 		}
 
 		if (key.equals("password-file")) {
-			Path proxyPasswordPath = parsePath(key, value);
+			Path proxyPasswordPath = parsePath(filePatternResolver, key, value);
 			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
 					.setProxyPasswordPath(proxyPasswordPath);
 			options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTP)
@@ -299,10 +299,10 @@ public class AgentOptionsParser {
 				storeConfigId(options, value);
 				return true;
 			case CONFIG_FILE_OPTION:
-				readConfigFromFile(options, parsePath(key, value).toFile());
+				readConfigFromFile(options, parsePath(filePatternResolver, key, value).toFile());
 				return true;
 			case LOGGING_CONFIG_OPTION:
-				options.loggingConfig = parsePath(key, value);
+				options.loggingConfig = parsePath(filePatternResolver, key, value);
 				return true;
 			case "interval":
 				options.dumpIntervalInMinutes = parseInt(key, value);
@@ -311,7 +311,7 @@ public class AgentOptionsParser {
 				options.validateSsl = Boolean.parseBoolean(value);
 				return true;
 			case "out":
-				options.setParentOutputDirectory(parsePath(key, value));
+				options.setParentOutputDirectory(parsePath(filePatternResolver, key, value));
 				return true;
 			case "upload-metadata":
 				try {
