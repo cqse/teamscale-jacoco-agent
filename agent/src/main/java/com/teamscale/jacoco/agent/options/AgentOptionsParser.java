@@ -489,7 +489,7 @@ public class AgentOptionsParser {
 	 * deterministic, i.e. if you run the pattern twice and get the same set of files, the same file will be picked each
 	 * time.
 	 */
-	public Path parsePath(String optionName, String pattern) throws AgentOptionParseException {
+	public static Path parsePath(FilePatternResolver filePatternResolver, String optionName, String pattern) throws AgentOptionParseException {
 		try {
 			return filePatternResolver.parsePath(optionName, pattern);
 		} catch (IOException e) {
