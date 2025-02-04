@@ -1,8 +1,8 @@
 package com.teamscale.report.testwise.jacoco
 
+import com.teamscale.client.JsonUtils.serialize
 import com.teamscale.client.TestDetails
 import com.teamscale.report.EDuplicateClassFileBehavior
-import com.teamscale.report.ReportUtils.getTestwiseCoverageReportAsString
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.report.testwise.model.TestwiseCoverage
@@ -48,7 +48,7 @@ class JaCoCoTestwiseReportGeneratorTest : TestDataBase() {
 			includeFilter, EDuplicateClassFileBehavior.IGNORE,
 			Mockito.mock()
 		).convert(useTestFile(execFileName))
-		return getTestwiseCoverageReportAsString(testwiseCoverage.generateDummyReport())
+		return testwiseCoverage.generateDummyReport().serialize()
 	}
 
 	companion object {
