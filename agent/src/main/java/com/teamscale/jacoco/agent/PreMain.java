@@ -2,6 +2,7 @@ package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
+import com.teamscale.jacoco.agent.logging.DelayedLogAppender;
 import com.teamscale.jacoco.agent.logging.LogToTeamscaleAppender;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -37,7 +38,7 @@ import static com.teamscale.jacoco.agent.logging.LoggingUtils.getLoggerContext;
 /** Container class for the premain entry point for the agent. */
 public class PreMain {
 
-	private static final Logger LOGGER = LoggingUtils.getLogger(PreMain.class);
+	private static Logger LOGGER;
 
 	private static LoggingUtils.LoggingResources loggingResources = null;
 
@@ -58,6 +59,7 @@ public class PreMain {
 	 * Entry point for the agent, called by the JVM.
 	 */
 	public static void premain(String options, Instrumentation instrumentation) throws Exception {
+		initializeDelayedLogging();
 		if (System.getProperty(LOCKING_SYSTEM_PROPERTY) != null) {
 			return;
 		}
@@ -92,6 +94,11 @@ public class PreMain {
 		}
 		AgentBase agent = createAgent(agentOptions, instrumentation);
 		agent.registerShutdownHook();
+	}
+
+	private static void initializeDelayedLogging() {
+		loggingResources = LoggingUtils.initializeDelayedLogging();
+		LOGGER = LoggingUtils.getLoggerContext().getLogger(PreMain.class);
 	}
 
 	@NotNull
@@ -135,10 +142,13 @@ public class PreMain {
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
 	private static void initializeLogging(AgentOptions agentOptions) throws IOException {
+		closeLoggingResources();
+		DelayedLogAppender.close();
 		if (agentOptions.isDebugLogging()) {
 			initializeDebugLogging(agentOptions);
 		} else {
 			loggingResources = LoggingUtils.initializeLogging(agentOptions.getLoggingConfig());
+			LOGGER = LoggingUtils.getLogger(PreMain.class);
 			LOGGER.info("Logging to " + new LogDirectoryPropertyDefiner().getPropertyValue());
 		}
 
@@ -171,6 +181,7 @@ public class PreMain {
 	 */
 	private static void initializeDebugLogging(AgentOptions agentOptions) {
 		loggingResources = LoggingUtils.initializeDebugLogging(agentOptions.getDebugLogDirectory());
+		LOGGER = LoggingUtils.getLogger(PreMain.class);
 		Path logDirectory = Paths.get(new DebugLogDirectoryPropertyDefiner().getPropertyValue());
 		if (FileSystemUtils.isValidPath(logDirectory.toString()) && Files.isWritable(logDirectory)) {
 			LOGGER.info("Logging to " + logDirectory);
@@ -232,8 +243,7 @@ public class PreMain {
 	 * Log the error and also print it to System Error, as the error might prevent the initialization of a real logger.
 	 */
 	private static void logAndPrintError(Exception e, String message) {
-		LOGGER.error(message,
-				e);
+		LOGGER.error(message, e);
 		System.err.println(message);
 	}
 }
