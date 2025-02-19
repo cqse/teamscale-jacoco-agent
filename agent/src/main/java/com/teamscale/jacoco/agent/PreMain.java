@@ -130,8 +130,10 @@ public class PreMain {
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
 		if (credentials == null) {
-			// With the current config mechanisms, this will almost always be shown.
-			delayedLogger.debug("No explicit teamscale.properties file given.");
+			// As many users still don't use the installer based setup, this log message will be shown in almost every log.
+			// We use a debug log, as this message can be confusing for customers that think a teamscale.properties file is synonymous with a config-file.
+			delayedLogger.debug(
+					"No explicit teamscale.properties file given. Looking for Teamscale credentials in a config file or via a command line argument. This is expected unless the installer based setup was used.");
 		}
 
 		Pair<AgentOptions, List<Exception>> parseResult;
