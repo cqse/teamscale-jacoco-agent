@@ -6,6 +6,8 @@ We use [semantic versioning](http://semver.org/):
 
 # Next version
 - [fix] _agent_: Fix wrong class description of GitMultiProjectPropertiesLocator in logs.
+- [fix] _agent_: Specifying `config-id` before Teamscale credentials led to option parsing errors. 
+
 # 34.2.2
 - [fix] _teamscale-gradle-plugin_: 401 Unauthorized error when trying to upload reports to Teamscale 
 
