@@ -300,7 +300,7 @@ public class AgentOptionsParser {
 			throws AgentOptionParseException, AgentOptionReceiveException {
 		switch (key) {
 			case "config-id":
-				storeConfigId(options, value);
+				options.teamscaleServer.configId = value;
 				return true;
 			case CONFIG_FILE_OPTION:
 				readConfigFromFile(options, parsePath(filePatternResolver, key, value).toFile());
@@ -386,10 +386,6 @@ public class AgentOptionsParser {
 			default:
 				return false;
 		}
-	}
-
-	private void storeConfigId(AgentOptions options, String configId) {
-		options.teamscaleServer.configId = configId;
 	}
 
 	private void readConfigFromTeamscale(
