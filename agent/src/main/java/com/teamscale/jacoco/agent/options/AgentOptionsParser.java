@@ -6,6 +6,7 @@
 package com.teamscale.jacoco.agent.options;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.teamscale.client.HttpUtils;
 import com.teamscale.client.ProxySystemProperties;
 import com.teamscale.client.StringUtils;
 import com.teamscale.client.TeamscaleProxySystemProperties;
@@ -24,6 +25,7 @@ import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
 import org.conqat.lib.commons.filesystem.FileSystemUtils;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -68,7 +70,7 @@ public class AgentOptionsParser {
 	 */
 	public static Pair<AgentOptions, List<Exception>> parse(String optionsString, String environmentConfigId,
 			String environmentConfigFile,
-			TeamscaleCredentials credentials,
+			@Nullable TeamscaleCredentials credentials,
 			ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
 		AgentOptionsParser parser = new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile,
 				credentials);
@@ -136,6 +138,8 @@ public class AgentOptionsParser {
 		// we have to put the proxy options into system properties before reading the configuration from Teamscale as we
 		// might need them to connect to Teamscale
 		putTeamscaleProxyOptionsIntoSystemProperties(options);
+		// Same as above, with the ssl validation.
+		HttpUtils.setShouldValidateSsl(options.shouldValidateSsl());
 
 		handleConfigId(options);
 		handleConfigFile(options);
@@ -384,11 +388,7 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private void storeConfigId(AgentOptions options, String configId) throws AgentOptionParseException {
-		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
-			throw new AgentOptionParseException(
-					"Has specified config-id '" + configId + "' without teamscale url/user/accessKey! The options need to be defined in teamscale.properties.");
-		}
+	private void storeConfigId(AgentOptions options, String configId) {
 		options.teamscaleServer.configId = configId;
 	}
 
@@ -397,7 +397,10 @@ public class AgentOptionsParser {
 		if (options.teamscaleServer.configId == null) {
 			return;
 		}
-
+		if (!options.teamscaleServer.isConfiguredForServerConnection()) {
+			throw new AgentOptionParseException(
+					"Config-id '" + options.teamscaleServer.configId + "' specified without teamscale url/user/accessKey! These options must be provided locally via config-file or command line argument.");
+		}
 		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger,
 				options.teamscaleServer.configId,
 				options.teamscaleServer.url,
