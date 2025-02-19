@@ -2,7 +2,10 @@ package com.teamscale.jacoco.agent;
 
 import com.teamscale.client.HttpUtils;
 import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
+import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
+import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
 import com.teamscale.jacoco.agent.logging.LogToTeamscaleAppender;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.options.AgentOptionsParser;
@@ -13,9 +16,6 @@ import com.teamscale.jacoco.agent.options.TeamscalePropertiesUtils;
 import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.upload.UploaderException;
 import com.teamscale.jacoco.agent.util.AgentUtils;
-import com.teamscale.jacoco.agent.logging.DebugLogDirectoryPropertyDefiner;
-import com.teamscale.jacoco.agent.logging.LogDirectoryPropertyDefiner;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.util.ILogger;
 import org.conqat.lib.commons.collections.CollectionUtils;
 import org.conqat.lib.commons.collections.Pair;
@@ -131,7 +131,10 @@ public class PreMain {
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();
 		if (credentials == null) {
-			delayedLogger.warn("Did not find a teamscale.properties file!");
+			// As many users still don't use the installer based setup, this log message will be shown in almost every log.
+			// We use a debug log, as this message can be confusing for customers that think a teamscale.properties file is synonymous with a config file.
+			delayedLogger.debug(
+					"No explicit teamscale.properties file given. Looking for Teamscale credentials in a config file or via a command line argument. This is expected unless the installer based setup was used.");
 		}
 
 		Pair<AgentOptions, List<Exception>> parseResult;

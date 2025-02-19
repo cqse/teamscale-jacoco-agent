@@ -194,6 +194,19 @@ public class AgentOptionsParserTest {
 				.hasMessageNotContaining("the 'teamscale-' upload options are incomplete");
 	}
 
+	/**
+	 * Test that we can define a config id first, before adding teamscale server credentials. We still expect an
+	 * exception to be thrown, because there is no Teamscale server to reach, but no parse exception.
+	 */
+	@Test
+	public void testConfigIdOptionOrderIrrelevant() {
+		assertThatThrownBy(() -> parseAndThrow(
+				"config-id=myConfig,teamscale-server-url=http://awesome-teamscale.com,teamscale-user=user,teamscale-access-token=mycoolkey")).hasMessageNotContaining(
+						"Failed to parse agent options")
+				.hasMessageContaining(
+						"Failed to retrieve profiler configuration from Teamscale!");
+	}
+
 	@Test
 	public void revisionOrCommitRequireProject() {
 		assertThatThrownBy(
