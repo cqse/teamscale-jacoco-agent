@@ -138,8 +138,6 @@ public class AgentOptionsParser {
 		// we have to put the proxy options into system properties before reading the configuration from Teamscale as we
 		// might need them to connect to Teamscale
 		putTeamscaleProxyOptionsIntoSystemProperties(options);
-		// Same as above, with the ssl validation.
-		HttpUtils.setShouldValidateSsl(options.shouldValidateSsl());
 
 		handleConfigId(options);
 		handleConfigFile(options);
@@ -397,6 +395,8 @@ public class AgentOptionsParser {
 			throw new AgentOptionParseException(
 					"Config-id '" + options.teamscaleServer.configId + "' specified without teamscale url/user/accessKey! These options must be provided locally via config-file or command line argument.");
 		}
+		// Set ssl validation option in case it needs to be off before trying to reach Teamscale.
+		HttpUtils.setShouldValidateSsl(options.shouldValidateSsl());
 		ConfigurationViaTeamscale configuration = ConfigurationViaTeamscale.retrieve(logger,
 				options.teamscaleServer.configId,
 				options.teamscaleServer.url,
