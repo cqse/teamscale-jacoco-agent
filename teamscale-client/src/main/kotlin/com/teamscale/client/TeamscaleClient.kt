@@ -148,9 +148,7 @@ open class TeamscaleClient {
 		val ensureProcessed = testImpactOptions.contains(ETestImpactOptions.ENSURE_PROCESSED)
 		val includeAddedTests = testImpactOptions.contains(ETestImpactOptions.INCLUDE_ADDED_TESTS)
 
-		if (projectId == null) {
-			throw IllegalArgumentException("Project ID must not be null!")
-		}
+		require (projectId != null) { "Project ID must not be null!" }
 
 		return if (availableTests == null) {
 			wrapInCluster(
@@ -200,9 +198,7 @@ open class TeamscaleClient {
 			MultipartBody.Part.createFormData("report", file.name, requestBody)
 		}
 
-		if (projectId == null) {
-			throw IllegalArgumentException("Project ID must not be null!")
-		}
+		require (projectId != null) { "Project ID must not be null!" }
 
 		val response = service
 			.uploadExternalReports(
@@ -224,9 +220,7 @@ open class TeamscaleClient {
 		partition: String,
 		message: String
 	) {
-		if (projectId == null) {
-			throw IllegalArgumentException("Project ID must not be null!")
-		}
+		require (projectId != null) { "Project ID must not be null!" }
 
 		service.uploadReport(
 			projectId,
