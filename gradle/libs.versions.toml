@@ -79,7 +79,7 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 
-springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.2" }
+springboot-loader = { module = "org.springframework.boot:spring-boot-loader", version = "3.4.3" }
 
 maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven" }
 maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven" }
