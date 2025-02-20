@@ -17,7 +17,7 @@ open class TeamscaleClient {
 	var service: ITeamscaleService
 
 	/** The project ID within Teamscale.  */
-	private val projectId: String
+	private val projectId: String?
 
 	/** Constructor with parameters for read and write timeout in seconds.  */
 	@JvmOverloads
@@ -25,7 +25,7 @@ open class TeamscaleClient {
 		baseUrl: String?,
 		user: String,
 		accessToken: String,
-		projectId: String,
+		projectId: String?,
 		readTimeout: Duration = HttpUtils.DEFAULT_READ_TIMEOUT,
 		writeTimeout: Duration = HttpUtils.DEFAULT_WRITE_TIMEOUT
 	) {
@@ -42,7 +42,7 @@ open class TeamscaleClient {
 		baseUrl: String?,
 		user: String,
 		accessToken: String,
-		projectId: String,
+		projectId: String?,
 		logfile: File?,
 		readTimeout: Duration = HttpUtils.DEFAULT_READ_TIMEOUT,
 		writeTimeout: Duration = HttpUtils.DEFAULT_WRITE_TIMEOUT
@@ -148,6 +148,10 @@ open class TeamscaleClient {
 		val ensureProcessed = testImpactOptions.contains(ETestImpactOptions.ENSURE_PROCESSED)
 		val includeAddedTests = testImpactOptions.contains(ETestImpactOptions.INCLUDE_ADDED_TESTS)
 
+		if (projectId == null) {
+			throw IllegalArgumentException("Project ID must not be null!")
+		}
+
 		return if (availableTests == null) {
 			wrapInCluster(
 				service.getImpactedTests(
@@ -196,6 +200,10 @@ open class TeamscaleClient {
 			MultipartBody.Part.createFormData("report", file.name, requestBody)
 		}
 
+		if (projectId == null) {
+			throw IllegalArgumentException("Project ID must not be null!")
+		}
+
 		val response = service
 			.uploadExternalReports(
 				projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
@@ -216,6 +224,10 @@ open class TeamscaleClient {
 		partition: String,
 		message: String
 	) {
+		if (projectId == null) {
+			throw IllegalArgumentException("Project ID must not be null!")
+		}
+
 		service.uploadReport(
 			projectId,
 			commitDescriptor,

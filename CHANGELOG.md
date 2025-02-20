@@ -5,6 +5,9 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+- [fix] _agent_: Delayed initialization of the project via a git properties file did not work.
+- [fix] _agent_: Only logs with a stack trace (errors) were sent to Teamscale.
 - [fix] _agent_: Fix wrong class description of GitMultiProjectPropertiesLocator in logs.
 - [fix] _agent_: Specifying `config-id` before Teamscale credentials led to option parsing errors. 
 
