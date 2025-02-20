@@ -2,6 +2,7 @@ package com.teamscale
 
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.client.JsonUtils
+import com.teamscale.plugin.fixtures.TestRootProject
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import com.teamscale.test.commons.TeamscaleMockServer
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.lang.management.ManagementFactory
 
 /**
  * Integration tests for the Teamscale Gradle plugin.
@@ -20,9 +22,6 @@ import java.io.File
 class TeamscalePluginTest {
 
 	companion object {
-
-		/** Set this to true to enable debugging of the Gradle Plugin via port 5005. */
-		private const val DEBUG_PLUGIN = false
 
 		/** Set this to true to enable debugging of the impacted tests engine via port 5005. */
 		private const val DEBUG_TEST_ENGINE = false
@@ -49,13 +48,14 @@ class TeamscalePluginTest {
 		teamscaleMockServer.shutdown()
 	}
 
-	/** The temp dir in which the simulated checkout and test execution will happen. */
-	@field:TempDir
-	lateinit var temporaryFolder: File
+	/** The Gradle project in which the simulated checkout and test execution will happen. */
+	lateinit var rootProject: TestRootProject
 
 	@BeforeEach
-	fun setup() {
-		File("src/test/resources/calculator_groovy").copyRecursively(temporaryFolder)
+	fun setup(@TempDir tempDir: File) {
+		rootProject = TestRootProject(tempDir)
+		rootProject.withSampleCode()
+		rootProject.defaultProjectSetup()
 	}
 
 	@Test
@@ -88,8 +88,7 @@ class TeamscalePluginTest {
 		)
 		assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
 			.doesNotContain("you did not provide all relevant class files")
-		val testwiseCoverageReportFile =
-			File(temporaryFolder, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
+		val testwiseCoverageReportFile = rootProject.buildDir.resolve("reports/testwise-coverage/unitTest/Unit-Tests.json")
 		assertThat(testwiseCoverageReportFile).exists()
 
 		assertFullCoverage(testwiseCoverageReportFile.readText())
@@ -110,8 +109,7 @@ class TeamscalePluginTest {
 			"teamscaleReportUpload"
 		)
 		assertThat(build.output).contains("SUCCESS (1 tests, 1 successes, 0 failures, 0 skipped)")
-		val testwiseCoverageReportFile =
-			File(temporaryFolder, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
+		val testwiseCoverageReportFile = rootProject.buildDir.resolve("reports/testwise-coverage/unitTest/Unit-Tests.json")
 		assertThat(testwiseCoverageReportFile).exists()
 
 		assertPartialCoverage(testwiseCoverageReportFile.readText())
@@ -133,8 +131,7 @@ class TeamscalePluginTest {
 			.doesNotContain("you did not provide all relevant class files")
 			.doesNotContain("WARNING: JAXBContext implementation could not be found. WADL feature is disabled.")
 			.doesNotContain("WARNING: A class javax.activation.DataSource for a default provider")
-		val testwiseCoverageReportFile =
-			File(temporaryFolder, "build/reports/testwise-coverage/unitTest/Unit-Tests.json")
+		val testwiseCoverageReportFile = rootProject.buildDir.resolve("reports/testwise-coverage/unitTest/Unit-Tests.json")
 		assertThat(testwiseCoverageReportFile).exists()
 
 		val source = testwiseCoverageReportFile.readText()
@@ -215,8 +212,9 @@ class TeamscalePluginTest {
 		val runner = GradleRunner.create()
 		runnerArgs.add("--stacktrace")
 
-		if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
+		if (ManagementFactory.getRuntimeMXBean().inputArguments.toString().contains("-agentlib:jdwp")) {
 			runner.withDebug(true)
+			runner.forwardOutput()
 			runnerArgs.add("--refresh-dependencies")
 			runnerArgs.add("--debug")
 		}
@@ -225,14 +223,10 @@ class TeamscalePluginTest {
 		}
 
 		runner
-			.withProjectDir(temporaryFolder)
+			.withProjectDir(rootProject.projectDir)
 			.withPluginClasspath()
 			.withArguments(runnerArgs)
 			.withGradleVersion("8.4")
-
-		if (DEBUG_PLUGIN) {
-			runner.withDebug(true)
-		}
 
 		val buildResult =
 			if (expectFailure) {
@@ -240,10 +234,6 @@ class TeamscalePluginTest {
 			} else {
 				runner.build()
 			}
-
-		if (DEBUG_TEST_ENGINE || DEBUG_PLUGIN) {
-			println(buildResult.output)
-		}
 
 		return buildResult
 	}
@@ -286,4 +276,3 @@ class TeamscalePluginTest {
 			.hasTestsWithCoverage(1)
 	}
 }
-

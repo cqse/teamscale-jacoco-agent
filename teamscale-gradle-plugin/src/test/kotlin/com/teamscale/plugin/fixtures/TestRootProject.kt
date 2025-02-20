@@ -1,3 +1,29 @@
+package com.teamscale.plugin.fixtures
+
+import java.io.File
+
+class TestRootProject(projectDir: File) : TestProject(projectDir) {
+
+	fun subproject(projectName: String, configureProject: TestProject.() -> Unit): TestProject {
+		if (!settingsFile.readText().contains(projectName)) {
+			settingsFile.appendText(
+				"""
+                include '$projectName'
+            """.trimIndent()
+			)
+		}
+		val sub = subproject(projectName)
+		configureProject(sub)
+		return sub
+	}
+
+	fun subproject(projectName: String): TestProject {
+		return TestProject(dir(projectName))
+	}
+
+	fun defaultProjectSetup() {
+		buildFile.appendText(
+			"""
 buildscript {
 	repositories {
 		mavenCentral()
@@ -50,7 +76,7 @@ task unitTest(type: TestImpacted) {
 		exceptionFormat "short"
 		afterSuite { desc, result ->
 			if (!desc.parent) { // will match the outermost suite
-				def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+				def output = "Results: ${'$'}{result.resultType} (${'$'}{result.testCount} tests, ${'$'}{result.successfulTestCount} successes, ${'$'}{result.failedTestCount} failures, ${'$'}{result.skippedTestCount} skipped)"
 				def startItem = '|  ', endItem = '  |'
 				def repeatLength = startItem.length() + output.length() + endItem.length()
 				println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
@@ -86,5 +112,7 @@ dependencies {
 	testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
-
+            """.trimIndent()
+		)
+	}
+}
