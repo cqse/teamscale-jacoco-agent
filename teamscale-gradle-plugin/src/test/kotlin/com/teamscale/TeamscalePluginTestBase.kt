@@ -51,16 +51,18 @@ abstract class TeamscalePluginTestBase {
 	private fun buildRunner(vararg arguments: String): GradleRunner {
 		val runnerArgs = arguments.toMutableList()
 		val runner = GradleRunner.create()
+		runner.forwardOutput()
 		runnerArgs.add("--stacktrace")
 
 		if (ManagementFactory.getRuntimeMXBean().inputArguments.toString()
-				.contains("-agentlib:jdwp") && arguments.contains("unitTest")
+				.contains("-agentlib:jdwp")
 		) {
 			runner.withDebug(true)
-			runner.forwardOutput()
 			runnerArgs.add("--refresh-dependencies")
-			runnerArgs.add("--debug")
-			runnerArgs.add("--debug-jvm")
+			runnerArgs.add("--info")
+			if (arguments.contains("unitTest")) {
+				runnerArgs.add("--debug-jvm")
+			}
 		}
 
 		runner

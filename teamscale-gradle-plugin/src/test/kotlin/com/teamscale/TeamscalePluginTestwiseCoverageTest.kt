@@ -1,7 +1,7 @@
 package com.teamscale
 
-import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.client.JsonUtils
+import com.teamscale.plugin.fixtures.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import org.assertj.core.api.Assertions.assertThat
@@ -16,14 +16,15 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 
 	@BeforeEach
 	fun init() {
-		rootProject.withSampleCode()
+		rootProject.withSingleProject()
 		rootProject.defaultProjectSetup()
 	}
 
 	@Test
 	fun `all unit tests produce coverage`() {
 		rootProject.withServerConfig()
-		rootProject.defineLegacyUnitTestTask()
+		rootProject.defineLegacyTestTasks()
+		rootProject.defineUploadTask()
 
 		val build = runExpectingError(
 			"--continue",
@@ -31,7 +32,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 			"unitTest",
 			"--impacted",
 			"--run-all-tests",
-			"teamscaleReportUpload"
+			"unitTestReportUpload"
 		)
 		assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
 			.doesNotContain("you did not provide all relevant class files")
@@ -49,14 +50,15 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 	@Test
 	fun `only impacted unit tests are executed`() {
 		rootProject.withServerConfig()
-		rootProject.defineLegacyUnitTestTask()
+		rootProject.defineLegacyTestTasks()
+		rootProject.defineUploadTask()
 
 		val build = run(
 			"--continue",
 			"clean",
 			"unitTest",
 			"--impacted",
-			"teamscaleReportUpload"
+			"unitTestReportUpload"
 		)
 		assertThat(build.output).contains("SUCCESS (1 tests, 1 successes, 0 failures, 0 skipped)")
 		val testwiseCoverageReportFile =
@@ -72,7 +74,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 
 	@Test
 	fun `unit tests without server config produce coverage`() {
-		rootProject.defineLegacyUnitTestTask()
+		rootProject.defineLegacyTestTasks()
 
 		val build = runExpectingError(
 			"clean",
@@ -92,13 +94,15 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 
 	@Test
 	fun `wrong include pattern produces error`() {
-		rootProject.defineLegacyUnitTestTask("non.existent.package.*")
+		rootProject.defineLegacyTestTasks("non.existent.package.*")
 
 		val build = runExpectingError(
 			"clean",
 			"unitTest"
 		)
-		assertThat(build.output).contains("None of the 9 class files found in the given directories match the configured include/exclude patterns!")
+		// TODO Currently we scan the full classpath for classes, previously we only looked at the gradle projects within this build might be able to rebuild this via:
+		// https://github.com/gradlex-org/maven-plugin-development/blob/5cab40cc4763a9471178a96ccbe37b933643506d/src/main/java/org/gradlex/maven/plugin/development/MavenPluginDevelopmentPlugin.java#L136C1-L192C6
+		assertThat(build.output).contains("None of the 975").contains(" class files found in the given directories match the configured include/exclude patterns!")
 	}
 
 	private fun assertFullCoverage(source: String) {

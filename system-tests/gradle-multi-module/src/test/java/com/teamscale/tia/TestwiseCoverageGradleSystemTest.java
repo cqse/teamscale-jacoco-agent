@@ -35,9 +35,9 @@ public class TestwiseCoverageGradleSystemTest {
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Unit Tests"));
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(unitTestReport.tests.get(0).uniformPath).isEqualTo("org/example/Test1/test1()");
+		assertThat(unitTestReport.tests.getFirst().uniformPath).isEqualTo("com/example/app/MainTest/testMain()");
 		unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(1);
-		assertThat(unitTestReport.tests.get(0).uniformPath).isEqualTo("org/example/Test2/test2()");
+		assertThat(unitTestReport.tests.getFirst().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
 	}
 
 }

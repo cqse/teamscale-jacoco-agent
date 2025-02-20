@@ -12,26 +12,24 @@ class TeamscalePluginTest : TeamscalePluginTestBase() {
 
 	@BeforeEach
 	fun init() {
-		rootProject.withSampleCode()
+		rootProject.withSingleProject()
 		rootProject.defaultProjectSetup()
 	}
 
 	@Test
 	fun `teamscale plugin can be configured`() {
-		rootProject.defineLegacyUnitTestTask()
+		rootProject.defineLegacyTestTasks()
 
-		assertThat(
-			run(  "clean", "tasks").output
-		).contains("SUCCESS")
+		assertThat(run("clean", "tasks").output).contains("SUCCESS")
 	}
 
 	@Test
 	fun `unit tests can be executed normally`() {
 		rootProject.excludeFailingTests()
-		rootProject.defineLegacyUnitTestTask()
+		rootProject.defineLegacyTestTasks()
 
 		assertThat(
-			run(  "clean", "unitTest").output
+			run("clean", "unitTest").output
 		).contains("SUCCESS (18 tests, 12 successes, 0 failures, 6 skipped)")
 	}
 }

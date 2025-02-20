@@ -8,10 +8,11 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 
 	@BeforeEach
 	fun init() {
-		rootProject.withSampleCode()
+		rootProject.withSingleProject()
 		rootProject.defaultProjectSetup()
 		rootProject.withServerConfig()
-		rootProject.defineLegacyUnitTestTask()
+		rootProject.defineLegacyTestTasks()
+		rootProject.defineUploadTask()
 	}
 
 	@Test
@@ -24,7 +25,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"unitTest",
 			"--impacted",
 			"--run-all-tests",
-			"teamscaleReportUpload"
+			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
 	}
@@ -37,7 +38,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"unitTest",
 			"--impacted",
 			"--run-all-tests",
-			"teamscaleReportUpload"
+			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.uploadCommits).contains("abcd1337, null")
 		assertThat(teamscaleMockServer.uploadRepositories).contains("myRepoId")
@@ -52,7 +53,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"clean",
 			"unitTest",
 			"--impacted",
-			"teamscaleReportUpload"
+			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
 	}
@@ -64,7 +65,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"clean",
 			"unitTest",
 			"--impacted",
-			"teamscaleReportUpload"
+			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, null")
 		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")

@@ -30,7 +30,40 @@ open class TestProject(val projectDir: File) {
 		}
 	}
 
-	fun withSampleCode() {
-		File("test-project").copyRecursively(projectDir)
+
+	fun withTeamscalePlugin(basePlugin: String = "java") {
+		buildFile.appendText(
+			"""
+plugins {
+	id '${basePlugin}'
+	id 'com.teamscale'
+}
+
+teamscale {
+	commit {
+		revision = "abcd1337"
+	}
+	repository = "myRepoId"
+}
+	""".trimIndent()
+		)
+	}
+
+	fun withJunitDependencies() {
+		buildFile.appendText(
+			"""
+				
+dependencies {
+	// JUnit Jupiter
+	testImplementation(platform("org.junit:junit-bom:5.12.0"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+
+	// If you also want to support JUnit 3 and JUnit 4 tests
+	testImplementation("junit:junit:4.13.2")
+	testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+				""".trimIndent()
+		)
 	}
 }

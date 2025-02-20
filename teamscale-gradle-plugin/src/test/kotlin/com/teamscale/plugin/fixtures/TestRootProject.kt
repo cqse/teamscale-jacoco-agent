@@ -4,6 +4,10 @@ import java.io.File
 
 class TestRootProject(projectDir: File) : TestProject(projectDir) {
 
+	fun withSingleProject() {
+		File("test-project").copyRecursively(projectDir)
+	}
+
 	fun subproject(projectName: String, configureProject: TestProject.() -> Unit): TestProject {
 		if (!settingsFile.readText().contains(projectName)) {
 			settingsFile.appendText(
@@ -22,66 +26,31 @@ class TestRootProject(projectDir: File) : TestProject(projectDir) {
 	}
 
 	fun defaultProjectSetup() {
-		settingsFile.writeText("""
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-		mavenLocal()
-    }
-}
-		""".trimIndent())
-		buildFile.appendText(
+		withDependencyResolutionManagement()
+		withTeamscalePlugin()
+		withJunitDependencies()
+	}
+
+	fun withDependencyResolutionManagement() {
+		settingsFile.writeText(
 			"""
-buildscript {
-	repositories {
-		mavenCentral()
-		mavenLocal()
-	}
-}
-
-plugins {
-	id 'java'
-	id 'jacoco'
-	id 'com.teamscale'
-}
-
-teamscale {
-	commit {
-		revision = "abcd1337"
-	}
-	repository="myRepoId"
-	report {
-		testwiseCoverage {
-			partition = 'Unit Tests'
+	dependencyResolutionManagement {
+		repositories {
+			mavenLocal()
+			mavenCentral()
 		}
 	}
-}
-
-task integrationTest(type: com.teamscale.TestImpacted) {
-	useJUnitPlatform {
-		includeTags 'integration'
-	}
-
-	jacoco.includes = [ 'com.example.project.*' ]
-	teamscale.report.partition = 'Integration Tests'
-}
-
-dependencies {
-	// JUnit Jupiter
-	testImplementation(platform("org.junit:junit-bom:5.12.0"))
-	testImplementation("org.junit.jupiter:junit-jupiter")
-
-	// If you also want to support JUnit 3 and JUnit 4 tests
-	testImplementation("junit:junit:4.13.2")
-	testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-            """.trimIndent()
+			""".trimIndent()
 		)
 	}
 
-	fun withServerConfig(user: String = TeamscaleConstants.USER, accessToken: String = TeamscaleConstants.ACCESS_TOKEN, port: Int = TeamscaleConstants.PORT) {
-		buildFile.appendText("""
+	fun withServerConfig(
+		user: String = TeamscaleConstants.USER,
+		accessToken: String = TeamscaleConstants.ACCESS_TOKEN,
+		port: Int = TeamscaleConstants.PORT
+	) {
+		buildFile.appendText(
+			"""
 
 teamscale {
 	server {
@@ -91,11 +60,13 @@ teamscale {
 		project = 'test'
 	}
 }
-		""".trimIndent())
+		""".trimIndent()
+		)
 	}
 
 	fun withBranchAndTimestamp() {
-		buildFile.appendText("""
+		buildFile.appendText(
+			"""
 			
 teamscale {
 	commit {
@@ -103,20 +74,24 @@ teamscale {
 		branchName = "master"
 	}
 }
-		""".trimIndent())
+		""".trimIndent()
+		)
 	}
 
 	fun excludeFailingTests() {
-		buildFile.appendText("""
+		buildFile.appendText(
+			"""
 
 tasks.withType(Test).configureEach {
 	exclude '**/FailingRepeatedTest*'
 }
-		""".trimIndent())
+		""".trimIndent()
+		)
 	}
 
-	fun defineLegacyUnitTestTask(jacocoIncludes: String = "com.example.project.*") {
-		buildFile.appendText("""
+	fun defineLegacyTestTasks(jacocoIncludes: String = "com.example.project.*") {
+		buildFile.appendText(
+			"""
 			
 task unitTest(type: com.teamscale.TestImpacted) {
 	useJUnitPlatform {
@@ -125,7 +100,7 @@ task unitTest(type: com.teamscale.TestImpacted) {
 	jacoco.includes = [ '${jacocoIncludes}' ]
 	testLogging {
 		// events "started", "skipped", "failed"
-		exceptionFormat "short"
+		exceptionFormat = "short"
 		afterSuite { desc, result ->
 			if (!desc.parent) { // will match the outermost suite
 				def output = "Results: ${'$'}{result.resultType} (${'$'}{result.testCount} tests, ${'$'}{result.successfulTestCount} successes, ${'$'}{result.failedTestCount} failures, ${'$'}{result.skippedTestCount} skipped)"
@@ -135,7 +110,34 @@ task unitTest(type: com.teamscale.TestImpacted) {
 			}
 		}
 	}
+	testClassesDirs = testing.suites.test.sources.output.classesDirs
+	classpath = testing.suites.test.sources.runtimeClasspath
+	partition = 'Unit Tests'
 }
-		""".trimIndent())
+
+task integrationTest(type: com.teamscale.TestImpacted) {
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+
+	jacoco.includes = [ 'com.example.project.*' ]
+	testClassesDirs = testing.suites.test.sources.output.classesDirs
+	classpath = testing.suites.test.sources.runtimeClasspath
+	partition = 'Integration Tests'
+}
+		""".trimIndent()
+		)
+	}
+
+	fun defineUploadTask() {
+		buildFile.appendText(
+			"""
+			
+tasks.register('unitTestReportUpload', com.teamscale.TeamscaleUpload) {
+	partition = 'Unit Tests'
+	from(tasks.unitTest)
+}
+		""".trimIndent()
+		)
 	}
 }

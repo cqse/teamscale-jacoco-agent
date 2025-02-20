@@ -1,16 +1,15 @@
 package com.teamscale.config
 
 import com.teamscale.ArgumentAppender
-import com.teamscale.TeamscalePlugin
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import okhttp3.HttpUrl
-import org.gradle.api.Project
-import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.provider.Provider
+import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.*
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
-import java.io.File
 import java.io.Serializable
+import javax.inject.Inject
 
 
 /**
@@ -18,105 +17,92 @@ import java.io.Serializable
  * The agent can either be configured to run locally or to connect to an
  * already running remote testwise coverage server.
  */
-class AgentConfiguration(val project: Project, val jacocoExtension: JacocoTaskExtension) : Serializable {
+@Suppress("unused")
+abstract class AgentConfiguration @Inject constructor(
+	@InputFiles val teamscaleJacocoAgentConfiguration: FileCollection,
+	@Nested val jacocoExtension: JacocoTaskExtension
+) : Serializable {
 
-    /** The property object backing #destination. */
-    private var destinationProperty: DirectoryProperty = project.objects.directoryProperty()
+	/** The property object backing #destination. */
+	@get:OutputDirectory
+	abstract val destination: DirectoryProperty
 
-    /** The destination directory to store test artifacts into. */
-    var destination: File
-        get() = destinationProperty.get().asFile
-        set(value) {
-            destinationProperty.set(value)
-        }
+	/** The local agent's server url to connect to. */
+	@get:Internal
+	abstract val localAgent: Property<TeamscaleAgent>
 
-    fun setDestination(provider: Provider<Directory>) {
-        destinationProperty.set(provider)
-    }
+	/** A remote agent's server url to connect to. */
+	@get:Internal
+	abstract val remoteAgent: Property<TeamscaleAgent>
 
-    /** The local agent's server url to connect to. */
-    var localAgent: TeamscaleAgent? = null
+	/** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
+	@Input
+	fun getAllAgentUrls(): List<String> {
+		val allAgents = mutableListOf<TeamscaleAgent>()
+		localAgent.orNull?.let { allAgents.add(it) }
+		remoteAgent.orNull?.let { allAgents.add(it) }
+		return allAgents.map { it.url.toString() }
+	}
 
-    /** A remote agent's server url to connect to. */
-    var remoteAgent: TeamscaleAgent? = null
+	/**
+	 * Configures the Teamscale plugin to use a local agent.
+	 * @param url The url (including the port) of the http server
+	 *            that should be started in testwise coverage mode for the local java process.
+	 */
+	@JvmOverloads
+	fun useLocalAgent(url: String = "http://127.0.0.1:8123/") {
+		localAgent.set(TeamscaleAgent(HttpUrl.parse(url)!!))
+	}
 
-    /** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
-    fun getAllAgents(): List<TeamscaleAgent> {
-        val allAgents = mutableListOf<TeamscaleAgent>()
-        localAgent?.let { allAgents.add(it) }
-        remoteAgent?.let { allAgents.add(it) }
-        return allAgents
-    }
+	/**
+	 * Configures the Teamscale plugin to use a remote agent additional to the local one.
+	 * @param url The url (including the port) of the http server
+	 *            started by the remote agent in testwise coverage mode.
+	 */
+	@JvmOverloads
+	fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
+		remoteAgent.set(TeamscaleAgent(HttpUrl.parse(url)!!))
+	}
 
-    /**
-     * Configures the Teamscale plugin to use a local agent.
-     * @param url The url (including the port) of the http server
-     *            that should be started in testwise coverage mode for the local java process.
-     */
-    @JvmOverloads
-    fun useLocalAgent(url: String = "http://127.0.0.1:8123/") {
-        localAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
-    }
+	/** Returns a filter predicate that respects the configured wildcard include and exclude patterns. */
+	@Internal
+	fun getPredicate(): ClasspathWildcardIncludeFilter {
+		return ClasspathWildcardIncludeFilter(
+			jacocoExtension.includes?.joinToString(":") { "*$it".replace('/', '.') },
+			jacocoExtension.excludes?.joinToString(":") { "*$it".replace('/', '.') }
+		)
+	}
 
-    /**
-     * Configures the Teamscale plugin to use a remote agent additional to the local one.
-     * @param url The url (including the port) of the http server
-     *            started by the remote agent in testwise coverage mode.
-     */
-    @JvmOverloads
-    fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
-        remoteAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
-    }
+	inner class TeamscaleAgent(val url: HttpUrl) {
 
-    /** Returns a filter predicate that respects the configured include and exclude patterns. */
-    fun getFilter(): SerializableFilter {
-        return SerializableFilter(jacocoExtension.includes, jacocoExtension.excludes)
-    }
+		/** Builds the jvm argument to start the impacted test executor. */
+		fun getJvmArgs(
+		): String {
+			val builder = StringBuilder()
+			val argument = ArgumentAppender(builder)
+			builder.append("-javaagent:")
+			val agentJar = teamscaleJacocoAgentConfiguration.singleFile
+			builder.append(agentJar.canonicalPath)
+			builder.append("=")
 
-    inner class TeamscaleAgent(val url: HttpUrl) {
+			appendArguments(argument, jacocoExtension)
 
-        /** Builds the jvm argument to start the impacted test executor. */
-        fun getJvmArgs(
-        ): String {
-            val builder = StringBuilder()
-            val argument = ArgumentAppender(builder)
-            builder.append("-javaagent:")
-            val agentJar =
-                project.configurations.getByName(TeamscalePlugin.teamscaleJaCoCoAgentConfiguration).singleFile
-            builder.append(agentJar.canonicalPath)
-            builder.append("=")
+			return builder.toString()
+		}
 
-            appendArguments(argument, jacocoExtension)
-
-            return builder.toString()
-        }
-
-        /**
-         * Appends the configuration for starting a local instance of the testwise coverage server to the
-         * java agent arguments.
-         */
-        private fun appendArguments(
-            argument: ArgumentAppender,
-            jacocoExtension: JacocoTaskExtension
-        ) {
-            argument.append("out", destination)
-            argument.append("includes", jacocoExtension.includes)
-            argument.append("excludes", jacocoExtension.excludes)
-            argument.append("mode", "testwise")
-            argument.append("http-server-port", url.port())
-        }
-    }
-}
-
-
-class SerializableFilter(private val includes: List<String>?, private val excludes: List<String>?) : Serializable {
-
-    /** Returns a filter predicate that respects the configured wildcard include and exclude patterns. */
-    fun getPredicate(): ClasspathWildcardIncludeFilter {
-        return ClasspathWildcardIncludeFilter(
-            includes?.joinToString(":") { "*$it".replace('/', '.') },
-            excludes?.joinToString(":") { "*$it".replace('/', '.') }
-        )
-    }
-
+		/**
+		 * Appends the configuration for starting a local instance of the testwise coverage server to the
+		 * java agent arguments.
+		 */
+		private fun appendArguments(
+			argument: ArgumentAppender,
+			jacocoExtension: JacocoTaskExtension
+		) {
+			argument.append("out", destination.asFile.get())
+			argument.append("includes", jacocoExtension.includes)
+			argument.append("excludes", jacocoExtension.excludes)
+			argument.append("mode", "testwise")
+			argument.append("http-server-port", url.port())
+		}
+	}
 }
