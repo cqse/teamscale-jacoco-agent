@@ -22,6 +22,14 @@ class TestRootProject(projectDir: File) : TestProject(projectDir) {
 	}
 
 	fun defaultProjectSetup() {
+		settingsFile.writeText("""
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+		mavenLocal()
+    }
+}
+		""".trimIndent())
 		buildFile.appendText(
 			"""
 buildscript {
@@ -37,25 +45,8 @@ plugins {
 	id 'com.teamscale'
 }
 
-import com.teamscale.TestImpacted
-
-if (!project.hasProperty("withoutServerConfig")) {
-	teamscale {
-		server {
-			url = 'http://127.0.0.1:64000'
-			userName = 'build'
-			userAccessToken = '82l1jtkIx6xG7DDG34FLsKhejcHz1cMu' // Not a real access token
-			project = 'test'
-		}
-	}
-}
-
 teamscale {
 	commit {
-		if (!project.hasProperty("withoutTimestamp")) {
-			timestamp = 1544512967526L
-			branchName = "master"
-		}
 		revision = "abcd1337"
 	}
 	repository="myRepoId"
@@ -66,40 +57,13 @@ teamscale {
 	}
 }
 
-task unitTest(type: TestImpacted) {
-	useJUnitPlatform {
-		excludeTags 'integration'
-	}
-	jacoco.includes = [ project.findProperty('jacocoIncludePattern') ?: 'com.example.project.*' ]
-	testLogging {
-		// events "started", "skipped", "failed"
-		exceptionFormat "short"
-		afterSuite { desc, result ->
-			if (!desc.parent) { // will match the outermost suite
-				def output = "Results: ${'$'}{result.resultType} (${'$'}{result.testCount} tests, ${'$'}{result.successfulTestCount} successes, ${'$'}{result.failedTestCount} failures, ${'$'}{result.skippedTestCount} skipped)"
-				def startItem = '|  ', endItem = '  |'
-				def repeatLength = startItem.length() + output.length() + endItem.length()
-				println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
-			}
-		}
-	}
-	if (project.hasProperty('excludeFailingTests')) {
-		exclude '**/FailingRepeatedTest*'
-	}
-}
-
-task integrationTest(type: TestImpacted) {
+task integrationTest(type: com.teamscale.TestImpacted) {
 	useJUnitPlatform {
 		includeTags 'integration'
 	}
 
 	jacoco.includes = [ 'com.example.project.*' ]
 	teamscale.report.partition = 'Integration Tests'
-}
-
-repositories {
-	mavenCentral()
-	mavenLocal()
 }
 
 dependencies {
@@ -114,5 +78,64 @@ dependencies {
 }
             """.trimIndent()
 		)
+	}
+
+	fun withServerConfig(user: String = TeamscaleConstants.USER, accessToken: String = TeamscaleConstants.ACCESS_TOKEN, port: Int = TeamscaleConstants.PORT) {
+		buildFile.appendText("""
+
+teamscale {
+	server {
+		url = 'http://127.0.0.1:${port}'
+		userName = '${user}'
+		userAccessToken = '${accessToken}'
+		project = 'test'
+	}
+}
+		""".trimIndent())
+	}
+
+	fun withBranchAndTimestamp() {
+		buildFile.appendText("""
+			
+teamscale {
+	commit {
+		timestamp = 1544512967526L
+		branchName = "master"
+	}
+}
+		""".trimIndent())
+	}
+
+	fun excludeFailingTests() {
+		buildFile.appendText("""
+
+tasks.withType(Test).configureEach {
+	exclude '**/FailingRepeatedTest*'
+}
+		""".trimIndent())
+	}
+
+	fun defineLegacyUnitTestTask(jacocoIncludes: String = "com.example.project.*") {
+		buildFile.appendText("""
+			
+task unitTest(type: com.teamscale.TestImpacted) {
+	useJUnitPlatform {
+		excludeTags 'integration'
+	}
+	jacoco.includes = [ '${jacocoIncludes}' ]
+	testLogging {
+		// events "started", "skipped", "failed"
+		exceptionFormat "short"
+		afterSuite { desc, result ->
+			if (!desc.parent) { // will match the outermost suite
+				def output = "Results: ${'$'}{result.resultType} (${'$'}{result.testCount} tests, ${'$'}{result.successfulTestCount} successes, ${'$'}{result.failedTestCount} failures, ${'$'}{result.skippedTestCount} skipped)"
+				def startItem = '|  ', endItem = '  |'
+				def repeatLength = startItem.length() + output.length() + endItem.length()
+				println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+			}
+		}
+	}
+}
+		""".trimIndent())
 	}
 }
