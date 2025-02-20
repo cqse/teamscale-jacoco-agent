@@ -9,7 +9,7 @@ class ProfilerLogEntry(
 	var message: String,
 
 	/** Details, for example, the stack trace */
-	var details: String,
+	var details: String?,
 
 	/** Event severity */
 	var severity: String
