@@ -97,8 +97,8 @@ public class PreMain {
 	}
 
 	private static void initializeDelayedLogging() {
-		loggingResources = LoggingUtils.initializeDelayedLogging();
-		LOGGER = LoggingUtils.getLoggerContext().getLogger(PreMain.class);
+		DelayedLogAppender.addDelayedAppenderTo(getLoggerContext());
+		LOGGER = LoggingUtils.getLogger(PreMain.class);
 	}
 
 	@NotNull
@@ -118,6 +118,7 @@ public class PreMain {
 		if (credentials == null) {
 			LOGGER.warn("Did not find a teamscale.properties file!");
 		}
+
 		AgentOptions agentOptions;
 		try {
 			agentOptions = AgentOptionsParser.parse(options, environmentConfigId, environmentConfigFile, credentials);
@@ -142,7 +143,6 @@ public class PreMain {
 
 	/** Initializes logging during {@link #premain(String, Instrumentation)} and also logs the log directory. */
 	private static void initializeLogging(AgentOptions agentOptions) throws IOException {
-		closeLoggingResources();
 		DelayedLogAppender.close();
 		if (agentOptions.isDebugLogging()) {
 			initializeDebugLogging(agentOptions);

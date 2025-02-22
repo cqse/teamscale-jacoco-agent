@@ -17,7 +17,7 @@ class CloseableBuffer<T> implements Iterable<T> {
 	 * @return whether the given object was appended to the buffer. Returns {@code false} if the buffer is closed.
 	 * */
 	public boolean append(T object) {
-			if (closed) {
+			if (!closed) {
 				return BUFFER.add(object);
 			}
 			return false;

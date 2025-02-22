@@ -91,12 +91,6 @@ public class LoggingUtils {
 		return new LoggingResources();
 	}
 
-	public static LoggingResources initializeDelayedLogging() {
-		InputStream stream = Agent.class.getResourceAsStream("logback.xml");
-		reconfigureLoggerContext(stream);
-		return new LoggingResources();
-	}
-
 	/** Initializes debug logging. */
 	public static LoggingResources initializeDebugLogging(Path logDirectory) {
 		if (logDirectory != null) {
