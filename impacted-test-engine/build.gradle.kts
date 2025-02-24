@@ -12,6 +12,7 @@ publishAs {
 }
 
 dependencies {
+    implementation(platform(libs.junit.bom))
     implementation(project(":teamscale-client"))
     implementation(project(":report-generator"))
     implementation(project(":tia-client"))

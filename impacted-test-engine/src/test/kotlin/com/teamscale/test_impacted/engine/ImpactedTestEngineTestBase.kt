@@ -16,6 +16,7 @@ abstract class ImpactedTestEngineTestBase {
 	private val impactedTestsProvider = mock<ImpactedTestsProvider>()
 	private val discoveryRequest = mock<EngineDiscoveryRequest>()
 	private val executionRequest = mock<ExecutionRequest>()
+	private val configurationParameters = mock<ConfigurationParameters>()
 	private val executionListener = mock<EngineExecutionListener>()
 	private val teamscaleAgentNotifier = mock<TeamscaleAgentNotifier>()
 
@@ -37,6 +38,8 @@ abstract class ImpactedTestEngineTestBase {
 			.thenReturn(executionListener)
 		whenever(executionRequest.rootTestDescriptor)
 			.thenReturn(engineDescriptor)
+		whenever(executionRequest.configurationParameters)
+			.thenReturn(configurationParameters)
 
 		testEngine.execute(executionRequest)
 

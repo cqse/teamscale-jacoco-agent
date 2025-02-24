@@ -13,11 +13,6 @@ plugins {
 
 import com.teamscale.TestImpacted
 
-ext.junit4Version = '4.13.2'
-ext.junitVintageVersion = '5.11.4'
-ext.junitPlatformVersion = '1.4.0'
-ext.junitJupiterVersion = '5.11.4'
-
 if (!project.hasProperty("withoutServerConfig")) {
 	teamscale {
 		server {
@@ -82,14 +77,14 @@ repositories {
 }
 
 dependencies {
-	// JUnit Jupiter API and TestEngine implementation
-	testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
-	testImplementation("org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}")
+	// JUnit Jupiter
+	testImplementation(platform("org.junit:junit-bom:5.12.0"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
 
 	// If you also want to support JUnit 3 and JUnit 4 tests
-	testImplementation("junit:junit:${junit4Version}")
-	testRuntimeOnly("org.junit.vintage:junit-vintage-engine:${junitVintageVersion}")
+	testImplementation("junit:junit:4.13.2")
+	testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 
