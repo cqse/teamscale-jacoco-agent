@@ -32,7 +32,7 @@ public class TestwiseCoverageGradleSystemTest {
 		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "teamscaleReportUpload", "--no-daemon");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(2);
-		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Unit Tests"));
+		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.partition.equals("Unit Tests"));
 
 		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(unitTestReport.tests.get(0).uniformPath).isEqualTo("org/example/Test1/test1()");
