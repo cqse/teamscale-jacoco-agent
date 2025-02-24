@@ -18,6 +18,7 @@ tasks.jar {
 
 dependencies {
     implementation(project(":tia-client"))
+    implementation(platform(libs.junit.bom))
     api(libs.junit4)
     api(libs.junit.platform.launcher)
 }

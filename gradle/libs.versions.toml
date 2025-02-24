@@ -9,8 +9,6 @@ jacoco = "0.8.12"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
 logback = "1.3.15"
 retrofit = "2.11.0"
-junit = "5.12.0"
-junitPlatform = "1.12.0"
 okhttp = "4.12.0"
 mockito = "5.15.2"
 mockitoKotlin = "5.4.0"
@@ -64,12 +62,12 @@ jna-platform = { module = "net.java.dev.jna:jna-platform", version = "5.16.0" }
 
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version = "2.24.3" }
 
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
-junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version.ref = "junitPlatform" }
-junit-platform-commons = { module = "org.junit.platform:junit-platform-commons", version.ref = "junitPlatform" }
+junit-bom = { module = "org.junit:junit-bom", version = "5.12.0" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine" }
+junit-platform-commons = { module = "org.junit.platform:junit-platform-commons" }
 
 junit4 = { module = "junit:junit", version = "4.13.2" }
 assertj = { module = "org.assertj:assertj-core", version = "3.27.3" }

@@ -34,14 +34,14 @@ val libs = catalogs.named("libs")
 fun lib(alias: String) = libs.findLibrary(alias).get()
 
 dependencies {
-    testImplementation(lib("junit-jupiter-api"))
+    testImplementation(platform(lib("junit-bom")))
+    testImplementation(lib("junit-jupiter"))
     testImplementation(lib("assertj"))
     testImplementation(lib("mockito-core"))
     testImplementation(lib("mockito-junit"))
 	testImplementation(lib("mockito-kotlin"))
 
     testRuntimeOnly(lib("junit-platform-launcher"))
-    testRuntimeOnly(lib("junit-jupiter-engine"))
 
     constraints {
         implementation("org.apache.commons:commons-compress:1.27.1")

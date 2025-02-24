@@ -26,6 +26,5 @@ dependencies {
 	implementation(libs.jgit)
 	implementation(libs.teamscaleLibCommons)
 
-	testImplementation(libs.junit.jupiter.api)
 	testImplementation(libs.assertj)
 }
