@@ -32,7 +32,6 @@ public class ConverterTest {
 		new Converter(arguments).runJaCoCoReportGeneration();
 
 		String xml = FileSystemUtils.readFileUTF8(outputFile);
-		System.err.println(xml);
 		assertThat(xml).isNotEmpty().contains("<package").contains("<sourcefile").contains("<counter").contains("TestClass");
 	}
 
@@ -50,7 +49,6 @@ public class ConverterTest {
 		new Converter(arguments).runJaCoCoReportGeneration();
 
 		String xml = FileSystemUtils.readFileUTF8(outputFile);
-		System.err.println(xml);
 		assertThat(xml).isNotEmpty().contains("<package").contains("<sourcefile").contains("<counter").contains("TestClass");
 	}
 
