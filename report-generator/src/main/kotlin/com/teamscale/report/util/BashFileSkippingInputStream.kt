@@ -46,8 +46,6 @@ class BashFileSkippingInputStream(input: InputStream) : FilterInputStream(Buffer
 			`in`.mark(BUFFER_SIZE)
 			bytesRead = `in`.read(buffer, 0, BUFFER_SIZE)
 		}
-
-		throw IOException("ZIP header not found in the input stream.")
 	}
 
 	/**

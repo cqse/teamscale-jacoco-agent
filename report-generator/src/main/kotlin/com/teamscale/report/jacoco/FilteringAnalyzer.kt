@@ -69,11 +69,10 @@ open class FilteringAnalyzer(
 	 */
 	@Throws(IOException::class)
 	protected open fun analyzeJar(input: InputStream, location: String): Int {
-		ZipInputStream(BashFileSkippingInputStream(input)).use { zip ->
-			return generateSequence { zip.nextEntry(location) }
+		val zip = ZipInputStream(BashFileSkippingInputStream(input))
+		return generateSequence { zip.nextEntry(location) }
 				.map { entry -> analyzeAll(zip, "$location@${entry.name}") }
 				.sum()
-		}
 	}
 
 	/** Copied from [org.jacoco.core.analysis.Analyzer.nextEntry].  */

@@ -32,7 +32,23 @@ public class ConverterTest {
 		new Converter(arguments).runJaCoCoReportGeneration();
 
 		String xml = FileSystemUtils.readFileUTF8(outputFile);
-		System.err.println(xml);
+		assertThat(xml).isNotEmpty().contains("<package").contains("<sourcefile").contains("<counter").contains("TestClass");
+	}
+
+	@Test
+	public void testNestedJar(@TempDir File tempDir) throws Exception {
+		File execFile = new File(getClass().getResource("coverage.exec").toURI());
+		File classFile = new File(getClass().getResource("TestClass.jar.zip").toURI());
+		File outputFile = new File(tempDir, "coverage.xml");
+
+		ConvertCommand arguments = new ConvertCommand();
+		arguments.inputFiles = Collections.singletonList(execFile.getAbsolutePath());
+		arguments.outputFile = outputFile.getAbsolutePath();
+		arguments.classDirectoriesOrZips = Collections.singletonList(classFile.getAbsolutePath());
+
+		new Converter(arguments).runJaCoCoReportGeneration();
+
+		String xml = FileSystemUtils.readFileUTF8(outputFile);
 		assertThat(xml).isNotEmpty().contains("<package").contains("<sourcefile").contains("<counter").contains("TestClass");
 	}
 
