@@ -60,7 +60,7 @@ public class Converter {
 		try (Benchmark benchmark = new Benchmark("Generating the XML report")) {
 			generator.convert(new Dump(sessionInfo, executionDataStore), Paths.get(arguments.outputFile).toFile());
 		} catch (EmptyReportException e) {
-			logger.warn("Converted report was emtpy.", e);
+			logger.warn("Converted report was empty.", e);
 		}
 	}
 
