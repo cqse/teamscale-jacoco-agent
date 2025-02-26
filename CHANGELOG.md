@@ -6,6 +6,9 @@ We use [semantic versioning](http://semver.org/):
 
 # Next version
 
+# 34.2.4
+- [fix] Convert tool could fail with `IOException` when providing nested jars
+
 # 34.2.3
 - [fix] _agent_: Delayed initialization of the project via a git properties file did not work.
 - [fix] _agent_: Only logs with a stack trace (errors) were sent to Teamscale.
