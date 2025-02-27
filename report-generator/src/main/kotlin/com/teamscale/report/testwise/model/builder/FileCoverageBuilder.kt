@@ -42,7 +42,7 @@ class FileCoverageBuilder(
 		compactifyToRanges(coveredLines).joinToString(",")
 
 	/** Returns true if there is no coverage for the file yet.  */
-	val isEmpty: Boolean get() = coveredLines.isEmpty()
+	val isEmpty: Boolean get() = coveredLines.isEmpty
 
 	/** Builds the [FileCoverage] object, which is serialized into the report.  */
 	fun build(): FileCoverage = FileCoverage(fileName, computeCompactifiedRangesAsString())

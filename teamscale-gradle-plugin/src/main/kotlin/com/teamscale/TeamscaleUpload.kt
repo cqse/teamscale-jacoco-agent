@@ -91,6 +91,11 @@ abstract class TeamscaleUpload : DefaultTask() {
 				addReport(EReportFormat.JACOCO.name, task.reports.xml.outputLocation)
 			}
 
+			is CompactCoverageReport -> {
+				check(task.reports.compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.compactCoverage.outputLocation)
+			}
+
 			else -> throw GradleException("Unsupported task type ${task.javaClass.name}! Use addReport(format, reportFiles) instead to upload reports produced by other tasks.")
 		}
 	}

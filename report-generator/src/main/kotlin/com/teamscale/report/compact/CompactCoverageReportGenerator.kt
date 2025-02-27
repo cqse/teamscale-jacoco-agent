@@ -1,14 +1,12 @@
-package com.teamscale.report.jacoco
+package com.teamscale.report.compact
 
 import com.teamscale.report.EDuplicateClassFileBehavior
+import com.teamscale.report.jacoco.EmptyReportException
+import com.teamscale.report.jacoco.JaCoCoBasedReportGenerator
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
-import org.jacoco.core.analysis.CoverageBuilder
-import org.jacoco.core.analysis.IBundleCoverage
 import org.jacoco.core.data.ExecutionDataStore
 import org.jacoco.core.data.SessionInfo
-import org.jacoco.core.internal.analysis.BundleCoverageImpl
-import org.jacoco.report.xml.XMLFormatter
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
@@ -19,22 +17,20 @@ import java.io.OutputStream
  * @param codeDirectoriesOrArchives Directories and zip files that contain class files.
  * @param locationIncludeFilter Include filter to apply to all locations during class file traversal.
  * @param duplicateClassFileBehavior Whether to ignore non-identical duplicates of class files.
- * @param ignoreUncoveredClasses Whether to remove uncovered classes from the report.
  * @param logger The logger.
  */
-class JaCoCoXmlReportGenerator(
-	private val codeDirectoriesOrArchives: List<File>,
+class CompactCoverageReportGenerator(
+	private val codeDirectoriesOrArchives: Collection<File>,
 	private val locationIncludeFilter: ClasspathWildcardIncludeFilter,
 	private val duplicateClassFileBehavior: EDuplicateClassFileBehavior,
-	private val ignoreUncoveredClasses: Boolean,
 	private val logger: ILogger
-) : JaCoCoBasedReportGenerator<CoverageBuilder>(
+) : JaCoCoBasedReportGenerator<TeamscaleCompactCoverageBuilder>(
 	codeDirectoriesOrArchives,
 	locationIncludeFilter,
 	duplicateClassFileBehavior,
-	ignoreUncoveredClasses,
+	true,
 	logger,
-	CoverageBuilder()
+	TeamscaleCompactCoverageBuilder()
 ) {
 
 	/** Creates an XML report based on the given session and coverage data.  */
@@ -44,22 +40,15 @@ class JaCoCoXmlReportGenerator(
 		sessionInfo: SessionInfo?,
 		store: ExecutionDataStore
 	) {
-		val bundleCoverage = BundleCoverageImpl("dummybundle", emptyList(), coverageVisitor.sourceFiles)
-		bundleCoverage.checkForEmptyReport()
-		XMLFormatter().createVisitor(output).apply {
-			visitInfo(listOf(sessionInfo), store.contents)
-			visitBundle(bundleCoverage, null)
-			visitEnd()
-		}
+		val compactReportData = coverageVisitor.buildReport()
+		compactReportData.checkForEmptyReport()
+		compactReportData.writeTo(output)
 	}
 
 	@Throws(EmptyReportException::class)
-	private fun IBundleCoverage.checkForEmptyReport() {
-		if (packages.isEmpty() || lineCounter.totalCount == 0) {
+	private fun TeamscaleCompactCoverageReport.checkForEmptyReport() {
+		if (this.fileCoverageInfos.all { it.fullyCoveredLines.isEmpty && it.partiallyCoveredLines?.isEmpty != false }) {
 			throw EmptyReportException("The generated coverage report is empty. $MOST_LIKELY_CAUSE_MESSAGE")
-		}
-		if (lineCounter.coveredCount == 0) {
-			throw EmptyReportException("The generated coverage report does not contain any covered source code lines. $MOST_LIKELY_CAUSE_MESSAGE")
 		}
 	}
 }

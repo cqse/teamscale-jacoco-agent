@@ -102,7 +102,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 		)
 		// TODO Currently we scan the full classpath for classes, previously we only looked at the gradle projects within this build might be able to rebuild this via:
 		// https://github.com/gradlex-org/maven-plugin-development/blob/5cab40cc4763a9471178a96ccbe37b933643506d/src/main/java/org/gradlex/maven/plugin/development/MavenPluginDevelopmentPlugin.java#L136C1-L192C6
-		assertThat(build.output).contains("None of the 975").contains(" class files found in the given directories match the configured include/exclude patterns!")
+		assertThat(build.output).contains("None of the 97").contains(" class files found in the given directories match the configured include/exclude patterns!")
 	}
 
 	private fun assertFullCoverage(source: String) {
@@ -119,7 +119,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 				"com/example/project/FailingRepeatedTest/testRepeatedTest()",
 				ETestExecutionResult.FAILURE
 			)
-			.containsExecutionResult("FibonacciTest/test[4]", ETestExecutionResult.PASSED)
+			.containsExecutionResult("com/example/project/FibonacciTest/test[4]", ETestExecutionResult.PASSED)
 			.containsCoverage(
 				"com/example/project/JUnit4Test/systemTest",
 				"com/example/project/Calculator.java",
