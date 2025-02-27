@@ -1,31 +1,32 @@
 package com.teamscale
 
-import com.teamscale.config.extension.TeamscalePluginExtension
-import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
-import org.gradle.api.Project
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.file.FileCollection
+import com.teamscale.client.CommitDescriptor
+import com.teamscale.config.AgentConfiguration
+import com.teamscale.config.ServerConfiguration
+import com.teamscale.internal.DefaultTestImpactedTaskReports
+import groovy.lang.Closure
+import org.gradle.api.Action
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.TestTaskReports
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
-import org.gradle.kotlin.dsl.withType
+import org.gradle.kotlin.dsl.property
+import org.gradle.util.internal.ClosureBackedAction
+import org.gradle.work.DisableCachingByDefault
 import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
-@CacheableTask
+@DisableCachingByDefault(because = "The task relies on Teamscale as an external system, so we cannot guarantee deterministic outputs")
 abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
 
 	companion object {
 		const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
 	}
-
-	/** Command line switch to enable/disable testwise coverage collection. */
-	@Input
-	val collectTestwiseCoverage: Property<Boolean> = objects.property(Boolean::class.java).convention(true)
 
 	/** Command line switch to activate requesting from Teamscale which tests are impacted by a change (last commit be default). */
 	@Input
@@ -34,7 +35,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		description = "If set the plugin connects to Teamscale to retrieve impacted tests and an optimized order in " +
 				"which they should be executed."
 	)
-	var runImpacted: Boolean = false
+	val runImpacted: Property<Boolean> = objects.property<Boolean>().convention(false)
 
 	/**
 	 * Command line switch to activate running all tests. This is the default if "--impacted" is false.
@@ -46,7 +47,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		description = "When set to true runs all tests even those that are not impacted. " +
 				"Teamscale still tries to optimize the execution order to cause failures early."
 	)
-	var runAllTests: Boolean = false
+	val runAllTests: Property<Boolean> = objects.property<Boolean>().convention(false)
 
 	/** Command line switch to include or exclude added tests. */
 	@Input
@@ -54,7 +55,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		option = "include-added-tests",
 		description = "When set to true includes added tests in test selection."
 	)
-	var includeAddedTests: Boolean = true
+	val includeAddedTests: Property<Boolean> = objects.property<Boolean>().convention(true)
 
 	/** Command line switch to include or exclude failed and skipped tests. */
 	@Input
@@ -62,106 +63,72 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		option = "include-failed-and-skipped",
 		description = "When set to true includes failed and skipped tests in test selection."
 	)
-	var includeFailedAndSkipped: Boolean = true
+	val includeFailedAndSkipped: Property<Boolean> = objects.property<Boolean>().convention(true)
 
-	/**
-	 * Reference to the configuration that should be used for this task.
-	 */
-	@Internal
-	lateinit var pluginExtension: TeamscalePluginExtension
+	@get:Input
+	abstract val partition: Property<String>
 
-	/**
-	 * Reference to the configuration that should be used for this task.
-	 */
-	@Internal
-	lateinit var taskExtension: TeamscaleTestImpactedTaskExtension
-
-	val reportConfiguration
-		@Nested
-		get() = taskExtension.report.getReport()
-
-	val agentFilterConfiguration
-		@Input
-		get() = taskExtension.agent.getFilter()
-
-	val agentJvmConfiguration
-		@Input
-		get() = taskExtension.agent.getAllAgents().map { it.getJvmArgs() }
-
-	val serverConfiguration
-		@Input
-		get() = pluginExtension.server
-
-	/**
-	 * The (current) commit at which test details should be uploaded to.
-	 * Furthermore all changes up to including this commit are considered for test impact analysis.
-	 */
-	val endCommit
-		@Internal
-		get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).first
-
-	/**
-	 *  Can be used instead of [endCommit] by using a revision (e.g. git SHA1) instead of a branch and timestamp.
-	 */
-	val endRevision
-		@Internal
-		get() = pluginExtension.commit.getOrResolveCommitDescriptor(project).second
-
-	/** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
-	val baseline
-		@Input
-		@Optional
-		get() = pluginExtension.baseline
-
-	/**
-	 * Can be used instead of [baseline] by using a revision (e.g. git SHA1) instead of a branch and timestamp
-	 */
-	val baselineRevision
-		@Input
-		@Optional
-		get() = pluginExtension.baselineRevision
-
-	/**
-	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
-	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
-	 */
-	val repository
-		@Input
-		@Optional
-		get() = pluginExtension.repository
+	@get:Input
+	abstract val serverConfiguration: Property<ServerConfiguration>
 
 	/**
 	 * The directory to write the jacoco execution data to. Ensures that the directory
 	 * is cleared before executing the task by Gradle.
 	 */
-	val reportOutputDir
-		@OutputDirectory
-		get() = taskExtension.agent.destination
+	@get:Nested
+	abstract val agentConfiguration: Property<AgentConfiguration>
 
-	/** The report task used to setup and cleanup report directories. */
-	@Internal
-	lateinit var reportTask: TestwiseCoverageReportTask
+	/**
+	 * The commit (branch+timestamp or revision e.g. git SHA1) at which test details should be uploaded to.
+	 * Furthermore, all changes up to including this commit are considered for test impact analysis.
+	 */
+	@get:Input
+	@get:Optional
+	abstract val endCommit: Property<Pair<CommitDescriptor?, String?>>
 
-	val testEngineConfiguration: FileCollection
-		@InputFiles
-		@Classpath
-		get() = project.configurations.getByName(TeamscalePlugin.impactedTestEngineConfiguration)
+	/** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
+	@get:Input
+	@get:Optional
+	abstract val baseline: Property<Long>
+
+	/**
+	 * Can be used instead of [baseline] by using a revision (e.g. git SHA1) instead of a branch and timestamp
+	 */
+	@get:Input
+	@get:Optional
+	abstract val baselineRevision: Property<String>
+
+	/**
+	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
+	 */
+	@get:Input
+	@get:Optional
+	abstract val repository: Property<String>
+
+	@get:InputFiles
+	@get:Classpath
+	abstract val testEngineConfiguration: ConfigurableFileCollection
+
+	private val impactedReports: TestImpactedTaskReports
 
 	init {
 		group = "Teamscale"
 		description = "Executes the impacted tests and collects coverage per test case"
+		impactedReports = DefaultTestImpactedTaskReports(super.getReports(), objects)
 	}
 
 	@TaskAction
 	override fun executeTests() {
 		val testFrameworkOptions = options
-		require(testFrameworkOptions is JUnitPlatformOptions) { "Only JUnit Platform is supported as test framework!" }
-		if (collectTestwiseCoverage.get()) {
-			require(maxParallelForks == 1) { "maxParallelForks is ${maxParallelForks}. Testwise coverage collection is only supported for maxParallelForks=1!" }
+		check(testFrameworkOptions is JUnitPlatformOptions) { "Only JUnit Platform is supported as test framework!" }
+		val collectTestwiseCoverage = impactedReports.testwiseCoverage.required.get()
+		if (collectTestwiseCoverage) {
+			check(maxParallelForks == 1) { "maxParallelForks is ${maxParallelForks}. Testwise coverage collection is only supported for maxParallelForks=1!" }
 
-			classpath = classpath.plus(testEngineConfiguration)
+			(stableClasspath as ConfigurableFileCollection).from(testEngineConfiguration)
 
-			if (runImpacted) {
+			if (runImpacted.get()) {
 				// Workaround to not cause the task to fail when no tests are executed, which might happen when no tests are impacted
 				// We do so by adding a useless filter, because the "no tests executed" can only be disabled for the case where filters are applied
 				// https://docs.gradle.org/8.8/userguide/upgrading_version_8.html#test_task_fail_on_no_test_executed
@@ -172,70 +139,92 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 
 			jvmArgumentProviders.removeIf { it.javaClass.name.contains("JacocoPluginExtension") }
 
-			taskExtension.agent.localAgent?.let {
+			agentConfiguration.get().localAgent.orNull?.let {
 				jvmArgs(it.getJvmArgs())
 			}
 
-			val reportConfig = taskExtension.report
-			val report = reportConfig.getReport().copy(partial = runImpacted && !runAllTests)
-
-			reportTask.addTestArtifactsDirs(report, reportOutputDir)
-
-			collectAllDependentJavaProjects(project).forEach { subProject ->
-				val sourceSets = subProject.property("sourceSets") as SourceSetContainer
-				reportTask.classDirs.addAll(sourceSets.map { it.output.classesDirs })
-			}
-
-			report.setImpactedTestEngineOptions(testFrameworkOptions)
+			setImpactedTestEngineOptions(testFrameworkOptions)
 			testFrameworkOptions.includeEngines = setOf(IMPACTED_TEST_ENGINE)
 		}
-		super.executeTests()
-	}
-
-	private fun collectAllDependentJavaProjects(
-		project: Project,
-		seenProjects: MutableSet<Project> = mutableSetOf()
-	): Set<Project> {
-		// seenProjects helps to detect cycles in the dependency graph
-		if (seenProjects.contains(project) || !project.pluginManager.hasPlugin("java")) {
-			return setOf()
+		try {
+			super.executeTests()
+		} finally {
+			if (collectTestwiseCoverage) {
+				val partial = runImpacted.get() && !runAllTests.get()
+				logger.info("Generating coverage reports...")
+				TestwiseCoverageReporting(
+					logger,
+					partial,
+					stableClasspath.files,
+					agentConfiguration.get().getPredicate(),
+					agentConfiguration.get().destination.asFile.get(),
+					impactedReports.testwiseCoverage.outputLocation.asFile.get()
+				).generateTestwiseCoverageReports()
+			}
 		}
-		seenProjects.add(project)
-		return project.configurations
-			.getByName("testRuntimeClasspath")
-			.allDependencies
-			.withType<ProjectDependency>()
-			.map { it.dependencyProject }
-			.flatMap { collectAllDependentJavaProjects(it, seenProjects) }
-			.union(listOf(project))
 	}
 
 	private infix fun String.writeProperty(value: Any?) {
 		value?.let { systemProperties["teamscale.test.impacted.${this}"] = it.toString() }
 	}
 
-	private fun Report.setImpactedTestEngineOptions(options: JUnitPlatformOptions) {
-		if (runImpacted) {
-			require(endRevision != null || endCommit != null) { "When executing only impacted tests a reference commit must be specified in the form of endRevision or endCommit!" }
-			serverConfiguration.validate()
-			"server.url" writeProperty serverConfiguration.url
-			"server.project" writeProperty serverConfiguration.project
-			"server.userName" writeProperty serverConfiguration.userName
-			"server.userAccessToken" writeProperty serverConfiguration.userAccessToken
+	private fun setImpactedTestEngineOptions(options: JUnitPlatformOptions) {
+		if (runImpacted.get()) {
+			check(endCommit.isPresent) { "When executing only impacted tests a reference commit must be specified in the form of endRevision or endCommit!" }
+			serverConfiguration.get().validate()
+			"server.url" writeProperty serverConfiguration.get().url.get()
+			"server.project" writeProperty serverConfiguration.get().project.get()
+			"server.userName" writeProperty serverConfiguration.get().userName.get()
+			"server.userAccessToken" writeProperty serverConfiguration.get().userAccessToken.get()
+			"baseline" writeProperty baseline.orNull
+			"baselineRevision" writeProperty baselineRevision.orNull
 		}
+		check(
+			partition.isPresent && partition.get().isNotBlank()
+		) { "Partition is required for retrieving Test Impact Analysis results" }
 		"partition" writeProperty partition.get()
-		"endCommit" writeProperty endCommit
-		"endRevision" writeProperty endRevision
-		"baseline" writeProperty baseline
-		"baselineRevision" writeProperty baselineRevision
-		"repository" writeProperty repository
-		"reportDirectory" writeProperty reportOutputDir.absolutePath
-		"agentsUrls" writeProperty taskExtension.agent.getAllAgents().map { it.url }.joinToString(",")
-		"runImpacted" writeProperty runImpacted
-		"runAllTests" writeProperty runAllTests
-		"includeAddedTests" writeProperty includeAddedTests
-		"includeFailedAndSkipped" writeProperty includeFailedAndSkipped
+		"endCommit" writeProperty endCommit.get().first
+		"endRevision" writeProperty endCommit.get().second
+		"repository" writeProperty repository.orNull
+		"reportDirectory" writeProperty agentConfiguration.get().destination.asFile.get().absolutePath
+		"agentsUrls" writeProperty agentConfiguration.get().getAllAgentUrls().joinToString(",")
+		"runImpacted" writeProperty runImpacted.get()
+		"runAllTests" writeProperty runAllTests.get()
+		"includeAddedTests" writeProperty includeAddedTests.get()
+		"includeFailedAndSkipped" writeProperty includeFailedAndSkipped.get()
 		"includedEngines" writeProperty options.includeEngines.joinToString(",")
 		"excludedEngines" writeProperty options.excludeEngines.joinToString(",")
 	}
+
+	/**
+	 * The reports that this task potentially produces.
+	 *
+	 * @return The reports that this task potentially produces
+	 */
+	@Nested
+	override fun getReports(): TestImpactedTaskReports {
+		return impactedReports
+	}
+
+	/**
+	 * Configures the reports that this task potentially produces.
+	 *
+	 * @param closure The configuration
+	 * @return The reports that this task potentially produces
+	 */
+	override fun reports(closure: Closure<*>): TestImpactedTaskReports {
+		return reports(ClosureBackedAction(closure))
+	}
+
+	/**
+	 * Configures the reports that this task potentially produces.
+	 *
+	 * @param configureAction The configuration
+	 * @return The reports that this task potentially produces
+	 */
+	override fun reports(configureAction: Action<in TestTaskReports?>): TestImpactedTaskReports {
+		configureAction.execute(impactedReports)
+		return impactedReports
+	}
 }
+

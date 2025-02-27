@@ -1,5 +1,17 @@
 package com.teamscale.test.commons;
 
+import com.teamscale.report.testwise.model.TestInfo;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import org.apache.commons.lang3.SystemUtils;
+import org.conqat.lib.commons.io.ProcessUtils;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,20 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.conqat.lib.commons.io.ProcessUtils;
-import org.jetbrains.annotations.NotNull;
-
-import com.teamscale.report.testwise.model.TestInfo;
-
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.http.Body;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
 
 /**
  * Utilities for running system tests.
@@ -105,7 +103,7 @@ public class SystemTestUtils {
 	 *
 	 * @throws IOException if running Gradle fails.
 	 */
-	public static void runGradle(String gradleProjectPath, String... gradleArguments) throws IOException {
+	public static ProcessUtils.ExecutionResult runGradle(String gradleProjectPath, String... gradleArguments) throws IOException {
 		ProcessUtils.ExecutionResult result;
 		try {
 			result = ProcessUtils.execute(buildGradleProcess(gradleProjectPath, gradleArguments));
@@ -121,6 +119,7 @@ public class SystemTestUtils {
 		if (result.terminatedByTimeoutOrInterruption()) {
 			throw new IOException("Running Gradle failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
+		return result;
 	}
 
 	/**
@@ -155,7 +154,7 @@ public class SystemTestUtils {
 		}
 
 		arguments.addAll(Arrays.asList(gradleArguments));
-		
+
 		return new ProcessBuilder(arguments).directory(new File(gradleProjectDirectory));
 	}
 

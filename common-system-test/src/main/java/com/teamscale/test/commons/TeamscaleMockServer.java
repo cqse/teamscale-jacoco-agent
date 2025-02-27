@@ -24,9 +24,12 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -62,6 +65,7 @@ public class TeamscaleMockServer {
 	private ProfilerConfiguration profilerConfiguration;
 	private String username = null;
 	private String accessToken = null;
+	private final Map<String, Session> sessions = new HashMap<>();
 
 	public TeamscaleMockServer(int port) throws IOException {
 		service = Service.ignite();
@@ -87,9 +91,26 @@ public class TeamscaleMockServer {
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
 	public TeamscaleMockServer acceptingReportUploads() {
-		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
+		service.post("api/v5.9.0/projects/:projectId/external-analysis/session/:sessionId/report",
 				this::handleReport);
+		service.post("api/v5.9.0/projects/:projectId/external-analysis/session",
+				this::createSession);
+		service.post("api/v5.9.0/projects/:projectId/external-analysis/session/:sessionId",
+				this::commitSession);
 		return this;
+	}
+
+	private Object commitSession(Request request, Response response) {
+		requireAuthentication(request, response);
+		return null;
+	}
+
+	private Object createSession(Request request, Response response) throws JsonProcessingException {
+		requireAuthentication(request, response);
+
+		String sessionId = UUID.randomUUID().toString();
+		sessions.put(sessionId, new Session(request));
+		return JsonUtils.serialize(sessionId);
 	}
 
 	/** Configures the server to answer all impacted test calls with the given tests. */
@@ -184,14 +205,22 @@ public class TeamscaleMockServer {
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
 		requireAuthentication(request, response);
 
+		String sessionId = request.params(":sessionId");
+		Session session;
+		if (sessionId.equals("auto-create")) {
+			session = new Session(request);
+		} else {
+			session = sessions.get(sessionId);
+		}
+
 		collectedUserAgents.add(request.headers("User-Agent"));
-		uploadCommits.add(request.queryParams("revision") + ", " + request.queryParams("t"));
-		uploadRepositories.add(request.queryParams("repository"));
+		uploadCommits.add(session.revision + ", " + session.commit);
+		uploadRepositories.add(session.repository);
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(tempDir.toString());
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
 		Collection<Part> parts = request.raw().getParts();
-		String partition = request.queryParams("partition");
+		String partition = session.partition;
 		for (Part part : parts) {
 			String reportString = IOUtils.toString(part.getInputStream());
 			uploadedReports.add(new ExternalReport(reportString, partition));
@@ -222,5 +251,20 @@ public class TeamscaleMockServer {
 	private String buildBasicAuthHeader(String username, String accessToken) {
 		String credentials = username + ":" + accessToken;
 		return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+	}
+
+	private static class Session {
+
+		private final String partition;
+		private final String revision;
+		private final String commit;
+		private final String repository;
+
+		public Session(Request request) {
+			partition = request.queryParams("partition");
+			revision = request.queryParams("revision");
+			commit = request.queryParams("t");
+			repository = request.queryParams("repository");
+		}
 	}
 }

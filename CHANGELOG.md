@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [feature] _teamscale-gradle-plugin_: Made compatible with Gradle 9.0
+- [breaking] _teamscale-gradle-plugin_: Support for Gradle configuration cache (see `teamscale-gradle-plugin/MIGRATION_35.md` for how to update)
 
 # 34.2.4
 - [fix] Convert tool could fail with `IOException` when providing nested jars
