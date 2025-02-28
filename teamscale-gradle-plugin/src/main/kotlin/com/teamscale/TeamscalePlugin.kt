@@ -124,6 +124,10 @@ open class TeamscalePlugin : Plugin<Project> {
 			extension.agent.useLocalAgent("http://127.0.0.1:${port}/")
 			extension.agent.destination.set(project.layout.buildDirectory.dir("jacoco/${project.name}-${this.name}"))
 
+			runImpacted.convention(false)
+			runAllTests.convention(false)
+			includeAddedTests.convention(true)
+			includeFailedAndSkipped.convention(true)
 			agentConfiguration.convention(extension.agent)
 			serverConfiguration.convention(teamscalePluginExtension.server)
 			testEngineConfiguration.from(impactedTestEngineConfiguration)

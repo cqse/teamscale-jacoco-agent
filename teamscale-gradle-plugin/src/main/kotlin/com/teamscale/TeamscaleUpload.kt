@@ -26,12 +26,12 @@ abstract class TeamscaleUpload : DefaultTask() {
 
 	/** The Teamscale server configuration. */
 	@get:Input
-	abstract val serverConfiguration: Property<ServerConfiguration>
+	internal abstract val serverConfiguration: Property<ServerConfiguration>
 
 	/** The commit/revision for which the reports should be uploaded. */
 	@get:Input
 	@get:Optional
-	abstract val commitDescriptorOrRevision: Property<Pair<CommitDescriptor?, String?>>
+	internal abstract val commitDescriptorOrRevision: Property<Pair<CommitDescriptor?, String?>>
 
 	/**
 	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
@@ -39,11 +39,11 @@ abstract class TeamscaleUpload : DefaultTask() {
 	 */
 	@get:Input
 	@get:Optional
-	abstract val repository: Property<String>
+	internal abstract val repository: Property<String>
 
 	/** The list of reports to be uploaded. */
 	@get:Input
-	abstract val reports: MapProperty<String, ConfigurableFileCollection>
+	internal abstract val reports: MapProperty<String, ConfigurableFileCollection>
 
 	/** The partition to upload the report to. */
 	@get:Input

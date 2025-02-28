@@ -14,7 +14,6 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.TestTaskReports
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
-import org.gradle.kotlin.dsl.property
 import org.gradle.util.internal.ClosureBackedAction
 import org.gradle.work.DisableCachingByDefault
 import javax.inject.Inject
@@ -29,54 +28,54 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 	}
 
 	/** Command line switch to activate requesting from Teamscale which tests are impacted by a change (last commit be default). */
-	@Input
-	@Option(
+	@get:Input
+	@get:Option(
 		option = "impacted",
 		description = "If set the plugin connects to Teamscale to retrieve impacted tests and an optimized order in " +
 				"which they should be executed."
 	)
-	val runImpacted: Property<Boolean> = objects.property<Boolean>().convention(false)
+	abstract val runImpacted: Property<Boolean>
 
 	/**
 	 * Command line switch to activate running all tests. This is the default if "--impacted" is false.
 	 * If "--impacted" is set this runs all test, but still requests on optimized order from Teamscale for the tests.
 	 */
-	@Input
-	@Option(
+	@get:Input
+	@get:Option(
 		option = "run-all-tests",
 		description = "When set to true runs all tests even those that are not impacted. " +
 				"Teamscale still tries to optimize the execution order to cause failures early."
 	)
-	val runAllTests: Property<Boolean> = objects.property<Boolean>().convention(false)
+	abstract val runAllTests: Property<Boolean>
 
 	/** Command line switch to include or exclude added tests. */
-	@Input
-	@Option(
+	@get:Input
+	@get:Option(
 		option = "include-added-tests",
 		description = "When set to true includes added tests in test selection."
 	)
-	val includeAddedTests: Property<Boolean> = objects.property<Boolean>().convention(true)
+	abstract val includeAddedTests: Property<Boolean>
 
 	/** Command line switch to include or exclude failed and skipped tests. */
-	@Input
-	@Option(
+	@get:Input
+	@get:Option(
 		option = "include-failed-and-skipped",
 		description = "When set to true includes failed and skipped tests in test selection."
 	)
-	val includeFailedAndSkipped: Property<Boolean> = objects.property<Boolean>().convention(true)
+	abstract val includeFailedAndSkipped: Property<Boolean>
 
 	@get:Input
 	abstract val partition: Property<String>
 
 	@get:Input
-	abstract val serverConfiguration: Property<ServerConfiguration>
+	internal abstract val serverConfiguration: Property<ServerConfiguration>
 
 	/**
 	 * The directory to write the jacoco execution data to. Ensures that the directory
 	 * is cleared before executing the task by Gradle.
 	 */
 	@get:Nested
-	abstract val agentConfiguration: Property<AgentConfiguration>
+	internal abstract val agentConfiguration: Property<AgentConfiguration>
 
 	/**
 	 * The commit (branch+timestamp or revision e.g. git SHA1) at which test details should be uploaded to.
@@ -84,7 +83,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 	 */
 	@get:Input
 	@get:Optional
-	abstract val endCommit: Property<Pair<CommitDescriptor?, String?>>
+	internal abstract val endCommit: Property<Pair<CommitDescriptor?, String?>>
 
 	/** The baseline. Only changes after the baseline are considered for determining the impacted tests. */
 	@get:Input
@@ -108,7 +107,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 
 	@get:InputFiles
 	@get:Classpath
-	abstract val testEngineConfiguration: ConfigurableFileCollection
+	internal abstract val testEngineConfiguration: ConfigurableFileCollection
 
 	private val impactedReports: TestImpactedTaskReports
 
