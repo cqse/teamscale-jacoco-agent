@@ -7,7 +7,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.ReportingBasePlugin
 import org.gradle.api.provider.Provider
+import org.gradle.api.reporting.ReportingExtension
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
@@ -71,8 +73,11 @@ open class TeamscalePlugin : Plugin<Project> {
 		}
 
 		project.logger.info("Applying teamscale plugin $pluginVersion to ${project.name}")
-		project.plugins.apply(JavaPlugin::class.java)
-		project.plugins.apply(JacocoPlugin::class.java)
+		project.plugins.apply {
+			apply(JavaPlugin::class.java)
+			apply(JacocoPlugin::class.java)
+			apply(ReportingBasePlugin::class.java)
+		}
 
 		val pluginExtension =
 			project.extensions.create(TEAMSCALE_EXTENSION_NAME, TeamscalePluginExtension::class.java)
@@ -106,12 +111,13 @@ open class TeamscalePlugin : Plugin<Project> {
 		project: Project,
 		teamscalePluginExtension: TeamscalePluginExtension
 	) {
+		val reporting = project.extensions.getByType<ReportingExtension>()
 		val agentPortGenerator: Provider<AgentPortGenerator> = project.gradle.sharedServices.registerIfAbsent(
 			"agent-port-generator",
 			AgentPortGenerator::class.java
 		) {}
 		project.tasks.withType<TestImpacted> {
-			val jacocoTaskExtension: JacocoTaskExtension = this.extensions.getByType<JacocoTaskExtension>()
+			val jacocoTaskExtension = this.extensions.getByType<JacocoTaskExtension>()
 			jacocoTaskExtension.excludes?.addAll(DEFAULT_EXCLUDES)
 
 			val extension = this.extensions.create<TeamscaleTestImpactedTaskExtension>(
@@ -137,16 +143,16 @@ open class TeamscalePlugin : Plugin<Project> {
 			repository.convention(teamscalePluginExtension.repository)
 
 			reports.testwiseCoverage.required.convention(true)
-			reports.testwiseCoverage.outputLocation.convention(partition.map { partition ->
-				project.layout.buildDirectory.file(
-					"reports/testwise-coverage/${name}/${
-						partition.replace(
+			reports.testwiseCoverage.outputLocation.convention {
+				reporting.baseDirectory.file(
+					"testwise-coverage/${name}/${
+						partition.get().replace(
 							"[ /\\\\]".toRegex(),
 							"-"
 						)
 					}.json"
-				).get()
-			})
+				).get().asFile
+			}
 		}
 	}
 }
