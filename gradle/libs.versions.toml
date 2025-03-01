@@ -1,7 +1,7 @@
 [versions]
 jetty = "9.4.57.v20241219"
 jersey = "2.46"
-jackson = "2.18.2"
+jackson = "2.18.3"
 # When upgrading JaCoCo to a newer version make sure to
 # check the comment in the OpenAnalyzer.java, JaCoCoPreMain.java and CachingInstructionsBuilder.java
 # and update the internal_xxxxxx hash included in the imports in LenientCoverageTransformer.java and JaCoCoPreMain.java.
