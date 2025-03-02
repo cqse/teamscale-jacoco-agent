@@ -1,4 +1,4 @@
-package com.teamscale.internal
+package com.teamscale.utils
 
 import groovy.lang.Closure
 import org.gradle.api.file.FileSystemLocation

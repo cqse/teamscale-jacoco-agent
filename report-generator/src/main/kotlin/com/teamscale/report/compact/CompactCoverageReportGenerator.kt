@@ -47,7 +47,7 @@ class CompactCoverageReportGenerator(
 
 	@Throws(EmptyReportException::class)
 	private fun TeamscaleCompactCoverageReport.checkForEmptyReport() {
-		if (this.fileCoverageInfos.all { it.fullyCoveredLines.isEmpty && it.partiallyCoveredLines?.isEmpty != false }) {
+		if (this.coverage.all { it.fullyCoveredLines.isEmpty && it.partiallyCoveredLines?.isEmpty != false }) {
 			throw EmptyReportException("The generated coverage report is empty. $MOST_LIKELY_CAUSE_MESSAGE")
 		}
 	}

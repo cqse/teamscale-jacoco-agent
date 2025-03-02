@@ -1,14 +1,20 @@
 package com.teamscale
 
+import com.teamscale.aggregation.ReportAggregationPlugin.Companion.RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.client.EReportFormat
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.ServerConfiguration
+import com.teamscale.reporting.compact.CompactCoverageReport
+import com.teamscale.utils.junitReports
+import com.teamscale.utils.testwiseCoverageReports
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Task
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -19,10 +25,22 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.io.File
 import java.io.IOException
+import javax.inject.Inject
 
 /** Handles report uploads to Teamscale. */
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 abstract class TeamscaleUpload : DefaultTask() {
+
+	/** The partition to upload the report to. */
+	@get:Input
+	abstract val partition: Property<String>
+
+	/** The commit message shown in Teamscale for the upload. */
+	@get:Input
+	abstract val message: Property<String>
+
+	@get:Input
+	abstract val ignoreFailures: Property<Boolean>
 
 	/** The Teamscale server configuration. */
 	@get:Input
@@ -45,16 +63,8 @@ abstract class TeamscaleUpload : DefaultTask() {
 	@get:Input
 	internal abstract val reports: MapProperty<String, ConfigurableFileCollection>
 
-	/** The partition to upload the report to. */
-	@get:Input
-	abstract val partition: Property<String>
-
-	/** The commit message shown in Teamscale for the upload. */
-	@get:Input
-	abstract val message: Property<String>
-
-	@get:Input
-	abstract val ignoreFailures: Property<Boolean>
+	@get:Inject
+	protected abstract val objectFactory: ObjectFactory
 
 	init {
 		group = "Teamscale"
@@ -68,6 +78,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 	fun from(task: Task) {
 		when (task) {
 			is TestImpacted -> {
+				mustRunAfter(task)
 				if (task.reports.testwiseCoverage.required.get()) {
 					addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
 				} else if (task.reports.junitXml.required.get()) {
@@ -80,6 +91,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 			}
 
 			is Test -> {
+				mustRunAfter(task)
 				check(task.reports.junitXml.required.get()) { "XML report generation is not enabled for task ${task.path}! Enable it by setting reports.junitXml.required = true for the task, to be able to upload it." }
 				addReport(EReportFormat.JUNIT.name, task.reports.junitXml.outputLocation.asFileTree.matching {
 					include("**/*.xml")
@@ -87,17 +99,43 @@ abstract class TeamscaleUpload : DefaultTask() {
 			}
 
 			is JacocoReport -> {
+				dependsOn(task)
 				check(task.reports.xml.required.get()) { "XML report generation is not enabled for task ${task.path}! Enable it by setting reports.xml.required = true for the task, to be able to upload it." }
 				addReport(EReportFormat.JACOCO.name, task.reports.xml.outputLocation)
 			}
 
 			is CompactCoverageReport -> {
+				dependsOn(task)
 				check(task.reports.compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
 				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.compactCoverage.outputLocation)
 			}
 
 			else -> throw GradleException("Unsupported task type ${task.javaClass.name}! Use addReport(format, reportFiles) instead to upload reports produced by other tasks.")
 		}
+	}
+
+	fun aggregatedJUnitReportsFrom(testSuiteName: String) {
+		val reportAggregation = project.configurations.getByName(RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
+		val junitArtifacts =
+			reportAggregation.incoming.artifactView {
+				withVariantReselection()
+				componentFilter { it is ProjectComponentIdentifier }
+				attributes.junitReports(objectFactory, testSuiteName)
+			}.files
+		mustRunAfter(junitArtifacts.buildDependencies)
+		addReport(EReportFormat.JUNIT.name, junitArtifacts)
+	}
+
+	fun aggregatedTestwiseCoverageReportsFrom(testSuiteName: String) {
+		val reportAggregation = project.configurations.getByName(RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
+		val testwiseArtifacts =
+			reportAggregation.incoming.artifactView {
+				withVariantReselection()
+				componentFilter { it is ProjectComponentIdentifier }
+				attributes.testwiseCoverageReports(objectFactory, testSuiteName)
+			}.files
+		mustRunAfter(testwiseArtifacts.buildDependencies)
+		addReport(EReportFormat.TESTWISE_COVERAGE.name, testwiseArtifacts)
 	}
 
 	fun addReport(format: String, reportFiles: Any) {
@@ -163,7 +201,14 @@ abstract class TeamscaleUpload : DefaultTask() {
 	) {
 		try {
 			retry(3) {
-				uploadReports(reports, commitDescriptorOrRevision.get().first, commitDescriptorOrRevision.get().second, repository.orNull, partition, message)
+				uploadReports(
+					reports,
+					commitDescriptorOrRevision.get().first,
+					commitDescriptorOrRevision.get().second,
+					repository.orNull,
+					partition,
+					message
+				)
 			}
 		} catch (e: IOException) {
 			throw GradleException("Upload failed (${e.message})", e)
@@ -171,7 +216,8 @@ abstract class TeamscaleUpload : DefaultTask() {
 	}
 
 	private fun getExistingReportFiles(reports: FileCollection) =
-		reports.files.filter { it.exists() }.flatMap { fileOrDir -> fileOrDir.walkTopDown().filter { it.isFile } }.distinct()
+		reports.files.filter { it.exists() }.flatMap { fileOrDir -> fileOrDir.walkTopDown().filter { it.isFile } }
+			.distinct()
 }
 
 /**

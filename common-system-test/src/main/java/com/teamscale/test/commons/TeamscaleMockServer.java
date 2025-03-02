@@ -7,6 +7,7 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TestWithClusterId;
+import com.teamscale.report.compact.TeamscaleCompactCoverageReport;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import spark.Request;
 import spark.Response;
@@ -150,6 +151,15 @@ public class TeamscaleMockServer {
 		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(), TestwiseCoverageReport.class);
 	}
 
+	/**
+	 * Returns the report at the given index in {@link #uploadedReports}, parsed as a {@link TeamscaleCompactCoverageReport}.
+	 *
+	 * @throws IOException when parsing the report fails.
+	 */
+	public TeamscaleCompactCoverageReport parseUploadedCompactCoverageReport(int index) throws IOException {
+		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(), TeamscaleCompactCoverageReport.class);
+	}
+
 	private String handleImpactedTests(Request request, Response response) throws IOException {
 		requireAuthentication(request, response);
 
@@ -221,9 +231,10 @@ public class TeamscaleMockServer {
 
 		Collection<Part> parts = request.raw().getParts();
 		String partition = session.partition;
+		String format = request.queryParams("format");
 		for (Part part : parts) {
 			String reportString = IOUtils.toString(part.getInputStream());
-			uploadedReports.add(new ExternalReport(reportString, partition));
+			uploadedReports.add(new ExternalReport(reportString, partition, format));
 			part.delete();
 		}
 

@@ -1,6 +1,7 @@
-package com.teamscale.internal
+package com.teamscale
 
-import com.teamscale.TestImpactedTaskReports
+import com.teamscale.utils.DefaultSingleFileReport
+import com.teamscale.utils.Reports
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.reporting.DirectoryReport
 import org.gradle.api.reporting.Report

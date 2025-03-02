@@ -1,22 +1,30 @@
 package com.teamscale
 
+import com.teamscale.aggregation.TestSuiteCompatibilityUtil
 import com.teamscale.config.extension.TeamscalePluginExtension
 import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
+import com.teamscale.utils.AgentPortGenerator
+import com.teamscale.utils.BuildVersion
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JvmTestSuitePlugin
 import org.gradle.api.plugins.ReportingBasePlugin
+import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.provider.Provider
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
+import org.gradle.testing.base.TestingExtension
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.util.GradleVersion
+import javax.inject.Inject
 
 
 /**
@@ -27,7 +35,7 @@ import org.gradle.util.GradleVersion
  * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
  * Furthermore, all reports configured are uploaded to Teamscale after the tests have been executed.
  */
-open class TeamscalePlugin : Plugin<Project> {
+abstract class TeamscalePlugin : Plugin<Project> {
 
 	companion object {
 
@@ -59,6 +67,9 @@ open class TeamscalePlugin : Plugin<Project> {
 		)
 	}
 
+	@get:Inject
+	protected abstract val objectFactory: ObjectFactory
+
 	/** The version of the teamscale gradle plugin and impacted-tests-executor.  */
 	private val pluginVersion = BuildVersion.pluginVersion
 
@@ -77,6 +88,7 @@ open class TeamscalePlugin : Plugin<Project> {
 			apply(JavaPlugin::class.java)
 			apply(JacocoPlugin::class.java)
 			apply(ReportingBasePlugin::class.java)
+			apply(JvmTestSuitePlugin::class.java)
 		}
 
 		val pluginExtension =
@@ -105,6 +117,15 @@ open class TeamscalePlugin : Plugin<Project> {
 
 		// Add the teamscale extension also to all TestImpacted tasks
 		extendTestImpactedTasks(project, pluginExtension)
+
+		// Auto-expose JUnit reports for test tasks bound to JVM test suites
+		val testing = project.extensions.getByType<TestingExtension>()
+		testing.suites.withType<JvmTestSuite> {
+			val suite = this
+			suite.targets.configureEach {
+				TestSuiteCompatibilityUtil.exposeJUnitReportsForAggregation(testTask.get(), suite.name)
+			}
+		}
 	}
 
 	private fun extendTestImpactedTasks(
@@ -122,7 +143,7 @@ open class TeamscalePlugin : Plugin<Project> {
 
 			val extension = this.extensions.create<TeamscaleTestImpactedTaskExtension>(
 				TEAMSCALE_EXTENSION_NAME,
-				project.objects,
+				objectFactory,
 				teamscaleJacocoAgentConfiguration,
 				jacocoTaskExtension
 			)

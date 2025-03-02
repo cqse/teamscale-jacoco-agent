@@ -1,30 +1,36 @@
-package com.teamscale
+package com.teamscale.reporting.compact
 
-import com.teamscale.internal.DefaultCompactCoverageTaskReports
 import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.compact.CompactCoverageReportGenerator
 import com.teamscale.report.jacoco.EmptyReportException
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.reporting.compact.internal.DefaultCompactCoverageTaskReports
+import com.teamscale.utils.wrapInILogger
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.reporting.Report
-import org.gradle.api.reporting.ReportContainer
 import org.gradle.api.reporting.Reporting
-import org.gradle.api.reporting.SingleFileReport
+import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.findByType
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.util.internal.ClosureBackedAction
 import javax.inject.Inject
 
 
-/** Task which runs the impacted tests. */
+/**
+ * Task which generates a
+ * [Teamscale Compact Coverage](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/)
+ * report from binary JaCoCo coverage data.
+ */
+@CacheableTask
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class CompactCoverageReport @Inject constructor(objects: ObjectFactory) : DefaultTask(),
+abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFactory) : DefaultTask(),
 	Reporting<CompactCoverageTaskReports> {
 
 	@get:PathSensitive(PathSensitivity.NONE)
@@ -39,11 +45,18 @@ abstract class CompactCoverageReport @Inject constructor(objects: ObjectFactory)
 	init {
 		group = "Teamscale"
 		description = "Executes the impacted tests and collects coverage per test case"
-		reports = objects.newInstance(DefaultCompactCoverageTaskReports::class.java)
-		reports.compactCoverage.required.convention(true)
-		reports.compactCoverage.outputLocation.convention(project.layout.buildDirectory.file("reports/compact-coverage/${name}/compact-coverage.json"))
+		reports = objectFactory.newInstance(DefaultCompactCoverageTaskReports::class.java)
 
-		onlyIf("Any of the execution data files exists") { executionData.any { it.exists() } }
+
+		val reporting = project.extensions.getByType<ReportingExtension>()
+		val reportDirectory: DirectoryProperty = objectFactory.directoryProperty().convention(
+			reporting.baseDirectory.dir("compact-coverage") //TODO how do other gradle plugins do the casing?
+		)
+
+		reports.compactCoverage.required.convention(true)
+		reports.compactCoverage.outputLocation.convention(reportDirectory.file("${name}/compact-coverage.json"))
+
+		onlyIf("Any of the execution data files exists") { executionData.files.any { it.exists() } }
 	}
 
 	@TaskAction
@@ -52,6 +65,8 @@ abstract class CompactCoverageReport @Inject constructor(objects: ObjectFactory)
 			return
 		}
 		logger.info("Generating compact coverage report...")
+		logger.debug("Class files: {}", classDirectories.files)
+		logger.debug("Execution data files: {}", executionData.files)
 		val generator = CompactCoverageReportGenerator(
 			classDirectories.files.filter { it.exists() },
 			ClasspathWildcardIncludeFilter(null, null),
@@ -62,7 +77,7 @@ abstract class CompactCoverageReport @Inject constructor(objects: ObjectFactory)
 		try {
 			generator.convertExecFilesToReport(executionData.files, reports.compactCoverage.outputLocation.get().asFile)
 		} catch (e: EmptyReportException) {
-			logger.warn("Converted report was empty.", e)
+			logger.warn("Converted report was empty.")
 		}
 	}
 
@@ -85,7 +100,7 @@ abstract class CompactCoverageReport @Inject constructor(objects: ObjectFactory)
 		for (task in tasks) {
 			val extension = task.extensions.findByType<JacocoTaskExtension>()
 			if (extension != null) {
-				executionData({ extension.destinationFile })
+				executionData(task.project.provider { extension.destinationFile })
 				mustRunAfter(task)
 			}
 		}
@@ -136,10 +151,3 @@ abstract class CompactCoverageReport @Inject constructor(objects: ObjectFactory)
 }
 
 
-/**
- * The reports produced by the [CompactCoverageReport] task.
- */
-interface CompactCoverageTaskReports : ReportContainer<Report> {
-	@get:Internal
-	val compactCoverage: SingleFileReport
-}

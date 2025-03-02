@@ -21,7 +21,7 @@ class CompactCoverageTest : TeamscalePluginTestBase() {
 		rootProject.buildFile.appendText(
 			"""
 
-tasks.register('compactCoverageReport', com.teamscale.CompactCoverageReport) {
+tasks.register('compactCoverageReport', com.teamscale.reporting.compact.CompactCoverageReport) {
 	executionData(tasks.test)
 	sourceSets(sourceSets.main)
 }

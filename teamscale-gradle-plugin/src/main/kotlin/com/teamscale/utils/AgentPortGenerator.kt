@@ -1,4 +1,4 @@
-package com.teamscale
+package com.teamscale.utils
 
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters

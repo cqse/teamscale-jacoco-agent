@@ -1,7 +1,7 @@
 package com.teamscale.config
 
-import com.teamscale.ArgumentAppender
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.utils.ArgumentAppender
 import okhttp3.HttpUrl
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection

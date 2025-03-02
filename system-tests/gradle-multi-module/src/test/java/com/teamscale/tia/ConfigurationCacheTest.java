@@ -10,11 +10,12 @@ import org.junit.jupiter.api.Test;
  */
 public class ConfigurationCacheTest {
 
+	/** Configuration cache is enabled via gradle.properties */
 	@Test
 	public void testConfigurationCache() throws Exception {
-		var result = SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "--configuration-cache");
+		var result = SystemTestUtils.runGradle("gradle-project", "clean", "systemTest");
 		Assertions.assertThat(result.getStdout()).contains("BUILD SUCCESSFUL");
-		result = SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "--configuration-cache");
+		result = SystemTestUtils.runGradle("gradle-project", "clean", "systemTest");
 		Assertions.assertThat(result.getStdout()).contains("Reusing configuration cache");
 	}
 }

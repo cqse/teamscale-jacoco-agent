@@ -3,7 +3,7 @@ package com.teamscale
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.config.AgentConfiguration
 import com.teamscale.config.ServerConfiguration
-import com.teamscale.internal.DefaultTestImpactedTaskReports
+import com.teamscale.reporting.testwise.TestwiseCoverageReporting
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.file.ConfigurableFileCollection
