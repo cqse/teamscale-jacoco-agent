@@ -113,6 +113,11 @@ task unitTest(type: com.teamscale.TestImpacted) {
 	testClassesDirs = testing.suites.test.sources.output.classesDirs
 	classpath = testing.suites.test.sources.runtimeClasspath
 	partition = 'Unit Tests'
+	finalizedBy('unitTestReport')
+}
+
+tasks.register('unitTestReport', com.teamscale.reporting.testwise.TestwiseCoverageReport) {
+	from(tasks.unitTest)
 }
 
 task integrationTest(type: com.teamscale.TestImpacted) {
@@ -132,10 +137,10 @@ task integrationTest(type: com.teamscale.TestImpacted) {
 	fun defineUploadTask() {
 		buildFile.appendText(
 			"""
-			
+
 tasks.register('unitTestReportUpload', com.teamscale.TeamscaleUpload) {
 	partition = 'Unit Tests'
-	from(tasks.unitTest)
+	from(tasks.unitTestReport)
 }
 		""".trimIndent()
 		)

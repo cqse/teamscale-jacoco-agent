@@ -1,9 +1,11 @@
 package com.teamscale.aggregation
 
 import com.teamscale.TestImpacted
+import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
+import com.teamscale.utils.PartialData
 import com.teamscale.utils.jacocoResults
 import com.teamscale.utils.junitReports
-import com.teamscale.utils.testwiseCoverageReports
+import com.teamscale.utils.testwiseCoverageResults
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ConsumableConfiguration
@@ -48,13 +50,14 @@ object TestSuiteCompatibilityUtil {
 
 		if (test is TestImpacted) {
 			createTestwiseCoverageResultsVariant(test.project, suiteName).configure {
+				attributes.attributeProvider(PartialData.PARTIAL_DATA_ATTRIBUTE, test.partial)
 				outgoing.artifact(
 					// We need to use "map" here to carry over the producer information in the provider
 					// https://github.com/gradle/gradle/issues/13242
 					test.project.tasks.named<TestImpacted>(test.name)
-						.map { it.reports.testwiseCoverage.outputLocation }) {
+						.map { it.extensions.getByType<TeamscaleTestImpactedTaskExtension>().agent.destination }) {
 					builtBy(test)
-					type = ArtifactTypeDefinition.BINARY_DATA_TYPE
+					type = ArtifactTypeDefinition.DIRECTORY_TYPE
 				}
 			}
 		}
@@ -105,7 +108,7 @@ object TestSuiteCompatibilityUtil {
 
 		return project.configurations.consumable(variantName) {
 			description = "Testwise coverage results obtained from running the '$suiteName' Tests."
-			attributes.testwiseCoverageReports(project.objects, suiteName)
+			attributes.testwiseCoverageResults(project.objects, project.provider { suiteName })
 		}
 	}
 }

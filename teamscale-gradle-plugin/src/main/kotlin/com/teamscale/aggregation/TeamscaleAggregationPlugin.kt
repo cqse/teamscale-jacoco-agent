@@ -1,6 +1,7 @@
 package com.teamscale.aggregation
 
 import com.teamscale.aggregation.compact.CompactCoverageAggregationPlugin
+import com.teamscale.aggregation.testwise.TestwiseCoverageAggregationPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -15,5 +16,6 @@ abstract class TeamscaleAggregationPlugin : Plugin<Project> {
 		project.logger.info("Applying coverage aggregation plugin to ${project.name}")
 		project.plugins.apply(CompactCoverageAggregationPlugin::class.java)
 		project.plugins.apply(ReportAggregationPlugin::class.java)
+		project.plugins.apply(TestwiseCoverageAggregationPlugin::class.java)
 	}
 }

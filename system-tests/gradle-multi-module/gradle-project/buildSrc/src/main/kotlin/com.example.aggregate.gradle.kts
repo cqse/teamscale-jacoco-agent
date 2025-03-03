@@ -1,5 +1,6 @@
 import com.teamscale.TeamscaleUpload
 import com.teamscale.aggregation.compact.AggregateCompactCoverageReport
+import com.teamscale.aggregation.testwise.AggregateTestwiseCoverageReport
 
 plugins {
 	id("com.teamscale.aggregation")
@@ -9,6 +10,9 @@ reporting {
 	reports {
 		val unitTestAggregateCompactCoverageReport by creating(AggregateCompactCoverageReport::class) {
 			testSuiteName = SuiteNames.UNIT_TEST
+		}
+		val systemTestAggregateTestwiseCoverageReport by creating(AggregateTestwiseCoverageReport::class) {
+			testSuiteName = SuiteNames.SYSTEM_TEST
 		}
 	}
 }
@@ -27,5 +31,5 @@ tasks.register<TeamscaleUpload>("teamscaleUnitTestReportUpload") {
 
 tasks.register<TeamscaleUpload>("teamscaleSystemTestReportUpload") {
 	partition = "System Tests"
-	aggregatedTestwiseCoverageReportsFrom(SuiteNames.SYSTEM_TEST)
+	from(tasks.named("systemTestAggregateTestwiseCoverageReport"))
 }

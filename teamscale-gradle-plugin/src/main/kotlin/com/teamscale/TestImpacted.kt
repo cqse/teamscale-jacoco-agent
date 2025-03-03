@@ -3,29 +3,27 @@ package com.teamscale
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.config.AgentConfiguration
 import com.teamscale.config.ServerConfiguration
-import com.teamscale.reporting.testwise.TestwiseCoverageReporting
-import groovy.lang.Closure
-import org.gradle.api.Action
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
-import org.gradle.api.tasks.testing.TestTaskReports
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
-import org.gradle.util.internal.ClosureBackedAction
 import org.gradle.work.DisableCachingByDefault
-import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
 @DisableCachingByDefault(because = "The task relies on Teamscale as an external system, so we cannot guarantee deterministic outputs")
-abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test() {
+abstract class TestImpacted : Test() {
 
 	companion object {
 		const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
 	}
+
+	/** Command line switch to enable/disable testwise coverage collection. */
+	@get:Input
+	abstract val collectTestwiseCoverage: Property<Boolean>
 
 	/** Command line switch to activate requesting from Teamscale which tests are impacted by a change (last commit be default). */
 	@get:Input
@@ -109,20 +107,23 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 	@get:Classpath
 	internal abstract val testEngineConfiguration: ConfigurableFileCollection
 
-	private val impactedReports: TestImpactedTaskReports
+	@get:Internal
+	internal val partial: Provider<Boolean>
+		get() = providerFactory.zip(
+			runImpacted,
+			runAllTests
+		) { runImpacted, runAllTests -> runImpacted && !runAllTests }
 
 	init {
 		group = "Teamscale"
 		description = "Executes the impacted tests and collects coverage per test case"
-		impactedReports = DefaultTestImpactedTaskReports(super.getReports(), objects)
 	}
 
 	@TaskAction
 	override fun executeTests() {
 		val testFrameworkOptions = options
 		check(testFrameworkOptions is JUnitPlatformOptions) { "Only JUnit Platform is supported as test framework!" }
-		val collectTestwiseCoverage = impactedReports.testwiseCoverage.required.get()
-		if (collectTestwiseCoverage) {
+		if (collectTestwiseCoverage.get()) {
 			check(maxParallelForks == 1) { "maxParallelForks is ${maxParallelForks}. Testwise coverage collection is only supported for maxParallelForks=1!" }
 
 			(stableClasspath as ConfigurableFileCollection).from(testEngineConfiguration)
@@ -145,22 +146,7 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 			setImpactedTestEngineOptions(testFrameworkOptions)
 			testFrameworkOptions.includeEngines = setOf(IMPACTED_TEST_ENGINE)
 		}
-		try {
-			super.executeTests()
-		} finally {
-			if (collectTestwiseCoverage) {
-				val partial = runImpacted.get() && !runAllTests.get()
-				logger.info("Generating coverage reports...")
-				TestwiseCoverageReporting(
-					logger,
-					partial,
-					stableClasspath.files,
-					agentConfiguration.get().getPredicate(),
-					agentConfiguration.get().destination.asFile.get(),
-					impactedReports.testwiseCoverage.outputLocation.asFile.get()
-				).generateTestwiseCoverageReports()
-			}
-		}
+		super.executeTests()
 	}
 
 	private infix fun String.writeProperty(value: Any?) {
@@ -193,37 +179,6 @@ abstract class TestImpacted @Inject constructor(objects: ObjectFactory) : Test()
 		"includeFailedAndSkipped" writeProperty includeFailedAndSkipped.get()
 		"includedEngines" writeProperty options.includeEngines.joinToString(",")
 		"excludedEngines" writeProperty options.excludeEngines.joinToString(",")
-	}
-
-	/**
-	 * The reports that this task potentially produces.
-	 *
-	 * @return The reports that this task potentially produces
-	 */
-	@Nested
-	override fun getReports(): TestImpactedTaskReports {
-		return impactedReports
-	}
-
-	/**
-	 * Configures the reports that this task potentially produces.
-	 *
-	 * @param closure The configuration
-	 * @return The reports that this task potentially produces
-	 */
-	override fun reports(closure: Closure<*>): TestImpactedTaskReports {
-		return reports(ClosureBackedAction(closure))
-	}
-
-	/**
-	 * Configures the reports that this task potentially produces.
-	 *
-	 * @param configureAction The configuration
-	 * @return The reports that this task potentially produces
-	 */
-	override fun reports(configureAction: Action<in TestTaskReports?>): TestImpactedTaskReports {
-		configureAction.execute(impactedReports)
-		return impactedReports
 	}
 }
 

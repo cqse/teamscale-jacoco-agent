@@ -6,8 +6,8 @@ import com.teamscale.client.EReportFormat
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.ServerConfiguration
 import com.teamscale.reporting.compact.CompactCoverageReport
+import com.teamscale.reporting.testwise.TestwiseCoverageReport
 import com.teamscale.utils.junitReports
-import com.teamscale.utils.testwiseCoverageReports
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Task
@@ -77,18 +77,6 @@ abstract class TeamscaleUpload : DefaultTask() {
 
 	fun from(task: Task) {
 		when (task) {
-			is TestImpacted -> {
-				mustRunAfter(task)
-				if (task.reports.testwiseCoverage.required.get()) {
-					addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
-				} else if (task.reports.junitXml.required.get()) {
-					addReport(EReportFormat.JUNIT.name, task.reports.junitXml.outputLocation.asFileTree.matching {
-						include("**/*.xml")
-					})
-				} else {
-					error("Testwise coverage collection and JUnit report collection are not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true or reports.junitXml.required = true for the task, to be able to upload it.")
-				}
-			}
 
 			is Test -> {
 				mustRunAfter(task)
@@ -110,6 +98,12 @@ abstract class TeamscaleUpload : DefaultTask() {
 				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.compactCoverage.outputLocation)
 			}
 
+			is TestwiseCoverageReport -> {
+				dependsOn(task)
+				check(task.reports.testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
+			}
+
 			else -> throw GradleException("Unsupported task type ${task.javaClass.name}! Use addReport(format, reportFiles) instead to upload reports produced by other tasks.")
 		}
 	}
@@ -124,18 +118,6 @@ abstract class TeamscaleUpload : DefaultTask() {
 			}.files
 		mustRunAfter(junitArtifacts.buildDependencies)
 		addReport(EReportFormat.JUNIT.name, junitArtifacts)
-	}
-
-	fun aggregatedTestwiseCoverageReportsFrom(testSuiteName: String) {
-		val reportAggregation = project.configurations.getByName(RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
-		val testwiseArtifacts =
-			reportAggregation.incoming.artifactView {
-				withVariantReselection()
-				componentFilter { it is ProjectComponentIdentifier }
-				attributes.testwiseCoverageReports(objectFactory, testSuiteName)
-			}.files
-		mustRunAfter(testwiseArtifacts.buildDependencies)
-		addReport(EReportFormat.TESTWISE_COVERAGE.name, testwiseArtifacts)
 	}
 
 	fun addReport(format: String, reportFiles: Any) {

@@ -80,7 +80,12 @@ tasks.register('unitTest', Test) {
     // ...
 }
 
+tasks.register('systemTest', TestImpacted) {
+    // ...
+}
+
 TestSuiteCompatibilityUtil.exposeTestForAggregation(tasks.named('unitTest'), 'myUnitTestSuite')
+TestSuiteCompatibilityUtil.exposeTestForAggregation(tasks.named('systemTest'), 'mySystemTestSuite')
 ```
 
 In the aggregation project create an aggregation report:
@@ -96,6 +101,9 @@ reporting {
         unitTestAggregateCompactCoverageReport(AggregateCompactCoverageReport) { 
             testSuiteName = 'myUnitTestSuite'
         }
+        systemTestAggregateTestwiseCoverageReport(AggregateTestwiseCoverageReport) { 
+            testSuiteName = 'mySystemTestSuite'
+        }
     }
 }
 
@@ -104,10 +112,12 @@ tasks.register("teamscaleUnitTestReportUpload", TeamscaleUpload) {
 	from(tasks.named('unitTestAggregateCompactCoverageReport'))
 	aggregatedJUnitReportsFrom('myUnitTestSuite')
 }
-```
 
-This approach also works for `TestImpacted` tasks.
-`aggregatedTestwiseCoverageReportsFrom(testSuiteName)` allows the TeamscaleUpload task to pick up those reports.
+tasks.register("teamscaleSystemTestReportUpload", TeamscaleUpload) {
+	partition = "System Tests"
+	from(tasks.named('systemTestAggregateTestwiseCoverageReport'))
+}
+```
 
 ### Upload without aggregation
 For each project that you want to individually upload data from, you can create one or multiple `TeamscaleUpload` tasks.
@@ -159,15 +169,7 @@ tasks.withType(TestImpacted) {
 ```
 This needs to be specified only for the TestImpacted task as it needs to request impacted tests from Teamscale before the tests are executed.
 
-## `TestwiseCoverageReportTask` was merged into `TestImpacted`
-The testwise coverage report is now generated directly by the corresponding `TestImpacted` task (same like the native Gradle test result reports `junitXml` and `html`).
+## `TestwiseCoverageReportTask`
+`TestwiseCoverageReportTask` was renamed to `TestwiseCoverageReport`. 
 
-```groovy
-import com.teamscale.TestImpacted
-// ...
-
-tasks.register("tiaUnitTests", TestImpacted) {
-    reports.testwiseCoverage.required = true // Previously called collectTestwiseCoverage, default is true
-    reports.testwiseCoverage.outputLocation = layout.buildDirectory.file("reports/tiaUnitTests/testwise-coverage.json")
-}
-```
+TODO no longer automatically created for each testimpacted task

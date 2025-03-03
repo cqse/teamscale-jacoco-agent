@@ -31,17 +31,16 @@ public class TestwiseCoverageGradleSystemTest {
 
 	@Test
 	public void testGradleAggregatedTestwiseCoverageUploadWithoutJVMTestSuite() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "systemTest", "teamscaleSystemTestReportUpload");
+		SystemTestUtils.runGradle("gradle-project", "clean", "systemTest", "teamscaleSystemTestReportUpload", "--stacktrace");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(2);
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(
 				report -> report.getPartition().equals("System Tests"));
 
-		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
+		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0); //TODO test that partial flag is set correctly
 		assertThat(testwiseReport.tests.getFirst().uniformPath).isEqualTo("com/example/app/MainTest/testMain()");
+		assertThat(testwiseReport.tests.getLast().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
 		assertThat(testwiseReport.tests.getFirst().paths).isNotEmpty();
-		testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(1);
-		assertThat(testwiseReport.tests.getFirst().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
 	}
 
 	@Test

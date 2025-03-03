@@ -1,4 +1,4 @@
-package com.teamscale.reporting.testwise
+package com.teamscale.reporting.testwise.internal
 
 import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.config.*
@@ -22,7 +22,7 @@ class TestwiseCoverageReporting(
 	private val partial: Boolean,
 	private val classDirs: MutableSet<File>,
 	private val predicate: ClasspathWildcardIncludeFilter,
-	private val reportOutputDir: File,
+	private val reportOutputDirs: Collection<File>,
 	private val reportOutputLocation: File
 ) {
 
@@ -32,14 +32,14 @@ class TestwiseCoverageReporting(
 			ReportUtils.readObjects(
 				ETestArtifactFormat.TEST_LIST,
 				Array<ClusteredTestDetails>::class.java,
-				listOf(reportOutputDir)
+				reportOutputDirs
 			)
 		val testExecutions = ReportUtils.readObjects(
 			ETestArtifactFormat.TEST_EXECUTION,
 			Array<TestExecution>::class.java,
-			listOf(reportOutputDir)
+			reportOutputDirs
 		)
-		val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, listOf(reportOutputDir))
+		val jacocoExecutionData = ReportUtils.listFiles(ETestArtifactFormat.JACOCO, reportOutputDirs)
 		if (jacocoExecutionData.isEmpty()) {
 			logger.error("No execution data provided!")
 			return

@@ -15,7 +15,6 @@ import org.gradle.api.plugins.JvmTestSuitePlugin
 import org.gradle.api.plugins.ReportingBasePlugin
 import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.provider.Provider
-import org.gradle.api.reporting.ReportingExtension
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
@@ -132,7 +131,6 @@ abstract class TeamscalePlugin : Plugin<Project> {
 		project: Project,
 		teamscalePluginExtension: TeamscalePluginExtension
 	) {
-		val reporting = project.extensions.getByType<ReportingExtension>()
 		val agentPortGenerator: Provider<AgentPortGenerator> = project.gradle.sharedServices.registerIfAbsent(
 			"agent-port-generator",
 			AgentPortGenerator::class.java
@@ -149,8 +147,9 @@ abstract class TeamscalePlugin : Plugin<Project> {
 			)
 			val port = agentPortGenerator.get().getNextPort()
 			extension.agent.useLocalAgent("http://127.0.0.1:${port}/")
-			extension.agent.destination.set(project.layout.buildDirectory.dir("jacoco/${project.name}-${this.name}"))
+			extension.agent.destination.set(project.layout.buildDirectory.dir("jacoco/${this.name}"))
 
+			collectTestwiseCoverage.convention(true)
 			runImpacted.convention(false)
 			runAllTests.convention(false)
 			includeAddedTests.convention(true)
@@ -162,18 +161,6 @@ abstract class TeamscalePlugin : Plugin<Project> {
 			baseline.convention(teamscalePluginExtension.baseline)
 			baselineRevision.convention(teamscalePluginExtension.baselineRevision)
 			repository.convention(teamscalePluginExtension.repository)
-
-			reports.testwiseCoverage.required.convention(true)
-			reports.testwiseCoverage.outputLocation.convention {
-				reporting.baseDirectory.file(
-					"testwise-coverage/${name}/${
-						partition.get().replace(
-							"[ /\\\\]".toRegex(),
-							"-"
-						)
-					}.json"
-				).get().asFile
-			}
 		}
 	}
 }
