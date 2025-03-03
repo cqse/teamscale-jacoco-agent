@@ -4,7 +4,6 @@ plugins {
 	com.teamscale.`system-test-convention`
 }
 
-
 tasks.jar {
 	manifest.attributes["Main-Class"] = "systemundertest.SystemUnderTest"
 }
