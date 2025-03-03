@@ -8,7 +8,7 @@ import org.gradle.api.tasks.Internal
 /**
  * The reports produced by the [CompactCoverageReport] task.
  */
-interface CompactCoverageTaskReports : ReportContainer<Report> {
+interface CompactCoverageTaskReportContainer : ReportContainer<Report> {
 	@get:Internal
 	val compactCoverage: SingleFileReport
 }

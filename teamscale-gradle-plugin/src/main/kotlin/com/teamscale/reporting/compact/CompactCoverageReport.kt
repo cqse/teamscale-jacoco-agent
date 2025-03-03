@@ -4,7 +4,7 @@ import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.compact.CompactCoverageReportGenerator
 import com.teamscale.report.jacoco.EmptyReportException
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
-import com.teamscale.reporting.compact.internal.DefaultCompactCoverageTaskReports
+import com.teamscale.reporting.compact.internal.DefaultCompactCoverageTaskReportContainer
 import com.teamscale.utils.wrapInILogger
 import groovy.lang.Closure
 import org.gradle.api.Action
@@ -31,7 +31,7 @@ import javax.inject.Inject
 @CacheableTask
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFactory) : DefaultTask(),
-	Reporting<CompactCoverageTaskReports> {
+	Reporting<CompactCoverageTaskReportContainer> {
 
 	@get:PathSensitive(PathSensitivity.NONE)
 	@get:InputFiles
@@ -40,17 +40,17 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 	@get:Classpath
 	abstract val classDirectories: ConfigurableFileCollection
 
-	private val reports: CompactCoverageTaskReports
+	private val reports: CompactCoverageTaskReportContainer
 
 	init {
 		group = "Teamscale"
 		description = "Executes the impacted tests and collects coverage per test case"
-		reports = objectFactory.newInstance(DefaultCompactCoverageTaskReports::class.java)
+		reports = objectFactory.newInstance(DefaultCompactCoverageTaskReportContainer::class.java)
 
 
 		val reporting = project.extensions.getByType<ReportingExtension>()
 		val reportDirectory: DirectoryProperty = objectFactory.directoryProperty().convention(
-			reporting.baseDirectory.dir("compact-coverage") //TODO how do other gradle plugins do the casing?
+			reporting.baseDirectory.dir("compact-coverage")
 		)
 
 		reports.compactCoverage.required.convention(true)
@@ -124,7 +124,7 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 	 * @return The reports that this task potentially produces
 	 */
 	@Nested
-	override fun getReports(): CompactCoverageTaskReports {
+	override fun getReports(): CompactCoverageTaskReportContainer {
 		return reports
 	}
 
@@ -134,7 +134,7 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 	 * @param closure The configuration
 	 * @return The reports that this task potentially produces
 	 */
-	override fun reports(closure: Closure<*>): CompactCoverageTaskReports {
+	override fun reports(closure: Closure<*>): CompactCoverageTaskReportContainer {
 		return reports(ClosureBackedAction(closure))
 	}
 
@@ -144,7 +144,7 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 	 * @param configureAction The configuration
 	 * @return The reports that this task potentially produces
 	 */
-	override fun reports(configureAction: Action<in CompactCoverageTaskReports?>): CompactCoverageTaskReports {
+	override fun reports(configureAction: Action<in CompactCoverageTaskReportContainer>): CompactCoverageTaskReportContainer {
 		configureAction.execute(reports)
 		return reports
 	}
