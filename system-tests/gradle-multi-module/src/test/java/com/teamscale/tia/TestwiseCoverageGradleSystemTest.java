@@ -48,7 +48,7 @@ public class TestwiseCoverageGradleSystemTest {
 	@Test
 	public void testGradleAggregatedTestwiseCoverageUploadHasPartialFlagSet() throws Exception {
 		SystemTestUtils.runGradle("gradle-project", "clean",
-				":lib:systemTest", "--impacted", ":app:systemTest", "--impacted",
+				"systemTest", "-Dimpacted",
 				"teamscaleSystemTestReportUpload");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);

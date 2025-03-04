@@ -1,44 +1,20 @@
 package com.teamscale.aggregation
 
-import com.teamscale.TestImpacted
-import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
-import com.teamscale.utils.PartialData
-import com.teamscale.utils.jacocoResults
-import com.teamscale.utils.junitReports
-import com.teamscale.utils.testwiseCoverageResults
+import com.teamscale.utils.*
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ConsumableConfiguration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
-import org.gradle.kotlin.dsl.findByType
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
-import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 
 /**
  * Helper class that allows users of the plugin
  * to use "com.teamscale.aggregation" also with projects that do not use JVM test suites yet.
- * Also, TestImpacted task outputs cannot be shared natively via JVM test suites yet.
  */
 @Suppress("unused")
 object TestSuiteCompatibilityUtil {
-
-	/**
-	 * Exposes the results produced by the given test task provider as results produced by a test suite with the given name.
-	 * A test suite with this name does not need to exist though.
-	 * This is necessary to aggregate those reports across projects via the "com.teamscale.aggregation" plugin.
-	 * It reuses the same mechanism introduced by the
-	 * [JVM Test Suites Plugin](https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html)
-	 * and
-	 * [JaCoCo Report Aggregation Plugin](https://docs.gradle.org/current/userguide/jacoco_report_aggregation_plugin.html)
-	 * but provides a way to use this without using JVM test suites yet.
-	 */
-	@JvmStatic
-	fun exposeTestForAggregation(testProvider: TaskProvider<out Test>, suiteName: String) {
-		exposeTestForAggregation(testProvider.get(), suiteName)
-	}
 
 	/**
 	 * Exposes the results produced by the given test task as results produced by a test suite with the given name.
@@ -52,44 +28,51 @@ object TestSuiteCompatibilityUtil {
 	 */
 	@JvmStatic
 	fun exposeTestForAggregation(test: Test, suiteName: String) {
-		if (test.extensions.findByType<JacocoTaskExtension>()?.isEnabled == true) {
-			createCoverageDataVariant(test.project, suiteName).configure {
-				outgoing.artifact(
-					// We need to use "map" here to carry over the producer information in the provider
-					// https://github.com/gradle/gradle/issues/13242
-					test.project.tasks.named<Test>(test.name)
-						.map { it.extensions.getByType<JacocoTaskExtension>().destinationFile!! }) {
-					builtBy(test)
+		exposeTestForAggregation(test.project.tasks.named<Test>(test.name), suiteName)
+	}
+
+	/**
+	 * Exposes the results produced by the given test task provider as results produced by a test suite with the given name.
+	 * A test suite with this name does not need to exist though.
+	 * This is necessary to aggregate those reports across projects via the "com.teamscale.aggregation" plugin.
+	 * It reuses the same mechanism introduced by the
+	 * [JVM Test Suites Plugin](https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html)
+	 * and
+	 * [JaCoCo Report Aggregation Plugin](https://docs.gradle.org/current/userguide/jacoco_report_aggregation_plugin.html)
+	 * but provides a way to use this without using JVM test suites yet.
+	 */
+	@JvmStatic
+	fun exposeTestForAggregation(testProvider: TaskProvider<out Test>, suiteName: String) {
+		if (testProvider.get().jacoco.isEnabled) {
+			createCoverageDataVariant(testProvider.get().project, suiteName).configure {
+				outgoing.artifact(testProvider.map { it.jacoco.destinationFile!! }) {
+					builtBy(testProvider) //TODO needed?
 					type = ArtifactTypeDefinition.BINARY_DATA_TYPE
 				}
 			}
 		}
 
-		exposeJUnitReportsForAggregation(test, suiteName)
-
-		if (test is TestImpacted) {
-			createTestwiseCoverageResultsVariant(test.project, suiteName).configure {
-				attributes.attributeProvider(PartialData.PARTIAL_DATA_ATTRIBUTE, test.partial)
-				outgoing.artifact(
-					// We need to use "map" here to carry over the producer information in the provider
-					// https://github.com/gradle/gradle/issues/13242
-					test.project.tasks.named<TestImpacted>(test.name)
-						.map { it.extensions.getByType<TeamscaleTestImpactedTaskExtension>().agent.destination }) {
-					builtBy(test)
-					type = ArtifactTypeDefinition.DIRECTORY_TYPE
-				}
-			}
-		}
+		exposeTestReportArtifactsForAggregation(testProvider.get().project, testProvider, suiteName)
 	}
 
-	internal fun exposeJUnitReportsForAggregation(test: Test, suiteName: String) {
-		createTestResultsVariant(test.project, suiteName).configure {
-			outgoing.artifact(
-				// We need to use "map" here to carry over the producer information in the provider
-				// https://github.com/gradle/gradle/issues/13242
-				test.project.tasks.named<Test>(test.name)
-					.map { it.reports.junitXml.outputLocation }) {
-				builtBy(test)
+	internal fun exposeTestReportArtifactsForAggregation(
+		project: Project,
+		testProvider: TaskProvider<out Test>,
+		suiteName: String
+	) {
+		createTestResultsVariant(project, suiteName).configure {
+			outgoing.artifact(testProvider.map { it.reports.junitXml.outputLocation }) {
+				builtBy(testProvider) //TODO needed?
+				type = ArtifactTypeDefinition.DIRECTORY_TYPE
+			}
+		}
+
+		createTestwiseCoverageResultsVariant(project, suiteName).configure {
+			attributes.attributeProvider(
+				PartialData.PARTIAL_DATA_ATTRIBUTE,
+				testProvider.map { it.teamscale.partial.get() })
+			outgoing.artifact(testProvider.map { it.teamscale.agent.destination }) {
+				builtBy(testProvider) //TODO needed?
 				type = ArtifactTypeDefinition.DIRECTORY_TYPE
 			}
 		}

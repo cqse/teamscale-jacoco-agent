@@ -50,7 +50,7 @@ class TestwiseCoverageReporting(
 		logger.info("Generating report with ${testDetails.size} Details/${testwiseCoverage.tests.size} Coverage/${testExecutions.size} Results")
 
 		if (testwiseCoverage.tests.isNotEmpty() && testwiseCoverage.tests.all { it.value.isEmpty }) {
-			logger.error("No coverage was recorded for any of the executed tests! Check your jacoco include/exclude patterns on the TestImpacted task.")
+			logger.error("No coverage was recorded for any of the executed tests! Check your jacoco include/exclude patterns on the Test task.")
 			return
 		}
 

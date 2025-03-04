@@ -23,8 +23,8 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"--continue",
 			"clean",
 			"unitTest",
-			"--impacted",
-			"--run-all-tests",
+			"-Dimpacted",
+			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
@@ -36,8 +36,8 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"--continue",
 			"clean",
 			"unitTest",
-			"--impacted",
-			"--run-all-tests",
+			"-Dimpacted",
+			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.uploadCommits).contains("abcd1337, null")
@@ -52,7 +52,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"--continue",
 			"clean",
 			"unitTest",
-			"--impacted",
+			"-Dimpacted",
 			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
@@ -64,7 +64,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"--continue",
 			"clean",
 			"unitTest",
-			"--impacted",
+			"-Dimpacted",
 			"unitTestReportUpload"
 		)
 		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, null")

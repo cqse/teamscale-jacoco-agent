@@ -30,8 +30,8 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 			"--continue",
 			"clean",
 			"unitTest",
-			"--impacted",
-			"--run-all-tests",
+			"-Dimpacted",
+			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
 		assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
@@ -57,7 +57,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 			"--continue",
 			"clean",
 			"unitTest",
-			"--impacted",
+			"-Dimpacted",
 			"unitTestReportUpload"
 		)
 		assertThat(build.output).contains("SUCCESS (1 tests, 1 successes, 0 failures, 0 skipped)")
@@ -94,7 +94,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 		rootProject.defineLegacyTestTasks("non.existent.package.*")
 
 		val build = runExpectingError("clean", "unitTest")
-		assertThat(build.output).contains("No coverage was recorded for any of the executed tests! Check your jacoco include/exclude patterns on the TestImpacted task.")
+		assertThat(build.output).contains("No coverage was recorded for any of the executed tests! Check your jacoco include/exclude patterns on the Test task.")
 	}
 
 	private fun assertFullCoverage(source: String) {

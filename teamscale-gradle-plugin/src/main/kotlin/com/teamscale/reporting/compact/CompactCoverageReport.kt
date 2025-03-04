@@ -5,19 +5,17 @@ import com.teamscale.report.compact.CompactCoverageReportGenerator
 import com.teamscale.report.jacoco.EmptyReportException
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.reporting.compact.internal.DefaultCompactCoverageTaskReportContainer
+import com.teamscale.utils.reporting
 import com.teamscale.utils.wrapInILogger
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.reporting.Reporting
-import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.findByType
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.util.internal.ClosureBackedAction
 import javax.inject.Inject
@@ -47,14 +45,8 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 		description = "Executes the impacted tests and collects coverage per test case"
 		reports = objectFactory.newInstance(DefaultCompactCoverageTaskReportContainer::class.java)
 
-
-		val reporting = project.extensions.getByType<ReportingExtension>()
-		val reportDirectory: DirectoryProperty = objectFactory.directoryProperty().convention(
-			reporting.baseDirectory.dir("compact-coverage")
-		)
-
 		reports.compactCoverage.required.convention(true)
-		reports.compactCoverage.outputLocation.convention(reportDirectory.file("${name}/compact-coverage.json"))
+		reports.compactCoverage.outputLocation.convention(project.reporting.baseDirectory.file("compact-coverage/${name}/compact-coverage.json"))
 
 		onlyIf("Any of the execution data files exists") { executionData.files.any { it.exists() } }
 	}

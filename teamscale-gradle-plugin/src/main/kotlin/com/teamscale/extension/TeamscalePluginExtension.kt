@@ -1,4 +1,4 @@
-package com.teamscale.config.extension
+package com.teamscale.extension
 
 import com.teamscale.config.Commit
 import com.teamscale.config.ServerConfiguration

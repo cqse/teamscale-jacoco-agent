@@ -2,6 +2,8 @@ package com.teamscale.aggregation.compact
 
 import com.teamscale.aggregation.compact.internal.DefaultAggregateCompactCoverageReport
 import com.teamscale.utils.jacocoResults
+import com.teamscale.utils.reporting
+import com.teamscale.utils.testing
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -11,11 +13,8 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JvmTestSuitePlugin
 import org.gradle.api.plugins.ReportingBasePlugin
 import org.gradle.api.plugins.jvm.JvmTestSuite
-import org.gradle.api.reporting.ReportingExtension
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.withType
-import org.gradle.testing.base.TestingExtension
 import org.gradle.testing.jacoco.plugins.JacocoReportAggregationPlugin
 import javax.inject.Inject
 
@@ -49,7 +48,7 @@ abstract class CompactCoverageAggregationPlugin : Plugin<Project> {
 		project.plugins.apply(ReportingBasePlugin::class.java)
 		project.plugins.apply(JacocoReportAggregationPlugin::class.java)
 
-		val reporting = project.extensions.getByType(ReportingExtension::class.java)
+		val reporting = project.reporting
 		reporting.reports.registerBinding(
 			AggregateCompactCoverageReport::class.java,
 			DefaultAggregateCompactCoverageReport::class.java
@@ -92,8 +91,7 @@ abstract class CompactCoverageAggregationPlugin : Plugin<Project> {
 
 		// convention for synthesizing reports based on existing test suites in "this" project
 		project.plugins.withType<JvmTestSuitePlugin> {
-			val testing = project.extensions.getByType<TestingExtension>()
-			testing.suites.withType<JvmTestSuite> {
+			project.testing.suites.withType<JvmTestSuite> {
 				val suite = this
 				reporting.reports.create(
 					"${suite.name}AggregateCompactCoverageReport",

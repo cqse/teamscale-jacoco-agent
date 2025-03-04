@@ -1,10 +1,10 @@
 package com.teamscale.reporting.testwise
 
-import com.teamscale.TestImpacted
-import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.reporting.testwise.internal.DefaultTestwiseCoverageTaskReportContainer
 import com.teamscale.reporting.testwise.internal.TestwiseCoverageReporting
+import com.teamscale.utils.reporting
+import com.teamscale.utils.teamscale
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -12,22 +12,18 @@ import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.Reporting
-import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.findByType
-import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.named
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.util.internal.ClosureBackedAction
 import javax.inject.Inject
 
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class TestwiseCoverageReport @Inject constructor(
-	objectFactory: ObjectFactory,
-	private val providerFactory: ProviderFactory
-) : DefaultTask(),
+abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectFactory) : DefaultTask(),
 	Reporting<TestwiseCoverageTaskReportContainer> {
 
 	@get:Input
@@ -46,11 +42,9 @@ abstract class TestwiseCoverageReport @Inject constructor(
 		group = "Teamscale"
 		description = "Generates a testwise coverage report"
 
-		val reporting = project.extensions.getByType<ReportingExtension>()
-
 		reports = objectFactory.newInstance(DefaultTestwiseCoverageTaskReportContainer::class.java)
 		reports.testwiseCoverage.required.convention(true)
-		reports.testwiseCoverage.outputLocation.convention(reporting.baseDirectory.file("testwise-coverage/${name}/testwise-coverage.json"))
+		reports.testwiseCoverage.outputLocation.convention(project.reporting.baseDirectory.file("testwise-coverage/${name}/testwise-coverage.json"))
 
 		onlyIf("Any of the execution data files exists") { executionData.files.any { it.exists() } }
 	}
@@ -71,12 +65,14 @@ abstract class TestwiseCoverageReport @Inject constructor(
 		).generateTestwiseCoverageReports()
 	}
 
-	fun from(testImpacted: TestImpacted) {
-		partial.set(testImpacted.partial)
-		executionData.from(
-			testImpacted.project.tasks.named(testImpacted.name)
-				.map { it.extensions.getByType<TeamscaleTestImpactedTaskExtension>().agent.destination })
-		classDirectories.from(testImpacted.classpath)
+	fun from(test: Test) {
+		from(test.project.tasks.named<Test>(test.name))
+	}
+
+	fun from(test: TaskProvider<Test>) {
+		partial.set(test.map { it.teamscale.partial.get() })
+		executionData.from(test.map { it.teamscale.agent.destination })
+		classDirectories.from(test.map { it.classpath }) //TODO should be picked more carefully to get rid of default excludes
 	}
 
 	/**

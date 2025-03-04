@@ -5,8 +5,6 @@ import com.teamscale.utils.ArgumentAppender
 import okhttp3.HttpUrl
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import java.io.Serializable
 import javax.inject.Inject
@@ -17,32 +15,31 @@ import javax.inject.Inject
  * The agent can either be configured to run locally or to connect to an
  * already running remote testwise coverage server.
  */
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 abstract class AgentConfiguration @Inject constructor(
-	@InputFiles val teamscaleJacocoAgentConfiguration: FileCollection,
-	@Nested val jacocoExtension: JacocoTaskExtension
+	private val teamscaleJacocoAgentConfiguration: FileCollection,
+	private val jacocoExtension: JacocoTaskExtension
 ) : Serializable {
 
-	/** The property object backing #destination. */
-	@get:OutputDirectory
+	/** The destination directory to store test artifacts into. */
 	abstract val destination: DirectoryProperty
 
 	/** The local agent's server url to connect to. */
-	@get:Internal
-	abstract val localAgent: Property<TeamscaleAgent>
+	var localAgent: TeamscaleAgent? = null
+		private set
 
 	/** A remote agent's server url to connect to. */
-	@get:Internal
-	abstract val remoteAgent: Property<TeamscaleAgent>
+	var remoteAgent: TeamscaleAgent? = null
+		private set
 
 	/** Returns the directory into which class files should be dumped when #dumpClasses is enabled. */
-	@Input
-	fun getAllAgentUrls(): List<String> {
-		val allAgents = mutableListOf<TeamscaleAgent>()
-		localAgent.orNull?.let { allAgents.add(it) }
-		remoteAgent.orNull?.let { allAgents.add(it) }
-		return allAgents.map { it.url.toString() }
-	}
+	internal val allAgentUrls: List<String>
+		get() {
+			val allAgents = mutableListOf<TeamscaleAgent>()
+			localAgent?.let { allAgents.add(it) }
+			remoteAgent?.let { allAgents.add(it) }
+			return allAgents.map { it.url.toString() }
+		}
 
 	/**
 	 * Configures the Teamscale plugin to use a local agent.
@@ -51,7 +48,7 @@ abstract class AgentConfiguration @Inject constructor(
 	 */
 	@JvmOverloads
 	fun useLocalAgent(url: String = "http://127.0.0.1:8123/") {
-		localAgent.set(TeamscaleAgent(HttpUrl.parse(url)!!))
+		localAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
 	}
 
 	/**
@@ -61,11 +58,10 @@ abstract class AgentConfiguration @Inject constructor(
 	 */
 	@JvmOverloads
 	fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
-		remoteAgent.set(TeamscaleAgent(HttpUrl.parse(url)!!))
+		remoteAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
 	}
 
 	/** Returns a filter predicate that respects the configured wildcard include and exclude patterns. */
-	@Internal
 	fun getPredicate(): ClasspathWildcardIncludeFilter {
 		return ClasspathWildcardIncludeFilter(
 			jacocoExtension.includes?.joinToString(":") { "*$it".replace('/', '.') },

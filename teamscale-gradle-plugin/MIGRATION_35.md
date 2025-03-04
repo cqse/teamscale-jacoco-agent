@@ -6,11 +6,66 @@ With this version, we make use of the Gradle configuration cache for a faster co
 Due to the restrictions that are imposed by the Gradle configuration cache, we had to adjust the API of the plugin.
 Now you need to create the `teamscaleReportUpload` task explicitly (see below for details).
 This gives you more control over which artifacts need to be uploaded together, and when in your build lifecycle, this is going to happen.
+We also made it possible to use Test Impact Analysis with regular Test tasks (see below for details). Hence, the `TestImpacted` task has been removed.
+This allows you to use JVM test suites in combination with TIA.
 
 ## Lazy properties
 To avoid issues with plugin execution order, we switched all extension and task properties from plain types e.g. `boolean` to `Property<Boolean>` etc.
-In all Gradle versions supported by the plugin (Gradle 8.4+) this is handled transparently.
+In all Gradle versions supported by the plugin (Gradle 8.10+) this is handled transparently.
 For more details, please refer to the official documentation: [Lazy Configuration](https://docs.gradle.org/8.1.1/userguide/lazy_configuration.html#lazy_properties).
+
+## `TestImpacted` removal
+The `teamscale` task extension on `Test` tasks now allow you set the same values that used to be only available on the `TestImpacted` task.
+Before:
+```groovy
+tasks.register('unitTest', TestImpacted) {
+    // ...
+    collectTestwiseCoverage = true
+    runImpacted = true
+}
+```
+After:
+```groovy
+tasks.register('unitTest', Test) {
+    // ...
+    teamscale {
+        collectTestwiseCoverage = true
+        runImpacted = true
+    }
+}
+```
+```kotlin
+tasks.register<Test>("unitTest") {
+    // ...
+    configure<TeamscaleTaskExtension> {
+        collectTestwiseCoverage = true
+        runImpacted = true
+        partition = "Unit Tests"
+    }
+}
+```
+ 
+To avoid breaking existing `Test` tasks, `collectTestwiseCoverage` is `false` by default.
+This unfortunately also means that the CLI toggles do no longer exist, but can still be configured via the extension:
+- `--impacted` -> `runImpacted`
+- `--run-all-tests` -> `runAllTests`
+- `--include-added-tests` -> `includeAddedTests`
+- `--include-failed-and-skipped` -> `includeFailedAndSkipped`
+
+If you need to set the values via the CLI you may want to use system properties instead:
+```groovy
+tasks.register<Test>("unitTest") {
+    // ...
+    configure<TeamscaleTaskExtension> {
+        collectTestwiseCoverage = true
+        runImpacted = System.getProperty("impacted") != null
+    }
+}
+```
+
+```bash
+./gradlew unitTest -Dimpacted
+```
 
 ## The `teamscaleReportUpload` task
 The `teamscaleReportUpload` task was previously provided automatically on the root project,
@@ -78,8 +133,10 @@ tasks.register('unitTest', Test) {
     // ...
 }
 
-tasks.register('systemTest', TestImpacted) {
-    // ...
+tasks.register('systemTest', Test) {
+    teamscale {
+        collectTestwiseCoverage = true
+    }
 }
 
 TestSuiteCompatibilityUtil.exposeTestForAggregation(tasks.named('unitTest'), 'myUnitTestSuite')
@@ -137,11 +194,11 @@ tasks.register("teamscaleReportUpload", TeamscaleUpload) {
     from(tasks.jacocoTestReport) // Will upload the coverage report produced by the JacocoReport task
     
     // or if you do collect testwise coverage
-    from(tasks.tiaTests) // Will upload the Testwise Coverage report produced by the TestImpacted task
+    from(tasks.testwiseCoverageReport) // Will upload the Testwise Coverage report produced by the TestwiseCoverageReport task
 }
 ```
 
-The `from` method accepts `Test`, `TestImpacted`, `JacocoReport` or `CompactCoverageReport` tasks,
+The `from` method accepts `Test`, `JacocoReport`, `CompactCoverageReport` and `TestwiseCoverageReport` tasks,
 whose produced reports will be uploaded.
 Additionally, can also use `addReport(format, files)` to attach other report types to the upload e.g.,
 Spotbugs reports or reports produced by other custom tasks.
@@ -162,15 +219,15 @@ teamscale {
     }
 }
 ```
-with one of the following:
+with the following:
 ```groovy
-import com.teamscale.TestImpacted
-// ...
-tasks.withType(TestImpacted) {
-    partition = "Unit Tests"
+tasks.withType(Test) {
+    teamscale {
+        partition = "Unit Tests"
+    }
 }
 ```
-This needs to be specified only for the TestImpacted task as it needs to request impacted tests from Teamscale before the tests are executed.
+This needs to be specified only for test tasks that are configured to run impacted tests, as it needs to request impacted tests from Teamscale before the tests are executed.
 
 ## `TestwiseCoverageReportTask`
 `TestwiseCoverageReportTask` was renamed to `TestwiseCoverageReport` and is also no longer automatically created for each `TestImpacted` task.

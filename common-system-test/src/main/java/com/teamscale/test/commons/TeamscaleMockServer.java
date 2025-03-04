@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -171,12 +172,12 @@ public class TeamscaleMockServer {
 		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"));
 		List<TestWithClusterId> availableTests = JsonUtils.deserializeList(request.body(), TestWithClusterId.class);
 		allAvailableTests.addAll(availableTests);
-		Map<String, List<TestWithClusterId>> impactedTestsByCluster = availableTests.stream()
+		Map<Optional<String>, List<TestWithClusterId>> impactedTestsByCluster = availableTests.stream()
 				.filter(availableTest -> impactedTests.contains(availableTest.getTestName())).collect(
-						Collectors.groupingBy(TestWithClusterId::getClusterId));
+						Collectors.groupingBy(testWithClusterId -> Optional.ofNullable(testWithClusterId.getClusterId())));
 		List<PrioritizableTestCluster> testClusters = new ArrayList<>();
 		impactedTestsByCluster.forEach(
-				(clusterId, impactedTests) -> testClusters.add(new PrioritizableTestCluster(clusterId,
+				(clusterId, impactedTests) -> testClusters.add(new PrioritizableTestCluster(clusterId.orElse(null),
 						impactedTests.stream().map(TestWithClusterId::getTestName).map(PrioritizableTest::new)
 								.collect(toList()))));
 		return JsonUtils.serialize(testClusters);

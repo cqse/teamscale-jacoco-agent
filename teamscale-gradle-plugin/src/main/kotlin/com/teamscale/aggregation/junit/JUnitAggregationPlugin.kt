@@ -3,6 +3,8 @@ package com.teamscale.aggregation.junit
 import com.teamscale.aggregation.ReportAggregationPlugin
 import com.teamscale.aggregation.junit.internal.DefaultAggregateJUnitReport
 import com.teamscale.utils.junitReports
+import com.teamscale.utils.reporting
+import com.teamscale.utils.testing
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -10,10 +12,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JvmTestSuitePlugin
 import org.gradle.api.plugins.jvm.JvmTestSuite
-import org.gradle.api.reporting.ReportingExtension
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
-import org.gradle.testing.base.TestingExtension
 import javax.inject.Inject
 
 /**
@@ -31,7 +30,7 @@ abstract class JUnitAggregationPlugin : Plugin<Project> {
 
 	/** Applies the teamscale plugin against the given project.  */
 	override fun apply(project: Project) {
-		val reporting = project.extensions.getByType(ReportingExtension::class.java)
+		val reporting = project.reporting
 		reporting.reports.registerBinding(
 			AggregateJUnitReport::class.java,
 			DefaultAggregateJUnitReport::class.java
@@ -61,8 +60,7 @@ abstract class JUnitAggregationPlugin : Plugin<Project> {
 
 		// convention for synthesizing reports based on existing test suites in "this" project
 		project.plugins.withType<JvmTestSuitePlugin> {
-			val testing = project.extensions.getByType<TestingExtension>()
-			testing.suites.withType<JvmTestSuite> {
+			project.testing.suites.withType<JvmTestSuite> {
 				val suite = this
 				reporting.reports.create("${suite.name}AggregateJUnitReport", AggregateJUnitReport::class.java) {
 					testSuiteName.convention(suite.name)

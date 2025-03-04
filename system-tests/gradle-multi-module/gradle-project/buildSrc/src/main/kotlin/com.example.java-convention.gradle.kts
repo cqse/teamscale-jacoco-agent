@@ -1,5 +1,5 @@
-import com.teamscale.TestImpacted
 import com.teamscale.aggregation.TestSuiteCompatibilityUtil
+import com.teamscale.extension.TeamscaleTaskExtension
 
 plugins {
 	java
@@ -60,11 +60,15 @@ val unitTest by tasks.registering(Test::class) {
 	classpath = files(test.map { it.sources.runtimeClasspath })
 }
 
-val systemTest by tasks.registering(TestImpacted::class) {
+val systemTest by tasks.registering(Test::class) {
 	useJUnitPlatform()
-	partition = "System Tests"
 	configure<JacocoTaskExtension> {
 		includes = listOf("com.example.*")
+	}
+	configure<TeamscaleTaskExtension> {
+		collectTestwiseCoverage = true
+		runImpacted = System.getProperty("impacted") != null
+		partition = "System Tests"
 	}
 	testClassesDirs = files(test.map { it.sources.output.classesDirs })
 	classpath = files(test.map { it.sources.runtimeClasspath })
