@@ -173,6 +173,15 @@ tasks.withType(TestImpacted) {
 This needs to be specified only for the TestImpacted task as it needs to request impacted tests from Teamscale before the tests are executed.
 
 ## `TestwiseCoverageReportTask`
-`TestwiseCoverageReportTask` was renamed to `TestwiseCoverageReport`. 
+`TestwiseCoverageReportTask` was renamed to `TestwiseCoverageReport` and is also no longer automatically created for each `TestImpacted` task.
+You only need this if you don't intend to use an aggregated report.
 
-TODO no longer automatically created for each testimpacted task
+You can create a task to build a testwise coverage report like this:
+ 
+```groovy
+import com.teamscale.reporting.testwise.TestwiseCoverageReport
+// ...
+tasks.register('unitTestReport', TestwiseCoverageReport) {
+	from(tasks.unitTest)
+}
+```
