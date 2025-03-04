@@ -15,7 +15,7 @@ abstract class GitRevisionValueSource : ValueSource<String, ValueSourceParameter
 	}
 
 	@get:Inject
-	abstract val layout: ProjectLayout
+	protected abstract val layout: ProjectLayout
 
 	override fun obtain(): String? {
 		EnvironmentVariableChecker.findCommit()?.let {

@@ -1,19 +1,26 @@
 package com.teamscale
 
-import com.teamscale.config.extension.TeamscalePluginExtension
-import com.teamscale.config.extension.TeamscaleTestImpactedTaskExtension
+import com.teamscale.aggregation.TestSuiteCompatibilityUtil
+import com.teamscale.extension.TeamscalePluginExtension
+import com.teamscale.extension.TeamscaleTaskExtension
+import com.teamscale.utils.AgentPortGenerator
+import com.teamscale.utils.BuildVersion
+import com.teamscale.utils.jacoco
+import com.teamscale.utils.testing
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JvmTestSuitePlugin
+import org.gradle.api.plugins.ReportingBasePlugin
+import org.gradle.api.plugins.jvm.JvmTestSuite
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.gradle.testing.jacoco.plugins.JacocoPlugin
-import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.util.GradleVersion
 
 
@@ -25,7 +32,7 @@ import org.gradle.util.GradleVersion
  * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
  * Furthermore, all reports configured are uploaded to Teamscale after the tests have been executed.
  */
-open class TeamscalePlugin : Plugin<Project> {
+abstract class TeamscalePlugin : Plugin<Project> {
 
 	companion object {
 
@@ -55,6 +62,8 @@ open class TeamscalePlugin : Plugin<Project> {
 			"*.FastClassByGuice.*",
 			"*.ConstructorAccess"
 		)
+
+		val MINIMUM_SUPPORTED_VERSION = GradleVersion.version("8.10")
 	}
 
 	/** The version of the teamscale gradle plugin and impacted-tests-executor.  */
@@ -66,22 +75,26 @@ open class TeamscalePlugin : Plugin<Project> {
 
 	/** Applies the teamscale plugin against the given project.  */
 	override fun apply(project: Project) {
-		if (GradleVersion.current() < GradleVersion.version("8.4")) {
-			throw GradleException("The teamscale plugin requires Gradle version 8.4.0 or higher. Version detected: ${GradleVersion.current()}")
+		if (GradleVersion.current() < MINIMUM_SUPPORTED_VERSION) {
+			throw GradleException("The teamscale plugin requires Gradle version ${MINIMUM_SUPPORTED_VERSION.version} or higher. Version detected: ${GradleVersion.current()}")
 		}
 
 		project.logger.info("Applying teamscale plugin $pluginVersion to ${project.name}")
-		project.plugins.apply(JavaPlugin::class.java)
-		project.plugins.apply(JacocoPlugin::class.java)
+		project.plugins.apply {
+			apply(JavaPlugin::class.java)
+			apply(JacocoPlugin::class.java)
+			apply(ReportingBasePlugin::class.java)
+			apply(JvmTestSuitePlugin::class.java)
+		}
 
 		val pluginExtension =
 			project.extensions.create(TEAMSCALE_EXTENSION_NAME, TeamscalePluginExtension::class.java)
 
-		// Add impacted tests executor to a custom configuration that will later be used to
-		// create the classpath for the TestImpacted created by this plugin.
+		// Add impacted tests executor to a custom configuration that will later be appended to the test classpath
+		// if testwise coverage collection is enabled
 		impactedTestEngineConfiguration = project.configurations.create(IMPACTED_TEST_ENGINE_CONFIGURATION_NAME)
 
-		// Add teamscale jacoco agent to a custom configuration that will later be used to
+		// Add teamscale jacoco agent to a custom configuration that will later be used
 		// to generate testwise coverage if enabled.
 		teamscaleJacocoAgentConfiguration = project.configurations.create(TEAMSCALE_JACOCO_AGENT_CONFIGURATION_NAME)
 
@@ -90,19 +103,35 @@ open class TeamscalePlugin : Plugin<Project> {
 			teamscaleJacocoAgentConfiguration("com.teamscale:teamscale-jacoco-agent:$pluginVersion")
 		}
 
+		configureTestTasks(project, pluginExtension)
+		configureTeamscaleUploadTasks(project, pluginExtension)
+
+		// Auto-expose JUnit and Testwise coverage reports for test tasks bound to JVM test suites
+		project.testing.suites.withType<JvmTestSuite> {
+			val suite = this
+			suite.targets.configureEach {
+				TestSuiteCompatibilityUtil.exposeTestReportArtifactsForAggregation(project, testTask, suite.name)
+			}
+			project.configurations.named(suite.sources.runtimeOnlyConfigurationName) {
+				extendsFrom(impactedTestEngineConfiguration)
+			}
+		}
+	}
+
+	private fun configureTeamscaleUploadTasks(
+		project: Project,
+		pluginExtension: TeamscalePluginExtension
+	) {
 		project.tasks.withType<TeamscaleUpload> {
 			serverConfiguration.convention(pluginExtension.server)
 			repository.convention(pluginExtension.repository)
-			commitDescriptorOrRevision.convention(pluginExtension.commit.combine())
+			commitDescriptorOrRevision.convention(pluginExtension.commit.combined)
 			ignoreFailures.convention(false)
 			message.convention(partition.map { "$it Gradle upload" })
 		}
-
-		// Add the teamscale extension also to all TestImpacted tasks
-		extendTestImpactedTasks(project, pluginExtension)
 	}
 
-	private fun extendTestImpactedTasks(
+	private fun configureTestTasks(
 		project: Project,
 		teamscalePluginExtension: TeamscalePluginExtension
 	) {
@@ -110,39 +139,26 @@ open class TeamscalePlugin : Plugin<Project> {
 			"agent-port-generator",
 			AgentPortGenerator::class.java
 		) {}
-		project.tasks.withType<TestImpacted> {
-			val jacocoTaskExtension: JacocoTaskExtension = this.extensions.getByType<JacocoTaskExtension>()
-			jacocoTaskExtension.excludes?.addAll(DEFAULT_EXCLUDES)
+		project.tasks.withType<Test> {
+			jacoco.excludes?.addAll(DEFAULT_EXCLUDES) //TODO still needed?
 
-			val extension = this.extensions.create<TeamscaleTestImpactedTaskExtension>(
-				TEAMSCALE_EXTENSION_NAME,
-				project.objects,
-				teamscaleJacocoAgentConfiguration,
-				jacocoTaskExtension
-			)
-			val port = agentPortGenerator.get().getNextPort()
-			extension.agent.useLocalAgent("http://127.0.0.1:${port}/")
-			extension.agent.destination.set(project.layout.buildDirectory.dir("jacoco/${project.name}-${this.name}"))
+			val extension = this.extensions.create<TeamscaleTaskExtension>(
+				TEAMSCALE_EXTENSION_NAME, teamscaleJacocoAgentConfiguration, jacoco
+			).apply {
+				collectTestwiseCoverage.convention(false)
+				runImpacted.convention(false)
+				runAllTests.convention(false)
+				includeAddedTests.convention(true)
+				includeFailedAndSkipped.convention(true)
+				val port = agentPortGenerator.get().getNextPort()
+				agent.useLocalAgent("http://127.0.0.1:${port}/")
+				agent.destination.set(project.layout.buildDirectory.dir("jacoco/${this@withType.name}"))
+			}
 
-			agentConfiguration.convention(extension.agent)
-			serverConfiguration.convention(teamscalePluginExtension.server)
-			testEngineConfiguration.from(impactedTestEngineConfiguration)
-			endCommit.convention(teamscalePluginExtension.commit.combine())
-			baseline.convention(teamscalePluginExtension.baseline)
-			baselineRevision.convention(teamscalePluginExtension.baselineRevision)
-			repository.convention(teamscalePluginExtension.repository)
+			doFirst("testImpactConfiguration", TestImpactConfigurationAction(teamscalePluginExtension, extension))
 
-			reports.testwiseCoverage.required.convention(true)
-			reports.testwiseCoverage.outputLocation.convention(partition.map { partition ->
-				project.layout.buildDirectory.file(
-					"reports/testwise-coverage/${name}/${
-						partition.replace(
-							"[ /\\\\]".toRegex(),
-							"-"
-						)
-					}.json"
-				).get()
-			})
+			outputs.doNotCacheIf("When using Test Impact Analysis ") { extension.runImpacted.get() }
+			outputs.dir(extension.agent.destination)
 		}
 	}
 }

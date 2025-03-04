@@ -69,7 +69,7 @@ abstract class TeamscalePluginTestBase {
 			.withProjectDir(rootProject.projectDir)
 			.withPluginClasspath()
 			.withArguments(runnerArgs)
-			.withGradleVersion("8.4")
+			.withGradleVersion(TeamscalePlugin.MINIMUM_SUPPORTED_VERSION.version)
 
 		return runner
 	}

@@ -1,5 +1,6 @@
 import com.teamscale.TeamscaleUpload
-import com.teamscale.TestImpacted
+import com.teamscale.extension.TeamscaleTaskExtension
+import com.teamscale.reporting.testwise.TestwiseCoverageReport
 
 plugins {
     id("java")
@@ -43,15 +44,24 @@ tasks.test {
     systemProperty("cucumber.junit-platform.naming-strategy", "long")
 }
 
-tasks.register<TestImpacted>("tiaTests") {
+tasks.register<Test>("tiaTests") {
     useJUnitPlatform()
-    partition.set("Cucumber Tests")
+    configure<TeamscaleTaskExtension> {
+        partition = "Cucumber Tests"
+        collectTestwiseCoverage = true
+        runImpacted = true
+    }
     configure<JacocoTaskExtension> {
         includes = listOf("*hellocucumber*")
     }
+    finalizedBy("tiaTestsReport")
+}
+
+tasks.register<TestwiseCoverageReport>("tiaTestsReport") {
+    from(tasks.named<Test>("tiaTests"))
 }
 
 tasks.register<TeamscaleUpload>("teamscaleReportUpload") {
     partition = "Cucumber Tests"
-    from(tasks.named("tiaTests"))
+    from(tasks.named("tiaTestsReport"))
 }

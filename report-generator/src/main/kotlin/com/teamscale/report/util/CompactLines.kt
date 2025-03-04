@@ -17,12 +17,7 @@
 
 package com.teamscale.report.util
 
-import java.io.IOException
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.io.Serializable
-import java.util.BitSet
-import java.util.NoSuchElementException
+import java.util.*
 
 /**
  * A compact, serializable representation of line numbers using a BitSet. This class is designed to
@@ -40,15 +35,16 @@ import java.util.NoSuchElementException
  *
  * @see BitSet
  */
-data class CompactLines(
-	private var bitSet: BitSet = BitSet()
-) : Serializable, Iterable<Int> {
+data class CompactLines @JvmOverloads constructor(val bitSet: BitSet = BitSet()) : Iterable<Int> {
 
 	companion object {
-		private const val serialVersionUID = 1L
-
 		fun compactLinesOf(vararg lines: Int) = CompactLines(*lines)
 		fun compactLinesOf(lines: Iterable<Int>) = CompactLines(lines)
+		fun compactLinesCopyOf(lines: CompactLines): CompactLines {
+			return CompactLines().apply {
+				this merge lines
+			}
+		}
 		fun compactLinesOf() = CompactLines()
 	}
 
@@ -65,14 +61,16 @@ data class CompactLines(
 	}
 
 	/** Returns the number of line numbers in this set. */
-	fun size() = bitSet.cardinality()
+	val size
+		get() = bitSet.cardinality()
 
 	/**
 	 * Checks if this set of line numbers is empty.
 	 *
 	 * @return `true` if there are no line numbers in this set, `false` otherwise.
 	 */
-	fun isEmpty() = bitSet.isEmpty
+	val isEmpty: Boolean
+		get() = bitSet.isEmpty
 
 	/**
 	 * Adds all line numbers from another [CompactLines] instance to this one.
@@ -108,7 +106,7 @@ data class CompactLines(
 	 *         `false` otherwise.
 	 */
 	fun containsAll(lines: Iterable<Int>) =
-		lines.all { line -> bitSet.get(line) }
+		lines.all { line -> bitSet[line] }
 
 	/**
 	 * Adds a specific line number to this set.
@@ -158,7 +156,7 @@ data class CompactLines(
 	 * Creates a new [CompactLines] object with the intersection of this and the other lines.
 	 */
 	fun intersection(other: CompactLines) =
-		compactLinesOf(this).apply {
+		compactLinesCopyOf(this).apply {
 			retainAll(other)
 		}
 
@@ -172,24 +170,6 @@ data class CompactLines(
 		bitSet.intersects(lines.bitSet)
 
 	override fun toString() = joinToString(",")
-
-	/**
-	 * Gets the highest line number contained in this set or null if there are no line numbers
-	 * contained.
-	 */
-	fun getHighestLineNumber() =
-		if (bitSet.isEmpty) null else bitSet.previousSetBit(bitSet.length() - 1)
-
-	@Throws(IOException::class)
-	private fun writeObject(out: ObjectOutputStream) {
-		val bytes = bitSet.toByteArray()
-		out.write(bytes)
-	}
-
-	@Throws(IOException::class, ClassNotFoundException::class)
-	private fun readObject(`in`: ObjectInputStream) {
-		bitSet = BitSet.valueOf(`in`.readBytes())
-	}
 
 	override fun iterator(): Iterator<Int> {
 		return object : Iterator<Int> {
