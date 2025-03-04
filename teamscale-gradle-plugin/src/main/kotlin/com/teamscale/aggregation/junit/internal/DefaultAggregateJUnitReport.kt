@@ -9,9 +9,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin
 import javax.inject.Inject
 
 /**
- * [ReportSpec] implementation that holds a [JUnitReportCollectionTask] task for aggregating JaCoCo coverage to the
- * [Teamscale Compat Coverage](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/)
- * format across projects.
+ * [ReportSpec] implementation that holds a [JUnitReportCollectionTask] task for collecting JUnit reports across projects.
  */
 internal abstract class DefaultAggregateJUnitReport @Inject constructor(
 	private val name: String,

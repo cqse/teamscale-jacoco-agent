@@ -16,8 +16,7 @@ import javax.inject.Inject
 internal abstract class DefaultAggregateCompactCoverageReport @Inject constructor(
 	private val name: String,
 	tasks: TaskContainer
-) :
-	AggregateCompactCoverageReport {
+) : AggregateCompactCoverageReport {
 
 	override val reportTask = tasks.register<CompactCoverageReport>(name) {
 		group = LifecycleBasePlugin.VERIFICATION_GROUP

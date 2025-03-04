@@ -9,7 +9,8 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin
 import javax.inject.Inject
 
 /**
- * [ReportSpec] that holds a [TestwiseCoverageReport] task for aggregating JaCoCo coverage to the
+ * [ReportSpec] implementation that holds a [TestwiseCoverageReport] task for aggregating the binary data produced
+ * by the Teamscale JaCoCo agent to the
  * [Testwise Coverage](https://docs.teamscale.com/reference/upload-formats-and-samples/testwise-coverage/)
  * format across projects.
  */

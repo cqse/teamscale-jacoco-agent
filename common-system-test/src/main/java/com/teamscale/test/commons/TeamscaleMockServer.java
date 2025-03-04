@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -58,7 +58,7 @@ public class TeamscaleMockServer {
 	public final List<String> impactedTestRepositories = new ArrayList<>();
 
 	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
-	public final Set<TestWithClusterId> availableTests = new HashSet<>();
+	public final Set<TestWithClusterId> allAvailableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private List<String> impactedTests;
@@ -152,12 +152,14 @@ public class TeamscaleMockServer {
 	}
 
 	/**
-	 * Returns the report at the given index in {@link #uploadedReports}, parsed as a {@link TeamscaleCompactCoverageReport}.
+	 * Returns the report at the given index in {@link #uploadedReports}, parsed as a
+	 * {@link TeamscaleCompactCoverageReport}.
 	 *
 	 * @throws IOException when parsing the report fails.
 	 */
 	public TeamscaleCompactCoverageReport parseUploadedCompactCoverageReport(int index) throws IOException {
-		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(), TeamscaleCompactCoverageReport.class);
+		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(),
+				TeamscaleCompactCoverageReport.class);
 	}
 
 	private String handleImpactedTests(Request request, Response response) throws IOException {
@@ -167,9 +169,17 @@ public class TeamscaleMockServer {
 		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"));
 		impactedTestRepositories.add(request.queryParams("repository"));
 		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"));
-		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
-		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
-		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
+		List<TestWithClusterId> availableTests = JsonUtils.deserializeList(request.body(), TestWithClusterId.class);
+		allAvailableTests.addAll(availableTests);
+		Map<String, List<TestWithClusterId>> impactedTestsByCluster = availableTests.stream()
+				.filter(availableTest -> impactedTests.contains(availableTest.getTestName())).collect(
+						Collectors.groupingBy(TestWithClusterId::getClusterId));
+		List<PrioritizableTestCluster> testClusters = new ArrayList<>();
+		impactedTestsByCluster.forEach(
+				(clusterId, impactedTests) -> testClusters.add(new PrioritizableTestCluster(clusterId,
+						impactedTests.stream().map(TestWithClusterId::getTestName).map(PrioritizableTest::new)
+								.collect(toList()))));
+		return JsonUtils.serialize(testClusters);
 	}
 
 	private String handleProfilerRegistration(Request request, Response response) throws JsonProcessingException {

@@ -188,24 +188,24 @@ abstract class TeamscaleUpload : DefaultTask() {
 		}
 	}
 
+	/**
+	 * Retries the given block numOfRetries-times catching any thrown exceptions.
+	 * If none of the retries succeeded, the latest caught exception is rethrown.
+	 */
+	private fun <T> retry(numOfRetries: Int, block: () -> T): T {
+		var throwable: Throwable? = null
+		(1..numOfRetries).forEach { attempt ->
+			try {
+				return block()
+			} catch (e: Throwable) {
+				throwable = e
+				println("Failed attempt $attempt / $numOfRetries")
+			}
+		}
+		throw throwable!!
+	}
+
 	private fun getExistingReportFiles(reports: FileCollection) =
 		reports.files.filter { it.exists() }.flatMap { fileOrDir -> fileOrDir.walkTopDown().filter { it.isFile } }
 			.distinct()
-}
-
-/**
- * Retries the given block numOfRetries-times catching any thrown exceptions.
- * If none of the retries succeeded, the latest caught exception is rethrown.
- */
-fun <T> retry(numOfRetries: Int, block: () -> T): T {
-	var throwable: Throwable? = null
-	(1..numOfRetries).forEach { attempt ->
-		try {
-			return block()
-		} catch (e: Throwable) {
-			throwable = e
-			println("Failed attempt $attempt / $numOfRetries")
-		}
-	}
-	throw throwable!!
 }

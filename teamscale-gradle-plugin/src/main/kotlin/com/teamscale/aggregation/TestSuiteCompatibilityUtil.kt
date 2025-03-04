@@ -25,14 +25,33 @@ import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 @Suppress("unused")
 object TestSuiteCompatibilityUtil {
 
+	/**
+	 * Exposes the results produced by the given test task provider as results produced by a test suite with the given name.
+	 * A test suite with this name does not need to exist though.
+	 * This is necessary to aggregate those reports across projects via the "com.teamscale.aggregation" plugin.
+	 * It reuses the same mechanism introduced by the
+	 * [JVM Test Suites Plugin](https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html)
+	 * and
+	 * [JaCoCo Report Aggregation Plugin](https://docs.gradle.org/current/userguide/jacoco_report_aggregation_plugin.html)
+	 * but provides a way to use this without using JVM test suites yet.
+	 */
 	@JvmStatic
 	fun exposeTestForAggregation(testProvider: TaskProvider<out Test>, suiteName: String) {
 		exposeTestForAggregation(testProvider.get(), suiteName)
 	}
 
+	/**
+	 * Exposes the results produced by the given test task as results produced by a test suite with the given name.
+	 * A test suite with this name does not need to exist though.
+	 * This is necessary to aggregate those reports across projects via the "com.teamscale.aggregation" plugin.
+	 * It reuses the same mechanism introduced by the
+	 * [JVM Test Suites Plugin](https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html)
+	 * and
+	 * [JaCoCo Report Aggregation Plugin](https://docs.gradle.org/current/userguide/jacoco_report_aggregation_plugin.html)
+	 * but provides a way to use this without using JVM test suites yet.
+	 */
 	@JvmStatic
 	fun exposeTestForAggregation(test: Test, suiteName: String) {
-
 		if (test.extensions.findByType<JacocoTaskExtension>()?.isEnabled == true) {
 			createCoverageDataVariant(test.project, suiteName).configure {
 				outgoing.artifact(

@@ -5,13 +5,11 @@ import org.gradle.api.reporting.ReportSpec
 import org.gradle.api.tasks.TaskProvider
 
 /**
- * [ReportSpec] that holds a [JUnitReportCollectionTask] task for aggregating JaCoCo coverage to the
- * [Teamscale Compat Coverage](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/)
- * format across projects.
+ * [ReportSpec] that holds a [JUnitReportCollectionTask] task for collecting JUnit reports across projects.
  */
 interface AggregateJUnitReport : ReportSpec {
 	/**
-	 * Contains the [JUnitReportCollectionTask] task instance which produces this report.
+	 * Contains the [JUnitReportCollectionTask] task instance which collects the reports.
 	 *
 	 * @return the task instance
 	 */

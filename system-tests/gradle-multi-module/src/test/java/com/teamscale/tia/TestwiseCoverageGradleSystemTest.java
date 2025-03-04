@@ -21,7 +21,7 @@ public class TestwiseCoverageGradleSystemTest {
 	@BeforeEach
 	public void startFakeTeamscaleServer() throws Exception {
 		teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT)
-				.acceptingReportUploads();
+				.acceptingReportUploads().withImpactedTests("com/example/app/MainTest/testMain()");
 	}
 
 	@AfterEach
@@ -31,16 +31,36 @@ public class TestwiseCoverageGradleSystemTest {
 
 	@Test
 	public void testGradleAggregatedTestwiseCoverageUploadWithoutJVMTestSuite() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "systemTest", "teamscaleSystemTestReportUpload", "--stacktrace");
+		SystemTestUtils.runGradle("gradle-project", "clean", "systemTest", "teamscaleSystemTestReportUpload");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(
 				report -> report.getPartition().equals("System Tests"));
 
-		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0); //TODO test that partial flag is set correctly
+		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
+		assertThat(testwiseReport.partial).isEqualTo(false);
 		assertThat(testwiseReport.tests.getFirst().uniformPath).isEqualTo("com/example/app/MainTest/testMain()");
 		assertThat(testwiseReport.tests.getLast().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
 		assertThat(testwiseReport.tests.getFirst().paths).isNotEmpty();
+		assertThat(testwiseReport.tests.getLast().paths).isNotEmpty();
+	}
+
+	@Test
+	public void testGradleAggregatedTestwiseCoverageUploadHasPartialFlagSet() throws Exception {
+		SystemTestUtils.runGradle("gradle-project", "clean",
+				":lib:systemTest", "--impacted", ":app:systemTest", "--impacted",
+				"teamscaleSystemTestReportUpload");
+
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.uploadedReports).allMatch(
+				report -> report.getPartition().equals("System Tests"));
+
+		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
+		assertThat(testwiseReport.partial).isEqualTo(true);
+		assertThat(testwiseReport.tests.getFirst().uniformPath).isEqualTo("com/example/app/MainTest/testMain()");
+		assertThat(testwiseReport.tests.getLast().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
+		assertThat(testwiseReport.tests.getFirst().paths).isNotEmpty();
+		assertThat(testwiseReport.tests.getLast().paths).isEmpty();
 	}
 
 	@Test
@@ -49,7 +69,8 @@ public class TestwiseCoverageGradleSystemTest {
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(3);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Unit Tests"));
-		assertThat(teamscaleMockServer.uploadedReports.getFirst().getFormat()).isEqualTo(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name());
+		assertThat(teamscaleMockServer.uploadedReports.getFirst().getFormat()).isEqualTo(
+				EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name());
 		assertThat(teamscaleMockServer.uploadedReports.stream()
 				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(2);
 

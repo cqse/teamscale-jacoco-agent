@@ -1,6 +1,5 @@
 package com.teamscale.aggregation.junit
 
-import com.teamscale.TeamscalePlugin
 import com.teamscale.aggregation.ReportAggregationPlugin
 import com.teamscale.aggregation.junit.internal.DefaultAggregateJUnitReport
 import com.teamscale.utils.junitReports
@@ -17,15 +16,13 @@ import org.gradle.kotlin.dsl.withType
 import org.gradle.testing.base.TestingExtension
 import javax.inject.Inject
 
-
 /**
- * TODO
- * Root entry point for the Teamscale Gradle plugin.
+ * Plugin that supports collecting JUnit reports across projects.
  *
- * The plugin applies the Java plugin and a root extension named teamscale.
- * Each Test task configured in the project the plugin creates a new task suffixed with {@value #impactedTestsSuffix}
- * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
- * Furthermore, all reports configured are uploaded to Teamscale after the tests have been executed.
+ * It reuses the resolvable configuration (aggregateReportResults) from the [ReportAggregationPlugin]
+ * to collect the directories that contain the JUnit reports in XML format.
+ *
+ * @see [ReportAggregationPlugin] for details
  */
 abstract class JUnitAggregationPlugin : Plugin<Project> {
 
@@ -34,8 +31,6 @@ abstract class JUnitAggregationPlugin : Plugin<Project> {
 
 	/** Applies the teamscale plugin against the given project.  */
 	override fun apply(project: Project) {
-		project.plugins.apply(TeamscalePlugin::class.java)
-
 		val reporting = project.extensions.getByType(ReportingExtension::class.java)
 		reporting.reports.registerBinding(
 			AggregateJUnitReport::class.java,
@@ -69,10 +64,7 @@ abstract class JUnitAggregationPlugin : Plugin<Project> {
 			val testing = project.extensions.getByType<TestingExtension>()
 			testing.suites.withType<JvmTestSuite> {
 				val suite = this
-				reporting.reports.create(
-					"${suite.name}AggregateJUnitReport",
-					AggregateJUnitReport::class.java
-				) {
+				reporting.reports.create("${suite.name}AggregateJUnitReport", AggregateJUnitReport::class.java) {
 					testSuiteName.convention(suite.name)
 				}
 			}

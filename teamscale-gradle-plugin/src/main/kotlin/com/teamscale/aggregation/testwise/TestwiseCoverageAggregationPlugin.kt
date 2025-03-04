@@ -16,26 +16,16 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.withType
 import javax.inject.Inject
 
-
 /**
- * TODO
- * Root entry point for the Teamscale Gradle plugin.
+ * Plugin that supports aggregating binary data produced by the Teamscale JaCoCo agent across projects.
  *
- * The plugin applies the Java plugin and a root extension named teamscale.
- * Each Test task configured in the project the plugin creates a new task suffixed with {@value #impactedTestsSuffix}
- * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
- * Furthermore, all reports configured are uploaded to Teamscale after the tests have been executed.
+ * It reuses the resolvable configuration (aggregateReportResults) from the [ReportAggregationPlugin]
+ * to collect the directories that contain the binary exec files,
+ * the test details and test execution results in JSON format.
+ *
+ * @see [ReportAggregationPlugin] for details
  */
 abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
-
-//	companion object {
-//
-//		const val TESTWISE_COVERAGE_AGGREGATION_CONFIGURATION_NAME = "testwiseCoverageAggregation"
-//
-//	}
-
-//	@get:Inject
-//	protected abstract val jvmPluginServices: JvmPluginServices
 
 	@get:Inject
 	protected abstract val objectFactory: ObjectFactory
@@ -45,30 +35,12 @@ abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
 		project.plugins.apply(TeamscalePlugin::class.java)
 
 		val configurations = project.configurations
-//		val testwiseCoverageAggregation =
-//			configurations.dependencyScope(TESTWISE_COVERAGE_AGGREGATION_CONFIGURATION_NAME) {
-//				description = "A configuration to collect testwise coverage reports across projects."
-//				isVisible = false
-//			}.get()
-
-//		val testwiseCoverageResultsConfiguration = configurations.resolvable("aggregateTestwiseCoverageReportResults") {
-//			extendsFrom(testwiseCoverageAggregation)
-//			// TODO "Resolvable configuration used to gather files for the JaCoCo coverage report aggregation via ArtifactViews, not intended to be used directly"
-//			description = "Graph needed for the aggregated test results report."
-//			isVisible = false
-//		}.get()
 
 		val reporting = project.extensions.getByType(ReportingExtension::class.java)
 		reporting.reports.registerBinding(
 			AggregateTestwiseCoverageReport::class.java,
 			DefaultAggregateTestwiseCoverageReport::class.java
 		)
-
-//		project.plugins.withType<JavaBasePlugin> {
-//			testwiseCoverageAggregation.dependencies.add(project.dependencyFactory.create(project))
-//			// If the current project is jvm-based, aggregate dependent projects as jvm-based as well.
-//			jvmPluginServices.configureAsRuntimeClasspath(testwiseCoverageResultsConfiguration)
-//		}
 
 		val codeCoverageResultsConf = configurations.getByName(ReportAggregationPlugin.RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
 
@@ -77,7 +49,7 @@ abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
 			attributes {
 				attribute(
 					LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-					objectFactory.named<LibraryElements>(LibraryElements.CLASSES)
+					objectFactory.named<LibraryElements>(LibraryElements.CLASSES)//TODO include test fixtures and test classes
 				)
 			}
 		}.files

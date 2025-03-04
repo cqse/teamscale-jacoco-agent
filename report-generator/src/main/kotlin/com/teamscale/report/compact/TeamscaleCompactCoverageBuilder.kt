@@ -7,9 +7,7 @@ import org.jacoco.core.analysis.ISourceNode
 import java.util.*
 
 /**
- * TODO [ICoverageVisitor] that can ignore non-identical duplicate classes or classes without coverage. In addition,
- * coverage returned via [.getBundle] will only return source file coverage because Teamscale does not
- * need class coverage anyway. This reduces XML size by approximately half.
+ * [ICoverageVisitor] that collects data for building a compact coverage report out of JaCoCo coverage.
  */
 class TeamscaleCompactCoverageBuilder : ICoverageVisitor {
 

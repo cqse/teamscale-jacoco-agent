@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 
 /**
- * Plugin that supports aggregating Testwise Coverage and JUnit reports across projects.
+ * Plugin that supports aggregating Testwise Coverage binary-data and JUnit reports across projects.
  *
  * It defines a consumable configuration (reportAggregation),
  * that is used to collect all projects to aggregate reports from and a resolvable configuration

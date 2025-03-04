@@ -19,7 +19,6 @@ import org.gradle.testing.base.TestingExtension
 import org.gradle.testing.jacoco.plugins.JacocoReportAggregationPlugin
 import javax.inject.Inject
 
-
 /**
  * Plugin that supports aggregating binary JaCoCo coverage data across projects.
  *
@@ -64,7 +63,7 @@ abstract class CompactCoverageAggregationPlugin : Plugin<Project> {
 			attributes {
 				attribute(
 					LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-					objectFactory.named<LibraryElements>(LibraryElements.CLASSES)
+					objectFactory.named<LibraryElements>(LibraryElements.CLASSES) //TODO include test fixtures and test classes
 				)
 			}
 		}.files

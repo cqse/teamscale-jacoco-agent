@@ -17,9 +17,7 @@ import java.io.OutputStream
 /**
  * Base class for generating reports from based on the binary JaCoCo exec dump files.
  *
- * TODO can ignore non-identical duplicate classes or classes without coverage. In addition,
- *  * coverage returned via [.getBundle] will only return source file coverage because Teamscale does not
- *  * need class coverage anyway. This reduces XML size by approximately half.
+ * It takes care of ignoring non-identical duplicate classes and classes without coverage.
  *
  * @param codeDirectoriesOrArchives Directories and zip files that contain class files.
  * @param locationIncludeFilter Include filter to apply to all locations during class file traversal.

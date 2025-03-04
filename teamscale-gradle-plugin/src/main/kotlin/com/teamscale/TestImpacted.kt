@@ -163,14 +163,14 @@ abstract class TestImpacted : Test() {
 			"server.userAccessToken" writeProperty serverConfiguration.get().userAccessToken.get()
 			"baseline" writeProperty baseline.orNull
 			"baselineRevision" writeProperty baselineRevision.orNull
+			check(
+				partition.isPresent && partition.get().isNotBlank()
+			) { "Partition is required for retrieving Test Impact Analysis results" }
+			"partition" writeProperty partition.get()
+			"endCommit" writeProperty endCommit.get().first
+			"endRevision" writeProperty endCommit.get().second
+			"repository" writeProperty repository.orNull
 		}
-		check(
-			partition.isPresent && partition.get().isNotBlank()
-		) { "Partition is required for retrieving Test Impact Analysis results" }
-		"partition" writeProperty partition.get()
-		"endCommit" writeProperty endCommit.get().first
-		"endRevision" writeProperty endCommit.get().second
-		"repository" writeProperty repository.orNull
 		"reportDirectory" writeProperty agentConfiguration.get().destination.asFile.get().absolutePath
 		"agentsUrls" writeProperty agentConfiguration.get().getAllAgentUrls().joinToString(",")
 		"runImpacted" writeProperty runImpacted.get()
