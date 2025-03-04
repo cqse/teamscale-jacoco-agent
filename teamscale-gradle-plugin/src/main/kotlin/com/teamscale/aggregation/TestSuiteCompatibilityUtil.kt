@@ -96,7 +96,7 @@ object TestSuiteCompatibilityUtil {
 
 		return project.configurations.consumable(variantName) {
 			description = "JUnit results obtained from running the '$suiteName' Tests."
-			attributes.junitReports(project.objects, suiteName)
+			attributes.junitReports(project.objects, project.provider { suiteName })
 		}
 	}
 

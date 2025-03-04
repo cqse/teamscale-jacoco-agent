@@ -50,7 +50,7 @@ Projects can also be manually added
 by adding the projects to the `jacocoAggregation` and `reportAggregation` configurations.
 
 #### With JVM test suites
-The `com.teamscale.aggregation` plugin automatically creates a <code><em>testSuite</em>AggregateCompactCoverageReport</code> task for each test suite in the presence of the JVM test suite plugin.
+The `com.teamscale.aggregation` plugin automatically creates a <code><em>testSuite</em>AggregateCompactCoverageReport</code> and <code><em>testSuite</em>AggregateJUnitReport</code> task for each test suite in the presence of the JVM test suite plugin.
 The task will collect coverage data across all projects
 and generate a [Teamscale Compact Coverage](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/) report from it.
 
@@ -62,11 +62,9 @@ plugins {
 tasks.register("teamscaleIntegrationTestReportUpload", TeamscaleUpload) {
 	partition = "Integration Tests"
 	from(tasks.integrationTestAggregateCompactCoverageReport)
-	aggregatedJUnitReportsFrom("integrationTest")
+	from(tasks.integrationTestAggregateJUnitReport)
 }
 ```
-
-`aggregatedJUnitReportsFrom(testSuiteName)` additionally configures the upload task to collect JUnit report from all dependant projects.  
 
 #### Without JVM test suites
 If your projects do not yet use JVM test suites, you can attach a testSuiteName to arbitrary tasks.
@@ -91,6 +89,8 @@ TestSuiteCompatibilityUtil.exposeTestForAggregation(tasks.named('systemTest'), '
 In the aggregation project create an aggregation report:
 ```groovy
 import com.teamscale.aggregation.compact.AggregateCompactCoverageReport
+import com.teamscale.aggregation.junit.AggregateJUnitReport
+import com.teamscale.aggregation.testwise.AggregateTestwiseCoverageReport
 
 plugins {
 	id 'com.teamscale.aggregation'
@@ -99,6 +99,9 @@ plugins {
 reporting {
     reports {
         unitTestAggregateCompactCoverageReport(AggregateCompactCoverageReport) { 
+            testSuiteName = 'myUnitTestSuite'
+        }
+        unitTestAggregateJUnitReport(AggregateJUnitReport) { 
             testSuiteName = 'myUnitTestSuite'
         }
         systemTestAggregateTestwiseCoverageReport(AggregateTestwiseCoverageReport) { 
@@ -110,7 +113,7 @@ reporting {
 tasks.register("teamscaleUnitTestReportUpload", TeamscaleUpload) {
 	partition = "Unit Tests"
 	from(tasks.named('unitTestAggregateCompactCoverageReport'))
-	aggregatedJUnitReportsFrom('myUnitTestSuite')
+	from(tasks.named('unitTestAggregateJUnitReport'))
 }
 
 tasks.register("teamscaleSystemTestReportUpload", TeamscaleUpload) {

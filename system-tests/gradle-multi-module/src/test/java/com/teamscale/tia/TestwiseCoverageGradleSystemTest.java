@@ -47,11 +47,11 @@ public class TestwiseCoverageGradleSystemTest {
 	public void testGradleAggregatedCompactCoverageUploadWithoutJVMTestSuite() throws Exception {
 		SystemTestUtils.runGradle("gradle-project", "clean", "unitTest", "teamscaleUnitTestReportUpload");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(9);
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(3);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Unit Tests"));
 		assertThat(teamscaleMockServer.uploadedReports.getFirst().getFormat()).isEqualTo(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name());
 		assertThat(teamscaleMockServer.uploadedReports.stream()
-				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(8);
+				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(2);
 
 		TeamscaleCompactCoverageReport compactReport = teamscaleMockServer.parseUploadedCompactCoverageReport(0);
 		assertThat(compactReport.getCoverage().getFirst().getFilePath()).isEqualTo("com/example/app/Main.java");
@@ -64,9 +64,9 @@ public class TestwiseCoverageGradleSystemTest {
 	public void testGradleAggregatedCompactCoverageUploadWithJVMTestSuite() throws Exception {
 		SystemTestUtils.runGradle("gradle-project", "clean", "test", "teamscaleTestReportUpload");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(9);
+		assertThat(teamscaleMockServer.uploadedReports).hasSize(3);
 		assertThat(teamscaleMockServer.uploadedReports.stream()
-				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(8);
+				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(2);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(
 				report -> report.getPartition().equals("Default Tests"));
 

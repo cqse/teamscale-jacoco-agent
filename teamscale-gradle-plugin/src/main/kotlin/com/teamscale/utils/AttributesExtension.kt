@@ -33,12 +33,11 @@ fun AttributeContainer.testwiseCoverageResults(objectFactory: ObjectFactory, tes
 	)
 }
 
-fun AttributeContainer.junitReports(objectFactory: ObjectFactory, testSuiteName: String) {
+fun AttributeContainer.junitReports(objectFactory: ObjectFactory, testSuiteName: Provider<String>) {
 	attribute(Category.CATEGORY_ATTRIBUTE, objectFactory.named<Category>(Category.VERIFICATION))
-	attribute(
+	attributeProvider(
 		TestSuiteName.TEST_SUITE_NAME_ATTRIBUTE,
-		objectFactory.named<TestSuiteName>(testSuiteName)
-	)
+		testSuiteName.map { objectFactory.named<TestSuiteName>(it) })
 	attribute(
 		VerificationType.VERIFICATION_TYPE_ATTRIBUTE,
 		objectFactory.named<VerificationType>(JUNIT_REPORT)

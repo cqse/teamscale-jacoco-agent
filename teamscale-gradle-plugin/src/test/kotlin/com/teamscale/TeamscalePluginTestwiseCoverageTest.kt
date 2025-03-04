@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 /**
  * Integration tests for the Teamscale Gradle plugin focusing on the testwise coverage generation.
  */
-class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
+class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 
 	@BeforeEach
 	fun init() {
@@ -76,10 +76,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 	fun `unit tests without server config produce coverage`() {
 		rootProject.defineLegacyTestTasks()
 
-		val build = runExpectingError(
-			"clean",
-			"unitTest"
-		)
+		val build = runExpectingError("clean", "unitTest")
 		assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
 			.doesNotContain("you did not provide all relevant class files")
 			.doesNotContain("WARNING: JAXBContext implementation could not be found. WADL feature is disabled.")
@@ -96,13 +93,8 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase()  {
 	fun `wrong include pattern produces error`() {
 		rootProject.defineLegacyTestTasks("non.existent.package.*")
 
-		val build = runExpectingError(
-			"clean",
-			"unitTest"
-		)
-		// TODO Currently we scan the full classpath for classes, previously we only looked at the gradle projects within this build might be able to rebuild this via:
-		// https://github.com/gradlex-org/maven-plugin-development/blob/5cab40cc4763a9471178a96ccbe37b933643506d/src/main/java/org/gradlex/maven/plugin/development/MavenPluginDevelopmentPlugin.java#L136C1-L192C6
-		assertThat(build.output).contains("None of the 97").contains(" class files found in the given directories match the configured include/exclude patterns!")
+		val build = runExpectingError("clean", "unitTest")
+		assertThat(build.output).contains("No coverage was recorded for any of the executed tests! Check your jacoco include/exclude patterns on the TestImpacted task.")
 	}
 
 	private fun assertFullCoverage(source: String) {

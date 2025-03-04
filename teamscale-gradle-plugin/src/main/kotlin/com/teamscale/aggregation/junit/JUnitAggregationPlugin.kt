@@ -1,0 +1,81 @@
+package com.teamscale.aggregation.junit
+
+import com.teamscale.TeamscalePlugin
+import com.teamscale.aggregation.ReportAggregationPlugin
+import com.teamscale.aggregation.junit.internal.DefaultAggregateJUnitReport
+import com.teamscale.utils.junitReports
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.plugins.JvmTestSuitePlugin
+import org.gradle.api.plugins.jvm.JvmTestSuite
+import org.gradle.api.reporting.ReportingExtension
+import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
+import org.gradle.testing.base.TestingExtension
+import javax.inject.Inject
+
+
+/**
+ * TODO
+ * Root entry point for the Teamscale Gradle plugin.
+ *
+ * The plugin applies the Java plugin and a root extension named teamscale.
+ * Each Test task configured in the project the plugin creates a new task suffixed with {@value #impactedTestsSuffix}
+ * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
+ * Furthermore, all reports configured are uploaded to Teamscale after the tests have been executed.
+ */
+abstract class JUnitAggregationPlugin : Plugin<Project> {
+
+	@get:Inject
+	protected abstract val objectFactory: ObjectFactory
+
+	/** Applies the teamscale plugin against the given project.  */
+	override fun apply(project: Project) {
+		project.plugins.apply(TeamscalePlugin::class.java)
+
+		val reporting = project.extensions.getByType(ReportingExtension::class.java)
+		reporting.reports.registerBinding(
+			AggregateJUnitReport::class.java,
+			DefaultAggregateJUnitReport::class.java
+		)
+
+		val codeCoverageResultsConf =
+			project.configurations.getByName(ReportAggregationPlugin.RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
+
+		// Iterate and configure each user-specified report.
+		reporting.reports.withType<AggregateJUnitReport> {
+			reportTask.configure {
+				include("**/*.xml")
+				from(codeCoverageResultsConf.incoming.artifactView {
+					withVariantReselection()
+					componentFilter { it is ProjectComponentIdentifier }
+					attributes {
+						junitReports(objectFactory, testSuiteName)
+						attribute(
+							ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+							ArtifactTypeDefinition.DIRECTORY_TYPE
+						)
+					}
+				}.files)
+				into(project.layout.buildDirectory.dir("reports/jacoco/$name"))
+			}
+		}
+
+		// convention for synthesizing reports based on existing test suites in "this" project
+		project.plugins.withType<JvmTestSuitePlugin> {
+			val testing = project.extensions.getByType<TestingExtension>()
+			testing.suites.withType<JvmTestSuite> {
+				val suite = this
+				reporting.reports.create(
+					"${suite.name}AggregateJUnitReport",
+					AggregateJUnitReport::class.java
+				) {
+					testSuiteName.convention(suite.name)
+				}
+			}
+		}
+	}
+}

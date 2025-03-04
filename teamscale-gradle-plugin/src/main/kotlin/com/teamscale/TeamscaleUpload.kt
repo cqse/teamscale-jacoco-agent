@@ -1,17 +1,15 @@
 package com.teamscale
 
-import com.teamscale.aggregation.ReportAggregationPlugin.Companion.RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME
+import com.teamscale.aggregation.junit.JUnitReportCollectionTask
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.client.EReportFormat
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.ServerConfiguration
 import com.teamscale.reporting.compact.CompactCoverageReport
 import com.teamscale.reporting.testwise.TestwiseCoverageReport
-import com.teamscale.utils.junitReports
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Task
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
@@ -104,20 +102,13 @@ abstract class TeamscaleUpload : DefaultTask() {
 				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
 			}
 
+			is JUnitReportCollectionTask -> {
+				dependsOn(task)
+				addReport(EReportFormat.JUNIT.name, task.project.provider { task.destinationDir })
+			}
+
 			else -> throw GradleException("Unsupported task type ${task.javaClass.name}! Use addReport(format, reportFiles) instead to upload reports produced by other tasks.")
 		}
-	}
-
-	fun aggregatedJUnitReportsFrom(testSuiteName: String) {
-		val reportAggregation = project.configurations.getByName(RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
-		val junitArtifacts =
-			reportAggregation.incoming.artifactView {
-				withVariantReselection()
-				componentFilter { it is ProjectComponentIdentifier }
-				attributes.junitReports(objectFactory, testSuiteName)
-			}.files
-		mustRunAfter(junitArtifacts.buildDependencies)
-		addReport(EReportFormat.JUNIT.name, junitArtifacts)
 	}
 
 	fun addReport(format: String, reportFiles: Any) {
