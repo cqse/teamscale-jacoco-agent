@@ -240,7 +240,7 @@ open class TeamscaleClient {
 
 			service.uploadExternalReports(projectId, sessionId, reportFormat, partList).executeOrThrow()
 		}
-		service.commitSession(projectId, sessionId)
+		service.commitSession(projectId, sessionId).executeOrThrow()
 	}
 
 	/** Uploads one in-memory report to Teamscale.  */
