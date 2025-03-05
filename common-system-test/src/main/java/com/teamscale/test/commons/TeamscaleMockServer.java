@@ -104,7 +104,8 @@ public class TeamscaleMockServer {
 
 	private Object commitSession(Request request, Response response) {
 		requireAuthentication(request, response);
-		return null;
+		sessions.remove(request.params("sessionId"));
+		return "";
 	}
 
 	private Object createSession(Request request, Response response) throws JsonProcessingException {

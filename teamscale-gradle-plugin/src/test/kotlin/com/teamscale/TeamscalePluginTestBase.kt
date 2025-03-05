@@ -61,7 +61,7 @@ abstract class TeamscalePluginTestBase {
 			runnerArgs.add("--refresh-dependencies")
 			runnerArgs.add("--info")
 			if (arguments.contains("unitTest")) {
-				runnerArgs.add("--debug-jvm")
+				runnerArgs.add(arguments.indexOf("unitTest") + 1, "--debug-jvm")
 			}
 		}
 
