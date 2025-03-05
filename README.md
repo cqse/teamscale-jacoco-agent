@@ -19,7 +19,7 @@ git config --local core.hooksPath .githooks
 
 ### Build locally
 
-* Import in Eclipse/IntelliJ as Gradle project
+* Import in IntelliJ as Gradle project
 * Command line: `./gradlew assemble`
 * Local docker build: `docker build -f agent/src/docker/Dockerfile .`
 

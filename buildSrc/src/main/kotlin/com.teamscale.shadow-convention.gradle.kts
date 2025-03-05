@@ -34,7 +34,8 @@ tasks.named<ShadowJar>("shadowJar") {
 // https://github.com/GradleUp/shadow/issues/882
 tasks.withType<ShadowJar> {
 	dependsOn(tasks.jar)
-	inputs.files(project.configurations.runtimeClasspath)
+	val runtimeClasspath = project.configurations.runtimeClasspath
+	inputs.files(runtimeClasspath)
 	configurations = emptyList()
-	doFirst { configurations = listOf(project.configurations.runtimeClasspath.get()) }
+	doFirst { configurations = listOf(runtimeClasspath.get()) }
 }

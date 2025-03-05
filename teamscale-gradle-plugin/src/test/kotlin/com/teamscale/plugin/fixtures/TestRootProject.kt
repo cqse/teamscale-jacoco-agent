@@ -93,7 +93,7 @@ tasks.withType(Test).configureEach {
 		buildFile.appendText(
 			"""
 			
-task unitTest(type: com.teamscale.TestImpacted) {
+task unitTest(type: Test) {
 	useJUnitPlatform {
 		excludeTags 'integration'
 	}
@@ -112,10 +112,20 @@ task unitTest(type: com.teamscale.TestImpacted) {
 	}
 	testClassesDirs = testing.suites.test.sources.output.classesDirs
 	classpath = testing.suites.test.sources.runtimeClasspath
-	partition = 'Unit Tests'
+	teamscale {
+		collectTestwiseCoverage = true
+		runImpacted = System.getProperty("impacted") != null
+		runAllTests = System.getProperty("runAllTests") != null
+		partition = 'Unit Tests'
+	}
+	finalizedBy('unitTestReport')
 }
 
-task integrationTest(type: com.teamscale.TestImpacted) {
+tasks.register('unitTestReport', com.teamscale.reporting.testwise.TestwiseCoverageReport) {
+	executionData(tasks.unitTest)
+}
+
+task integrationTest(type: Test) {
 	useJUnitPlatform {
 		includeTags 'integration'
 	}
@@ -123,7 +133,10 @@ task integrationTest(type: com.teamscale.TestImpacted) {
 	jacoco.includes = [ 'com.example.project.*' ]
 	testClassesDirs = testing.suites.test.sources.output.classesDirs
 	classpath = testing.suites.test.sources.runtimeClasspath
-	partition = 'Integration Tests'
+	teamscale {
+		collectTestwiseCoverage = true
+		partition = 'Integration Tests'
+	}
 }
 		""".trimIndent()
 		)
@@ -132,10 +145,10 @@ task integrationTest(type: com.teamscale.TestImpacted) {
 	fun defineUploadTask() {
 		buildFile.appendText(
 			"""
-			
+
 tasks.register('unitTestReportUpload', com.teamscale.TeamscaleUpload) {
 	partition = 'Unit Tests'
-	from(tasks.unitTest)
+	from(tasks.unitTestReport)
 }
 		""".trimIndent()
 		)

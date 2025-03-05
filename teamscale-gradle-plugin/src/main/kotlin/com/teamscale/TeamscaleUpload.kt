@@ -1,14 +1,18 @@
 package com.teamscale
 
-import com.teamscale.client.CommitDescriptor
+import com.teamscale.aggregation.junit.JUnitReportCollectionTask
 import com.teamscale.client.EReportFormat
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.ServerConfiguration
+import com.teamscale.config.internal.CommitInfo
+import com.teamscale.reporting.compact.CompactCoverageReport
+import com.teamscale.reporting.testwise.TestwiseCoverageReport
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -19,31 +23,11 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.io.File
 import java.io.IOException
+import javax.inject.Inject
 
 /** Handles report uploads to Teamscale. */
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 abstract class TeamscaleUpload : DefaultTask() {
-
-	/** The Teamscale server configuration. */
-	@get:Input
-	abstract val serverConfiguration: Property<ServerConfiguration>
-
-	/** The commit/revision for which the reports should be uploaded. */
-	@get:Input
-	@get:Optional
-	abstract val commitDescriptorOrRevision: Property<Pair<CommitDescriptor?, String?>>
-
-	/**
-	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
-	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
-	 */
-	@get:Input
-	@get:Optional
-	abstract val repository: Property<String>
-
-	/** The list of reports to be uploaded. */
-	@get:Input
-	abstract val reports: MapProperty<String, ConfigurableFileCollection>
 
 	/** The partition to upload the report to. */
 	@get:Input
@@ -56,6 +40,30 @@ abstract class TeamscaleUpload : DefaultTask() {
 	@get:Input
 	abstract val ignoreFailures: Property<Boolean>
 
+	/** The Teamscale server configuration. */
+	@get:Input
+	internal abstract val serverConfiguration: Property<ServerConfiguration>
+
+	/** The commit/revision for which the reports should be uploaded. */
+	@get:Input
+	@get:Optional
+	internal abstract val commitDescriptorOrRevision: Property<CommitInfo>
+
+	/**
+	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
+	 * Null or empty will lead to a lookup in all repositories in the Teamscale project.
+	 */
+	@get:Input
+	@get:Optional
+	internal abstract val repository: Property<String>
+
+	/** The list of reports to be uploaded. */
+	@get:Input
+	internal abstract val reports: MapProperty<String, ConfigurableFileCollection>
+
+	@get:Inject
+	protected abstract val objectFactory: ObjectFactory
+
 	init {
 		group = "Teamscale"
 		description = "Uploads reports to Teamscale"
@@ -67,19 +75,9 @@ abstract class TeamscaleUpload : DefaultTask() {
 
 	fun from(task: Task) {
 		when (task) {
-			is TestImpacted -> {
-				if (task.reports.testwiseCoverage.required.get()) {
-					addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
-				} else if (task.reports.junitXml.required.get()) {
-					addReport(EReportFormat.JUNIT.name, task.reports.junitXml.outputLocation.asFileTree.matching {
-						include("**/*.xml")
-					})
-				} else {
-					error("Testwise coverage collection and JUnit report collection are not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true or reports.junitXml.required = true for the task, to be able to upload it.")
-				}
-			}
 
 			is Test -> {
+				mustRunAfter(task)
 				check(task.reports.junitXml.required.get()) { "XML report generation is not enabled for task ${task.path}! Enable it by setting reports.junitXml.required = true for the task, to be able to upload it." }
 				addReport(EReportFormat.JUNIT.name, task.reports.junitXml.outputLocation.asFileTree.matching {
 					include("**/*.xml")
@@ -87,8 +85,26 @@ abstract class TeamscaleUpload : DefaultTask() {
 			}
 
 			is JacocoReport -> {
+				dependsOn(task)
 				check(task.reports.xml.required.get()) { "XML report generation is not enabled for task ${task.path}! Enable it by setting reports.xml.required = true for the task, to be able to upload it." }
 				addReport(EReportFormat.JACOCO.name, task.reports.xml.outputLocation)
+			}
+
+			is CompactCoverageReport -> {
+				dependsOn(task)
+				check(task.reports.compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.compactCoverage.outputLocation)
+			}
+
+			is TestwiseCoverageReport -> {
+				dependsOn(task)
+				check(task.reports.testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
+			}
+
+			is JUnitReportCollectionTask -> {
+				dependsOn(task)
+				addReport(EReportFormat.JUNIT.name, task.project.provider { task.destinationDir })
 			}
 
 			else -> throw GradleException("Unsupported task type ${task.javaClass.name}! Use addReport(format, reportFiles) instead to upload reports produced by other tasks.")
@@ -118,7 +134,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 		server.validate()
 
 		try {
-			logger.info("Uploading to $server at ${commitDescriptorOrRevision.get()}...")
+			logger.info("Uploading to ${server.url.get()} at ${commitDescriptorOrRevision.get()}...")
 			server.toClient().uploadReports(reports)
 		} catch (e: Exception) {
 			if (ignoreFailures.get()) {
@@ -134,13 +150,13 @@ abstract class TeamscaleUpload : DefaultTask() {
 	private fun TeamscaleClient.uploadReports(reports: MutableMap<String, ConfigurableFileCollection>) {
 		val formatAndReports = reports.mapValues { getExistingReportFiles(it.value) }.filter {
 			if (it.value.isEmpty()) {
-				logger.info("Skipped empty upload for ${it.key} reports to partition $partition.")
+				logger.info("Skipped empty upload for ${it.key} reports to partition ${partition.get()}.")
 				false
 			} else {
 				true
 			}
 		}
-		logger.info("Uploading ${formatAndReports.values.flatten().size} report(s) to partition $partition...")
+		logger.info("Uploading ${formatAndReports.values.flatten().size} report(s) to partition ${partition.get()}...")
 
 		formatAndReports.forEach { (format, files) ->
 			files.forEach {
@@ -158,30 +174,38 @@ abstract class TeamscaleUpload : DefaultTask() {
 	) {
 		try {
 			retry(3) {
-				uploadReports(reports, commitDescriptorOrRevision.get().first, commitDescriptorOrRevision.get().second, repository.orNull, partition, message)
+				uploadReports(
+					reports,
+					commitDescriptorOrRevision.get().commit,
+					commitDescriptorOrRevision.get().revision,
+					repository.orNull,
+					partition,
+					message
+				)
 			}
 		} catch (e: IOException) {
 			throw GradleException("Upload failed (${e.message})", e)
 		}
 	}
 
-	private fun getExistingReportFiles(reports: FileCollection) =
-		reports.files.filter { it.exists() }.flatMap { fileOrDir -> fileOrDir.walkTopDown().filter { it.isFile } }.distinct()
-}
-
-/**
- * Retries the given block numOfRetries-times catching any thrown exceptions.
- * If none of the retries succeeded, the latest caught exception is rethrown.
- */
-fun <T> retry(numOfRetries: Int, block: () -> T): T {
-	var throwable: Throwable? = null
-	(1..numOfRetries).forEach { attempt ->
-		try {
-			return block()
-		} catch (e: Throwable) {
-			throwable = e
-			println("Failed attempt $attempt / $numOfRetries")
+	/**
+	 * Retries the given block numOfRetries-times catching any thrown exceptions.
+	 * If none of the retries succeeded, the latest caught exception is rethrown.
+	 */
+	private fun <T> retry(numOfRetries: Int, block: () -> T): T {
+		var throwable: Throwable? = null
+		(1..numOfRetries).forEach { attempt ->
+			try {
+				return block()
+			} catch (e: Throwable) {
+				throwable = e
+				println("Failed attempt $attempt / $numOfRetries")
+			}
 		}
+		throw throwable!!
 	}
-	throw throwable!!
+
+	private fun getExistingReportFiles(reports: FileCollection) =
+		reports.files.filter { it.exists() }.flatMap { fileOrDir -> fileOrDir.walkTopDown().filter { it.isFile } }
+			.distinct()
 }

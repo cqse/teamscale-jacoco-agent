@@ -5,7 +5,10 @@ import com.teamscale.client.TeamscaleClient
 import com.teamscale.test_impacted.engine.ImpactedTestEngineConfiguration
 import com.teamscale.test_impacted.engine.TestDataWriter
 import com.teamscale.test_impacted.engine.TestEngineRegistry
-import com.teamscale.test_impacted.engine.executor.*
+import com.teamscale.test_impacted.engine.executor.ImpactedTestsProvider
+import com.teamscale.test_impacted.engine.executor.ImpactedTestsSorter
+import com.teamscale.test_impacted.engine.executor.NOPTestSorter
+import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi
 import okhttp3.HttpUrl
 import java.io.File
@@ -63,8 +66,8 @@ class TestEngineOptions(
 	}
 
 	init {
-		require(endCommit != null || endRevision != null) { "End commit must be set via endCommit or endRevision." }
 		if (runImpacted) {
+			require(endCommit != null || endRevision != null) { "End commit must be set via endCommit or endRevision." }
 			requireNotNull(serverOptions) { "Server options must be set." }
 		}
 		requireNotNull(reportDirectory) { "Report directory must be set." }

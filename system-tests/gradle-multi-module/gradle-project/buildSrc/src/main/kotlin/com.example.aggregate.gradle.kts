@@ -1,22 +1,39 @@
 import com.teamscale.TeamscaleUpload
+import com.teamscale.aggregation.compact.AggregateCompactCoverageReport
+import com.teamscale.aggregation.junit.AggregateJUnitReport
+import com.teamscale.aggregation.testwise.AggregateTestwiseCoverageReport
 
 plugins {
-	java
-	id("com.teamscale")
+	id("com.teamscale.aggregation")
 }
 
-val testwiseCoverageReports by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    extendsFrom(configurations.getByName("implementation"))
-    attributes {
-		attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.VERIFICATION))
-		attribute(Usage.USAGE_ATTRIBUTE, objects.named("testwise-coverage"))
-    }
+reporting {
+	reports {
+		val unitTestAggregateCompactCoverageReport by creating(AggregateCompactCoverageReport::class) {
+			testSuiteName = SuiteNames.UNIT_TEST
+		}
+		val unitTestAggregateJUnitReport by creating(AggregateJUnitReport::class) {
+			testSuiteName = SuiteNames.UNIT_TEST
+		}
+		val systemTestAggregateTestwiseCoverageReport by creating(AggregateTestwiseCoverageReport::class) {
+			testSuiteName = SuiteNames.SYSTEM_TEST
+		}
+	}
 }
 
-tasks.register<TeamscaleUpload>("teamscaleReportUpload") {
+tasks.register<TeamscaleUpload>("teamscaleTestReportUpload") {
+	partition = "Default Tests"
+	from(tasks.named("testAggregateCompactCoverageReport"))
+	from(tasks.named("testAggregateJUnitReport"))
+}
+
+tasks.register<TeamscaleUpload>("teamscaleUnitTestReportUpload") {
 	partition = "Unit Tests"
-	from(tasks.named("tiaTests"))
-	addReport("TESTWISE_COVERAGE", testwiseCoverageReports.incoming.artifactView { lenient(true) }.files)
+	from(tasks.named("unitTestAggregateCompactCoverageReport"))
+	from(tasks.named("unitTestAggregateJUnitReport"))
+}
+
+tasks.register<TeamscaleUpload>("teamscaleSystemTestReportUpload") {
+	partition = "System Tests"
+	from(tasks.named("systemTestAggregateTestwiseCoverageReport"))
 }

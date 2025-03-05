@@ -31,7 +31,7 @@ public class CucumberGradleTiaSystemTest {
 
 	@Test
 	public void testImpactedCucumberTestsAreRun() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "--impacted", "teamscaleReportUpload", "--no-daemon");
+		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "teamscaleReportUpload", "--no-daemon");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Cucumber Tests"));

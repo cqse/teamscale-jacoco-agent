@@ -61,7 +61,7 @@ abstract class TeamscalePluginTestBase {
 			runnerArgs.add("--refresh-dependencies")
 			runnerArgs.add("--info")
 			if (arguments.contains("unitTest")) {
-				runnerArgs.add("--debug-jvm")
+				runnerArgs.add(arguments.indexOf("unitTest") + 1, "--debug-jvm")
 			}
 		}
 
@@ -69,7 +69,7 @@ abstract class TeamscalePluginTestBase {
 			.withProjectDir(rootProject.projectDir)
 			.withPluginClasspath()
 			.withArguments(runnerArgs)
-			.withGradleVersion("8.4")
+			.withGradleVersion(TeamscalePlugin.MINIMUM_SUPPORTED_VERSION.version)
 
 		return runner
 	}
