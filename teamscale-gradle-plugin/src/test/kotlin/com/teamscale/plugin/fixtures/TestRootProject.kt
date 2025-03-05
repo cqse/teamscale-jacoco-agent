@@ -122,7 +122,7 @@ task unitTest(type: Test) {
 }
 
 tasks.register('unitTestReport', com.teamscale.reporting.testwise.TestwiseCoverageReport) {
-	from(tasks.unitTest)
+	executionData(tasks.unitTest)
 }
 
 task integrationTest(type: Test) {

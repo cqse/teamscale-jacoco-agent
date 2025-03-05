@@ -239,6 +239,6 @@ You can create a task to build a testwise coverage report like this:
 import com.teamscale.reporting.testwise.TestwiseCoverageReport
 // ...
 tasks.register('unitTestReport', TestwiseCoverageReport) {
-	from(tasks.unitTest)
+	executionData(tasks.unitTest)
 }
 ```

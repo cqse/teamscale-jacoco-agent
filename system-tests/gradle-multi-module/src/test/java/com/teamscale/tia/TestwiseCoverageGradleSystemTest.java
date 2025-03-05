@@ -31,7 +31,7 @@ public class TestwiseCoverageGradleSystemTest {
 
 	@Test
 	public void testGradleAggregatedTestwiseCoverageUploadWithoutJVMTestSuite() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "systemTest", "teamscaleSystemTestReportUpload");
+		SystemTestUtils.runGradle("gradle-project", "clean", "teamscaleSystemTestReportUpload");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(
@@ -83,7 +83,7 @@ public class TestwiseCoverageGradleSystemTest {
 
 	@Test
 	public void testGradleAggregatedCompactCoverageUploadWithJVMTestSuite() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "test", "teamscaleTestReportUpload");
+		SystemTestUtils.runGradle("gradle-project", "clean", "teamscaleTestReportUpload");
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(3);
 		assertThat(teamscaleMockServer.uploadedReports.stream()

@@ -58,7 +58,7 @@ tasks.register<Test>("tiaTests") {
 }
 
 tasks.register<TestwiseCoverageReport>("tiaTestsReport") {
-    from(tasks.named<Test>("tiaTests"))
+    executionData(tasks.named("tiaTests"))
 }
 
 tasks.register<TeamscaleUpload>("teamscaleReportUpload") {

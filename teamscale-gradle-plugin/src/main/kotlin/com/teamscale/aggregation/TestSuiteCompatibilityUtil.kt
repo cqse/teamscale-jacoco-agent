@@ -46,7 +46,6 @@ object TestSuiteCompatibilityUtil {
 		if (testProvider.get().jacoco.isEnabled) {
 			createCoverageDataVariant(testProvider.get().project, suiteName).configure {
 				outgoing.artifact(testProvider.map { it.jacoco.destinationFile!! }) {
-					builtBy(testProvider) //TODO needed?
 					type = ArtifactTypeDefinition.BINARY_DATA_TYPE
 				}
 			}
@@ -62,7 +61,6 @@ object TestSuiteCompatibilityUtil {
 	) {
 		createTestResultsVariant(project, suiteName).configure {
 			outgoing.artifact(testProvider.map { it.reports.junitXml.outputLocation }) {
-				builtBy(testProvider) //TODO needed?
 				type = ArtifactTypeDefinition.DIRECTORY_TYPE
 			}
 		}
@@ -72,7 +70,6 @@ object TestSuiteCompatibilityUtil {
 				PartialData.PARTIAL_DATA_ATTRIBUTE,
 				testProvider.map { it.teamscale.partial.get() })
 			outgoing.artifact(testProvider.map { it.teamscale.agent.destination }) {
-				builtBy(testProvider) //TODO needed?
 				type = ArtifactTypeDefinition.DIRECTORY_TYPE
 			}
 		}
@@ -82,7 +79,7 @@ object TestSuiteCompatibilityUtil {
 		project: Project,
 		suiteName: String
 	): NamedDomainObjectProvider<ConsumableConfiguration> {
-		val variantName = "binaryCoverageDataElementsFor${suiteName.capitalizedCompat()}"
+		val variantName = "binaryCoverageDataElementsFor${suiteName.capitalized()}"
 
 		return project.configurations.consumable(variantName) {
 			description = "Binary results containing Jacoco test coverage for '$suiteName' Tests."
@@ -94,7 +91,7 @@ object TestSuiteCompatibilityUtil {
 		project: Project,
 		suiteName: String
 	): NamedDomainObjectProvider<ConsumableConfiguration> {
-		val variantName = "junitReportElementsFor${suiteName.capitalizedCompat()}"
+		val variantName = "junitReportElementsFor${suiteName.capitalized()}"
 
 		return project.configurations.consumable(variantName) {
 			description = "JUnit results obtained from running the '$suiteName' Tests."
@@ -106,7 +103,7 @@ object TestSuiteCompatibilityUtil {
 		project: Project,
 		suiteName: String
 	): NamedDomainObjectProvider<ConsumableConfiguration> {
-		val variantName = "testwiseCoverageReportElementsFor${suiteName.capitalizedCompat()}"
+		val variantName = "testwiseCoverageReportElementsFor${suiteName.capitalized()}"
 
 		return project.configurations.consumable(variantName) {
 			description = "Testwise coverage results obtained from running the '$suiteName' Tests."
@@ -115,4 +112,4 @@ object TestSuiteCompatibilityUtil {
 	}
 }
 
-fun String.capitalizedCompat() = this.replaceFirstChar { it.uppercase() }
+fun String.capitalized() = this.replaceFirstChar { it.uppercase() }

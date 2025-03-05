@@ -15,11 +15,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.reporting.Reporting
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.Test
-import org.gradle.kotlin.dsl.findByType
-import org.gradle.kotlin.dsl.named
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.util.internal.ClosureBackedAction
 import javax.inject.Inject
+
 
 /** Task which runs the impacted tests. */
 @Suppress("MemberVisibilityCanBePrivate")
@@ -54,6 +53,7 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 	 */
 	@TaskAction
 	fun generateTestwiseCoverageReports() {
+		check(classDirectories.files.isNotEmpty()) { "The classDirectories does not contain any input! Did you forget to configure sourceSets on the task?" }
 		logger.info("Generating coverage reports...")
 		TestwiseCoverageReporting(
 			logger,
@@ -63,16 +63,6 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 			executionData.files,
 			reports.testwiseCoverage.outputLocation.asFile.get()
 		).generateTestwiseCoverageReports()
-	}
-
-	fun from(test: Test) {
-		from(test.project.tasks.named<Test>(test.name))
-	}
-
-	fun from(test: TaskProvider<Test>) {
-		partial.set(test.map { it.teamscale.partial.get() })
-		executionData.from(test.map { it.teamscale.agent.destination })
-		classDirectories.from(test.map { it.classpath }) //TODO should be picked more carefully to get rid of default excludes
 	}
 
 	/**
@@ -91,11 +81,20 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 	 */
 	fun executionData(vararg tasks: Task) {
 		for (task in tasks) {
-			val extension = task.extensions.findByType<JacocoTaskExtension>()
-			if (extension != null) {
-				executionData(task.project.provider { extension.destinationFile })
-				mustRunAfter(task)
-			}
+			executionData(task)
+		}
+	}
+
+	fun executionData(test: Task) {
+		executionData(test.project.tasks.named(test.name))
+	}
+
+	fun executionData(test: TaskProvider<out Task>) {
+		if (test.get() is Test) {
+			partial.set(test.map { (it as Test).teamscale.partial.get() })
+			executionData.from(test.map { (it as Test).teamscale.agent.destination })
+			classDirectories.from(test.map { (it as Test).classpath })
+			mustRunAfter(test)
 		}
 	}
 

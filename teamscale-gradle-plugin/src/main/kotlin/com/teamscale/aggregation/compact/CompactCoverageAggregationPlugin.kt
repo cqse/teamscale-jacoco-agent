@@ -62,7 +62,7 @@ abstract class CompactCoverageAggregationPlugin : Plugin<Project> {
 			attributes {
 				attribute(
 					LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-					objectFactory.named<LibraryElements>(LibraryElements.CLASSES) //TODO include test fixtures and test classes
+					objectFactory.named<LibraryElements>(LibraryElements.CLASSES)
 				)
 			}
 		}.files
