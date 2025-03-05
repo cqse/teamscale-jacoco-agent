@@ -99,7 +99,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 			is TestwiseCoverageReport -> {
 				dependsOn(task)
 				check(task.reports.testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
-				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
+				addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
 			}
 
 			is JUnitReportCollectionTask -> {

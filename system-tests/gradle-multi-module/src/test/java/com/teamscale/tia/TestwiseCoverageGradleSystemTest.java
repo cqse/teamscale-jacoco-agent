@@ -35,7 +35,8 @@ public class TestwiseCoverageGradleSystemTest {
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(
-				report -> report.getPartition().equals("System Tests"));
+				report -> report.getPartition().equals("System Tests") && report.getFormat()
+						.equals(EReportFormat.TESTWISE_COVERAGE.name()));
 
 		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(testwiseReport.partial).isEqualTo(false);
@@ -53,7 +54,8 @@ public class TestwiseCoverageGradleSystemTest {
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
 		assertThat(teamscaleMockServer.uploadedReports).allMatch(
-				report -> report.getPartition().equals("System Tests"));
+				report -> report.getPartition().equals("System Tests") && report.getFormat()
+						.equals(EReportFormat.TESTWISE_COVERAGE.name()));
 
 		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
 		assertThat(testwiseReport.partial).isEqualTo(true);
