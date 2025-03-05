@@ -43,7 +43,7 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 
 		reports = objectFactory.newInstance(DefaultTestwiseCoverageTaskReportContainer::class.java)
 		reports.testwiseCoverage.required.convention(true)
-		reports.testwiseCoverage.outputLocation.convention(project.reporting.baseDirectory.file("testwise-coverage/${name}/testwise-coverage.json"))
+		reports.testwiseCoverage.outputLocation.convention(project.reporting.baseDirectory.file("testwise-coverage/${name}.json"))
 
 		onlyIf("Any of the execution data files exists") { executionData.files.any { it.exists() } }
 	}
@@ -90,12 +90,19 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 	}
 
 	fun executionData(test: TaskProvider<out Task>) {
-		if (test.get() is Test) {
-			partial.set(test.map { (it as Test).teamscale.partial.get() })
-			executionData.from(test.map { (it as Test).teamscale.agent.destination })
-			classDirectories.from(test.map { (it as Test).classpath })
-			mustRunAfter(test)
-		}
+		partial.set(test.map {
+			check(it is Test) { "executionData of TestwiseCoverageReport expected a Test task as input" }
+			it.teamscale.partial.get()
+		})
+		executionData.from(test.map {
+			check(it is Test) { "executionData of TestwiseCoverageReport expected a Test task as input" }
+			it.teamscale.agent.destination
+		})
+		classDirectories.from(test.map {
+			check(it is Test) { "executionData of TestwiseCoverageReport expected a Test task as input" }
+			it.classpath
+		})
+		mustRunAfter(test)
 	}
 
 	/**

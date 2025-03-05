@@ -88,7 +88,7 @@ abstract class TeamscalePlugin : Plugin<Project> {
 		}
 
 		val pluginExtension =
-			project.extensions.create(TEAMSCALE_EXTENSION_NAME, TeamscalePluginExtension::class.java)
+			project.extensions.create(TEAMSCALE_EXTENSION_NAME, TeamscalePluginExtension::class.java, project.layout)
 
 		// Add impacted tests executor to a custom configuration that will later be appended to the test classpath
 		// if testwise coverage collection is enabled

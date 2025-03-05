@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import okhttp3.MultipartBody.Companion.FORM
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
 import retrofit2.Response
 import java.io.File
 import java.io.IOException
@@ -148,7 +149,7 @@ open class TeamscaleClient {
 		val ensureProcessed = testImpactOptions.contains(ETestImpactOptions.ENSURE_PROCESSED)
 		val includeAddedTests = testImpactOptions.contains(ETestImpactOptions.INCLUDE_ADDED_TESTS)
 
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
 		return if (availableTests == null) {
 			wrapInCluster(
@@ -185,15 +186,11 @@ open class TeamscaleClient {
 			MultipartBody.Part.createFormData("report", file.name, requestBody)
 		}
 
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
-		val response = service
-			.uploadExternalReports(
-				projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
-			).execute()
-		if (!response.isSuccessful) {
-			throw IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response))
-		}
+		service.uploadExternalReports(
+			projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
+		).executeOrThrow()
 	}
 
 	/** Uploads multiple reports to Teamscale.  */
@@ -212,15 +209,11 @@ open class TeamscaleClient {
 			MultipartBody.Part.createFormData("report", file.name, requestBody)
 		}
 
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
-		val response = service
-			.uploadExternalReports(
-				projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
-			).execute()
-		if (!response.isSuccessful) {
-			throw IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response))
-		}
+		service.uploadExternalReports(
+			projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
+		).executeOrThrow()
 	}
 
 	/** Uploads multiple reports to Teamscale within one session.  */
@@ -233,13 +226,10 @@ open class TeamscaleClient {
 		partition: String,
 		message: String
 	) {
-		require (projectId != null) { "Project ID must not be null!" }
-		val sessionIdResponse =
-			service.createSession(projectId, commitDescriptor, revision, repository, true, partition, message).execute()
-		if (!sessionIdResponse.isSuccessful) {
-			throw IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(sessionIdResponse))
-		}
-		val sessionId = sessionIdResponse.body()
+		require(projectId != null) { "Project ID must not be null!" }
+		val sessionId =
+			service.createSession(projectId, commitDescriptor, revision, repository, true, partition, message)
+				.executeOrThrow()
 		require(sessionId != null) { "Session ID was null" }
 
 		for ((reportFormat, files) in reports) {
@@ -248,11 +238,7 @@ open class TeamscaleClient {
 				MultipartBody.Part.createFormData("report", file.name, requestBody)
 			}
 
-			val response = service
-				.uploadExternalReports(projectId, sessionId, reportFormat, partList).execute()
-			if (!response.isSuccessful) {
-				throw IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response))
-			}
+			service.uploadExternalReports(projectId, sessionId, reportFormat, partList).executeOrThrow()
 		}
 		service.commitSession(projectId, sessionId)
 	}
@@ -268,7 +254,7 @@ open class TeamscaleClient {
 		partition: String,
 		message: String
 	) {
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
 		service.uploadReport(
 			projectId,
@@ -304,4 +290,14 @@ open class TeamscaleClient {
 			}
 		}
 	}
+}
+
+fun <T> Call<T>.executeOrThrow(): T? {
+	val response = execute()
+	if (!response.isSuccessful) {
+		throw IOException(
+			"HTTP request " + request() + " failed: " + HttpUtils.getErrorBodyStringSafe(response)
+		)
+	}
+	return response.body()
 }

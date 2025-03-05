@@ -1,21 +1,20 @@
 package com.teamscale.config
 
 import org.eclipse.jgit.api.Git
-import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
 import java.util.logging.Logger
-import javax.inject.Inject
 
 /** Provider that tries to determine the repository revision either from the environment variables or from a checked-out Git repository. */
-abstract class GitRevisionValueSource : ValueSource<String, ValueSourceParameters.None> {
+abstract class GitRevisionValueSource : ValueSource<String, GitRevisionValueSource.Parameters> {
+	interface Parameters : ValueSourceParameters {
+		val projectDirectory: DirectoryProperty
+	}
 
 	companion object {
 		private val LOGGER = Logger.getLogger("GitRevisionValueSource")
 	}
-
-	@get:Inject
-	protected abstract val layout: ProjectLayout
 
 	override fun obtain(): String? {
 		EnvironmentVariableChecker.findCommit()?.let {
@@ -23,10 +22,10 @@ abstract class GitRevisionValueSource : ValueSource<String, ValueSourceParameter
 		}
 
 		try {
-			val git = Git.open(layout.projectDirectory.asFile)
+			val git = Git.open(parameters.projectDirectory.get().asFile)
 			return git.repository.refDatabase.findRef("HEAD").objectId.name
 		} catch (e: Exception) {
-			LOGGER.fine { "Failed to auto-detect git revision from checked out reporsitory! " + e.stackTraceToString()}
+			LOGGER.info { "Failed to auto-detect git revision from checked out repository! " + e.stackTraceToString()}
 			return null
 		}
 	}

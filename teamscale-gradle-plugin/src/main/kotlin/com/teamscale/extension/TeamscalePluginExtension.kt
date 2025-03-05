@@ -3,6 +3,7 @@ package com.teamscale.extension
 import com.teamscale.config.Commit
 import com.teamscale.config.ServerConfiguration
 import org.gradle.api.Action
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 
@@ -11,7 +12,7 @@ import org.gradle.api.provider.Property
  * Holds all user configuration for the teamscale plugin.
  */
 @Suppress("unused")
-abstract class TeamscalePluginExtension(objects: ObjectFactory) {
+abstract class TeamscalePluginExtension(objects: ObjectFactory, layout: ProjectLayout) {
 
 	val server = objects.newInstance(ServerConfiguration::class.java)
 
@@ -20,7 +21,7 @@ abstract class TeamscalePluginExtension(objects: ObjectFactory) {
 		action.execute(server)
 	}
 
-	val commit = objects.newInstance(Commit::class.java)
+	val commit = objects.newInstance(Commit::class.java, layout)
 
 	/** Configures the code commit. */
 	fun commit(action: Action<in Commit>) {

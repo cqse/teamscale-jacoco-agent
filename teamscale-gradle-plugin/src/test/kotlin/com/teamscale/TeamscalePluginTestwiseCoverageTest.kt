@@ -37,7 +37,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 		assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
 			.doesNotContain("you did not provide all relevant class files")
 		val testwiseCoverageReportFile =
-			rootProject.buildDir.resolve("reports/testwise-coverage/unitTestReport/testwise-coverage.json")
+			rootProject.buildDir.resolve("reports/testwise-coverage/unitTestReport.json")
 		assertThat(testwiseCoverageReportFile).exists()
 
 		assertFullCoverage(testwiseCoverageReportFile.readText())
@@ -62,7 +62,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 		)
 		assertThat(build.output).contains("SUCCESS (1 tests, 1 successes, 0 failures, 0 skipped)")
 		val testwiseCoverageReportFile =
-			rootProject.buildDir.resolve("reports/testwise-coverage/unitTestReport/testwise-coverage.json")
+			rootProject.buildDir.resolve("reports/testwise-coverage/unitTestReport.json")
 		assertThat(testwiseCoverageReportFile).exists()
 
 		assertPartialCoverage(testwiseCoverageReportFile.readText())
@@ -82,7 +82,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 			.doesNotContain("WARNING: JAXBContext implementation could not be found. WADL feature is disabled.")
 			.doesNotContain("WARNING: A class javax.activation.DataSource for a default provider")
 		val testwiseCoverageReportFile =
-			rootProject.buildDir.resolve("reports/testwise-coverage/unitTestReport/testwise-coverage.json")
+			rootProject.buildDir.resolve("reports/testwise-coverage/unitTestReport.json")
 		assertThat(testwiseCoverageReportFile).exists()
 
 		val source = testwiseCoverageReportFile.readText()

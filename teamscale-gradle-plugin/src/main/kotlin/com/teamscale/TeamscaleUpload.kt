@@ -1,10 +1,10 @@
 package com.teamscale
 
 import com.teamscale.aggregation.junit.JUnitReportCollectionTask
-import com.teamscale.client.CommitDescriptor
 import com.teamscale.client.EReportFormat
 import com.teamscale.client.TeamscaleClient
 import com.teamscale.config.ServerConfiguration
+import com.teamscale.config.internal.CommitInfo
 import com.teamscale.reporting.compact.CompactCoverageReport
 import com.teamscale.reporting.testwise.TestwiseCoverageReport
 import org.gradle.api.DefaultTask
@@ -47,7 +47,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 	/** The commit/revision for which the reports should be uploaded. */
 	@get:Input
 	@get:Optional
-	internal abstract val commitDescriptorOrRevision: Property<Pair<CommitDescriptor?, String?>>
+	internal abstract val commitDescriptorOrRevision: Property<CommitInfo>
 
 	/**
 	 * The repository id in your Teamscale project which Teamscale should use to look up the revision, if given.
@@ -134,7 +134,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 		server.validate()
 
 		try {
-			logger.info("Uploading to $server at ${commitDescriptorOrRevision.get()}...")
+			logger.info("Uploading to ${server.url.get()} at ${commitDescriptorOrRevision.get()}...")
 			server.toClient().uploadReports(reports)
 		} catch (e: Exception) {
 			if (ignoreFailures.get()) {
@@ -150,13 +150,13 @@ abstract class TeamscaleUpload : DefaultTask() {
 	private fun TeamscaleClient.uploadReports(reports: MutableMap<String, ConfigurableFileCollection>) {
 		val formatAndReports = reports.mapValues { getExistingReportFiles(it.value) }.filter {
 			if (it.value.isEmpty()) {
-				logger.info("Skipped empty upload for ${it.key} reports to partition $partition.")
+				logger.info("Skipped empty upload for ${it.key} reports to partition ${partition.get()}.")
 				false
 			} else {
 				true
 			}
 		}
-		logger.info("Uploading ${formatAndReports.values.flatten().size} report(s) to partition $partition...")
+		logger.info("Uploading ${formatAndReports.values.flatten().size} report(s) to partition ${partition.get()}...")
 
 		formatAndReports.forEach { (format, files) ->
 			files.forEach {
@@ -176,8 +176,8 @@ abstract class TeamscaleUpload : DefaultTask() {
 			retry(3) {
 				uploadReports(
 					reports,
-					commitDescriptorOrRevision.get().first,
-					commitDescriptorOrRevision.get().second,
+					commitDescriptorOrRevision.get().commit,
+					commitDescriptorOrRevision.get().revision,
 					repository.orNull,
 					partition,
 					message

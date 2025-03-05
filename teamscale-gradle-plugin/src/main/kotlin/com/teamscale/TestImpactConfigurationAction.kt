@@ -77,8 +77,8 @@ class TestImpactConfigurationAction(
 			writeProperty("baseline", pluginExtension.baseline.orNull)
 			writeProperty("baselineRevision", pluginExtension.baselineRevision.orNull)
 			writeProperty("partition", extension.partition.get())
-			writeProperty("endCommit", combinedCommit.get().first)
-			writeProperty("endRevision", combinedCommit.get().second)
+			writeProperty("endCommit", combinedCommit.get().commit)
+			writeProperty("endRevision", combinedCommit.get().revision)
 			writeProperty("repository", pluginExtension.repository.orNull)
 		}
 		writeProperty("reportDirectory", extension.agent.destination.asFile.get().absolutePath)
