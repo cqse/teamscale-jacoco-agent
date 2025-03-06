@@ -204,7 +204,7 @@ Additionally, can also use `addReport(format, files)` to attach other report typ
 Spotbugs reports or reports produced by other custom tasks.
 
 
-## Specifying partitions top-level
+## The Teamscale plugin extension
 The `teamscale.report` extension action was removed.
 This was previously used to specify the `partition` and `message` to use during the report upload for all tasks of a project.
 The `partition` and `message` are now specified via the `TeamscaleUpload` task, see above.
@@ -228,6 +228,10 @@ tasks.withType(Test) {
 }
 ```
 This needs to be specified only for test tasks that are configured to run impacted tests, as it needs to request impacted tests from Teamscale before the tests are executed.
+
+The following properties have been refactored:
+- `teamscale.baseline` -> `teamscale.baseline.timestamp`
+- `teamscale.baselineRevision` -> `teamscale.baseline.revision`
 
 ## `TestwiseCoverageReportTask`
 `TestwiseCoverageReportTask` was renamed to `TestwiseCoverageReport` and is also no longer automatically created for each `TestImpacted` task.

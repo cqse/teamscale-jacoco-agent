@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 
 /**
- * Plugin that supports aggregating Testwise Coverage binary-data and JUnit reports across projects.
+ * Plugin that supports aggregating Testwise Coverage binary-data, JaCoCo binary data and JUnit reports across projects.
  *
  * It defines a consumable configuration (reportAggregation),
  * that is used to collect all projects to aggregate reports from and a resolvable configuration
@@ -37,14 +37,14 @@ abstract class ReportAggregationPlugin : Plugin<Project> {
 		val configurations = project.configurations
 		val reportAggregation =
 			configurations.dependencyScope(REPORT_AGGREGATION_CONFIGURATION_NAME) {
-				description = "A configuration to collect testwise coverage and junit reports across projects."
+				description = "A configuration to collect reports across projects."
 				isVisible = false
 			}.get()
 
 		val aggregateReportResults = configurations.resolvable(RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME) {
 			extendsFrom(reportAggregation)
 			description =
-				"Resolvable configuration used to gather files for testwise coverage and junit report aggregation via ArtifactViews, not intended to be used directly"
+				"Resolvable configuration used to gather files for report aggregation via ArtifactViews, not intended to be used directly"
 			isVisible = false
 		}.get()
 

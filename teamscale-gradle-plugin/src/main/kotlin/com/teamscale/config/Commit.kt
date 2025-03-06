@@ -13,7 +13,7 @@ import org.gradle.kotlin.dsl.property
 import java.io.Serializable
 import javax.inject.Inject
 
-/** The commit object which holds the end commit for which we do Test Impact Analysis. */
+/** The commit object which holds the commit for which we do Test Impact Analysis and upload reports to. */
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Commit @Inject constructor(
 	objects: ObjectFactory,
@@ -54,8 +54,7 @@ abstract class Commit @Inject constructor(
 		})
 
 	/**
-	 * Checks that a branch name and timestamp are set or can be retrieved from the projects git and
-	 * stores them for later use.
+	 * Provides a combined provider that resolves to the branch and timestamp if given or to the revision otherwise.
 	 */
 	internal val combined: Provider<CommitInfo> by lazy {
 		val commitProvider: Provider<CommitInfo> =

@@ -65,6 +65,7 @@ class TestImpactConfigurationAction(
 	private fun Test.setImpactedTestEngineOptions() {
 		if (extension.runImpacted.get()) {
 			val combinedCommit = pluginExtension.commit.combined
+			val combinedBaseline = pluginExtension.baseline.combined
 			check(combinedCommit.isPresent) { "When executing only impacted tests a reference commit must be specified in the form of endRevision or endCommit!" }
 			check(
 				extension.partition.isPresent && extension.partition.get().isNotBlank()
@@ -74,8 +75,8 @@ class TestImpactConfigurationAction(
 			writeProperty("server.project", pluginExtension.server.project.get())
 			writeProperty("server.userName", pluginExtension.server.userName.get())
 			writeProperty("server.userAccessToken", pluginExtension.server.userAccessToken.get())
-			writeProperty("baseline", pluginExtension.baseline.orNull)
-			writeProperty("baselineRevision", pluginExtension.baselineRevision.orNull)
+			writeProperty("baseline", combinedBaseline.orNull?.timestamp)
+			writeProperty("baselineRevision", combinedBaseline.orNull?.revision)
 			writeProperty("partition", extension.partition.get())
 			writeProperty("endCommit", combinedCommit.get().commit)
 			writeProperty("endRevision", combinedCommit.get().revision)

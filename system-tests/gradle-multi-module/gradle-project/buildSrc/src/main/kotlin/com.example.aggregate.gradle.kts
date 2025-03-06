@@ -9,13 +9,13 @@ plugins {
 
 reporting {
 	reports {
-		val unitTestAggregateCompactCoverageReport by creating(AggregateCompactCoverageReport::class) {
+		register<AggregateCompactCoverageReport>("unitTestAggregateCompactCoverageReport") {
 			testSuiteName = SuiteNames.UNIT_TEST
 		}
-		val unitTestAggregateJUnitReport by creating(AggregateJUnitReport::class) {
+		register<AggregateJUnitReport>("unitTestAggregateJUnitReport") {
 			testSuiteName = SuiteNames.UNIT_TEST
 		}
-		val systemTestAggregateTestwiseCoverageReport by creating(AggregateTestwiseCoverageReport::class) {
+		register<AggregateTestwiseCoverageReport>("systemTestAggregateTestwiseCoverageReport") {
 			testSuiteName = SuiteNames.SYSTEM_TEST
 		}
 	}

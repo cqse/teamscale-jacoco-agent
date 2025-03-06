@@ -1,6 +1,5 @@
 package com.teamscale.aggregation.testwise
 
-import com.teamscale.TeamscalePlugin
 import com.teamscale.aggregation.ReportAggregationPlugin
 import com.teamscale.aggregation.testwise.internal.DefaultAggregateTestwiseCoverageReport
 import com.teamscale.utils.PartialData
@@ -32,8 +31,6 @@ abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
 
 	/** Applies the teamscale plugin against the given project.  */
 	override fun apply(project: Project) {
-		project.plugins.apply(TeamscalePlugin::class.java)
-
 		val reporting = project.reporting
 		reporting.reports.registerBinding(
 			AggregateTestwiseCoverageReport::class.java,
@@ -52,7 +49,6 @@ abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
 				)
 			}
 		}.files
-
 
 		// Iterate and configure each user-specified report.
 		reporting.reports.withType<AggregateTestwiseCoverageReport> {

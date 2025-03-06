@@ -37,6 +37,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 	@get:Input
 	abstract val message: Property<String>
 
+	/** Whether the task should fail when the upload failed (default false). */
 	@get:Input
 	abstract val ignoreFailures: Property<Boolean>
 

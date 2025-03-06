@@ -1,5 +1,6 @@
 package com.teamscale.extension
 
+import com.teamscale.config.Baseline
 import com.teamscale.config.Commit
 import com.teamscale.config.ServerConfiguration
 import org.gradle.api.Action
@@ -21,9 +22,10 @@ abstract class TeamscalePluginExtension(objects: ObjectFactory, layout: ProjectL
 		action.execute(server)
 	}
 
+	/** Configures the code commit. */
 	val commit = objects.newInstance(Commit::class.java, layout)
 
-	/** Configures the code commit. */
+	/** @see #commit */
 	fun commit(action: Action<in Commit>) {
 		action.execute(commit)
 	}
@@ -31,15 +33,17 @@ abstract class TeamscalePluginExtension(objects: ObjectFactory, layout: ProjectL
 	/**
 	 * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
 	 */
-	abstract val baseline: Property<Long>
+	val baseline = objects.newInstance(Baseline::class.java)
+
+	/** @see #baseline */
+	fun baseline(action: Action<in Baseline>) {
+		action.execute(baseline)
+	}
 
 	/**
-	 * Impacted tests are calculated from baseline to endCommit.
-	 * The baselineRevision sets the baseline with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
+	 * Configures the repository in which the baseline#revision and commit#revision should be resolved in Teamscale
+	 * (esp. if there's more than one repo in the Teamscale project).
 	 */
-	abstract val baselineRevision: Property<String>
-
-	/** Configures the repository in which the baseline should be resolved in Teamscale (esp. if there's more than one repo in the Teamscale project). */
 	abstract val repository: Property<String>
 
 }
