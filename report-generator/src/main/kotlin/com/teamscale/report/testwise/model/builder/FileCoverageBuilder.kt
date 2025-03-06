@@ -1,9 +1,9 @@
 package com.teamscale.report.testwise.model.builder
 
 import com.teamscale.report.testwise.model.FileCoverage
-import com.teamscale.report.testwise.model.LineRange
 import com.teamscale.report.util.CompactLines
 import com.teamscale.report.util.CompactLines.Companion.compactLinesOf
+import com.teamscale.report.util.LineRange
 
 /** Holds coverage of a single file.  */
 class FileCoverageBuilder(
@@ -42,7 +42,7 @@ class FileCoverageBuilder(
 		compactifyToRanges(coveredLines).joinToString(",")
 
 	/** Returns true if there is no coverage for the file yet.  */
-	val isEmpty: Boolean get() = coveredLines.isEmpty()
+	val isEmpty: Boolean get() = coveredLines.isEmpty
 
 	/** Builds the [FileCoverage] object, which is serialized into the report.  */
 	fun build(): FileCoverage = FileCoverage(fileName, computeCompactifiedRangesAsString())

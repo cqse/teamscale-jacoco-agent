@@ -2,36 +2,36 @@ package com.teamscale.config
 
 import com.teamscale.client.TeamscaleClient
 import org.gradle.api.GradleException
+import org.gradle.api.provider.Property
 import java.io.Serializable
 
-data class ServerConfiguration(
+abstract class ServerConfiguration : Serializable {
 	/** The url of the Teamscale server. */
-	var url: String? = null,
+	abstract val url: Property<String>
+
 	/** The project id for which artifacts should be uploaded. */
-	var project: String? = null,
-	/** The username of the Teamscale user.   */
-	var userName: String? = null,
-	/** The access token of the user.   */
-	var userAccessToken: String? = null
-) : Serializable {
-    fun validate() {
-        if (url.isNullOrBlank()) {
-            throw GradleException("Teamscale server url must not be empty!")
-        }
-        if (project.isNullOrBlank()) {
-            throw GradleException("Teamscale project name must not be empty!")
-        }
-        if (userName.isNullOrBlank()) {
-            throw GradleException("Teamscale user name must not be empty!")
-        }
-        if (userAccessToken.isNullOrBlank()) {
-            throw GradleException("Teamscale user access token must not be empty!")
-        }
-    }
-	fun toClient() = TeamscaleClient(
-		url,
-		userName ?: throw GradleException("Teamscale user name must not be null!"),
-		userAccessToken ?: throw GradleException("Teamscale user access token must not be null!"),
-		project ?: throw GradleException("Teamscale project name must not be null!")
-	)
+	abstract val project: Property<String>
+
+	/** The username of the Teamscale user. */
+	abstract val userName: Property<String>
+
+	/** The access token of the user. */
+	abstract val userAccessToken: Property<String>
+
+	fun validate() {
+		if (url.get().isBlank()) {
+			throw GradleException("Teamscale server url must not be empty!")
+		}
+		if (project.get().isBlank()) {
+			throw GradleException("Teamscale project name must not be empty!")
+		}
+		if (userName.get().isBlank()) {
+			throw GradleException("Teamscale user name must not be empty!")
+		}
+		if (userAccessToken.get().isBlank()) {
+			throw GradleException("Teamscale user access token must not be empty!")
+		}
+	}
+
+	fun toClient() = TeamscaleClient(url.get(), userName.get(), userAccessToken.get(), project.get())
 }
