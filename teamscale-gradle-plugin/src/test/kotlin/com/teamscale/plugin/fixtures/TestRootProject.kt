@@ -2,12 +2,18 @@ package com.teamscale.plugin.fixtures
 
 import java.io.File
 
+/** The root of the test project. */
 class TestRootProject(projectDir: File) : TestProject(projectDir) {
 
+	/** The settings file in the project. */
+	val settingsFile = file("settings.gradle")
+
+	/** Copies over some code files into the project. */
 	fun withSingleProject() {
 		File("test-project").copyRecursively(projectDir)
 	}
 
+	/** Creates a subproject within the project and registers it in the #settingsFile. */
 	fun subproject(projectName: String, configureProject: TestProject.() -> Unit): TestProject {
 		if (!settingsFile.readText().contains(projectName)) {
 			settingsFile.appendText(
@@ -21,17 +27,19 @@ class TestRootProject(projectDir: File) : TestProject(projectDir) {
 		return sub
 	}
 
+	/** Creates a subproject within the project and registers it in the #settingsFile. */
 	fun subproject(projectName: String): TestProject {
 		return TestProject(dir(projectName))
 	}
 
+	/** Initializes the project with some defaults that we use across all tests. */
 	fun defaultProjectSetup() {
 		withDependencyResolutionManagement()
 		withTeamscalePlugin()
 		withJunitDependencies()
 	}
 
-	fun withDependencyResolutionManagement() {
+	private fun withDependencyResolutionManagement() {
 		settingsFile.writeText(
 			"""
 	dependencyResolutionManagement {
@@ -44,6 +52,7 @@ class TestRootProject(projectDir: File) : TestProject(projectDir) {
 		)
 	}
 
+	/** Adds the teamscale server configuration. */
 	fun withServerConfig(
 		user: String = TeamscaleConstants.USER,
 		accessToken: String = TeamscaleConstants.ACCESS_TOKEN,
@@ -64,6 +73,7 @@ teamscale {
 		)
 	}
 
+	/** Specifies a branch and timestamp as commit. */
 	fun withBranchAndTimestamp() {
 		buildFile.appendText(
 			"""
@@ -78,6 +88,7 @@ teamscale {
 		)
 	}
 
+	/** Excludes some tests that are failing (on purpose) */
 	fun excludeFailingTests() {
 		buildFile.appendText(
 			"""
@@ -89,11 +100,12 @@ tasks.withType(Test).configureEach {
 		)
 	}
 
-	fun defineLegacyTestTasks(jacocoIncludes: String = "com.example.project.*") {
+	/** Sets up two test tasks and a corresponding report task. */
+	fun defineTestTasks(jacocoIncludes: String = "com.example.project.*") {
 		buildFile.appendText(
 			"""
 			
-task unitTest(type: Test) {
+tasks.register('unitTest', Test) {
 	useJUnitPlatform {
 		excludeTags 'integration'
 	}
@@ -125,7 +137,7 @@ tasks.register('unitTestReport', com.teamscale.reporting.testwise.TestwiseCovera
 	executionData(tasks.unitTest)
 }
 
-task integrationTest(type: Test) {
+tasks.register('integrationTest', Test) {
 	useJUnitPlatform {
 		includeTags 'integration'
 	}
@@ -142,6 +154,7 @@ task integrationTest(type: Test) {
 		)
 	}
 
+	/** Defines an upload task. */
 	fun defineUploadTask() {
 		buildFile.appendText(
 			"""

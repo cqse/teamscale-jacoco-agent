@@ -10,6 +10,6 @@ import org.gradle.testing.base.TestingExtension
 val Project.reporting
 	get() = this.extensions.getByType<ReportingExtension>()
 
-/** This is provided by the [TestSuiteBasePlugin]. */
+/** This is provided by the [org.gradle.testing.base.plugins.TestSuiteBasePlugin]. */
 val Project.testing
 	get() = this.extensions.getByType<TestingExtension>()

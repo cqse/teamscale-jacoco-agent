@@ -30,6 +30,7 @@ abstract class JaCoCoBasedReportGenerator<Visitor : ICoverageVisitor>(
 	private val duplicateClassFileBehavior: EDuplicateClassFileBehavior,
 	private val ignoreUncoveredClasses: Boolean,
 	private val logger: ILogger,
+	/** The coverage visitor which will be called with all the data found in the exec files. */
 	protected val coverageVisitor: Visitor,
 ) {
 
@@ -49,6 +50,7 @@ abstract class JaCoCoBasedReportGenerator<Visitor : ICoverageVisitor>(
 		return coverageFile
 	}
 
+	/** Merges and converts multiple exec files into one testwise coverage report. */
 	@Throws(IOException::class, EmptyReportException::class)
 	fun convertExecFilesToReport(execFiles: Collection<File>, outputFilePath: File) {
 		val loader = ExecFileLoader()
@@ -80,7 +82,7 @@ abstract class JaCoCoBasedReportGenerator<Visitor : ICoverageVisitor>(
 		}
 	}
 
-	inner class EnhancedCoverageVisitor : ICoverageVisitor {
+	private inner class EnhancedCoverageVisitor : ICoverageVisitor {
 
 		private val classIdByClassName: MutableMap<String, Long> = mutableMapOf()
 

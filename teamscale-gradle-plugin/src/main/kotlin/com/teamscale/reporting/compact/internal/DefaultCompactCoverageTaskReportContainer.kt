@@ -9,6 +9,9 @@ import org.gradle.api.reporting.SingleFileReport
 import org.gradle.api.tasks.Internal
 import javax.inject.Inject
 
+/**
+ * Implementation of CompactCoverageTaskReportContainer.
+ */
 open class DefaultCompactCoverageTaskReportContainer @Inject constructor(objectFactory: ObjectFactory) :
 	Reports<Report>(objectFactory, Report::class.java),
 	CompactCoverageTaskReportContainer {

@@ -2,12 +2,19 @@ package com.teamscale.plugin.fixtures
 
 import java.io.File
 
-open class TestProject(val projectDir: File) {
+/** Builder for a test project. */
+open class TestProject(
+	/** The project directory. */
+	val projectDir: File
+) {
 
-	val settingsFile = file("settings.gradle")
+	/** The build output directory. */
 	val buildDir = file("build")
+
+	/** The build gradle file. */
 	val buildFile = file("build.gradle")
 
+	/** Constructs a directory within the project. */
 	fun dir(path: String): File {
 		val dir = if (path.startsWith("/")) {
 			File(path)
@@ -18,6 +25,7 @@ open class TestProject(val projectDir: File) {
 		return dir
 	}
 
+	/** Constructs a file path within the project */
 	fun file(path: String): File {
 		return if (path.contains("/")) {
 			val parentPath = path.substringBeforeLast("/")
@@ -30,7 +38,7 @@ open class TestProject(val projectDir: File) {
 		}
 	}
 
-
+	/** Applies the given base plugin and the teamscale plugin with a basic commit info. */
 	fun withTeamscalePlugin(basePlugin: String = "java") {
 		buildFile.appendText(
 			"""
@@ -49,6 +57,7 @@ teamscale {
 		)
 	}
 
+	/** Adds the Junit 4 and 5 dependencies. */
 	fun withJunitDependencies() {
 		buildFile.appendText(
 			"""

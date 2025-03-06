@@ -57,11 +57,13 @@ abstract class TeamscaleTaskExtension @Inject constructor(
 	/** The partition in Teamscale that will be used to look up impacted tests. */
 	abstract val partition: Property<String>
 
+	/**
+	 * Provider lazily determining whether the test will only run the tests partially
+	 * according to the #runImpacted and #runAllTests options.
+	 */
 	internal val partial: Provider<Boolean>
-		get() = providerFactory.zip(
-			runImpacted,
-			runAllTests
-		) { runImpacted, runAllTests -> runImpacted && !runAllTests }
+		get() = providerFactory.zip(runImpacted, runAllTests)
+		{ runImpacted, runAllTests -> runImpacted && !runAllTests }
 }
 
 

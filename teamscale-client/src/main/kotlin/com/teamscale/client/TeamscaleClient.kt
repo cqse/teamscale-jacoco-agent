@@ -292,12 +292,15 @@ open class TeamscaleClient {
 	}
 }
 
+/**
+ * Executes the service call and throws if a non 2xx status code is returned,
+ * including the URL of the failing request in the error message.
+ */
+@Throws(IOException::class)
 fun <T> Call<T>.executeOrThrow(): T? {
 	val response = execute()
 	if (!response.isSuccessful) {
-		throw IOException(
-			"HTTP request " + request() + " failed: " + HttpUtils.getErrorBodyStringSafe(response)
-		)
+		throw IOException("HTTP request " + request() + " failed: " + HttpUtils.getErrorBodyStringSafe(response))
 	}
 	return response.body()
 }

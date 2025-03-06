@@ -5,6 +5,9 @@ import org.gradle.api.reporting.ReportContainer
 import org.gradle.api.reporting.SingleFileReport
 import org.gradle.api.tasks.Internal
 
+/**
+ * The reports produced by the [TestwiseCoverageReport] task.
+ */
 interface TestwiseCoverageTaskReportContainer : ReportContainer<Report> {
 
 	/**

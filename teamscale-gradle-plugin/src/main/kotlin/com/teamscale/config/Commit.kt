@@ -16,7 +16,7 @@ import javax.inject.Inject
 /** The commit object which holds the commit for which we do Test Impact Analysis and upload reports to. */
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Commit @Inject constructor(
-	objects: ObjectFactory,
+	objectFactory: ObjectFactory,
 	private val providers: ProviderFactory,
 	layout: ProjectLayout
 ) : Serializable {
@@ -47,7 +47,7 @@ abstract class Commit @Inject constructor(
 	 * It falls back to retrieving the values from the git repository, if not given manually.
 	 */
 	val revision: Property<String> =
-		objects.property<String>().convention(providers.of(GitRevisionValueSource::class.java) {
+		objectFactory.property<String>().convention(providers.of(GitRevisionValueSource::class.java) {
 			parameters {
 				projectDirectory.set(layout.projectDirectory)
 			}

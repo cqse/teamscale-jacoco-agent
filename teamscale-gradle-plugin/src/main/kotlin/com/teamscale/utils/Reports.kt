@@ -17,8 +17,8 @@ import java.util.*
  *
  * @param <T> Type of report
  */
-open class Reports<T : Report>(objects: ObjectFactory, clazz: Class<T>) : ReportContainer<T> {
-	private val reports = objects.namedDomainObjectSet(clazz)
+open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : ReportContainer<T> {
+	private val reports = objectFactory.namedDomainObjectSet(clazz)
 	private val enabled = reports.matching { report: T -> report.required.get() }
 
 	override fun getEnabled(): NamedDomainObjectSet<T?> {

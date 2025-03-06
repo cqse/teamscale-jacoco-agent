@@ -3,7 +3,6 @@ package com.teamscale.report.util
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import com.teamscale.report.testwise.model.LineRange
 import java.io.IOException
 import java.util.stream.Collectors
 

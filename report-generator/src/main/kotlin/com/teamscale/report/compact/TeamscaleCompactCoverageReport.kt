@@ -15,8 +15,10 @@ import java.io.OutputStream
  * Teamscale Compact Coverage report on a per-file based granularity to reduce the amount of data
  * sent to and processed by Teamscale.
  *
- * @param version Version number for the Teamscale Compact Coverage report. Default is version 1.
- * @param coverage Coverage information on an aggregated per-file granularity.
+ * See [Teamscale Compact Coverage Documentation](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/).
+ *
+ * @property version Version number for the Teamscale Compact Coverage report. Default is version 1.
+ * @property coverage Coverage information on an aggregated per-file granularity.
  */
 data class TeamscaleCompactCoverageReport @JsonCreator constructor(
 	@JsonProperty("version") val version: Int,
@@ -34,17 +36,26 @@ data class TeamscaleCompactCoverageReport @JsonCreator constructor(
 	 * strings possibly including ranges (denoted by '-').
 	 */
 	data class CompactCoverageFileInfo @JsonCreator constructor(
-		@JsonProperty("filePath") val filePath: String,
+		/** The file path of the covered file. */
+		@JsonProperty("filePath")
+		val filePath: String,
+
+		/** All fully covered lines */
 		@JsonProperty("fullyCoveredLines")
 		@JsonSerialize(using = LineRangeSerializer::class)
 		@JsonDeserialize(using = LineRangeDeserializer::class)
 		val fullyCoveredLines: CompactLines = CompactLines(),
 
+		/** All partially covered lines */
 		@JsonProperty("partiallyCoveredLines")
 		@JsonSerialize(using = LineRangeSerializer::class)
 		@JsonDeserialize(using = LineRangeDeserializer::class)
 		val partiallyCoveredLines: CompactLines? = CompactLines(),
 
+		/**
+		 * All uncovered lines covered lines. This is not used anywhere in here,
+		 * but was added for completeness with the spec.
+		 */
 		@JsonProperty("uncoveredLines")
 		@JsonSerialize(using = LineRangeSerializer::class)
 		@JsonDeserialize(using = LineRangeDeserializer::class)

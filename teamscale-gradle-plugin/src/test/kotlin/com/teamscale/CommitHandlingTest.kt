@@ -11,7 +11,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 		rootProject.withSingleProject()
 		rootProject.defaultProjectSetup()
 		rootProject.withServerConfig()
-		rootProject.defineLegacyTestTasks()
+		rootProject.defineTestTasks()
 		rootProject.defineUploadTask()
 	}
 

@@ -1,57 +1,41 @@
 package com.teamscale.reporting.testwise
 
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.reporting.JaCoCoBasedReportTaskBase
 import com.teamscale.reporting.testwise.internal.DefaultTestwiseCoverageTaskReportContainer
 import com.teamscale.reporting.testwise.internal.TestwiseCoverageReporting
 import com.teamscale.utils.reporting
 import com.teamscale.utils.teamscale
-import groovy.lang.Closure
-import org.gradle.api.Action
-import org.gradle.api.DefaultTask
 import org.gradle.api.Task
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.reporting.Reporting
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
-import org.gradle.util.internal.ClosureBackedAction
-import javax.inject.Inject
-
 
 /** Task which runs the impacted tests. */
-@Suppress("MemberVisibilityCanBePrivate")
-abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectFactory) : DefaultTask(),
-	Reporting<TestwiseCoverageTaskReportContainer> {
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+abstract class TestwiseCoverageReport : JaCoCoBasedReportTaskBase<TestwiseCoverageTaskReportContainer>() {
 
+	/** Whether the report contains only partial data (i.e., not all tests have been executed). */
 	@get:Input
 	abstract val partial: Property<Boolean>
 
-	@get:PathSensitive(PathSensitivity.NONE)
-	@get:InputFiles
-	abstract val executionData: ConfigurableFileCollection
-
-	@get:Classpath
-	abstract val classDirectories: ConfigurableFileCollection
-
-	private val reports: TestwiseCoverageTaskReportContainer
+	override val reportContainer: TestwiseCoverageTaskReportContainer =
+		objectFactory.newInstance(DefaultTestwiseCoverageTaskReportContainer::class.java)
 
 	init {
-		group = "Teamscale"
 		description = "Generates a testwise coverage report"
 
-		reports = objectFactory.newInstance(DefaultTestwiseCoverageTaskReportContainer::class.java)
-		reports.testwiseCoverage.required.convention(true)
-		reports.testwiseCoverage.outputLocation.convention(project.reporting.baseDirectory.file("testwise-coverage/${name}.json"))
-
-		onlyIf("Any of the execution data files exists") { executionData.files.any { it.exists() } }
+		reportContainer.testwiseCoverage.required.convention(true)
+		reportContainer.testwiseCoverage.outputLocation.convention(project.reporting.baseDirectory.file("testwise-coverage/${name}.json"))
 	}
 
 	/**
 	 * Generates a testwise coverage from the execution data and merges it with eventually existing closure coverage.
 	 */
 	@TaskAction
-	fun generateTestwiseCoverageReports() {
+	override fun generateReport() {
 		check(classDirectories.files.isNotEmpty()) { "The classDirectories does not contain any input! Did you forget to configure sourceSets on the task?" }
 		logger.info("Generating coverage reports...")
 		TestwiseCoverageReporting(
@@ -60,17 +44,8 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 			classDirectories.files,
 			ClasspathWildcardIncludeFilter(null, null),
 			executionData.files,
-			reports.testwiseCoverage.outputLocation.asFile.get()
+			reportContainer.testwiseCoverage.outputLocation.asFile.get()
 		).generateTestwiseCoverageReports()
-	}
-
-	/**
-	 * Adds execution data files to be used during coverage analysis.
-	 *
-	 * @param files one or more files to add
-	 */
-	fun executionData(vararg files: Any) {
-		executionData.from(*files)
 	}
 
 	/**
@@ -109,48 +84,5 @@ abstract class TestwiseCoverageReport @Inject constructor(objectFactory: ObjectF
 			it.classpath
 		})
 		mustRunAfter(test)
-	}
-
-	/**
-	 * Adds a source set to the list to be reported on. The output of this source set will be used as classes to include in the report. The source for this source set will be used for any classes
-	 * included in the report.
-	 *
-	 * @param sourceSets one or more source sets to report on
-	 */
-	fun sourceSets(vararg sourceSets: SourceSet) {
-		for (sourceSet in sourceSets) {
-			classDirectories.from(sourceSet.output)
-		}
-	}
-
-	/**
-	 * The reports that this task potentially produces.
-	 *
-	 * @return The reports that this task potentially produces
-	 */
-	@Nested
-	override fun getReports(): TestwiseCoverageTaskReportContainer {
-		return reports
-	}
-
-	/**
-	 * Configures the reports that this task potentially produces.
-	 *
-	 * @param closure The configuration
-	 * @return The reports that this task potentially produces
-	 */
-	override fun reports(closure: Closure<*>): TestwiseCoverageTaskReportContainer {
-		return reports(ClosureBackedAction(closure))
-	}
-
-	/**
-	 * Configures the reports that this task potentially produces.
-	 *
-	 * @param configureAction The configuration
-	 * @return The reports that this task potentially produces
-	 */
-	override fun reports(configureAction: Action<in TestwiseCoverageTaskReportContainer>): TestwiseCoverageTaskReportContainer {
-		configureAction.execute(reports)
-		return reports
 	}
 }

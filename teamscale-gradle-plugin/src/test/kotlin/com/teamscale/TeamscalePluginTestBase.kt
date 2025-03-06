@@ -17,6 +17,7 @@ import java.lang.management.ManagementFactory
  */
 abstract class TeamscalePluginTestBase {
 
+	/** Teamscale mock server to be used during the tests. */
 	protected lateinit var teamscaleMockServer: TeamscaleMockServer
 
 	@BeforeEach
@@ -40,10 +41,12 @@ abstract class TeamscalePluginTestBase {
 		rootProject = TestRootProject(tempDir)
 	}
 
+	/** Runs Gradle with the given arguments and fails if the execution was not successful. */
 	protected fun run(vararg arguments: String): BuildResult {
 		return buildRunner(*arguments).build()
 	}
 
+	/** Runs Gradle with the given arguments and assumes that the build will fail with an error. */
 	protected fun runExpectingError(vararg arguments: String): BuildResult {
 		return buildRunner(*arguments).buildAndFail()
 	}

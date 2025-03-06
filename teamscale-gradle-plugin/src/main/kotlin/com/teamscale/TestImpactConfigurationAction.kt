@@ -14,7 +14,7 @@ class TestImpactConfigurationAction(
 ) : Action<Task> {
 
 	companion object {
-		const val IMPACTED_TEST_ENGINE = "teamscale-test-impacted"
+		private const val IMPACTED_TEST_ENGINE_ID = "teamscale-test-impacted"
 	}
 
 	override fun execute(test: Task) {
@@ -48,9 +48,9 @@ class TestImpactConfigurationAction(
 			setImpactedTestEngineOptions()
 			writeProperty("includedEngines", testFrameworkOptions.includeEngines.joinToString(","))
 			writeProperty("excludedEngines", testFrameworkOptions.excludeEngines.joinToString(","))
-			testFrameworkOptions.includeEngines = setOf(IMPACTED_TEST_ENGINE)
+			testFrameworkOptions.includeEngines = setOf(IMPACTED_TEST_ENGINE_ID)
 		} else {
-			testFrameworkOptions.excludeEngines.add(IMPACTED_TEST_ENGINE)
+			testFrameworkOptions.excludeEngines.add(IMPACTED_TEST_ENGINE_ID)
 		}
 	}
 

@@ -10,6 +10,10 @@ import org.gradle.util.internal.ConfigureUtil
 import java.io.File
 import javax.inject.Inject
 
+/**
+ * Reimplementation of [org.gradle.api.reporting.internal.SimpleReport] so that we don't have
+ * to rely on Gradle internal classes, which might change any time (and often do).
+ */
 abstract class SimpleReport(
 	private val name: String,
 	private val outputType: Report.OutputType
@@ -42,5 +46,9 @@ abstract class SimpleReport(
 	}
 }
 
+/**
+ * Single report of the type file.
+ * Reimplementation of [org.gradle.api.reporting.internal.DefaultSingleFileReport].
+ */
 abstract class DefaultSingleFileReport @Inject constructor(name: String) :
 	SimpleReport(name, Report.OutputType.FILE), SingleFileReport

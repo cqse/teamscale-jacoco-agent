@@ -1,4 +1,4 @@
-package com.teamscale.report.testwise.model
+package com.teamscale.report.util
 
 /** Holds a line range with start and end (both inclusive and 1-based).  */
 data class LineRange(

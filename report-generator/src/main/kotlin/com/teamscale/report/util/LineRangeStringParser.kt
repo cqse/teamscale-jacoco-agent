@@ -1,6 +1,5 @@
 package com.teamscale.report.util
 
-import com.teamscale.report.testwise.model.LineRange
 import org.conqat.lib.commons.assertion.CCSMAssert
 
 /**

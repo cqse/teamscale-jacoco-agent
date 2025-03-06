@@ -13,9 +13,9 @@ import org.gradle.api.provider.Property
  * Holds all user configuration for the teamscale plugin.
  */
 @Suppress("unused")
-abstract class TeamscalePluginExtension(objects: ObjectFactory, layout: ProjectLayout) {
+abstract class TeamscalePluginExtension(objectFactory: ObjectFactory, layout: ProjectLayout) {
 
-	val server = objects.newInstance(ServerConfiguration::class.java)
+	val server = objectFactory.newInstance(ServerConfiguration::class.java)
 
 	/** Configures the Teamscale server. */
 	fun server(action: Action<in ServerConfiguration>) {
@@ -23,7 +23,7 @@ abstract class TeamscalePluginExtension(objects: ObjectFactory, layout: ProjectL
 	}
 
 	/** Configures the code commit. */
-	val commit = objects.newInstance(Commit::class.java, layout)
+	val commit = objectFactory.newInstance(Commit::class.java, layout)
 
 	/** @see #commit */
 	fun commit(action: Action<in Commit>) {
@@ -33,7 +33,7 @@ abstract class TeamscalePluginExtension(objects: ObjectFactory, layout: ProjectL
 	/**
 	 * Impacted tests are calculated from baseline to endCommit. This sets the baseline.
 	 */
-	val baseline = objects.newInstance(Baseline::class.java)
+	val baseline = objectFactory.newInstance(Baseline::class.java)
 
 	/** @see #baseline */
 	fun baseline(action: Action<in Baseline>) {

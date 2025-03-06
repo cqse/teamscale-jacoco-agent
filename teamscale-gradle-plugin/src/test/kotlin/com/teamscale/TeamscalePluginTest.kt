@@ -18,7 +18,7 @@ class TeamscalePluginTest : TeamscalePluginTestBase() {
 
 	@Test
 	fun `teamscale plugin can be configured`() {
-		rootProject.defineLegacyTestTasks()
+		rootProject.defineTestTasks()
 
 		assertThat(run("clean", "tasks").output).contains("SUCCESS")
 	}
@@ -26,7 +26,7 @@ class TeamscalePluginTest : TeamscalePluginTestBase() {
 	@Test
 	fun `unit tests can be executed normally`() {
 		rootProject.excludeFailingTests()
-		rootProject.defineLegacyTestTasks()
+		rootProject.defineTestTasks()
 
 		assertThat(
 			run("clean", "unitTest").output

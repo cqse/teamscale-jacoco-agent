@@ -4,56 +4,37 @@ import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.compact.CompactCoverageReportGenerator
 import com.teamscale.report.jacoco.EmptyReportException
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
+import com.teamscale.reporting.JaCoCoBasedReportTaskBase
 import com.teamscale.reporting.compact.internal.DefaultCompactCoverageTaskReportContainer
 import com.teamscale.utils.reporting
 import com.teamscale.utils.wrapInILogger
-import groovy.lang.Closure
-import org.gradle.api.Action
-import org.gradle.api.DefaultTask
 import org.gradle.api.Task
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.model.ObjectFactory
-import org.gradle.api.reporting.Reporting
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
-import org.gradle.util.internal.ClosureBackedAction
-import javax.inject.Inject
-
 
 /**
  * Task which generates a
  * [Teamscale Compact Coverage](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/)
  * report from binary JaCoCo coverage data.
  */
-@CacheableTask
-@Suppress("MemberVisibilityCanBePrivate")
-abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFactory) : DefaultTask(),
-	Reporting<CompactCoverageTaskReportContainer> {
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+abstract class CompactCoverageReport : JaCoCoBasedReportTaskBase<CompactCoverageTaskReportContainer>() {
 
-	@get:PathSensitive(PathSensitivity.NONE)
-	@get:InputFiles
-	abstract val executionData: ConfigurableFileCollection
-
-	@get:Classpath
-	abstract val classDirectories: ConfigurableFileCollection
-
-	private val reports: CompactCoverageTaskReportContainer
+	override val reportContainer: CompactCoverageTaskReportContainer =
+		objectFactory.newInstance(DefaultCompactCoverageTaskReportContainer::class.java)
 
 	init {
-		group = "Teamscale"
 		description = "Executes the impacted tests and collects coverage per test case"
-		reports = objectFactory.newInstance(DefaultCompactCoverageTaskReportContainer::class.java)
 
-		reports.compactCoverage.required.convention(true)
-		reports.compactCoverage.outputLocation.convention(project.reporting.baseDirectory.file("compact-coverage/${name}/compact-coverage.json"))
-
-		onlyIf("Any of the execution data files exists") { executionData.files.any { it.exists() } }
+		reportContainer.compactCoverage.required.convention(true)
+		reportContainer.compactCoverage.outputLocation.convention(project.reporting.baseDirectory.file("compact-coverage/${name}/compact-coverage.json"))
 	}
 
+	/** Generates the Compact Coverage report */
 	@TaskAction
-	fun generateReport() {
-		if (!reports.compactCoverage.required.get()) {
+	override fun generateReport() {
+		if (!reportContainer.compactCoverage.required.get()) {
 			return
 		}
 		logger.info("Generating compact coverage report...")
@@ -67,20 +48,10 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 		)
 
 		try {
-			generator.convertExecFilesToReport(executionData.files, reports.compactCoverage.outputLocation.get().asFile)
+			generator.convertExecFilesToReport(executionData.files, reportContainer.compactCoverage.outputLocation.get().asFile)
 		} catch (e: EmptyReportException) {
 			logger.warn("Converted report was empty.")
 		}
-	}
-
-
-	/**
-	 * Adds execution data files to be used during coverage analysis.
-	 *
-	 * @param files one or more files to add
-	 */
-	fun executionData(vararg files: Any) {
-		executionData.from(*files)
 	}
 
 	/**
@@ -96,49 +67,6 @@ abstract class CompactCoverageReport @Inject constructor(objectFactory: ObjectFa
 				mustRunAfter(task)
 			}
 		}
-	}
-
-	/**
-	 * Adds a source set to the list to be reported on. The output of this source set will be used as classes to include in the report. The source for this source set will be used for any classes
-	 * included in the report.
-	 *
-	 * @param sourceSets one or more source sets to report on
-	 */
-	fun sourceSets(vararg sourceSets: SourceSet) {
-		for (sourceSet in sourceSets) {
-			classDirectories.from(sourceSet.output)
-		}
-	}
-
-	/**
-	 * The reports that this task potentially produces.
-	 *
-	 * @return The reports that this task potentially produces
-	 */
-	@Nested
-	override fun getReports(): CompactCoverageTaskReportContainer {
-		return reports
-	}
-
-	/**
-	 * Configures the reports that this task potentially produces.
-	 *
-	 * @param closure The configuration
-	 * @return The reports that this task potentially produces
-	 */
-	override fun reports(closure: Closure<*>): CompactCoverageTaskReportContainer {
-		return reports(ClosureBackedAction(closure))
-	}
-
-	/**
-	 * Configures the reports that this task potentially produces.
-	 *
-	 * @param configureAction The configuration
-	 * @return The reports that this task potentially produces
-	 */
-	override fun reports(configureAction: Action<in CompactCoverageTaskReportContainer>): CompactCoverageTaskReportContainer {
-		configureAction.execute(reports)
-		return reports
 	}
 }
 

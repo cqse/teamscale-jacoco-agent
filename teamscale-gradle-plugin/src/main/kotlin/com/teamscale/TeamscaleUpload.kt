@@ -62,6 +62,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 	@get:Input
 	internal abstract val reports: MapProperty<String, ConfigurableFileCollection>
 
+	/** Object factory. */
 	@get:Inject
 	protected abstract val objectFactory: ObjectFactory
 
@@ -70,10 +71,18 @@ abstract class TeamscaleUpload : DefaultTask() {
 		description = "Uploads reports to Teamscale"
 	}
 
+	/**
+	 * Adds the report produced by the given task to the upload and adds a dependency on the task.
+	 * @param task Supports [Test], [JacocoReport], [CompactCoverageReport], [TestwiseCoverageReport] and [JUnitReportCollectionTask]
+	 */
 	fun from(task: TaskProvider<*>) {
 		from(task.get())
 	}
 
+	/**
+	 * Adds the report produced by the given task to the upload and adds a dependency on the task.
+	 * @param task Supports [Test], [JacocoReport], [CompactCoverageReport], [TestwiseCoverageReport] and [JUnitReportCollectionTask]
+	 */
 	fun from(task: Task) {
 		when (task) {
 
@@ -93,14 +102,14 @@ abstract class TeamscaleUpload : DefaultTask() {
 
 			is CompactCoverageReport -> {
 				dependsOn(task)
-				check(task.reports.compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
-				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.reports.compactCoverage.outputLocation)
+				check(task.getReports().compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.getReports().compactCoverage.outputLocation)
 			}
 
 			is TestwiseCoverageReport -> {
 				dependsOn(task)
-				check(task.reports.testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
-				addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
+				check(task.getReports().testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TESTWISE_COVERAGE.name, task.getReports().testwiseCoverage.outputLocation)
 			}
 
 			is JUnitReportCollectionTask -> {
@@ -112,6 +121,11 @@ abstract class TeamscaleUpload : DefaultTask() {
 		}
 	}
 
+	/** Adds arbitrary report files to be uploaded.
+	 *
+	 * @param format Report format (see EReportFormat#name for valid values)
+	 * @param reportFiles Any objects that are accepted by [org.gradle.api.Project.files]
+	 */
 	fun addReport(format: String, reportFiles: Any) {
 		val files = reports.getting(format).orNull
 		if (files == null) {

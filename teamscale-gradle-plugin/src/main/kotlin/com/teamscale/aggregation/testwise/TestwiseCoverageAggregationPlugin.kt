@@ -1,17 +1,19 @@
 package com.teamscale.aggregation.testwise
 
 import com.teamscale.aggregation.ReportAggregationPlugin
+import com.teamscale.aggregation.aggregateReportResults
+import com.teamscale.aggregation.classDirectories
+import com.teamscale.aggregation.filterProject
 import com.teamscale.aggregation.testwise.internal.DefaultAggregateTestwiseCoverageReport
 import com.teamscale.utils.PartialData
+import com.teamscale.utils.artifactType
 import com.teamscale.utils.reporting
 import com.teamscale.utils.testwiseCoverageResults
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.model.ObjectFactory
-import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.withType
 import javax.inject.Inject
 
@@ -26,6 +28,7 @@ import javax.inject.Inject
  */
 abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
 
+	/** Object factory. */
 	@get:Inject
 	protected abstract val objectFactory: ObjectFactory
 
@@ -37,52 +40,27 @@ abstract class TestwiseCoverageAggregationPlugin : Plugin<Project> {
 			DefaultAggregateTestwiseCoverageReport::class.java
 		)
 
-		val codeCoverageResultsConf =
-			project.configurations.getByName(ReportAggregationPlugin.RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
-
-		val classDirectories = codeCoverageResultsConf.incoming.artifactView {
-			componentFilter { it is ProjectComponentIdentifier }
-			attributes {
-				attribute(
-					LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-					objectFactory.named<LibraryElements>(LibraryElements.CLASSES)
-				)
-			}
-		}.files
+		val codeCoverageResultsConf = project.configurations.aggregateReportResults
+		val classDirectories = codeCoverageResultsConf.classDirectories(objectFactory)
 
 		// Iterate and configure each user-specified report.
 		reporting.reports.withType<AggregateTestwiseCoverageReport> {
 			reportTask.configure {
 				this.classDirectories.from(classDirectories)
-				this.executionData.from(codeCoverageResultsConf.incoming.artifactView {
+				val executionDataView = codeCoverageResultsConf.incoming.artifactView {
 					withVariantReselection()
-					componentFilter { it is ProjectComponentIdentifier }
-					attributes {
-						testwiseCoverageResults(objectFactory, testSuiteName)
-						attribute(
-							ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
-							ArtifactTypeDefinition.DIRECTORY_TYPE
-						)
-					}
-				}.files)
-				this.partial.set(codeCoverageResultsConf.incoming.artifactView {
-					withVariantReselection()
-					componentFilter { it is ProjectComponentIdentifier }
-					attributes {
-						testwiseCoverageResults(objectFactory, testSuiteName)
-						attribute(
-							ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
-							ArtifactTypeDefinition.DIRECTORY_TYPE
-						)
-					}
-				}.artifacts.resolvedArtifacts.map {
-					it.any { artifact ->
-						artifact.variant.attributes.getAttribute(
-							PartialData.PARTIAL_DATA_ATTRIBUTE
-						) ?: false
-					}
+					filterProject()
+					attributes.testwiseCoverageResults(objectFactory, testSuiteName)
+					attributes.artifactType(ArtifactTypeDefinition.DIRECTORY_TYPE)
+				}
+				this.executionData.from(executionDataView.files)
+				this.partial.set(executionDataView.artifacts.resolvedArtifacts.map {
+					it.any(ResolvedArtifactResult::isPartial)
 				})
 			}
 		}
 	}
 }
+
+private fun ResolvedArtifactResult.isPartial() =
+	variant.attributes.getAttribute(PartialData.PARTIAL_DATA_ATTRIBUTE) ?: false

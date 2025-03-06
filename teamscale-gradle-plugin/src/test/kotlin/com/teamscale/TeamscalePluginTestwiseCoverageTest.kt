@@ -23,7 +23,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 	@Test
 	fun `all unit tests produce coverage`() {
 		rootProject.withServerConfig()
-		rootProject.defineLegacyTestTasks()
+		rootProject.defineTestTasks()
 		rootProject.defineUploadTask()
 
 		val build = runExpectingError(
@@ -50,7 +50,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 	@Test
 	fun `only impacted unit tests are executed`() {
 		rootProject.withServerConfig()
-		rootProject.defineLegacyTestTasks()
+		rootProject.defineTestTasks()
 		rootProject.defineUploadTask()
 
 		val build = run(
@@ -74,7 +74,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 
 	@Test
 	fun `unit tests without server config produce coverage`() {
-		rootProject.defineLegacyTestTasks()
+		rootProject.defineTestTasks()
 
 		val build = runExpectingError("clean", "unitTest")
 		assertThat(build.output).contains("FAILURE (21 tests, 14 successes, 1 failures, 6 skipped)")
@@ -91,7 +91,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 
 	@Test
 	fun `wrong include pattern produces error`() {
-		rootProject.defineLegacyTestTasks("non.existent.package.*")
+		rootProject.defineTestTasks("non.existent.package.*")
 
 		val build = runExpectingError("clean", "unitTest")
 		assertThat(build.output).contains("No coverage was recorded for any of the executed tests! Check your jacoco include/exclude patterns on the Test task.")

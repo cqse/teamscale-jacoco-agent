@@ -1,13 +1,15 @@
 package com.teamscale.aggregation.junit
 
 import com.teamscale.aggregation.ReportAggregationPlugin
+import com.teamscale.aggregation.aggregateReportResults
+import com.teamscale.aggregation.filterProject
 import com.teamscale.aggregation.junit.internal.DefaultAggregateJUnitReport
+import com.teamscale.utils.artifactType
 import com.teamscale.utils.junitReports
 import com.teamscale.utils.reporting
 import com.teamscale.utils.testing
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JvmTestSuitePlugin
@@ -25,6 +27,7 @@ import javax.inject.Inject
  */
 abstract class JUnitAggregationPlugin : Plugin<Project> {
 
+	/** Object factory. */
 	@get:Inject
 	protected abstract val objectFactory: ObjectFactory
 
@@ -36,8 +39,7 @@ abstract class JUnitAggregationPlugin : Plugin<Project> {
 			DefaultAggregateJUnitReport::class.java
 		)
 
-		val codeCoverageResultsConf =
-			project.configurations.getByName(ReportAggregationPlugin.RESOLVABLE_REPORT_AGGREGATION_CONFIGURATION_NAME)
+		val codeCoverageResultsConf = project.configurations.aggregateReportResults
 
 		// Iterate and configure each user-specified report.
 		reporting.reports.withType<AggregateJUnitReport> {
@@ -45,14 +47,9 @@ abstract class JUnitAggregationPlugin : Plugin<Project> {
 				include("**/*.xml")
 				from(codeCoverageResultsConf.incoming.artifactView {
 					withVariantReselection()
-					componentFilter { it is ProjectComponentIdentifier }
-					attributes {
-						junitReports(objectFactory, testSuiteName)
-						attribute(
-							ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
-							ArtifactTypeDefinition.DIRECTORY_TYPE
-						)
-					}
+					filterProject()
+					attributes.junitReports(objectFactory, testSuiteName)
+					attributes.artifactType(ArtifactTypeDefinition.DIRECTORY_TYPE)
 				}.files)
 				into(project.layout.buildDirectory.dir("reports/jacoco/$name"))
 			}

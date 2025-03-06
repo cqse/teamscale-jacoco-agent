@@ -8,7 +8,10 @@ import java.util.logging.Logger
 
 /** Provider that tries to determine the repository revision either from the environment variables or from a checked-out Git repository. */
 abstract class GitRevisionValueSource : ValueSource<String, GitRevisionValueSource.Parameters> {
+
+	/** Parameters for the GitRevisionValueSource. */
 	interface Parameters : ValueSourceParameters {
+		/** The project directory in which the plugin was applied. */
 		val projectDirectory: DirectoryProperty
 	}
 

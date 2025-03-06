@@ -50,6 +50,7 @@ interface ITeamscaleService {
 		@Part report: List<MultipartBody.Part>
 	): Call<ResponseBody>
 
+	/** Uploads reports in an auto-create session. */
 	@Multipart
 	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
 	fun uploadExternalReports(
@@ -64,6 +65,7 @@ interface ITeamscaleService {
 		@Part report: List<MultipartBody.Part>
 	): Call<ResponseBody>
 
+	/** Creates an external report session, which allows to upload reports in multiple formats as one commit. */
 	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session")
 	fun createSession(
 		@Path("projectId") projectId: String,
@@ -75,6 +77,7 @@ interface ITeamscaleService {
 		@Query("message") message: String
 	): Call<String>
 
+	/** Commits/closes the given session. */
 	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/{sessionId}")
 	fun commitSession(
 		@Path("projectId") projectId: String,

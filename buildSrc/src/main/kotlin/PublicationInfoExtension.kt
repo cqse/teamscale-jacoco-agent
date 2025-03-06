@@ -7,10 +7,10 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.property
 
 /** Extension that holds the information that will end up in the POM file published to Maven Central. */
-open class PublicationInfoExtension(objects: ObjectFactory, val project: Project) {
-    val artifactId: Property<String> = objects.property<String>().convention(project.name)
-    val readableName: Property<String> = objects.property<String>()
-    val description: Property<String> = objects.property<String>()
+open class PublicationInfoExtension(objectFactory: ObjectFactory, val project: Project) {
+    val artifactId: Property<String> = objectFactory.property<String>().convention(project.name)
+    val readableName: Property<String> = objectFactory.property<String>()
+    val description: Property<String> = objectFactory.property<String>()
 
     fun applyTo(publication: Publication) {
         if (publication is MavenPublication) {

@@ -35,22 +35,17 @@ import java.util.*
  *
  * @see BitSet
  */
-data class CompactLines @JvmOverloads constructor(val bitSet: BitSet = BitSet()) : Iterable<Int> {
+data class CompactLines @JvmOverloads constructor(private val bitSet: BitSet = BitSet()) : Iterable<Int> {
 
 	companion object {
+		/** Constructs [CompactLines] of the given line numbers. */
 		fun compactLinesOf(vararg lines: Int) = CompactLines(*lines)
-		fun compactLinesOf(lines: Iterable<Int>) = CompactLines(lines)
+
+		/** Creates a copy of the given [CompactLines]. */
 		fun compactLinesCopyOf(lines: CompactLines): CompactLines {
 			return CompactLines().apply {
 				this merge lines
 			}
-		}
-		fun compactLinesOf() = CompactLines()
-	}
-
-	constructor(lines: Iterable<Int>) : this() {
-		lines.forEach { line ->
-			bitSet.set(line)
 		}
 	}
 

@@ -63,7 +63,8 @@ abstract class TeamscalePlugin : Plugin<Project> {
 			"*.ConstructorAccess"
 		)
 
-		val MINIMUM_SUPPORTED_VERSION = GradleVersion.version("8.10")
+		/** The minimum supported Gradle version. */
+		val MINIMUM_SUPPORTED_VERSION = GradleVersion.version("8.10")!!
 	}
 
 	/** The version of the teamscale gradle plugin and impacted-tests-executor.  */

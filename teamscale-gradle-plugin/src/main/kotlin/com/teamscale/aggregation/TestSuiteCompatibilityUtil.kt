@@ -54,6 +54,16 @@ object TestSuiteCompatibilityUtil {
 		exposeTestReportArtifactsForAggregation(testProvider.get().project, testProvider, suiteName)
 	}
 
+	/**
+	 * Exposes the results produced by the given [Test] task provider as results produced by a test suite with the given name.
+	 * A test suite with this name does not need to exist though.
+	 * This is necessary to aggregate those reports across projects via the "com.teamscale.aggregation" plugin.
+	 * It reuses the same mechanism introduced by the
+	 * [JVM Test Suites Plugin](https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html)
+	 * and
+	 * [JaCoCo Report Aggregation Plugin](https://docs.gradle.org/current/userguide/jacoco_report_aggregation_plugin.html)
+	 * but provides a way to use this without using JVM test suites yet.
+	 */
 	internal fun exposeTestReportArtifactsForAggregation(
 		project: Project,
 		testProvider: TaskProvider<out Test>,
@@ -112,4 +122,4 @@ object TestSuiteCompatibilityUtil {
 	}
 }
 
-fun String.capitalized() = this.replaceFirstChar { it.uppercase() }
+private fun String.capitalized() = this.replaceFirstChar { it.uppercase() }
