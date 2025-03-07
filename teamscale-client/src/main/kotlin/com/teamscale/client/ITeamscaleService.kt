@@ -116,7 +116,7 @@ interface ITeamscaleService {
 	fun registerProfilerLegacy(
 		@Query("configuration-id") configurationId: String?,
 		@Body processInformation: ProcessInformation?
-	): Call<ProfilerRegistration>
+	): Call<ResponseBody>
 
 	/** Updates the profiler infos and sets the profiler to still alive.  */
 	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
@@ -136,7 +136,7 @@ interface ITeamscaleService {
 	fun registerProfiler(
 		@Query("configuration-id") configurationId: String?,
 		@Body processInformation: ProcessInformation?
-	): Call<ProfilerRegistration>
+	): Call<ResponseBody>
 
 	/** Updates the profiler infos and sets the profiler to still alive.  */
 	@PUT("api/v2024.7.0/profilers/{profilerId}")

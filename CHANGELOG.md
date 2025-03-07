@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] Improved error messages when configuration can't be read from Teamscale 
 
 # 34.2.4
 - [fix] Convert tool could fail with `IOException` when providing nested jars
