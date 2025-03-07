@@ -6,8 +6,8 @@ import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerInfo;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TeamscaleServiceGenerator;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
@@ -32,8 +32,8 @@ public class ConfigurationViaTeamscale {
 	private static final Duration LONG_TIMEOUT = Duration.ofSeconds(120);
 
 	/**
-	 * The UUID that Teamscale assigned to this instance of the profiler during the registration.
-	 * This ID needs to be used when communicating with Teamscale.
+	 * The UUID that Teamscale assigned to this instance of the profiler during the registration. This ID needs to be
+	 * used when communicating with Teamscale.
 	 */
 	private final String profilerId;
 
@@ -41,7 +41,7 @@ public class ConfigurationViaTeamscale {
 	private final ProfilerInfo profilerInfo;
 
 	public ConfigurationViaTeamscale(ITeamscaleService teamscaleClient, ProfilerRegistration profilerRegistration,
-									 ProcessInformation processInformation) {
+			ProcessInformation processInformation) {
 		this.teamscaleClient = teamscaleClient;
 		this.profilerId = profilerRegistration.profilerId;
 		this.profilerInfo = new ProfilerInfo(processInformation, profilerRegistration.profilerConfiguration);
@@ -52,8 +52,8 @@ public class ConfigurationViaTeamscale {
 	 * {@link AgentOptionReceiveException}.
 	 */
 	public static ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
-													 String userName,
-													 String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
+			String userName,
+			String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
@@ -65,21 +65,21 @@ public class ConfigurationViaTeamscale {
 						processInformation).execute();
 			}
 			if (!response.isSuccessful()) {
-				if (response.code() >= 400 && response.code() < 500) {
-					throw new AgentOptionParseException(
-							"Failed to retrieve profiler configuration from Teamscale! " + response.errorBody()
-									.string());
-				}
 				throw new AgentOptionReceiveException(
-						"Failed to retrieve profiler configuration from Teamscale! " + response.errorBody().string());
+						"Failed to retrieve profiler configuration from Teamscale due to failed request. Http status: " + response.code()
+								+ " Body: " + response.errorBody().string());
 			}
 			ProfilerRegistration registration = response.body();
 			if (registration == null) {
-				throw new AgentOptionReceiveException("Failed to retrieve profiler configuration from Teamscale!");
+				throw new AgentOptionReceiveException(
+						"Failed to retrieve profiler configuration from Teamscale due to empty response. Status: " + response.code());
 			}
 			return new ConfigurationViaTeamscale(teamscaleClient, registration, processInformation);
 		} catch (IOException e) {
-			throw new AgentOptionReceiveException("Failed to retrieve profiler configuration from Teamscale!", e);
+			// we include the causing error message in this exception's message since this causes it to be printed
+			// to stderr which is much more helpful than just saying "something didn't work"
+			throw new AgentOptionReceiveException(
+					"Failed to retrieve profiler configuration from Teamscale due to network or parsing error: " + e.getMessage(), e);
 		}
 	}
 
