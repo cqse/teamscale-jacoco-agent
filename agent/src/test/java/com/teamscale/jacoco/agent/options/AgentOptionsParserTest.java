@@ -204,7 +204,7 @@ public class AgentOptionsParserTest {
 				"config-id=myConfig,teamscale-server-url=http://awesome-teamscale.com,teamscale-user=user,teamscale-access-token=mycoolkey")).hasMessageNotContaining(
 						"Failed to parse agent options")
 				.hasMessageContaining(
-						"Failed to retrieve profiler configuration from Teamscale!");
+						"Failed to retrieve profiler configuration from Teamscale");
 	}
 
 	@Test
