@@ -5,6 +5,11 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [breaking] _teamscale-maven-plugin_: Renamed `testwise-coverage-converter` goal to `testwise-coverage-report`.
+- [breaking] _teamscale-maven-plugin_: Removed `outputFolder` option from `testwise-coverage-report`
+- [breaking] _teamscale-maven-plugin_: Removed `tiaMode` option from the plugin. `exec-file` is the new default. All setups that did not use `exec-file` before now need to add the `testwise-coverage-report` and `upload-coverage` goals to their builds. They should be configured only for a single coverage aggregation module.
+- [breaking] _teamscale-maven-plugin_: Removed `testwisePartition` option from the plugin. Uploads now use the `unitTestPartition` and `integrationTestPartition` respectively.
+- [breaking] _teamscale-maven-plugin_: Replaced `partition` option from `prepare-tia-unit-test` and `prepare-tia-integration-test` in favor of `unitTestPartition` and `integrationTestPartition` options to allow consistently querying and upload impacted tests.
 
 # 34.2.5
 - [fix] Improved error messages when configuration can't be read from Teamscale 

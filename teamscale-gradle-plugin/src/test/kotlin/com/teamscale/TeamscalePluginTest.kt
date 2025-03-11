@@ -1,6 +1,7 @@
 package com.teamscale
 
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
+import com.teamscale.client.EReportFormat
 import com.teamscale.client.JsonUtils
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
@@ -94,9 +95,8 @@ class TeamscalePluginTest {
 
 		assertFullCoverage(testwiseCoverageReportFile.readText())
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		assertFullCoverage(teamscaleMockServer.uploadedReports[0].reportString)
-		assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("Unit Tests")
+		val report = teamscaleMockServer.getOnlyReport("Unit Tests", EReportFormat.TESTWISE_COVERAGE)
+		assertFullCoverage(report)
 	}
 
 	@Test
@@ -116,9 +116,8 @@ class TeamscalePluginTest {
 
 		assertPartialCoverage(testwiseCoverageReportFile.readText())
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		assertPartialCoverage(teamscaleMockServer.uploadedReports[0].reportString)
-		assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("Unit Tests")
+		val report = teamscaleMockServer.getOnlyReport("Unit Tests", EReportFormat.TESTWISE_COVERAGE)
+		assertPartialCoverage(report)
 	}
 
 	@Test
@@ -152,7 +151,7 @@ class TeamscalePluginTest {
 			"--run-all-tests",
 			"teamscaleReportUpload"
 		)
-		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
+		assertThat(teamscaleMockServer.onlySession.commit).isEqualTo("null, master:1544512967526")
 	}
 
 	@Test
@@ -167,8 +166,9 @@ class TeamscalePluginTest {
 			"--run-all-tests",
 			"teamscaleReportUpload"
 		)
-		assertThat(teamscaleMockServer.uploadCommits).contains("abcd1337, null")
-		assertThat(teamscaleMockServer.uploadRepositories).contains("myRepoId")
+		val session = teamscaleMockServer.onlySession
+		assertThat(session.commit).isEqualTo("abcd1337, null")
+		assertThat(session.repository).isEqualTo("myRepoId")
 	}
 
 	@Test

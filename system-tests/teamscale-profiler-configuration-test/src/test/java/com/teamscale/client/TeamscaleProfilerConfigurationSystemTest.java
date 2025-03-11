@@ -34,7 +34,7 @@ public class TeamscaleProfilerConfigurationSystemTest {
 		System.out.println(result.getStdout());
 		Assertions.assertThat(result.getReturnCode()).isEqualTo(0);
 
-		assertThat(teamscaleMockServer.uploadedReports).element(0).extracting("partition").isEqualTo("foo");
+		assertThat(teamscaleMockServer.getOnlySession().getPartition()).isEqualTo("foo");
 
 		teamscaleMockServer.shutdown();
 

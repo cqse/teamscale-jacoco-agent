@@ -43,12 +43,11 @@
                         <goals>
                             <goal>prepare-tia-unit-test</goal>
                             <goal>prepare-tia-integration-test</goal>
+                            <goal>testwise-coverage-report</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <partition>MyPartition</partition>
-                    <tiaMode>disk</tiaMode>
                     <runAllTests>true</runAllTests>
                     <runImpacted>false</runImpacted>
                     <includes>

@@ -1,5 +1,6 @@
 package com.teamscale.tia.client;
 
+import com.teamscale.client.EReportFormat;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,7 @@ public class DefaultExcludesSystemTest {
 		new SystemUnderTest().foo();
 		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
+		String report = teamscaleMockServer.getOnlyReport("part", EReportFormat.JACOCO);
 		assertThat(report).doesNotContain("shadow");
 		assertThat(report).doesNotContain("junit");
 		assertThat(report).doesNotContain("eclipse");

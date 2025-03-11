@@ -2,16 +2,14 @@ package com.teamscale.tia;
 
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.Session;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
  * Runs several Maven projects' Surefire tests that have the agent attached and one of our JUnit run listeners enabled.
@@ -40,7 +38,7 @@ public class TiaMavenCucumberSystemTest {
 					.acceptingReportUploads()
 					.withImpactedTests(IMPACTED_TEST_PATHS);
 		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer.reset();
 	}
 
 	@AfterEach
@@ -54,29 +52,26 @@ public class TiaMavenCucumberSystemTest {
 
 		assertThat(teamscaleMockServer.availableTests).extracting("partition").contains("MyPartition");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		Session session = teamscaleMockServer.getOnlySession();
+		assertThat(session.getReports()).hasSize(1);
+		assertThat(session.getPartition()).isEqualTo("MyPartition");
 
-		TestwiseCoverageReport unitTestReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
-		assertThat(unitTestReport.tests).hasSize(IMPACTED_TEST_PATHS.length);
+		TestwiseCoverageReport unitTestReport = session.getOnlyTestwiseCoverageReport();
 		assertThat(unitTestReport.partial).isTrue();
-		assertAll(() -> {
-			assertThat(unitTestReport.tests)
-					.extracting(test -> test.uniformPath)
-					.containsExactlyInAnyOrder(IMPACTED_TEST_PATHS);
-			assertThat(unitTestReport.tests)
-					.extracting(test -> test.result)
-					.containsExactlyInAnyOrder(Arrays.stream(IMPACTED_TEST_PATHS)
-							.map(s -> ETestExecutionResult.PASSED)
-							.toArray(ETestExecutionResult[]::new));
-			assertThat(unitTestReport.tests)
-					.extracting(SystemTestUtils::getCoverageString)
-					.containsExactly(COVERAGE_ADD, // must match TEST_PATHS
-							COVERAGE_ADD,
-							COVERAGE_ADD,
-							COVERAGE_ADD,
-							COVERAGE_ADD,
-							COVERAGE_SUBTRACT);
-		});
+		assertThat(unitTestReport.tests)
+				.extracting(test -> test.uniformPath)
+				.containsExactlyInAnyOrder(IMPACTED_TEST_PATHS);
+		assertThat(unitTestReport.tests)
+				.extracting(test -> test.result)
+				.allMatch(result -> result == ETestExecutionResult.PASSED);
+		assertThat(unitTestReport.tests)
+				.extracting(SystemTestUtils::getCoverageString)
+				.containsExactly(COVERAGE_ADD, // must match TEST_PATHS
+						COVERAGE_ADD,
+						COVERAGE_ADD,
+						COVERAGE_ADD,
+						COVERAGE_ADD,
+						COVERAGE_SUBTRACT);
 	}
 
 }
