@@ -53,6 +53,7 @@ public class AgentOptionsParser {
 
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
+	public static final String DEBUG = "debug";
 
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
@@ -202,7 +203,7 @@ public class AgentOptionsParser {
 	 */
 	private void handleOption(AgentOptions options,
 			String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
-		if (key.startsWith("debug")) {
+		if (key.startsWith(DEBUG)) {
 			handleDebugOption(options, value);
 			return;
 		}
