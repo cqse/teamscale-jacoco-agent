@@ -6,7 +6,10 @@ import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
 import java.util.logging.Logger
 
-/** Provider that tries to determine the repository revision either from the environment variables or from a checked-out Git repository. */
+/**
+ * Provider that tries to determine the repository revision either
+ * from the environment variables or from a checked-out Git repository.
+ */
 abstract class GitRevisionValueSource : ValueSource<String, GitRevisionValueSource.Parameters> {
 
 	/** Parameters for the GitRevisionValueSource. */
@@ -28,7 +31,7 @@ abstract class GitRevisionValueSource : ValueSource<String, GitRevisionValueSour
 			val git = Git.open(parameters.projectDirectory.get().asFile)
 			return git.repository.refDatabase.findRef("HEAD").objectId.name
 		} catch (e: Exception) {
-			LOGGER.info { "Failed to auto-detect git revision from checked out repository! " + e.stackTraceToString()}
+			LOGGER.info { "Failed to auto-detect git revision from checked out repository! " + e.stackTraceToString() }
 			return null
 		}
 	}

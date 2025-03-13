@@ -25,7 +25,7 @@ interface ITeamscaleService {
 	 * for details.
 	 */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
+	@POST("api/v2024.7.0/projects/{projectId}/external-analysis/session/auto-create/report")
 	fun uploadExternalReport(
 		@Path("projectId") projectId: String,
 		@Query("format") format: String,
@@ -42,7 +42,7 @@ interface ITeamscaleService {
 	 * Add multiple files into an existing session.
 	 */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/{sessionId}/report")
+	@POST("api/v2024.7.0/projects/{projectId}/external-analysis/session/{sessionId}/report")
 	fun uploadExternalReports(
 		@Path("projectId") projectId: String,
 		@Path("sessionId") sessionId: String,
@@ -52,7 +52,7 @@ interface ITeamscaleService {
 
 	/** Uploads reports in an auto-create session. */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
+	@POST("api/v2024.7.0/projects/{projectId}/external-analysis/session/auto-create/report")
 	fun uploadExternalReports(
 		@Path("projectId") projectId: String,
 		@Query("format") format: EReportFormat,
@@ -66,7 +66,7 @@ interface ITeamscaleService {
 	): Call<ResponseBody>
 
 	/** Creates an external report session, which allows to upload reports in multiple formats as one commit. */
-	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session")
+	@POST("api/v2024.7.0/projects/{projectId}/external-analysis/session")
 	fun createSession(
 		@Path("projectId") projectId: String,
 		@Query("t") commit: CommitDescriptor?,
@@ -78,7 +78,7 @@ interface ITeamscaleService {
 	): Call<String>
 
 	/** Commits/closes the given session. */
-	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/{sessionId}")
+	@POST("api/v2024.7.0/projects/{projectId}/external-analysis/session/{sessionId}")
 	fun commitSession(
 		@Path("projectId") projectId: String,
 		@Path("sessionId") sessionId: String
@@ -91,7 +91,7 @@ interface ITeamscaleService {
 	 * @see uploadExternalReport
 	 */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
+	@POST("api/v2024.7.0/projects/{projectId}/external-analysis/session/auto-create/report")
 	fun uploadExternalReports(
 		@Path("projectId") projectId: String,
 		@Query("format") format: String,
@@ -105,7 +105,7 @@ interface ITeamscaleService {
 	): Call<ResponseBody>
 
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
-	@PUT("api/v9.4.0/projects/{projectId}/impacted-tests")
+	@PUT("api/v2024.7.0/projects/{projectId}/impacted-tests")
 	fun getImpactedTests(
 		@Path("projectId") projectId: String,
 		@Query("baseline") baseline: String?,
@@ -122,7 +122,7 @@ interface ITeamscaleService {
 	): Call<List<PrioritizableTestCluster>>
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
-	@GET("api/v9.4.0/projects/{projectId}/impacted-tests")
+	@GET("api/v2024.7.0/projects/{projectId}/impacted-tests")
 	fun getImpactedTests(
 		@Path("projectId") projectId: String,
 		@Query("baseline") baseline: String?,
@@ -137,25 +137,9 @@ interface ITeamscaleService {
 		@Query("include-added-tests") includeAddedTests: Boolean
 	): Call<List<PrioritizableTest>>
 
-	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with.  */
-	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
-	@POST("api/v9.4.0/running-profilers")
-	fun registerProfilerLegacy(
-		@Query("configuration-id") configurationId: String?,
-		@Body processInformation: ProcessInformation?
-	): Call<ProfilerRegistration>
-
-	/** Updates the profiler infos and sets the profiler to still alive.  */
-	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
-	@PUT("api/v9.4.0/running-profilers/{profilerId}")
-	fun sendHeartbeatLegacy(
-		@Path("profilerId") profilerId: String?,
-		@Body profilerInfo: ProfilerInfo?
-	): Call<ResponseBody>
-
 	/** Removes the profiler identified by given ID.  */
 	@Deprecated("This is here for compatibility with older Teamscale version; remove after these are no longer supported.")
-	@DELETE("api/v9.4.0/running-profilers/{profilerId}")
+	@DELETE("api/v2024.7.0/running-profilers/{profilerId}")
 	fun unregisterProfilerLegacy(@Path("profilerId") profilerId: String?): Call<ResponseBody>
 
 	/** Registers a profiler to Teamscale and returns the profiler configuration it should be started with.  */

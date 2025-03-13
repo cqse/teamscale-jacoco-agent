@@ -6,8 +6,8 @@ import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerInfo;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TeamscaleServiceGenerator;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
@@ -32,8 +32,8 @@ public class ConfigurationViaTeamscale {
 	private static final Duration LONG_TIMEOUT = Duration.ofSeconds(120);
 
 	/**
-	 * The UUID that Teamscale assigned to this instance of the profiler during the registration.
-	 * This ID needs to be used when communicating with Teamscale.
+	 * The UUID that Teamscale assigned to this instance of the profiler during the registration. This ID needs to be
+	 * used when communicating with Teamscale.
 	 */
 	private final String profilerId;
 
@@ -41,7 +41,7 @@ public class ConfigurationViaTeamscale {
 	private final ProfilerInfo profilerInfo;
 
 	public ConfigurationViaTeamscale(ITeamscaleService teamscaleClient, ProfilerRegistration profilerRegistration,
-									 ProcessInformation processInformation) {
+			ProcessInformation processInformation) {
 		this.teamscaleClient = teamscaleClient;
 		this.profilerId = profilerRegistration.profilerId;
 		this.profilerInfo = new ProfilerInfo(processInformation, profilerRegistration.profilerConfiguration);
@@ -52,18 +52,14 @@ public class ConfigurationViaTeamscale {
 	 * {@link AgentOptionReceiveException}.
 	 */
 	public static ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
-													 String userName,
-													 String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
+			String userName,
+			String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
 			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
 			Response<ProfilerRegistration> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
-			if (response.code() == 405) {
-				response = teamscaleClient.registerProfilerLegacy(configurationId,
-						processInformation).execute();
-			}
 			if (!response.isSuccessful()) {
 				if (response.code() >= 400 && response.code() < 500) {
 					throw new AgentOptionParseException(
@@ -113,9 +109,6 @@ public class ConfigurationViaTeamscale {
 	private void sendHeartbeat() {
 		try {
 			Response<ResponseBody> response = teamscaleClient.sendHeartbeat(profilerId, profilerInfo).execute();
-			if (response.code() == 405) {
-				response = teamscaleClient.sendHeartbeatLegacy(profilerId, profilerInfo).execute();
-			}
 			if (!response.isSuccessful()) {
 				LoggingUtils.getLogger(this)
 						.error("Failed to send heartbeat. Teamscale responded with: " + response.errorBody().string());

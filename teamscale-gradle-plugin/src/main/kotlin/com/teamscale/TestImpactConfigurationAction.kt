@@ -7,7 +7,10 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 
-/** Task action which is attached to all tasks of type [Test], that configures the task to run the tests through the impacted-test engine if . */
+/**
+ * Task action which is attached to all tasks of type [Test] that configures the task
+ * to run the tests through the impacted-test engine if [TeamscaleTaskExtension.collectTestwiseCoverage] or
+ * [TeamscaleTaskExtension.runImpacted] is enabled. */
 class TestImpactConfigurationAction(
 	private val pluginExtension: TeamscalePluginExtension,
 	private val extension: TeamscaleTaskExtension

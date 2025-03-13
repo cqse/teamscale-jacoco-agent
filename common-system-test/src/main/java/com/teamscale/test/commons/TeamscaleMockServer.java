@@ -93,11 +93,11 @@ public class TeamscaleMockServer {
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
 	public TeamscaleMockServer acceptingReportUploads() {
-		service.post("api/v5.9.0/projects/:projectId/external-analysis/session/:sessionId/report",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session/:sessionId/report",
 				this::handleReport);
-		service.post("api/v5.9.0/projects/:projectId/external-analysis/session",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session",
 				this::createSession);
-		service.post("api/v5.9.0/projects/:projectId/external-analysis/session/:sessionId",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session/:sessionId",
 				this::commitSession);
 		return this;
 	}
@@ -119,7 +119,7 @@ public class TeamscaleMockServer {
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
 		this.impactedTests = Arrays.asList(impactedTests);
-		service.put("api/v9.4.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		service.put("api/v2024.7.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		return this;
 	}
 

@@ -12,7 +12,7 @@ import com.teamscale.report.util.LineRangeSerializer
 import java.io.OutputStream
 
 /**
- * Teamscale Compact Coverage report on a per-file based granularity to reduce the amount of data
+ * Teamscale Compact Coverage report on a per-file-based granularity to reduce the amount of data
  * sent to and processed by Teamscale.
  *
  * See [Teamscale Compact Coverage Documentation](https://docs.teamscale.com/reference/upload-formats-and-samples/teamscale-compact-coverage/).
@@ -32,8 +32,8 @@ data class TeamscaleCompactCoverageReport @JsonCreator constructor(
 	}
 
 	/**
-	 * Class that describes the coverage data for a single file. All list of lines are represented by
-	 * strings possibly including ranges (denoted by '-').
+	 * Describes the coverage data for a single file.
+	 * All lists of lines are represented by strings, possibly including ranges (denoted by '-').
 	 */
 	data class CompactCoverageFileInfo @JsonCreator constructor(
 		/** The file path of the covered file. */

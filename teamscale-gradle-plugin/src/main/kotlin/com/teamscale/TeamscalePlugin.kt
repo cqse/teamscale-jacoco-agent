@@ -32,7 +32,7 @@ import org.gradle.util.GradleVersion
  * that executes the same set of tests, but additionally collects testwise coverage and executes only impacted tests.
  * Furthermore, all reports configured are uploaded to Teamscale after the tests have been executed.
  */
-abstract class TeamscalePlugin : Plugin<Project> {
+class TeamscalePlugin : Plugin<Project> {
 
 	companion object {
 

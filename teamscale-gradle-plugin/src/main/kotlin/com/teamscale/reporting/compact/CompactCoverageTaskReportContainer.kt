@@ -12,8 +12,6 @@ interface CompactCoverageTaskReportContainer : ReportContainer<Report> {
 
 	/**
 	 * A JSON report representing the coverage in a compact form.
-	 *
-	 * @return The JSON report
 	 */
 	@get:Internal
 	val compactCoverage: SingleFileReport

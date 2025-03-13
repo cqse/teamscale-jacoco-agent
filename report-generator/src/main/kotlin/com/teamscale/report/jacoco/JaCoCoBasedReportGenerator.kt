@@ -15,9 +15,9 @@ import java.io.IOException
 import java.io.OutputStream
 
 /**
- * Base class for generating reports from based on the binary JaCoCo exec dump files.
+ * Base class for generating reports based on the binary JaCoCo exec dump files.
  *
- * It takes care of ignoring non-identical duplicate classes and classes without coverage.
+ * It takes care of ignoring non-identical classes with the same fully qualified name and classes without coverage.
  *
  * @param codeDirectoriesOrArchives Directories and zip files that contain class files.
  * @param locationIncludeFilter Include filter to apply to all locations during class file traversal.

@@ -25,6 +25,8 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
+private const val MAX_RETRY_COUNT = 3
+
 /** Handles report uploads to Teamscale. */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 abstract class TeamscaleUpload : DefaultTask() {
@@ -103,7 +105,10 @@ abstract class TeamscaleUpload : DefaultTask() {
 			is CompactCoverageReport -> {
 				dependsOn(task)
 				check(task.getReports().compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
-				addReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name, task.getReports().compactCoverage.outputLocation)
+				addReport(
+					EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name,
+					task.getReports().compactCoverage.outputLocation
+				)
 			}
 
 			is TestwiseCoverageReport -> {
@@ -121,7 +126,8 @@ abstract class TeamscaleUpload : DefaultTask() {
 		}
 	}
 
-	/** Adds arbitrary report files to be uploaded.
+	/**
+	 * Adds arbitrary report files to be uploaded.
 	 *
 	 * @param format Report format (see EReportFormat#name for valid values)
 	 * @param reportFiles Any objects that are accepted by [org.gradle.api.Project.files]
@@ -161,7 +167,6 @@ abstract class TeamscaleUpload : DefaultTask() {
 		}
 	}
 
-
 	private fun TeamscaleClient.uploadReports(reports: MutableMap<String, ConfigurableFileCollection>) {
 		val formatAndReports = reports.mapValues { getExistingReportFiles(it.value) }.filter {
 			if (it.value.isEmpty()) {
@@ -188,7 +193,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 		message: String
 	) {
 		try {
-			retry(3) {
+			retry(MAX_RETRY_COUNT) {
 				uploadReports(
 					reports,
 					commitDescriptorOrRevision.get().commit,
