@@ -139,7 +139,7 @@ object HttpUtils {
 	 * Sets sensible defaults for the [okhttp3.OkHttpClient].
 	 */
 	private fun Builder.setTimeouts(readTimeout: Duration, writeTimeout: Duration) {
-		connectTimeout(Duration.ofSeconds(60))
+		connectTimeout(Duration.ofMinutes(5))
 		readTimeout(readTimeout)
 		writeTimeout(writeTimeout)
 	}

@@ -11,19 +11,12 @@ import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import org.conqat.lib.commons.string.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import retrofit2.Response;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +31,7 @@ public class ConfigurationViaTeamscale {
 	 * Two minute timeout. This is quite high to account for an eventual high load on the Teamscale server. This is a
 	 * tradeoff between fast application startup and potentially missing test coverage.
 	 */
-	private static final Duration LONG_TIMEOUT = Duration.ofSeconds(120);
+	private static final Duration LONG_TIMEOUT = Duration.ofMinutes(2);
 
 	/**
 	 * The UUID that Teamscale assigned to this instance of the profiler during the registration. This ID needs to be
@@ -62,37 +55,10 @@ public class ConfigurationViaTeamscale {
 	 */
 	public static @NotNull ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
 			String userName, String userAccessToken) throws AgentOptionReceiveException {
-		ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
-		try {
-			logger.info("native api/version: " + javaNativeRequestVersion(url));
-		} catch (IOException e) {
-			logger.error("Failed to call api/version via Java net APIs: " + LoggingUtils.getStackTraceAsString(e), e);
-		}
-		try {
-			logger.info("okhttp api/version: " + okHttpVersion(url));
-		} catch (IOException e) {
-			logger.error("Failed to call api/version via okhttp: " + LoggingUtils.getStackTraceAsString(e), e);
-		}
-		try {
-			logger.info("native api/v2024.7.0/profilers: " + javaNativeRequest(url, userName, userAccessToken, processInformation,
-					configurationId));
-		} catch (IOException e) {
-			logger.error(
-					"Failed to call api/v2024.7.0/profilers via Java net APIs: " + LoggingUtils.getStackTraceAsString(
-							e), e);
-		}
-		try {
-			logger.info("okhttp api/v2024.7.0/profilers: " + okHttp(url, userName, userAccessToken, processInformation,
-					configurationId));
-		} catch (IOException e) {
-			logger.error("Failed to call api/v2024.7.0/profilers via okhttp: " + LoggingUtils.getStackTraceAsString(e),
-					e);
-		}
-
-
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
+			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
 			Response<ResponseBody> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
 			if (response.code() == 405) {
@@ -115,104 +81,6 @@ public class ConfigurationViaTeamscale {
 							e),
 					e);
 		}
-	}
-
-	private static String okHttpVersion(HttpUrl url) throws IOException {
-		okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
-				.readTimeout(LONG_TIMEOUT)
-				.writeTimeout(LONG_TIMEOUT)
-				.build();
-
-		Request request = new Request.Builder()
-				.url(url.newBuilder().addPathSegment("api").addPathSegment("version").build())
-				.build();
-
-		try (okhttp3.Response response = client.newCall(request).execute()) {
-			return response.body().string();
-		}
-	}
-
-	private static String okHttp(HttpUrl url, String userName, String userAccessToken,
-			ProcessInformation processInformation, String configId) throws IOException {
-		okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
-				.readTimeout(LONG_TIMEOUT)
-				.writeTimeout(LONG_TIMEOUT)
-				.build();
-
-		Request request = new Request.Builder()
-				.url(url.newBuilder().addPathSegments("api/v2024.7.0/profilers").addQueryParameter("configuration-id", configId).build())
-				.header("Authorization", okhttp3.Credentials.basic(userName, userAccessToken))
-				.post(RequestBody.create(okhttp3.MediaType.get("application/json"),
-						JsonUtils.serialize(processInformation)))
-				.build();
-
-		try (okhttp3.Response response = client.newCall(request).execute()) {
-			return response.body().string();
-		}
-	}
-
-	private static String javaNativeRequestVersion(HttpUrl url) throws IOException {
-		HttpURLConnection connection = null;
-		try {
-			URL fullUrl = new URL(url.newBuilder().addPathSegments("api/version").build().toString());
-			connection = (HttpURLConnection) fullUrl.openConnection();
-			connection.setReadTimeout((int) LONG_TIMEOUT.toMillis());
-			connection.setConnectTimeout((int) LONG_TIMEOUT.toMillis());
-			connection.setRequestMethod("GET");
-
-			int responseCode = connection.getResponseCode();
-			try (InputStream inputStream = responseCode >= 200 && responseCode < 300
-					? connection.getInputStream()
-					: connection.getErrorStream()) {
-				if (inputStream != null) {
-					return StringUtils.fromInputStream(inputStream);
-				}
-			}
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
-		}
-		return null;
-	}
-
-	private static String javaNativeRequest(HttpUrl url, String userName, String userAccessToken,
-			ProcessInformation processInformation, String configId) throws IOException {
-		HttpURLConnection connection = null;
-		try {
-			URL fullUrl = new URL(url.newBuilder().addPathSegments("api/v2024.7.0/profilers")
-					.addQueryParameter("configuration-id", configId).build().toString());
-			connection = (HttpURLConnection) fullUrl.openConnection();
-			connection.setReadTimeout((int) LONG_TIMEOUT.toMillis());
-			connection.setConnectTimeout((int) LONG_TIMEOUT.toMillis());
-			connection.setRequestMethod("POST");
-			connection.setDoOutput(true); // Enable output stream for request body
-			String basicAuth = "Basic " + Base64.getEncoder()
-					.encodeToString((userName + ":" + userAccessToken).getBytes());
-			connection.setRequestProperty("Authorization", basicAuth);
-			connection.setRequestProperty("Content-Type", "application/json");
-
-			// Convert processInformation to JSON and write to output stream
-			String jsonPayload = JsonUtils.serialize(processInformation);
-			try (java.io.OutputStream outputStream = connection.getOutputStream()) {
-				outputStream.write(jsonPayload.getBytes());
-				outputStream.flush();
-			}
-
-			int responseCode = connection.getResponseCode();
-			try (InputStream inputStream = responseCode >= 200 && responseCode < 300
-					? connection.getInputStream()
-					: connection.getErrorStream()) {
-				if (inputStream != null) {
-					return StringUtils.fromInputStream(inputStream);
-				}
-			}
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
-		}
-		return null;
 	}
 
 	private static @NotNull ConfigurationViaTeamscale parseProfilerRegistration(ResponseBody body,
