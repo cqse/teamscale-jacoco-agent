@@ -9,7 +9,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
-import ch.qos.logback.classic.spi.StackTraceElementProxy;
+import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
@@ -78,6 +78,19 @@ public class LoggingUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Converts a Throwable to its stack trace as a String.
+	 *
+	 * @param throwable the throwable to convert
+	 * @return the stack trace as a String
+	 */
+	public static String getStackTraceAsString(Throwable throwable) {
+		if (throwable == null) {
+			return null;
+		}
+		return ThrowableProxyUtil.asString(new ThrowableProxy(throwable));
 	}
 
 	/**
