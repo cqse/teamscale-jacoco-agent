@@ -63,8 +63,8 @@ public class MavenExternalUploadSystemTest {
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(6);
 		ExternalReport unitTests = teamscaleMockServer.uploadedReports.get(0);
 		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(3);
-		assertThat(unitTests.getPartition()).isEqualTo("My Custom Unit Tests Partition");
-		assertThat(integrationTests.getPartition()).isEqualTo("Integration Tests");
+		assertThat(unitTests.partition).isEqualTo("My Custom Unit Tests Partition");
+		assertThat(integrationTests.partition).isEqualTo("Integration Tests");
 	}
 
 	@Test

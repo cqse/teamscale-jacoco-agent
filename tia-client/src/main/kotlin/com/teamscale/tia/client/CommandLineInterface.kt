@@ -109,7 +109,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		) {
 			api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests)
 		}?.let {
-			println(serialize(it))
+			println(it.serialize())
 		}
 	}
 
