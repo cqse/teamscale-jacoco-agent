@@ -7,6 +7,7 @@ import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TestWithClusterId;
+import com.teamscale.report.compact.TeamscaleCompactCoverageReport;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import spark.Request;
 import spark.Response;
@@ -23,10 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -54,7 +59,7 @@ public class TeamscaleMockServer {
 	public final List<String> impactedTestRepositories = new ArrayList<>();
 
 	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
-	public final Set<TestWithClusterId> availableTests = new HashSet<>();
+	public final Set<TestWithClusterId> allAvailableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private List<String> impactedTests;
@@ -62,6 +67,7 @@ public class TeamscaleMockServer {
 	private ProfilerConfiguration profilerConfiguration;
 	private String username = null;
 	private String accessToken = null;
+	private final Map<String, Session> sessions = new HashMap<>();
 
 	public TeamscaleMockServer(int port) throws IOException {
 		service = Service.ignite();
@@ -87,15 +93,33 @@ public class TeamscaleMockServer {
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
 	public TeamscaleMockServer acceptingReportUploads() {
-		service.post("api/v5.9.0/projects/:projectName/external-analysis/session/auto-create/report",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session/:sessionId/report",
 				this::handleReport);
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session",
+				this::createSession);
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session/:sessionId",
+				this::commitSession);
 		return this;
+	}
+
+	private Object commitSession(Request request, Response response) {
+		requireAuthentication(request, response);
+		sessions.remove(request.params("sessionId"));
+		return "";
+	}
+
+	private Object createSession(Request request, Response response) throws JsonProcessingException {
+		requireAuthentication(request, response);
+
+		String sessionId = UUID.randomUUID().toString();
+		sessions.put(sessionId, new Session(request));
+		return JsonUtils.serialize(sessionId);
 	}
 
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
 		this.impactedTests = Arrays.asList(impactedTests);
-		service.put("api/v9.4.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		service.put("api/v2024.7.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		return this;
 	}
 
@@ -129,6 +153,17 @@ public class TeamscaleMockServer {
 		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(), TestwiseCoverageReport.class);
 	}
 
+	/**
+	 * Returns the report at the given index in {@link #uploadedReports}, parsed as a
+	 * {@link TeamscaleCompactCoverageReport}.
+	 *
+	 * @throws IOException when parsing the report fails.
+	 */
+	public TeamscaleCompactCoverageReport parseUploadedCompactCoverageReport(int index) throws IOException {
+		return JsonUtils.deserialize(uploadedReports.get(index).getReportString(),
+				TeamscaleCompactCoverageReport.class);
+	}
+
 	private String handleImpactedTests(Request request, Response response) throws IOException {
 		requireAuthentication(request, response);
 
@@ -136,9 +171,17 @@ public class TeamscaleMockServer {
 		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"));
 		impactedTestRepositories.add(request.queryParams("repository"));
 		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"));
-		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
-		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
-		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
+		List<TestWithClusterId> availableTests = JsonUtils.deserializeList(request.body(), TestWithClusterId.class);
+		allAvailableTests.addAll(availableTests);
+		Map<Optional<String>, List<TestWithClusterId>> impactedTestsByCluster = availableTests.stream()
+				.filter(availableTest -> impactedTests.contains(availableTest.getTestName())).collect(
+						Collectors.groupingBy(testWithClusterId -> Optional.ofNullable(testWithClusterId.getClusterId())));
+		List<PrioritizableTestCluster> testClusters = new ArrayList<>();
+		impactedTestsByCluster.forEach(
+				(clusterId, impactedTests) -> testClusters.add(new PrioritizableTestCluster(clusterId.orElse(null),
+						impactedTests.stream().map(TestWithClusterId::getTestName).map(PrioritizableTest::new)
+								.collect(toList()))));
+		return JsonUtils.serialize(testClusters);
 	}
 
 	private String handleProfilerRegistration(Request request, Response response) throws JsonProcessingException {
@@ -184,17 +227,26 @@ public class TeamscaleMockServer {
 	private String handleReport(Request request, Response response) throws IOException, ServletException {
 		requireAuthentication(request, response);
 
+		String sessionId = request.params(":sessionId");
+		Session session;
+		if (sessionId.equals("auto-create")) {
+			session = new Session(request);
+		} else {
+			session = sessions.get(sessionId);
+		}
+
 		collectedUserAgents.add(request.headers("User-Agent"));
-		uploadCommits.add(request.queryParams("revision") + ", " + request.queryParams("t"));
-		uploadRepositories.add(request.queryParams("repository"));
+		uploadCommits.add(session.revision + ", " + session.commit);
+		uploadRepositories.add(session.repository);
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(tempDir.toString());
 		request.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
 
 		Collection<Part> parts = request.raw().getParts();
-		String partition = request.queryParams("partition");
+		String partition = session.partition;
+		String format = request.queryParams("format");
 		for (Part part : parts) {
 			String reportString = IOUtils.toString(part.getInputStream());
-			uploadedReports.add(new ExternalReport(reportString, partition));
+			uploadedReports.add(new ExternalReport(reportString, partition, format));
 			part.delete();
 		}
 
@@ -222,5 +274,20 @@ public class TeamscaleMockServer {
 	private String buildBasicAuthHeader(String username, String accessToken) {
 		String credentials = username + ":" + accessToken;
 		return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+	}
+
+	private static class Session {
+
+		private final String partition;
+		private final String revision;
+		private final String commit;
+		private final String repository;
+
+		public Session(Request request) {
+			partition = request.queryParams("partition");
+			revision = request.queryParams("revision");
+			commit = request.queryParams("t");
+			repository = request.queryParams("repository");
+		}
 	}
 }
