@@ -147,7 +147,7 @@ interface ITeamscaleService {
 	fun registerProfiler(
 		@Query("configuration-id") configurationId: String?,
 		@Body processInformation: ProcessInformation?
-	): Call<ProfilerRegistration>
+	): Call<ResponseBody>
 
 	/** Updates the profiler infos and sets the profiler to still alive.  */
 	@PUT("api/v2024.7.0/profilers/{profilerId}")

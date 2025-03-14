@@ -3,6 +3,7 @@ package com.teamscale.jacoco.agent.options;
 import com.teamscale.client.JsonUtils;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerRegistration;
+import com.teamscale.jacoco.agent.configuration.AgentOptionReceiveException;
 import com.teamscale.jacoco.agent.upload.artifactory.ArtifactoryConfig;
 import com.teamscale.jacoco.agent.util.TestUtils;
 import com.teamscale.report.util.CommandLineLogger;
@@ -204,7 +205,7 @@ public class AgentOptionsParserTest {
 				"config-id=myConfig,teamscale-server-url=http://awesome-teamscale.com,teamscale-user=user,teamscale-access-token=mycoolkey")).hasMessageNotContaining(
 						"Failed to parse agent options")
 				.hasMessageContaining(
-						"Failed to retrieve profiler configuration from Teamscale!");
+						"Failed to retrieve profiler configuration from Teamscale");
 	}
 
 	@Test
@@ -226,7 +227,7 @@ public class AgentOptionsParserTest {
 				() -> new AgentOptionsParser(new CommandLineLogger(), "invalid-config-id", null,
 						teamscaleCredentials).parse(
 						"")
-		).isInstanceOf(AgentOptionParseException.class).hasMessageContaining("invalid-config-id does not exist");
+		).isInstanceOf(AgentOptionReceiveException.class).hasMessageContaining("invalid-config-id does not exist");
 	}
 
 	@Test

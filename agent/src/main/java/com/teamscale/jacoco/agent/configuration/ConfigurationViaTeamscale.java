@@ -1,16 +1,18 @@
 package com.teamscale.jacoco.agent.configuration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.teamscale.client.ITeamscaleService;
+import com.teamscale.client.JsonUtils;
 import com.teamscale.client.ProcessInformation;
 import com.teamscale.client.ProfilerConfiguration;
 import com.teamscale.client.ProfilerInfo;
 import com.teamscale.client.ProfilerRegistration;
 import com.teamscale.client.TeamscaleServiceGenerator;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
-import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.report.util.ILogger;
 import okhttp3.HttpUrl;
 import okhttp3.ResponseBody;
+import org.jetbrains.annotations.NotNull;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -51,31 +53,53 @@ public class ConfigurationViaTeamscale {
 	 * Tries to retrieve the profiler configuration from Teamscale. In case retrieval fails the method throws a
 	 * {@link AgentOptionReceiveException}.
 	 */
-	public static ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
+	public static @NotNull ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
 			String userName,
-			String userAccessToken) throws AgentOptionReceiveException, AgentOptionParseException {
+			String userAccessToken) throws AgentOptionReceiveException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
 			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
-			Response<ProfilerRegistration> response = teamscaleClient.registerProfiler(configurationId,
+			Response<ResponseBody> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
 			if (!response.isSuccessful()) {
-				if (response.code() >= 400 && response.code() < 500) {
-					throw new AgentOptionParseException(
-							"Failed to retrieve profiler configuration from Teamscale! " + response.errorBody()
-									.string());
-				}
 				throw new AgentOptionReceiveException(
-						"Failed to retrieve profiler configuration from Teamscale! " + response.errorBody().string());
+						"Failed to retrieve profiler configuration from Teamscale due to failed request. Http status: " + response.code()
+								+ " Body: " + response.errorBody().string());
 			}
-			ProfilerRegistration registration = response.body();
+
+			ResponseBody body = response.body();
+			return parseProfilerRegistration(body, response, teamscaleClient, processInformation);
+		} catch (IOException e) {
+			// we include the causing error message in this exception's message since this causes it to be printed
+			// to stderr which is much more helpful than just saying "something didn't work"
+			throw new AgentOptionReceiveException(
+					"Failed to retrieve profiler configuration from Teamscale due to network error: " + e.getMessage(),
+					e);
+		}
+	}
+
+	private static @NotNull ConfigurationViaTeamscale parseProfilerRegistration(ResponseBody body,
+			Response<ResponseBody> response, ITeamscaleService teamscaleClient,
+			ProcessInformation processInformation) throws AgentOptionReceiveException, IOException {
+		if (body == null) {
+			throw new AgentOptionReceiveException(
+					"Failed to retrieve profiler configuration from Teamscale due to empty response. HTTP code: " + response.code());
+		}
+		// We may only call this once
+		String bodyString = body.string();
+		try {
+			ProfilerRegistration registration = JsonUtils.deserialize(bodyString,
+					ProfilerRegistration.class);
 			if (registration == null) {
-				throw new AgentOptionReceiveException("Failed to retrieve profiler configuration from Teamscale!");
+				throw new AgentOptionReceiveException(
+						"Failed to retrieve profiler configuration from Teamscale due to invalid JSON. HTTP code: " + response.code() + " Response: " + bodyString);
 			}
 			return new ConfigurationViaTeamscale(teamscaleClient, registration, processInformation);
-		} catch (IOException e) {
-			throw new AgentOptionReceiveException("Failed to retrieve profiler configuration from Teamscale!", e);
+		} catch (JsonProcessingException e) {
+			throw new AgentOptionReceiveException(
+					"Failed to retrieve profiler configuration from Teamscale due to invalid JSON. HTTP code: " + response.code() + " Response: " + bodyString,
+					e);
 		}
 	}
 

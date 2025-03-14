@@ -32,6 +32,10 @@ tasks.jar {
     from(configurations.runtimeClasspath.get().files.map { if (it.isDirectory) it else zipTree(it) })
 }
 
+gitProperties {
+    dotGitDirectory = rootProject.layout.projectDirectory.dir(".git")
+}
+
 dependencies {
     // this logback version is the oldest one available that I could get to work and possibly incompatible
     // with the one used in the agent. This way, we can test if the shadowing works correctly

@@ -115,7 +115,8 @@ public class PreMain {
 		agent.registerShutdownHook();
 	}
 
-	private static Pair<AgentOptions, List<Exception>> getAndApplyAgentOptions(String options, String environmentConfigId,
+	private static Pair<AgentOptions, List<Exception>> getAndApplyAgentOptions(String options,
+			String environmentConfigId,
 			String environmentConfigFile) throws AgentOptionParseException, IOException, AgentOptionReceiveException {
 
 		DelayedLogger delayedLogger = new DelayedLogger();
@@ -153,7 +154,7 @@ public class PreMain {
 		} catch (AgentOptionReceiveException e) {
 			try (LoggingUtils.LoggingResources ignored = initializeFallbackLogging(options, delayedLogger)) {
 				delayedLogger.errorAndStdErr(
-						e.getMessage() + " The application should start up normally, but NO coverage will be collected!",
+						e.getMessage() + " The application should start up normally, but NO coverage will be collected! Check the log file for details.",
 						e);
 				attemptLogAndThrow(delayedLogger);
 				throw e;
