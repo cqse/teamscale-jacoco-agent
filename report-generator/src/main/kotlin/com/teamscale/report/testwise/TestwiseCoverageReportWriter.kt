@@ -19,10 +19,12 @@ class TestwiseCoverageReportWriter(
 	/** Factory for converting [TestCoverageBuilder] objects to [TestInfo]s.  */
 	private val testInfoFactory: TestInfoFactory, private val outputFile: File,
 	/** After how many written tests a new file should be started.  */
-	private val splitAfter: Int
+	private val splitAfter: Int,
+	/** Teh value of the partial flag. */
+	private val partial: Boolean?
 ) : Consumer<TestCoverageBuilder>,
 	AutoCloseable {
-	/** Writer instance to where the [com.teamscale.report.testwise.model.TestwiseCoverageReport] is written to.  */
+	/** Writer instance to where the [com.teamscale.report.testwise.model.TestwiseCoverageReport] is written to. */
 	private var jsonGenerator: JsonGenerator? = null
 
 	/** Number of tests written to the file.  */
@@ -60,6 +62,7 @@ class TestwiseCoverageReportWriter(
 		jsonGenerator = JsonUtils.createFactory().createGenerator(outputStream).apply {
 			prettyPrinter = DefaultPrettyPrinter()
 			writeStartObject()
+			partial?.let { writeBooleanField("partial", it) }
 			writeFieldName("tests")
 			writeStartArray()
 		}
@@ -74,6 +77,10 @@ class TestwiseCoverageReportWriter(
 
 	@Throws(IOException::class)
 	private fun writeTestInfo(testInfo: TestInfo?) {
+		if (testInfo == null || testInfo.paths.isEmpty() && partial == true) {
+			// Do not add skipped tests to the report if the partial flag is set
+			return
+		}
 		if (testsWritten >= splitAfter) {
 			endReport()
 			testsWritten = 0

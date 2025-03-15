@@ -108,6 +108,8 @@
                             <goal>prepare-tia-unit-test</goal> <!-- Enables TIA for Surefire unit tests -->
                             <goal>prepare-tia-integration-test
                             </goal> <!-- Enables TIA for Failsafe integration tests -->
+                            <goal>testwise-coverage-report</goal>
+                            <goal>upload-coverage</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -117,7 +119,8 @@
                     <username>build</username>
                     <accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
                     <commit>master:HEAD</commit>
-                    <partition>MyPartition</partition>
+                    <unitTestPartition>MyPartition</unitTestPartition>
+                    <integrationTestPartition>MyPartition</integrationTestPartition>
                     <includes>
                         <include>*hellocucumber*</include>
                     </includes>

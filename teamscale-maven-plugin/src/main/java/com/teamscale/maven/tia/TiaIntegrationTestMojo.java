@@ -12,15 +12,18 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 		requiresDependencyResolution = ResolutionScope.RUNTIME, threadSafe = true)
 public class TiaIntegrationTestMojo extends TiaMojoBase {
 
+	/** The name of the directory into which the binary execution data is written. */
+	public static final String OUTPUT_DIR_NAME = "tia-integration";
+
 	/**
-	 * The partition to which to upload integration test coverage.
+	 * The Teamscale partition name to which integration test reports will be uploaded.
 	 */
-	@Parameter(defaultValue = "Integration Tests")
-	public String partition;
+	@Parameter(property = "teamscale.integrationTestPartition", defaultValue = "Integration Tests")
+	public String integrationTestPartition;
 
 	@Override
 	protected String getPartition() {
-		return partition;
+		return integrationTestPartition;
 	}
 
 	@Override
@@ -36,5 +39,10 @@ public class TiaIntegrationTestMojo extends TiaMojoBase {
 	@Override
 	protected String getTestPluginPropertyPrefix() {
 		return "failsafe";
+	}
+
+	@Override
+	protected String getOutputDirectoryName() {
+		return OUTPUT_DIR_NAME;
 	}
 }

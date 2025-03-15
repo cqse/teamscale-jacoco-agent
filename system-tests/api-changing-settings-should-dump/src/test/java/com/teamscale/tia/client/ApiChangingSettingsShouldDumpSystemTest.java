@@ -1,5 +1,7 @@
 package com.teamscale.tia.client;
 
+import com.teamscale.client.EReportFormat;
+import com.teamscale.test.commons.Session;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.Test;
@@ -26,10 +28,9 @@ public class ApiChangingSettingsShouldDumpSystemTest {
 		new SystemUnderTest().foo();
 		SystemTestUtils.changePartition(SystemTestUtils.AGENT_PORT, "some_other_value");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		assertThat(teamscaleMockServer.uploadedReports.get(0).getPartition()).isEqualTo("partition_before_change");
-		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
-		assertThat(report).contains(coveredLine(METHOD_FOO_COVERABLE_LINE));
+		Session session = teamscaleMockServer.getOnlySession();
+		assertThat(session.getPartition()).isEqualTo("partition_before_change");
+		assertThat(session.getOnlyReport(EReportFormat.JACOCO)).contains(coveredLine(METHOD_FOO_COVERABLE_LINE));
 	}
 
 	private String coveredLine(int lineNumber) {

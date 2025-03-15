@@ -1,5 +1,6 @@
 package com.teamscale.tia;
 
+import com.google.common.collect.Iterables;
 import com.teamscale.client.JsonUtils;
 import com.teamscale.report.testwise.model.ETestExecutionResult;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
@@ -44,7 +45,7 @@ public class TiaMavenDumpToFileSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests(MAVEN_PROJECT_NAME);
 
-		TestwiseCoverageReport unitTestReport = parseDumpedCoverageReport(0);
+		TestwiseCoverageReport unitTestReport = parseDumpedCoverageReport("tia");
 		assertThat(unitTestReport.tests).hasSize(2);
 		assertThat(unitTestReport.partial).isFalse();
 		assertAll(() -> {
@@ -56,7 +57,7 @@ public class TiaMavenDumpToFileSystemTest {
 					.containsExactly("SUT.java:3,6-7", "SUT.java:3,10-11");
 		});
 
-		TestwiseCoverageReport integrationTestReport = parseDumpedCoverageReport(1);
+		TestwiseCoverageReport integrationTestReport = parseDumpedCoverageReport("tia-integration");
 		assertThat(integrationTestReport.tests).hasSize(2);
 		assertAll(() -> {
 			assertThat(integrationTestReport.tests).extracting(test -> test.uniformPath)
@@ -68,9 +69,10 @@ public class TiaMavenDumpToFileSystemTest {
 		});
 	}
 
-	private TestwiseCoverageReport parseDumpedCoverageReport(int index) throws IOException {
-		List<Path> files = SystemTestUtils.getReportFileNames(MAVEN_PROJECT_NAME);
-		return JsonUtils.deserialize(new String(Files.readAllBytes(files.get(index))), TestwiseCoverageReport.class);
+	private TestwiseCoverageReport parseDumpedCoverageReport(String folderName) throws IOException {
+		List<Path> files = SystemTestUtils.getReportFileNames(MAVEN_PROJECT_NAME, folderName);
+		return JsonUtils.deserialize(new String(Files.readAllBytes(Iterables.getOnlyElement(files))),
+				TestwiseCoverageReport.class);
 	}
 
 }

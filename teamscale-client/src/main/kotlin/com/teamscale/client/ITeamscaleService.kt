@@ -25,9 +25,9 @@ interface ITeamscaleService {
 	 * for details.
 	 */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectAliasOrId}/external-analysis/session/auto-create/report")
+	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
 	fun uploadExternalReport(
-		@Path("projectAliasOrId") projectAliasOrId: String,
+		@Path("projectId") projectId: String,
 		@Query("format") format: String,
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
@@ -39,14 +39,22 @@ interface ITeamscaleService {
 	): Call<ResponseBody>
 
 	/**
-	 * Report upload API for multiple reports at once.
-	 *
-	 * @see uploadExternalReport
+	 * Add multiple files into an existing session.
 	 */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
+	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/{sessionId}/report")
 	fun uploadExternalReports(
-		@Path("projectName") projectName: String,
+		@Path("projectId") projectId: String,
+		@Path("sessionId") sessionId: String,
+		@Query("format") format: String,
+		@Part report: List<MultipartBody.Part>
+	): Call<ResponseBody>
+
+	/** Uploads reports in an auto-create session. */
+	@Multipart
+	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
+	fun uploadExternalReports(
+		@Path("projectId") projectId: String,
 		@Query("format") format: EReportFormat,
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
@@ -57,6 +65,25 @@ interface ITeamscaleService {
 		@Part report: List<MultipartBody.Part>
 	): Call<ResponseBody>
 
+	/** Creates an external report session, which allows to upload reports in multiple formats as one commit. */
+	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session")
+	fun createSession(
+		@Path("projectId") projectId: String,
+		@Query("t") commit: CommitDescriptor?,
+		@Query("revision") revision: String?,
+		@Query("repository") repository: String?,
+		@Query("movetolastcommit") moveToLastCommit: Boolean,
+		@Query("partition") partition: String,
+		@Query("message") message: String
+	): Call<String>
+
+	/** Commits/closes the given session. */
+	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/{sessionId}")
+	fun commitSession(
+		@Path("projectId") projectId: String,
+		@Path("sessionId") sessionId: String
+	): Call<Void>
+
 	/**
 	 * Report upload API for multiple reports at once. This is an overloaded version that takes a string as report
 	 * format so that consumers can add support for new report formats without requiring changes to teamscale-client.
@@ -64,9 +91,9 @@ interface ITeamscaleService {
 	 * @see uploadExternalReport
 	 */
 	@Multipart
-	@POST("api/v5.9.0/projects/{projectName}/external-analysis/session/auto-create/report")
+	@POST("api/v5.9.0/projects/{projectId}/external-analysis/session/auto-create/report")
 	fun uploadExternalReports(
-		@Path("projectName") projectName: String,
+		@Path("projectId") projectId: String,
 		@Query("format") format: String,
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
@@ -78,9 +105,9 @@ interface ITeamscaleService {
 	): Call<ResponseBody>
 
 	/** Retrieve clustered impacted tests based on the given available tests and baseline timestamp. */
-	@PUT("api/v9.4.0/projects/{projectName}/impacted-tests")
+	@PUT("api/v9.4.0/projects/{projectId}/impacted-tests")
 	fun getImpactedTests(
-		@Path("projectName") projectName: String,
+		@Path("projectId") projectId: String,
 		@Query("baseline") baseline: String?,
 		@Query("baseline-revision") baselineRevision: String?,
 		@Query("end") end: CommitDescriptor?,
@@ -95,9 +122,9 @@ interface ITeamscaleService {
 	): Call<List<PrioritizableTestCluster>>
 
 	/** Retrieve unclustered impacted tests based on all tests known to Teamscale and the given baseline timestamp. */
-	@GET("api/v9.4.0/projects/{projectName}/impacted-tests")
+	@GET("api/v9.4.0/projects/{projectId}/impacted-tests")
 	fun getImpactedTests(
-		@Path("projectName") projectName: String,
+		@Path("projectId") projectId: String,
 		@Query("baseline") baseline: String?,
 		@Query("baseline-revision") baselineRevision: String?,
 		@Query("end") end: CommitDescriptor?,
@@ -164,7 +191,7 @@ interface ITeamscaleService {
  */
 @Throws(IOException::class)
 fun ITeamscaleService.uploadReport(
-	projectName: String,
+	projectId: String,
 	commit: CommitDescriptor?,
 	revision: String?,
 	repository: String?,
@@ -183,7 +210,7 @@ fun ITeamscaleService.uploadReport(
 
 	try {
 		val response = uploadExternalReport(
-			projectName, reportFormat.name, commitNull, revision, repository, moveToLastCommit, partition, message, report
+			projectId, reportFormat.name, commitNull, revision, repository, moveToLastCommit, partition, message, report
 		).execute()
 
 		val body = response.body()

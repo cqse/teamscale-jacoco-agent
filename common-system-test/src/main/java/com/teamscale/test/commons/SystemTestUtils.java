@@ -1,5 +1,17 @@
 package com.teamscale.test.commons;
 
+import com.teamscale.report.testwise.model.TestInfo;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import org.apache.commons.lang3.SystemUtils;
+import org.conqat.lib.commons.io.ProcessUtils;
+import org.jetbrains.annotations.NotNull;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,20 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.conqat.lib.commons.io.ProcessUtils;
-import org.jetbrains.annotations.NotNull;
-
-import com.teamscale.report.testwise.model.TestInfo;
-
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.http.Body;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
 
 /**
  * Utilities for running system tests.
@@ -155,13 +153,13 @@ public class SystemTestUtils {
 		}
 
 		arguments.addAll(Arrays.asList(gradleArguments));
-		
+
 		return new ProcessBuilder(arguments).directory(new File(gradleProjectDirectory));
 	}
 
 	/** Retrieve all files in the `tia/reports` folder sorted by name. */
-	public static List<Path> getReportFileNames(String mavenProjectPath) throws IOException {
-		try (Stream<Path> stream = Files.walk(Paths.get(mavenProjectPath, "target", "tia", "reports"))) {
+	public static List<Path> getReportFileNames(String mavenProjectPath, String folderName) throws IOException {
+		try (Stream<Path> stream = Files.walk(Paths.get(mavenProjectPath, "target", folderName, "reports"))) {
 			return stream.filter(Files::isRegularFile).sorted().collect(Collectors.toList());
 		}
 	}

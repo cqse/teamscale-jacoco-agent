@@ -12,15 +12,18 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 		threadSafe = true)
 public class TiaUnitTestMojo extends TiaMojoBase {
 
+	/** The name of the directory into which the binary execution data is written. */
+	public static final String OUTPUT_DIR_NAME = "tia";
+
 	/**
-	 * The partition to which to upload unit test coverage.
+	 * The Teamscale partition name to which unit test reports will be uploaded.
 	 */
-	@Parameter(defaultValue = "Unit Tests")
-	public String partition;
+	@Parameter(property = "teamscale.unitTestPartition", defaultValue = "Unit Tests")
+	public String unitTestPartition;
 
 	@Override
 	protected String getPartition() {
-		return partition;
+		return unitTestPartition;
 	}
 
 	@Override
@@ -36,5 +39,10 @@ public class TiaUnitTestMojo extends TiaMojoBase {
 	@Override
 	protected String getTestPluginPropertyPrefix() {
 		return "surefire";
+	}
+
+	@Override
+	protected String getOutputDirectoryName() {
+		return OUTPUT_DIR_NAME;
 	}
 }

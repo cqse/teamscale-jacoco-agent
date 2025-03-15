@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import okhttp3.MultipartBody.Companion.FORM
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
 import retrofit2.Response
 import java.io.File
 import java.io.IOException
@@ -148,7 +149,7 @@ open class TeamscaleClient {
 		val ensureProcessed = testImpactOptions.contains(ETestImpactOptions.ENSURE_PROCESSED)
 		val includeAddedTests = testImpactOptions.contains(ETestImpactOptions.INCLUDE_ADDED_TESTS)
 
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
 		return if (availableTests == null) {
 			wrapInCluster(
@@ -168,24 +169,11 @@ open class TeamscaleClient {
 		}
 	}
 
-	/** Uploads multiple reports to Teamscale in the given [EReportFormat].  */
-	@Throws(IOException::class)
-	open fun uploadReports(
-		reportFormat: EReportFormat,
-		reports: Collection<File>,
-		commitDescriptor: CommitDescriptor?,
-		revision: String?,
-		repository: String?,
-		partition: String,
-		message: String
-	) {
-		uploadReports(reportFormat.name, reports, commitDescriptor, revision, repository, partition, message)
-	}
-
 	/** Uploads multiple reports to Teamscale.  */
 	@Throws(IOException::class)
 	open fun uploadReports(
-		reportFormat: String,
+		sessionId: String,
+		reportFormat: EReportFormat,
 		reports: Collection<File>,
 		commitDescriptor: CommitDescriptor?,
 		revision: String?,
@@ -198,15 +186,61 @@ open class TeamscaleClient {
 			MultipartBody.Part.createFormData("report", file.name, requestBody)
 		}
 
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
-		val response = service
-			.uploadExternalReports(
-				projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
-			).execute()
-		if (!response.isSuccessful) {
-			throw IOException("HTTP request failed: " + HttpUtils.getErrorBodyStringSafe(response))
+		service.uploadExternalReports(
+			projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
+		).executeOrThrow()
+	}
+
+	/** Uploads multiple reports to Teamscale.  */
+	@Throws(IOException::class)
+	open fun uploadReports(
+		reportFormat: EReportFormat,
+		reports: Collection<File>,
+		commitDescriptor: CommitDescriptor?,
+		revision: String?,
+		repository: String?,
+		partition: String,
+		message: String
+	) {
+		val partList = reports.map { file ->
+			val requestBody = file.asRequestBody(FORM)
+			MultipartBody.Part.createFormData("report", file.name, requestBody)
 		}
+
+		require(projectId != null) { "Project ID must not be null!" }
+
+		service.uploadExternalReports(
+			projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
+		).executeOrThrow()
+	}
+
+	/** Uploads multiple reports to Teamscale within one session.  */
+	@Throws(IOException::class)
+	fun uploadReports(
+		reports: Map<String, Collection<File>>,
+		commitDescriptor: CommitDescriptor?,
+		revision: String?,
+		repository: String?,
+		partition: String,
+		message: String
+	) {
+		require(projectId != null) { "Project ID must not be null!" }
+		val sessionId =
+			service.createSession(projectId, commitDescriptor, revision, repository, true, partition, message)
+				.executeOrThrow()
+		require(sessionId != null) { "Session ID was null" }
+
+		for ((reportFormat, files) in reports) {
+			val partList = files.map { file ->
+				val requestBody = file.asRequestBody(FORM)
+				MultipartBody.Part.createFormData("report", file.name, requestBody)
+			}
+
+			service.uploadExternalReports(projectId, sessionId, reportFormat, partList).executeOrThrow()
+		}
+		service.commitSession(projectId, sessionId).executeOrThrow()
 	}
 
 	/** Uploads one in-memory report to Teamscale.  */
@@ -220,7 +254,7 @@ open class TeamscaleClient {
 		partition: String,
 		message: String
 	) {
-		require (projectId != null) { "Project ID must not be null!" }
+		require(projectId != null) { "Project ID must not be null!" }
 
 		service.uploadReport(
 			projectId,
@@ -256,4 +290,17 @@ open class TeamscaleClient {
 			}
 		}
 	}
+}
+
+/**
+ * Executes the service call and throws if a non 2xx status code is returned,
+ * including the URL of the failing request in the error message.
+ */
+@Throws(IOException::class)
+fun <T> Call<T>.executeOrThrow(): T? {
+	val response = execute()
+	if (!response.isSuccessful) {
+		throw IOException("HTTP request " + request() + " failed: " + HttpUtils.getErrorBodyStringSafe(response))
+	}
+	return response.body()
 }

@@ -1,9 +1,9 @@
 package com.teamscale.jacoco.agent.convert;
 
 import com.teamscale.client.TestDetails;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.AgentOptionParseException;
 import com.teamscale.jacoco.agent.util.Benchmark;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.ReportUtils;
 import com.teamscale.report.jacoco.EmptyReportException;
 import com.teamscale.report.jacoco.JaCoCoXmlReportGenerator;
@@ -89,7 +89,7 @@ public class Converter {
 					"Writing report with " + testDetails.size() + " Details/" + testExecutions.size() + " Results");
 
 			try (TestwiseCoverageReportWriter coverageWriter = new TestwiseCoverageReportWriter(testInfoFactory,
-					arguments.getOutputFile(), arguments.getSplitAfter())) {
+					arguments.getOutputFile(), arguments.getSplitAfter(), null)) {
 				for (File executionDataFile : jacocoExecutionDataList) {
 					generator.convertAndConsume(executionDataFile, coverageWriter);
 				}

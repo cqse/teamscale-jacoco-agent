@@ -17,7 +17,7 @@ public class RedirectMockServer {
 		service = Service.ignite();
 		service.port(port);
 		service.post("/*", (Request request, Response response) -> {
-			String url = request.url();
+			String url = request.url() + "?" + request.queryString();
 			url = url.replace(Integer.toString(port), Integer.toString(redirectTo));
 			response.redirect(url, 307);
 			return response;

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.example</groupId>
+		<artifactId>nested-project</artifactId>
+		<version>1.0-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+
+	<artifactId>coverage</artifactId>
+	<packaging>pom</packaging>
+
+	<name>Example Test Coverage Reports</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sub-project-A</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sub-project-B1</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sub-project-B2</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.teamscale</groupId>
+				<artifactId>teamscale-maven-plugin</artifactId>
+				<version>${tia.agent.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>upload-coverage</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<teamscaleUrl>http://localhost:${tia.teamscale.fake.port}</teamscaleUrl>
+					<projectId>m</projectId>
+					<username>build</username>
+					<accessToken>6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4</accessToken>
+					<commit>master:HEAD</commit>
+					<unitTestPartition>My Custom Unit Tests Partition</unitTestPartition>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

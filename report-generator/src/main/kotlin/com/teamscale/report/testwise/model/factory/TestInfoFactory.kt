@@ -12,6 +12,7 @@ import com.teamscale.report.testwise.model.builder.TestwiseCoverageReportBuilder
  * from test details and test executions.
  */
 class TestInfoFactory(testDetails: List<TestDetails>, testExecutions: List<TestExecution>) {
+
 	/** Maps uniform paths to test details.  */
 	private val testDetailsMap = mutableMapOf<String, TestDetails>()
 
@@ -31,6 +32,9 @@ class TestInfoFactory(testDetails: List<TestDetails>, testExecutions: List<TestE
 			}
 		}
 	}
+
+	/** Returns whether the test details are empty. */
+	fun isEmpty() = testDetailsMap.isEmpty()
 
 	/**
 	 * Converts the given [TestCoverageBuilder] to a [TestInfo] using the internally stored test details and

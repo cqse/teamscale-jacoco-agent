@@ -1,6 +1,7 @@
 package com.teamscale.upload;
 
-import com.teamscale.test.commons.ExternalReport;
+import com.teamscale.client.EReportFormat;
+import com.teamscale.test.commons.Session;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.apache.commons.lang3.SystemUtils;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -38,7 +40,7 @@ public class MavenExternalUploadSystemTest {
 		if (teamscaleMockServer == null) {
 			teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT).acceptingReportUploads();
 		}
-		teamscaleMockServer.uploadedReports.clear();
+		teamscaleMockServer.reset();
 	}
 
 	private ProcessUtils.ExecutionResult runCoverageUploadGoal(String projectPath) {
@@ -60,11 +62,13 @@ public class MavenExternalUploadSystemTest {
 	public void testMavenExternalUpload() throws Exception {
 		SystemTestUtils.runMavenTests(NESTED_MAVEN_PROJECT_NAME);
 		runCoverageUploadGoal(NESTED_MAVEN_PROJECT_NAME);
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(6);
-		ExternalReport unitTests = teamscaleMockServer.uploadedReports.get(0);
-		ExternalReport integrationTests = teamscaleMockServer.uploadedReports.get(3);
-		assertThat(unitTests.getPartition()).isEqualTo("My Custom Unit Tests Partition");
-		assertThat(integrationTests.getPartition()).isEqualTo("Integration Tests");
+		List<Session> sessions = teamscaleMockServer.getSessions();
+		assertThat(sessions).hasSize(2);
+		assertThat(sessions.getFirst().getPartition()).isEqualTo("Integration Tests");
+		assertThat(sessions.getLast().getPartition()).isEqualTo("My Custom Unit Tests Partition");
+
+		assertThat(sessions.getFirst().getReports(EReportFormat.JACOCO)).hasSize(3);
+		assertThat(sessions.getLast().getReports(EReportFormat.JACOCO)).hasSize(3);
 	}
 
 	@Test
@@ -72,7 +76,7 @@ public class MavenExternalUploadSystemTest {
 		SystemTestUtils.runMavenTests(FAILING_MAVEN_PROJECT_NAME);
 		ProcessUtils.ExecutionResult result = runCoverageUploadGoal(FAILING_MAVEN_PROJECT_NAME);
 		assertThat(result).isNotNull();
-		assertThat(teamscaleMockServer.uploadedReports).isEmpty();
+		assertThat(teamscaleMockServer.getSessions()).isEmpty();
 		assertThat(result.getStdout()).contains(
 				String.format("Skipping upload for %s as %s is not configured to produce XML reports",
 						FAILING_MAVEN_PROJECT_NAME, "org.jacoco:jacoco-maven-plugin"));
@@ -91,7 +95,7 @@ public class MavenExternalUploadSystemTest {
 		ProcessUtils.ExecutionResult result = runCoverageUploadGoal(projectPath);
 		assertThat(result).isNotNull();
 		assertThat(result.getReturnCode()).isNotEqualTo(0);
-		assertThat(teamscaleMockServer.uploadedReports).isEmpty();
+		assertThat(teamscaleMockServer.getSessions()).isEmpty();
 		assertThat(result.getStdout()).contains("There is no <revision> or <commit> configured in the pom.xml and it was not possible to determine the current revision");
 	}
 
