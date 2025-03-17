@@ -20,7 +20,7 @@ import java.io.File
 class TestwiseCoverageReporting(
 	private val logger: Logger,
 	private val partial: Boolean,
-	private val classDirs: MutableSet<File>,
+	private val classDirs: Collection<File>,
 	private val predicate: ClasspathWildcardIncludeFilter,
 	private val reportOutputDirs: Collection<File>,
 	private val reportOutputLocation: File

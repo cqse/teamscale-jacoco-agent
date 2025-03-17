@@ -41,9 +41,9 @@ abstract class TestwiseCoverageReport : JaCoCoBasedReportTaskBase<TestwiseCovera
 		TestwiseCoverageReporting(
 			logger,
 			partial.get(),
-			classDirectories.files,
+			classDirectories.files.filter { it.exists() },
 			ClasspathWildcardIncludeFilter(null, null),
-			executionData.files,
+			executionData.files.filter { it.exists() },
 			reportContainer.testwiseCoverage.outputLocation.asFile.get()
 		).generateTestwiseCoverageReports()
 	}

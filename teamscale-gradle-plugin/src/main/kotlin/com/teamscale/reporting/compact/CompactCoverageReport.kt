@@ -48,7 +48,10 @@ abstract class CompactCoverageReport : JaCoCoBasedReportTaskBase<CompactCoverage
 		)
 
 		try {
-			generator.convertExecFilesToReport(executionData.files, reportContainer.compactCoverage.outputLocation.get().asFile)
+			generator.convertExecFilesToReport(
+				executionData.files.filter { it.exists() },
+				reportContainer.compactCoverage.outputLocation.get().asFile
+			)
 		} catch (e: EmptyReportException) {
 			logger.warn("Converted report was empty.")
 		}
