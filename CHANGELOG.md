@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _agent_: Make Teamscale connection more robust in K8s environment
 
 # 34.2.5
 - [fix] Improved error messages when configuration can't be read from Teamscale 
