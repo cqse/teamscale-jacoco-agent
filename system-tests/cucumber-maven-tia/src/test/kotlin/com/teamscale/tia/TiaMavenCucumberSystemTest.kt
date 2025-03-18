@@ -82,7 +82,6 @@ class TiaMavenCucumberSystemTest {
 		)
 	}
 
-
 	companion object {
 		private val IMPACTED_TEST_PATHS = arrayOf( // sorted alphabetically
 			"hellocucumber/RunCucumberTest/hellocucumber/calculator.feature/Actually we just want to test a http:\\/\\/link #1",  // also tests addition, escaped /
