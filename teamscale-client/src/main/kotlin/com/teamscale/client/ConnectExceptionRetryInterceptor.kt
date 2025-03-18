@@ -62,7 +62,7 @@ class ConnectExceptionRetryInterceptor(private val timeout: Duration) : Intercep
 	/**
 	 * Calculates the backoff delay using exponential backoff with jitter.
 	 */
-	private fun calculateBackoffDelay(attemptCount: Int): Long {
+	fun calculateBackoffDelay(attemptCount: Int): Long {
 		val baseDelayMs = 500L // Start with 500ms
 		val maxDelayMs = 5000L // Max 5 seconds
 

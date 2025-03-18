@@ -238,11 +238,13 @@ public class PreMain {
 		for (String optionPart : premainOptions.split(",")) {
 			if (optionPart.startsWith(AgentOptionsParser.DEBUG + "=")) {
 				String value = optionPart.split("=", 2)[1];
-				if (value.equalsIgnoreCase("false")) {
+				boolean debugDisabled = value.equalsIgnoreCase("false");
+				boolean debugEnabled = value.equalsIgnoreCase("true");
+				if (debugDisabled) {
 					continue;
 				}
 				Path debugLogDirectory = null;
-				if (!value.isEmpty() && !value.equalsIgnoreCase("true")) {
+				if (!value.isEmpty() && !debugEnabled) {
 					debugLogDirectory = Paths.get(value);
 				}
 				return LoggingUtils.initializeDebugLogging(debugLogDirectory);
