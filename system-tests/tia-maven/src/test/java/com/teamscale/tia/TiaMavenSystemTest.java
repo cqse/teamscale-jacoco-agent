@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * Runs several Maven projects' Surefire tests that have the agent attached and one of our JUnit run listeners enabled.
+ * Runs several Maven projects' Surefire tests that have the agent attached, and one of our JUnit run listeners enabled.
  * Checks that this produces a correct coverage report.
  */
 public class TiaMavenSystemTest {
@@ -44,18 +44,16 @@ public class TiaMavenSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project", "-Dtia");
 
-		assertThat(teamscaleMockServer.availableTests).extracting("partition").containsOnly("Unit Tests", "Integration Tests");
+		assertThat(teamscaleMockServer.availableTests).extracting("partition")
+				.containsOnly("Unit Tests", "Integration Tests");
 
 		assertThat(teamscaleMockServer.getSessions()).hasSize(2);
 		Session unitTestSession = teamscaleMockServer.getSession("Unit Tests");
 		Session integrationTestSession = teamscaleMockServer.getSession("Integration Tests");
 
-		assertThat(integrationTestSession.getRepository()).isEqualTo("myRepoId");
-		assertThat(teamscaleMockServer.impactedTestRepositories).containsOnly("myRepoId");
-
-		assertThat(integrationTestSession.getCommit()).matches("abcd1337, .*");
-		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("abcd1337, .*");
-		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("abcd1337, .*");
+		assertThat(integrationTestSession.getCommit()).matches("abcd1337:myRepoId, .*");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("abcd1337:myRepoId, .*");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("abcd1337:myRepoId, .*");
 
 		TestwiseCoverageReport unitTestReport = unitTestSession.getOnlyTestwiseCoverageReport();
 		assertThat(unitTestReport.partial).isTrue();
@@ -70,9 +68,9 @@ public class TiaMavenSystemTest {
 		SystemTestUtils.runMavenTests("maven-project", "-DteamscaleRevision=abcd1337",
 				"-DteamscaleTimestamp=master:HEAD", "-Dtia");
 
-		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("abcd1337, null");
-		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("abcd1337, null");
-		assertThat(teamscaleMockServer.getSession("Unit Tests").getCommit()).matches("abcd1337, null");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(0)).matches("abcd1337:myRepoId, null");
+		assertThat(teamscaleMockServer.impactedTestCommits.get(1)).matches("abcd1337:myRepoId, null");
+		assertThat(teamscaleMockServer.getSession("Unit Tests").getCommit()).matches("abcd1337:myRepoId, null");
 	}
 
 	@Test
@@ -91,8 +89,8 @@ public class TiaMavenSystemTest {
 	}
 
 	/**
-	 * Starts a maven process with the reuseForks flag set to "false". Checks if the coverage
-	 * can be converted to a testwise coverage report afterward.
+	 * Starts a maven process with the reuseForks flag set to "false". Checks if the coverage can be converted to a
+	 * testwise coverage report afterward.
 	 */
 	@Test
 	public void testMavenTiaWithoutReuseForks() throws Exception {

@@ -13,8 +13,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents an upload session to Teamscale which contains data from a single partition, for a specific
- * commit/revision.
- * A session may contain data in multiple formats.
+ * commit/revision. A session may contain data in multiple formats.
  */
 public class Session {
 
@@ -38,12 +37,7 @@ public class Session {
 	 * representation separated by a comma.
 	 */
 	public String getCommit() {
-		return revision + ", " + commit;
-	}
-
-	/** Returns the repository ID if it was set. */
-	public String getRepository() {
-		return repository;
+		return revision + ":" + repository + ", " + commit;
 	}
 
 	/** Returns the partition name for which the session was opened. */
@@ -52,7 +46,7 @@ public class Session {
 	}
 
 	/**
-	 * Marks the session as submitted, which means no more data will be added, and a real Teamscale would start
+	 * Marks the session as committed, which means no more data will be added, and a real Teamscale would start
 	 * processing the data now.
 	 */
 	public void markCommitted() {
@@ -109,7 +103,7 @@ public class Session {
 				TestwiseCoverageReport.class);
 	}
 
-	/** Returns the only Testwise Coverage report in deserialized form.  */
+	/** Returns the only Testwise Coverage report in deserialized form. */
 	public TestwiseCoverageReport getOnlyTestwiseCoverageReport() throws JsonProcessingException {
 		return JsonUtils.deserialize(
 				getOnlyReport(EReportFormat.TESTWISE_COVERAGE),

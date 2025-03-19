@@ -151,7 +151,7 @@ class TeamscalePluginTest {
 			"--run-all-tests",
 			"teamscaleReportUpload"
 		)
-		assertThat(teamscaleMockServer.onlySession.commit).isEqualTo("null, master:1544512967526")
+		assertThat(teamscaleMockServer.onlySession.commit).isEqualTo("null:myRepoId, master:1544512967526")
 	}
 
 	@Test
@@ -167,8 +167,7 @@ class TeamscalePluginTest {
 			"teamscaleReportUpload"
 		)
 		val session = teamscaleMockServer.onlySession
-		assertThat(session.commit).isEqualTo("abcd1337, null")
-		assertThat(session.repository).isEqualTo("myRepoId")
+		assertThat(session.commit).isEqualTo("abcd1337:myRepoId, null")
 	}
 
 	@Test
@@ -181,7 +180,7 @@ class TeamscalePluginTest {
 			"--impacted",
 			"teamscaleReportUpload"
 		)
-		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("null:myRepoId, master:1544512967526")
 	}
 
 	@Test
@@ -195,8 +194,7 @@ class TeamscalePluginTest {
 			"--impacted",
 			"teamscaleReportUpload"
 		)
-		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, null")
-		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337:myRepoId, null")
 	}
 
 	@Test

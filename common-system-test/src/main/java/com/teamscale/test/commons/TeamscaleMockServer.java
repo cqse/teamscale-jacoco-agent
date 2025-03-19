@@ -49,8 +49,6 @@ public class TeamscaleMockServer {
 
 	/** A list of all commits for which impacted tests were requested. Can either be branch:timestamp or revision */
 	public final List<String> impactedTestCommits = new ArrayList<>();
-	/** A list of all repositories for which impacted tests were requested. */
-	public final List<String> impactedTestRepositories = new ArrayList<>();
 	/** A list of all commits used as baseline for retrieving impacted tests */
 	public final List<String> baselines = new ArrayList<>();
 
@@ -85,7 +83,6 @@ public class TeamscaleMockServer {
 		availableTests.clear();
 		profilerEvents.clear();
 		impactedTestCommits.clear();
-		impactedTestRepositories.clear();
 		baselines.clear();
 	}
 
@@ -202,8 +199,8 @@ public class TeamscaleMockServer {
 		requireAuthentication(request, response);
 
 		collectedUserAgents.add(request.headers("User-Agent"));
-		impactedTestCommits.add(request.queryParams("end-revision") + ", " + request.queryParams("end"));
-		impactedTestRepositories.add(request.queryParams("repository"));
+		impactedTestCommits.add(request.queryParams("end-revision") + ":" + request.queryParams(
+				"repository") + ", " + request.queryParams("end"));
 		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"));
 		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
 		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());

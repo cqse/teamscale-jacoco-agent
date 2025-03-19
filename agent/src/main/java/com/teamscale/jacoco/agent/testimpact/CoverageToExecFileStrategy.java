@@ -22,20 +22,20 @@ public class CoverageToExecFileStrategy extends TestEventHandlerStrategyBase {
 	private final TestExecutionWriter testExecutionWriter;
 
 	public CoverageToExecFileStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
-									  TestExecutionWriter testExecutionWriter) {
+			TestExecutionWriter testExecutionWriter) {
 		super(agentOptions, controller);
 		this.testExecutionWriter = testExecutionWriter;
 	}
 
 	@Override
 	public TestInfo testEnd(String test,
-							TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
+			TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		logger.debug("Test {} ended with execution {}. Writing exec file and test execution", test, testExecution);
 		super.testEnd(test, testExecution);
 		controller.dump();
 		// Ensures that the coverage collected between the last test and the JVM shutdown
 		// is not considered a test with the same name as the last test
-		controller.setSessionId("");
+		controller.resetSessionId();
 		if (testExecution != null) {
 			try {
 				testExecutionWriter.append(testExecution);

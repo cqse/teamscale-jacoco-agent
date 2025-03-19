@@ -20,6 +20,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Batch converts all binary data files of the current and dependent projects into a Testwise Coverage report.
- * The goal should only be run in the aggregator module.
+ * Batch converts all binary data files of the current and dependent projects into a Testwise Coverage report. The goal
+ * should only be run in the aggregator module.
  */
 @Mojo(name = TestwiseCoverageReportMojo.NAME, defaultPhase = LifecyclePhase.VERIFY, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class TestwiseCoverageReportMojo extends AbstractMojo {
@@ -85,12 +86,7 @@ public class TestwiseCoverageReportMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoFailureException {
-		List<File> projectBuildDirectories = new ArrayList<>();
-		List<MavenProject> dependantProjects = DependencyUtils.findDependencies(reactorProjects, project,
-				Artifact.SCOPE_COMPILE, Artifact.SCOPE_RUNTIME, Artifact.SCOPE_PROVIDED);
-		for (MavenProject dependantProject : dependantProjects) {
-			projectBuildDirectories.add(new File(dependantProject.getBuild().getDirectory()));
-		}
+		List<File> projectBuildDirectories = collectProjectBuildDirectories();
 		logger.info("Generating the testwise coverage report");
 		JaCoCoTestwiseReportGenerator generator = createJaCoCoTestwiseReportGenerator(projectBuildDirectories);
 
@@ -98,12 +94,20 @@ public class TestwiseCoverageReportMojo extends AbstractMojo {
 		generateTestwiseCoverageReport(generator, projectBuildDirectories, TiaIntegrationTestMojo.OUTPUT_DIR_NAME);
 	}
 
+	private @NotNull List<File> collectProjectBuildDirectories() {
+		List<File> projectBuildDirectories = new ArrayList<>();
+		List<MavenProject> dependantProjects = DependencyUtils.findDependencies(reactorProjects, project,
+				Artifact.SCOPE_COMPILE, Artifact.SCOPE_RUNTIME, Artifact.SCOPE_PROVIDED);
+		for (MavenProject dependantProject : dependantProjects) {
+			projectBuildDirectories.add(new File(dependantProject.getBuild().getDirectory()));
+		}
+		return projectBuildDirectories;
+	}
+
 	private void generateTestwiseCoverageReport(JaCoCoTestwiseReportGenerator generator,
 			List<File> projectBuildDirectories, String folderName) throws MojoFailureException {
 		Path outputsFolder = Paths.get(project.getBuild().getDirectory(), folderName);
-		List<File> reportFileDirectories = projectBuildDirectories.stream()
-				.map(buildDir -> new File(buildDir, folderName))
-				.collect(Collectors.toList());
+		List<File> reportFileDirectories = getReportFileDirectories(projectBuildDirectories, folderName);
 		TestInfoFactory testInfoFactory = createTestInfoFactory(reportFileDirectories);
 		if (testInfoFactory.isEmpty()) {
 			logger.debug(
@@ -131,6 +135,13 @@ public class TestwiseCoverageReportMojo extends AbstractMojo {
 			logger.error("Could not create testwise report. Aborting.", e);
 			throw new MojoFailureException(e);
 		}
+	}
+
+	/** Appends the given folderName to all given project build directories. */
+	private static @NotNull List<File> getReportFileDirectories(List<File> projectBuildDirectories, String folderName) {
+		return projectBuildDirectories.stream()
+				.map(buildDir -> new File(buildDir, folderName))
+				.collect(Collectors.toList());
 	}
 
 	private TestInfoFactory createTestInfoFactory(List<File> reportFiles) throws MojoFailureException {
