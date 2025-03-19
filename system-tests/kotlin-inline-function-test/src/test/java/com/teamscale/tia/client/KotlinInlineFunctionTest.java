@@ -20,7 +20,7 @@ public class KotlinInlineFunctionTest {
 		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
 		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		String report = teamscaleMockServer.uploadedReports.get(0).getReportString();
+		String report = teamscaleMockServer.uploadedReports.get(0).reportString;
 		assertThat(report).doesNotContain("<line nr=\"8\"");
 		assertThat(report).contains("nr=\"4\" mi=\"0\" ci=\"21\"");
 	}

@@ -21,7 +21,7 @@ public class TiaClientTiaModeHttpSystemTest {
 		CustomTestFramework customTestFramework = new CustomTestFramework(SystemTestUtils.AGENT_PORT);
 		customTestFramework.runTestsWithTia();
 
-		assertThat(customTestFramework.testInfos.stream().map(SystemTestUtils::getCoverageString))
+		assertThat(customTestFramework.testInfos.stream().map(SystemTestUtils::getCoverage))
 				.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
 	}
 

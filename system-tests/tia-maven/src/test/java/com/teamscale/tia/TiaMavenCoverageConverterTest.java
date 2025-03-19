@@ -45,7 +45,7 @@ public class TiaMavenCoverageConverterTest {
 					"bar/UnitTest/itFoo()");
 			assertThat(testwiseCoverageReport.tests).extracting(test -> test.result)
 					.doesNotContain(ETestExecutionResult.FAILURE);
-			assertThat(testwiseCoverageReport.tests).extracting(SystemTestUtils::getCoverageString).containsExactly(
+			assertThat(testwiseCoverageReport.tests).extracting(SystemTestUtils::getCoverage).containsExactly(
 					"SUT.java:3,6-7", "SUT.java:3,10-11", "", "SUT.java:3,6-7", "SUT.java:3,10-11", "");
 		});
 	}
