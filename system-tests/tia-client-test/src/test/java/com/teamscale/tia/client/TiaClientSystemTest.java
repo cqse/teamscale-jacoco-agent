@@ -48,7 +48,7 @@ public class TiaClientSystemTest {
 					.containsExactlyInAnyOrder("testBar", "testFoo");
 			assertThat(report.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.FAILURE, ETestExecutionResult.PASSED);
-			assertThat(report.tests).extracting(SystemTestUtils::getCoverageString)
+			assertThat(report.tests).extracting(SystemTestUtils::getCoverage)
 					.containsExactlyInAnyOrder("SystemUnderTest.java:4,13", "SystemUnderTest.java:4,8");
 		});
 	}

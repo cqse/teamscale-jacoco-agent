@@ -17,7 +17,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.stream.Collectors
 import kotlin.streams.asSequence
 
 /**
@@ -45,9 +44,10 @@ object SystemTestUtils {
 	 * Example: `file1.java:1,7-12;file2.java:9-22,33`
 	 */
 	@JvmStatic
-	fun getCoverageString(info: TestInfo) =
-		info.paths.flatMap { it.files }
-			.joinToString(";") { it.fileName + ":" + it.coveredLines }
+	val TestInfo.coverage
+		get() = paths
+			.flatMap { it.files }
+			.joinToString(";") { "${it.fileName}:${it.coveredLines}" }
 
 	/**
 	 * Runs the clean and verify goal of the Maven project at the given path with the provided arguments

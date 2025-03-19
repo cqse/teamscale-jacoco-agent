@@ -2,7 +2,7 @@ package com.teamscale.tia
 
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.test.commons.SystemTestUtils
-import com.teamscale.test.commons.SystemTestUtils.getCoverageString
+import com.teamscale.test.commons.SystemTestUtils.coverage
 import com.teamscale.test.commons.SystemTestUtils.runMavenTests
 import com.teamscale.test.commons.TeamscaleMockServer
 import org.assertj.core.api.Assertions.assertThat
@@ -69,7 +69,7 @@ class TiaMavenCucumberSystemTest {
 			Executable {
 				// Ensure coverage strings match the expected values
 				assertThat(unitTestReport?.tests)
-					.extracting<String> { getCoverageString(it) }
+					.extracting<String> { it.coverage }
 					.containsExactly(
 						COVERAGE_ADD,
 						COVERAGE_ADD,
