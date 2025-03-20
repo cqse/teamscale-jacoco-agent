@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Runs several Maven projects' Surefire tests that have the agent attached, and one of our JUnit run listeners enabled.
@@ -31,8 +30,18 @@ public class TiaMavenSystemTest {
 		teamscaleMockServer = new TeamscaleMockServer(SystemTestUtils.TEAMSCALE_PORT)
 				.withAuthentication("build", "6lJKEvNHeTxGPhMAi4D84DWqzoSFL1p4")
 				.acceptingReportUploads()
-				.withImpactedTests("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()",
-						"bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
+				.withImpactedTests("org/example/UnitTest/utBla()",
+						"org/example/UnitTest/utFoo()",
+						"org/example/UnitB1Test/utBlub()",
+						"org/example/UnitB1Test/utGoo()",
+						"org/example/UnitB2Test/utBlub()",
+						"org/example/UnitB2Test/utGoo()",
+						"org/example/IntegrationIT/itBla()",
+						"org/example/IntegrationIT/itFoo()",
+						"org/example/IntegrationB1IT/itBlub()",
+						"org/example/IntegrationB1IT/itGoo()",
+						"org/example/IntegrationB2IT/itBlub()",
+						"org/example/IntegrationB2IT/itGoo()");
 	}
 
 	@AfterEach
@@ -106,7 +115,7 @@ public class TiaMavenSystemTest {
 	}
 
 	private static void checkExpectedUnitTestCoverage(TestwiseCoverageReport testwiseCoverageReport) {
-		assertNotNull(testwiseCoverageReport);
+		assertThat(testwiseCoverageReport).isNotNull();
 		assertThat(testwiseCoverageReport.tests).extracting(test -> test.uniformPath).containsExactlyInAnyOrder(
 				"org/example/UnitTest/utBla()",
 				"org/example/UnitTest/utFoo()",
