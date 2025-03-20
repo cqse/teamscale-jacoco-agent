@@ -1,5 +1,6 @@
 package com.teamscale
 
+import com.teamscale.client.EReportFormat
 import com.teamscale.client.JsonUtils
 import com.teamscale.plugin.fixtures.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.report.testwise.model.ETestExecutionResult
@@ -42,9 +43,8 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 
 		assertFullCoverage(testwiseCoverageReportFile.readText())
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		assertFullCoverage(teamscaleMockServer.uploadedReports[0].reportString)
-		assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("Unit Tests")
+		val session = teamscaleMockServer.getOnlySession("Unit Tests")
+		assertFullCoverage(session.getOnlyReport(EReportFormat.TESTWISE_COVERAGE))
 	}
 
 	@Test
@@ -67,9 +67,8 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 
 		assertPartialCoverage(testwiseCoverageReportFile.readText())
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1)
-		assertPartialCoverage(teamscaleMockServer.uploadedReports[0].reportString)
-		assertThat(teamscaleMockServer.uploadedReports[0].partition).isEqualTo("Unit Tests")
+		val session = teamscaleMockServer.getOnlySession("Unit Tests")
+		assertPartialCoverage(session.getOnlyReport(EReportFormat.TESTWISE_COVERAGE))
 	}
 
 	@Test

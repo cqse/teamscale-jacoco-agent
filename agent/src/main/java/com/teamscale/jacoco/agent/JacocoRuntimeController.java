@@ -114,6 +114,11 @@ public class JacocoRuntimeController {
 		agent.setSessionId(sessionId);
 	}
 
+	/** Unsets the session ID so that coverage collected from now on is not attributed to the previous test. */
+	public void resetSessionId() {
+		agent.setSessionId("");
+	}
+
 	/**
 	 * Receives and stores a {@link SessionInfo}. Has a fallback dummy session in case nothing is received.
 	 */

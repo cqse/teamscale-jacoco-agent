@@ -27,7 +27,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
-		assertThat(teamscaleMockServer.uploadCommits).contains("null, master:1544512967526")
+		assertThat(teamscaleMockServer.onlySession.commit).contains("null:myRepoId, master:1544512967526")
 	}
 
 	@Test
@@ -40,8 +40,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
-		assertThat(teamscaleMockServer.uploadCommits).contains("abcd1337, null")
-		assertThat(teamscaleMockServer.uploadRepositories).contains("myRepoId")
+		assertThat(teamscaleMockServer.onlySession.commit).contains("abcd1337:myRepoId, null")
 	}
 
 	@Test
@@ -55,7 +54,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"-Dimpacted",
 			"unitTestReportUpload"
 		)
-		assertThat(teamscaleMockServer.impactedTestCommits).contains("null, master:1544512967526")
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("null:myRepoId, master:1544512967526")
 	}
 
 	@Test
@@ -67,7 +66,6 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"-Dimpacted",
 			"unitTestReportUpload"
 		)
-		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337, null")
-		assertThat(teamscaleMockServer.impactedTestRepositories).contains("myRepoId")
+		assertThat(teamscaleMockServer.impactedTestCommits).contains("abcd1337:myRepoId, null")
 	}
 }

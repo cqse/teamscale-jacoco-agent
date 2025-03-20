@@ -159,8 +159,8 @@ public class SystemTestUtils {
 	}
 
 	/** Retrieve all files in the `tia/reports` folder sorted by name. */
-	public static List<Path> getReportFileNames(String mavenProjectPath) throws IOException {
-		try (Stream<Path> stream = Files.walk(Paths.get(mavenProjectPath, "target", "tia", "reports"))) {
+	public static List<Path> getReportFileNames(String mavenProjectPath, String folderName) throws IOException {
+		try (Stream<Path> stream = Files.walk(Paths.get(mavenProjectPath, "target", folderName, "reports"))) {
 			return stream.filter(Files::isRegularFile).sorted().collect(Collectors.toList());
 		}
 	}

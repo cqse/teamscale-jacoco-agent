@@ -82,7 +82,7 @@ public abstract class TeamscaleMojoBase extends AbstractMojo {
 	/**
 	 * The running Maven session. Provided automatically by Maven.
 	 */
-	@Parameter(defaultValue = "${session}")
+	@Parameter(defaultValue = "${session}", readonly = true)
 	public MavenSession session;
 
 	/**

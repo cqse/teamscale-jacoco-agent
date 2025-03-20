@@ -70,15 +70,15 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	private static final String EXCLUDE_JUNIT5_ENGINES_OPTION = "excludeJUnit5Engines";
 
 	/**
-    * Impacted tests are calculated from "baselineCommit" to "commit". This sets the baseline.
-    */
+	 * Impacted tests are calculated from "baselineCommit" to "commit". This sets the baseline.
+	 */
 	@Parameter
 	public String baselineCommit;
 
-    /**
-     * Impacted tests are calculated from "baselineCommit" to "commit".
-     * The baselineRevision sets the baselineCommit with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
-     */
+	/**
+	 * Impacted tests are calculated from "baselineCommit" to "commit". The baselineRevision sets the baselineCommit
+	 * with the help of a VCS revision (e.g. git SHA1) instead of a branch and timestamp
+	 */
 	@Parameter
 	public String baselineRevision;
 
@@ -145,12 +145,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	public boolean runImpacted;
 
 	/**
-	 * Mode of producing testwise coverage.
-	 */
-	@Parameter(defaultValue = "teamscale-upload")
-	public String tiaMode;
-
-	/**
 	 * Map of resolved Maven artifacts. Provided automatically by Maven.
 	 */
 	@Parameter(property = "plugin.artifactMap", required = true, readonly = true)
@@ -159,7 +153,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	/**
 	 * The project build directory (usually: {@code ./target}). Provided automatically by Maven.
 	 */
-	@Parameter(defaultValue = "${project.build.directory}")
+	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	public String projectBuildDir;
 
 	private Path targetDirectory;
@@ -185,7 +179,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 			}
 		}
 
-		targetDirectory = Paths.get(projectBuildDir, "tia").toAbsolutePath();
+		targetDirectory = Paths.get(projectBuildDir, getOutputDirectoryName()).toAbsolutePath();
 		createTargetDirectory();
 
 		resolveCommitOrRevision();
@@ -196,6 +190,9 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		Path logFilePath = targetDirectory.resolve("agent.log");
 		setArgLine(agentConfigFile, logFilePath);
 	}
+
+	/** The name of the directory within the build dir into which the execution data should be written. */
+	protected abstract String getOutputDirectoryName();
 
 	private void setTiaProperties() {
 		setTiaProperty("reportDirectory", targetDirectory.toString());
@@ -251,13 +248,13 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	}
 
 	private void enforcePropertyValue(String engineOption, String impactedEngineSuffix,
-									  String newValue) {
+			String newValue) {
 		overrideProperty(engineOption, impactedEngineSuffix, newValue, session.getCurrentProject().getProperties());
 		overrideProperty(engineOption, impactedEngineSuffix, newValue, session.getUserProperties());
 	}
 
 	private void overrideProperty(String engineOption, String impactedEngineSuffix, String newValue,
-								  Properties properties) {
+			Properties properties) {
 		Object originalValue = properties.put(getPropertyName(engineOption), newValue);
 		if (originalValue instanceof String && !Strings.isBlank((String) originalValue) && !newValue.equals(
 				originalValue)) {
@@ -291,7 +288,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	}
 
 	private void validateEngineNotConfigured(Xpp3Dom configurationDom,
-											 String xmlConfigurationName) throws MojoFailureException {
+			String xmlConfigurationName) throws MojoFailureException {
 		Xpp3Dom engines = configurationDom.getChild(xmlConfigurationName);
 		if (engines != null) {
 			throw new MojoFailureException(
@@ -314,7 +311,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	}
 
 	private void validateParallelizationParameter(Xpp3Dom configurationDom,
-												  String parallelizationParameter) throws MojoFailureException {
+			String parallelizationParameter) throws MojoFailureException {
 		Xpp3Dom parameterDom = configurationDom.getChild(parallelizationParameter);
 		if (parameterDom == null) {
 			return;
@@ -351,6 +348,9 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 
 	private void createTargetDirectory() throws MojoFailureException {
 		try {
+			if (targetDirectory.toFile().exists()) {
+				FileSystemUtils.deleteRecursively(targetDirectory.toFile());
+			}
 			Files.createDirectories(targetDirectory);
 		} catch (IOException e) {
 			throw new MojoFailureException("Could not create target directory " + targetDirectory, e);
@@ -379,7 +379,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		}
 
 		Path configFilePath = targetDirectory.resolve("agent-at-port-" + agentPort + ".properties");
-		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory.resolve("reports"));
+		String agentConfig = createAgentConfig(loggingConfigPath, targetDirectory);
 		try {
 			Files.write(configFilePath, Collections.singleton(agentConfig));
 		} catch (IOException e) {
@@ -397,12 +397,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 
 	private String createAgentConfig(Path loggingConfigPath, Path agentOutputDirectory) {
 		String config = "mode=testwise" +
-				"\ntia-mode=" + tiaMode +
-				"\nteamscale-server-url=" + teamscaleUrl +
-				"\nteamscale-project=" + projectId +
-				"\nteamscale-user=" + username +
-				"\nteamscale-access-token=" + accessToken +
-				"\nteamscale-partition=" + getPartition() +
+				"\ntia-mode=exec-file" +
 				"\nhttp-server-port=" + agentPort +
 				"\nlogging-config=" + loggingConfigPath +
 				"\nout=" + agentOutputDirectory.toAbsolutePath();
@@ -411,15 +406,6 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 		}
 		if (ArrayUtils.isNotEmpty(excludes)) {
 			config += "\nexcludes=" + String.join(";", excludes);
-		}
-		if (StringUtils.isNotBlank(repository)) {
-			config += "\nteamscale-repository=" + repository;
-		}
-
-		if (StringUtils.isNotEmpty(resolvedRevision)) {
-			config += "\nteamscale-revision=" + resolvedRevision;
-		} else {
-			config += "\nteamscale-commit=" + resolvedCommit;
 		}
 		return config;
 	}

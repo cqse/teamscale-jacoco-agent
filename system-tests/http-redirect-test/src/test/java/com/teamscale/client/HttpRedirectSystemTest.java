@@ -28,7 +28,7 @@ public class HttpRedirectSystemTest {
 		new SystemUnderTest().foo();
 		SystemTestUtils.dumpCoverage(SystemTestUtils.AGENT_PORT);
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
+		assertThat(teamscaleMockServer.getOnlySession("part").getReports()).hasSize(1);
 		checkCustomUserAgent(teamscaleMockServer);
 
 		redirectMockServer.shutdown();

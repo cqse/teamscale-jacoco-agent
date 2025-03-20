@@ -3,6 +3,7 @@ package com.teamscale.tia;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.report.compact.TeamscaleCompactCoverageReport;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
+import com.teamscale.test.commons.Session;
 import com.teamscale.test.commons.SystemTestUtils;
 import com.teamscale.test.commons.TeamscaleMockServer;
 import org.junit.jupiter.api.AfterEach;
@@ -33,12 +34,7 @@ public class TestwiseCoverageGradleSystemTest {
 	public void testGradleAggregatedTestwiseCoverageUploadWithoutJVMTestSuite() throws Exception {
 		SystemTestUtils.runGradle("gradle-project", "clean", "teamscaleSystemTestReportUpload");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		assertThat(teamscaleMockServer.uploadedReports).allMatch(
-				report -> report.getPartition().equals("System Tests") && report.getFormat()
-						.equals(EReportFormat.TESTWISE_COVERAGE.name()));
-
-		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
+		TestwiseCoverageReport testwiseReport = teamscaleMockServer.getOnlyTestwiseCoverageReport("System Tests");
 		assertThat(testwiseReport.partial).isEqualTo(false);
 		assertThat(testwiseReport.tests.getFirst().uniformPath).isEqualTo("com/example/app/MainTest/testMain()");
 		assertThat(testwiseReport.tests.getLast().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
@@ -52,12 +48,7 @@ public class TestwiseCoverageGradleSystemTest {
 				"systemTest", "-Dimpacted",
 				"teamscaleSystemTestReportUpload");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(1);
-		assertThat(teamscaleMockServer.uploadedReports).allMatch(
-				report -> report.getPartition().equals("System Tests") && report.getFormat()
-						.equals(EReportFormat.TESTWISE_COVERAGE.name()));
-
-		TestwiseCoverageReport testwiseReport = teamscaleMockServer.parseUploadedTestwiseCoverageReport(0);
+		TestwiseCoverageReport testwiseReport = teamscaleMockServer.getOnlyTestwiseCoverageReport("System Tests");
 		assertThat(testwiseReport.partial).isEqualTo(true);
 		assertThat(testwiseReport.tests.getFirst().uniformPath).isEqualTo("com/example/app/MainTest/testMain()");
 		assertThat(testwiseReport.tests.getLast().uniformPath).isEqualTo("com/example/lib/CalculatorTest/testAdd()");
@@ -69,14 +60,11 @@ public class TestwiseCoverageGradleSystemTest {
 	public void testGradleAggregatedCompactCoverageUploadWithoutJVMTestSuite() throws Exception {
 		SystemTestUtils.runGradle("gradle-project", "clean", "unitTest", "teamscaleUnitTestReportUpload");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(3);
-		assertThat(teamscaleMockServer.uploadedReports).allMatch(report -> report.getPartition().equals("Unit Tests"));
-		assertThat(teamscaleMockServer.uploadedReports.getFirst().getFormat()).isEqualTo(
-				EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name());
-		assertThat(teamscaleMockServer.uploadedReports.stream()
-				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(2);
+		Session session = teamscaleMockServer.getOnlySession("Unit Tests");
+		assertThat(session.getReports()).hasSize(3);
+		assertThat(session.getReports(EReportFormat.JUNIT)).hasSize(2);
 
-		TeamscaleCompactCoverageReport compactReport = teamscaleMockServer.parseUploadedCompactCoverageReport(0);
+		TeamscaleCompactCoverageReport compactReport = session.getCompactCoverageReport(0);
 		assertThat(compactReport.getCoverage().getFirst().getFilePath()).isEqualTo("com/example/app/Main.java");
 		assertThat(compactReport.getCoverage().getLast().getFilePath()).isEqualTo("com/example/lib/Calculator.java");
 		assertThat(compactReport.getCoverage().getFirst().getFullyCoveredLines()).containsExactly(7, 8, 9);
@@ -87,13 +75,11 @@ public class TestwiseCoverageGradleSystemTest {
 	public void testGradleAggregatedCompactCoverageUploadWithJVMTestSuite() throws Exception {
 		SystemTestUtils.runGradle("gradle-project", "clean", "teamscaleTestReportUpload");
 
-		assertThat(teamscaleMockServer.uploadedReports).hasSize(3);
-		assertThat(teamscaleMockServer.uploadedReports.stream()
-				.filter(report -> EReportFormat.JUNIT.name().equals(report.getFormat())).count()).isEqualTo(2);
-		assertThat(teamscaleMockServer.uploadedReports).allMatch(
-				report -> report.getPartition().equals("Default Tests"));
+		Session session = teamscaleMockServer.getOnlySession("Default Tests");
+		assertThat(session.getReports()).hasSize(3);
+		assertThat(session.getReports(EReportFormat.JUNIT)).hasSize(2);
 
-		TeamscaleCompactCoverageReport compactReport = teamscaleMockServer.parseUploadedCompactCoverageReport(0);
+		TeamscaleCompactCoverageReport compactReport = session.getCompactCoverageReport(0);
 		assertThat(compactReport.getCoverage().getFirst().getFilePath()).isEqualTo("com/example/app/Main.java");
 		assertThat(compactReport.getCoverage().getLast().getFilePath()).isEqualTo("com/example/lib/Calculator.java");
 		assertThat(compactReport.getCoverage().getFirst().getFullyCoveredLines()).containsExactly(7, 8, 9);
