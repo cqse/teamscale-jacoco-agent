@@ -56,7 +56,7 @@ object ReportUtils {
 	fun <T> readObjects(
 		format: ETestArtifactFormat,
 		clazz: Class<Array<T>>,
-		directoriesOrFiles: List<File>
+		directoriesOrFiles: Collection<File>
 	) = listFiles(format, directoriesOrFiles)
 		.map { JsonUtils.deserializeFile(it, clazz) }
 		.flatMap { listOf(*it) }
@@ -65,7 +65,7 @@ object ReportUtils {
 	@JvmStatic
 	fun listFiles(
 		format: ETestArtifactFormat,
-		directoriesOrFiles: List<File>
+		directoriesOrFiles: Collection<File>
 	) = directoriesOrFiles.flatMap { directoryOrFile ->
 		when {
 			directoryOrFile.isDirectory() -> {

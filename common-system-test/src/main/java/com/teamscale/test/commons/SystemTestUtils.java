@@ -103,7 +103,7 @@ public class SystemTestUtils {
 	 *
 	 * @throws IOException if running Gradle fails.
 	 */
-	public static void runGradle(String gradleProjectPath, String... gradleArguments) throws IOException {
+	public static ProcessUtils.ExecutionResult runGradle(String gradleProjectPath, String... gradleArguments) throws IOException {
 		ProcessUtils.ExecutionResult result;
 		try {
 			result = ProcessUtils.execute(buildGradleProcess(gradleProjectPath, gradleArguments));
@@ -119,6 +119,7 @@ public class SystemTestUtils {
 		if (result.terminatedByTimeoutOrInterruption()) {
 			throw new IOException("Running Gradle failed: " + result.getStdout() + "\n" + result.getStderr());
 		}
+		return result;
 	}
 
 	/**

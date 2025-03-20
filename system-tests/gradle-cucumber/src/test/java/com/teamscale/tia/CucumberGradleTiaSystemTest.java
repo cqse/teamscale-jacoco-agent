@@ -31,7 +31,7 @@ public class CucumberGradleTiaSystemTest {
 
 	@Test
 	public void testImpactedCucumberTestsAreRun() throws Exception {
-		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "--impacted", "teamscaleReportUpload", "--no-daemon");
+		SystemTestUtils.runGradle("gradle-project", "clean", "tiaTests", "teamscaleReportUpload", "--no-daemon");
 
 		TestwiseCoverageReport testReport = teamscaleMockServer.getOnlyTestwiseCoverageReport("Cucumber Tests");
 		// We can't just assert for testReport.test == 1 here because the Gradle plugin uploads all test cases.

@@ -16,7 +16,7 @@ class ImpactedTestsSorter(private val impactedTestsProvider: ImpactedTestsProvid
 
 		val testClusters = impactedTestsProvider.getImpactedTestsFromTeamscale(availableTests.testList)
 
-		if (testClusters.isEmpty()) {
+		if (testClusters == null) {
 			ImpactedTestEngine.LOG.fine { "Falling back to execute all!" }
 			return
 		}

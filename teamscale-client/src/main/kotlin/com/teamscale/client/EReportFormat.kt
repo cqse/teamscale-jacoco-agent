@@ -79,6 +79,12 @@ enum class EReportFormat(
 	/** Bullseye (C++) coverage report format.  */
 	BULLSEYE("Bullseye"),
 
+	/**
+	 * CQSE custom format for multiple line coverage reports that should be converted to testwise
+	 * coverage.
+	 */
+	RAW_TESTWISE("Raw Testwise Coverage"),
+
 	/** FxCop (.NET) findings report format.  */
 	FXCOP("FxCop"),
 
@@ -88,14 +94,14 @@ enum class EReportFormat(
 	/** JUnit (Java unit tests) report format.  */
 	JUNIT("JUnit"),
 
+	/** Boost.Test report format. */
+	BOOST_TEST("Boost.Test"),
+
 	/** XUnit (.NET unit tests) report format.  */
 	XUNIT("XUnit"),
 
 	/** MS Test report format.  */
 	MS_TEST("MSTest"),
-
-	/** Istanbul (JavaScript coverage) report format.  */
-	ISTANBUL("Istanbul"),
 
 	/** C# Compiler warnings format  */
 	CS_COMPILER_WARNING("C# Compiler Warning"),
@@ -112,6 +118,7 @@ enum class EReportFormat(
 	/** Our own export format for SAP code inspector findings.  */
 	SAP_CODE_INSPECTOR("SAP Code Inspector Export"),
 
+	SAP_COVERAGE("SAP Coverage"),
 
 	/** Custom testwise coverage report format.  */
 	TESTWISE_COVERAGE("Testwise Coverage"),
@@ -137,7 +144,7 @@ enum class EReportFormat(
 	GENERIC_FINDINGS("Teamscale Generic Findings"),
 
 	/** Our own generic non-code metric format.  */
-	GENERIC_NON_CODE("Teamscale Non-Code Metrics"),
+	GENERIC_NON_CODE("Teamscale Custom Artifacts Metrics"),
 
 	/** Parasoft C/C++text.  */
 	PARASOFT_CPP_TEST("Parasoft C/C++test"),
@@ -167,5 +174,38 @@ enum class EReportFormat(
 	/**
 	 * jQAssistant report format.
 	 */
-	JQASSISTANT("jQAssistant")
+	JQASSISTANT("jQAssistant"),
+
+	/**
+	 * NUnit (.Net unit tests) report format. Supported are NUNit versions 2.x and 3.x.
+	 */
+	NUNIT("NUnit"),
+
+	/**
+	 * Simulink Meta information file. A Level 5 MAT-File is an openly documented, but proprietary,
+	 * binary data container format used by MATLAB software from MathWorks (MATLAB software is the IDE
+	 * for Simulink models).
+	 * <p>
+	 * MAT files are binary files that store json-like data structures (can store any kind of meta
+	 * information). For example, tracing hints from generated code back to blocks in simulink models.
+	 */
+	SIMULINK_MAT("Simulink MAT"),
+
+	/**
+	 * Teamscale Compact Coverage report format.
+	 */
+	TEAMSCALE_COMPACT_COVERAGE("Teamscale Compact Coverage"),
+
+	/**
+	 * XCResult test execution reports in JSON format. Note that uploading the *.xcresult file is not
+	 * possible, as it has to be converted to JSON as described in the docs.
+	 */
+	XCRESULT_JSON("XCResult JSON"),
+
+	/**
+	 * Coverage reports created with the
+	 * <a href= "https://www.segger.com/products/debug-probes/j-link/technology/power-profiling/">
+	 * J-Link hardware profiler</a> that have been converted to a CSV with the Segger Ozone tool.
+	 */
+	JLINK_CSV("J-Link CSV");
 }

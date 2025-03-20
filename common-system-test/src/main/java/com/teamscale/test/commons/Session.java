@@ -3,6 +3,7 @@ package com.teamscale.test.commons;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.teamscale.client.EReportFormat;
 import com.teamscale.client.JsonUtils;
+import com.teamscale.report.compact.TeamscaleCompactCoverageReport;
 import com.teamscale.report.testwise.model.TestwiseCoverageReport;
 import org.conqat.lib.commons.collections.ListMap;
 import spark.Request;
@@ -108,5 +109,23 @@ public class Session {
 		return JsonUtils.deserialize(
 				getOnlyReport(EReportFormat.TESTWISE_COVERAGE),
 				TestwiseCoverageReport.class);
+	}
+
+	/** Returns the only Compact Coverage report in deserialized form. */
+	public TeamscaleCompactCoverageReport getOnlyCompactCoverageReport() throws JsonProcessingException {
+		return JsonUtils.deserialize(
+				getOnlyReport(EReportFormat.TEAMSCALE_COMPACT_COVERAGE),
+				TeamscaleCompactCoverageReport.class);
+	}
+
+	/**
+	 * Returns the report at the given index in {@link #reports}, parsed as a {@link TeamscaleCompactCoverageReport}.
+	 *
+	 * @throws IOException when parsing the report fails.
+	 */
+	public TeamscaleCompactCoverageReport getCompactCoverageReport(int index) throws IOException {
+		return JsonUtils.deserialize(
+				reports.getCollection(EReportFormat.TEAMSCALE_COMPACT_COVERAGE).get(index).getReportString(),
+				TeamscaleCompactCoverageReport.class);
 	}
 }

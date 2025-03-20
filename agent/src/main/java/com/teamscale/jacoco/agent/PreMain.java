@@ -236,6 +236,19 @@ public class PreMain {
 			return LoggingUtils.initializeDefaultLogging();
 		}
 		for (String optionPart : premainOptions.split(",")) {
+			if (optionPart.startsWith(AgentOptionsParser.DEBUG + "=")) {
+				String value = optionPart.split("=", 2)[1];
+				boolean debugDisabled = value.equalsIgnoreCase("false");
+				boolean debugEnabled = value.equalsIgnoreCase("true");
+				if (debugDisabled) {
+					continue;
+				}
+				Path debugLogDirectory = null;
+				if (!value.isEmpty() && !debugEnabled) {
+					debugLogDirectory = Paths.get(value);
+				}
+				return LoggingUtils.initializeDebugLogging(debugLogDirectory);
+			}
 			if (optionPart.startsWith(AgentOptionsParser.LOGGING_CONFIG_OPTION + "=")) {
 				return createFallbackLoggerFromConfig(optionPart.split("=", 2)[1], delayedLogger);
 			}

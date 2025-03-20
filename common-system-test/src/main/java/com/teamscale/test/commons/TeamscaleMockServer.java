@@ -24,14 +24,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -53,7 +54,7 @@ public class TeamscaleMockServer {
 	public final List<String> baselines = new ArrayList<>();
 
 	/** All tests that the test engine has signaled to Teamscale as being available for execution. */
-	public final Set<TestWithClusterId> availableTests = new HashSet<>();
+	public final Set<TestWithClusterId> allAvailableTests = new HashSet<>();
 	private final Path tempDir = Files.createTempDirectory("TeamscaleMockServer");
 	private final Service service;
 	private List<String> impactedTests;
@@ -80,7 +81,7 @@ public class TeamscaleMockServer {
 	/** Resets the data collected by the mock server for the next test. */
 	public void reset() {
 		sessions.clear();
-		availableTests.clear();
+		allAvailableTests.clear();
 		profilerEvents.clear();
 		impactedTestCommits.clear();
 		baselines.clear();
@@ -144,11 +145,11 @@ public class TeamscaleMockServer {
 
 	/** Configures the server to accept report uploads and store them within the mock for later retrieval. */
 	public TeamscaleMockServer acceptingReportUploads() {
-		service.post("api/v5.9.0/projects/:projectId/external-analysis/session/:sessionId/report",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session/:sessionId/report",
 				this::handleReport);
-		service.post("api/v5.9.0/projects/:projectId/external-analysis/session",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session",
 				this::createSession);
-		service.post("api/v5.9.0/projects/:projectId/external-analysis/session/:sessionId",
+		service.post("api/v2024.7.0/projects/:projectId/external-analysis/session/:sessionId",
 				this::commitSession);
 		return this;
 	}
@@ -170,7 +171,7 @@ public class TeamscaleMockServer {
 	/** Configures the server to answer all impacted test calls with the given tests. */
 	public TeamscaleMockServer withImpactedTests(String... impactedTests) {
 		this.impactedTests = Arrays.asList(impactedTests);
-		service.put("api/v9.4.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
+		service.put("api/v2024.7.0/projects/:projectName/impacted-tests", this::handleImpactedTests);
 		return this;
 	}
 
@@ -202,9 +203,18 @@ public class TeamscaleMockServer {
 		impactedTestCommits.add(request.queryParams("end-revision") + ":" + request.queryParams(
 				"repository") + ", " + request.queryParams("end"));
 		baselines.add(request.queryParams("baseline-revision") + ", " + request.queryParams("baseline"));
-		availableTests.addAll(JsonUtils.deserializeList(request.body(), TestWithClusterId.class));
-		List<PrioritizableTest> tests = impactedTests.stream().map(PrioritizableTest::new).collect(toList());
-		return JsonUtils.serialize(Collections.singletonList(new PrioritizableTestCluster("cluster", tests)));
+		List<TestWithClusterId> availableTests = JsonUtils.deserializeList(request.body(), TestWithClusterId.class);
+		allAvailableTests.addAll(availableTests);
+		Map<Optional<String>, List<TestWithClusterId>> impactedTestsByCluster = availableTests.stream()
+				.filter(availableTest -> impactedTests.contains(availableTest.getTestName())).collect(
+						Collectors.groupingBy(
+								testWithClusterId -> Optional.ofNullable(testWithClusterId.getClusterId())));
+		List<PrioritizableTestCluster> testClusters = new ArrayList<>();
+		impactedTestsByCluster.forEach(
+				(clusterId, impactedTests) -> testClusters.add(new PrioritizableTestCluster(clusterId.orElse(null),
+						impactedTests.stream().map(TestWithClusterId::getTestName).map(PrioritizableTest::new)
+								.collect(toList()))));
+		return JsonUtils.serialize(testClusters);
 	}
 
 	private String handleProfilerRegistration(Request request, Response response) throws JsonProcessingException {

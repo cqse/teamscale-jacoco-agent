@@ -31,7 +31,7 @@ public class ConfigurationViaTeamscale {
 	 * Two minute timeout. This is quite high to account for an eventual high load on the Teamscale server. This is a
 	 * tradeoff between fast application startup and potentially missing test coverage.
 	 */
-	private static final Duration LONG_TIMEOUT = Duration.ofSeconds(120);
+	private static final Duration LONG_TIMEOUT = Duration.ofMinutes(2);
 
 	/**
 	 * The UUID that Teamscale assigned to this instance of the profiler during the registration. This ID needs to be
@@ -54,17 +54,14 @@ public class ConfigurationViaTeamscale {
 	 * {@link AgentOptionReceiveException}.
 	 */
 	public static @NotNull ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
-			String userName, String userAccessToken) throws AgentOptionReceiveException {
+			String userName,
+			String userAccessToken) throws AgentOptionReceiveException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
 			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
 			Response<ResponseBody> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
-			if (response.code() == 405) {
-				response = teamscaleClient.registerProfilerLegacy(configurationId,
-						processInformation).execute();
-			}
 			if (!response.isSuccessful()) {
 				throw new AgentOptionReceiveException(
 						"Failed to retrieve profiler configuration from Teamscale due to failed request. Http status: " + response.code()
@@ -77,7 +74,8 @@ public class ConfigurationViaTeamscale {
 			// we include the causing error message in this exception's message since this causes it to be printed
 			// to stderr which is much more helpful than just saying "something didn't work"
 			throw new AgentOptionReceiveException(
-					"Failed to retrieve profiler configuration from Teamscale due to network error: " + e.getMessage(),
+					"Failed to retrieve profiler configuration from Teamscale due to network error: " + LoggingUtils.getStackTraceAsString(
+							e),
 					e);
 		}
 	}
@@ -136,9 +134,6 @@ public class ConfigurationViaTeamscale {
 	private void sendHeartbeat() {
 		try {
 			Response<ResponseBody> response = teamscaleClient.sendHeartbeat(profilerId, profilerInfo).execute();
-			if (response.code() == 405) {
-				response = teamscaleClient.sendHeartbeatLegacy(profilerId, profilerInfo).execute();
-			}
 			if (!response.isSuccessful()) {
 				LoggingUtils.getLogger(this)
 						.error("Failed to send heartbeat. Teamscale responded with: " + response.errorBody().string());

@@ -7,8 +7,8 @@ package com.teamscale.jacoco.agent.testimpact;
 
 import com.teamscale.jacoco.agent.AgentBase;
 import com.teamscale.jacoco.agent.GenericExceptionMapper;
-import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -55,6 +55,9 @@ public class TestwiseCoverageAgent extends AgentBase {
 				testEventHandler = new CoverageToExecFileStrategy(controller, options, testExecutionWriter);
 				break;
 		}
+		// Set to empty to not end up with a default session in case no tests are executed,
+		// which in turn causes a warning because we didn't write a corresponding test detail
+		controller.setSessionId("");
 	}
 
 	@Override

@@ -1,12 +1,12 @@
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-    }
-}
-
 pluginManagement {
     plugins {
         kotlin("jvm") version "2.1.10"
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
     }
 }
 

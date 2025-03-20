@@ -44,7 +44,7 @@ public class TiaMavenSystemTest {
 	public void testMavenTia() throws Exception {
 		SystemTestUtils.runMavenTests("maven-project", "-Dtia");
 
-		assertThat(teamscaleMockServer.availableTests).extracting("partition")
+		assertThat(teamscaleMockServer.allAvailableTests).extracting("partition")
 				.containsOnly("Unit Tests", "Integration Tests");
 
 		assertThat(teamscaleMockServer.getSessions()).hasSize(2);

@@ -54,6 +54,9 @@ public class AgentOptionsParser {
 	/** Character which starts a comment in the config file. */
 	private static final String COMMENT_PREFIX = "#";
 
+	/** The name of the option that enables debug logging. */
+	public static final String DEBUG = "debug";
+
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
 	private final TeamscaleConfig teamscaleConfig;
@@ -202,7 +205,7 @@ public class AgentOptionsParser {
 	 */
 	private void handleOption(AgentOptions options,
 			String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
-		if (key.startsWith("debug")) {
+		if (key.startsWith(DEBUG)) {
 			handleDebugOption(options, value);
 			return;
 		}
@@ -233,7 +236,8 @@ public class AgentOptionsParser {
 		throw new AgentOptionParseException("Unknown option: " + key);
 	}
 
-	private boolean handleProxyOptions(AgentOptions options, String key, String value) throws AgentOptionParseException {
+	private boolean handleProxyOptions(AgentOptions options, String key,
+			String value) throws AgentOptionParseException {
 		String httpsPrefix = ProxySystemProperties.Protocol.HTTPS + "-";
 		if (key.startsWith(httpsPrefix)
 				&& options.getTeamscaleProxyOptions(ProxySystemProperties.Protocol.HTTPS)
@@ -488,7 +492,8 @@ public class AgentOptionsParser {
 	 * deterministic, i.e. if you run the pattern twice and get the same set of files, the same file will be picked each
 	 * time.
 	 */
-	public static Path parsePath(FilePatternResolver filePatternResolver, String optionName, String pattern) throws AgentOptionParseException {
+	public static Path parsePath(FilePatternResolver filePatternResolver, String optionName,
+			String pattern) throws AgentOptionParseException {
 		try {
 			return filePatternResolver.parsePath(optionName, pattern);
 		} catch (IOException e) {

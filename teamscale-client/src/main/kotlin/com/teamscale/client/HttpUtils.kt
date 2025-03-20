@@ -139,7 +139,9 @@ object HttpUtils {
 	 * Sets sensible defaults for the [okhttp3.OkHttpClient].
 	 */
 	private fun Builder.setTimeouts(readTimeout: Duration, writeTimeout: Duration) {
-		connectTimeout(Duration.ofSeconds(60))
+		// In a K8s environment, it might take quite some time until the K8s networking is fully initialized and a connection can be established.
+		// Just setting the connectTimout does only retry once, but not wait for the given duration if the ConnectException is thrown very quickly.
+		addInterceptor(ConnectExceptionRetryInterceptor(Duration.ofMinutes(1)))
 		readTimeout(readTimeout)
 		writeTimeout(writeTimeout)
 	}

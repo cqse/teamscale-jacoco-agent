@@ -3,16 +3,12 @@ package com.teamscale.report.util
 import com.teamscale.report.util.CompactLines.Companion.compactLinesOf
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 
 internal class CompactLinesTest {
 	@Test
 	fun emptyList() {
 		val compactLines = compactLinesOf()
-		assertThat(compactLines.isEmpty()).isTrue()
+		assertThat(compactLines.isEmpty).isTrue()
 	}
 
 	@Test
@@ -34,15 +30,15 @@ internal class CompactLinesTest {
 	@Test
 	fun testSize() {
 		val lines = compactLinesOf(1, 2)
-		assertThat(lines.size()).isEqualTo(2)
+		assertThat(lines.size).isEqualTo(2)
 	}
 
 	@Test
 	fun testIsEmpty() {
 		val lines = compactLinesOf()
-		assertThat(lines.isEmpty()).isTrue()
+		assertThat(lines.isEmpty).isTrue()
 		lines.add(1)
-		assertThat(lines.isEmpty()).isFalse()
+		assertThat(lines.isEmpty).isFalse()
 	}
 
 	@Test
@@ -102,21 +98,5 @@ internal class CompactLinesTest {
 		assertThat(lines.containsAll(listOf(1, 3))).isTrue()
 		assertThat(lines.containsAll(compactLinesOf(1, 2, 3))).isFalse()
 		assertThat(lines.containsAll(compactLinesOf(1, 3))).isTrue()
-	}
-
-	@Test
-	fun testSerialization() {
-		val lines = compactLinesOf(1, 3, 7)
-
-		val bytes = ByteArrayOutputStream().use { outputStream ->
-			ObjectOutputStream(outputStream).use { it.writeObject(lines) }
-			outputStream.toByteArray()
-		}
-
-		val deserializedLines = ByteArrayInputStream(bytes).use { inputStream ->
-			ObjectInputStream(inputStream).use { it.readObject() as CompactLines }
-		}
-
-		assertThat(deserializedLines).containsExactly(1, 3, 7)
 	}
 }

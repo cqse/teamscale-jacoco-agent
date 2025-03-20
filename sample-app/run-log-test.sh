@@ -5,7 +5,7 @@ profiler_dist="../agent/build/distributions/teamscale-jacoco-agent.zip"
 ../gradlew :agent:assemble
 ../gradlew :sample-app:assemble
 
-rm -r tmp
+rm -rf tmp
 unzip -d tmp "$profiler_dist"
 unzip -d tmp build/distributions/sample-app.zip
 
