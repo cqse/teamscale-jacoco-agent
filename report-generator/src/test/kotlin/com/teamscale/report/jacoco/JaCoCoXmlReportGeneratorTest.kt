@@ -163,7 +163,7 @@ class JaCoCoXmlReportGeneratorTest : TestDataBase() {
 			duplicateClassFileBehavior,
 			ignoreUncoveredClasses,
 			Mockito.mock()
-		).convert(dump, Paths.get(outputFilePath).toFile())
+		).convertSingleDumpToReport(dump, Paths.get(outputFilePath).toFile())
 	}
 
 	companion object {

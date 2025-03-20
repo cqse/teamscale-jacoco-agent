@@ -1,3 +1,6 @@
+import com.teamscale.aggregation.TestSuiteCompatibilityUtil
+import com.teamscale.extension.TeamscaleTaskExtension
+
 plugins {
 	java
 	id("com.teamscale")
@@ -12,17 +15,27 @@ java {
 	}
 }
 
-dependencies {
-	testImplementation(platform("org.junit:junit-bom:5.9.1"))
-	testImplementation("org.junit.jupiter:junit-jupiter")
+testing {
+	suites {
+		val test by getting(JvmTestSuite::class) {
+			useJUnitJupiter()
+		}
+
+		register<JvmTestSuite>("integrationTest") {
+			dependencies {
+				implementation(project())
+			}
+		}
+	}
 }
 
-tasks.test {
-	useJUnitPlatform()
+dependencies {
+	testImplementation(platform("org.junit:junit-bom:5.12.1"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 teamscale {
-
 	server {
 		url = "http://localhost:${System.getenv("TEAMSCALE_PORT")}/"
 		userName = "admin"
@@ -30,21 +43,36 @@ teamscale {
 		project = "submodules"
 	}
 
-	report {
-		testwiseCoverage {
-			partition.set("Unit Tests")
-		}
-	}
 	commit {
 		branchName = "branch1"
 		timestamp = "123456"
 	}
-
 }
 
-tasks.register("tiaTests", com.teamscale.TestImpacted::class.java) {
+val test by testing.suites.existing(JvmTestSuite::class)
+
+val unitTest by tasks.registering(Test::class) {
 	useJUnitPlatform()
 	configure<JacocoTaskExtension> {
-		includes = listOf("org.example.*")
+		includes = listOf("com.example.*")
 	}
+	testClassesDirs = files(test.map { it.sources.output.classesDirs })
+	classpath = files(test.map { it.sources.runtimeClasspath })
 }
+
+val systemTest by tasks.registering(Test::class) {
+	useJUnitPlatform()
+	configure<JacocoTaskExtension> {
+		includes = listOf("com.example.*")
+	}
+	configure<TeamscaleTaskExtension> {
+		collectTestwiseCoverage = true
+		runImpacted = System.getProperty("impacted") != null
+		partition = "System Tests"
+	}
+	testClassesDirs = files(test.map { it.sources.output.classesDirs })
+	classpath = files(test.map { it.sources.runtimeClasspath })
+}
+
+TestSuiteCompatibilityUtil.exposeTestForAggregation(unitTest, SuiteNames.UNIT_TEST)
+TestSuiteCompatibilityUtil.exposeTestForAggregation(systemTest, SuiteNames.SYSTEM_TEST)

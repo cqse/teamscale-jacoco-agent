@@ -54,17 +54,14 @@ public class ConfigurationViaTeamscale {
 	 * {@link AgentOptionReceiveException}.
 	 */
 	public static @NotNull ConfigurationViaTeamscale retrieve(ILogger logger, String configurationId, HttpUrl url,
-			String userName, String userAccessToken) throws AgentOptionReceiveException {
+			String userName,
+			String userAccessToken) throws AgentOptionReceiveException {
 		ITeamscaleService teamscaleClient = TeamscaleServiceGenerator
 				.createService(ITeamscaleService.class, url, userName, userAccessToken, LONG_TIMEOUT, LONG_TIMEOUT);
 		try {
 			ProcessInformation processInformation = new ProcessInformationRetriever(logger).getProcessInformation();
 			Response<ResponseBody> response = teamscaleClient.registerProfiler(configurationId,
 					processInformation).execute();
-			if (response.code() == 405) {
-				response = teamscaleClient.registerProfilerLegacy(configurationId,
-						processInformation).execute();
-			}
 			if (!response.isSuccessful()) {
 				throw new AgentOptionReceiveException(
 						"Failed to retrieve profiler configuration from Teamscale due to failed request. Http status: " + response.code()
@@ -137,9 +134,6 @@ public class ConfigurationViaTeamscale {
 	private void sendHeartbeat() {
 		try {
 			Response<ResponseBody> response = teamscaleClient.sendHeartbeat(profilerId, profilerInfo).execute();
-			if (response.code() == 405) {
-				response = teamscaleClient.sendHeartbeatLegacy(profilerId, profilerInfo).execute();
-			}
 			if (!response.isSuccessful()) {
 				LoggingUtils.getLogger(this)
 						.error("Failed to send heartbeat. Teamscale responded with: " + response.errorBody().string());

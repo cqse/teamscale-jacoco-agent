@@ -38,7 +38,7 @@ open class ImpactedTestsProvider(
 	/** Queries Teamscale for impacted tests.  */
 	fun getImpactedTestsFromTeamscale(
 		availableTestDetails: List<ClusteredTestDetails>
-	): List<PrioritizableTestCluster> {
+	): List<PrioritizableTestCluster>? {
 		try {
 			LOG.info { "Getting impacted tests..." }
 			val response = client
@@ -64,7 +64,7 @@ open class ImpactedTestsProvider(
 				Level.SEVERE, e
 			) { "Retrieval of impacted tests failed." }
 		}
-		return emptyList()
+		return null
 	}
 
 	/**

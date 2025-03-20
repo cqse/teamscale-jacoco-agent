@@ -12,7 +12,7 @@ class TestwiseCoverage {
 	 * If there is already a test with the same ID the coverage is merged.
 	 */
 	fun add(coverage: TestCoverageBuilder?) {
-		if (coverage == null || coverage.isEmpty) return
+		if (coverage == null) return
 		if (tests.containsKey(coverage.uniformPath)) {
 			tests[coverage.uniformPath]?.addAll(coverage.files)
 		} else {

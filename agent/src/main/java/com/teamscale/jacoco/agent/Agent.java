@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
 import static com.teamscale.jacoco.agent.logging.LoggingUtils.wrap;
+import static com.teamscale.jacoco.agent.upload.teamscale.TeamscaleUploader.RETRY_UPLOAD_FILE_SUFFIX;
 
 /**
  * A wrapper around the JaCoCo Java agent that automatically triggers a dump and XML conversion based on a time
@@ -194,7 +194,7 @@ public class Agent extends AgentBase {
 
 		try (Benchmark ignored = new Benchmark("Generating the XML report")) {
 			File outputFile = options.createNewFileInOutputDirectory("jacoco", "xml");
-			CoverageFile coverageFile = generator.convert(dump, outputFile);
+			CoverageFile coverageFile = generator.convertSingleDumpToReport(dump, outputFile);
 			uploader.upload(coverageFile);
 		} catch (IOException e) {
 			logger.error("Converting binary dump to XML failed", e);

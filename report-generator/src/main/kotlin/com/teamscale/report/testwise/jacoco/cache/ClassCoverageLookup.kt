@@ -58,7 +58,7 @@ class ClassCoverageLookup internal constructor(
 		probes.forEach { (probeId, coveredLines) ->
 			if (executedProbes.getOrNull(probeId) == true) {
 				when {
-					coveredLines.isEmpty() -> logger.debug(
+					coveredLines.isEmpty -> logger.debug(
 						"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
 					)
 

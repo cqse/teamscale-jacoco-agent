@@ -1,12 +1,13 @@
 package com.teamscale.report.jacoco
 
 import com.teamscale.report.EDuplicateClassFileBehavior
-import com.teamscale.report.jacoco.dump.Dump
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
+import org.jacoco.core.analysis.CoverageBuilder
 import org.jacoco.core.analysis.IBundleCoverage
 import org.jacoco.core.data.ExecutionDataStore
 import org.jacoco.core.data.SessionInfo
+import org.jacoco.core.internal.analysis.BundleCoverageImpl
 import org.jacoco.report.xml.XMLFormatter
 import java.io.File
 import java.io.IOException
@@ -27,28 +28,28 @@ class JaCoCoXmlReportGenerator(
 	private val duplicateClassFileBehavior: EDuplicateClassFileBehavior,
 	private val ignoreUncoveredClasses: Boolean,
 	private val logger: ILogger
+) : JaCoCoBasedReportGenerator<CoverageBuilder>(
+	codeDirectoriesOrArchives,
+	locationIncludeFilter,
+	duplicateClassFileBehavior,
+	ignoreUncoveredClasses,
+	logger,
+	CoverageBuilder()
 ) {
-	/**
-	 * Creates the report and writes it to a file.
-	 *
-	 * @return The file object of for the converted report or null if it could not be created
-	 */
-	@Throws(IOException::class, EmptyReportException::class)
-	fun convert(dump: Dump, filePath: File): CoverageFile {
-		val coverageFile = CoverageFile(filePath)
-		convertToReport(coverageFile, dump)
-		return coverageFile
-	}
 
-	/** Creates the report.  */
-	@Throws(IOException::class, EmptyReportException::class)
-	private fun convertToReport(coverageFile: CoverageFile, dump: Dump) {
-		val mergedStore = dump.store
-		analyzeStructureAndAnnotateCoverage(mergedStore).apply {
-			checkForEmptyReport()
-			coverageFile.outputStream.use { outputStream ->
-				createReport(outputStream, this, dump.info, mergedStore)
-			}
+	/** Creates an XML report based on the given session and coverage data.  */
+	@Throws(IOException::class)
+	override fun createReport(
+		output: OutputStream,
+		sessionInfo: SessionInfo?,
+		store: ExecutionDataStore
+	) {
+		val bundleCoverage = BundleCoverageImpl("dummybundle", emptyList(), coverageVisitor.sourceFiles)
+		bundleCoverage.checkForEmptyReport()
+		XMLFormatter().createVisitor(output).apply {
+			visitInfo(listOf(sessionInfo), store.contents)
+			visitBundle(bundleCoverage, null)
+			visitEnd()
 		}
 	}
 
@@ -59,48 +60,6 @@ class JaCoCoXmlReportGenerator(
 		}
 		if (lineCounter.coveredCount == 0) {
 			throw EmptyReportException("The generated coverage report does not contain any covered source code lines. $MOST_LIKELY_CAUSE_MESSAGE")
-		}
-	}
-
-	/**
-	 * Analyzes the structure of the class files in [.codeDirectoriesOrArchives] and builds an in-memory coverage
-	 * report with the coverage in the given store.
-	 */
-	@Throws(IOException::class)
-	private fun analyzeStructureAndAnnotateCoverage(store: ExecutionDataStore): IBundleCoverage {
-		val coverageBuilder = TeamscaleCoverageBuilder(
-			logger, duplicateClassFileBehavior, ignoreUncoveredClasses
-		)
-
-		codeDirectoriesOrArchives.forEach { file ->
-			FilteringAnalyzer(store, coverageBuilder, locationIncludeFilter, logger)
-				.analyzeAll(file)
-		}
-
-		return coverageBuilder.getBundle("dummybundle")
-	}
-
-	companion object {
-		/** Part of the error message logged when validating the coverage report fails.  */
-		private const val MOST_LIKELY_CAUSE_MESSAGE = "Most likely you did not configure the agent correctly." +
-				" Please check that the includes and excludes options are set correctly so the relevant code is included." +
-				" If in doubt, first include more code and then iteratively narrow the patterns down to just the relevant code." +
-				" If you have specified the class-dir option, please make sure it points to a directory containing the" +
-				" class files/jars/wars/ears/etc. for which you are trying to measure code coverage."
-
-		/** Creates an XML report based on the given session and coverage data.  */
-		@Throws(IOException::class)
-		private fun createReport(
-			output: OutputStream,
-			bundleCoverage: IBundleCoverage,
-			sessionInfo: SessionInfo?,
-			store: ExecutionDataStore
-		) {
-			XMLFormatter().createVisitor(output).apply {
-				visitInfo(listOf(sessionInfo), store.contents)
-				visitBundle(bundleCoverage, null)
-				visitEnd()
-			}
 		}
 	}
 }

@@ -18,7 +18,7 @@ class ImpactedTestEngine : TestEngine {
 		val engineOptions = TestEngineOptionUtils
 			.getEngineOptions(discoveryRequest.configurationParameters)
 		val configuration = engineOptions.testEngineConfiguration
-		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition!!)
+		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition)
 
 		// Re-initialize the configuration for this discovery (and optional following execution).
 		internalImpactedTestEngine = engine

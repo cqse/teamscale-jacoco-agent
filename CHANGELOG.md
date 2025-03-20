@@ -5,6 +5,13 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [breaking] Dropped support for Teamscale 2024.6 and older
+- [feature] _teamscale-gradle-plugin_: Added support for generating Compact Coverage reports from JaCoCo execution data
+- [feature] _teamscale-gradle-plugin_: Added support for aggregating Testwise Coverage across projects
+- [feature] _teamscale-gradle-plugin_: Added support for aggregating Compact Coverage across projects
+- [feature] _teamscale-gradle-plugin_: Made compatible with Gradle 9.0
+- [breaking] _teamscale-gradle-plugin_: Support for Gradle configuration cache (see `teamscale-gradle-plugin/MIGRATION_35.md` for how to update)
+- [breaking] _teamscale-gradle-plugin_: Bumped up minimum required Gradle version to 8.10
 
 # 34.2.6
 - [fix] _agent_: Make Teamscale connection more robust in K8s environment

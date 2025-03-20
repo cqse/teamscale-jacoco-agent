@@ -20,7 +20,7 @@ class PrioritizableTestCluster @JsonCreator constructor(
 	 *
 	 * @see ClusteredTestDetails.clusterId
 	 */
-	@param:JsonProperty("clusterId") var clusterId: String,
+	@param:JsonProperty("clusterId") var clusterId: String?,
 	/** The [PrioritizableTest]s in this cluster.  */
 	@JvmField @param:JsonProperty("tests") var tests: List<PrioritizableTest>?
 ) {

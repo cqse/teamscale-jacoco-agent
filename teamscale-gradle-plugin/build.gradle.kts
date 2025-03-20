@@ -33,6 +33,13 @@ gradlePlugin {
             description = "Supports collecting Testwise Coverage and uploading reports to Teamscale."
             tags.set(listOf("teamscale", "coverage", "tga", "test", "gap", "junit", "upload"))
         }
+        create("teamscaleAggregationPlugin") {
+            id = "com.teamscale.aggregation"
+            displayName = "Teamscale Gradle aggregation plugin"
+            implementationClass = "com.teamscale.aggregation.TeamscaleAggregationPlugin"
+            description = "Supports aggregating test execution and coverage data."
+            tags.set(listOf("teamscale", "coverage", "tga", "test", "gap", "junit", "aggregation"))
+        }
     }
 }
 
