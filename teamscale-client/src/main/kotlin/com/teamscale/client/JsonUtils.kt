@@ -37,8 +37,8 @@ object JsonUtils {
 	 */
 	@Throws(JsonProcessingException::class)
 	@JvmStatic
-	fun <T> deserialize(json: String, clazz: Class<T>): T =
-		OBJECT_MAPPER.readValue(json, clazz)
+	inline fun <reified T> deserialize(json: String): T =
+		OBJECT_MAPPER.readValue(json, T::class.java)
 
 	/**
 	 * Deserializes the contents of the given file into an object of the given class.
@@ -52,9 +52,9 @@ object JsonUtils {
 	 */
 	@Throws(JsonProcessingException::class)
 	@JvmStatic
-	fun <T> deserializeList(json: String, elementClass: Class<T>): List<T> =
+	inline fun <reified T> deserializeList(json: String): List<T> =
 		OBJECT_MAPPER.readValue(
-			json, OBJECT_MAPPER.typeFactory.constructCollectionLikeType(MutableList::class.java, elementClass)
+			json, OBJECT_MAPPER.typeFactory.constructCollectionLikeType(MutableList::class.java, T::class.java)
 		)
 
 	/**

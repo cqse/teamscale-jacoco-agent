@@ -57,7 +57,7 @@ class TeamscaleMockServer(port: Int) {
 	private val tempDir = Files.createTempDirectory("TeamscaleMockServer")
 	private val service = Service.ignite()
 	private var impactedTests = listOf<String>()
-	private val profilerEvents = mutableListOf<String>()
+	val profilerEvents = mutableListOf<String>()
 	private var profilerConfiguration: ProfilerConfiguration? = null
 	private var username: String? = null
 	private var accessToken: String? = null
@@ -124,7 +124,7 @@ class TeamscaleMockServer(port: Int) {
 	 */
 	@Throws(IOException::class)
 	fun parseUploadedTestwiseCoverageReport(index: Int) =
-		deserialize(uploadedReports[index].reportString, TestwiseCoverageReport::class.java)
+		deserialize<TestwiseCoverageReport>(uploadedReports[index].reportString)
 
 	@Throws(IOException::class)
 	private fun handleImpactedTests(request: Request, response: Response): String {
@@ -134,7 +134,7 @@ class TeamscaleMockServer(port: Int) {
 		impactedTestCommits.add("${request.queryParams("end-revision")}, ${request.queryParams("end")}")
 		impactedTestRepositories.add(request.queryParams("repository"))
 		baselines.add("${request.queryParams("baseline-revision")}, ${request.queryParams("baseline")}")
-		availableTests.addAll(deserializeList(request.body(), TestWithClusterId::class.java))
+		availableTests.addAll(deserializeList<TestWithClusterId>(request.body()))
 		val tests = impactedTests.map { testName -> PrioritizableTest(testName) }
 		return listOf(PrioritizableTestCluster("cluster", tests)).serialize()
 	}
@@ -176,8 +176,6 @@ class TeamscaleMockServer(port: Int) {
 		profilerEvents.add("Profiler ${request.params(":profilerId")} unregistered")
 		return "foo"
 	}
-
-	fun getProfilerEvents() = profilerEvents
 
 	@Throws(IOException::class, ServletException::class)
 	private fun handleReport(request: Request, response: Response): String {

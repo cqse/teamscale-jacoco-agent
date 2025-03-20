@@ -1,6 +1,7 @@
 import org.gradle.jvm.tasks.Jar
 
 plugins {
+	com.teamscale.`kotlin-convention`
 	com.teamscale.`system-test-convention`
 }
 
@@ -20,9 +21,7 @@ tasks.test {
 
 tasks.withType<Jar> {
 	archiveFileName.set("app.jar")
-	manifest {
-		attributes["Main-Class"] = "jul.test.SystemUnderTest"
-	}
+	manifest.attributes["Main-Class"] = "jul.test.SystemUnderTest"
 	// create a fat jar
 	from(configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE

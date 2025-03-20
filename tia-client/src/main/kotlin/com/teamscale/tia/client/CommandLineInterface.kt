@@ -118,10 +118,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		val json = readStdin()
 		var availableTests = emptyList<ClusteredTestDetails>()
 		if (!isEmpty(json)) {
-			availableTests = deserializeList(
-				json,
-				ClusteredTestDetails::class.java
-			)
+			availableTests = deserializeList<ClusteredTestDetails>(json)
 		}
 		return availableTests
 	}

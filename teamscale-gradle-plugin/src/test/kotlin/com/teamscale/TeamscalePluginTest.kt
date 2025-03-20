@@ -2,6 +2,7 @@ package com.teamscale
 
 import com.teamscale.TestwiseCoverageReportAssert.Companion.assertThat
 import com.teamscale.client.JsonUtils
+import com.teamscale.client.JsonUtils.deserialize
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import com.teamscale.test.commons.TeamscaleMockServer
@@ -249,7 +250,7 @@ class TeamscalePluginTest {
 	}
 
 	private fun assertFullCoverage(source: String) {
-		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
+		val testwiseCoverageReport = deserialize<TestwiseCoverageReport>(source)
 		assertThat(testwiseCoverageReport)
 			.hasPartial(false)
 			.containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
@@ -273,7 +274,7 @@ class TeamscalePluginTest {
 	}
 
 	private fun assertPartialCoverage(source: String) {
-		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
+		val testwiseCoverageReport = deserialize<TestwiseCoverageReport>(source)
 		assertThat(testwiseCoverageReport)
 			.hasPartial(true)
 			.containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)

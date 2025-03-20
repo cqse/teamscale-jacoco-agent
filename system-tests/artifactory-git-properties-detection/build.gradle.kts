@@ -5,7 +5,7 @@ plugins {
 
 sourceSets {
 	main {
-		output.setResourcesDir(java.classesDirectory.get().asFile)
+		output.resourcesDir = java.classesDirectory.get().asFile
 	}
 }
 

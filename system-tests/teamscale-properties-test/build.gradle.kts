@@ -1,11 +1,12 @@
 import kotlin.io.path.writeText
 
 plugins {
+	com.teamscale.`kotlin-convention`
 	com.teamscale.`system-test-convention`
 }
 
 tasks.test {
-	val teamscalePropertiesPath = agentJar.toPath().getParent().getParent().resolve("teamscale.properties")
+	val teamscalePropertiesPath = agentJar.toPath().parent.parent.resolve("teamscale.properties")
 	doFirst {
 		teamscalePropertiesPath.writeText("""
 			url=http://localhost:$teamscalePort

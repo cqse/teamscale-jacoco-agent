@@ -102,7 +102,7 @@ class RunningTest(private val uniformPath: String, private val api: ITestwiseCov
 		}
 
 		try {
-			return deserialize(json, TestInfo::class.java)
+			return deserialize<TestInfo>(json)
 		} catch (e: IOException) {
 			throw AgentHttpRequestFailedException(
 				"Unable to parse the JSON returned by the agent. Maybe you have" +

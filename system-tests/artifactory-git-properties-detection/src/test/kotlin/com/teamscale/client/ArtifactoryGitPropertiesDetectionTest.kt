@@ -27,9 +27,6 @@ class ArtifactoryGitPropertiesDetectionTest {
 		SystemUnderTest.foo()
 		dumpCoverage(SystemTestUtils.AGENT_PORT)
 
-		assertThat(
-			artifactoryMockServer?.uploadedReports
-		).hasSize(1)
 		val reports = artifactoryMockServer?.uploadedReports
 		assertThat(reports).hasSize(1)
 		// Ensure infos from src/main/resources/git.properties are picked up

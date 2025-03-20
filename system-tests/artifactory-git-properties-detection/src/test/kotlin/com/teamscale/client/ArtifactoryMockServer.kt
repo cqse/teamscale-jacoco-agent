@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse
  */
 class ArtifactoryMockServer(port: Int) {
 	/** All reports uploaded to this Teamscale instance.  */
-	val uploadedReports: PairList<String, String> = PairList()
+	val uploadedReports = PairList<String, String>()
 	private val service = Service.ignite()
 
 	init {
