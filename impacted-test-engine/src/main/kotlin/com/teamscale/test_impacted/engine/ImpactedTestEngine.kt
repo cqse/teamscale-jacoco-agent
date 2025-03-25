@@ -18,7 +18,7 @@ class ImpactedTestEngine : TestEngine {
 		val engineOptions = TestEngineOptionUtils
 			.getEngineOptions(discoveryRequest.configurationParameters)
 		val configuration = engineOptions.testEngineConfiguration
-		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition)
+		val engine = InternalImpactedTestEngine(configuration, engineOptions.enabled, engineOptions.partition)
 
 		// Re-initialize the configuration for this discovery (and optional following execution).
 		internalImpactedTestEngine = engine
@@ -42,6 +42,9 @@ class ImpactedTestEngine : TestEngine {
 	companion object {
 		/** The id of the [ImpactedTestEngine].  */
 		const val ENGINE_ID = "teamscale-test-impacted"
+
+		/** The human readable name of the [ImpactedTestEngine].  */
+		const val ENGINE_NAME = "Teamscale Impacted Tests"
 
 		/** Logger instance */
 		val LOG = createLogger()

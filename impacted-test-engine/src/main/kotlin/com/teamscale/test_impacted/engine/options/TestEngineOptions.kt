@@ -19,6 +19,7 @@ import kotlin.io.path.createDirectories
  * This class is used to determine the execution behavior, including impacted tests,
  * test coverage, and specific Test Engine configurations.
  *
+ * @property enabled Whether the engine is enabled and hence should execute any tests
  * @property serverOptions Configuration options for connecting to the Teamscale server.
  *                          Required when `runImpacted` is `true`.
  * @property partition The partition name that identifies the specific test execution context.
@@ -38,6 +39,7 @@ import kotlin.io.path.createDirectories
  * @param testCoverageAgentUrls A list of URLs pointing to test-wise coverage agents used during test execution.
  */
 class TestEngineOptions(
+	val enabled: Boolean,
 	private val serverOptions: ServerOptions? = null,
 	val partition: String? = null,
 	private val repository: String? = null,
@@ -92,7 +94,12 @@ class TestEngineOptions(
 			val teamscaleAgentNotifier = createTeamscaleAgentNotifier()
 			val testEngineRegistry = TestEngineRegistry(includedTestEngineIds, excludedTestEngineIds)
 			val testDataWriter = TestDataWriter(reportDirectory!!)
-			return ImpactedTestEngineConfiguration(testDataWriter, testEngineRegistry, testSorter, teamscaleAgentNotifier)
+			return ImpactedTestEngineConfiguration(
+				testDataWriter,
+				testEngineRegistry,
+				testSorter,
+				teamscaleAgentNotifier
+			)
 		}
 
 	private fun createTestSorter() =

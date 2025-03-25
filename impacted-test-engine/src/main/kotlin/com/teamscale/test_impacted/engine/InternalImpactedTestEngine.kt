@@ -1,6 +1,7 @@
 package com.teamscale.test_impacted.engine
 
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
+import com.teamscale.test_impacted.engine.ImpactedTestEngine.Companion.ENGINE_NAME
 import com.teamscale.test_impacted.engine.executor.TestwiseCoverageCollectingExecutionListener
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorResolverRegistry.getTestDescriptorResolver
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.getAvailableTests
@@ -10,6 +11,7 @@ import org.junit.platform.engine.ExecutionRequest
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
+
 
 /**
  * Internal test engine implementation for executing impacted tests. This class provides functionality
@@ -23,6 +25,7 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor
  */
 internal class InternalImpactedTestEngine(
 	configuration: ImpactedTestEngineConfiguration,
+	private val enabled: Boolean,
 	private val partition: String?
 ) {
 	private val testEngineRegistry = configuration.testEngineRegistry
@@ -35,24 +38,26 @@ internal class InternalImpactedTestEngine(
 	 * in a single engine [TestDescriptor].
 	 */
 	fun discover(discoveryRequest: EngineDiscoveryRequest?, uniqueId: UniqueId?): TestDescriptor {
-		val engineDescriptor = EngineDescriptor(uniqueId, "Teamscale Impacted Tests")
+		val engineDescriptor = EngineDescriptor(uniqueId, ENGINE_NAME)
+		if (enabled) {
 
-		LOG.fine { "Starting test discovery for engine " + ImpactedTestEngine.ENGINE_ID }
+			LOG.fine { "Starting test discovery for engine " + ImpactedTestEngine.ENGINE_ID }
 
-		testEngineRegistry.forEach { delegateTestEngine ->
-			LOG.fine { "Starting test discovery for delegate engine: " + delegateTestEngine.id }
-			val delegateEngineDescriptor = delegateTestEngine.discover(
-				discoveryRequest,
-				UniqueId.forEngine(delegateTestEngine.id)
-			)
+			testEngineRegistry.forEach { delegateTestEngine ->
+				LOG.fine { "Starting test discovery for delegate engine: " + delegateTestEngine.id }
+				val delegateEngineDescriptor = delegateTestEngine.discover(
+					discoveryRequest,
+					UniqueId.forEngine(delegateTestEngine.id)
+				)
 
-			engineDescriptor.addChild(delegateEngineDescriptor)
-		}
+				engineDescriptor.addChild(delegateEngineDescriptor)
+			}
 
-		LOG.fine {
-			"Discovered test descriptor for engine ${ImpactedTestEngine.ENGINE_ID}:\n${
-				getTestDescriptorAsString(engineDescriptor)
-			}"
+			LOG.fine {
+				"Discovered test descriptor for engine ${ImpactedTestEngine.ENGINE_ID}:\n${
+					getTestDescriptorAsString(engineDescriptor)
+				}"
+			}
 		}
 
 		return engineDescriptor
