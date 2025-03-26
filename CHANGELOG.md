@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _teamscale-gradle-plugin_: Running tests via IntelliJ did no longer work 
 
 # 35.0.0
 - [breaking] Dropped support for Teamscale 2024.6 and older

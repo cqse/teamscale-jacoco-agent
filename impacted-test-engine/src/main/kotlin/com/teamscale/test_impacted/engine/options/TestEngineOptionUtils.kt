@@ -17,13 +17,15 @@ object TestEngineOptionUtils {
 	/** Returns the [TestEngineOptions] configured in the [Properties].  */
 	fun getEngineOptions(configurationParameters: ConfigurationParameters): TestEngineOptions {
 		val propertyReader = PrefixingPropertyReader(PREFIX, configurationParameters)
+		val enabled = propertyReader.getBoolean("enabled", false)
 		val shouldRunImpactedTests = propertyReader.getBoolean("runImpacted", true)
 
-		val serverOptions = if (shouldRunImpactedTests) {
+		val serverOptions = if (enabled && shouldRunImpactedTests) {
 			propertyReader.createServerOptions()
 		} else null
 
 		return TestEngineOptions(
+			enabled = enabled,
 			serverOptions = serverOptions,
 			partition = propertyReader.getString("partition"),
 			runImpacted = shouldRunImpactedTests,
@@ -44,10 +46,10 @@ object TestEngineOptionUtils {
 
 	private fun PrefixingPropertyReader.createServerOptions() =
 		ServerOptions(
-			getString("server.url")!!,
-			getString("server.project")!!,
-			getString("server.userName")!!,
-			getString("server.userAccessToken")!!
+			getString("server.url") ?: throw AssertionError("server url is required"),
+			getString("server.project") ?: throw AssertionError("project is required"),
+			getString("server.userName") ?: throw AssertionError("username is required"),
+			getString("server.userAccessToken") ?: throw AssertionError("access token is required")
 		)
 
 	private class PrefixingPropertyReader(

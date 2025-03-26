@@ -85,6 +85,7 @@ class TestImpactConfigurationAction(
 			writeProperty("endRevision", combinedCommit.get().revision)
 			writeProperty("repository", pluginExtension.repository.orNull)
 		}
+		writeProperty("enabled", true)
 		writeProperty("reportDirectory", extension.agent.destination.asFile.get().absolutePath)
 		writeProperty("agentsUrls", extension.agent.allAgentUrls.joinToString(","))
 		writeProperty("runImpacted", extension.runImpacted.get())

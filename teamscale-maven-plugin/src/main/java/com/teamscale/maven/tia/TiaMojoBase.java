@@ -195,6 +195,7 @@ public abstract class TiaMojoBase extends TeamscaleMojoBase {
 	protected abstract String getOutputDirectoryName();
 
 	private void setTiaProperties() {
+		setTiaProperty("enabled", "true");
 		setTiaProperty("reportDirectory", targetDirectory.toString());
 		setTiaProperty("server.url", teamscaleUrl);
 		setTiaProperty("server.project", projectId);
