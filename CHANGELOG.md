@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _teamscale-gradle-plugin_: `IllegalArgumentException`: End commit must be set via endCommit or endRevision
 
 # 35.0.1
 - [fix] _teamscale-gradle-plugin_: Running tests via IntelliJ did no longer work 

@@ -3,6 +3,7 @@ package com.teamscale.test_impacted.engine
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.engine.options.TestEngineOptionUtils
 import org.junit.platform.engine.*
+import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import java.util.*
 
 /** Test engine for executing impacted tests.  */
@@ -17,8 +18,11 @@ class ImpactedTestEngine : TestEngine {
 	): TestDescriptor {
 		val engineOptions = TestEngineOptionUtils
 			.getEngineOptions(discoveryRequest.configurationParameters)
+		if (!engineOptions.enabled) {
+			return EngineDescriptor(uniqueId, ENGINE_NAME)
+		}
 		val configuration = engineOptions.testEngineConfiguration
-		val engine = InternalImpactedTestEngine(configuration, engineOptions.enabled, engineOptions.partition)
+		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition)
 
 		// Re-initialize the configuration for this discovery (and optional following execution).
 		internalImpactedTestEngine = engine
