@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+# 35.0.2
 - [fix] _teamscale-gradle-plugin_: `IllegalArgumentException`: End commit must be set via endCommit or endRevision
 - [fix] _teamscale-gradle-plugin_: `TestwiseCoverageReport#executionData` Used test classpath as default which could lead to OOM
 
