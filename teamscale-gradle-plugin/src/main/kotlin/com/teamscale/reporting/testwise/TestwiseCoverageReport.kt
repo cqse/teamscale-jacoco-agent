@@ -79,7 +79,7 @@ abstract class TestwiseCoverageReport : JaCoCoBasedReportTaskBase<TestwiseCovera
 			check(it is Test) { "executionData of TestwiseCoverageReport expected a Test task as input" }
 			it.teamscale.agent.destination
 		})
-		classDirectories.from(test.map {
+		classDirectories.convention(test.map {
 			check(it is Test) { "executionData of TestwiseCoverageReport expected a Test task as input" }
 			it.classpath
 		})
