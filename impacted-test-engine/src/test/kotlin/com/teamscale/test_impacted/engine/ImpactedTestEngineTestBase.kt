@@ -54,9 +54,6 @@ abstract class ImpactedTestEngineTestBase {
 	}
 
 	/** Returns the available engines that should be assumed by the impacted test engine.  */
-	open val enabled: Boolean = true
-
-	/** Returns the available engines that should be assumed by the impacted test engine.  */
 	abstract val engines: List<TestEngine>
 
 	/** Returns the result that Teamscale should return when asked for impacted tests.  */
@@ -78,7 +75,6 @@ abstract class ImpactedTestEngineTestBase {
 				ImpactedTestsSorter(impactedTestsProvider),
 				teamscaleAgentNotifier
 			),
-			enabled,
 			impactedTestsProvider.partition
 		)
 	}

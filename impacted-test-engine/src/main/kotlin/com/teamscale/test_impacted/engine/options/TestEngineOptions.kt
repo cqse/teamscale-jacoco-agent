@@ -68,15 +68,17 @@ class TestEngineOptions(
 	}
 
 	init {
-		if (runImpacted) {
-			require(endCommit != null || endRevision != null) { "End commit must be set via endCommit or endRevision." }
-			requireNotNull(serverOptions) { "Server options must be set." }
-		}
-		requireNotNull(reportDirectory) { "Report directory must be set." }
+		if (enabled) {
+			if (runImpacted) {
+				require(endCommit != null || endRevision != null) { "End commit must be set via endCommit or endRevision." }
+				requireNotNull(serverOptions) { "Server options must be set." }
+			}
+			requireNotNull(reportDirectory) { "Report directory must be set." }
 
-		reportDirectory?.let {
-			if (!it.isDirectory || !it.canWrite()) {
-				it.toPath().createDirectories()
+			reportDirectory?.let {
+				if (!it.isDirectory || !it.canWrite()) {
+					it.toPath().createDirectories()
+				}
 			}
 		}
 	}

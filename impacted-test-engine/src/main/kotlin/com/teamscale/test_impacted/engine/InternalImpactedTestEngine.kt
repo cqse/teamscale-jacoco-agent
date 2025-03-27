@@ -25,7 +25,6 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor
  */
 internal class InternalImpactedTestEngine(
 	configuration: ImpactedTestEngineConfiguration,
-	private val enabled: Boolean,
 	private val partition: String?
 ) {
 	private val testEngineRegistry = configuration.testEngineRegistry
@@ -39,25 +38,23 @@ internal class InternalImpactedTestEngine(
 	 */
 	fun discover(discoveryRequest: EngineDiscoveryRequest?, uniqueId: UniqueId?): TestDescriptor {
 		val engineDescriptor = EngineDescriptor(uniqueId, ENGINE_NAME)
-		if (enabled) {
 
-			LOG.fine { "Starting test discovery for engine " + ImpactedTestEngine.ENGINE_ID }
+		LOG.fine { "Starting test discovery for engine " + ImpactedTestEngine.ENGINE_ID }
 
-			testEngineRegistry.forEach { delegateTestEngine ->
-				LOG.fine { "Starting test discovery for delegate engine: " + delegateTestEngine.id }
-				val delegateEngineDescriptor = delegateTestEngine.discover(
-					discoveryRequest,
-					UniqueId.forEngine(delegateTestEngine.id)
-				)
+		testEngineRegistry.forEach { delegateTestEngine ->
+			LOG.fine { "Starting test discovery for delegate engine: " + delegateTestEngine.id }
+			val delegateEngineDescriptor = delegateTestEngine.discover(
+				discoveryRequest,
+				UniqueId.forEngine(delegateTestEngine.id)
+			)
 
-				engineDescriptor.addChild(delegateEngineDescriptor)
-			}
+			engineDescriptor.addChild(delegateEngineDescriptor)
+		}
 
-			LOG.fine {
-				"Discovered test descriptor for engine ${ImpactedTestEngine.ENGINE_ID}:\n${
-					getTestDescriptorAsString(engineDescriptor)
-				}"
-			}
+		LOG.fine {
+			"Discovered test descriptor for engine ${ImpactedTestEngine.ENGINE_ID}:\n${
+				getTestDescriptorAsString(engineDescriptor)
+			}"
 		}
 
 		return engineDescriptor
