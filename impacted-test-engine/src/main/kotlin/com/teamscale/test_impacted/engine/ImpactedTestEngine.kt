@@ -33,9 +33,7 @@ class ImpactedTestEngine : TestEngine {
 	override fun execute(request: ExecutionRequest) {
 		// According to the TestEngine interface the request must correspond to the last execution request. Therefore, we
 		// may re-use the configuration initialized during discovery.
-		requireNotNull(internalImpactedTestEngine) {
-			"Can't execute request without discovering it first."
-		}
+		// Engine might be null if it is not enabled.
 		internalImpactedTestEngine?.execute(request)
 	}
 

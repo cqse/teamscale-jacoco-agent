@@ -6,6 +6,9 @@ We use [semantic versioning](http://semver.org/):
 
 # Next version
 
+# 35.0.3
+- [fix] _teamscale-gradle-plugin_: `IllegalArgumentException`: Can't execute request without discovering it first
+
 # 35.0.2
 - [fix] _teamscale-gradle-plugin_: `IllegalArgumentException`: End commit must be set via endCommit or endRevision
 - [fix] _teamscale-gradle-plugin_: `TestwiseCoverageReport#executionData` Used test classpath as default which could lead to OOM
