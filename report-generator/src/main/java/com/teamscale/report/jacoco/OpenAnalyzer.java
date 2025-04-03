@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2023 Mountainminds GmbH & Co. KG and Contributors
+ * Copyright (c) 2009, 2025 Mountainminds GmbH & Co. KG and Contributors
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0
@@ -41,19 +41,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * This is a copy of the {@link Analyzer} class from JaCoCo.
- * The only changes are that the following methods are protected instead of private:
- * - {@link #analyzeClass(byte[])}
- * - {@link #analyzerError(String, Exception)}
+ * This is a copy of the {@link Analyzer} class from JaCoCo. The only changes are that the following methods are
+ * protected instead of private: - {@link #analyzeClass(byte[])} - {@link #analyzerError(String, Exception)}
  * <p>
  * When performing an update of JaCoCo we need to check that this file is still up to date.
  * <p>
- * An {@link Analyzer} instance processes a set of Java class files and
- * calculates coverage data for them. For each class file the result is reported
- * to a given {@link ICoverageVisitor} instance. In addition, the
- * {@link Analyzer} requires a {@link ExecutionDataStore} instance that holds
- * the execution data for the classes to analyze. The {@link Analyzer} offers
- * several methods to analyze classes from a variety of sources.
+ * An {@link Analyzer} instance processes a set of Java class files and calculates coverage data for them. For each
+ * class file the result is reported to a given {@link ICoverageVisitor} instance. In addition, the {@link Analyzer}
+ * requires a {@link ExecutionDataStore} instance that holds the execution data for the classes to analyze. The
+ * {@link Analyzer} offers several methods to analyze classes from a variety of sources.
  * <p>
  * CAUTION: Do not convert to Kotlin. This class has to stay in Java for future maintenance reasons!
  */
@@ -68,11 +64,8 @@ public class OpenAnalyzer {
 	/**
 	 * Creates a new analyzer reporting to the given output.
 	 *
-	 * @param executionData
-	 *            execution data
-	 * @param coverageVisitor
-	 *            the output instance that will coverage data for every analyzed
-	 *            class
+	 * @param executionData   execution data
+	 * @param coverageVisitor the output instance that will coverage data for every analyzed class
 	 */
 	public OpenAnalyzer(final ExecutionDataStore executionData,
 			final ICoverageVisitor coverageVisitor) {
@@ -84,10 +77,8 @@ public class OpenAnalyzer {
 	/**
 	 * Creates an ASM class visitor for analysis.
 	 *
-	 * @param classId
-	 *            id of the class calculated with {@link CRC64}
-	 * @param className
-	 *            VM name of the class
+	 * @param classId   id of the class calculated with {@link CRC64}
+	 * @param className VM name of the class
 	 * @return ASM visitor to write class definition to
 	 */
 	private ClassVisitor createAnalyzingVisitor(final long classId,
@@ -133,12 +124,9 @@ public class OpenAnalyzer {
 	/**
 	 * Analyzes the class definition from a given in-memory buffer.
 	 *
-	 * @param buffer
-	 *            class definitions
-	 * @param location
-	 *            a location description used for exception messages
-	 * @throws IOException
-	 *             if the class can't be analyzed
+	 * @param buffer   class definitions
+	 * @param location a location description used for exception messages
+	 * @throws IOException if the class can't be analyzed
 	 */
 	public void analyzeClass(final byte[] buffer, final String location)
 			throws IOException {
@@ -150,15 +138,12 @@ public class OpenAnalyzer {
 	}
 
 	/**
-	 * Analyzes the class definition from a given input stream. The provided
-	 * {@link InputStream} is not closed by this method.
+	 * Analyzes the class definition from a given input stream. The provided {@link InputStream} is not closed by this
+	 * method.
 	 *
-	 * @param input
-	 *            stream to read class definition from
-	 * @param location
-	 *            a location description used for exception messages
-	 * @throws IOException
-	 *             if the stream can't be read or the class can't be analyzed
+	 * @param input    stream to read class definition from
+	 * @param location a location description used for exception messages
+	 * @throws IOException if the stream can't be read or the class can't be analyzed
 	 */
 	public void analyzeClass(final InputStream input, final String location)
 			throws IOException {
@@ -182,19 +167,14 @@ public class OpenAnalyzer {
 	}
 
 	/**
-	 * Analyzes all classes found in the given input stream. The input stream
-	 * may either represent a single class file, a ZIP archive, a Pack200
-	 * archive or a gzip stream that is searched recursively for class files.
-	 * All other content types are ignored. The provided {@link InputStream} is
-	 * not closed by this method.
+	 * Analyzes all classes found in the given input stream. The input stream may either represent a single class file,
+	 * a ZIP archive, a Pack200 archive or a gzip stream that is searched recursively for class files. All other content
+	 * types are ignored. The provided {@link InputStream} is not closed by this method.
 	 *
-	 * @param input
-	 *            input data
-	 * @param location
-	 *            a location description used for exception messages
+	 * @param input    input data
+	 * @param location a location description used for exception messages
 	 * @return number of class files found
-	 * @throws IOException
-	 *             if the stream can't be read or a class can't be analyzed
+	 * @throws IOException if the stream can't be read or a class can't be analyzed
 	 */
 	public int analyzeAll(final InputStream input, final String location)
 			throws IOException {
@@ -220,15 +200,12 @@ public class OpenAnalyzer {
 	}
 
 	/**
-	 * Analyzes all class files contained in the given file or folder. Class
-	 * files as well as ZIP files are considered. Folders are searched
-	 * recursively.
+	 * Analyzes all class files contained in the given file or folder. Class files as well as ZIP files are considered.
+	 * Folders are searched recursively.
 	 *
-	 * @param file
-	 *            file or folder to look for class files
+	 * @param file file or folder to look for class files
 	 * @return number of class files found
-	 * @throws IOException
-	 *             if the file can't be read or a class can't be analyzed
+	 * @throws IOException if the file can't be read or a class can't be analyzed
 	 */
 	public int analyzeAll(final File file) throws IOException {
 		int count = 0;
@@ -248,18 +225,14 @@ public class OpenAnalyzer {
 	}
 
 	/**
-	 * Analyzes all classes from the given class path. Directories containing
-	 * class files as well as archive files are considered.
+	 * Analyzes all classes from the given class path. Directories containing class files as well as archive files are
+	 * considered.
 	 *
-	 * @param path
-	 *            path definition
-	 * @param basedir
-	 *            optional base directory, if <code>null</code> the current
-	 *            working directory is used as the base for relative path
-	 *            entries
+	 * @param path    path definition
+	 * @param basedir optional base directory, if <code>null</code> the current working directory is used as the base
+	 *                for relative path entries
 	 * @return number of class files found
-	 * @throws IOException
-	 *             if a file can't be read or a class can't be analyzed
+	 * @throws IOException if a file can't be read or a class can't be analyzed
 	 */
 	public int analyzeAll(final String path, final File basedir)
 			throws IOException {
@@ -288,6 +261,11 @@ public class OpenAnalyzer {
 		try {
 			return input.getNextEntry();
 		} catch (final IOException e) {
+			throw analyzerError(location, e);
+		} catch (final IllegalArgumentException e) {
+			// might be thrown in JDK versions below 23 - see
+			// https://bugs.openjdk.org/browse/JDK-8321156
+			// https://github.com/openjdk/jdk/commit/20c71ceacdcb791f5b70cda456bdc47bdd9acf6c
 			throw analyzerError(location, e);
 		}
 	}

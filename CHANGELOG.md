@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [feature] _agent_: Experimental support for Java 25 class files
 
 # 35.0.3
 - [fix] _teamscale-gradle-plugin_: `IllegalArgumentException`: Can't execute request without discovering it first
