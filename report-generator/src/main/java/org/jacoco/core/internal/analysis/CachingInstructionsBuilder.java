@@ -18,7 +18,7 @@ import java.util.Map;
  * original sequence along with additional information like line numbers. Afterwards the instructions can be obtained
  * with the <code>getInstructions()</code> method.
  * <p>
- * It's core is a copy of {@link org.jacoco.core.internal.analysis.InstructionsBuilder} that has been extended with
+ * Its core is a copy of {@link org.jacoco.core.internal.analysis.InstructionsBuilder} that has been extended with
  * caching functionality to speed up report generation.
  * <p>
  * This class contains callbacks for stepping through a method at bytecode level which has been decorated with probes by

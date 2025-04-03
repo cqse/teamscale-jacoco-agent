@@ -1,8 +1,8 @@
 package com.teamscale.jacoco.agent;
 
-import org.jacoco.agent.rt.internal_aeaf9ab.CoverageTransformer;
-import org.jacoco.agent.rt.internal_aeaf9ab.core.runtime.AgentOptions;
-import org.jacoco.agent.rt.internal_aeaf9ab.core.runtime.IRuntime;
+import org.jacoco.agent.rt.internal_0e20598.CoverageTransformer;
+import org.jacoco.agent.rt.internal_0e20598.core.runtime.AgentOptions;
+import org.jacoco.agent.rt.internal_0e20598.core.runtime.IRuntime;
 import org.slf4j.Logger;
 
 import java.lang.instrument.IllegalClassFormatException;
@@ -27,8 +27,8 @@ public class LenientCoverageTransformer extends CoverageTransformer {
 
 	@Override
 	public byte[] transform(ClassLoader loader, String classname, Class<?> classBeingRedefined,
-							ProtectionDomain protectionDomain,
-							byte[] classfileBuffer) {
+			ProtectionDomain protectionDomain,
+			byte[] classfileBuffer) {
 		try {
 			return super.transform(loader, classname, classBeingRedefined, protectionDomain, classfileBuffer);
 		} catch (IllegalClassFormatException e) {

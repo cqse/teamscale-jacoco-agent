@@ -2,10 +2,10 @@
 jetty = "9.4.57.v20241219"
 jersey = "2.46"
 jackson = "2.18.3"
-# When upgrading JaCoCo to a newer version make sure to
+# When upgrading JaCoCo to a newer version, make sure to
 # check the comment in the OpenAnalyzer.java, JaCoCoPreMain.java and CachingInstructionsBuilder.java
 # and update the internal_xxxxxx hash included in the imports in LenientCoverageTransformer.java and JaCoCoPreMain.java.
-jacoco = "0.8.12"
+jacoco = "0.8.13"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
 logback = "1.3.15"
 retrofit = "2.11.0"

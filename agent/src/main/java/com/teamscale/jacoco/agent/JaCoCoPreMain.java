@@ -13,15 +13,15 @@
 
 package com.teamscale.jacoco.agent;
 
-import org.jacoco.agent.rt.internal_aeaf9ab.Agent;
-import org.jacoco.agent.rt.internal_aeaf9ab.AgentModule;
-import org.jacoco.agent.rt.internal_aeaf9ab.CoverageTransformer;
-import org.jacoco.agent.rt.internal_aeaf9ab.IExceptionLogger;
-import org.jacoco.agent.rt.internal_aeaf9ab.PreMain;
-import org.jacoco.agent.rt.internal_aeaf9ab.core.runtime.AgentOptions;
-import org.jacoco.agent.rt.internal_aeaf9ab.core.runtime.IRuntime;
-import org.jacoco.agent.rt.internal_aeaf9ab.core.runtime.InjectedClassRuntime;
-import org.jacoco.agent.rt.internal_aeaf9ab.core.runtime.ModifiedSystemClassRuntime;
+import org.jacoco.agent.rt.internal_0e20598.Agent;
+import org.jacoco.agent.rt.internal_0e20598.AgentModule;
+import org.jacoco.agent.rt.internal_0e20598.CoverageTransformer;
+import org.jacoco.agent.rt.internal_0e20598.IExceptionLogger;
+import org.jacoco.agent.rt.internal_0e20598.PreMain;
+import org.jacoco.agent.rt.internal_0e20598.core.runtime.AgentOptions;
+import org.jacoco.agent.rt.internal_0e20598.core.runtime.IRuntime;
+import org.jacoco.agent.rt.internal_0e20598.core.runtime.InjectedClassRuntime;
+import org.jacoco.agent.rt.internal_0e20598.core.runtime.ModifiedSystemClassRuntime;
 import org.slf4j.Logger;
 
 import java.lang.instrument.Instrumentation;
@@ -32,6 +32,7 @@ import java.lang.instrument.Instrumentation;
  * <li>replaced the {@link CoverageTransformer} with our {@link LenientCoverageTransformer}</li>
  * <li>pass a {@link Logger} to {@link #premain(String, Instrumentation, Logger)} which is passed to the
  * {@link LenientCoverageTransformer} instead of {@link IExceptionLogger}</li>
+ * <li>Replaced "$JaCoCo" suffix with "$TeamscaleJaCoCo" to avoid conflicts in cases where jacoco is on the classpath as well.</li>
  * </ul>
  */
 public final class JaCoCoPreMain {
