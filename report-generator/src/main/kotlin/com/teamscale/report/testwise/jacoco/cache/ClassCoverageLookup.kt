@@ -56,14 +56,15 @@ class ClassCoverageLookup internal constructor(
 
 	private fun fillFileCoverage(fileCoverage: FileCoverageBuilder, executedProbes: BooleanArray, logger: ILogger) {
 		probes.forEach { (probeId, coveredLines) ->
-			if (executedProbes.getOrNull(probeId) == true) {
-				when {
-					coveredLines.isEmpty -> logger.debug(
-						"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
-					)
+			if (!executedProbes[probeId]) {
+				return@forEach
+			}
+			when {
+				coveredLines.isEmpty -> logger.debug(
+					"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
+				)
 
-					else -> fileCoverage.addLines(coveredLines)
-				}
+				else -> fileCoverage.addLines(coveredLines)
 			}
 		}
 	}
