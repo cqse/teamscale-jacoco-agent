@@ -64,11 +64,6 @@ class ClassCoverageLookup internal constructor(
 
 					else -> fileCoverage.addLines(coveredLines)
 				}
-			} else {
-				logger.info(
-					"$sourceFileName $className contains a covered probe $probeId that could not be matched to any method. " +
-							"This could be a bug in the profiler tooling. Please report it back to CQSE."
-				)
 			}
 		}
 	}
