@@ -56,19 +56,15 @@ class ClassCoverageLookup internal constructor(
 
 	private fun fillFileCoverage(fileCoverage: FileCoverageBuilder, executedProbes: BooleanArray, logger: ILogger) {
 		probes.forEach { (probeId, coveredLines) ->
-			if (executedProbes.getOrNull(probeId) == true) {
-				when {
-					coveredLines.isEmpty -> logger.debug(
-						"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
-					)
-
-					else -> fileCoverage.addLines(coveredLines)
-				}
-			} else {
-				logger.info(
-					"$sourceFileName $className contains a covered probe $probeId that could not be matched to any method. " +
-							"This could be a bug in the profiler tooling. Please report it back to CQSE."
+			if (!executedProbes[probeId]) {
+				return@forEach
+			}
+			when {
+				coveredLines.isEmpty -> logger.debug(
+					"$sourceFileName $className contains a method with no line information. Does the class contain debug information?"
 				)
+
+				else -> fileCoverage.addLines(coveredLines)
 			}
 		}
 	}

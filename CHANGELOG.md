@@ -7,6 +7,7 @@ We use [semantic versioning](http://semver.org/):
 # Next version
 - [feature] _agent_: Experimental support for Java 25 class files
 - [fix] _agent_: Reported wrong version number in docker container
+- [fix] _agent_: Erroneous log messages were printed about unmatched probes
 
 # 35.0.3
 - [fix] _teamscale-gradle-plugin_: `IllegalArgumentException`: Can't execute request without discovering it first
