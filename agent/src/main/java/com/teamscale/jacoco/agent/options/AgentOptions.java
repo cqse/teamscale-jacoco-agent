@@ -377,17 +377,22 @@ public class AgentOptions {
 	}
 
 	private void validateTestwiseCoverageConfig(Validator validator) {
-		validator.isFalse(
-				!(testwiseCoverageMode == ETestwiseCoverageMode.DISK) && httpServerPort == null,
-				"You use 'mode' 'TESTWISE' but did use neither 'http-server-port' nor dumping to disk!" +
-						" One of them is required!");
+		validator.isTrue(httpServerPort != null,
+				"You use 'mode=testwise' but did not specify the required option 'http-server-port'!");
 
-		validator.isFalse(testwiseCoverageMode == ETestwiseCoverageMode.TEAMSCALE_UPLOAD
-						&& !teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
+		validator.isTrue(testwiseCoverageMode != ETestwiseCoverageMode.TEAMSCALE_UPLOAD
+						|| teamscaleServer.isConfiguredForSingleProjectTeamscaleUpload(),
 				"You use 'tia-mode=teamscale-upload' but did not set all required 'teamscale-' fields to facilitate" +
 						" a connection to Teamscale!");
-	}
 
+		validator.isTrue(
+				testwiseCoverageMode != ETestwiseCoverageMode.TEAMSCALE_UPLOAD || teamscaleServer.hasCommitOrRevision(),
+				"You use 'tia-mode=teamscale-upload' but did not provide a revision or commit via the agent's '" + TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "', '" +
+						TeamscaleConfig.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "', '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION +
+						"', '" + TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "' or '" +
+						AgentOptions.GIT_PROPERTIES_JAR_OPTION + "' option." +
+						" Auto-detecting the git.properties is currently not supported in this mode.");
+	}
 
 	/**
 	 * Creates a {@link TeamscaleClient} based on the agent options. Returns null if the user did not fully configure a

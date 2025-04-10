@@ -1,24 +1,22 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import org.slf4j.Logger;
-
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
+import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
-import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.testwise.jacoco.cache.CoverageGenerationException;
 import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestInfo;
-
+import org.slf4j.Logger;
 import retrofit2.Response;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /** Base class for strategies to handle test events. */
 public abstract class TestEventHandlerStrategyBase {
@@ -63,7 +61,7 @@ public abstract class TestEventHandlerStrategyBase {
 	 * as a json response.
 	 */
 	public TestInfo testEnd(String test,
-							TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
+			TestExecution testExecution) throws JacocoRuntimeController.DumpException, CoverageGenerationException {
 		if (testExecution != null) {
 			testExecution.uniformPath = test;
 			if (startTimestamp != -1) {
@@ -86,9 +84,9 @@ public abstract class TestEventHandlerStrategyBase {
 	 * @throws UnsupportedOperationException if the user did not properly configure the {@link #teamscaleClient}.
 	 */
 	public List<PrioritizableTestCluster> testRunStart(List<ClusteredTestDetails> availableTests,
-													   boolean includeNonImpactedTests,
-													   boolean includeAddedTests, boolean includeFailedAndSkipped,
-													   String baseline, String baselineRevision) throws IOException {
+			boolean includeNonImpactedTests,
+			boolean includeAddedTests, boolean includeFailedAndSkipped,
+			String baseline, String baselineRevision) throws IOException {
 		int availableTestCount = 0;
 		if (availableTests != null) {
 			availableTestCount = availableTests.size();
@@ -99,13 +97,14 @@ public abstract class TestEventHandlerStrategyBase {
 
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
 				.getImpactedTests(availableTests, baseline, baselineRevision,
-						agentOptions.getTeamscaleServerOptions().commit, agentOptions.getTeamscaleServerOptions().revision,
+						agentOptions.getTeamscaleServerOptions().commit,
+						agentOptions.getTeamscaleServerOptions().revision,
 						agentOptions.getTeamscaleServerOptions().repository,
 						Collections.singletonList(agentOptions.getTeamscaleServerOptions().partition),
 						includeNonImpactedTests, includeAddedTests, includeFailedAndSkipped);
 		if (response.isSuccessful()) {
 			List<PrioritizableTestCluster> prioritizableTestClusters = response.body();
-			logger.debug("Teamscale suggested these tests: {}", prioritizableTestClusters.toString());
+			logger.debug("Teamscale suggested these tests: {}", prioritizableTestClusters);
 			return prioritizableTestClusters;
 		} else {
 			String responseBody = HttpUtils.getErrorBodyStringSafe(response);
@@ -121,11 +120,14 @@ public abstract class TestEventHandlerStrategyBase {
 					" Thus, you cannot use the agent to retrieve impacted tests via the testrun/start REST endpoint." +
 					" Please use the 'teamscale-' agent parameters to configure a Teamscale connection.");
 		}
-		if (agentOptions.getTeamscaleServerOptions().commit == null) {
+		if (!agentOptions.getTeamscaleServerOptions().hasCommitOrRevision()) {
 			throw new UnsupportedOperationException(
-					"You did not provide a '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION + "' or '" +
-							TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "'. '" +
-							TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "' is not sufficient to retrieve impacted tests.");
+					"You must provide a revision or commit via the agent's '" + TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "', '" +
+							TeamscaleConfig.TEAMSCALE_REVISION_MANIFEST_JAR_OPTION + "', '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION +
+							"', '" + TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "' or '" +
+							AgentOptions.GIT_PROPERTIES_JAR_OPTION + "' option." +
+							" Auto-detecting the git.properties does not work since we need the commit before any code" +
+							" has been profiled in order to obtain the prioritized test cases from the TIA.");
 		}
 	}
 

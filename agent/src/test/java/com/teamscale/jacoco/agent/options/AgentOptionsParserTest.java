@@ -64,7 +64,7 @@ public class AgentOptionsParserTest {
 		assertThat(parseAndThrow(basicTeamscaleOptions + ",teamscale-project=proj")
 				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_SINGLE_PROJECT);
 		assertThat(parseAndThrow(
-						basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+				basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 				.determineUploadMethod())
 				.isEqualTo(AgentOptions.EUploadMethod.SAP_NWDI_TEAMSCALE);
 	}
@@ -89,7 +89,7 @@ public class AgentOptionsParserTest {
 		assertThat(parseAndThrow(basicTeamscaleOptions + ",teamscale-project=proj")
 				.determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.TEAMSCALE_SINGLE_PROJECT);
 		assertThat(parseAndThrow(
-						basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
+				basicTeamscaleOptions + ",sap-nwdi-applications=com.package.MyClass:projectId;com.company.Main:project")
 				.determineUploadMethod())
 				.isEqualTo(AgentOptions.EUploadMethod.SAP_NWDI_TEAMSCALE);
 	}
@@ -221,6 +221,26 @@ public class AgentOptionsParserTest {
 	}
 
 	@Test
+	public void testTeamscaleUploadRequiresRevisionOrCommit() {
+		String teamscaleBaseOptions = "teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=token,teamscale-partition=p,teamscale-project=proj,mode=testwise,http-server-port=8123,";
+		assertThatThrownBy(
+				() -> parseAndThrow(
+						teamscaleBaseOptions + "tia-mode=teamscale-upload")
+		).hasMessageContaining("You use 'tia-mode=teamscale-upload' but did not provide a revision or commit");
+
+		assertThatCode(
+				() -> parseAndThrow(
+						teamscaleBaseOptions + "tia-mode=teamscale-upload,teamscale-revision=12345")
+		).doesNotThrowAnyException();
+
+		assertThatCode(
+				() -> parseAndThrow(
+						teamscaleBaseOptions + "tia-mode=teamscale-upload,teamscale-commit=master:HEAD")
+		).doesNotThrowAnyException();
+	}
+
+
+	@Test
 	public void environmentConfigIdDoesNotExist() {
 		mockWebServer.enqueue(new MockResponse().setResponseCode(404).setBody("invalid-config-id does not exist"));
 		assertThatThrownBy(
@@ -245,7 +265,8 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
-		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials), "teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
+		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials),
+				"teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");
 		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials),
 				"teamscale-project=p,teamscale-partition=p,teamscale-user=user2").teamscaleServer.userName).isEqualTo(
