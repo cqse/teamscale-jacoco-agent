@@ -1,24 +1,5 @@
 package com.teamscale.jacoco.agent.testimpact;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.CommitDescriptor;
 import com.teamscale.client.EReportFormat;
@@ -34,9 +15,28 @@ import com.teamscale.report.testwise.model.TestExecution;
 import com.teamscale.report.testwise.model.TestwiseCoverage;
 import com.teamscale.report.testwise.model.builder.FileCoverageBuilder;
 import com.teamscale.report.testwise.model.builder.TestCoverageBuilder;
-
 import okhttp3.HttpUrl;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import retrofit2.Response;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CoverageToTeamscaleStrategyTest {
@@ -55,7 +55,7 @@ public class CoverageToTeamscaleStrategyTest {
 
 	@Test
 	public void shouldRecordCoverageForTestsEvenIfNotProvidedAsAvailableTest() throws Exception {
-		AgentOptions options = mockOptions();
+		AgentOptions options = mockOptions(false);
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
 		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
@@ -71,18 +71,20 @@ public class CoverageToTeamscaleStrategyTest {
 				any(), any(), any(), any(), any());
 	}
 
-	@Test
-	public void testValidCallSequence() throws Exception {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testValidCallSequence(boolean useRevision) throws Exception {
 		List<PrioritizableTestCluster> clusters = Collections
 				.singletonList(new PrioritizableTestCluster("cluster",
 						Collections.singletonList(new PrioritizableTest("mytest"))));
-		when(client.getImpactedTests(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(
+		when(client.getImpactedTests(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(),
+				anyBoolean())).thenReturn(
 				Response.success(clusters));
 
 		TestwiseCoverage testwiseCoverage = getDummyTestwiseCoverage("mytest");
 		when(reportGenerator.convert(any(File.class))).thenReturn(testwiseCoverage);
 
-		AgentOptions options = mockOptions();
+		AgentOptions options = mockOptions(useRevision);
 		JacocoRuntimeController controller = mock(JacocoRuntimeController.class);
 		CoverageToTeamscaleStrategy strategy = new CoverageToTeamscaleStrategy(controller, options, reportGenerator);
 
@@ -111,13 +113,17 @@ public class CoverageToTeamscaleStrategyTest {
 		return testwiseCoverage;
 	}
 
-	private AgentOptions mockOptions() throws IOException {
+	private AgentOptions mockOptions(boolean useRevision) throws IOException {
 		AgentOptions options = mock(AgentOptions.class);
 		when(options.createTeamscaleClient(true)).thenReturn(client);
 		when(options.createNewFileInOutputDirectory(any(), any())).thenReturn(new File(tempDir, "test"));
 
 		TeamscaleServer server = new TeamscaleServer();
-		server.commit = new CommitDescriptor("branch", "12345");
+		if (useRevision) {
+			server.revision = "rev1";
+		} else {
+			server.commit = new CommitDescriptor("branch", "12345");
+		}
 		server.url = HttpUrl.get("http://doesnt-exist.io");
 		server.userName = "build";
 		server.userAccessToken = "token";

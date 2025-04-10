@@ -1,36 +1,25 @@
 package com.teamscale.jacoco.agent.testimpact;
 
+import com.teamscale.client.EReportFormat;
+import com.teamscale.jacoco.agent.JacocoRuntimeController;
+import com.teamscale.jacoco.agent.options.AgentOptions;
+import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
+import org.conqat.lib.commons.filesystem.FileSystemUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.conqat.lib.commons.filesystem.FileSystemUtils;
-
-import com.teamscale.client.EReportFormat;
-import com.teamscale.jacoco.agent.JacocoRuntimeController;
-import com.teamscale.jacoco.agent.options.AgentOptions;
-import com.teamscale.jacoco.agent.upload.teamscale.TeamscaleConfig;
-import com.teamscale.report.testwise.jacoco.JaCoCoTestwiseReportGenerator;
-
 /**
  * Strategy that records test-wise coverage and uploads the resulting report to Teamscale. Also handles the
- * {@link #testRunStart(List, boolean, boolean, boolean, String, String)} event by retrieving tests to run from Teamscale.
+ * {@link #testRunStart(List, boolean, boolean, boolean, String, String)} event by retrieving tests to run from
+ * Teamscale.
  */
 public class CoverageToTeamscaleStrategy extends CoverageToJsonStrategyBase {
 
 	public CoverageToTeamscaleStrategy(JacocoRuntimeController controller, AgentOptions agentOptions,
-									   JaCoCoTestwiseReportGenerator reportGenerator) {
+			JaCoCoTestwiseReportGenerator reportGenerator) {
 		super(controller, agentOptions, reportGenerator);
-
-		if (!agentOptions.getTeamscaleServerOptions().hasCommitOrRevision()) {
-			throw new UnsupportedOperationException(
-					"You must provide a commit or revision via the agent's '" + TeamscaleConfig.TEAMSCALE_COMMIT_OPTION +
-							"', '" + TeamscaleConfig.TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION + "', '" +
-							TeamscaleConfig.TEAMSCALE_REVISION_OPTION + "' or '" +
-							AgentOptions.GIT_PROPERTIES_JAR_OPTION + "' option." +
-							" Auto-detecting the git.properties does not work since we need the commit before any code" +
-							" has been profiled in order to obtain the prioritized test cases from the TIA.");
-		}
 	}
 
 	@Override
