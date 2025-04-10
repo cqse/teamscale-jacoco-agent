@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+# 35.1.0
 - [feature] _agent_: Experimental support for Java 25 class files
 - [fix] _agent_: Reported wrong version number in docker container
 - [fix] _agent_: Erroneous log messages were printed about unmatched probes
