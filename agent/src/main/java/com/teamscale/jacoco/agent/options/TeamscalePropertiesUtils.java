@@ -19,8 +19,8 @@ public class TeamscalePropertiesUtils {
 			.resolve("teamscale.properties");
 
 	/**
-	 * Tries to open {@link #TEAMSCALE_PROPERTIES_PATH} and parse that properties file to obtain {@link
-	 * TeamscaleCredentials}.
+	 * Tries to open {@link #TEAMSCALE_PROPERTIES_PATH} and parse that properties file to obtain
+	 * {@link TeamscaleCredentials}.
 	 *
 	 * @return the parsed credentials or null in case the teamscale.properties file doesn't exist.
 	 * @throws AgentOptionParseException in case the teamscale.properties file exists but can't be read or parsed.
@@ -32,7 +32,8 @@ public class TeamscalePropertiesUtils {
 	/**
 	 * Same as {@link #parseCredentials()} but testable since the path is not hardcoded.
 	 */
-	/*package*/ static TeamscaleCredentials parseCredentials(
+	/*package*/
+	static TeamscaleCredentials parseCredentials(
 			Path teamscalePropertiesPath) throws AgentOptionParseException {
 		if (!Files.exists(teamscalePropertiesPath)) {
 			return null;

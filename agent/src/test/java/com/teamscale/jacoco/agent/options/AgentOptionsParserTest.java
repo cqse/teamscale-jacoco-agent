@@ -72,7 +72,7 @@ public class AgentOptionsParserTest {
 	@Test
 	public void testUploadMethodRecognitionWithTeamscaleProperties() throws Exception {
 		TeamscaleCredentials credentials = new TeamscaleCredentials(HttpUrl.get("http://localhost"), "user", "key");
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, credentials);
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, credentials, null);
 
 		assertThat(parseAndThrow(null).determineUploadMethod()).isEqualTo(AgentOptions.EUploadMethod.LOCAL_DISK);
 		assertThat(parseAndThrow("azure-url=azure.com,azure-key=key").determineUploadMethod()).isEqualTo(
@@ -103,7 +103,7 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=foo";
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
-				null, teamscaleCredentials);
+				null, teamscaleCredentials, null);
 		AgentOptions options = parseAndThrow(parser, "teamscale-partition=bar");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("foo");
@@ -112,7 +112,7 @@ public class AgentOptionsParserTest {
 	@Test
 	public void environmentConfigFileOverridesCommandLineOptions() throws Exception {
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, configFile.toString(),
-				teamscaleCredentials);
+				teamscaleCredentials, null);
 		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
@@ -127,7 +127,7 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=from-config-id";
 		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config", configFile.toString(),
-				teamscaleCredentials);
+				teamscaleCredentials, null);
 		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");
 
 		assertThat(options.teamscaleServer.partition).isEqualTo("from-config-file");
@@ -245,9 +245,20 @@ public class AgentOptionsParserTest {
 		mockWebServer.enqueue(new MockResponse().setResponseCode(404).setBody("invalid-config-id does not exist"));
 		assertThatThrownBy(
 				() -> new AgentOptionsParser(new CommandLineLogger(), "invalid-config-id", null,
-						teamscaleCredentials).parse(
+						teamscaleCredentials, null).parse(
 						"")
 		).isInstanceOf(AgentOptionReceiveException.class).hasMessageContaining("invalid-config-id does not exist");
+	}
+
+	@Test
+	public void accessTokenFromEnvironment() throws Exception {
+		assertThat(parseAndThrow(
+				"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-partition=p,teamscale-project=p",
+				"envtoken").teamscaleServer.userAccessToken).isEqualTo("envtoken");
+		// command line overrides env variable
+		assertThat(parseAndThrow(
+				"teamscale-server-url=teamscale.com,teamscale-user=user,teamscale-access-token=commandlinetoken,teamscale-partition=p,teamscale-project=p",
+				"envtoken").teamscaleServer.userAccessToken).isEqualTo("commandlinetoken");
 	}
 
 	@Test
@@ -265,11 +276,13 @@ public class AgentOptionsParserTest {
 
 	@Test
 	public void teamscalePropertiesCredentialsUsedAsDefaultButOverridable() throws Exception {
-		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials),
-				"teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
+		assertThat(
+				parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials, null),
+						"teamscale-project=p,teamscale-partition=p").teamscaleServer.userName).isEqualTo(
 				"user");
-		assertThat(parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials),
-				"teamscale-project=p,teamscale-partition=p,teamscale-user=user2").teamscaleServer.userName).isEqualTo(
+		assertThat(
+				parseAndThrow(new AgentOptionsParser(new CommandLineLogger(), null, null, teamscaleCredentials, null),
+						"teamscale-project=p,teamscale-partition=p,teamscale-user=user2").teamscaleServer.userName).isEqualTo(
 				"user2");
 	}
 
@@ -280,7 +293,13 @@ public class AgentOptionsParserTest {
 	}
 
 	private AgentOptions parseAndThrow(String options) throws Exception {
-		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null, null);
+		return parseAndThrow(parser, options);
+	}
+
+	private AgentOptions parseAndThrow(String options, String environmentAccessToken) throws Exception {
+		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), null, null, null,
+				environmentAccessToken);
 		return parseAndThrow(parser, options);
 	}
 
