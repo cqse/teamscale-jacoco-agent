@@ -137,8 +137,9 @@ patterns with `*`, `**` and `?`.
 - `teamscale-user`: the username used to authenticate against Teamscale. The user account must have the
   "Perform External Uploads" permission on the given project.
 - `teamscale-access-token`: the access token of the user.
+  Alternatively you can also set the `TEAMSCALE_ACCESS_TOKEN` environment variable to that value.
 - `teamscale-partition`: the partition within Teamscale to upload coverage to. A partition can be an arbitrary string
-  which can be used to encode e.g. the test environment or the tester. These can be individually toggled on or off in
+  which can be used to encode e.g. the test environment. These can be individually toggled on or off in
   Teamscale's UI.
 - `teamscale-revision`: the source control revision (e.g. SVN revision or Git hash) that has been used to build
   the system under test. Teamscale uses this to map the coverage to the corresponding source code. For an alternative see `teamscale-revision-manifest-jar`.
