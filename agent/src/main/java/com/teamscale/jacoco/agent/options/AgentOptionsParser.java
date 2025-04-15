@@ -127,14 +127,7 @@ public class AgentOptionsParser {
 		AgentOptions options = new AgentOptions(logger);
 		options.originalOptionsString = optionsString;
 
-		if (credentials != null) {
-			options.teamscaleServer.url = credentials.url;
-			options.teamscaleServer.userName = credentials.userName;
-			options.teamscaleServer.userAccessToken = credentials.accessKey;
-		}
-		if (environmentAccessToken != null) {
-			options.teamscaleServer.userAccessToken = environmentAccessToken;
-		}
+		presetCredentialOptions(options);
 
 		if (!StringUtils.isEmpty(optionsString)) {
 			String[] optionParts = optionsString.split(",");
@@ -160,6 +153,17 @@ public class AgentOptionsParser {
 		}
 
 		return options;
+	}
+
+	private void presetCredentialOptions(AgentOptions options) {
+		if (credentials != null) {
+			options.teamscaleServer.url = credentials.url;
+			options.teamscaleServer.userName = credentials.userName;
+			options.teamscaleServer.userAccessToken = credentials.accessKey;
+		}
+		if (environmentAccessToken != null) {
+			options.teamscaleServer.userAccessToken = environmentAccessToken;
+		}
 	}
 
 	/**
