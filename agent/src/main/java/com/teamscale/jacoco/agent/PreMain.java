@@ -55,6 +55,9 @@ public class PreMain {
 	/** Environment variable from which to read the config file to use. */
 	private static final String CONFIG_FILE_ENVIRONMENT_VARIABLE = "TEAMSCALE_JAVA_PROFILER_CONFIG_FILE";
 
+	/** Environment variable from which to read the Teamscale access token. */
+	private static final String ACCESS_TOKEN_ENVIRONMENT_VARIABLE = "TEAMSCALE_ACCESS_TOKEN";
+
 	/**
 	 * Entry point for the agent, called by the JVM.
 	 */
@@ -138,11 +141,13 @@ public class PreMain {
 					"No explicit teamscale.properties file given. Looking for Teamscale credentials in a config file or via a command line argument. This is expected unless the installer based setup was used.");
 		}
 
+		String environmentAccessToken = System.getenv(ACCESS_TOKEN_ENVIRONMENT_VARIABLE);
+
 		Pair<AgentOptions, List<Exception>> parseResult;
 		AgentOptions agentOptions;
 		try {
 			parseResult = AgentOptionsParser.parse(
-					options, environmentConfigId, environmentConfigFile, credentials,
+					options, environmentConfigId, environmentConfigFile, credentials, environmentAccessToken,
 					delayedLogger);
 			agentOptions = parseResult.getFirst();
 		} catch (AgentOptionParseException e) {

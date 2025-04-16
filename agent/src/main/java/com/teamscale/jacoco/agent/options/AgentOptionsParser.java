@@ -62,34 +62,40 @@ public class AgentOptionsParser {
 	private final TeamscaleConfig teamscaleConfig;
 	private final String environmentConfigId;
 	private final String environmentConfigFile;
+	@Nullable
 	private final TeamscaleCredentials credentials;
+	@Nullable
+	private final String environmentAccessToken;
 	private final List<Exception> collectedErrors;
 
 	/**
 	 * Parses the given command-line options.
 	 *
-	 * @param environmentConfigId   The Profiler configuration ID given via an environment variable.
-	 * @param environmentConfigFile The Profiler configuration file given via an environment variable.
+	 * @param environmentConfigId    The Profiler configuration ID given via an environment variable.
+	 * @param environmentConfigFile  The Profiler configuration file given via an environment variable.
+	 * @param credentials            Optional Teamscale credentials from a teamscale.properties file.
+	 * @param environmentAccessToken Optional access token for accessing Teamscale, read from an env variable.
 	 */
 	public static Pair<AgentOptions, List<Exception>> parse(String optionsString, String environmentConfigId,
-			String environmentConfigFile,
-			@Nullable TeamscaleCredentials credentials,
+			String environmentConfigFile, @Nullable TeamscaleCredentials credentials,
+			@Nullable String environmentAccessToken,
 			ILogger logger) throws AgentOptionParseException, AgentOptionReceiveException {
 		AgentOptionsParser parser = new AgentOptionsParser(logger, environmentConfigId, environmentConfigFile,
-				credentials);
+				credentials, environmentAccessToken);
 		AgentOptions options = parser.parse(optionsString);
 		return Pair.createPair(options, parser.getCollectedErrors());
 	}
 
 	@VisibleForTesting
 	AgentOptionsParser(ILogger logger, String environmentConfigId, String environmentConfigFile,
-			TeamscaleCredentials credentials) {
+			@Nullable TeamscaleCredentials credentials, @Nullable String environmentAccessToken) {
 		this.logger = logger;
 		this.filePatternResolver = new FilePatternResolver(logger);
 		this.teamscaleConfig = new TeamscaleConfig(logger, filePatternResolver);
 		this.environmentConfigId = environmentConfigId;
 		this.environmentConfigFile = environmentConfigFile;
 		this.credentials = credentials;
+		this.environmentAccessToken = environmentAccessToken;
 		this.collectedErrors = Lists.newArrayList();
 	}
 
@@ -121,11 +127,7 @@ public class AgentOptionsParser {
 		AgentOptions options = new AgentOptions(logger);
 		options.originalOptionsString = optionsString;
 
-		if (credentials != null) {
-			options.teamscaleServer.url = credentials.url;
-			options.teamscaleServer.userName = credentials.userName;
-			options.teamscaleServer.userAccessToken = credentials.accessKey;
-		}
+		presetCredentialOptions(options);
 
 		if (!StringUtils.isEmpty(optionsString)) {
 			String[] optionParts = optionsString.split(",");
@@ -151,6 +153,17 @@ public class AgentOptionsParser {
 		}
 
 		return options;
+	}
+
+	private void presetCredentialOptions(AgentOptions options) {
+		if (credentials != null) {
+			options.teamscaleServer.url = credentials.url;
+			options.teamscaleServer.userName = credentials.userName;
+			options.teamscaleServer.userAccessToken = credentials.accessKey;
+		}
+		if (environmentAccessToken != null) {
+			options.teamscaleServer.userAccessToken = environmentAccessToken;
+		}
 	}
 
 	/**
@@ -179,7 +192,7 @@ public class AgentOptionsParser {
 		readConfigFromTeamscale(options);
 	}
 
-	private void handleConfigFile(AgentOptions options) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void handleConfigFile(AgentOptions options) throws AgentOptionParseException {
 		if (environmentConfigFile != null) {
 			handleOptionPart(options, "config-file=" + environmentConfigFile);
 		}
@@ -195,7 +208,7 @@ public class AgentOptionsParser {
 	 * Parses and stores the given option in the format <code>key=value</code>.
 	 */
 	private void handleOptionPart(AgentOptions options,
-			String optionPart) throws AgentOptionParseException, AgentOptionReceiveException {
+			String optionPart) throws AgentOptionParseException {
 		Pair<String, String> keyAndValue = parseOption(optionPart);
 		handleOption(options, keyAndValue.getFirst(), keyAndValue.getSecond());
 	}
@@ -204,7 +217,7 @@ public class AgentOptionsParser {
 	 * Parses and stores the option with the given key and value.
 	 */
 	private void handleOption(AgentOptions options,
-			String key, String value) throws AgentOptionParseException, AgentOptionReceiveException {
+			String key, String value) throws AgentOptionParseException {
 		if (key.startsWith(DEBUG)) {
 			handleDebugOption(options, value);
 			return;
@@ -299,7 +312,7 @@ public class AgentOptionsParser {
 	 * @return true if it has successfully processed the given option.
 	 */
 	private boolean handleAgentOptions(AgentOptions options, String key, String value)
-			throws AgentOptionParseException, AgentOptionReceiveException {
+			throws AgentOptionParseException {
 		switch (key) {
 			case "config-id":
 				options.teamscaleServer.configId = value;
@@ -447,7 +460,7 @@ public class AgentOptionsParser {
 	 * excludes=third.party.*
 	 */
 	private void readConfigFromFile(AgentOptions options,
-			File configFile) throws AgentOptionParseException, AgentOptionReceiveException {
+			File configFile) throws AgentOptionParseException {
 		try {
 			String content = FileSystemUtils.readFileUTF8(configFile);
 			readConfigFromString(options, content);
@@ -460,8 +473,7 @@ public class AgentOptionsParser {
 		}
 	}
 
-	private void readConfigFromString(AgentOptions options,
-			String content) throws AgentOptionParseException, AgentOptionReceiveException {
+	private void readConfigFromString(AgentOptions options, String content) {
 		List<String> configFileKeyValues = org.conqat.lib.commons.string.StringUtils.splitLinesAsList(
 				content);
 		for (String optionKeyValue : configFileKeyValues) {

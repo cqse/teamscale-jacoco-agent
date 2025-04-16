@@ -482,11 +482,11 @@ public class AgentOptionsTest {
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLogger() {
-		return new AgentOptionsParser(new CommandLineLogger(), null, null, null);
+		return new AgentOptionsParser(new CommandLineLogger(), null, null, null, null);
 	}
 
 	private static AgentOptionsParser getAgentOptionsParserWithDummyLoggerAndCredentials(TeamscaleCredentials credentials) {
-		return new AgentOptionsParser(new CommandLineLogger(), null, null, credentials);
+		return new AgentOptionsParser(new CommandLineLogger(), null, null, credentials, null);
 	}
 
 	/**

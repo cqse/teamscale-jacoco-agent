@@ -5,6 +5,8 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [feature] _agent_: Access token can be passed via environment variable `TEAMSCALE_ACCESS_TOKEN`
+
 # 35.1.0
 - [feature] _agent_: Experimental support for Java 25 class files
 - [fix] _agent_: Reported wrong version number in docker container
