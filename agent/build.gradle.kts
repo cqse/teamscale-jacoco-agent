@@ -25,9 +25,11 @@ val jacocoVersion = libs.versions.jacoco.get()
 val outputVersion = "$appVersion-jacoco-$jacocoVersion"
 
 dependencies {
+	implementation(platform(libs.jetty.bom))
 	implementation(libs.jetty.server)
 	implementation(libs.jetty.servlet)
 
+	implementation(platform(libs.jersey.bom))
 	implementation(libs.jersey.server)
 	implementation(libs.jersey.containerServletCore)
 	implementation(libs.jersey.containerJettyHttp)
