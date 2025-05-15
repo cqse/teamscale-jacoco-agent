@@ -10,7 +10,7 @@ import com.teamscale.test_impacted.engine.executor.ImpactedTestsSorter
 import com.teamscale.test_impacted.engine.executor.NOPTestSorter
 import com.teamscale.test_impacted.engine.executor.TeamscaleAgentNotifier
 import com.teamscale.tia.client.ITestwiseCoverageAgentApi
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.io.File
 import kotlin.io.path.createDirectories
 
@@ -59,7 +59,7 @@ class TestEngineOptions(
 
 	private var reportDirectory = reportDirectoryPath?.let { File(it) }
 	private var testwiseCoverageAgentApis =
-		testCoverageAgentUrls.mapNotNull { HttpUrl.parse(it)?.let(ITestwiseCoverageAgentApi::createService) }
+		testCoverageAgentUrls.mapNotNull { it.toHttpUrlOrNull()?.let(ITestwiseCoverageAgentApi::createService) }
 
 	companion object {
 		private const val DEFAULT_RUN_IMPACTED = true

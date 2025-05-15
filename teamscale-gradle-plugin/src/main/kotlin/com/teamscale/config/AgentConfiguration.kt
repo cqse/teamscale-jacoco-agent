@@ -3,6 +3,7 @@ package com.teamscale.config
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.utils.ArgumentAppender
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
@@ -48,7 +49,7 @@ abstract class AgentConfiguration @Inject constructor(
 	 */
 	@JvmOverloads
 	fun useLocalAgent(url: String = "http://127.0.0.1:8123/") {
-		localAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
+		localAgent = TeamscaleAgent(url.toHttpUrl())
 	}
 
 	/**
@@ -58,7 +59,7 @@ abstract class AgentConfiguration @Inject constructor(
 	 */
 	@JvmOverloads
 	fun useRemoteAgent(url: String = "http://127.0.0.1:8124/") {
-		remoteAgent = TeamscaleAgent(HttpUrl.parse(url)!!)
+		remoteAgent = TeamscaleAgent(url.toHttpUrl())
 	}
 
 	/** Returns a filter predicate that respects the configured wildcard include and exclude patterns. */
@@ -98,7 +99,7 @@ abstract class AgentConfiguration @Inject constructor(
 			argument.append("includes", jacocoExtension.includes)
 			argument.append("excludes", jacocoExtension.excludes)
 			argument.append("mode", "testwise")
-			argument.append("http-server-port", url.port())
+			argument.append("http-server-port", url.port)
 		}
 	}
 }

@@ -5,7 +5,7 @@ import com.teamscale.tia.client.RunningTest
 import com.teamscale.tia.client.TestRun
 import com.teamscale.tia.client.TestRun.TestResultWithMessage
 import com.teamscale.tia.client.TiaAgent
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 /**
  * Handles communication with the [TiaAgent] and logging for any type of test run listener.
@@ -31,7 +31,7 @@ class RunListenerAgentBridge(runListenerClassName: String) {
 			throw exception
 		}
 
-		val agent = TiaAgent(false, HttpUrl.get(agentUrl))
+		val agent = TiaAgent(false, agentUrl.toHttpUrl())
 		testRun = agent.startTestRunWithoutTestSelection()
 	}
 
