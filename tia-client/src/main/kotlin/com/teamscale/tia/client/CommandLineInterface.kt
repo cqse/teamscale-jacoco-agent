@@ -1,7 +1,6 @@
 package com.teamscale.tia.client
 
 import com.teamscale.client.ClusteredTestDetails
-import com.teamscale.client.JsonUtils
 import com.teamscale.client.JsonUtils.deserializeList
 import com.teamscale.client.JsonUtils.serialize
 import com.teamscale.client.StringUtils.isEmpty
@@ -9,7 +8,7 @@ import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestExecution
 import com.teamscale.tia.client.AgentCommunicationUtils.handleRequestError
 import com.teamscale.tia.client.UrlUtils.encodeUrl
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -34,8 +33,8 @@ class CommandLineInterface(arguments: Array<String>) {
 			)
 		}
 
-		val url = HttpUrl.parse(this.arguments.removeAt(0))
-		api = ITestwiseCoverageAgentApi.createService(url!!)
+		val url = this.arguments.removeAt(0).toHttpUrl()
+		api = ITestwiseCoverageAgentApi.createService(url)
 
 		command = this.arguments.removeAt(0)
 	}
