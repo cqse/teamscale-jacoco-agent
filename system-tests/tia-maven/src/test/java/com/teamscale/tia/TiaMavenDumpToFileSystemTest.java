@@ -53,7 +53,7 @@ public class TiaMavenDumpToFileSystemTest {
 					.containsExactlyInAnyOrder("bar/UnitTest/utBla()", "bar/UnitTest/utFoo()");
 			assertThat(unitTestReport.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
-			assertThat(unitTestReport.tests).extracting(SystemTestUtils::getCoverageString)
+			assertThat(unitTestReport.tests).extracting(SystemTestUtils::getCoverage)
 					.containsExactly("SUT.java:3,6-7", "SUT.java:3,10-11");
 		});
 
@@ -64,7 +64,7 @@ public class TiaMavenDumpToFileSystemTest {
 					.containsExactlyInAnyOrder("bar/IntegIT/itBla()", "bar/IntegIT/itFoo()");
 			assertThat(integrationTestReport.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
-			assertThat(integrationTestReport.tests).extracting(SystemTestUtils::getCoverageString)
+			assertThat(integrationTestReport.tests).extracting(SystemTestUtils::getCoverage)
 					.containsExactly("SUT.java:3,6-7", "SUT.java:3,10-11");
 		});
 	}

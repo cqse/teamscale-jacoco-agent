@@ -65,7 +65,7 @@ public class TiaMavenCucumberSystemTest {
 				.extracting(test -> test.result)
 				.allMatch(result -> result == ETestExecutionResult.PASSED);
 		assertThat(unitTestReport.tests)
-				.extracting(SystemTestUtils::getCoverageString)
+				.extracting(SystemTestUtils::getCoverage)
 				.containsExactlyInAnyOrder(COVERAGE_ADD, // must match TEST_PATHS
 						COVERAGE_ADD,
 						COVERAGE_ADD,

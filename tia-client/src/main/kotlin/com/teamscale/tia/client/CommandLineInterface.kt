@@ -108,7 +108,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		) {
 			api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests)
 		}?.let {
-			println(serialize(it))
+			println(it.serialize())
 		}
 	}
 
@@ -117,10 +117,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		val json = readStdin()
 		var availableTests = emptyList<ClusteredTestDetails>()
 		if (!isEmpty(json)) {
-			availableTests = deserializeList(
-				json,
-				ClusteredTestDetails::class.java
-			)
+			availableTests = deserializeList(json)
 		}
 		return availableTests
 	}

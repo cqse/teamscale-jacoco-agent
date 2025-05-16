@@ -38,7 +38,7 @@ public class JUnitRunListenerSystemTest {
 					.containsExactlyInAnyOrder("JUnit4ExecutedWithJUnit5Test/testAdd()", "JUnit5Test/testAdd()");
 			assertThat(report.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED, ETestExecutionResult.PASSED);
-			assertThat(report.tests).extracting(SystemTestUtils::getCoverageString)
+			assertThat(report.tests).extracting(SystemTestUtils::getCoverage)
 					.containsExactly("SystemUnderTest.java:3,6", "SystemUnderTest.java:3,6");
 		});
 	}
@@ -55,7 +55,7 @@ public class JUnitRunListenerSystemTest {
 					.containsExactlyInAnyOrder("JUnit4Test/testAdd");
 			assertThat(report.tests).extracting(test -> test.result)
 					.containsExactlyInAnyOrder(ETestExecutionResult.PASSED);
-			assertThat(report.tests).extracting(SystemTestUtils::getCoverageString)
+			assertThat(report.tests).extracting(SystemTestUtils::getCoverage)
 					.containsExactly("SystemUnderTest.java:3,6");
 		});
 	}

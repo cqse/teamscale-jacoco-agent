@@ -3,6 +3,7 @@ package com.teamscale.report
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.teamscale.client.FileSystemUtils
 import com.teamscale.client.JsonUtils
+import com.teamscale.client.JsonUtils.serialize
 import com.teamscale.client.TestDetails
 import com.teamscale.report.testwise.ETestArtifactFormat
 import com.teamscale.report.testwise.model.TestExecution
@@ -36,9 +37,7 @@ object ReportUtils {
 	/** Converts to given report to a json string. For testing only.  */
 	@JvmStatic
 	@Throws(JsonProcessingException::class)
-	fun getTestwiseCoverageReportAsString(
-		report: TestwiseCoverageReport
-	) = JsonUtils.serialize(report)
+	fun getTestwiseCoverageReportAsString(report: TestwiseCoverageReport) = report.serialize()
 
 	/** Writes the report object to the given file as json.  */
 	@Throws(IOException::class)

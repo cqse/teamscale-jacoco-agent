@@ -126,7 +126,7 @@ public class TiaMavenSystemTest {
 		);
 		assertThat(testwiseCoverageReport.tests).extracting(test -> test.result)
 				.allMatch(result -> result == ETestExecutionResult.PASSED);
-		assertThat(testwiseCoverageReport.tests).extracting(SystemTestUtils::getCoverageString).containsExactly(
+		assertThat(testwiseCoverageReport.tests).extracting(SystemTestUtils::getCoverage).containsExactly(
 				"SUTA.java:7,10-11;UnitTest.java:10-11",
 				"SUTA.java:7,14-15;UnitTest.java:15-16",
 				"SUTB1.java:7,14-15;UnitB1Test.java:10-11",
@@ -149,7 +149,7 @@ public class TiaMavenSystemTest {
 				);
 		assertThat(integrationTestReport.tests).extracting(test -> test.result)
 				.allMatch(result -> result == ETestExecutionResult.PASSED);
-		assertThat(integrationTestReport.tests).extracting(SystemTestUtils::getCoverageString)
+		assertThat(integrationTestReport.tests).extracting(SystemTestUtils::getCoverage)
 				.containsExactly("IntegrationIT.java:10-11;SUTA.java:7,10-11",
 						"IntegrationIT.java:15-16;SUTA.java:7,14-15",
 						"IntegrationB1IT.java:10-11;SUTB1.java:7,14-15",

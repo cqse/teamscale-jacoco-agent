@@ -27,7 +27,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
-		assertThat(teamscaleMockServer.onlySession.commit).contains("null:myRepoId, master:1544512967526")
+		assertThat(teamscaleMockServer.onlySession.getCommit()).contains("null:myRepoId, master:1544512967526")
 	}
 
 	@Test
@@ -40,7 +40,7 @@ class CommitHandlingTest : TeamscalePluginTestBase() {
 			"-DrunAllTests",
 			"unitTestReportUpload"
 		)
-		assertThat(teamscaleMockServer.onlySession.commit).contains("abcd1337:myRepoId, null")
+		assertThat(teamscaleMockServer.onlySession.getCommit()).contains("abcd1337:myRepoId, null")
 	}
 
 	@Test
