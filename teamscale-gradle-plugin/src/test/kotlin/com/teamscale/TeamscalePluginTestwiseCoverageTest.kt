@@ -97,7 +97,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 	}
 
 	private fun assertFullCoverage(source: String) {
-		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
+		val testwiseCoverageReport = JsonUtils.deserialize<TestwiseCoverageReport>(source)
 		assertThat(testwiseCoverageReport)
 			.hasPartial(false)
 			.containsExecutionResult("com/example/project/IgnoredJUnit4Test/systemTest", ETestExecutionResult.SKIPPED)
@@ -121,7 +121,7 @@ class TeamscalePluginTestwiseCoverageTest : TeamscalePluginTestBase() {
 	}
 
 	private fun assertPartialCoverage(source: String) {
-		val testwiseCoverageReport = JsonUtils.deserialize(source, TestwiseCoverageReport::class.java)
+		val testwiseCoverageReport = JsonUtils.deserialize<TestwiseCoverageReport>(source)
 		assertThat(testwiseCoverageReport)
 			.hasPartial(true)
 			.containsExecutionResult("com/example/project/JUnit4Test/systemTest", ETestExecutionResult.PASSED)
