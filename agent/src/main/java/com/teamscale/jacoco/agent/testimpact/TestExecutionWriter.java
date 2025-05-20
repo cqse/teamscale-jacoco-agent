@@ -29,7 +29,7 @@ public class TestExecutionWriter {
 
 	/** Appends the given {@link TestExecution} to the test execution list file. */
 	public synchronized void append(TestExecution testExecution) throws IOException {
-		String json = JsonUtils.serialize(testExecution);
+		String json = JsonUtils.serializeToJson(testExecution);
 
 		// the file contains a JSON array if it exists and to append to it, we strip the trailing "]" and append
 		// our new entry and a closing "]"

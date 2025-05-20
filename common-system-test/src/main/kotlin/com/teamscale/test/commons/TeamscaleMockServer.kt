@@ -3,7 +3,7 @@ package com.teamscale.test.commons
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.teamscale.client.*
 import com.teamscale.client.JsonUtils.deserializeList
-import com.teamscale.client.JsonUtils.serialize
+import com.teamscale.client.JsonUtils.serializeToJson
 import spark.*
 import spark.utils.IOUtils
 import java.io.IOException
@@ -143,7 +143,7 @@ class TeamscaleMockServer(port: Int) {
 
 		val sessionId = UUID.randomUUID().toString()
 		sessions.put(sessionId, Session(request))
-		return sessionId.serialize()
+		return sessionId.serializeToJson()
 	}
 
 	/** Configures the server to answer all impacted test calls with the given tests.  */
@@ -191,7 +191,7 @@ class TeamscaleMockServer(port: Int) {
 					clusterId.orElse(null),
 					impactedTests.map { PrioritizableTest(it.testName) }
 				)
-			}.serialize()
+			}.serializeToJson()
 	}
 
 	@Throws(JsonProcessingException::class)
@@ -205,7 +205,7 @@ class TeamscaleMockServer(port: Int) {
 		val registration = ProfilerRegistration()
 		registration.profilerConfiguration = this.profilerConfiguration
 		registration.profilerId = "123"
-		return registration.serialize()
+		return registration.serializeToJson()
 	}
 
 	private fun handleProfilerHeartbeat(request: Request, response: Response): String {

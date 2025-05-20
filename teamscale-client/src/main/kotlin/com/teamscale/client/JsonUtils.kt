@@ -70,7 +70,7 @@ object JsonUtils {
 	 */
 	@JvmStatic
 	@Throws(JsonProcessingException::class)
-	fun Any.serialize(): String =
+	fun Any.serializeToJson(): String =
 		OBJECT_MAPPER.writeValueAsString(this)
 
 	/**

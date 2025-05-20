@@ -389,7 +389,7 @@ public class AgentOptionsTest {
 			profilerRegistration.profilerConfiguration = expectedProfilerConfiguration;
 
 			mockProxyServer.enqueue(new MockResponse().setResponseCode(407));
-			mockProxyServer.enqueue(new MockResponse().setResponseCode(200).setBody(JsonUtils.serialize(profilerRegistration)));
+			mockProxyServer.enqueue(new MockResponse().setResponseCode(200).setBody(JsonUtils.serializeToJson(profilerRegistration)));
 
 			AgentOptions agentOptions= parseProxyOptions("config-id=config,", ProxySystemProperties.Protocol.HTTP, expectedHost, expectedPort, expectedUser, unexpectedPassword, passwordFile);
 
