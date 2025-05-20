@@ -47,6 +47,12 @@ fun PublicationContainer.configureMavenPublication() {
             hasShadow = true
         }
 
+        versionMapping {
+            usage(Usage.JAVA_RUNTIME) {
+                fromResolutionOf("runtimeClasspath")
+            }
+        }
+
         // we do not want to publish both the shadow and the normal jar (this causes errors during publishing)
         if (!hasShadow) {
             pluginManager.withPlugin("java-library") {
