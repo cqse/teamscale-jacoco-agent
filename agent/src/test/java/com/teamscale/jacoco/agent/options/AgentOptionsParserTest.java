@@ -101,7 +101,7 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration = new ProfilerConfiguration();
 		registration.profilerConfiguration.configurationId = "my-config";
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=foo";
-		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
+		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serializeToJson(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config",
 				null, teamscaleCredentials, null);
 		AgentOptions options = parseAndThrow(parser, "teamscale-partition=bar");
@@ -125,7 +125,7 @@ public class AgentOptionsParserTest {
 		registration.profilerConfiguration = new ProfilerConfiguration();
 		registration.profilerConfiguration.configurationId = "my-config";
 		registration.profilerConfiguration.configurationOptions = "teamscale-partition=from-config-id";
-		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serialize(registration)));
+		mockWebServer.enqueue(new MockResponse().setBody(JsonUtils.serializeToJson(registration)));
 		AgentOptionsParser parser = new AgentOptionsParser(new CommandLineLogger(), "my-config", configFile.toString(),
 				teamscaleCredentials, null);
 		AgentOptions options = parseAndThrow(parser, "teamscale-partition=from-command-line");

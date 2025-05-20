@@ -1,6 +1,7 @@
 import kotlin.io.path.writeText
 
 plugins {
+	com.teamscale.`kotlin-convention`
 	com.teamscale.`system-test-convention`
 }
 

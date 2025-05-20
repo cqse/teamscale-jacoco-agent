@@ -1,6 +1,7 @@
 import org.gradle.jvm.tasks.Jar
 
 plugins {
+	com.teamscale.`kotlin-convention`
 	com.teamscale.`system-test-convention`
 }
 

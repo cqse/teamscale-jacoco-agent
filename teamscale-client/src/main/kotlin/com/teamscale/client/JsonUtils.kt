@@ -41,6 +41,14 @@ object JsonUtils {
 		OBJECT_MAPPER.readValue(json, clazz)
 
 	/**
+	 * Deserializes a JSON string into an object of the given class.
+	 */
+	@Throws(JsonProcessingException::class)
+	@JvmStatic
+	inline fun <reified T> deserialize(json: String): T =
+		OBJECT_MAPPER.readValue(json, T::class.java)
+
+	/**
 	 * Deserializes the contents of the given file into an object of the given class.
 	 */
 	@Throws(IOException::class)
@@ -52,9 +60,9 @@ object JsonUtils {
 	 */
 	@Throws(JsonProcessingException::class)
 	@JvmStatic
-	fun <T> deserializeList(json: String, elementClass: Class<T>): List<T> =
+	inline fun <reified T> deserializeList(json: String): List<T> =
 		OBJECT_MAPPER.readValue(
-			json, OBJECT_MAPPER.typeFactory.constructCollectionLikeType(MutableList::class.java, elementClass)
+			json, OBJECT_MAPPER.typeFactory.constructCollectionLikeType(MutableList::class.java, T::class.java)
 		)
 
 	/**
@@ -62,8 +70,8 @@ object JsonUtils {
 	 */
 	@JvmStatic
 	@Throws(JsonProcessingException::class)
-	fun serialize(value: Any): String =
-		OBJECT_MAPPER.writeValueAsString(value)
+	fun Any.serializeToJson(): String =
+		OBJECT_MAPPER.writeValueAsString(this)
 
 	/**
 	 * Serializes an object to a file with pretty printing enabled.

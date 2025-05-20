@@ -2,7 +2,7 @@ package com.teamscale.tia.client
 
 import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.client.JsonUtils.deserializeList
-import com.teamscale.client.JsonUtils.serialize
+import com.teamscale.client.JsonUtils.serializeToJson
 import com.teamscale.client.StringUtils.isEmpty
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestExecution
@@ -108,7 +108,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		) {
 			api.testRunStarted(includeNonImpacted, baseline, baselineRevision, availableTests)
 		}?.let {
-			println(serialize(it))
+			println(it.serializeToJson())
 		}
 	}
 
@@ -117,10 +117,7 @@ class CommandLineInterface(arguments: Array<String>) {
 		val json = readStdin()
 		var availableTests = emptyList<ClusteredTestDetails>()
 		if (!isEmpty(json)) {
-			availableTests = deserializeList(
-				json,
-				ClusteredTestDetails::class.java
-			)
+			availableTests = deserializeList(json)
 		}
 		return availableTests
 	}

@@ -141,7 +141,7 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 		availableTests.clear();
 		testExecutions.clear();
 
-		return JsonUtils.serialize(report);
+		return JsonUtils.serializeToJson(report);
 	}
 
 }
