@@ -34,6 +34,8 @@ import java.lang.instrument.Instrumentation;
  * {@link LenientCoverageTransformer} instead of {@link IExceptionLogger}</li>
  * <li>Replaced "$JaCoCo" suffix with "$TeamscaleJaCoCo" to avoid conflicts in cases where jacoco is on the classpath as well.</li>
  * </ul>
+ *
+ * CAUTION: Keep this class in Java for future maintenance and compatibility reasons!
  */
 public final class JaCoCoPreMain {
 
