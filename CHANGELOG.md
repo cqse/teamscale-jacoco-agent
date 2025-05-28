@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _agent_: Bad request error when starting a test run in some cases
 
 # 35.2.0
 - [feature] _agent_: Access token can be passed via environment variable `TEAMSCALE_ACCESS_TOKEN`
