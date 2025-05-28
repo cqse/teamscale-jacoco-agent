@@ -2,6 +2,7 @@ package com.teamscale.test_impacted.engine
 
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import com.teamscale.test_impacted.engine.options.TestEngineOptionUtils
+import jdk.internal.agent.AgentConfigurationError
 import org.junit.platform.engine.*
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import java.util.*
@@ -21,6 +22,10 @@ class ImpactedTestEngine : TestEngine {
 		if (!engineOptions.enabled) {
 			return EngineDescriptor(uniqueId, ENGINE_NAME)
 		}
+		if (engineOptions.partition == null) {
+			throw AgentConfigurationError("Agent option partition is undefined, but it's a mandatory parameter when executing impacted tests.")
+		}
+
 		val configuration = engineOptions.testEngineConfiguration
 		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition)
 

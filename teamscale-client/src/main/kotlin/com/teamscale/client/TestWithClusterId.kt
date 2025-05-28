@@ -18,11 +18,11 @@ class TestWithClusterId @JsonCreator constructor(
 	/**
 	 * The partition of the test.
 	 */
-	@param:JsonProperty("partition") val partition: String?,
+	@param:JsonProperty("partition") val partition: String,
 	/**
 	 * A unique identifier for the cluster this test should be prioritized within. May not be null.
 	 */
-	@param:JsonProperty("clusterId") val clusterId: String?
+	@param:JsonProperty("clusterId") val clusterId: String
 ) {
 	companion object {
 		/**
@@ -31,7 +31,7 @@ class TestWithClusterId @JsonCreator constructor(
 		fun fromClusteredTestDetails(clusteredTestDetails: ClusteredTestDetails) =
 			TestWithClusterId(
 				clusteredTestDetails.uniformPath, clusteredTestDetails.content,
-				clusteredTestDetails.partition, clusteredTestDetails.clusterId
+				clusteredTestDetails.partition, clusteredTestDetails.clusterId ?: clusteredTestDetails.uniformPath
 			)
 	}
 }

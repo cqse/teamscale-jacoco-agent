@@ -95,7 +95,7 @@ object TestDescriptorUtils {
 	/** Returns the [AvailableTests] contained within the root [TestDescriptor].  */
 	fun getAvailableTests(
 		rootTestDescriptor: TestDescriptor,
-		partition: String?
+		partition: String
 	): AvailableTests {
 		val availableTests = AvailableTests()
 

@@ -33,6 +33,6 @@ class ClusteredTestDetails @JsonCreator constructor(
 	 */
 	@param:JsonProperty(
 		"partition"
-	) var partition: String?
+	) var partition: String
 ) : TestDetails(uniformPath, sourcePath, content)
 

@@ -69,7 +69,7 @@ public abstract class CoverageToJsonStrategyBase extends TestEventHandlerStrateg
 		if (availableTests.stream().noneMatch(test -> test.uniformPath.equals(uniformPath))) {
 			// ensure that we can at least generate a report for the tests that were actually run,
 			// even if the caller did not provide a list of tests up-front in testRunStart
-			availableTests.add(new ClusteredTestDetails(uniformPath, uniformPath, null, null, null));
+			availableTests.add(new ClusteredTestDetails(uniformPath, uniformPath, null, null, agentOptions.getTeamscaleServerOptions().partition));
 		}
 	}
 
