@@ -80,7 +80,6 @@ class TestImpactConfigurationAction(
 			writeProperty("server.userAccessToken", pluginExtension.server.userAccessToken.get())
 			writeProperty("baseline", combinedBaseline.orNull?.timestamp)
 			writeProperty("baselineRevision", combinedBaseline.orNull?.revision)
-			writeProperty("partition", extension.partition.get())
 			writeProperty("endCommit", combinedCommit.get().commit)
 			writeProperty("endRevision", combinedCommit.get().revision)
 			writeProperty("repository", pluginExtension.repository.orNull)
@@ -92,6 +91,7 @@ class TestImpactConfigurationAction(
 		writeProperty("runAllTests", extension.runAllTests.get())
 		writeProperty("includeAddedTests", extension.includeAddedTests.get())
 		writeProperty("includeFailedAndSkipped", extension.includeFailedAndSkipped.get())
+		writeProperty("partition", extension.partition.get())
 	}
 }
 

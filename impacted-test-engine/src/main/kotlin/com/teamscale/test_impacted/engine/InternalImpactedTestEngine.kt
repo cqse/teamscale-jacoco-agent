@@ -25,7 +25,7 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor
  */
 internal class InternalImpactedTestEngine(
 	configuration: ImpactedTestEngineConfiguration,
-	private val partition: String?
+	private val partition: String
 ) {
 	private val testEngineRegistry = configuration.testEngineRegistry
 	private val testSorter = configuration.testSorter
