@@ -32,7 +32,7 @@ class CustomTestFramework(private val agentPort: Int) {
 		val agent = TiaAgent(false, "http://localhost:$agentPort".toHttpUrl())
 		val testRun = agent.startTestRun(
 			allTests.keys
-				.map { name -> ClusteredTestDetails(name, name, null, null, "test-partition") }
+				.map { name -> ClusteredTestDetails(name, name, null, null) }
 		)
 
 		testRun.prioritizedClusters?.forEach { cluster ->
