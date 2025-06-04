@@ -32,6 +32,9 @@ public class TeamscaleConfig {
 	/** Option name that allows to specify a jar file that contains the branch name and timestamp in a MANIFEST.MF file. */
 	public static final String TEAMSCALE_COMMIT_MANIFEST_JAR_OPTION = "teamscale-commit-manifest-jar";
 
+	/** Option name that allows to specify a partition to which coverage should be uploaded to. */
+	public static final String TEAMSCALE_PARTITION_OPTION = "teamscale-partition";
+
 	private final ILogger logger;
 	private final FilePatternResolver filePatternResolver;
 
@@ -61,7 +64,7 @@ public class TeamscaleConfig {
 			case "teamscale-access-token":
 				teamscaleServer.userAccessToken = value;
 				return true;
-			case "teamscale-partition":
+			case TEAMSCALE_PARTITION_OPTION:
 				teamscaleServer.partition = value;
 				return true;
 			case TEAMSCALE_COMMIT_OPTION:

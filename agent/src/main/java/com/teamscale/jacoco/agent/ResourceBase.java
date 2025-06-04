@@ -6,6 +6,7 @@ import com.teamscale.jacoco.agent.testimpact.TestwiseCoverageAgent;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.report.testwise.model.RevisionInfo;
 import org.conqat.lib.commons.string.StringUtils;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.ws.rs.BadRequestException;
@@ -135,6 +136,7 @@ public abstract class ResourceBase {
 	/**
 	 * Handles bad requests to the endpoints.
 	 */
+	@Contract(value = "_ -> fail")
 	protected void handleBadRequest(String message) throws BadRequestException {
 		logger.error(message);
 		throw new BadRequestException(message);

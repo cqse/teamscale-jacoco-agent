@@ -4,6 +4,7 @@ import com.teamscale.client.ClusteredTestDetails;
 import com.teamscale.client.HttpUtils;
 import com.teamscale.client.PrioritizableTestCluster;
 import com.teamscale.client.TeamscaleClient;
+import com.teamscale.client.TestWithClusterId;
 import com.teamscale.jacoco.agent.JacocoRuntimeController;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
 import com.teamscale.jacoco.agent.options.AgentOptions;
@@ -17,6 +18,7 @@ import retrofit2.Response;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Base class for strategies to handle test events. */
 public abstract class TestEventHandlerStrategyBase {
@@ -88,15 +90,20 @@ public abstract class TestEventHandlerStrategyBase {
 			boolean includeAddedTests, boolean includeFailedAndSkipped,
 			String baseline, String baselineRevision) throws IOException {
 		int availableTestCount = 0;
+		List<TestWithClusterId> availableTestsWithClusterId = null;
 		if (availableTests != null) {
 			availableTestCount = availableTests.size();
+			availableTestsWithClusterId = availableTests.stream()
+					.map(availableTest -> TestWithClusterId.Companion.fromClusteredTestDetails(availableTest, getPartition()))
+					.collect(
+							Collectors.toList());
 		}
 		logger.debug("Test run started with {} available tests. baseline = {}, includeNonImpactedTests = {}",
 				availableTestCount, baseline, includeNonImpactedTests);
 		validateConfiguration();
 
 		Response<List<PrioritizableTestCluster>> response = teamscaleClient
-				.getImpactedTests(availableTests, baseline, baselineRevision,
+				.getImpactedTests(availableTestsWithClusterId, baseline, baselineRevision,
 						agentOptions.getTeamscaleServerOptions().commit,
 						agentOptions.getTeamscaleServerOptions().revision,
 						agentOptions.getTeamscaleServerOptions().repository,
@@ -112,6 +119,18 @@ public abstract class TestEventHandlerStrategyBase {
 					"Request to Teamscale to get impacted tests failed with HTTP status " + response.code() +
 							" " + response.message() + ". Response body: " + responseBody);
 		}
+	}
+
+	/**
+	 * Returns the partition defined in the agent options. Asserts that the partition is defined.
+	 */
+	private String getPartition() {
+		String partition = agentOptions.getTeamscaleServerOptions().partition;
+		if (partition == null) {
+			throw new UnsupportedOperationException(
+					"You must provide a partition via the agent's '" + TeamscaleConfig.TEAMSCALE_PARTITION_OPTION + "' option.");
+		}
+		return partition;
 	}
 
 	private void validateConfiguration() {

@@ -25,7 +25,7 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor
  */
 internal class InternalImpactedTestEngine(
 	configuration: ImpactedTestEngineConfiguration,
-	private val partition: String
+	private val partition: String?
 ) {
 	private val testEngineRegistry = configuration.testEngineRegistry
 	private val testSorter = configuration.testSorter
@@ -66,7 +66,7 @@ internal class InternalImpactedTestEngine(
 	 */
 	fun execute(request: ExecutionRequest) {
 		val rootTestDescriptor = request.rootTestDescriptor
-		val availableTests = getAvailableTests(rootTestDescriptor, partition)
+		val availableTests = getAvailableTests(rootTestDescriptor)
 
 		LOG.fine {
 			"Starting selection and sorting ${ImpactedTestEngine.ENGINE_ID}:\n${

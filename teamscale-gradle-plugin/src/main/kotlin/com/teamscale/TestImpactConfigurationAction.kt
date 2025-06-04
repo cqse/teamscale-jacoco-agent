@@ -83,6 +83,7 @@ class TestImpactConfigurationAction(
 			writeProperty("endCommit", combinedCommit.get().commit)
 			writeProperty("endRevision", combinedCommit.get().revision)
 			writeProperty("repository", pluginExtension.repository.orNull)
+			writeProperty("partition", extension.partition.get())
 		}
 		writeProperty("enabled", true)
 		writeProperty("reportDirectory", extension.agent.destination.asFile.get().absolutePath)
@@ -91,7 +92,6 @@ class TestImpactConfigurationAction(
 		writeProperty("runAllTests", extension.runAllTests.get())
 		writeProperty("includeAddedTests", extension.includeAddedTests.get())
 		writeProperty("includeFailedAndSkipped", extension.includeFailedAndSkipped.get())
-		writeProperty("partition", extension.partition.get())
 	}
 }
 

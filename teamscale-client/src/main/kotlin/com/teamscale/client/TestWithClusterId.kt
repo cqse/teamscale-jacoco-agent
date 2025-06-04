@@ -28,10 +28,10 @@ class TestWithClusterId @JsonCreator constructor(
 		/**
 		 * Creates a #TestWithClusterId from a #ClusteredTestDetails object.
 		 */
-		fun fromClusteredTestDetails(clusteredTestDetails: ClusteredTestDetails) =
+		fun fromClusteredTestDetails(clusteredTestDetails: ClusteredTestDetails, partition: String) =
 			TestWithClusterId(
 				clusteredTestDetails.uniformPath, clusteredTestDetails.content,
-				clusteredTestDetails.partition, clusteredTestDetails.clusterId ?: clusteredTestDetails.uniformPath
+				partition, clusteredTestDetails.clusterId ?: clusteredTestDetails.uniformPath
 			)
 	}
 }

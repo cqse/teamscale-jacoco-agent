@@ -27,12 +27,6 @@ class ClusteredTestDetails @JsonCreator constructor(
 	 */
 	@param:JsonProperty(
 		"clusterId"
-	) var clusterId: String?,
-	/**
-	 * The partition for the cluster this test should be prioritized within and the result will be uploaded to.
-	 */
-	@param:JsonProperty(
-		"partition"
-	) var partition: String
+	) var clusterId: String?
 ) : TestDetails(uniformPath, sourcePath, content)
 

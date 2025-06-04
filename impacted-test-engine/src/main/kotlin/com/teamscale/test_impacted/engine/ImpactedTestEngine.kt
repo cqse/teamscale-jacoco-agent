@@ -21,9 +21,6 @@ class ImpactedTestEngine : TestEngine {
 		if (!engineOptions.enabled) {
 			return EngineDescriptor(uniqueId, ENGINE_NAME)
 		}
-		if (engineOptions.partition == null) {
-			throw AssertionError("Agent option partition is undefined, but it's a mandatory parameter when executing impacted tests.")
-		}
 
 		val configuration = engineOptions.testEngineConfiguration
 		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition)

@@ -90,7 +90,7 @@ public class CoverageToTeamscaleStrategyTest {
 
 		strategy.testRunStart(
 				Collections.singletonList(
-						new ClusteredTestDetails("mytest", "mytest", "content", "cluster", "partition")), false,
+						new ClusteredTestDetails("mytest", "mytest", "content", "cluster")), false,
 				true, true,
 				null, null);
 		strategy.testStart("mytest");
