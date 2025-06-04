@@ -80,10 +80,10 @@ class TestImpactConfigurationAction(
 			writeProperty("server.userAccessToken", pluginExtension.server.userAccessToken.get())
 			writeProperty("baseline", combinedBaseline.orNull?.timestamp)
 			writeProperty("baselineRevision", combinedBaseline.orNull?.revision)
+			writeProperty("partition", extension.partition.get())
 			writeProperty("endCommit", combinedCommit.get().commit)
 			writeProperty("endRevision", combinedCommit.get().revision)
 			writeProperty("repository", pluginExtension.repository.orNull)
-			writeProperty("partition", extension.partition.get())
 		}
 		writeProperty("enabled", true)
 		writeProperty("reportDirectory", extension.agent.destination.asFile.get().absolutePath)

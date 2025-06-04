@@ -21,7 +21,6 @@ class ImpactedTestEngine : TestEngine {
 		if (!engineOptions.enabled) {
 			return EngineDescriptor(uniqueId, ENGINE_NAME)
 		}
-
 		val configuration = engineOptions.testEngineConfiguration
 		val engine = InternalImpactedTestEngine(configuration, engineOptions.partition)
 
