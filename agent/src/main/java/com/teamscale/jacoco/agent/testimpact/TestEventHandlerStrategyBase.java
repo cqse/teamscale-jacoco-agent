@@ -128,7 +128,7 @@ public abstract class TestEventHandlerStrategyBase {
 		String partition = agentOptions.getTeamscaleServerOptions().partition;
 		if (partition == null) {
 			throw new UnsupportedOperationException(
-					"You must provide a partition via the agent's '" + TeamscaleConfig.TEAMSCALE_PARTITION_OPTION + "' option.");
+					"You must provide a partition via the agent's '" + TeamscaleConfig.TEAMSCALE_PARTITION_OPTION + "' option or using the /partition REST endpoint.");
 		}
 		return partition;
 	}
