@@ -81,7 +81,7 @@ open class TeamscaleClient {
 	 */
 	@Throws(IOException::class)
 	open fun getImpactedTests(
-		availableTests: List<ClusteredTestDetails>?,
+		availableTests: List<TestWithClusterId>?,
 		baseline: String?,
 		baselineRevision: String?,
 		endCommit: CommitDescriptor?,
@@ -134,7 +134,7 @@ open class TeamscaleClient {
 	 */
 	@Throws(IOException::class)
 	private fun getImpactedTests(
-		availableTests: List<ClusteredTestDetails>?,
+		availableTests: List<TestWithClusterId>?,
 		baseline: String?,
 		baselineRevision: String?,
 		endCommit: CommitDescriptor?,
@@ -159,12 +159,9 @@ open class TeamscaleClient {
 				).execute()
 			)
 		} else {
-			val availableTestsMap = availableTests.map { clusteredTestDetails ->
-				TestWithClusterId.fromClusteredTestDetails(clusteredTestDetails)
-			}
 			service.getImpactedTests(
 				projectId, baseline, baselineRevision, endCommit, endRevision, repository, partitions,
-				includeNonImpacted, includeFailedAndSkipped, ensureProcessed, includeAddedTests, availableTestsMap
+				includeNonImpacted, includeFailedAndSkipped, ensureProcessed, includeAddedTests, availableTests
 			).execute()
 		}
 	}

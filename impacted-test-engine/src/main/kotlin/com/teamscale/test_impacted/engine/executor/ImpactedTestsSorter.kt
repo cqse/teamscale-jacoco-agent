@@ -1,20 +1,23 @@
 package com.teamscale.test_impacted.engine.executor
 
+import com.teamscale.client.TestWithClusterId.Companion.fromClusteredTestDetails
 import com.teamscale.test_impacted.engine.ImpactedTestEngine
 import com.teamscale.test_impacted.test_descriptor.TestDescriptorUtils.getAvailableTests
 import org.junit.platform.engine.TestDescriptor
 import java.util.*
 
 /**
-* Test sorter that requests impacted tests from Teamscale and rewrites the [TestDescriptor] to take the returned
-* order into account when executing the tests.
-*/
+ * Test sorter that requests impacted tests from Teamscale and rewrites the [TestDescriptor] to take the returned
+ * order into account when executing the tests.
+ */
 class ImpactedTestsSorter(private val impactedTestsProvider: ImpactedTestsProvider) : ITestSorter {
 
 	override fun selectAndSort(testDescriptor: TestDescriptor) {
-		val availableTests = getAvailableTests(testDescriptor, impactedTestsProvider.partition)
+		val availableTests = getAvailableTests(testDescriptor)
 
-		val testClusters = impactedTestsProvider.getImpactedTestsFromTeamscale(availableTests.testList)
+		val testClusters = impactedTestsProvider.getImpactedTestsFromTeamscale(
+			availableTests.testList
+				.map { fromClusteredTestDetails(it, impactedTestsProvider.partition) })
 
 		if (testClusters == null) {
 			ImpactedTestEngine.LOG.fine { "Falling back to execute all!" }

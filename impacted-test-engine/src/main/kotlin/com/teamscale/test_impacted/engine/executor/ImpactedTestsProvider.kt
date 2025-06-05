@@ -1,9 +1,9 @@
 package com.teamscale.test_impacted.engine.executor
 
-import com.teamscale.client.ClusteredTestDetails
 import com.teamscale.client.CommitDescriptor
 import com.teamscale.client.PrioritizableTestCluster
 import com.teamscale.client.TeamscaleClient
+import com.teamscale.client.TestWithClusterId
 import com.teamscale.test_impacted.commons.LoggerUtils.createLogger
 import retrofit2.Response
 import java.io.IOException
@@ -37,7 +37,7 @@ open class ImpactedTestsProvider(
 ) {
 	/** Queries Teamscale for impacted tests.  */
 	fun getImpactedTestsFromTeamscale(
-		availableTestDetails: List<ClusteredTestDetails>
+		availableTestDetails: List<TestWithClusterId>
 	): List<PrioritizableTestCluster>? {
 		try {
 			LOG.info { "Getting impacted tests..." }
@@ -73,7 +73,7 @@ open class ImpactedTestsProvider(
 	 */
 	private fun testCountIsPlausible(
 		testClusters: List<PrioritizableTestCluster>,
-		availableTestDetails: List<ClusteredTestDetails>
+		availableTestDetails: List<TestWithClusterId>
 	): Boolean {
 		val returnedTests = testClusters.stream().mapToLong {
 			it.tests?.size?.toLong() ?: 0

@@ -94,8 +94,7 @@ object TestDescriptorUtils {
 
 	/** Returns the [AvailableTests] contained within the root [TestDescriptor].  */
 	fun getAvailableTests(
-		rootTestDescriptor: TestDescriptor,
-		partition: String?
+		rootTestDescriptor: TestDescriptor
 	): AvailableTests {
 		val availableTests = AvailableTests()
 
@@ -125,8 +124,7 @@ object TestDescriptorUtils {
 					uniformPath.get(),
 					testDescriptor.source(),
 					null,
-					clusterId.get(),
-					partition
+					clusterId.get()
 				)
 				availableTests.add(testDescriptor.uniqueId, testDetails)
 			}
