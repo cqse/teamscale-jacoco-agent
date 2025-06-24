@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.6")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.7")
     implementation("com.xpdustry:kotlin-shadow-relocator:2.0.0")
 
     implementation("org.ow2.asm:asm:9.8")
