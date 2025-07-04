@@ -41,6 +41,7 @@ application {
 val ADOPTIUM_BINARY_REPOSITORY = "https://api.adoptium.net/v3/binary"
 val RUNTIME_JDK_VERSION = "17.0.5+8"
 jlink {
+	forceMerge("kotlin")
 	options = listOf(
 		"--compress", "2",
 		"--no-header-files",

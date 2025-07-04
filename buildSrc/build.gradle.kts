@@ -13,6 +13,14 @@ dependencies {
 
 	implementation(libs.asm.core)
 	implementation(libs.asm.commons)
+
+	constraints {
+		implementation("org.jetbrains.kotlin:kotlin-metadata-jvm") {
+			version {
+				strictly("2.2.0")
+			}
+		}
+	}
 }
 
 // Helper function that transforms a Gradle Plugin alias from a
