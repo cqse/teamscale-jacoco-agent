@@ -1,16 +1,30 @@
 plugins {
-    `kotlin-dsl`
+	`kotlin-dsl`
 }
 
 repositories {
-    gradlePluginPortal()
+	gradlePluginPortal()
 }
 
 dependencies {
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.8")
-    implementation("com.xpdustry:kotlin-shadow-relocator:2.0.0")
+	implementation(plugin(libs.plugins.shadow))
+	implementation(plugin(libs.plugins.kotlinShadowRelocator))
+	implementation(plugin(libs.plugins.kotlinJvm))
 
-    implementation("org.ow2.asm:asm:9.8")
-    implementation("org.ow2.asm:asm-commons:9.8")
-    implementation("org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:2.1.21")
+	implementation(libs.asm.core)
+	implementation(libs.asm.commons)
+
+	constraints {
+		implementation("org.jetbrains.kotlin:kotlin-metadata-jvm") {
+			version {
+				strictly("2.2.0")
+			}
+		}
+	}
 }
+
+// Helper function that transforms a Gradle Plugin alias from a
+// Version Catalog into a valid dependency notation for buildSrc
+// https://docs.gradle.org/current/userguide/version_catalogs.html#sec:buildsrc-version-catalog
+fun plugin(plugin: Provider<PluginDependency>) =
+	plugin.map { "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}" }
