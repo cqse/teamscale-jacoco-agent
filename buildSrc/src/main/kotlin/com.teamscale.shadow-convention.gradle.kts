@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.DependencyFilter
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.xpdustry.ksr.kotlinRelocate
@@ -20,6 +21,19 @@ tasks.named<ShadowJar>("shadowJar") {
 	kotlinRelocate("okio", "shadow.okio")
 	kotlinRelocate("retrofit", "shadow.retrofit")
 	doLast("revertKotlinPackageChanges") { revertKotlinPackageChanges(this as ShadowJar) }
+}
+
+// https://github.com/GradleUp/shadow/issues/1501
+configurations {
+	named(ShadowJavaPlugin.SHADOW_RUNTIME_ELEMENTS_CONFIGURATION_NAME) {
+		attributes {
+			attributeProvider(
+				TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE,
+				configurations.named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+					.map { it.attributes.getAttribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE)!! }
+			)
+		}
+	}
 }
 
 // Defer the resolution of 'runtimeClasspath'. This is an issue in the shadow

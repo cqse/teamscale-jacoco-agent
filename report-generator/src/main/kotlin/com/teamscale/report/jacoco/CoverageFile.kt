@@ -2,8 +2,10 @@ package com.teamscale.report.jacoco
 
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import java.io.*
-import java.util.*
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.IOException
+import java.io.OutputStream
 
 /**
  * Represents a coverage file on disk. The main purpose is to avoid reading the
@@ -66,7 +68,7 @@ data class CoverageFile(private val coverageFile: File) {
 	 * coverage file.
 	 */
 	fun createFormRequestBody(): RequestBody =
-		RequestBody.create(MultipartBody.FORM, coverageFile)
+		coverageFile.asRequestBody(MultipartBody.FORM)
 
 	/**
 	 * Get the [java.io.OutputStream] in order to write to the coverage file.
