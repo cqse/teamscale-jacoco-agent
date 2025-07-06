@@ -150,16 +150,14 @@ class TestwiseCoverageCollectingExecutionListener(
 			TestExecutionResult.Status.SUCCESSFUL -> return TestExecution(
 				testUniformPath, duration, ETestExecutionResult.PASSED
 			)
+
 			TestExecutionResult.Status.ABORTED -> return TestExecution(
 				testUniformPath, duration, ETestExecutionResult.ERROR, message
 			)
+
 			TestExecutionResult.Status.FAILED -> return TestExecution(
 				testUniformPath, duration, ETestExecutionResult.FAILURE, message
 			)
-			else -> {
-				LOG.severe { "Got unexpected test execution result status: $status" }
-				return null
-			}
 		}
 	}
 

@@ -6,11 +6,12 @@ jacoco = "0.8.13"
 # We need to stay on the 1.3.x release line as 1.4.x requires Java 11
 logback = "1.3.15"
 retrofit = "3.0.0"
-okhttp = "4.12.0"
+okhttp = "5.0.0"
 mockito = "5.18.0"
 mockitoKotlin = "5.4.0"
 picocli = "4.7.7"
 maven = "3.9.10"
+asm = "9.8"
 
 [libraries]
 jetty-bom = { module = "org.eclipse.jetty:jetty-bom", version = "9.4.57.v20241219" }
@@ -79,6 +80,9 @@ maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven" }
 maven-pluginApi = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven" }
 maven-pluginAnnotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version = "3.15.1" }
 
+asm-core = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
+
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.52.0" }
 markdownToPdf = { id = "de.fntsoftware.gradle.markdown-to-pdf", version = "1.1.0" }
@@ -86,3 +90,6 @@ nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0"
 pluginPublish = { id = "com.gradle.plugin-publish", version = "1.3.1" }
 gitProperties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.0" }
 mavenPluginDevelopment = { id = "org.gradlex.maven-plugin-development", version = "1.0.3" }
+shadow = { id = "com.gradleup.shadow", version = "9.0.0-rc1" }
+kotlinShadowRelocator = { id = "com.xpdustry.kotlin-shadow-relocator", version = "3.0.0-rc.1" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.21" }

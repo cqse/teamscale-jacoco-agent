@@ -3,7 +3,6 @@ package com.teamscale.client
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import java.io.File
@@ -36,13 +35,12 @@ class FileLoggingInterceptor(
 				"<-- Received response for ${response.code} ${response.request.url} in ${(requestEndTime - requestStartTime) / 1e6}ms\n${response.headers}\n\n"
 			)
 
-			var wrappedBody: ResponseBody? = null
-			response.body?.let {
+			val wrappedBody = response.body.let {
 				val contentType = it.contentType()
 				val content = it.string()
 				fileWriter.write(content)
 
-				wrappedBody = content.toResponseBody(contentType)
+				content.toResponseBody(contentType)
 			}
 			return response.newBuilder().body(wrappedBody).build()
 		}
