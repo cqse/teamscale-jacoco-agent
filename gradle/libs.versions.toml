@@ -88,7 +88,7 @@ versions = { id = "com.github.ben-manes.versions", version = "0.52.0" }
 markdownToPdf = { id = "de.fntsoftware.gradle.markdown-to-pdf", version = "1.1.0" }
 nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version = "2.0.0" }
 pluginPublish = { id = "com.gradle.plugin-publish", version = "1.3.1" }
-gitProperties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.0" }
+gitProperties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.2" }
 mavenPluginDevelopment = { id = "org.gradlex.maven-plugin-development", version = "1.0.3" }
 shadow = { id = "com.gradleup.shadow", version = "9.0.0-rc1" }
 kotlinShadowRelocator = { id = "com.xpdustry.kotlin-shadow-relocator", version = "3.0.0-rc.1" }
