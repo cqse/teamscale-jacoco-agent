@@ -6,12 +6,12 @@ plugins {
 }
 
 publishAs {
-	readableName.set("Teamscale Maven Plugin")
-	description.set("Maven Plugin for Teamscale")
+	readableName = "Teamscale Maven Plugin"
+	description = "Maven Plugin for Teamscale"
 }
 
 mavenPlugin {
-	helpMojoPackage.set("com.teamscale.maven.help")
+	helpMojoPackage = "com.teamscale.maven.help"
 }
 
 dependencies {

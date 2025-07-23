@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-	mainClass.set("com.example.Main")
+	mainClass = "com.example.Main"
 }
 
 version = "unspecified"

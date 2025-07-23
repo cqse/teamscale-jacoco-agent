@@ -1,4 +1,5 @@
 plugins {
+	java
 	jacoco
 }
 
@@ -6,11 +7,12 @@ jacoco {
 	toolVersion = "0.8.13"
 }
 
-tasks.named<JacocoReport>("jacocoTestReport") {
+tasks.jacocoTestReport {
 	reports {
-		xml.required.set(true)
+		xml.required = true
 	}
 }
-tasks.named("test") {
-	finalizedBy(tasks.named("jacocoTestReport"))
+
+tasks.test {
+	finalizedBy(tasks.jacocoTestReport)
 }

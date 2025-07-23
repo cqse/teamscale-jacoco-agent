@@ -20,7 +20,7 @@ tasks.test {
 }
 
 tasks.withType<Jar> {
-	archiveFileName.set("app.jar")
+	archiveFileName = "app.jar"
 	manifest {
 		attributes["Main-Class"] = "jul.test.SystemUnderTest"
 	}

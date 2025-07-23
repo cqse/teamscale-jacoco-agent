@@ -6,10 +6,9 @@ plugins {
 }
 
 publishAs {
-	readableName.set("Teamscale Upload Client")
-	description.set(
+	readableName = "Teamscale Upload Client"
+	description =
 		"A tiny service client that only supports Teamscale's the external upload interface and impacted-tests service."
-	)
 }
 
 dependencies {

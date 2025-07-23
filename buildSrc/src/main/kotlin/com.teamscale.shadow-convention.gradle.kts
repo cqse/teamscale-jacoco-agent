@@ -13,7 +13,7 @@ plugins {
 
 tasks.named<ShadowJar>("shadowJar") {
 	enableRelocation = project.properties["debug"] !== "true"
-	archiveClassifier.set(null as String?)
+	archiveClassifier = null as String?
 	mergeServiceFiles()
 	// Relocates the .kotlin_metadata files to ensure reflection in Kotlin does not break
 	kotlinRelocate("kotlin", "shadow.kotlin")
