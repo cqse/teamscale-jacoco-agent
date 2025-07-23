@@ -1,4 +1,6 @@
 import org.beryx.jlink.util.JdkUtil
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
 	kotlin("jvm")
@@ -6,7 +8,7 @@ plugins {
 	com.teamscale.`java-convention`
 	com.teamscale.coverage
 	com.teamscale.`system-test-convention`
-	id("org.beryx.jlink") version ("3.1.1")
+	alias(libs.plugins.jlink)
 }
 
 tasks.jar {
@@ -17,14 +19,12 @@ tasks.jar {
 	}
 }
 
-java {
-	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(17))
-	}
+tasks.withType<JavaCompile> {
+	options.release = 21
 }
 
-tasks.withType<JavaCompile> {
-	options.release = 17
+tasks.withType<KotlinCompile> {
+	compilerOptions.jvmTarget = JvmTarget.JVM_21
 }
 
 application {
@@ -39,7 +39,7 @@ application {
 }
 
 val ADOPTIUM_BINARY_REPOSITORY = "https://api.adoptium.net/v3/binary"
-val RUNTIME_JDK_VERSION = "17.0.5+8"
+val RUNTIME_JDK_VERSION = "21.0.6+7"
 jlink {
 	forceMerge("kotlin")
 	options = listOf(

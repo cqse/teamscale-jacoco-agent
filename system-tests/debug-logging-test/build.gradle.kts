@@ -5,7 +5,7 @@ plugins {
 
 tasks.register<JavaExec>("runWithoutGradleWorker") {
 	dependsOn(":agent:shadowJar")
-	mainClass.set("jul.test.SystemUnderTest")
+	mainClass = "jul.test.SystemUnderTest"
 	classpath = sourceSets["main"].runtimeClasspath
 	systemProperty("java.util.logging.manager", "jul.test.CustomLogManager")
 	teamscaleAgent(mapOf("mode" to "testwise", "tia-mode" to "http", "http-server-port" to "63900"))

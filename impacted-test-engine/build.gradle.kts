@@ -7,8 +7,8 @@ plugins {
 }
 
 publishAs {
-	readableName.set("Impacted Test Engine")
-	description.set("A JUnit 5 engine that handles retrieving impacted tests from Teamscale and organizes their execution")
+	readableName = "Impacted Test Engine"
+	description = "A JUnit 5 engine that handles retrieving impacted tests from Teamscale and organizes their execution"
 }
 
 dependencies {

@@ -15,9 +15,9 @@ plugins {
 evaluationDependsOn(":installer")
 
 publishAs {
-	artifactId.set("teamscale-jacoco-agent")
-	readableName.set("Teamscale JaCoCo Agent")
-	description.set("JVM profiler that simplifies various aspects around recording and uploading test coverage")
+	artifactId = "teamscale-jacoco-agent"
+	readableName = "Teamscale JaCoCo Agent"
+	description = "JVM profiler that simplifies various aspects around recording and uploading test coverage"
 }
 
 val appVersion = rootProject.extra["appVersion"].toString()
@@ -64,14 +64,14 @@ dependencies {
 }
 
 application {
-	mainClass.set("com.teamscale.jacoco.agent.Main")
+	mainClass = "com.teamscale.jacoco.agent.Main"
 }
 
 tasks.shadowJar {
 	// since this is used as an agent, we want it to always have the same name
 	// otherwise people have to adjust their -javaagent parameters after every
 	// update
-	archiveFileName.set("teamscale-jacoco-agent.jar")
+	archiveFileName = "teamscale-jacoco-agent.jar"
 
 	manifest {
 		attributes["Premain-Class"] = "com.teamscale.jacoco.agent.PreMain"
@@ -84,7 +84,7 @@ tasks.startShadowScripts {
 
 distributions {
 	named("shadow") {
-		distributionBaseName.set("teamscale-jacoco-agent")
+		distributionBaseName = "teamscale-jacoco-agent"
 		contents {
 			from(project(":installer").tasks["jlink"]) {
 				into("installer")
@@ -105,7 +105,7 @@ distributions {
 }
 
 tasks.shadowDistZip {
-	archiveFileName.set("teamscale-jacoco-agent.zip")
+	archiveFileName = "teamscale-jacoco-agent.zip"
 }
 
 tasks.processResources {
