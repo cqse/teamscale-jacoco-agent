@@ -8,5 +8,5 @@ repositories {
 }
 
 dependencies {
-    implementation("com.teamscale:teamscale-gradle-plugin:${System.getenv("AGENT_VERSION") ?: "34.2.4-SNAPSHOT"}")
+	implementation("com.teamscale:teamscale-gradle-plugin:${System.getenv("AGENT_VERSION") ?: "35.2.1-SNAPSHOT"}")
 }

@@ -1,3 +1,5 @@
+import java.io.Serializable
+
 plugins {
 	id("com.teamscale.java-convention")
 }
@@ -13,17 +15,22 @@ fun Task.createAgentCopy() {
 	val agentJar = libDir.resolve("agent.jar")
 	extra["agentJar"] = agentJar
 
-	doFirst {
-		mkdir(libDir)
-		copy {
-			from(project.project(":agent").tasks["shadowJar"].outputs.files.singleFile)
-			into(libDir)
-			rename { _ -> agentJar.name }
-		}
+	val shadowJarOutputs = project.project(":agent").tasks["shadowJar"].outputs.files
+	doFirst("copyAgent", CopyAgent(shadowJarOutputs, libDir, agentJar))
+}
+
+class CopyAgent(
+	val shadowJarOutputs: FileCollection,
+	val libDir: File,
+	val agentJar: File
+) : Action<Task>, Serializable {
+	override fun execute(t: Task) {
+		libDir.mkdir()
+		shadowJarOutputs.singleFile.copyTo(agentJar, overwrite = true)
 	}
 }
 
-tasks.withType<JavaExec>() {
+tasks.withType<JavaExec> {
 	createAgentCopy()
 }
 

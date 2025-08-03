@@ -30,14 +30,15 @@ abstract class SimpleReport(
 		return "Report $name"
 	}
 
-	abstract override fun getOutputLocation(): FileSystemLocationProperty<out FileSystemLocation?>
+	abstract override fun getOutputLocation(): FileSystemLocationProperty<out FileSystemLocation>
 
 	override fun getOutputType(): Report.OutputType {
 		return outputType
 	}
 
+	// Had to be overwritten prior to Gradle 9
 	@Deprecated("", ReplaceWith("outputLocation.fileValue(file)"))
-	override fun setDestination(file: File) {
+	fun setDestination(file: File) {
 		outputLocation.fileValue(file)
 	}
 
