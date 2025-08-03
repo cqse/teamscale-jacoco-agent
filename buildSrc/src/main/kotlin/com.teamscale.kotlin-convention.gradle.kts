@@ -6,5 +6,8 @@ plugins {
 }
 
 tasks.compileKotlin {
-	compilerOptions.jvmTarget = JvmTarget.JVM_1_8
+	compilerOptions {
+		jvmTarget = JvmTarget.JVM_1_8
+		freeCompilerArgs.add("-Xannotation-default-target=param-property")
+	}
 }

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -15,7 +16,12 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<KotlinCompile> {
-	compilerOptions.jvmTarget = JvmTarget.JVM_11
+	compilerOptions {
+		jvmTarget = JvmTarget.JVM_11
+		// Needed to support older Gradle versions
+		languageVersion = KotlinVersion.KOTLIN_2_1
+		apiVersion = KotlinVersion.KOTLIN_2_1
+	}
 }
 
 publishAs {
@@ -55,6 +61,7 @@ dependencies {
 }
 
 tasks.processResources {
+	val version = project.version
 	inputs.property("version", version)
 	filesMatching("**/plugin.properties") {
 		filter {
