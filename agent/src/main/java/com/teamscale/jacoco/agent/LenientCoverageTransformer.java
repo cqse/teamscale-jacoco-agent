@@ -35,7 +35,7 @@ public class LenientCoverageTransformer extends CoverageTransformer {
 			logger.error(
 					"Failed to instrument " + classname + ". File will be skipped from instrumentation. " +
 							"No coverage will be collected for it. Exclude the file from the instrumentation or try " +
-							"updating the Teamscale JaCoCo Agent if the file should actually be instrumented. (Cause: {})",
+							"updating the Teamscale Java Profiler if the file should actually be instrumented. (Cause: {})",
 					getRootCauseMessage(e));
 			return null;
 		}

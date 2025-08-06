@@ -130,7 +130,7 @@ public class PreMain {
 			delayedLogger.warn("Using multiple java agents could interfere with coverage recording.");
 		}
 		if (!javaAgents.get(0).contains("teamscale-jacoco-agent.jar")) {
-			delayedLogger.warn("For best results consider registering the Teamscale JaCoCo Agent first.");
+			delayedLogger.warn("For best results consider registering the Teamscale Java Profiler first.");
 		}
 
 		TeamscaleCredentials credentials = TeamscalePropertiesUtils.parseCredentials();

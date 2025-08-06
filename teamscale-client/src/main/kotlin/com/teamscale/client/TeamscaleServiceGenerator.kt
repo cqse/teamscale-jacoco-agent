@@ -10,7 +10,7 @@ import java.time.Duration
 /** Helper class for generating a teamscale compatible service.  */
 object TeamscaleServiceGenerator {
 	/** Custom user agent of the requests, used to monitor API traffic.  */
-	const val USER_AGENT = "Teamscale JaCoCo Agent"
+	const val USER_AGENT = "Teamscale Java Profiler"
 
 	/**
 	 * Generates a [Retrofit] instance for the given service, which uses basic auth to authenticate against the

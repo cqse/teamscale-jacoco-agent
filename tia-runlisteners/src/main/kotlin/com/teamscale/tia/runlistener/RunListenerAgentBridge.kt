@@ -23,7 +23,7 @@ class RunListenerAgentBridge(runListenerClassName: String) {
 		val agentUrl = System.getProperty("tia.agent") ?: System.getenv("TIA_AGENT")
 		if (agentUrl == null) {
 			val exception = RunListenerConfigurationException(
-				"You did not provide the URL of a Teamscale JaCoCo agent that will record test-wise coverage." +
+				"You did not provide the URL of a Teamscale Java Profiler that will record test-wise coverage." +
 						" You can configure the URL either as a system property with -Dtia.agent=URL" +
 						" or as an environment variable with TIA_AGENT=URL."
 			)

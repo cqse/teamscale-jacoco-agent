@@ -6,8 +6,8 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.teamscale.jacoco.agent.commandline.Validator;
 import com.teamscale.jacoco.agent.convert.ConvertCommand;
-import com.teamscale.jacoco.agent.util.AgentUtils;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.util.AgentUtils;
 import org.conqat.lib.commons.string.StringUtils;
 import org.jacoco.core.JaCoCo;
 import org.slf4j.Logger;
@@ -44,7 +44,8 @@ public class Main {
 		}
 
 		if (defaultArguments.help) {
-			System.out.println("CQSE JaCoCo agent " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
+			System.out.println(
+					"Teamscale Java Profiler " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 			jCommander.usage();
 			return;
 		}
@@ -54,7 +55,8 @@ public class Main {
 			handleInvalidCommandLine(jCommander, StringUtils.LINE_FEED + validator.getErrorMessage());
 		}
 
-		logger.info("Starting CQSE JaCoCo agent " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
+		logger.info(
+				"Starting Teamscale Java Profiler " + AgentUtils.VERSION + " compiled against JaCoCo " + JaCoCo.VERSION);
 		command.run();
 	}
 

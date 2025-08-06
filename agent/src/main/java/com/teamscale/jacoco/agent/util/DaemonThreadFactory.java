@@ -10,7 +10,7 @@ public class DaemonThreadFactory implements ThreadFactory {
 	private final String threadName;
 
 	public DaemonThreadFactory(Class<?> owningClass, String threadName) {
-		this.threadName = "Teamscale JaCoCo Agent " + owningClass.getSimpleName() + " " + threadName;
+		this.threadName = "Teamscale Java Profiler " + owningClass.getSimpleName() + " " + threadName;
 	}
 
 	@Override
