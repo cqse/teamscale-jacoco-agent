@@ -104,17 +104,17 @@ abstract class TeamscaleUpload : DefaultTask() {
 
 			is CompactCoverageReport -> {
 				dependsOn(task)
-				check(task.getReports().compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
+				check(task.reports.compactCoverage.required.get()) { "Compact coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.compactCoverageReport.required = true for the task, to be able to upload it." }
 				addReport(
 					EReportFormat.TEAMSCALE_COMPACT_COVERAGE.name,
-					task.getReports().compactCoverage.outputLocation
+					task.reports.compactCoverage.outputLocation
 				)
 			}
 
 			is TestwiseCoverageReport -> {
 				dependsOn(task)
-				check(task.getReports().testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
-				addReport(EReportFormat.TESTWISE_COVERAGE.name, task.getReports().testwiseCoverage.outputLocation)
+				check(task.reports.testwiseCoverage.required.get()) { "Testwise coverage report generation is not enabled for task ${task.path}! Enable it by setting reports.testwiseCoverage.required = true for the task, to be able to upload it." }
+				addReport(EReportFormat.TESTWISE_COVERAGE.name, task.reports.testwiseCoverage.outputLocation)
 			}
 
 			is JUnitReportCollectionTask -> {
@@ -153,6 +153,7 @@ abstract class TeamscaleUpload : DefaultTask() {
 
 		val server = serverConfiguration.get()
 		server.validate()
+		check(commitDescriptorOrRevision.isPresent) { "To upload to Teamscale you must specify the commit to which the data should be uploaded to via teamscale.commit (revision or branchName/timestamp)!" }
 
 		try {
 			logger.info("Uploading to ${server.url.get()} at ${commitDescriptorOrRevision.get()}...")

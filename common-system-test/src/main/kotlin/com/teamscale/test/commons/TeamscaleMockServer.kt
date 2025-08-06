@@ -4,24 +4,22 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.teamscale.client.*
 import com.teamscale.client.JsonUtils.deserializeList
 import com.teamscale.client.JsonUtils.serializeToJson
-import spark.*
+import spark.Request
+import spark.Response
+import spark.Service
 import spark.utils.IOUtils
 import java.io.IOException
 import java.nio.file.Files
 import java.util.*
-import java.util.Base64
 import javax.servlet.MultipartConfigElement
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletResponse
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.groupBy
 
 /**
  * Mocks a Teamscale server: returns predetermined impacted tests and stores all uploaded reports so tests can run
  * assertions on them.
  */
-class TeamscaleMockServer(port: Int) {
+class TeamscaleMockServer(val port: Int) {
 	/** All report upload sessions that were created.  */
 	private val sessions = hashMapOf<String, Session>()
 
@@ -62,6 +60,10 @@ class TeamscaleMockServer(port: Int) {
 		service.init()
 		service.awaitInitialization()
 	}
+
+	/** Returns the URL of the mock server. */
+	val url
+		get() = "http://localhost:${port}"
 
 	/** Resets the data collected by the mock server for the next test.  */
 	fun reset() {
@@ -142,7 +144,7 @@ class TeamscaleMockServer(port: Int) {
 		requireAuthentication(request, response)
 
 		val sessionId = UUID.randomUUID().toString()
-		sessions.put(sessionId, Session(request))
+		sessions[sessionId] = Session(request)
 		return sessionId.serializeToJson()
 	}
 
@@ -179,7 +181,13 @@ class TeamscaleMockServer(port: Int) {
 		requireAuthentication(request, response)
 
 		request.collectUserAgent()
-		impactedTestCommits.add("${request.queryParams("end-revision")}:${request.queryParams("repository")}, ${request.queryParams("end")}")
+		impactedTestCommits.add(
+			"${request.queryParams("end-revision")}:${request.queryParams("repository")}, ${
+				request.queryParams(
+					"end"
+				)
+			}"
+		)
 		baselines.add("${request.queryParams("baseline-revision")}, ${request.queryParams("baseline")}")
 		val availableTests = deserializeList<TestWithClusterId>(request.body())
 		allAvailableTests.addAll(availableTests)

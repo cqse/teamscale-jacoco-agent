@@ -61,7 +61,7 @@ abstract class Commit @Inject constructor(
 			providers.zip(branchName, timestamp) { branch, timestamp ->
 				BranchAndTimestamp(CommitDescriptor(branch, timestamp.toString()))
 			}
-		val revisionProvider = revision.map { Revision(it) }
+		val revisionProvider = revision.filter { !it.isNullOrBlank() }.map { Revision(it) }
 		// If timestamp and branch are set manually, prefer to use them
 		// otherwise use revision as 2nd option
 		commitProvider.orElse(revisionProvider)
