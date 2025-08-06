@@ -20,14 +20,16 @@ tasks.test {
 
 	val teamscalePropertiesPath = agentJar.toPath().parent.parent.resolve("teamscale.properties")
 	doFirst {
-		teamscalePropertiesPath.writeText("""
+		teamscalePropertiesPath.writeText(
+			"""
 			url=http://localhost:$teamscalePort
 			username=fake
 			accesskey=fake
-		""".trimIndent())
+		""".trimIndent()
+		)
 	}
 	doLast {
-		delete(teamscalePropertiesPath)
+		teamscalePropertiesPath.toFile().delete()
 	}
 	dependsOn(tasks.jar)
 }

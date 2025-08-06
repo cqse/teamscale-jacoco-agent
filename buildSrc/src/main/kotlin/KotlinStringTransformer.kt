@@ -1,4 +1,5 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
 import org.objectweb.asm.*
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -10,8 +11,8 @@ import kotlin.io.path.pathString
  * Reverts the transformation from "kotlin" to "shadow/kotlin" within strings of
  * "org/jacoco/core/internal/analysis/filter" to make JaCoCo correctly process Kotlin class files.
  */
-fun revertKotlinPackageChanges(task: ShadowJar) {
-	val zip = task.archiveFile.get().asFile.toPath()
+fun revertKotlinPackageChanges(archiveFile: Provider<RegularFile>) {
+	val zip = archiveFile.get().asFile.toPath()
 	FileSystems.newFileSystem(zip, null as ClassLoader?).use { fs ->
 		Files.walk(fs.getPath("/")).forEach { path ->
 			if (!Files.isRegularFile(path)) return@forEach

@@ -19,7 +19,8 @@ tasks.named<ShadowJar>("shadowJar") {
 	kotlinRelocate("okhttp3", "shadow.okhttp3")
 	kotlinRelocate("okio", "shadow.okio")
 	kotlinRelocate("retrofit", "shadow.retrofit")
-	doLast("revertKotlinPackageChanges") { revertKotlinPackageChanges(this as ShadowJar) }
+	val archiveFile = this.archiveFile
+	doLast("revertKotlinPackageChanges") { revertKotlinPackageChanges(archiveFile) }
 }
 
 // Defer the resolution of 'runtimeClasspath'. This is an issue in the shadow
