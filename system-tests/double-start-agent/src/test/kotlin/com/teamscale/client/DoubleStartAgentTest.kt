@@ -12,7 +12,7 @@ class DoubleStartAgentTest {
 	fun systemTest() {
 		assertThat(LOG_DIRECTORY).exists()
 		val lines = LOG_DIRECTORY.resolve("teamscale-jacoco-agent.log").readLines()
-		val agentStartLines = lines.filter { it.contains("Starting JaCoCo agent") }
+		val agentStartLines = lines.filter { it.contains("Starting Teamscale Java Profiler") }
 		assertThat(agentStartLines).hasSize(1)
 	}
 
