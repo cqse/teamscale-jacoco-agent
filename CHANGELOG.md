@@ -5,7 +5,10 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+
+# 35.2.2
 - [fix] _teamscale-gradle-plugin_: TeamscaleUpload task did not properly validate `revision` argument
+- [fix] _teamscale-gradle-plugin_: Removed usage of deprecated `movetolastcommit` option
 
 # 35.2.1
 - [fix] _agent_: Bad request error when starting a test run in some cases
