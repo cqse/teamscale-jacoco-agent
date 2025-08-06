@@ -1,7 +1,7 @@
 package com.teamscale.jacoco.agent;
 
-import com.teamscale.jacoco.agent.options.AgentOptions;
 import com.teamscale.jacoco.agent.logging.LoggingUtils;
+import com.teamscale.jacoco.agent.options.AgentOptions;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -41,9 +41,10 @@ public abstract class AgentBase {
 			controller = new JacocoRuntimeController(RT.getAgent());
 		} catch (IllegalStateException e) {
 			throw new IllegalStateException(
-					"JaCoCo agent not started or there is a conflict with another JaCoCo agent on the classpath.", e);
+					"Teamscale Java Profiler not started or there is a conflict with another agent on the classpath.",
+					e);
 		}
-		logger.info("Starting JaCoCo agent for process {} with options: {}",
+		logger.info("Starting Teamscale Java Profiler for process {} with options: {}",
 				ManagementFactory.getRuntimeMXBean().getName(), getOptionsObjectToLog());
 		if (options.getHttpServerPort() != null) {
 			try {
@@ -115,12 +116,12 @@ public abstract class AgentBase {
 	void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
-				logger.info("CQSE JaCoCo agent is shutting down...");
+				logger.info("Teamscale Java Profiler is shutting down...");
 				stopServer();
 				prepareShutdown();
-				logger.info("CQSE JaCoCo agent successfully shut down.");
+				logger.info("Teamscale Java Profiler successfully shut down.");
 			} catch (Exception e) {
-				logger.error("Exception during agent shutdown.", e);
+				logger.error("Exception during profiler shutdown.", e);
 			} finally {
 				// Try to flush logging resources also in case of an exception during shutdown
 				PreMain.closeLoggingResources();

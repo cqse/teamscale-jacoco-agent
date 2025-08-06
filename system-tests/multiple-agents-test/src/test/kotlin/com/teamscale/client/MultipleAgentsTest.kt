@@ -15,7 +15,7 @@ class MultipleAgentsTest {
 		assertThat(lines)
 			.anyMatch { it.contains("Using multiple java agents could interfere with coverage recording.") }
 		assertThat(lines)
-			.anyMatch { it.contains("For best results consider registering the Teamscale JaCoCo Agent first.") }
+			.anyMatch { it.contains("For best results consider registering the Teamscale Java Profiler first.") }
 	}
 
 	companion object {

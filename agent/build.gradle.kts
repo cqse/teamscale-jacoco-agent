@@ -16,7 +16,7 @@ evaluationDependsOn(":installer")
 
 publishAs {
 	artifactId = "teamscale-jacoco-agent"
-	readableName = "Teamscale JaCoCo Agent"
+	readableName = "Teamscale Java Profiler"
 	description = "JVM profiler that simplifies various aspects around recording and uploading test coverage"
 }
 

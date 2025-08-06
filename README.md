@@ -1,4 +1,4 @@
-# Teamscale JaCoCo Agent [![Build Status](https://github.com/cqse/teamscale-jacoco-agent/workflows/Build/badge.svg)](https://github.com/cqse/teamscale-jacoco-agent/actions)
+# Teamscale Java Profiler [![Build Status](https://github.com/cqse/teamscale-jacoco-agent/workflows/Build/badge.svg)](https://github.com/cqse/teamscale-jacoco-agent/actions)
 
 ## Download
 
@@ -7,7 +7,7 @@
 
 ## Documentation
 
-* [Teamscale JaCoCo Agent](agent/README.md)
+* [Teamscale Java Profiler](https://docs.teamscale.com/reference/coverage-profilers/teamscale-java-profiler/)
 
 ## Development
 
