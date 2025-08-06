@@ -186,7 +186,7 @@ open class TeamscaleClient {
 		require(projectId != null) { "Project ID must not be null!" }
 
 		service.uploadExternalReports(
-			projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
+			projectId, reportFormat, commitDescriptor, revision, repository, partition, message, partList
 		).executeOrThrow()
 	}
 
@@ -209,7 +209,7 @@ open class TeamscaleClient {
 		require(projectId != null) { "Project ID must not be null!" }
 
 		service.uploadExternalReports(
-			projectId, reportFormat, commitDescriptor, revision, repository, true, partition, message, partList
+			projectId, reportFormat, commitDescriptor, revision, repository, partition, message, partList
 		).executeOrThrow()
 	}
 
@@ -225,7 +225,7 @@ open class TeamscaleClient {
 	) {
 		require(projectId != null) { "Project ID must not be null!" }
 		val sessionId =
-			service.createSession(projectId, commitDescriptor, revision, repository, true, partition, message)
+			service.createSession(projectId, commitDescriptor, revision, repository, partition, message)
 				.executeOrThrow()
 		require(sessionId != null) { "Session ID was null" }
 

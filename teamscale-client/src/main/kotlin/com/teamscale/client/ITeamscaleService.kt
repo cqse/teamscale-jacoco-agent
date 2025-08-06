@@ -15,7 +15,6 @@ interface ITeamscaleService {
 	 * Report upload API.
 	 *
 	 * @param commit           A branch and timestamp to upload the report to. Can be null if revision is specified.
-	 * @param moveToLastCommit Whether to move the upload timestamp to right after the last commit
 	 * @param revision         This parameter allows passing a revision instead of a timestamp. Can be null if a
 	 *                         timestamp is given.
 	 * @param partition        The name of the logical partition to store the results into. All existing data in this
@@ -32,7 +31,6 @@ interface ITeamscaleService {
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
 		@Query("repository") repository: String?,
-		@Query("movetolastcommit") moveToLastCommit: Boolean?,
 		@Query("partition") partition: String,
 		@Query("message") message: String,
 		@Part("report") report: RequestBody
@@ -59,7 +57,6 @@ interface ITeamscaleService {
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
 		@Query("repository") repository: String?,
-		@Query("movetolastcommit") moveToLastCommit: Boolean,
 		@Query("partition") partition: String,
 		@Query("message") message: String,
 		@Part report: List<MultipartBody.Part>
@@ -72,7 +69,6 @@ interface ITeamscaleService {
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
 		@Query("repository") repository: String?,
-		@Query("movetolastcommit") moveToLastCommit: Boolean,
 		@Query("partition") partition: String,
 		@Query("message") message: String
 	): Call<String>
@@ -98,7 +94,6 @@ interface ITeamscaleService {
 		@Query("t") commit: CommitDescriptor?,
 		@Query("revision") revision: String?,
 		@Query("repository") repository: String?,
-		@Query("movetolastcommit") moveToLastCommit: Boolean,
 		@Query("partition") partition: String,
 		@Query("message") message: String,
 		@Part report: List<MultipartBody.Part>
@@ -169,7 +164,7 @@ interface ITeamscaleService {
 }
 
 /**
- * Uploads the given report body to Teamscale as blocking call with movetolastcommit set to false.
+ * Uploads the given report body to Teamscale as blocking call.
  *
  * @return Returns the request body if successful, otherwise throws an IOException.
  */
@@ -185,16 +180,14 @@ fun ITeamscaleService.uploadReport(
 	report: RequestBody
 ): String {
 	var commitNull = commit
-	var moveToLastCommit: Boolean? = false
-	if (revision != null) {
+	if (!revision.isNullOrBlank()) {
 		// When uploading to a revision, we don't need commit adjustment.
 		commitNull = null
-		moveToLastCommit = null
 	}
 
 	try {
 		val response = uploadExternalReport(
-			projectId, reportFormat.name, commitNull, revision, repository, moveToLastCommit, partition, message, report
+			projectId, reportFormat.name, commitNull, revision, repository, partition, message, report
 		).execute()
 
 		val body = response.body()
