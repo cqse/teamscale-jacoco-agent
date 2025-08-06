@@ -1,6 +1,5 @@
 plugins {
 	com.teamscale.`java-convention`
-	alias(libs.plugins.markdownToPdf)
 	application
 
 	// we don't want to cause conflicts between our dependencies and the target application
@@ -88,11 +87,6 @@ distributions {
 		contents {
 			from(project(":installer").tasks["jlink"]) {
 				into("installer")
-			}
-
-			from(tasks.readmeToPdf) {
-				into("documentation")
-				rename("README.pdf", "userguide.pdf")
 			}
 
 			filesMatching("**/VERSION.txt") {
