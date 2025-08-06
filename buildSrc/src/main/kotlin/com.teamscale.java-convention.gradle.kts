@@ -48,3 +48,17 @@ dependencies {
 		implementation("org.apache.commons:commons-compress:1.28.0")
 	}
 }
+
+tasks.processResources {
+	val version = project.version
+	inputs.property("version", version)
+	filesMatching("**/*.properties", VersionReplacer(version.toString()))
+}
+
+class VersionReplacer(val version: String) : Action<FileCopyDetails> {
+	override fun execute(t: FileCopyDetails) {
+		t.filter {
+			it.replace("%VERSION_TOKEN_REPLACED_DURING_BUILD%", version)
+		}
+	}
+}

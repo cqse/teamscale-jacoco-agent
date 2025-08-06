@@ -60,16 +60,6 @@ dependencies {
 	testImplementation(project(":common-system-test"))
 }
 
-tasks.processResources {
-	val version = project.version
-	inputs.property("version", version)
-	filesMatching("**/plugin.properties") {
-		filter {
-			it.replace("%PLUGIN_VERSION_TOKEN_REPLACED_DURING_BUILD%", version.toString())
-		}
-	}
-}
-
 tasks.test {
 	dependsOn(":agent:publishToMavenLocal")
 	dependsOn(":impacted-test-engine:publishToMavenLocal")

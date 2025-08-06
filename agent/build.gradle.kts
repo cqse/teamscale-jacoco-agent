@@ -101,13 +101,3 @@ distributions {
 tasks.shadowDistZip {
 	archiveFileName = "teamscale-jacoco-agent.zip"
 }
-
-tasks.processResources {
-	val version = project.version
-	inputs.property("version", version)
-	filesMatching("**/app.properties") {
-		filter {
-			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", version.toString())
-		}
-	}
-}
