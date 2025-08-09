@@ -21,7 +21,7 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 	private val reports = objectFactory.namedDomainObjectSet(clazz)
 	private val enabled = reports.matching { report: T -> report.required.get() }
 
-	override fun getEnabled(): NamedDomainObjectSet<T?> {
+	override fun getEnabled(): NamedDomainObjectSet<T> {
 		return this.enabled
 	}
 
@@ -47,7 +47,7 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 		throw ReportContainer.ImmutableViolationException()
 	}
 
-	override fun addAllLater(provider: Provider<out Iterable<T>?>) {
+	override fun addAllLater(provider: Provider<out Iterable<T>>) {
 		throw ReportContainer.ImmutableViolationException()
 	}
 
@@ -71,11 +71,11 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 		return reports.containsAll(elements)
 	}
 
-	override fun getNamer(): Namer<T?> {
+	override fun getNamer(): Namer<T> {
 		return Namer { obj: T? -> obj!!.name }
 	}
 
-	override fun getAsMap(): SortedMap<String, T?> {
+	override fun getAsMap(): SortedMap<String, T> {
 		return reports.asMap
 	}
 
@@ -135,38 +135,38 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 		return reports.contains(element)
 	}
 
-	override fun iterator(): MutableIterator<T?> {
+	override fun iterator(): MutableIterator<T> {
 		return reports.iterator()
 	}
 
-	override fun getEnabledReports(): Map<String, T?> {
+	override fun getEnabledReports(): Map<String, T> {
 		return enabled.asMap
 	}
 
-	override fun <S : T?> withType(type: Class<S>): NamedDomainObjectSet<S> {
+	override fun <S : T> withType(type: Class<S>): NamedDomainObjectSet<S> {
 		return reports.withType(type)
 	}
 
-	override fun <S : T?> withType(
+	override fun <S : T> withType(
 		type: Class<S>,
 		configureAction: Action<in S>
 	): DomainObjectCollection<S> {
 		return reports.withType(type, configureAction)
 	}
 
-	override fun <S : T?> withType(type: Class<S>, configureClosure: Closure<*>): DomainObjectCollection<S> {
+	override fun <S : T> withType(type: Class<S>, configureClosure: Closure<*>): DomainObjectCollection<S> {
 		return reports.withType(type, configureClosure)
 	}
 
-	override fun matching(spec: Spec<in T>): NamedDomainObjectSet<T?> {
+	override fun matching(spec: Spec<in T>): NamedDomainObjectSet<T> {
 		return reports.matching(spec)
 	}
 
-	override fun matching(spec: Closure<*>): NamedDomainObjectSet<T?> {
+	override fun matching(spec: Closure<*>): NamedDomainObjectSet<T> {
 		return reports.matching(spec)
 	}
 
-	override fun whenObjectAdded(action: Action<in T>): Action<in T?> {
+	override fun whenObjectAdded(action: Action<in T>): Action<in T> {
 		return reports.whenObjectAdded(action)
 	}
 
@@ -174,7 +174,7 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 		reports.whenObjectAdded(action)
 	}
 
-	override fun whenObjectRemoved(action: Action<in T>): Action<in T?> {
+	override fun whenObjectRemoved(action: Action<in T>): Action<in T> {
 		return reports.whenObjectRemoved(action)
 	}
 
@@ -195,7 +195,7 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 	}
 
 	@Throws(UnknownDomainObjectException::class)
-	override fun named(name: String): NamedDomainObjectProvider<T?> {
+	override fun named(name: String): NamedDomainObjectProvider<T> {
 		return reports.named(name)
 	}
 
@@ -203,12 +203,12 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 	override fun named(
 		name: String,
 		configurationAction: Action<in T>
-	): NamedDomainObjectProvider<T?> {
+	): NamedDomainObjectProvider<T> {
 		return reports.named(name, configurationAction)
 	}
 
 	@Throws(UnknownDomainObjectException::class)
-	override fun <S : T?> named(
+	override fun <S : T> named(
 		name: String,
 		type: Class<S>
 	): NamedDomainObjectProvider<S> {
@@ -216,14 +216,14 @@ open class Reports<T : Report>(objectFactory: ObjectFactory, clazz: Class<T>) : 
 	}
 
 	@Throws(UnknownDomainObjectException::class)
-	override fun <S : T?> named(
+	override fun <S : T> named(
 		name: String, type: Class<S>,
 		configurationAction: Action<in S>
 	): NamedDomainObjectProvider<S> {
 		return reports.named(name, type, configurationAction)
 	}
 
-	override fun named(nameFilter: Spec<String>): NamedDomainObjectSet<T?> {
+	override fun named(nameFilter: Spec<String>): NamedDomainObjectSet<T> {
 		return reports.named(nameFilter)
 	}
 

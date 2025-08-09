@@ -8,9 +8,14 @@ val provider = SystemTestPorts.registerWith(project)
 tasks.test {
 	dependsOn(":agent:shadowJar")
 	usesService(provider)
-	portProvider = provider
-	teamscalePort = provider.get().pickFreePort()
-	agentPort = provider.get().pickFreePort()
+
+	val teamscalePort = provider.get().pickFreePort()
+	val agentPort = provider.get().pickFreePort()
+	extensions.create<PortsExtension>("ports", provider).apply {
+		this.teamscalePort = teamscalePort
+		this.agentPort = agentPort
+	}
+
 	systemProperties("agentPort" to agentPort, "teamscalePort" to teamscalePort)
 	environment("AGENT_VERSION", version)
 	environment("AGENT_PATH", agentJar)

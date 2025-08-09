@@ -1,6 +1,5 @@
 plugins {
 	com.teamscale.`java-convention`
-	alias(libs.plugins.markdownToPdf)
 	application
 
 	// we don't want to cause conflicts between our dependencies and the target application
@@ -90,11 +89,6 @@ distributions {
 				into("installer")
 			}
 
-			from(tasks.readmeToPdf) {
-				into("documentation")
-				rename("README.pdf", "userguide.pdf")
-			}
-
 			filesMatching("**/VERSION.txt") {
 				filter {
 					it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", outputVersion)
@@ -106,13 +100,4 @@ distributions {
 
 tasks.shadowDistZip {
 	archiveFileName = "teamscale-jacoco-agent.zip"
-}
-
-tasks.processResources {
-	inputs.property("version", project.version)
-	filesMatching("**/app.properties") {
-		filter {
-			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", version.toString())
-		}
-	}
 }

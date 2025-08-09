@@ -1,3 +1,4 @@
+import org.beryx.jlink.BaseTask
 import org.beryx.jlink.util.JdkUtil
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -21,6 +22,10 @@ tasks.jar {
 
 tasks.withType<JavaCompile> {
 	options.release = 21
+}
+
+tasks.withType<BaseTask> {
+	notCompatibleWithConfigurationCache("https://github.com/beryx/badass-jlink-plugin/issues/304")
 }
 
 tasks.withType<KotlinCompile> {
@@ -82,12 +87,4 @@ dependencies {
 
 	testImplementation(libs.spark)
 	testImplementation(project(":common-system-test"))
-}
-
-tasks.processResources {
-	filesMatching("**/app.properties") {
-		filter {
-			it.replace("%APP_VERSION_TOKEN_REPLACED_DURING_BUILD%", version.toString())
-		}
-	}
 }

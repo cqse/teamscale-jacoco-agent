@@ -8,6 +8,8 @@
 ## Documentation
 
 * [Teamscale Java Profiler](https://docs.teamscale.com/reference/coverage-profilers/teamscale-java-profiler/)
+* [Teamscale Gradle Plugin](https://docs.teamscale.com/reference/integrations/gradle-plugin/)
+* [Teamscale Maven Plugin](https://docs.teamscale.com/reference/integrations/maven-plugin/)
 
 ## Development
 
