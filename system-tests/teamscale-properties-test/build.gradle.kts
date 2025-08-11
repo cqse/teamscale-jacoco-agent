@@ -6,13 +6,16 @@ plugins {
 }
 
 tasks.test {
-	val teamscalePropertiesPath = agentJar.toPath().getParent().getParent().resolve("teamscale.properties")
+	val teamscalePropertiesPath = agentJar.toPath().parent.parent.resolve("teamscale.properties")
+	val teamscalePort = teamscalePort
 	doFirst {
-		teamscalePropertiesPath.writeText("""
+		teamscalePropertiesPath.writeText(
+			"""
 			url=http://localhost:$teamscalePort
 			username=fake
 			accesskey=fake
-		""".trimIndent())
+		""".trimIndent()
+		)
 	}
 	doLast {
 		delete(teamscalePropertiesPath)

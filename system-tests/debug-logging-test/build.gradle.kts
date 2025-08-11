@@ -13,6 +13,5 @@ tasks.register<JavaExec>("runWithoutGradleWorker") {
 
 tasks.test {
 	dependsOn("runWithoutGradleWorker")
-	val logFilePath = "logTest"
 	teamscaleAgent(mapOf("debug" to logFilePath))
 }

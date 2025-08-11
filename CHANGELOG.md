@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [breaking fix] _teamscale-gradle-plugin_: Adjusted to breaking API changes in Gradle 9.0
 
 # 35.2.2
 - [fix] _teamscale-gradle-plugin_: TeamscaleUpload task did not properly validate `revision` argument

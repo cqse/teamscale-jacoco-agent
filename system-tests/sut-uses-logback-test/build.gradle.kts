@@ -14,9 +14,6 @@ dependencies {
 tasks.test {
 	dependsOn(tasks.jar)
 	systemProperty("agentJar", agentJar)
-	doFirst {
-		file("logTest/app.log").delete()
-	}
 }
 
 tasks.withType<Jar> {

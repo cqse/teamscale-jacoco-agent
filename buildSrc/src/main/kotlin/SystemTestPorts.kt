@@ -1,9 +1,12 @@
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.tasks.testing.Test
-import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.the
+import java.io.Serializable
+import javax.inject.Inject
 
 /**
  * Synchronizes access to ports for the system tests so two system tests running in parallel don't
@@ -37,24 +40,26 @@ abstract class SystemTestPorts : BuildService<BuildServiceParameters.None> {
 	}
 }
 
-/** Provider for the SystemTestPorts build service. */
-@Suppress("UNCHECKED_CAST")
-var Test.portProvider: Provider<SystemTestPorts>
-	get() = extra["portProvider"] as Provider<SystemTestPorts>
-	set(value) {
-		extra["portProvider"] = value
-	}
+
+abstract class PortsExtension @Inject constructor(val portProvider: Provider<SystemTestPorts>) : Serializable {
+
+	/** The port that the fake Teamscale should use during the system test. Guaranteed conflict-free. */
+	abstract val teamscalePort: Property<Int>
+
+	/** The port that the agent should use during the system test. Guaranteed conflict-free. */
+	abstract val agentPort: Property<Int>
+
+	fun pickFreePort(): Int = portProvider.get().pickFreePort()
+
+}
+
+val Test.ports: PortsExtension
+	get() = the<PortsExtension>()
 
 /** The port that the fake Teamscale should use during the system test. Guaranteed conflict-free. */
-var Test.teamscalePort: Int
-	get() = extra["teamscalePort"] as Int
-	set(value) {
-		extra["teamscalePort"] = value
-	}
+val Test.teamscalePort: Int
+	get() = ports.teamscalePort.get()
 
 /** The port that the agent should use during the system test. Guaranteed conflict-free. */
-var Test.agentPort: Int
-	get() = extra["agentPort"] as Int
-	set(value) {
-		extra["agentPort"] = value
-	}
+val Test.agentPort: Int
+	get() = ports.agentPort.get()
