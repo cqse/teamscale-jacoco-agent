@@ -14,7 +14,7 @@ maven = "3.9.11"
 asm = "9.8"
 
 [libraries]
-jetty-bom = { module = "org.eclipse.jetty:jetty-bom", version = "9.4.57.v20241219" }
+jetty-bom = { module = "org.eclipse.jetty:jetty-bom", version = "9.4.58.v20250814" }
 jetty-server = { module = "org.eclipse.jetty:jetty-server" }
 jetty-servlet = { module = "org.eclipse.jetty:jetty-servlet" }
 
