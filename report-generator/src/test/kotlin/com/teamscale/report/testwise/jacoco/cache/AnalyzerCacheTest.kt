@@ -4,12 +4,14 @@ import com.teamscale.report.EDuplicateClassFileBehavior
 import com.teamscale.report.util.ClasspathWildcardIncludeFilter
 import com.teamscale.report.util.ILogger
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.jacoco.core.internal.data.CRC64
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.Mockito
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -33,6 +35,25 @@ class AnalyzerCacheTest {
 
 		assertThat(count).isEqualTo(1)
 		assertThat(probesCache.containsClassId(CRC64.classId(classBytes))).isTrue()
+	}
+
+	/** A nested JAR that cannot be read must be reported with its location, so that users can find it. */
+	@Test
+	fun reportsLocationOfUnreadableNestedJar(@TempDir tempDir: File) {
+		val classBytes = javaClass.getResourceAsStream("AnalyzerCacheTest.class")!!.use { it.readBytes() }
+		val innerJar = zip("com/teamscale/report/testwise/jacoco/cache/AnalyzerCacheTest.class" to classBytes)
+		val outerJar = zip("lib/inner.jar" to innerJar)
+		// Cuts the outer JAR in the middle of the nested JAR's data
+		tempDir.resolve("outer.jar").writeBytes(outerJar.copyOf(outerJar.size / 2))
+
+		val logger = Mockito.mock<ILogger>()
+		val analyzer = AnalyzerCache(
+			ProbesCache(logger, EDuplicateClassFileBehavior.IGNORE), ClasspathWildcardIncludeFilter(null, null), logger
+		)
+
+		assertThatThrownBy { analyzer.analyzeAll(tempDir) }
+			.isInstanceOf(IOException::class.java)
+			.hasMessageContaining("outer.jar@lib/inner.jar")
 	}
 
 	private fun zip(vararg entries: Pair<String, ByteArray>): ByteArray {

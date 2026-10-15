@@ -66,7 +66,11 @@ class AnalyzerCache(
 		if (file.isFile) {
 			return analyzeJarWithCache(CRC64.classId(Files.readAllBytes(file.toPath())), input, location)
 		}
-		val bytes = input.readBytes()
+		val bytes = try {
+			input.readBytes()
+		} catch (e: IOException) {
+			throw analyzerError(location, e)
+		}
 		return analyzeJarWithCache(CRC64.classId(bytes), bytes.inputStream(), location)
 	}
 
