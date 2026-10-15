@@ -1,12 +1,11 @@
 package com.teamscale.tia
 
 import com.teamscale.client.EnvironmentVariableChecker
-import com.teamscale.client.FileSystemUtils
 import com.teamscale.client.JsonUtils
 import com.teamscale.report.testwise.model.ETestExecutionResult
 import com.teamscale.report.testwise.model.TestwiseCoverageReport
 import com.teamscale.test.commons.SystemTestUtils
-import com.teamscale.test.commons.SystemTestUtils.buildMavenProcess
+import com.teamscale.test.commons.SystemTestUtils.copyMavenProject
 import com.teamscale.test.commons.SystemTestUtils.coverage
 import com.teamscale.test.commons.SystemTestUtils.getReportFileNames
 import com.teamscale.test.commons.SystemTestUtils.runMavenTests
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -55,17 +53,16 @@ class TiaMavenDumpToFileSystemTest {
 	@Test
 	@Throws(Exception::class)
 	fun testMavenTiaWithoutCommit(@TempDir tmpDir: Path) {
-		FileSystemUtils.copyFiles(File(MAVEN_PROJECT_NAME), tmpDir.toFile()) { true }
-		tmpDir.resolve("mvnw").toFile().setExecutable(true)
-		val projectPath = tmpDir.toAbsolutePath().toString()
+		val projectPath = copyMavenProject(MAVEN_PROJECT_NAME, tmpDir)
 
-		val result = buildMavenProcess(projectPath, "clean", "verify")
-			.removeEnvironmentVariables(EnvironmentVariableChecker.COMMIT_ENVIRONMENT_VARIABLES)
-			.execute()
-		println("Maven stdout: ${result.stdout}")
-		println("Maven stderr: ${result.stderr}")
+		val result = runMavenTests(
+			projectPath,
+			removeEnvironmentVariables = EnvironmentVariableChecker.COMMIT_ENVIRONMENT_VARIABLES
+		)
 
-		assertThat(result.exitCode).isEqualTo(0)
+		assertThat(result.exitCode)
+			.withFailMessage { "Maven failed:\n${result.stdout}\n${result.stderr}" }
+			.isEqualTo(0)
 		assertCoverageReportsDumped(projectPath)
 	}
 
