@@ -11,8 +11,6 @@ import org.jacoco.core.internal.flow.ClassProbesAdapter
 import org.jacoco.core.internal.instr.InstrSupport
 import java.io.IOException
 import java.io.InputStream
-import java.nio.file.Files
-import java.nio.file.Paths
 
 /**
  * An [AnalyzerCache] instance processes a set of Java class/jar/war/... files and builds a cache for each of the classes.
@@ -55,15 +53,19 @@ class AnalyzerCache(
 
 	/**
 	 * Adds caching for jar files to the analyze jar functionality.
+	 *
+	 * Reads the jar from the given stream and not from [location], because nested jars have locations like
+	 * `outer.jar@path/inner.jar`, which do not exist on disk.
 	 */
 	@Throws(IOException::class)
 	override fun analyzeJar(input: InputStream, location: String): Int {
-		val jarId = CRC64.classId(Files.readAllBytes(Paths.get(location)))
+		val bytes = input.readBytes()
+		val jarId = CRC64.classId(bytes)
 		val probesCountForJarId = probesCache.countForJarId(jarId)
 		if (probesCountForJarId != 0) {
 			return probesCountForJarId
 		}
-		val count = super.analyzeJar(input, location)
+		val count = super.analyzeJar(bytes.inputStream(), location)
 		probesCache.addJarId(jarId, count)
 		return count
 	}
