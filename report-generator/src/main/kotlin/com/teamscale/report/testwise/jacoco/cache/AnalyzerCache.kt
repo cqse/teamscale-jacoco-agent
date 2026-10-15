@@ -9,8 +9,10 @@ import org.jacoco.core.internal.analysis.StringPool
 import org.jacoco.core.internal.data.CRC64
 import org.jacoco.core.internal.flow.ClassProbesAdapter
 import org.jacoco.core.internal.instr.InstrSupport
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.nio.file.Files
 
 /**
  * An [AnalyzerCache] instance processes a set of Java class/jar/war/... files and builds a cache for each of the classes.
@@ -54,18 +56,27 @@ class AnalyzerCache(
 	/**
 	 * Adds caching for jar files to the analyze jar functionality.
 	 *
-	 * Reads the jar from the given stream and not from [location], because nested jars have locations like
-	 * `outer.jar@path/inner.jar`, which do not exist on disk.
+	 * The jar ID of a jar on disk is computed from the file, so the jar is only held in memory while the ID is
+	 * computed. A nested jar has a location like `outer.jar@path/inner.jar`, which does not exist on disk. Its bytes
+	 * are only available from [input], so they are buffered to compute the ID and to analyze the jar.
 	 */
 	@Throws(IOException::class)
 	override fun analyzeJar(input: InputStream, location: String): Int {
+		val file = File(location)
+		if (file.isFile) {
+			return analyzeJarWithCache(CRC64.classId(Files.readAllBytes(file.toPath())), input, location)
+		}
 		val bytes = input.readBytes()
-		val jarId = CRC64.classId(bytes)
+		return analyzeJarWithCache(CRC64.classId(bytes), bytes.inputStream(), location)
+	}
+
+	/** Analyzes the given jar unless a jar with the same [jarId] has been analyzed before.  */
+	private fun analyzeJarWithCache(jarId: Long, input: InputStream, location: String): Int {
 		val probesCountForJarId = probesCache.countForJarId(jarId)
 		if (probesCountForJarId != 0) {
 			return probesCountForJarId
 		}
-		val count = super.analyzeJar(bytes.inputStream(), location)
+		val count = super.analyzeJar(input, location)
 		probesCache.addJarId(jarId, count)
 		return count
 	}
