@@ -57,15 +57,26 @@ class AnalyzerCache(
 	 * Adds caching for jar files to the analyze jar functionality.
 	 *
 	 * The jar ID of a jar on disk is computed from the file, so the jar is only held in memory while the ID is
-	 * computed. A nested jar has a location like `outer.jar@path/inner.jar`, which does not exist on disk. Its bytes
-	 * are only available from [input], so they are buffered to compute the ID and to analyze the jar.
+	 * computed. The jar itself is then streamed from [input] while it is analyzed.
 	 */
 	@Throws(IOException::class)
 	override fun analyzeJar(input: InputStream, location: String): Int {
 		val file = File(location)
-		if (file.isFile) {
-			return analyzeJarWithCache(CRC64.classId(Files.readAllBytes(file.toPath())), input, location)
+		// Checks the file system instead of looking for '@' in the location, because real paths may contain '@' as
+		// well (e.g. the Jenkins workspace `workspace@2`). Such jars must still be streamed instead of buffered.
+		if (!file.isFile) {
+			return analyzeJarInsideArchive(input, location)
 		}
+		return analyzeJarWithCache(CRC64.classId(Files.readAllBytes(file.toPath())), input, location)
+	}
+
+	/**
+	 * Analyzes a jar that is an entry of another archive (JAR, WAR, EAR, ZIP, ...). Such a jar has a location like
+	 * `app.war@WEB-INF/lib/inner.jar`, which is not a file on disk. Its bytes are only available from [input], so
+	 * they are buffered to compute the jar ID and to analyze the jar.
+	 */
+	@Throws(IOException::class)
+	private fun analyzeJarInsideArchive(input: InputStream, location: String): Int {
 		val bytes = try {
 			input.readBytes()
 		} catch (e: IOException) {
