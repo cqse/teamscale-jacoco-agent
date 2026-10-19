@@ -5,6 +5,7 @@ We use [semantic versioning](http://semver.org/):
 - PATCH version when you make backwards compatible bug fixes.
 
 # Next version
+- [fix] _teamscale-maven-plugin_: `prepare-tia-unit-test` and `prepare-tia-integration-test` no longer require a commit or revision when `runImpacted` is `false`.
 - [fix] _teamscale-gradle-plugin_, _teamscale-maven-plugin_: Testwise coverage reports no longer drop a class directory that contains an archive (JAR, WAR, EAR, ZIP) that contains a JAR.
 
 # 39.0.0
