@@ -11,7 +11,7 @@ mockito = "5.24.0"
 mockitoKotlin = "6.4.0"
 picocli = "4.7.7"
 maven = "3.10.0"
-asm = "9.11"
+asm = "9.11.1"
 coroutines = "1.11.0"
 
 [libraries]
@@ -21,7 +21,7 @@ jersey-containerJdkHttp = { module = "org.glassfish.jersey.containers:jersey-con
 jersey-mediaJsonJackson = { module = "org.glassfish.jersey.media:jersey-media-json-jackson" }
 jersey-hk2 = { module = "org.glassfish.jersey.inject:jersey-hk2" }
 
-jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version = "2.22.3" }
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version = "2.22.4" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 
 jakarta-activation-api = { module = "jakarta.activation:jakarta.activation-api", version = "1.2.2" }
